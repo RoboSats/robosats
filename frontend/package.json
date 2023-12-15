@@ -72,7 +72,7 @@
     "js-sha256": "^0.10.1",
     "leaflet": "^1.9.4",
     "light-bolt11-decoder": "^3.0.0",
-    "npm": "^10.2.4",
+    "npm": "^10.2.5",
     "openpgp": "^5.11.0",
     "react": "^18.2.0",
     "react-countdown": "^2.3.5",
