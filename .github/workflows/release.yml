@@ -83,7 +83,7 @@ jobs:
 
       # Upload app-universal-release APK artifact asset
       - name: 'Download universal APK Artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: robosats-${{ needs.check-versions.outputs.semver }}-universal.apk
           path: .
@@ -100,7 +100,7 @@ jobs:
 
       # Upload app-arm64-v8a-release APK artifact asset
       - name: 'Download arm64-v8a APK Artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: robosats-${{ needs.check-versions.outputs.semver }}-arm64-v8a.apk
           path: .
@@ -117,7 +117,7 @@ jobs:
 
       # Upload app-armeabi-v7a-release APK artifact asset
       - name: 'Download armeabi-v7a APK Artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: robosats-${{ needs.check-versions.outputs.semver }}-armeabi-v7a.apk
           path: .
@@ -134,7 +134,7 @@ jobs:
 
       # Upload app-x86_64-release APK artifact asset
       - name: 'Download x86_64 APK Artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: robosats-${{ needs.check-versions.outputs.semver }}-x86_64.apk
           path: .
@@ -151,7 +151,7 @@ jobs:
 
       # Upload app-x86-release APK artifact asset
       - name: 'Download x86 APK Artifact'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: robosats-${{ needs.check-versions.outputs.semver }}-x86.apk
           path: .
