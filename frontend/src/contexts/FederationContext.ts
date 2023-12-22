@@ -89,26 +89,24 @@ export const useFederationStore = (): UseFederationStoreType => {
 
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
-    setFederation(() => {
-      const newFed = initialFederationContext.federation;
-      newFed.registerHook('onFederationReady', () => {
-        setCoordinatorUpdatedAt(new Date().toISOString());
-      });
-      newFed.registerHook('onCoordinatorUpdate', () => {
-        setFederationUpdatedAt(new Date().toISOString());
-      });
-      void newFed.start(origin, settings, hostUrl);
-      return newFed;
+    const newFed = initialFederationContext.federation;
+    newFed.registerHook('onFederationReady', () => {
+      setCoordinatorUpdatedAt(new Date().toISOString());
     });
+    newFed.registerHook('onCoordinatorUpdate', () => {
+      setFederationUpdatedAt(new Date().toISOString());
+    });
+    void newFed.start(origin, settings, hostUrl);
+    setFederation(newFed);
   }, [settings.network, torStatus]);
 
-  const onOrderReceived = (order: any): void => {
-    if (order?.bad_request !== undefined) {
+  const onOrderReceived = (order: Order): void => {
+    if (order?.bad_request) {
       setBadOrder(order.bad_request);
       setDelay(99999999);
-      garage.updateOrder(undefined);
+      garage.updateOrder(null);
     }
-    if (order?.id != null) {
+    if (order?.id) {
       setDelay(
         order.status >= 0 && order.status <= 18
           ? page === 'order'
@@ -116,7 +114,7 @@ export const useFederationStore = (): UseFederationStoreType => {
             : statusToDelay[order.status] * 5 // If user is not looking at "order" tab, refresh less often.
           : 99999999,
       );
-      garage.updateOrder(order as Order);
+      garage.updateOrder(order);
       setBadOrder(undefined);
     }
   };
@@ -124,12 +122,12 @@ export const useFederationStore = (): UseFederationStoreType => {
   const fetchCurrentOrder = (): void => {
     const activeSlot = garage.getSlot();
     const robot = activeSlot?.getRobot(activeSlot?.activeShortAlias ?? '');
-    if (robot != null && activeSlot?.activeShortAlias != null) {
-      const coordinator = federation.getCoordinator(activeSlot?.activeShortAlias);
+    if (robot?.activeOrderId && activeSlot?.activeShortAlias) {
+      const coordinator = federation.getCoordinator(activeSlot?.activeShortAlias ?? '');
       coordinator
-        .fetchOrder(robot.activeOrderId, robot)
+        ?.fetchOrder(robot.activeOrderId, robot)
         .then((order) => {
-          onOrderReceived(order);
+          onOrderReceived(order as Order);
         })
         .finally(() => {
           setTimer(setTimeout(fetchCurrentOrder, delay));
@@ -148,17 +146,17 @@ export const useFederationStore = (): UseFederationStoreType => {
   }, []);
 
   useEffect(() => {
+    if (page === 'offers') void federation.updateBook();
+  }, [page]);
+
+  useEffect(() => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
 
-    if (robot != null && garage.currentSlot != null) {
+    if (robot && garage.currentSlot) {
       if (open.profile && Boolean(slot?.hashId) && slot?.token) {
         void federation.fetchRobot(garage, slot?.token); // refresh/update existing robot
-      } else if (
-        robot.token !== undefined &&
-        robot.encPrivKey !== undefined &&
-        robot.pubKey !== undefined
-      ) {
+      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
         void federation.fetchRobot(garage, robot.token); // create new robot with existing token and keys (on network and coordinator change)
       }
     }

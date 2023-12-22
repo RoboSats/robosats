@@ -68,7 +68,6 @@ export class Federation {
       this.onCoordinatorSaved(shortAlias);
     };
     this.loading = true;
-    // Object.values(this.coordinators).forEach(async (coor) => {
     for (const coor of Object.values(this.coordinators)) {
       await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
     }
@@ -76,9 +75,17 @@ export class Federation {
 
   update = async (): Promise<void> => {
     this.loading = false;
-    // Object.values(this.coordinators).forEach(async (coor) => {
     for (const coor of Object.values(this.coordinators)) {
       await coor.update(() => {
+        this.onCoordinatorSaved(coor.shortAlias);
+      });
+    }
+  };
+
+  updateBook = async (): Promise<void> => {
+    this.loading = false;
+    for (const coor of Object.values(this.coordinators)) {
+      await coor.updateBook(() => {
         this.onCoordinatorSaved(coor.shortAlias);
       });
     }

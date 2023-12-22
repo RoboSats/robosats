@@ -141,7 +141,7 @@ const RobotProfile = ({
             tooltip={t('This is your trading avatar')}
             tooltipPosition='top'
           />
-          {robot?.found === true && slot?.lastShortAlias != null ? (
+          {robot?.found && Boolean(slot?.lastShortAlias) ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>

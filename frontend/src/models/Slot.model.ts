@@ -10,8 +10,8 @@ class Slot {
     this.hashId = sha256(sha256(this.token));
     this.nickname = generate_roboname(this.hashId);
     // trigger RoboHash avatar generation in webworker and store in RoboHash class cache.
-    robohash.generate(this.hashId, 'small');
-    robohash.generate(this.hashId, 'large');
+    void robohash.generate(this.hashId, 'small');
+    void robohash.generate(this.hashId, 'large');
 
     this.robots = {};
     this.order = null;
@@ -35,11 +35,11 @@ class Slot {
   };
 
   getRobot = (shortAlias?: string): Robot | null => {
-    if (shortAlias != null) {
+    if (shortAlias) {
       return this.robots[shortAlias];
-    } else if (this.activeShortAlias !== null && this.robots[this.activeShortAlias] != null) {
+    } else if (this.activeShortAlias !== null && this.robots[this.activeShortAlias]) {
       return this.robots[this.activeShortAlias];
-    } else if (this.lastShortAlias !== null && this.robots[this.lastShortAlias] != null) {
+    } else if (this.lastShortAlias !== null && this.robots[this.lastShortAlias]) {
       return this.robots[this.lastShortAlias];
     } else if (Object.values(this.robots).length > 0) {
       return Object.values(this.robots)[0];

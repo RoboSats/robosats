@@ -83,7 +83,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
               <RobotAvatar
                 avatarClass='profileAvatar'
                 style={{ width: 65, height: 65 }}
-                hashId={garage.getSlot()?.hashId}
+                hashId={garage.getSlot()?.hashId ?? ''}
               />
             </ListItemAvatar>
           </ListItem>

@@ -58,7 +58,7 @@ class Garage {
     if (slotsDump !== '') {
       const rawSlots = JSON.parse(slotsDump);
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
-        if (rawSlot?.token != null) {
+        if (rawSlot?.token) {
           this.createSlot(rawSlot?.token);
           Object.keys(rawSlot.robots).forEach((shortAlias) => {
             const rawRobot = rawSlot.robots[shortAlias];
@@ -76,7 +76,7 @@ class Garage {
   // Slots
   getSlot: (token?: string) => Slot | null = (token) => {
     const currentToken = token ?? this.currentSlot;
-    return currentToken != null ? this.slots[currentToken] ?? null : null;
+    return currentToken ? this.slots[currentToken] ?? null : null;
   };
 
   createSlot: (token: string) => Slot | null = (token) => {
@@ -89,7 +89,7 @@ class Garage {
 
   deleteSlot: (token?: string) => void = (token) => {
     const targetIndex = token ?? this.currentSlot;
-    if (targetIndex != null) {
+    if (targetIndex) {
       Reflect.deleteProperty(this.slots, targetIndex);
       this.currentSlot = null;
       this.triggerHook('onRobotUpdate');
@@ -103,7 +103,7 @@ class Garage {
     token,
   ) => {
     const slot = this.getSlot(token);
-    if (attributes != null) {
+    if (attributes) {
       if (attributes.copiedToken !== undefined) slot?.setCopiedToken(attributes.copiedToken);
       this.triggerHook('onRobotUpdate');
     }
@@ -116,7 +116,7 @@ class Garage {
     shortAlias,
     attributes,
   ) => {
-    if (token === null || shortAlias === null) return;
+    if (!token || !shortAlias) return;
 
     let slot = this.getSlot(token);
 
@@ -132,18 +132,22 @@ class Garage {
   };
 
   // Orders
-  updateOrder: (order: Order) => void = (order) => {
+  updateOrder: (order: Order | null) => void = (order) => {
     const slot = this.getSlot();
     if (slot != null) {
-      const updatedOrder = slot.order ?? null;
-      if (updatedOrder !== null && updatedOrder.id === order.id) {
-        Object.assign(updatedOrder, order);
-        slot.order = updatedOrder;
+      if (order !== null) {
+        const updatedOrder = slot.order ?? null;
+        if (updatedOrder !== null && updatedOrder.id === order.id) {
+          Object.assign(updatedOrder, order);
+          slot.order = updatedOrder;
+        } else {
+          slot.order = order;
+        }
+        if (slot.order?.is_participant) {
+          slot.activeShortAlias = order.shortAlias;
+        }
       } else {
-        slot.order = order;
-      }
-      if (slot.order?.is_participant) {
-        slot.activeShortAlias = order.shortAlias;
+        slot.order = null;
       }
       this.triggerHook('onOrderUpdate');
       this.save();

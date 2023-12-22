@@ -414,12 +414,14 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
             </>
           )}
 
-          {coordinator?.info?.notice_severity != null &&
+          {Boolean(coordinator?.info?.notice_severity) &&
             coordinator?.info?.notice_severity !== 'none' && (
               <ListItem>
-                <Alert severity={coordinator.info.notice_severity} sx={{ width: '100%' }}>
+                <Alert severity={coordinator?.info?.notice_severity} sx={{ width: '100%' }}>
                   <AlertTitle>{t('Coordinator Notice')}</AlertTitle>
-                  <div dangerouslySetInnerHTML={{ __html: coordinator.info.notice_message }} />
+                  <div
+                    dangerouslySetInnerHTML={{ __html: coordinator?.info?.notice_message ?? '' }}
+                  />
                 </Alert>
               </ListItem>
             )}
@@ -478,13 +480,13 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
           )}
         </List>
 
-        {coordinator?.loadingInfo ? (
+        {Boolean(coordinator?.loadingInfo) ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>
-        ) : coordinator?.info !== undefined ? (
+        ) : Boolean(coordinator?.info) ? (
           <Box>
-            {coordinator?.policies !== undefined && (
+            {Boolean(coordinator?.policies) && (
               <Accordion
                 expanded={expanded === 'policies'}
                 onChange={() => {

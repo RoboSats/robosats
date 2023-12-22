@@ -56,9 +56,9 @@ const OrderPage = (): JSX.Element => {
           .then((order) => {
             if (order?.bad_request !== undefined) {
               setBadOrder(order.bad_request);
-            } else if (order?.id != null) {
+            } else if (Boolean(order?.id)) {
               setCurrentOrder(order);
-              if (order.is_participant) {
+              if (order?.is_participant) {
                 garage.updateOrder(order);
               }
             }
@@ -82,23 +82,25 @@ const OrderPage = (): JSX.Element => {
     navigate('/robot');
   };
 
-  const orderDetailsSpace =
-    currentOrder != null ? (
-      <OrderDetails
-        shortAlias={String(currentOrder.shortAlias)}
-        currentOrder={currentOrder}
-        onClickCoordinator={onClickCoordinator}
-        baseUrl={baseUrl}
-        onClickGenerateRobot={() => {
-          navigate('/robot');
-        }}
-      />
-    ) : (
-      <></>
-    );
+  const orderDetailsSpace = currentOrder ? (
+    <OrderDetails
+      shortAlias={String(currentOrder.shortAlias)}
+      currentOrder={currentOrder}
+      onClickCoordinator={onClickCoordinator}
+      baseUrl={baseUrl}
+      onClickGenerateRobot={() => {
+        navigate('/robot');
+      }}
+    />
+  ) : (
+    <></>
+  );
 
-  const tradeBoxSpace =
-    currentOrder != null ? <TradeBox baseUrl={baseUrl} onStartAgain={startAgain} /> : <></>;
+  const tradeBoxSpace = currentOrder ? (
+    <TradeBox baseUrl={baseUrl} onStartAgain={startAgain} />
+  ) : (
+    <></>
+  );
 
   return (
     <Box>
