@@ -35,6 +35,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Cash App](#cash-app-mobile)|[4.7](https://cash.app/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}||
+|[Green wallet](#green-wallet)|[4.0.21](https://github.com/Blockstream/green_android/releases)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}||
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[lntxbot](https://github.com/RoboSats/robosats/issues/44#issuecomment-1054607956)|[NA](https://t.me/lntxbot)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | [{{page.thumbsup}}](https://github.com/RoboSats/robosats/issues/44#issuecomment-1054607956)|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
@@ -77,6 +78,9 @@ Works as expected. The `lightning-cli pay <invoice>` command does not conclude w
 
 ### Electrum (Desktop)
 Experience using Electrum is limited. It does not seem to support more than one pending HTLC (even if there are multiple channels). This wallet is not recommended to use with RoboSats. However, it works well if you are a buyer, as only one hold invoice for the fidelity bond is needed. The payment shows as pending with a spinner for the duration of the locktime.
+
+### Green Wallet (Beta)
+Green wallet offers lightning and Liquid.
 
 ### LND (CLI Interface)
 Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not user friendly and therefore not recommended to interact with RoboSats by beginners. However, everything works just fine. If you are using LNCLI regularly, then you will find no issue using it with RoboSats.
