@@ -35,7 +35,7 @@ jobs:
 
     - name: 'Download main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: web-basic-selfhosted-js
         path: nodeapp/static/frontend/
@@ -51,7 +51,7 @@ jobs:
 
     - name: 'Download pro.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: web-pro-selfhosted-js
         path: nodeapp/static/frontend/
