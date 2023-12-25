@@ -22,7 +22,7 @@ psycopg2==2.9.9
 SQLAlchemy==2.0.16
 django-import-export==3.3.3
 requests[socks]
-python-gnupg==0.5.1
+python-gnupg==0.5.2
 daphne==4.0.0
 drf-spectacular==0.26.2
 drf-spectacular-sidecar==2023.5.1
