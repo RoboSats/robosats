@@ -77,7 +77,7 @@ class ChatView(viewsets.ViewSet):
             },
         )
 
-        # Poor idea: is_peer_connected() mockup. Update connection status based on last time a GET request was sent
+        # is_peer_connected() mockup. Update connection status based on last time a GET request was sent
         if chatroom.maker == request.user:
             chatroom.taker_connected = order.taker.last_login > (
                 timezone.now() - timedelta(minutes=1)
