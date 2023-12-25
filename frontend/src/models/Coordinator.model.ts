@@ -141,7 +141,6 @@ export class Coordinator {
       this.url = String(this[settings.network][origin]);
       this.basePath = '';
     }
-
     void this.update(() => {
       onStarted(this.shortAlias);
     });
@@ -157,14 +156,20 @@ export class Coordinator {
     this.loadInfo(onDataLoad);
   };
 
-  generateAllMakerAvatars = (data: [PublicOrder]) => {
+  updateBook = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
+    this.loadBook(() => {
+      onUpdate(this.shortAlias);
+    });
+  };
+
+  generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
     for (const order of data) {
-      robohash.generate(order.maker_hash_id, 'small');
+      void robohash.generate(order.maker_hash_id, 'small');
     }
   };
 
   loadBook = (onDataLoad: () => void = () => {}): void => {
-    if (this.enabled === false) return;
+    if (!this.enabled) return;
     if (this.loadingBook) return;
 
     this.loadingBook = true;
@@ -172,12 +177,12 @@ export class Coordinator {
     apiClient
       .get(this.url, `${this.basePath}/api/book/`)
       .then((data) => {
-        if (data.not_found === undefined) {
+        if (!data?.not_found) {
           this.book = (data as PublicOrder[]).map((order) => {
             order.coordinatorShortAlias = this.shortAlias;
             return order;
           });
-          this.generateAllMakerAvatars(data);
+          void this.generateAllMakerAvatars(data);
           onDataLoad();
         }
       })
@@ -190,7 +195,7 @@ export class Coordinator {
   };
 
   loadLimits = (onDataLoad: () => void = () => {}): void => {
-    if (this.enabled === false) return;
+    if (!this.enabled) return;
     if (this.loadingLimits) return;
 
     this.loadingLimits = true;
@@ -218,7 +223,7 @@ export class Coordinator {
   };
 
   loadInfo = (onDataLoad: () => void = () => {}): void => {
-    if (this.enabled === false) return;
+    if (!this.enabled) return;
     if (this.loadingInfo) return;
 
     this.loadingInfo = true;
@@ -275,7 +280,7 @@ export class Coordinator {
   };
 
   fecthRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
-    if (this.enabled === false) return null;
+    if (!this.enabled) return null;
 
     const robot = garage?.getSlot(token)?.getRobot() ?? null;
 
@@ -324,7 +329,7 @@ export class Coordinator {
   };
 
   fetchOrder = async (orderId: number, robot: Robot): Promise<Order | null> => {
-    if (this.enabled === false) return null;
+    if (!this.enabled) return null;
     if (!(robot.token != null)) return null;
 
     const authHeaders = robot.getAuthHeaders();
@@ -355,7 +360,7 @@ export class Coordinator {
     bad_invoice?: string;
     successful_withdrawal?: boolean;
   }> => {
-    if (this.enabled === false) return null;
+    if (!this.enabled) return null;
 
     const robot = garage.getSlot(index)?.getRobot();
 
@@ -377,7 +382,7 @@ export class Coordinator {
   };
 
   fetchStealth = async (wantsStealth: boolean, garage: Garage, index: string): Promise<null> => {
-    if (this.enabled === false) return null;
+    if (!this.enabled) return null;
 
     const robot = garage?.getSlot(index)?.getRobot();
 

@@ -156,7 +156,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
   const renewOrder = function (): void {
     const currentOrder = garage.getSlot()?.order;
-    if (currentOrder != null) {
+    if (Boolean(currentOrder)) {
       const body = {
         type: currentOrder.type,
         currency: currentOrder.currency,
@@ -362,7 +362,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
     const currentOrder = garage.getSlot()?.order;
-    if (currentOrder != null && currentOrder?.status !== lastOrderStatus) {
+    if (currentOrder && currentOrder?.status !== lastOrderStatus) {
       setLastOrderStatus(currentOrder.status);
       void handleWebln(currentOrder);
     }
@@ -380,7 +380,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       titleIcon: () => <></>,
     };
 
-    if (order == null) return baseContract;
+    if (!order) return baseContract;
 
     const status = order.status;
     const isBuyer = order.is_buyer;

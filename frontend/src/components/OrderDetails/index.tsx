@@ -40,7 +40,6 @@ import type Coordinator from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { type Order } from '../../models';
@@ -62,7 +61,6 @@ const OrderDetails = ({
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const [coordinator] = useState<Coordinator | null>(federation.getCoordinator(shortAlias));

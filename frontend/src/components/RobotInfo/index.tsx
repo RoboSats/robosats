@@ -203,7 +203,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
             </ListItemIcon>
 
             <ListItemText>
-              {robot?.tgEnabled === true ? (
+              {Boolean(robot?.tgEnabled) ? (
                 <Typography color={theme.palette.success.main}>
                   <b>{t('Telegram enabled')}</b>
                 </Typography>
@@ -241,7 +241,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       <Switch
                         checked={robot?.stealthInvoices}
                         onChange={() => {
-                          setStealthInvoice(!(robot?.stealthInvoices === true));
+                          setStealthInvoice(!Boolean(robot?.stealthInvoices));
                         }}
                       />
                     }

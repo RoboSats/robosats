@@ -166,7 +166,7 @@ const NavBar = (): JSX.Element => {
           value='order'
           disabled={
             !Boolean(slot?.hashId) ||
-            !(slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId != null)
+            !Boolean(slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId)
           }
           icon={<Assignment />}
           iconPosition='start'

@@ -93,7 +93,7 @@ const MakerForm = ({
 
   useEffect(() => {
     const slot = garage.getSlot();
-    if (slot?.token != null) void federation.fetchRobot(garage, slot?.token);
+    if (Boolean(slot?.token)) void federation.fetchRobot(garage, slot?.token);
   }, [garage.currentSlot]);
 
   useEffect(() => {
@@ -287,7 +287,7 @@ const MakerForm = ({
   const handleCreateOrder = function (): void {
     const slot = garage.getSlot();
 
-    if (slot?.activeShortAlias != null) {
+    if (Boolean(slot?.activeShortAlias)) {
       setBadRequest(t('You are already maker of an active order'));
       return;
     }
