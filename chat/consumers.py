@@ -36,6 +36,8 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 defaults={
                     "maker": self.user,
                     "maker_connected": True,
+                    "taker": order.taker,
+                    "taker_connected": True,
                 },
             )
 
@@ -47,6 +49,8 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 defaults={
                     "taker": self.user,
                     "taker_connected": True,
+                    "maker": order.maker,
+                    "maker_connected": False,
                 },
             )
 

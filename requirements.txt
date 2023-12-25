@@ -8,8 +8,8 @@ djangorestframework==3.14.0
 channels==4.0.0
 channels-redis==4.1.0
 celery==5.3.6
-grpcio==1.59.2
-googleapis-common-protos==1.61.0
+grpcio==1.60.0
+googleapis-common-protos==1.62.0
 grpcio-tools==1.59.2
 numpy==1.26.0
 Pillow==10.1.0
@@ -20,11 +20,11 @@ git+https://github.com/RoboSats/Robohash.git
 gunicorn==21.2.0
 psycopg2==2.9.9
 SQLAlchemy==2.0.16
-django-import-export==3.3.3
+django-import-export==3.3.5
 requests[socks]
-python-gnupg==0.5.1
+python-gnupg==0.5.2
 daphne==4.0.0
-drf-spectacular==0.26.2
+drf-spectacular==0.27.0
 drf-spectacular-sidecar==2023.5.1
 django-cors-headers==4.3.1
 base91==1.0.1

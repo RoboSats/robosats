@@ -26,7 +26,7 @@ jobs:
 
     - name: 'Download basic.selfhosted.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v3
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
@@ -35,14 +35,14 @@ jobs:
 
     - name: 'Download main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: web-basic-selfhosted-js
         path: nodeapp/static/frontend/
 
     - name: 'Download pro.selfhosted.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v3
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
@@ -51,7 +51,7 @@ jobs:
 
     - name: 'Download pro.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: web-pro-selfhosted-js
         path: nodeapp/static/frontend/
