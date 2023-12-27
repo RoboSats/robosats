@@ -72,7 +72,7 @@
       "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!"
     },
     "mainnet": {
-      "onion": "http://_TEMPORARY_SILENCED_MAINNET_ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
+      "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
       "clearnet": "",
       "i2p": ""
     },
@@ -116,8 +116,8 @@
       "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
     },
     "mainnet": {
-      "onion": "http://_TEMPORARY_SILENCED_MAINNET_satstraoq35jffvkgpfoqld32nzw2siuvowanruindbfojowpwsjdgad.onion",
-      "clearnet": "https://_TEMPORARY_SILENCED_MAINNET_unsafe.satstralia.com",
+      "onion": "http://satstraoq35jffvkgpfoqld32nzw2siuvowanruindbfojowpwsjdgad.onion",
+      "clearnet": "https://unsafe.satstralia.com",
       "i2p": ""
     },
     "testnet": {
