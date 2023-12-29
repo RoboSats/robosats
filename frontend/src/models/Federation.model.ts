@@ -51,8 +51,10 @@ export class Federation {
     });
   };
 
-  onCoordinatorSaved = (shortAlias: string): void => {
-    this.book = [...this.book, ...this.getCoordinator(shortAlias).book];
+  onCoordinatorSaved = (): void => {
+    this.book = Object.values(this.coordinators).reduce<PublicOrder[]>((array, coordinator) => {
+      return [...array, ...coordinator.book];
+    }, []);
     this.loading = false;
     this.triggerHook('onCoordinatorUpdate');
     if (Object.values(this.coordinators).every((coor) => coor.isUpdated())) {
@@ -63,9 +65,9 @@ export class Federation {
 
   // Setup
   start = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
-    const onCoordinatorStarted = (shortAlias: string): void => {
+    const onCoordinatorStarted = (): void => {
       this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
-      this.onCoordinatorSaved(shortAlias);
+      this.onCoordinatorSaved();
     };
     this.loading = true;
     for (const coor of Object.values(this.coordinators)) {
@@ -77,7 +79,7 @@ export class Federation {
     this.loading = false;
     for (const coor of Object.values(this.coordinators)) {
       await coor.update(() => {
-        this.onCoordinatorSaved(coor.shortAlias);
+        this.onCoordinatorSaved();
       });
     }
   };
@@ -86,7 +88,7 @@ export class Federation {
     this.loading = false;
     for (const coor of Object.values(this.coordinators)) {
       await coor.updateBook(() => {
-        this.onCoordinatorSaved(coor.shortAlias);
+        this.onCoordinatorSaved();
       });
     }
   };

@@ -62,9 +62,6 @@ const NavBar = (): JSX.Element => {
       navigate('/robot');
       setPage('robot');
     }
-    if (isPage(pathPage)) {
-      setPage(pathPage);
-    }
   }, [location, navigate, setPage, orderUpdatedAt, robotUpdatedAt]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
