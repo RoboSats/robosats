@@ -9,7 +9,7 @@ self.addEventListener('message', async (event) => {
   const avatarB64 = await async_generate_robohash(hash, size == 'small' ? 80 : 256);
   const imageUrl = `data:image/png;base64,${avatarB64}`;
   const t1 = performance.now();
-  console.log(`Worker ${workerIndex} :: Time to generate avatar: ${t1 - t0} ms`);
+  console.log(`Avatar generated in: ${t1 - t0} ms`);
   // Send the result back to the main thread
   self.postMessage({ cacheKey, imageUrl });
 });

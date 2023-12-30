@@ -29,13 +29,16 @@ import {
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import SwapCalls from '@mui/icons-material/SwapCalls';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface SettingsFormProps {
   dense?: boolean;
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
-  const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
+  const { fav, setFav, origin, hostUrl, settings, setSettings } =
+    useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -223,6 +226,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               value={settings.network}
               onChange={(e, network) => {
                 setSettings({ ...settings, network });
+                federation.updateUrls(origin, { ...settings, network }, hostUrl);
                 systemClient.setItem('settings_network', network);
               }}
             >

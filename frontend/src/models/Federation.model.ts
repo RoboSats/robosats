@@ -81,6 +81,14 @@ export class Federation {
     }
   };
 
+  // On Testnet/Mainnet change
+  updateUrls = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
+    this.loading = true;
+    for (const coor of Object.values(this.coordinators)) {
+      await coor.updateUrl(settings, origin, hostUrl);
+    }
+  };
+
   update = async (): Promise<void> => {
     this.loading = false;
     for (const coor of Object.values(this.coordinators)) {

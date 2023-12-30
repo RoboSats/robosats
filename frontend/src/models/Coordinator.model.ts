@@ -133,7 +133,13 @@ export class Coordinator {
     onStarted: (shortAlias: string) => void = () => {},
   ): Promise<void> => {
     if (this.enabled !== true) return;
+    void this.updateUrl(settings, origin, hostUrl);
+    void this.update(() => {
+      onStarted(this.shortAlias);
+    });
+  };
 
+  updateUrl = async (settings: Settings, origin: Origin, hostUrl: string): Promise<void> => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = hostUrl;
       this.basePath = `/${settings.network}/${this.shortAlias}`;
@@ -141,9 +147,6 @@ export class Coordinator {
       this.url = String(this[settings.network][origin]);
       this.basePath = '';
     }
-    void this.update(() => {
-      onStarted(this.shortAlias);
-    });
   };
 
   update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
@@ -170,6 +173,7 @@ export class Coordinator {
 
   loadBook = (onDataLoad: () => void = () => {}): void => {
     if (!this.enabled) return;
+    if (this.url === '') return;
     if (this.loadingBook) return;
 
     this.loadingBook = true;
@@ -196,6 +200,7 @@ export class Coordinator {
 
   loadLimits = (onDataLoad: () => void = () => {}): void => {
     if (!this.enabled) return;
+    if (this.url === '') return;
     if (this.loadingLimits) return;
 
     this.loadingLimits = true;
@@ -224,6 +229,7 @@ export class Coordinator {
 
   loadInfo = (onDataLoad: () => void = () => {}): void => {
     if (!this.enabled) return;
+    if (this.url === '') return;
     if (this.loadingInfo) return;
 
     this.loadingInfo = true;
