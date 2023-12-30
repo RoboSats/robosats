@@ -32,7 +32,6 @@ testnet_temple_port=1002
 mainnet_temple_socat="socat tcp4-LISTEN:${mainnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 testnet_temple_socat="socat tcp4-LISTEN:${testnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
-
 ################################
 # Satstralia
 # Mainnet
@@ -45,6 +44,18 @@ testnet_satstralia_port=1003
 mainnet_satstralia_socat="socat tcp4-LISTEN:${mainnet_satstralia_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_satstralia_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 testnet_satstralia_socat="socat tcp4-LISTEN:${testnet_satstralia_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_satstralia_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
+################################
+# TheBigLake
+# Mainnet
+mainnet_lake_onion=4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion
+mainnet_lake_port=104
+# Testnet
+testnet_lake_onion=ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion
+testnet_lake_port=1004
+# socat cmd
+mainnet_lake_socat="socat tcp4-LISTEN:${mainnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_lake_socat="socat tcp4-LISTEN:${testnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+
 
 # RUN!
-$mainnet_exp_socat & $testnet_exp_socat & $mainnet_temple_socat & $testnet_temple_socat & $mainnet_satstralia_socat & $testnet_satstralia_socat& nginx
+$mainnet_exp_socat & $testnet_exp_socat & $mainnet_temple_socat & $testnet_temple_socat & $mainnet_satstralia_socat & $testnet_satstralia_socat& $mainnet_lake_socat & $testnet_lake_socat  & nginx

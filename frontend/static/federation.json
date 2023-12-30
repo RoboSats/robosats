@@ -128,6 +128,49 @@
     "mainnetNodesPubkeys": ["029c5b14214ca7c1f5334db539dbab266088ba43a40563551efb9458756a94cd94"],
     "testnetNodesPubkeys": ["03607900c00c5fcc3f9d32da4ad687c73d95df4faa065e5320e77b41c5d76ef381"]
   },
+  "lake": {
+    "longAlias": "TheBigLake",
+    "shortAlias": "lake",
+    "description": "Becoming a RoboSats coordinator represents boosting intrinsic values of decentralization and economic freedom. RoboSats solves the problem of KYC and loss of privacy that big Exchanges are forced to comply with. I believe that decentralizing the lightning nodes will enhance the robustness of the tool, allowing more users to join. I am excited to be part of this new phase of growth.",
+    "motto": "TheBigLake: The Lake of Economic Freedom.",
+    "color": "#000D28",
+    "contact": {
+      "email": "gabbygator184@proton.me",
+      "telegram": "@gabbygator184",
+      "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2FLsFHfMGI9rm3kUDz1jwXZf3uAYPUuhli%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJ8hrCl81w79Wx2qfae6cGR9rZpeHVoevAObBqNgzqGU%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion",
+      "matrix": "@gabbygator184:matrix.org",
+      "pgp": "/static/federation/pgp/EC4F94F629AA28242B54265F1ABE1CA3582A031A.asc",
+      "nostr": "npub17t2g2h0nnf7mvxtxvm5ydxs85ycumhqgmj48gj35gdplln655yxq68wj6f",
+      "fingerprint": "EC4F94F629AA28242B54265F1ABE1CA3582A031A"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http:///ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
+    "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"]
+  },
   "local": {
     "longAlias": "Local Dev",
     "shortAlias": "local",
@@ -135,15 +178,15 @@
     "motto": "Buidl",
     "color": "#000000",
     "testnet": {
-      "onion": "http://none.onion",
-      "clearnet": "http://localhost:12596"
+      "onion": "",
+      "clearnet": "http://localhost:8000"
     },
     "badges": {
       "donatesToDevFund": 0
     },
     "mainnet": {
-      "onion": "http://none.onion",
-      "clearnet": "http://localhost:12596"
+      "onion": "",
+      "clearnet": ""
     },
     "policies": {
       "Development Policy": "Don't look around, just buidl"
