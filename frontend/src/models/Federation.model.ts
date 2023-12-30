@@ -8,6 +8,7 @@ import {
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
+import { getHost } from '../utils';
 import { updateExchangeInfo } from './Exchange.model';
 
 type FederationHooks = 'onCoordinatorUpdate' | 'onFederationReady';
@@ -16,8 +17,13 @@ export class Federation {
   constructor() {
     this.coordinators = Object.entries(defaultFederation).reduce(
       (acc: Record<string, Coordinator>, [key, value]: [string, any]) => {
-        acc[key] = new Coordinator(value);
-        return acc;
+        if (getHost() !== '127.0.0.1:8000' && key == 'local') {
+          // Do not add `Local Dev` unless it is running on localhost
+          return acc;
+        } else {
+          acc[key] = new Coordinator(value);
+          return acc;
+        }
       },
       {},
     );
