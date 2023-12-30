@@ -78,7 +78,6 @@ const FederationTable = ({
                 shortAlias={params.row.shortAlias}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
-                flipHorizontally={false}
                 small={true}
               />
             </Grid>

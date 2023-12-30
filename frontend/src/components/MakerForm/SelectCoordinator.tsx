@@ -73,12 +73,9 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
             >
               <Grid item>
                 <RobotAvatar
-                  nickname={coordinator}
-                  coordinator={true}
+                  shortAlias={coordinator}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
-                  flipHorizontally={true}
-                  baseUrl={hostUrl}
                   small={true}
                 />
               </Grid>
