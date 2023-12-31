@@ -130,16 +130,18 @@ export class Coordinator {
     origin: Origin,
     settings: Settings,
     hostUrl: string,
-    onStarted: (shortAlias: string) => void = () => {},
+    onUpdate: (shortAlias: string) => void = () => {},
   ): Promise<void> => {
     if (this.enabled !== true) return;
-    void this.updateUrl(settings, origin, hostUrl);
-    void this.update(() => {
-      onStarted(this.shortAlias);
-    });
+    void this.updateUrl(settings, origin, hostUrl, onUpdate);
   };
 
-  updateUrl = async (settings: Settings, origin: Origin, hostUrl: string): Promise<void> => {
+  updateUrl = async (
+    settings: Settings,
+    origin: Origin,
+    hostUrl: string,
+    onUpdate: (shortAlias: string) => void = () => {},
+  ): Promise<void> => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = hostUrl;
       this.basePath = `/${settings.network}/${this.shortAlias}`;
@@ -147,6 +149,9 @@ export class Coordinator {
       this.url = String(this[settings.network][origin]);
       this.basePath = '';
     }
+    void this.update(() => {
+      onUpdate(this.shortAlias);
+    });
   };
 
   update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
