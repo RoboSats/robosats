@@ -38,6 +38,7 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
               tooltip={t(order.maker_status)}
               baseUrl={baseUrl}
               small={true}
+              hashId={order.maker_hash_id}
             />
           </Grid>
         </Grid>
