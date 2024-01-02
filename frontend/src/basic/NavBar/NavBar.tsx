@@ -21,17 +21,8 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 const NavBar = (): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const {
-    page,
-    setPage,
-    settings,
-    setSlideDirection,
-    open,
-    setOpen,
-    windowSize,
-    navbarHeight,
-    hostUrl,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { page, setPage, settings, setSlideDirection, open, setOpen, windowSize, navbarHeight } =
+    useContext<UseAppStoreType>(AppContext);
   const { garage, orderUpdatedAt, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const navigate = useNavigate();
@@ -61,6 +52,9 @@ const NavBar = (): JSX.Element => {
     if (pathPage === 'index.html') {
       navigate('/robot');
       setPage('robot');
+    }
+    if (isPage(pathPage) && pathPage.includes('order')) {
+      setPage(pathPage);
     }
   }, [location, navigate, setPage, orderUpdatedAt, robotUpdatedAt]);
 
