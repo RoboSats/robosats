@@ -49,9 +49,7 @@ const RobotAvatar: React.FC<Props> = ({
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const backgroundFadeTime = 3000;
 
-  const [backgroundData] = useState<BackgroundData>(
-    placeholderType === 'generating' ? placeholder.generating : placeholder.loading,
-  );
+  const [backgroundData] = useState<BackgroundData>(placeholder.loading);
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
@@ -117,7 +115,8 @@ const RobotAvatar: React.FC<Props> = ({
             transform: flipHorizontally ? 'scaleX(-1)' : '',
             border: '0.3px solid #55555',
             filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-            backgroundImage: activeBackground ? backgroundImage : '',
+            backgroundImage:
+              activeBackground && placeholderType == 'loading' ? backgroundImage : '',
           }}
         >
           <div className={className}>
