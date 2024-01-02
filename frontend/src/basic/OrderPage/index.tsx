@@ -10,12 +10,14 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type Order } from '../../models';
+import CautionDialog from './CautionDialog';
 
 const OrderPage = (): JSX.Element => {
   const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, badOrder, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
+  const [openCoordinatorWarning, setOpenCoordinatorWarning] = useState<Boolean>(true);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
@@ -104,6 +106,11 @@ const OrderPage = (): JSX.Element => {
 
   return (
     <Box>
+      <CautionDialog
+        open={openCoordinatorWarning}
+        onClose={() => setOpenCoordinatorWarning(false)}
+        longAlias={federation.getCoordinator(params.shortAlias ?? '').longAlias}
+      />
       {currentOrder === null && badOrder === undefined && <CircularProgress />}
       {badOrder !== undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
