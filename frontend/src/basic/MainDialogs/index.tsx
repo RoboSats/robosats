@@ -18,6 +18,7 @@ export interface OpenDialogs {
   community: boolean;
   info: boolean;
   coordinator: string;
+  warning: boolean;
   exchange: boolean;
   client: boolean;
   update: boolean;

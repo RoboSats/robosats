@@ -33,12 +33,13 @@ const entryPage: Page = !isNativeRoboSats
   ? ((isPagePathEmpty ? 'robot' : pageFromPath) as Page)
   : 'robot';
 
-export const closeAll = {
+export const closeAll: OpenDialogs = {
   more: false,
   learn: false,
   community: false,
   info: false,
-  coordinator: false,
+  coordinator: '',
+  warning: false,
   exchange: false,
   client: false,
   update: false,
@@ -107,6 +108,8 @@ export interface UseAppStoreType {
   open: OpenDialogs;
   setOpen: Dispatch<SetStateAction<OpenDialogs>>;
   windowSize?: WindowSize;
+  acknowledgedWarning: boolean;
+  setAcknowledgedWarning: Dispatch<SetStateAction<boolean>>;
   clientVersion: {
     semver: Version;
     short: string;
@@ -137,6 +140,7 @@ export const initialAppContext: UseAppStoreType = {
   origin: getOrigin(),
   hostUrl: getHostUrl(),
   clientVersion: getClientVersion(),
+  acknowledgedWarning: false,
   fav: { type: null, currency: 0, mode: 'fiat' },
   setFav: () => {},
 };
@@ -167,6 +171,9 @@ export const useAppStore = (): UseAppStoreType => {
     getWindowSize(theme.typography.fontSize),
   );
   const [fav, setFav] = useState<Favorites>(initialAppContext.fav);
+  const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
+    initialAppContext.acknowledgedWarning,
+  );
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -222,6 +229,8 @@ export const useAppStore = (): UseAppStoreType => {
     setOpen,
     windowSize,
     clientVersion,
+    acknowledgedWarning,
+    setAcknowledgedWarning,
     hostUrl,
     origin,
     fav,

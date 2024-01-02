@@ -12,3 +12,4 @@ export { default as ClientDialog } from './Client';
 export { default as EnableTelegramDialog } from './EnableTelegram';
 export { default as F2fMapDialog } from './F2fMap';
 export { default as UpdateDialog } from './Update';
+export { default as WarningDialog } from './Warning';

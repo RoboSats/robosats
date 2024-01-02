@@ -6,18 +6,26 @@ import { useNavigate, useParams } from 'react-router-dom';
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type Order } from '../../models';
-import CautionDialog from './CautionDialog';
+import { WarningDialog } from '../../components/Dialogs';
 
 const OrderPage = (): JSX.Element => {
-  const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =
-    useContext<UseAppStoreType>(AppContext);
+  const {
+    windowSize,
+    open,
+    setOpen,
+    acknowledgedWarning,
+    setAcknowledgedWarning,
+    settings,
+    navbarHeight,
+    hostUrl,
+    origin,
+  } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, badOrder, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
-  const [openCoordinatorWarning, setOpenCoordinatorWarning] = useState<Boolean>(true);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
@@ -43,6 +51,7 @@ const OrderPage = (): JSX.Element => {
 
     const orderId = Number(params.orderId);
     if (Boolean(orderId) && currentOrderId !== orderId) setCurrentOrderId(orderId);
+    if (!acknowledgedWarning) setOpen({ ...closeAll, warning: true });
   }, [params]);
 
   useEffect(() => {
@@ -106,9 +115,11 @@ const OrderPage = (): JSX.Element => {
 
   return (
     <Box>
-      <CautionDialog
-        open={openCoordinatorWarning}
-        onClose={() => setOpenCoordinatorWarning(false)}
+      <WarningDialog
+        open={open.warning}
+        onClose={() => {
+          setOpen(closeAll), setAcknowledgedWarning(true);
+        }}
         longAlias={federation.getCoordinator(params.shortAlias ?? '').longAlias}
       />
       {currentOrder === null && badOrder === undefined && <CircularProgress />}

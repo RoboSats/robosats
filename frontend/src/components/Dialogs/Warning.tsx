@@ -15,7 +15,7 @@ interface Props {
   longAlias: string;
 }
 
-const CautionDialog = ({ open, onClose, longAlias }: Props): JSX.Element => {
+const WarningDialog = ({ open, onClose, longAlias }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
@@ -38,4 +38,4 @@ const CautionDialog = ({ open, onClose, longAlias }: Props): JSX.Element => {
   );
 };
 
-export default CautionDialog;
+export default WarningDialog;
