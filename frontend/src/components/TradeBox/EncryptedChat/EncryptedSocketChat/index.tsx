@@ -98,16 +98,20 @@ const EncryptedSocketChat: React.FC<Props> = ({
   }, [serverMessages]);
 
   const connectWebsocket = (): void => {
+    const robot = garage.getSlot()?.getRobot();
+
+    if (!robot) return;
+
     websocketClient
       .open(
-        `ws://${window.location.host}/ws/chat/${orderId}/?token_sha256_hex=${sha256(robot.token)}`,
+        `ws://${window.location.host}/ws/chat/${orderId}/?token_sha256_hex=${sha256(robot?.token)}`,
       )
       .then((connection) => {
         setConnection(connection);
         setConnected(true);
 
         connection.send({
-          message: garage.getSlot()?.getRobot()?.pubKey,
+          message: robot?.pubKey,
           nick: userNick,
         });
 

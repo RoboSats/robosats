@@ -32,6 +32,7 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 interface TakeButtonProps {
   currentOrder: Order;
   info?: Info;
+  updateCurrentOrder?: () => void;
   onClickGenerateRobot?: () => void;
 }
 
@@ -44,6 +45,7 @@ const closeAll = { inactiveMaker: false, confirmation: false };
 const TakeButton = ({
   currentOrder,
   info,
+  updateCurrentOrder = () => null,
   onClickGenerateRobot = () => null,
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
@@ -333,11 +335,10 @@ const TakeButton = ({
         { tokenSHA256: robot?.tokenSHA256 },
       )
       .then((data) => {
-        setLoadingTake(false);
         if (data?.bad_request !== undefined) {
           setBadRequest(data.bad_request);
         } else {
-          garage.updateOrder(data as Order);
+          updateCurrentOrder();
           setBadRequest('');
         }
       })
