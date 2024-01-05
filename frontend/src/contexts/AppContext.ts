@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 
@@ -26,7 +26,12 @@ import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
 
-const getWindowSize = function (fontSize: number) {
+interface WindowSize {
+  width: number;
+  height: number;
+}
+
+const getWindowSize = function (fontSize: number): WindowSize {
   // returns window size in EM units
   return {
     width: window.innerWidth / fontSize,
@@ -71,7 +76,7 @@ export interface fetchRobotProps {
 
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
 
-let entryPage: Page | '' | 'index.html' =
+const entryPage: Page | string | 'index.html' =
   window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
 
 export const closeAll = {
@@ -87,7 +92,7 @@ export const closeAll = {
   notice: false,
 };
 
-const makeTheme = function (settings: Settings) {
+const makeTheme = function (settings: Settings): Theme {
   const theme: Theme = createTheme({
     palette: {
       mode: settings.mode,
@@ -101,7 +106,7 @@ const makeTheme = function (settings: Settings) {
   return theme;
 };
 
-export const useAppStore = () => {
+export const useAppStore = (): any => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 
@@ -114,10 +119,14 @@ export const useAppStore = () => {
 
   useEffect(() => {
     setTheme(makeTheme(settings));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.fontSize, settings.mode, settings.lightQRs]);
 
   useEffect(() => {
-    i18n.changeLanguage(settings.language);
+    i18n.changeLanguage(settings.language).catch((error) => {
+      console.error('Error changing language:', error);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // All app data structured
@@ -138,7 +147,7 @@ export const useAppStore = () => {
   });
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
-  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
+  const coordinators: Coordinator[] = defaultCoordinators;
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
 
@@ -148,7 +157,7 @@ export const useAppStore = () => {
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
   const [page, setPage] = useState<Page>(
-    entryPage == '' || entryPage == 'index.html' ? 'robot' : entryPage,
+    ['', 'index.html'].includes(entryPage) ? 'robot' : (entryPage as Page),
   );
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
@@ -176,21 +185,24 @@ export const useAppStore = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       window.addEventListener('resize', onResize);
     }
 
-    if (baseUrl != '') {
+    if (baseUrl !== '') {
       setBook({ orders: [], loading: true });
       setLimits({ list: [], loading: true });
       fetchBook();
-      fetchLimits();
+      fetchLimits().catch((error) => {
+        console.error('Error fetching limits:', error);
+      });
     }
     return () => {
-      if (typeof window !== undefined) {
+      if (typeof window !== 'undefined') {
         window.removeEventListener('resize', onResize);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseUrl]);
 
   useEffect(() => {
@@ -207,74 +219,91 @@ export const useAppStore = () => {
           : coordinators[0].testnetOnion;
     }
     setBaseUrl(`${protocol}//${host}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.network]);
 
   useEffect(() => {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   }, [theme.typography.fontSize]);
 
-  const onResize = function () {
+  const onResize = function (): void {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   };
 
-  const fetchBook = function () {
+  const fetchBook = function (): void {
     setBook((book) => {
       return { ...book, loading: true };
     });
-    apiClient.get(baseUrl, '/api/book/').then((data: any) => {
-      setBook({
-        loading: false,
-        orders: data.not_found ? [] : data,
+    apiClient
+      .get(baseUrl, '/api/book/')
+      .then((data: any) => {
+        setBook({
+          loading: false,
+          orders: (data.not_found as boolean) ? [] : data,
+        });
+      })
+      .catch((error) => {
+        console.error('Error fetching book:', error);
       });
-    });
   };
 
-  const fetchLimits = async () => {
+  const fetchLimits = async (): Promise<any> => {
     setLimits({ ...limits, loading: true });
-    const data = apiClient.get(baseUrl, '/api/limits/').then((data) => {
+    return await apiClient.get(baseUrl, '/api/limits/').then((data) => {
       setLimits({ list: data ?? [], loading: false });
       return data;
     });
-    return await data;
   };
 
-  const fetchInfo = function () {
+  const fetchInfo = function (): void {
     setInfo({ ...info, loading: true });
-    apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-      setInfo({
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-        loading: false,
+    apiClient
+      .get(baseUrl, '/api/info/')
+      .then((data: Info) => {
+        const versionInfo: any = checkVer(
+          data.version.major,
+          data.version.minor,
+          data.version.patch,
+        );
+        setInfo({
+          ...data,
+          openUpdateClient: versionInfo.updateAvailable,
+          coordinatorVersion: versionInfo.coordinatorVersion,
+          clientVersion: versionInfo.clientVersion,
+          loading: false,
+        });
+        setSettings({ ...settings, network: data.network });
+      })
+      .catch((error) => {
+        console.error('Error fetching info:', error);
       });
-      setSettings({ ...settings, network: data.network });
-    });
   };
 
   useEffect(() => {
-    if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
+    if (open.stats || open.coordinator || info.coordinatorVersion === 'v?.?.?') {
+      if (window.NativeRobosats === undefined || torStatus === '"Done"') {
         fetchInfo();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open.stats, open.coordinator]);
 
   useEffect(() => {
     // Sets Setting network from coordinator API param if accessing via web
-    if (settings.network == undefined && info.network) {
+    if (settings.network === undefined && typeof info.network === 'string') {
       setSettings((settings: Settings) => {
         return { ...settings, network: info.network };
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info]);
 
   // Fetch current order at load and in a loop
   useEffect(() => {
-    if (currentOrder != undefined && (page == 'order' || (order == badOrder) == undefined)) {
+    if (currentOrder !== undefined && (page === 'order' || (order === badOrder) === undefined)) {
       fetchOrder();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrder, page]);
 
   useEffect(() => {
@@ -283,17 +312,18 @@ export const useAppStore = () => {
     return () => {
       clearInterval(timer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [delay, currentOrder, page, badOrder]);
 
-  const orderReceived = function (data: any) {
-    if (data.bad_request) {
+  const orderReceived = function (data: any): void {
+    if (typeof data.bad_request === 'string') {
       setBadOrder(data.bad_request);
       setDelay(99999999);
       setOrder(undefined);
     } else {
       setDelay(
         data.status >= 0 && data.status <= 18
-          ? page == 'order'
+          ? page === 'order'
             ? statusToDelay[data.status]
             : statusToDelay[data.status] * 5
           : 99999999,
@@ -303,15 +333,18 @@ export const useAppStore = () => {
     }
   };
 
-  const fetchOrder = function () {
-    if (currentOrder) {
+  const fetchOrder = function (): void {
+    if (currentOrder !== null && currentOrder !== undefined) {
       apiClient
-        .get(baseUrl, '/api/order/?order_id=' + currentOrder, { tokenSHA256: robot.tokenSHA256 })
-        .then(orderReceived);
+        .get(baseUrl, `/api/order/?order_id=${currentOrder}`, { tokenSHA256: robot.tokenSHA256 })
+        .then(orderReceived)
+        .catch((error) => {
+          console.error('Error fetching order:', error);
+        });
     }
   };
 
-  const clearOrder = function () {
+  const clearOrder = function (): void {
     setOrder(undefined);
     setBadOrder(undefined);
   };
@@ -376,16 +409,16 @@ export const useAppStore = () => {
           shannonEntropy,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
-          copiedToken: !!data.found,
+          copiedToken: data.found as boolean,
         };
         if (currentOrder === undefined) {
-          setCurrentOrder(
-            data.active_order_id
-              ? data.active_order_id
-              : data.last_order_id
-              ? data.last_order_id
-              : null,
-          );
+          let orderId = null;
+          if (data.active_order_id !== null && data.active_order_id !== undefined) {
+            orderId = data.active_order_id;
+          } else if (data.last_order_id !== null && data.last_order_id !== undefined) {
+            orderId = data.last_order_id;
+          }
+          setCurrentOrder(orderId);
         }
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
@@ -398,13 +431,17 @@ export const useAppStore = () => {
   };
 
   useEffect(() => {
-    if (baseUrl != '' && page != 'robot') {
+    if (baseUrl !== '' && page !== 'robot') {
+      const hasToken = robot.token !== null && robot.token !== '';
+      const hasPrivKey = robot.encPrivKey !== null && robot.encPrivKey !== '';
+      const hasPubkey = robot.pubKey !== null && robot.pubKey !== '';
       if (open.profile && robot.avatarLoaded) {
         fetchRobot({ isRefresh: true }); // refresh/update existing robot
-      } else if (!robot.avatarLoaded && robot.token && robot.encPrivKey && robot.pubKey) {
+      } else if (!robot.avatarLoaded && hasToken && hasPrivKey && hasPubkey) {
         fetchRobot({}); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open.profile, baseUrl]);
 
   return {

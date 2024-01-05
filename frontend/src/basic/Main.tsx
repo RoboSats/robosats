@@ -87,7 +87,7 @@ const Main: React.FC = () => {
                   <Slide
                     direction={page === 'robot' ? slideDirection.in : slideDirection.out}
                     in={page === 'robot'}
-                    appear={slideDirection.in != undefined}
+                    appear={slideDirection.in !== undefined}
                   >
                     <div>
                       <RobotPage />
@@ -105,7 +105,7 @@ const Main: React.FC = () => {
               <Slide
                 direction={page === 'offers' ? slideDirection.in : slideDirection.out}
                 in={page === 'offers'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <BookPage />
@@ -120,7 +120,7 @@ const Main: React.FC = () => {
               <Slide
                 direction={page === 'create' ? slideDirection.in : slideDirection.out}
                 in={page === 'create'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <MakerPage />
@@ -135,7 +135,7 @@ const Main: React.FC = () => {
               <Slide
                 direction={page === 'order' ? slideDirection.in : slideDirection.out}
                 in={page === 'order'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <OrderPage />
@@ -150,7 +150,7 @@ const Main: React.FC = () => {
               <Slide
                 direction={page === 'settings' ? slideDirection.in : slideDirection.out}
                 in={page === 'settings'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <SettingsPage />

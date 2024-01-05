@@ -12,19 +12,19 @@ export const pn = (value?: number | null): string | undefined => {
 
 export const amountToString: (
   amount: string,
-  has_range: boolean,
-  min_amount: number,
-  max_amount: number,
+  hasRange: boolean,
+  minAmount: number,
+  maxAmount: number,
   precision?: number,
-) => string = (amount, has_range, min_amount, max_amount, precision = 4) => {
-  if (has_range) {
-    return (
-      pn(parseFloat(Number(min_amount).toPrecision(precision))) +
-      '-' +
-      pn(parseFloat(Number(max_amount).toPrecision(precision)))
-    );
+) => string = (amount, hasRange, minAmount, maxAmount, precision = 4) => {
+  if (hasRange) {
+    const rangeStart = pn(parseFloat(Number(minAmount).toPrecision(precision)));
+    const rangeEnd = pn(parseFloat(Number(maxAmount).toPrecision(precision)));
+    if (rangeStart !== undefined && rangeEnd !== undefined) {
+      return `${rangeStart}-${rangeEnd}`;
+    }
   }
-  return pn(parseFloat(Number(amount).toPrecision(precision))) || '';
+  return pn(parseFloat(Number(amount).toPrecision(precision))) ?? '';
 };
 
 export default pn;

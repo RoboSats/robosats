@@ -1,19 +1,22 @@
-import { requestProvider, type WeblnProvider } from 'webln';
+import { requestProvider, type WebLNProvider } from 'webln';
 
-const getWebln = async (): Promise<WeblnProvider> => {
-  const resultPromise = new Promise<WeblnProvider>(async (resolve, reject) => {
-    try {
-      const webln = await requestProvider();
-      if (webln) {
-        webln.enable();
-        resolve(webln);
-      }
-    } catch (err) {
-      console.log("Coulnd't connect to Webln");
-      reject();
-    }
+const getWebln = async (): Promise<WebLNProvider> => {
+  const resultPromise = new Promise<WebLNProvider>((resolve, reject) => {
+    requestProvider()
+      .then((webln) => {
+        if (webln.enable !== undefined) {
+          webln.enable().catch((error) => {
+            console.error("Couldn't enable Webln:", error);
+            reject(error);
+          });
+          resolve(webln);
+        }
+      })
+      .catch((error) => {
+        console.log("Couldn't connect to Webln:", error);
+        reject(new Error("Couldn't connect to Webln"));
+      });
   });
-
   return await resultPromise;
 };
 

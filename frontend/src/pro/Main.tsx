@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import GridLayout, { type Layout } from 'react-grid-layout';
 import { Grid, styled, useTheme } from '@mui/material';
 
@@ -23,9 +23,9 @@ import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
 
 const StyledRGL = styled(GridLayout)(
   ({ theme, gridCellSize, height, width, freeze }) => `
-  height: ${height}em;
-  width: ${width}px;
-  max-height: ${height}em;
+  height: ${height as number}em;
+  width: ${width as number}px;
+  max-height: ${height as number}em;
   `,
 );
 
@@ -41,35 +41,7 @@ const defaultLayout: Layout = [
 ];
 
 const Main = (): JSX.Element => {
-  const {
-    book,
-    fetchBook,
-    maker,
-    setMaker,
-    setSettings,
-    clearOrder,
-    torStatus,
-    settings,
-    limits,
-    fetchLimits,
-    robot,
-    setRobot,
-    fetchRobot,
-    setOrder,
-    setDelay,
-    info,
-    fav,
-    setFav,
-    baseUrl,
-    order,
-    currentOrder,
-    setCurrentOrder,
-    open,
-    setOpen,
-    windowSize,
-    badOrder,
-    setBadOrder,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { setSettings, settings, windowSize } = useContext<UseAppStoreType>(AppContext);
 
   const theme = useTheme();
   const em: number = theme.typography.fontSize;
@@ -80,7 +52,7 @@ const Main = (): JSX.Element => {
   const [layout, setLayout] = useState<Layout>(defaultLayout);
 
   return (
-    <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
+    <Grid container direction='column' sx={{ width: `${windowSize.width as number}em` }}>
       <Grid item>
         <ToolBar height={`${toolbarHeight}em`} settings={settings} setSettings={setSettings} />
         <LandingDialog
@@ -96,14 +68,14 @@ const Main = (): JSX.Element => {
           height={windowSize.height - toolbarHeight}
           width={Number((windowSize.width / gridCellSize).toFixed()) * gridCellSize * em}
           theme={theme}
-          freeze={!settings.freezeViewports}
+          freeze={!(settings.freezeViewports as boolean)}
           gridCellSize={gridCellSize}
           className='layout'
           layout={layout}
           cols={Number((windowSize.width / gridCellSize).toFixed())} // cols are 2em wide
           margin={[0.5 * em, 0.5 * em]}
-          isDraggable={!settings.freezeViewports}
-          isResizable={!settings.freezeViewports}
+          isDraggable={!(settings.freezeViewports as boolean)}
+          isResizable={!(settings.freezeViewports as boolean)}
           rowHeight={gridCellSize * em} // rows are 2em high
           autoSize={true}
           onLayoutChange={(layout: Layout) => {

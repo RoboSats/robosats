@@ -1,4 +1,4 @@
-export default function statusBadgeColor(status: string) {
+export default function statusBadgeColor(status: string): string {
   if (status === 'Active') {
     return 'success';
   }

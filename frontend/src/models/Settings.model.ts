@@ -28,9 +28,9 @@ class BaseSettings {
     this.mode =
       modeCookie !== ''
         ? modeCookie
-        : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
+        : window.matchMedia?.('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
 
     this.lightQRs = systemClient.getItem('settings_light_qr') === 'true';
 
@@ -39,8 +39,8 @@ class BaseSettings {
       languageCookie !== ''
         ? languageCookie
         : i18n.resolvedLanguage == null
-        ? 'en'
-        : i18n.resolvedLanguage.substring(0, 2);
+          ? 'en'
+          : i18n.resolvedLanguage.substring(0, 2);
 
     const networkCookie = systemClient.getItem('settings_network');
     this.network = networkCookie !== '' ? networkCookie : 'mainnet';

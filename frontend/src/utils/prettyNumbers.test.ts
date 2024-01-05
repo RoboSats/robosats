@@ -37,7 +37,7 @@ describe('amountToString', () => {
       { input: ['100.00', true, 50, undefined], output: '50-NaN' },
       { input: ['100.00', true, 50, 150], output: '50-150' },
     ].forEach((it) => {
-      const params: any[] = it.input || [];
+      const params: any[] = it?.input ?? [];
       const response = amountToString(params[0], params[1], params[2], params[3]);
       expect(response).toBe(it.output);
     });
