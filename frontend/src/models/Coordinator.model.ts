@@ -341,7 +341,6 @@ export class Coordinator {
     if (!token) return null;
 
     const authHeaders = robot.getAuthHeaders();
-    console.log('authHeaders', authHeaders);
     if (!authHeaders) return null;
 
     return await apiClient
