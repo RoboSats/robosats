@@ -291,17 +291,14 @@ export class Coordinator {
   };
 
   fecthRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
-    if (!this.enabled) return null;
+    if (!this.enabled || !token) return null;
 
     const robot = garage?.getSlot(token)?.getRobot() ?? null;
+    const authHeaders = robot?.getAuthHeaders();
 
-    if (robot?.token !== token) return null;
+    if (!authHeaders) return null;
 
-    const authHeaders = robot.getAuthHeaders();
-
-    if (authHeaders === null) return null;
-
-    const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(robot.token);
+    const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
     if (!hasEnoughEntropy) return null;
 
@@ -339,17 +336,18 @@ export class Coordinator {
     return garage.getSlot(this.shortAlias)?.getRobot() ?? null;
   };
 
-  fetchOrder = async (orderId: number, robot: Robot): Promise<Order | null> => {
+  fetchOrder = async (orderId: number, robot: Robot, token: string): Promise<Order | null> => {
     if (!this.enabled) return null;
-    if (!(robot.token != null)) return null;
+    if (!token) return null;
 
     const authHeaders = robot.getAuthHeaders();
-
-    if (authHeaders === null) return null;
+    console.log('authHeaders', authHeaders);
+    if (!authHeaders) return null;
 
     return await apiClient
       .get(this.url, `${this.basePath}/api/order/?order_id=${orderId}`, authHeaders)
       .then((data) => {
+        console.log('data', data);
         const order: Order = {
           ...defaultOrder,
           ...data,
@@ -373,9 +371,10 @@ export class Coordinator {
   }> => {
     if (!this.enabled) return null;
 
-    const robot = garage.getSlot(index)?.getRobot();
+    const slot = garage.getSlot(index);
+    const robot = slot?.getRobot();
 
-    if (!(robot?.token != null) || !(robot.encPrivKey != null)) return null;
+    if (!slot?.token || !robot?.encPrivKey) return null;
 
     const data = await apiClient.post(
       this.url,
@@ -385,7 +384,7 @@ export class Coordinator {
       },
       { tokenSHA256: robot.tokenSHA256 },
     );
-    garage.upsertRobot(robot?.token, this.shortAlias, {
+    garage.upsertRobot(slot?.token, this.shortAlias, {
       earnedRewards: data?.successful_withdrawal === true ? 0 : robot.earnedRewards,
     });
 
@@ -395,9 +394,10 @@ export class Coordinator {
   fetchStealth = async (wantsStealth: boolean, garage: Garage, index: string): Promise<null> => {
     if (!this.enabled) return null;
 
-    const robot = garage?.getSlot(index)?.getRobot();
+    const slot = garage.getSlot(index);
+    const robot = slot?.getRobot();
 
-    if (!(robot?.token != null) || !(robot.encPrivKey != null)) return null;
+    if (!(slot?.token != null) || !(robot?.encPrivKey != null)) return null;
 
     await apiClient.post(
       this.url,
@@ -406,7 +406,7 @@ export class Coordinator {
       { tokenSHA256: robot.tokenSHA256 },
     );
 
-    garage.upsertRobot(robot?.token, this.shortAlias, {
+    garage.upsertRobot(slot?.token, this.shortAlias, {
       stealthInvoices: wantsStealth,
     });
 

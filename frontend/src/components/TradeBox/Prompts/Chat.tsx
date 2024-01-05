@@ -132,7 +132,7 @@ export const ChatPrompt = ({
         <EncryptedChat
           status={order.status}
           chatOffset={order.chat_last_index}
-          orderId={order.id}
+          order={order}
           takerNick={order.taker_nick}
           makerNick={order.maker_nick}
           userNick={order.ur_nick}

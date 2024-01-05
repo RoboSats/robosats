@@ -48,7 +48,8 @@ class Slot {
   };
 
   upsertRobot = (shortAlias: string, attributes: Record<any, any>): Robot | null => {
-    if (this.robots[shortAlias] === undefined) this.robots[shortAlias] = new Robot();
+    if (this.robots[shortAlias] === undefined)
+      this.robots[shortAlias] = new Robot(attributes ?? {});
 
     this.robots[shortAlias].update(attributes);
 

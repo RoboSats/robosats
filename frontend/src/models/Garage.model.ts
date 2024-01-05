@@ -120,12 +120,12 @@ class Garage {
 
     let slot = this.getSlot(token);
 
-    if (slot === null && attributes.token != null) {
-      slot = this.createSlot(attributes.token);
+    if (slot === null && token) {
+      slot = this.createSlot(token);
     }
 
     if (slot != null) {
-      slot.upsertRobot(shortAlias, attributes);
+      slot.upsertRobot(shortAlias, { token, ...attributes });
       this.triggerHook('onRobotUpdate');
       this.save();
     }

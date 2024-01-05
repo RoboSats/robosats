@@ -87,8 +87,8 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot(coordinator.shortAlias);
 
-    if (robot != null && slot?.token != null && robot.encPrivKey != null && robot.token != null) {
-      void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then(
+    if (robot != null && slot?.token != null && robot.encPrivKey != null) {
+      void signCleartextMessage(rewardInvoice, robot.encPrivKey, slot?.token).then(
         (signedInvoice) => {
           void coordinator.fetchReward(signedInvoice, garage, slot?.token).then((data) => {
             setBadInvoice(data.bad_invoice ?? '');
