@@ -22,14 +22,14 @@ const FederationTable = ({
   const { t } = useTranslation();
   const { federation, sortedCoordinators, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
-  const { hostUrl, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
-  const verticalHeightFrame = 3.25;
-  const verticalHeightRow = 3.25;
+  const verticalHeightFrame = 3.3;
+  const verticalHeightRow = 3.27;
   const defaultPageSize = Math.max(
     Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow),
     1,
