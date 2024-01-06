@@ -45,7 +45,7 @@ const Onboarding = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');

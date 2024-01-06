@@ -89,7 +89,7 @@ const RobotAvatar: React.FC<Props> = ({
     } else {
       setActiveBackground(true);
     }
-  }, [shortAlias]); // TODO: should hashId
+  }, [shortAlias]);
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '0.428em', top: '0.07em' }}>
@@ -115,8 +115,7 @@ const RobotAvatar: React.FC<Props> = ({
             transform: flipHorizontally ? 'scaleX(-1)' : '',
             border: '0.3px solid #55555',
             filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-            backgroundImage:
-              activeBackground && placeholderType == 'loading' ? backgroundImage : '',
+            backgroundImage: activeBackground ? backgroundImage : '',
           }}
         >
           <div className={className}>
@@ -147,7 +146,7 @@ const RobotAvatar: React.FC<Props> = ({
         />
       );
     }
-  }, [hashId, shortAlias, avatarSrc, statusColor, tooltip, avatarClass]);
+  }, [hashId, shortAlias, avatarSrc, statusColor, tooltip, avatarClass, activeBackground]);
 
   const getAvatarWithBadges = useCallback(() => {
     let component = avatar;
