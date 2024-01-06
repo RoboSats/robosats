@@ -55,7 +55,7 @@
     "@mui/base": "^5.0.0-beta.7",
     "@mui/icons-material": "^5.15.3",
     "@mui/lab": "^5.0.0-alpha.136",
-    "@mui/material": "^5.15.1",
+    "@mui/material": "^5.15.3",
     "@mui/system": "^5.15.3",
     "@mui/x-data-grid": "^6.17.0",
     "@mui/x-date-pickers": "^6.17.0",
