@@ -56,6 +56,10 @@ const OrderPage = (): JSX.Element => {
 
   useEffect(() => {
     setCurrentOrder(null);
+    updateCurrentOrder();
+  }, [currentOrderId]);
+
+  const updateCurrentOrder = () => {
     if (currentOrderId !== null) {
       const coordinator = federation.getCoordinator(params.shortAlias ?? '');
       const slot = garage.getSlot();
@@ -63,7 +67,7 @@ const OrderPage = (): JSX.Element => {
       if (robot != null && slot?.token != null) {
         void federation.fetchRobot(garage, slot.token);
         coordinator
-          .fetchOrder(currentOrderId, robot)
+          .fetchOrder(currentOrderId, robot, slot.token)
           .then((order) => {
             if (order?.bad_request !== undefined) {
               setBadOrder(order.bad_request);
@@ -79,7 +83,7 @@ const OrderPage = (): JSX.Element => {
           });
       }
     }
-  }, [currentOrderId]);
+  };
 
   const onClickCoordinator = function (): void {
     if (currentOrder?.shortAlias != null) {
@@ -97,8 +101,8 @@ const OrderPage = (): JSX.Element => {
     <OrderDetails
       shortAlias={String(currentOrder.shortAlias)}
       currentOrder={currentOrder}
+      updateCurrentOrder={updateCurrentOrder}
       onClickCoordinator={onClickCoordinator}
-      baseUrl={baseUrl}
       onClickGenerateRobot={() => {
         navigate('/robot');
       }}

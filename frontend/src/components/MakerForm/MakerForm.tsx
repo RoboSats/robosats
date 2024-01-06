@@ -98,6 +98,13 @@ const MakerForm = ({
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
+  }, [coordinatorUpdatedAt]);
+
+  useEffect(() => {
+    updateCoordinatorInfo();
+  }, [maker.coordinator]);
+
+  const updateCoordinatorInfo = () => {
     if (maker.coordinator != null) {
       const newLimits = federation.getCoordinator(maker.coordinator).limits;
       if (Object.keys(newLimits).length !== 0) {
@@ -107,7 +114,7 @@ const MakerForm = ({
         setLimits(newLimits);
       }
     }
-  }, [coordinatorUpdatedAt]);
+  };
 
   const updateAmountLimits = function (
     limitList: LimitList,

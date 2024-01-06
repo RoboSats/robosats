@@ -24,7 +24,7 @@ const SettingsPage = (): JSX.Element => {
           <SettingsForm />
         </Grid>
         <Grid item>
-          <FederationTable maxHeight={14} />
+          <FederationTable maxHeight={18} />
         </Grid>
       </Grid>
     </Paper>

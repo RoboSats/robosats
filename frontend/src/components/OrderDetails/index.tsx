@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   List,
@@ -47,26 +47,33 @@ import { type Order } from '../../models';
 interface OrderDetailsProps {
   shortAlias: string;
   currentOrder: Order;
+  updateCurrentOrder?: () => void;
   onClickCoordinator?: () => void;
-  baseUrl: string;
   onClickGenerateRobot?: () => void;
 }
 
 const OrderDetails = ({
   shortAlias,
   currentOrder,
+  updateCurrentOrder = () => null,
   onClickCoordinator = () => null,
-  baseUrl,
   onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const [coordinator] = useState<Coordinator | null>(federation.getCoordinator(shortAlias));
-  const currencyCode: string = currencies[(currentOrder?.currency ?? 1).toString()];
+  const [coordinator, setCoordinator] = useState<Coordinator | null>(
+    federation.getCoordinator(shortAlias),
+  );
+  const [currencyCode, setCurrecyCode] = useState<string | null>();
   const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
+
+  useEffect(() => {
+    setCoordinator(federation.getCoordinator(shortAlias));
+    setCurrecyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
+  }, [orderUpdatedAt]);
 
   const amountString = useMemo(() => {
     if (currentOrder === null || currentOrder.amount === null) return;
@@ -262,7 +269,7 @@ const OrderDetails = ({
             {' '}
             <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid item xs={2}>
-                <RobotAvatar shortAlias={coordinator.shortAlias} coordinator={true} small={true} />
+                <RobotAvatar shortAlias={coordinator.shortAlias} small={true} />
               </Grid>
               <Grid item xs={4}>
                 <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
@@ -527,6 +534,7 @@ const OrderDetails = ({
             <TakeButton
               currentOrder={currentOrder}
               info={coordinator.info}
+              updateCurrentOrder={updateCurrentOrder}
               onClickGenerateRobot={onClickGenerateRobot}
             />
           </Grid>

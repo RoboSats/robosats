@@ -119,14 +119,18 @@ export const useFederationStore = (): UseFederationStoreType => {
     }
   };
 
-  const fetchCurrentOrder = (): void => {
-    const activeSlot = garage.getSlot();
-    const robot = activeSlot?.getRobot(activeSlot?.activeShortAlias ?? '');
-    if (robot?.activeOrderId && activeSlot?.activeShortAlias) {
-      const coordinator = federation.getCoordinator(activeSlot?.activeShortAlias ?? '');
+  const fetchCurrentOrder: () => void = () => {
+    const slot = garage?.getSlot();
+    const robot = slot?.getRobot();
+    console.log('slot?.token', slot?.token);
+    console.log('slot?.activeShortAlias', slot?.activeShortAlias);
+    console.log('robot?.activeOrderId', robot?.activeOrderId);
+    if (slot?.token && slot?.activeShortAlias && robot?.activeOrderId) {
+      const coordinator = federation.getCoordinator(slot.activeShortAlias);
       coordinator
-        ?.fetchOrder(robot.activeOrderId, robot)
+        ?.fetchOrder(robot.activeOrderId, robot, slot.token)
         .then((order) => {
+          console.log('order', order);
           onOrderReceived(order as Order);
         })
         .finally(() => {
@@ -156,8 +160,8 @@ export const useFederationStore = (): UseFederationStoreType => {
     if (robot && garage.currentSlot) {
       if (open.profile && Boolean(slot?.hashId) && slot?.token) {
         void federation.fetchRobot(garage, slot?.token); // refresh/update existing robot
-      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        void federation.fetchRobot(garage, robot.token); // create new robot with existing token and keys (on network and coordinator change)
+      } else if (slot?.token && robot.encPrivKey && robot.pubKey) {
+        void federation.fetchRobot(garage, slot.token); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, hostUrl, robotUpdatedAt]);
