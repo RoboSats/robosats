@@ -250,6 +250,7 @@ const Onboarding = ({
                   color='primary'
                   onClick={() => {
                     navigate('/offers');
+                    setPage('offers');
                   }}
                 >
                   <Storefront /> <div style={{ width: '0.5em' }} />
@@ -259,6 +260,7 @@ const Onboarding = ({
                   color='secondary'
                   onClick={() => {
                     navigate('/create');
+                    setPage('create');
                   }}
                 >
                   <AddBox /> <div style={{ width: '0.5em' }} />
