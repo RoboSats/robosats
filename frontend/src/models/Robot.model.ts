@@ -10,13 +10,13 @@ interface AuthHeaders {
 }
 
 class Robot {
-  constructor(garageRobot?: Robot) {
-    if (garageRobot != null) {
-      this.token = garageRobot?.token ?? undefined;
+  constructor(attributes?: Record<any, any>) {
+    if (attributes != null) {
+      this.token = attributes?.token ?? undefined;
       this.tokenSHA256 =
-        garageRobot?.tokenSHA256 ?? (this.token != null ? hexToBase91(sha256(this.token)) : '');
-      this.pubKey = garageRobot?.pubKey ?? undefined;
-      this.encPrivKey = garageRobot?.encPrivKey ?? undefined;
+        attributes?.tokenSHA256 ?? (this.token != null ? hexToBase91(sha256(this.token)) : '');
+      this.pubKey = attributes?.pubKey ?? undefined;
+      this.encPrivKey = attributes?.encPrivKey ?? undefined;
     }
   }
 
@@ -43,9 +43,7 @@ class Robot {
   };
 
   getAuthHeaders = (): AuthHeaders | null => {
-    if (this.token === undefined) return null;
-
-    const tokenSHA256 = hexToBase91(sha256(this.token));
+    const tokenSHA256 = this.tokenSHA256 ?? '';
     const encPrivKey = this.encPrivKey ?? '';
     const pubKey = this.pubKey ?? '';
 

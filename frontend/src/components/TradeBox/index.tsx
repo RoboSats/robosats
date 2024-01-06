@@ -269,11 +269,12 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const updateInvoice = function (invoice: string): void {
-    const robot = garage.getSlot()?.getRobot();
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
 
-    if (robot?.encPrivKey != null && robot?.token != null) {
+    if (robot?.encPrivKey != null && slot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-      void signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
+      void signCleartextMessage(invoice, robot.encPrivKey, slot.token).then((signedInvoice) => {
         submitAction({
           action: 'update_invoice',
           invoice: signedInvoice,
@@ -284,11 +285,12 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const updateAddress = function (): void {
-    const robot = garage.getSlot()?.getRobot();
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
 
-    if (robot?.encPrivKey != null && robot?.token != null) {
+    if (robot?.encPrivKey != null && slot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
-      void signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then(
+      void signCleartextMessage(onchain.address, robot.encPrivKey, slot.token).then(
         (signedAddress) => {
           submitAction({
             action: 'update_address',
@@ -306,10 +308,10 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const submitStatement = function (): void {
-    const robot = garage.getSlot()?.getRobot();
+    const slot = garage.getSlot();
     let statement = dispute.statement;
     if (dispute.attachLogs) {
-      const payload = { statement, messages, token: robot?.token };
+      const payload = { statement, messages, token: slot?.token };
       statement = JSON.stringify(payload, null, 2);
     }
     setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
