@@ -66,14 +66,14 @@ const OrderDetails = ({
   const [coordinator, setCoordinator] = useState<Coordinator | null>(
     federation.getCoordinator(shortAlias),
   );
-  const [currencyCode, setCurrecyCode] = useState<string | null>();
+  const [currencyCode, setCurrencyCode] = useState<string | null>();
   const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias));
-    setCurrecyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
-  }, [orderUpdatedAt]);
+    setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
+  }, [currentOrder, orderUpdatedAt]);
 
   const amountString = useMemo(() => {
     if (currentOrder === null || currentOrder.amount === null) return;
@@ -97,7 +97,7 @@ const OrderDetails = ({
         ) + ` ${currencyCode}`
       );
     }
-  }, [orderUpdatedAt]);
+  }, [orderUpdatedAt, currencyCode]);
 
   // Countdown Renderer callback with condition
   const countdownRenderer = function ({
