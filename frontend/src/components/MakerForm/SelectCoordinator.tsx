@@ -76,6 +76,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
                   shortAlias={coordinator}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
+                  flipHorizontally={false}
                   small={true}
                 />
               </Grid>

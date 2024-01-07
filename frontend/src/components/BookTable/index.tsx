@@ -283,7 +283,6 @@ const BookTable = ({
                 shortAlias={params.row.coordinatorShortAlias}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
-                flipHorizontally={true}
                 small={true}
               />
             </ListItemAvatar>
