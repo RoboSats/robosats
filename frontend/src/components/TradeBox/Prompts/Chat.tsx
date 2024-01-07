@@ -50,7 +50,9 @@ export const ChatPrompt = ({
   const [text, setText] = useState<string>('');
 
   const currencyCode: string = currencies[`${order.currency}`];
-  const amount: string = pn(parseFloat(order.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4));
+  const amount: string = pn(
+    Number(parseFloat(order.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4)),
+  );
 
   const disputeCountdownRenderer = function ({
     hours,
@@ -133,9 +135,6 @@ export const ChatPrompt = ({
           status={order.status}
           chatOffset={order.chat_last_index}
           order={order}
-          takerNick={order.taker_nick}
-          makerNick={order.maker_nick}
-          userNick={order.ur_nick}
           baseUrl={baseUrl}
           messages={messages}
           setMessages={setMessages}

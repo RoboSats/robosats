@@ -29,6 +29,8 @@ interface Props {
   status: number;
   userNick: string;
   takerNick: string;
+  takerHashId: string;
+  makerHashId: string;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
   baseUrl: string;
@@ -41,6 +43,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
   status,
   userNick,
   takerNick,
+  makerHashId,
+  takerHashId,
   messages,
   setMessages,
   baseUrl,
@@ -315,7 +319,9 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   message={message}
                   isTaker={isTaker}
                   userConnected={userConnected}
-                  baseUrl={baseUrl}
+                  takerNick={takerNick}
+                  takerHashId={takerHashId}
+                  makerHashId={makerHashId}
                 />
               </li>
             );

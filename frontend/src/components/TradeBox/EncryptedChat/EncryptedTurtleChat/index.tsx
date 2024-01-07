@@ -25,6 +25,8 @@ interface Props {
   order: Order;
   userNick: string;
   takerNick: string;
+  takerHashId: string;
+  makerHashId: string;
   chatOffset: number;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
@@ -42,6 +44,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   order,
   userNick,
   takerNick,
+  takerHashId,
+  makerHashId,
   chatOffset,
   messages,
   setMessages,
@@ -311,7 +315,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                   message={message}
                   isTaker={isTaker}
                   userConnected={userConnected}
-                  baseUrl={baseUrl}
+                  takerNick={takerNick}
+                  takerHashId={takerHashId}
+                  makerHashId={makerHashId}
                 />
               </li>
             );

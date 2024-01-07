@@ -6,9 +6,6 @@ import EncryptedTurtleChat from './EncryptedTurtleChat';
 interface Props {
   order: Order;
   status: number;
-  takerNick: string;
-  makerNick: string;
-  userNick: string;
   chatOffset: number;
   baseUrl: string;
   messages: EncryptedChatMessage[];
@@ -34,8 +31,6 @@ export interface ServerMessage {
 
 const EncryptedChat: React.FC<Props> = ({
   order,
-  takerNick,
-  userNick,
   chatOffset,
   baseUrl,
   setMessages,
@@ -49,8 +44,10 @@ const EncryptedChat: React.FC<Props> = ({
       messages={messages}
       setMessages={setMessages}
       order={order}
-      takerNick={takerNick}
-      userNick={userNick}
+      takerNick={order.taker_nick}
+      takerHashId={order.taker_hash_id}
+      makerHashId={order.maker_hash_id}
+      userNick={order.ur_nick}
       chatOffset={chatOffset}
       baseUrl={baseUrl}
       turtleMode={turtleMode}
@@ -62,8 +59,10 @@ const EncryptedChat: React.FC<Props> = ({
       messages={messages}
       setMessages={setMessages}
       order={order}
-      takerNick={takerNick}
-      userNick={userNick}
+      takerNick={order.taker_nick}
+      takerHashId={order.taker_hash_id}
+      makerHashId={order.maker_hash_id}
+      userNick={order.ur_nick}
       baseUrl={baseUrl}
       turtleMode={turtleMode}
       setTurtleMode={setTurtleMode}

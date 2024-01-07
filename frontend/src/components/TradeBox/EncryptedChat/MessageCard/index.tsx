@@ -13,12 +13,21 @@ import { type EncryptedChatMessage } from '..';
 
 interface Props {
   message: EncryptedChatMessage;
+  takerNick: string;
+  takerHashId: string;
+  makerHashId: string;
   isTaker: boolean;
   userConnected: boolean;
-  baseUrl: string;
 }
 
-const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl }) => {
+const MessageCard: React.FC<Props> = ({
+  message,
+  isTaker,
+  userConnected,
+  takerNick,
+  takerHashId,
+  makerHashId,
+}) => {
   const [showPGP, setShowPGP] = useState<boolean>(false);
   const { t } = useTranslation();
   const theme = useTheme();
@@ -34,8 +43,7 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
         avatar={
           <RobotAvatar
             statusColor={userConnected ? 'success' : 'error'}
-            nickname={message.userNick}
-            baseUrl={baseUrl}
+            hashId={message.userNick === takerNick ? takerHashId : makerHashId}
             small={true}
           />
         }
