@@ -93,7 +93,7 @@ const MakerForm = ({
 
   useEffect(() => {
     const slot = garage.getSlot();
-    if (Boolean(slot?.token)) void federation.fetchRobot(garage, slot?.token);
+    if (slot?.token) void federation.fetchRobot(garage, slot?.token);
   }, [garage.currentSlot]);
 
   useEffect(() => {
@@ -104,7 +104,7 @@ const MakerForm = ({
     updateCoordinatorInfo();
   }, [maker.coordinator]);
 
-  const updateCoordinatorInfo = () => {
+  const updateCoordinatorInfo = (): void => {
     if (maker.coordinator != null) {
       const newLimits = federation.getCoordinator(maker.coordinator).limits;
       if (Object.keys(newLimits).length !== 0) {
@@ -294,7 +294,7 @@ const MakerForm = ({
   const handleCreateOrder = function (): void {
     const slot = garage.getSlot();
 
-    if (Boolean(slot?.activeShortAlias)) {
+    if (slot?.activeShortAlias) {
       setBadRequest(t('You are already maker of an active order'));
       return;
     }

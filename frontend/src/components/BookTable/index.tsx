@@ -106,8 +106,7 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { fav, setFav, settings, setOpen, hostUrl, origin } =
-    useContext<UseAppStoreType>(AppContext);
+  const { fav, setFav, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 
@@ -206,11 +205,6 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const { url, basePath } =
-          federation
-            .getCoordinator(params.row.coordinatorShortAlias)
-            ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
-
         return (
           <ListItemButton
             style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
@@ -243,11 +237,6 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const { url, basePath } =
-          federation
-            .getCoordinator(params.row.coordinatorShortAlias)
-            ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
-
         return (
           <div
             style={{ position: 'relative', left: '-0.34em', cursor: 'pointer' }}

@@ -94,7 +94,7 @@ const OrderDetails = ({
           currentOrder.amount > 0 ? false : currentOrder.has_range,
           currentOrder.min_amount,
           currentOrder.max_amount,
-        ) + ` ${currencyCode}`
+        ) + ` ${String(currencyCode)}`
       );
     }
   }, [orderUpdatedAt, currencyCode]);

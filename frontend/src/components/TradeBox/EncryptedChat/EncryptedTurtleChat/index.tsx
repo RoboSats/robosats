@@ -19,7 +19,7 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import { type UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
-import { Order } from '../../../../models';
+import { type Order } from '../../../../models';
 
 interface Props {
   order: Order;

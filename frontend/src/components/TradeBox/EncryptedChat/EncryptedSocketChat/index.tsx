@@ -15,9 +15,12 @@ import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
 import ChatBottom from '../ChatBottom';
 import { sha256 } from 'js-sha256';
-import { Order } from '../../../../models';
-import { UseFederationStoreType, FederationContext } from '../../../../contexts/FederationContext';
-import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import { type Order } from '../../../../models';
+import {
+  type UseFederationStoreType,
+  FederationContext,
+} from '../../../../contexts/FederationContext';
+import { type UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 
 const audioPath =
   window.NativeRobosats === undefined

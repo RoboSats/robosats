@@ -51,7 +51,7 @@ const MakerPage = (): JSX.Element => {
   ]);
 
   const onOrderClicked = function (id: number): void {
-    if (Boolean(garage.getSlot()?.hashId)) {
+    if (garage.getSlot()?.hashId) {
       navigate(`/order/${id}`);
     } else {
       setOpenNoRobot(true);

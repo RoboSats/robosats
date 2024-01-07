@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Order, type Robot } from '../../../models';
+import { type Order, type Robot } from '../../../models';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import EncryptedTurtleChat from './EncryptedTurtleChat';
 

@@ -22,7 +22,6 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -46,7 +45,6 @@ const RobotProfile = ({
 }: RobotProfileProps): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { garage, robotUpdatedAt, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -56,8 +54,7 @@ const RobotProfile = ({
 
   useEffect(() => {
     const slot = garage.getSlot();
-    const robot = slot?.getRobot(sortedCoordinators[0]);
-    if (Boolean(slot?.hashId)) {
+    if (slot?.hashId) {
       setLoading(false);
     }
   }, [orderUpdatedAt, robotUpdatedAt, loading]);
@@ -87,7 +84,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {Boolean(slot?.hashId) ? (
+          {slot?.hashId ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{

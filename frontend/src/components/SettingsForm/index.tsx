@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import SwapCalls from '@mui/icons-material/SwapCalls';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -226,7 +226,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               value={settings.network}
               onChange={(e, network) => {
                 setSettings({ ...settings, network });
-                federation.updateUrls(origin, { ...settings, network }, hostUrl);
+                void federation.updateUrls(origin, { ...settings, network }, hostUrl);
                 systemClient.setItem('settings_network', network);
               }}
             >

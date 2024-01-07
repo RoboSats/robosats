@@ -33,7 +33,7 @@ const NavBar = (): JSX.Element => {
   const tabSx = smallBar
     ? {
         position: 'relative',
-        bottom: Boolean(garage.getSlot()?.hashId) ? '0.9em' : '0.13em',
+        bottom: garage.getSlot()?.hashId ? '0.9em' : '0.13em',
         minWidth: '1em',
       }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
@@ -155,10 +155,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={
-            !Boolean(slot?.hashId) ||
-            !Boolean(slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId)
-          }
+          disabled={!slot?.hashId || !slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId}
           icon={<Assignment />}
           iconPosition='start'
         />

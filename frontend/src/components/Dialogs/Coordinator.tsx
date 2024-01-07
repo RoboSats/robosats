@@ -340,7 +340,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
 const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { clientVersion, page, hostUrl } = useContext(AppContext);
+  const { clientVersion, page } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const coordinator = federation.getCoordinator(shortAlias);
 
@@ -480,11 +480,11 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
           )}
         </List>
 
-        {Boolean(coordinator?.loadingInfo) ? (
+        {coordinator?.loadingInfo ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>
-        ) : Boolean(coordinator?.info) ? (
+        ) : coordinator?.info ? (
           <Box>
             {Boolean(coordinator?.policies) && (
               <Accordion

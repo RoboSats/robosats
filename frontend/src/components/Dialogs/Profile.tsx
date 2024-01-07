@@ -33,7 +33,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setLoading(!Boolean(garage.getSlot()?.hashId));
+    setLoading(!garage.getSlot()?.hashId);
   }, [robotUpdatedAt]);
 
   return (
@@ -96,7 +96,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
         </Typography>
 
         {Object.values(federation.coordinators).map((coordinator: Coordinator): JSX.Element => {
-          if (Boolean(garage.getSlot()?.hashId)) {
+          if (garage.getSlot()?.hashId) {
             return (
               <div key={coordinator.shortAlias}>
                 <RobotInfo coordinator={coordinator} onClose={onClose} />

@@ -156,7 +156,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
   const renewOrder = function (): void {
     const currentOrder = garage.getSlot()?.order;
-    if (Boolean(currentOrder)) {
+    if (currentOrder) {
       const body = {
         type: currentOrder.type,
         currency: currentOrder.currency,

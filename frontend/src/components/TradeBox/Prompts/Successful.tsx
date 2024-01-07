@@ -20,7 +20,10 @@ import { LoadingButton } from '@mui/lab';
 
 import { type Order } from '../../../models';
 import { systemClient } from '../../../services/System';
-import { FederationContext, UseFederationStoreType } from '../../../contexts/FederationContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
 
 interface SuccessfulPromptProps {
   order: Order;

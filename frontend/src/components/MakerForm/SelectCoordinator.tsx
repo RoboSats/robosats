@@ -21,7 +21,7 @@ interface SelectCoordinatorProps {
 }
 
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setCoordinator }) => {
-  const { setOpen, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();

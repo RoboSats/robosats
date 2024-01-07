@@ -62,7 +62,6 @@ const Onboarding = ({
   };
 
   const slot = garage.getSlot();
-  const robot = slot?.getRobot();
 
   return (
     <Box>
@@ -151,7 +150,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {Boolean(slot?.hashId) ? (
+                {slot?.hashId ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -179,7 +178,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {Boolean(slot?.hashId) ? (
+            {slot?.hashId ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -211,7 +210,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={!!Boolean(slot?.hashId)}>
+              <Collapse in={!!slot?.hashId}>
                 <Button
                   onClick={() => {
                     setStep('3');

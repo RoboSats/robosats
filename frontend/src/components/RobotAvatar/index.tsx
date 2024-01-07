@@ -4,7 +4,7 @@ import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
 import { robohash } from './RobohashGenerator';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
   shortAlias?: string | undefined;

@@ -1,7 +1,7 @@
 interface Task {
   robohash: Robohash;
-  resolves: ((result: string) => void)[];
-  rejects: ((reason?: Error) => void)[];
+  resolves: Array<(result: string) => void>;
+  rejects: Array<(reason?: Error) => void>;
 }
 
 interface Robohash {
@@ -32,7 +32,7 @@ class RoboGenerator {
     }
   }
 
-  private assignTasksToWorkers() {
+  private assignTasksToWorkers(): void {
     const availableWorker = this.workers.find((w) => !w.busy);
 
     if (availableWorker) {
@@ -42,13 +42,13 @@ class RoboGenerator {
         availableWorker.worker.postMessage(task.robohash);
 
         // Clean up the event listener and free the worker after receiving the result
-        const cleanup = () => {
+        const cleanup = (): void => {
           availableWorker.worker.removeEventListener('message', completionCallback);
           availableWorker.busy = false;
         };
 
         // Resolve the promise when the task is completed
-        const completionCallback = (event: MessageEvent) => {
+        const completionCallback = (event: MessageEvent): void => {
           if (event.data.cacheKey === task.robohash.cacheKey) {
             const { cacheKey, imageUrl } = event.data;
 
@@ -57,7 +57,9 @@ class RoboGenerator {
 
             cleanup();
 
-            task.resolves.forEach((f) => f(imageUrl));
+            task.resolves.forEach((f) => {
+              f(imageUrl);
+            });
           }
         };
 
@@ -67,7 +69,9 @@ class RoboGenerator {
         availableWorker.worker.addEventListener('error', (error) => {
           cleanup();
 
-          task.rejects.forEach((f) => f(new Error(error.message)));
+          task.rejects.forEach((f) => {
+            f(new Error(error.message));
+          });
         });
       }
     }
@@ -81,7 +85,7 @@ class RoboGenerator {
     if (this.assetsCache[cacheKey]) {
       return this.assetsCache[cacheKey];
     } else {
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         let task = this.queue.find((t) => t.robohash.cacheKey === cacheKey);
 
         if (!task) {

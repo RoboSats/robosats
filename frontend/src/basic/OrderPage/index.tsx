@@ -59,7 +59,7 @@ const OrderPage = (): JSX.Element => {
     updateCurrentOrder();
   }, [currentOrderId]);
 
-  const updateCurrentOrder = () => {
+  const updateCurrentOrder = (): void => {
     if (currentOrderId !== null) {
       const coordinator = federation.getCoordinator(params.shortAlias ?? '');
       const slot = garage.getSlot();
@@ -71,7 +71,7 @@ const OrderPage = (): JSX.Element => {
           .then((order) => {
             if (order?.bad_request !== undefined) {
               setBadOrder(order.bad_request);
-            } else if (Boolean(order?.id)) {
+            } else if (order?.id) {
               setCurrentOrder(order);
               if (order?.is_participant) {
                 garage.updateOrder(order);
@@ -122,7 +122,8 @@ const OrderPage = (): JSX.Element => {
       <WarningDialog
         open={open.warning}
         onClose={() => {
-          setOpen(closeAll), setAcknowledgedWarning(true);
+          setOpen(closeAll);
+          setAcknowledgedWarning(true);
         }}
         longAlias={federation.getCoordinator(params.shortAlias ?? '').longAlias}
       />
