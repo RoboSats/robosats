@@ -40,26 +40,24 @@ import { systemClient } from '../../services/System';
 
 interface Props {
   isMaker: boolean;
-  makerNick: string;
-  takerNick: string;
+  makerHashId: string;
+  takerHashId: string;
   currencyCode: string;
   makerSummary: TradeRobotSummary;
   takerSummary: TradeRobotSummary;
   platformSummary: TradeCoordinatorSummary;
   orderId: number;
-  baseUrl: string;
 }
 
 const TradeSummary = ({
   isMaker,
-  makerNick,
-  takerNick,
+  makerHashId,
+  takerHashId,
   currencyCode,
   makerSummary,
   takerSummary,
   platformSummary,
   orderId,
-  baseUrl,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -123,9 +121,8 @@ const TradeSummary = ({
             }}
           >
             <RobotAvatar
-              baseUrl={baseUrl}
               style={{ height: '1.5em', width: '1.5em' }}
-              nickname={makerNick}
+              hashId={makerHashId}
               small={true}
             />
             &nbsp;
@@ -150,10 +147,9 @@ const TradeSummary = ({
             {t('Taker')}
             &nbsp;
             <RobotAvatar
-              baseUrl={baseUrl}
               avatarClass='smallAvatar'
               style={{ height: '1.5em', width: '1.5em' }}
-              nickname={takerNick}
+              hashId={takerHashId}
               small={true}
             />
           </ToggleButton>

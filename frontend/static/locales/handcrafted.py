@@ -12,7 +12,6 @@ phrases = OrderedDict(
             "phone_unsafe_alert",
             "You will not be able to complete a trade. Use <1>Tor Browser</1> and visit the <3>Onion</3> site.",
         ),
-        ("rate_robosats", "What do you think of <1>RoboSats</1>?"),
         (
             "let_us_know_hot_to_improve",
             "Let us know how the platform could improve (<1>Telegram</1> / <3>Github</3>)",

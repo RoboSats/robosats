@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import {
   Grid,
@@ -20,6 +20,7 @@ import { LoadingButton } from '@mui/lab';
 
 import { type Order } from '../../../models';
 import { systemClient } from '../../../services/System';
+import { FederationContext, UseFederationStoreType } from '../../../contexts/FederationContext';
 
 interface SuccessfulPromptProps {
   order: Order;
@@ -27,7 +28,6 @@ interface SuccessfulPromptProps {
   onClickStartAgain: () => void;
   onClickRenew: () => void;
   loadingRenew: boolean;
-  baseUrl: string;
 }
 
 export const SuccessfulPrompt = ({
@@ -36,10 +36,10 @@ export const SuccessfulPrompt = ({
   onClickStartAgain,
   onClickRenew,
   loadingRenew,
-  baseUrl,
 }: SuccessfulPromptProps): JSX.Element => {
   const { t } = useTranslation();
   const currencyCode: string = currencies[`${order.currency}`];
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [rating, setRating] = useState<number | undefined>(undefined);
 
@@ -54,9 +54,9 @@ export const SuccessfulPrompt = ({
     >
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
-          <Trans i18nKey='rate_robosats'>
-            What do you think of <b>RoboSats</b>?
-          </Trans>
+          {t('What do you think your order host "{{coordinator}}"?', {
+            coordinator: federation.getCoordinator(order.shortAlias)?.longAlias,
+          })}
         </Typography>
       </Grid>
       <Grid item>
@@ -116,7 +116,7 @@ export const SuccessfulPrompt = ({
       )}
 
       {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
-      <Collapse in={order.txid !== undefined}>
+      <Collapse in={Boolean(order.txid)}>
         <Alert severity='success'>
           <AlertTitle>
             {t('Your TXID')}
@@ -212,14 +212,13 @@ export const SuccessfulPrompt = ({
         <Grid item>
           <TradeSummary
             isMaker={order.is_maker}
-            makerNick={order.maker_nick}
-            takerNick={order.taker_nick}
+            makerHashId={order.maker_hash_id}
+            takerHashId={order.taker_hash_id}
             currencyCode={currencyCode}
             makerSummary={order.maker_summary}
             takerSummary={order.taker_summary}
             platformSummary={order.platform_summary}
             orderId={order.id}
-            baseUrl={baseUrl}
           />
         </Grid>
       ) : (
