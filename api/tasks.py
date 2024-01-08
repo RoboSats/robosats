@@ -98,15 +98,9 @@ def send_devfund_donation(order_id, proceeds, reason):
 
     from api.lightning.node import LNNode
     from api.models import LNPayment, Order
+    from api.utils import get_devfund_pubkey
 
-    if config("NETWORK", cast=str) == "testnet":
-        target_pubkey = (
-            "03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"
-        )
-    else:
-        target_pubkey = (
-            "02187352cc4b1856b9604e0a79e1bc9b301be7e0c14acbbb8c29f7051d507127d7"
-        )
+    target_pubkey = get_devfund_pubkey(config("NETWORK", cast=str))
 
     order = Order.objects.get(id=order_id)
     coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")
