@@ -143,21 +143,21 @@ def get_devfund_pubkey(network: str) -> str:
     """
 
     session = get_session()
-    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubkey.json"
-    # hardcoded fallback
-    mainnet = "02187352cc4b1856b9604e0a79e1bc9b301be7e0c14acbbb8c29f7051d507127d7"
-    testnet = "03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"
+    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubey.json"
 
     try:
         response = session.get(url)
         response.raise_for_status()  # Raises stored HTTPError, if one occurred
         value = response.json().get(network)
-        if len(value) == 66:
-            return value
+        if len(value) != 66:
+            raise Exception()
     except Exception as e:
         print(e)
+        with open("devfund_pubkey.json", "r") as f:
+            data = json.load(f)
+            value = data.get(network)
 
-    return mainnet if network == "mainnet" else testnet
+    return value
 
 
 market_cache = {}
