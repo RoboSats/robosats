@@ -5,12 +5,8 @@ from collections import OrderedDict
 phrases = OrderedDict(
     [
         (
-            "desktop_unsafe_alert",
-            "Some features are disabled for your protection (e.g. chat) and you will not be able to complete a trade without them. To protect your privacy and fully enable RoboSats, use <1>Tor Browser</1> and visit the <3>Onion</3> site.",
-        ),
-        (
-            "phone_unsafe_alert",
-            "You will not be able to complete a trade. Use <1>Tor Browser</1> and visit the <3>Onion</3> site.",
+            "unsafe_alert",
+            "To protect your data and privacy use <1>Tor Browser</1> and visit a federation hosted <3>Onion</3> site. Or <5>host your own app.</5>",
         ),
         (
             "let_us_know_hot_to_improve",
