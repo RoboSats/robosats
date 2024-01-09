@@ -6,7 +6,6 @@ from django.utils import timezone
 
 
 class Currency(models.Model):
-
     with open("frontend/static/assets/currencies.json") as f:
         currency_dict = json.load(f)
     currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
