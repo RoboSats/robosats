@@ -26,7 +26,7 @@ interface Props {
   position?: [number, number] | undefined;
   setPosition?: (position: [number, number]) => void;
   orders?: PublicOrder[];
-  onOrderClicked?: (id: number) => void;
+  onOrderClicked?: (id: number, shortAlias: string) => void;
   zoom?: number;
   center?: [number, number];
   interactive?: boolean;
@@ -81,7 +81,7 @@ const Map = ({
         }
         eventHandlers={{
           click: (_event: LeafletMouseEvent) => {
-            order?.id != null && onOrderClicked(order.id);
+            order?.id != null && onOrderClicked(order.id, order.coordinatorShortAlias);
           },
         }}
       >
