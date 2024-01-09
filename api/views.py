@@ -913,7 +913,7 @@ class LimitView(ListAPIView):
     def get(self, request):
         # Trade limits as BTC
         min_trade = config("MIN_ORDER_SIZE", cast=int, default=20_000) / 100_000_000
-        max_trade = config("MAX_ORDER_SIZE", cast=int, default=5_000_000) / 100_000_000
+        max_trade = config("MAX_ORDER_SIZE", cast=int, default=500_000) / 100_000_000
 
         payload = {}
         queryset = Currency.objects.all().order_by("currency")
