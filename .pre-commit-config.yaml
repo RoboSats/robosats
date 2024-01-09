@@ -1,6 +1,3 @@
-# TODO
-# add a hook which automatically generates the OpenApi schema on API changes
-# and places them in an appropriate location
 exclude: '(api|chat|control)/migrations/.*'
 repos:
   - repo: 'https://github.com/pre-commit/pre-commit-hooks'
@@ -50,27 +47,20 @@ repos:
         files: ^mobile/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
         entry: bash -c 'cd mobile && npm run format'
-      - id: isort
-        name: isort
-        stages:
-          - commit
-          - merge-commit
-        language: system
-        types: [python]
-        entry: isort
-      - id: black
-        name: black
-        stages:
-          - commit
-          - merge-commit
-        language: system
-        types: [python]
-        entry: black
-      - id: flake8
-        name: flake8
-        stages:
-          - commit
-          - merge-commit
-        language: system
-        types: [python]
-        entry: flake8
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.11
+    hooks:
+    - id: ruff
+      stages:
+        - commit
+        - merge-commit
+      language: system
+      args: [ --fix ]
+      types: [python]
+    - id: ruff-format
+      stages:
+        - commit
+        - merge-commit
+      language: system
+      types: [python]
+

@@ -8,7 +8,6 @@ from control.models import AccountingDay, BalanceLog
 
 @admin.register(AccountingDay)
 class AccountingDayAdmin(ImportExportModelAdmin):
-
     list_display = (
         "day",
         "contracted",
@@ -34,7 +33,6 @@ class AccountingDayAdmin(ImportExportModelAdmin):
 
 @admin.register(BalanceLog)
 class BalanceLogAdmin(ImportExportModelAdmin):
-
     list_display = (
         "time",
         "total",

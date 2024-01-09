@@ -11,7 +11,6 @@ from api.utils import get_session
 
 
 class Command(BaseCommand):
-
     help = "Polls telegram /getUpdates method"
     rest = 3  # seconds between consecutive polls
 
