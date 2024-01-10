@@ -9,7 +9,7 @@ from django.utils import timezone
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
 from api.tasks import send_devfund_donation, send_notification
-from api.utils import validate_onchain_address
+from api.utils import get_minning_fee, validate_onchain_address
 from chat.models import Message
 
 FEE = float(config("FEE"))
@@ -19,7 +19,7 @@ ESCROW_USERNAME = config("ESCROW_USERNAME")
 PENALTY_TIMEOUT = int(config("PENALTY_TIMEOUT"))
 
 MIN_ORDER_SIZE = config("MIN_ORDER_SIZE", cast=int, default=20_000)
-MAX_ORDER_SIZE = config("MAX_ORDER_SIZE", cast=int, default=5_000_000)
+MAX_ORDER_SIZE = config("MAX_ORDER_SIZE", cast=int, default=500_000)
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 EXP_TAKER_BOND_INVOICE = int(config("EXP_TAKER_BOND_INVOICE"))
@@ -640,10 +640,7 @@ class Logics:
         ):  # Not enough onchain balance to commit for this swap.
             return False
 
-        suggested_mining_fee_rate = LNNode.estimate_fee(
-            amount_sats=preliminary_amount,
-            target_conf=config("SUGGESTED_TARGET_CONF", cast=int, default=2),
-        )["mining_fee_rate"]
+        suggested_mining_fee_rate = get_minning_fee("suggested", preliminary_amount)
 
         # Hardcap mining fee suggested at 1000 sats/vbyte
         if suggested_mining_fee_rate > 1000:
@@ -795,10 +792,7 @@ class Logics:
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         if mining_fee_rate:
             # not a valid mining fee
-            min_mining_fee_rate = LNNode.estimate_fee(
-                amount_sats=num_satoshis,
-                target_conf=config("MINIMUM_TARGET_CONF", cast=int, default=24),
-            )["mining_fee_rate"]
+            min_mining_fee_rate = get_minning_fee("minimum", num_satoshis)
 
             min_mining_fee_rate = max(2, min_mining_fee_rate)
 

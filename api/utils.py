@@ -70,6 +70,96 @@ def validate_onchain_address(address):
     return True, None
 
 
+mining_fee = {}
+
+
+@ring.dict(mining_fee, expire=60)  # keeps in cache for 60 seconds
+def get_minning_fee(priority: str, preliminary_amount: int) -> int:
+    """
+    priority: (str) 'suggested' | 'minimum'
+    Fetches suggested and minimum mining fee rates from mempool.space
+    uses LND/CLN fee estimator as fallback.
+
+    mempool.space response object:
+    {
+        fastestFee: 1,
+        halfHourFee: 1,
+        hourFee: 1,
+        economyFee: 1,
+        minimumFee: 1
+    }
+    Where 'suggested' is 'fastestFee' and 'minimum' is 'economyFee'
+    """
+
+    from api.lightning.node import LNNode
+
+    session = get_session()
+    mempool_url = (
+        "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
+        if USE_TOR
+        else "https://mempool.space"
+    )
+    api_path = "/api/v1/fees/recommended"
+
+    try:
+        response = session.get(mempool_url + api_path)
+        response.raise_for_status()  # Raises stored HTTPError, if one occurred
+        data = response.json()
+        if priority == "suggested":
+            value = data.get("fastestFee")
+        elif priority == "minimum":
+            value = data.get("economyFee")
+        else:
+            raise Exception(
+                "an error occurred",
+                "unexpected value for mining fee priority",
+                priority,
+            )
+
+    except Exception:
+        # Fetch mining fee from LND/CLN instance
+        if priority == "suggested":
+            target_conf = config("SUGGESTED_TARGET_CONF", cast=int, default=2)
+        if priority == "minimum":
+            target_conf = config("MINIMUM_TARGET_CONF", cast=int, default=24)
+
+        value = LNNode.estimate_fee(
+            amount_sats=preliminary_amount,
+            target_conf=target_conf,
+        )["mining_fee_rate"]
+
+    return value
+
+
+devfund_pubkey = {}
+
+
+@ring.dict(devfund_pubkey, expire=3600)  # keeps in cache for 3600 seconds
+def get_devfund_pubkey(network: str) -> str:
+    """
+    network: (str) "mainnet" | "testnet";
+    Fetches devfund pubkey from `main` branch in the repository
+    fallback to hardcoded pubkey
+    """
+
+    session = get_session()
+    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubey.json"
+
+    try:
+        response = session.get(url)
+        response.raise_for_status()  # Raises stored HTTPError, if one occurred
+        value = response.json().get(network)
+        if len(value) != 66:
+            raise Exception()
+    except Exception as e:
+        print(e)
+        with open("devfund_pubkey.json", "r") as f:
+            data = json.load(f)
+            value = data.get(network)
+
+    return value
+
+
 market_cache = {}
 
 
