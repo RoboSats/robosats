@@ -175,6 +175,8 @@ export const useAppStore = (): UseAppStoreType => {
     initialAppContext.acknowledgedWarning,
   );
 
+  console.log('On AppContext "page" is:', page);
+
   useEffect(() => {
     setTheme(makeTheme(settings));
   }, [settings.fontSize, settings.mode, settings.lightQRs]);

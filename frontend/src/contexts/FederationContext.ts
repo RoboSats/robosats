@@ -16,6 +16,7 @@ import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
 
 // Refresh delays (ms) according to Order status
+const defaultDelay = 5000;
 const statusToDelay = [
   3000, // 'Waiting for maker bond'
   35000, // 'Public'
@@ -82,7 +83,7 @@ export const useFederationStore = (): UseFederationStoreType => {
   );
   const [federationUpdatedAt, setFederationUpdatedAt] = useState<string>(new Date().toISOString());
 
-  const [delay, setDelay] = useState<number>(5000);
+  const [delay, setDelay] = useState<number>(defaultDelay);
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
     setInterval(() => null, delay),
   );
@@ -100,54 +101,54 @@ export const useFederationStore = (): UseFederationStoreType => {
     setFederation(newFed);
   }, [settings.network, torStatus]);
 
+  console.log('On FederationContext "page" is:', page);
   const onOrderReceived = (order: Order): void => {
+    let newDelay = defaultDelay;
     if (order?.bad_request) {
+      newDelay = 99999999;
+      console.log('bad request on order, new delay', newDelay);
       setBadOrder(order.bad_request);
-      setDelay(99999999);
       garage.updateOrder(null);
     }
     if (order?.id) {
-      setDelay(
+      newDelay =
         order.status >= 0 && order.status <= 18
           ? page === 'order'
             ? statusToDelay[order.status]
             : statusToDelay[order.status] * 5 // If user is not looking at "order" tab, refresh less often.
-          : 99999999,
-      );
+          : 99999999;
+      console.log('has order id, new delay is', newDelay);
       garage.updateOrder(order);
       setBadOrder(undefined);
     }
+    console.log('page:', page, 'Why remains as initial page?');
+    console.log('setting delay!', newDelay);
+    setDelay(newDelay);
+    setTimer(setTimeout(fetchCurrentOrder, newDelay));
   };
 
   const fetchCurrentOrder: () => void = () => {
     const slot = garage?.getSlot();
     const robot = slot?.getRobot();
-    console.log('slot?.token', slot?.token);
-    console.log('slot?.activeShortAlias', slot?.activeShortAlias);
-    console.log('robot?.activeOrderId', robot?.activeOrderId);
     if (slot?.token && slot?.activeShortAlias && robot?.activeOrderId) {
       const coordinator = federation.getCoordinator(slot.activeShortAlias);
-      coordinator
-        ?.fetchOrder(robot.activeOrderId, robot, slot.token)
-        .then((order) => {
-          console.log('order', order);
-          onOrderReceived(order as Order);
-        })
-        .finally(() => {
-          setTimer(setTimeout(fetchCurrentOrder, delay));
-        });
+      void coordinator?.fetchOrder(robot.activeOrderId, robot, slot.token).then((order) => {
+        onOrderReceived(order as Order);
+      });
     } else {
-      setTimer(setTimeout(fetchCurrentOrder, delay));
+      console.log('Hit no order, delay', defaultDelay);
+      setTimer(setTimeout(fetchCurrentOrder, defaultDelay));
     }
   };
 
   useEffect(() => {
     clearInterval(timer);
     fetchCurrentOrder();
+    setDelay(defaultDelay);
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [coordinatorUpdatedAt, federationUpdatedAt]);
 
   useEffect(() => {
     if (page === 'offers') void federation.updateBook();

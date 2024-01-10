@@ -25,6 +25,8 @@ const NavBar = (): JSX.Element => {
     useContext<UseAppStoreType>(AppContext);
   const { garage, orderUpdatedAt, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
+  console.log('On NavBar "page" is:', page);
+
   const navigate = useNavigate();
   const location = useLocation();
   const smallBar = windowSize?.width < 50;
@@ -56,7 +58,7 @@ const NavBar = (): JSX.Element => {
     if (isPage(pathPage) && pathPage.includes('order')) {
       setPage(pathPage);
     }
-  }, [location, navigate, setPage, orderUpdatedAt, robotUpdatedAt]);
+  }, [location, navigate, orderUpdatedAt, robotUpdatedAt]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
     const oldPos: number = pagesPosition[oldPage];

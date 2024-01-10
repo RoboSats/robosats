@@ -339,6 +339,7 @@ const MakerForm = ({
         })
         .catch(() => {
           setBadRequest('Request error');
+          setSubmittingRequest(false);
         });
     }
     setOpenDialogs(false);
