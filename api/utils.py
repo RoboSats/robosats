@@ -94,17 +94,14 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
     from api.lightning.node import LNNode
 
     session = get_session()
-    mempool_url = (
-        "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion"
-        if USE_TOR
-        else "https://mempool.space"
-    )
+    mempool_url = "https://mempool.space"
     api_path = "/api/v1/fees/recommended"
 
     try:
         response = session.get(mempool_url + api_path)
         response.raise_for_status()  # Raises stored HTTPError, if one occurred
         data = response.json()
+
         if priority == "suggested":
             value = data.get("fastestFee")
         elif priority == "minimum":
@@ -116,7 +113,8 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
                 priority,
             )
 
-    except Exception:
+    except Exception as e:
+        print(e)
         # Fetch mining fee from LND/CLN instance
         if priority == "suggested":
             target_conf = config("SUGGESTED_TARGET_CONF", cast=int, default=2)
@@ -190,7 +188,8 @@ def get_exchange_rates(currencies):
                             blockchain_rates.append(
                                 float(blockchain_prices[currency]["last"])
                             )
-                        except Exception:
+                        except Exception as e:
+                            print(e)
                             blockchain_rates.append(np.nan)
                 api_rates.append(blockchain_rates)
 
