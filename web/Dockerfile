@@ -14,13 +14,11 @@ RUN set -x \
 
 COPY . .
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./coordinators/ /etc/nginx/conf.d/
 
 RUN apk -U --no-cache upgrade \
-    && apk --no-cache add socat \
     && apk --no-cache add nginx
 
-EXPOSE 12596
-HEALTHCHECK CMD curl --fail http://localhost:12596/selfhosted || exit 1
+EXPOSE 80
+HEALTHCHECK CMD curl --fail http://localhost:80 || exit 1
 
-CMD ["sh", "robosats-client.sh"]
+CMD ["sh", "run.sh"]

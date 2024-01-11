@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: 'Copy Static' # Needed since Github actions does not support symlinks
-      run: cp -r frontend/static nodeapp/static
+      run: cp -r frontend/static web/static
 
     - name: 'Download main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
@@ -31,14 +31,14 @@ jobs:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: web-main-js
-        path: nodeapp/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Download main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
         name: web-main-js
-        path: nodeapp/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Download pro.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
@@ -47,14 +47,14 @@ jobs:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: web-pro-js
-        path: nodeapp/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Download pro.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
         name: web-pro-js
-        path: nodeapp/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Log in to Docker Hub'
       uses: docker/login-action@v3
@@ -87,7 +87,7 @@ jobs:
     - name: 'Build and push Docker image'
       uses: docker/build-push-action@v5
       with:
-        context: ./nodeapp
+        context: ./web
         platforms: linux/amd64,linux/arm64
         push: true
         tags: ${{ steps.meta.outputs.tags }}
