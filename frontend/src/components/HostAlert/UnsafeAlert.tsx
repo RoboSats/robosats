@@ -24,6 +24,8 @@ function federationUrls(): string[] {
     }
   }
 
+  // web hosted frontend without coordinator
+  urls.push('robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion');
   return urls;
 }
 
