@@ -140,6 +140,7 @@ export const initialAppContext: UseAppStoreType = {
   origin: getOrigin(),
   hostUrl: getHostUrl(),
   clientVersion: getClientVersion(),
+  setAcknowledgedWarning: () => {},
   acknowledgedWarning: false,
   fav: { type: null, currency: 0, mode: 'fiat' },
   setFav: () => {},
