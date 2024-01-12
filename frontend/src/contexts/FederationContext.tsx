@@ -8,6 +8,7 @@ import React, {
   useContext,
   ReactNode,
 } from 'react';
+import { useParams } from 'react-router-dom';
 
 import { type Coordinator, type Order, Federation } from '../models';
 
@@ -58,6 +59,11 @@ export interface UseFederationStoreType {
   setDelay: Dispatch<SetStateAction<number>>;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
+  currentOrder: Order | null;
+  currentOrderId: number | null;
+  setCurrentOrderId: (orderId: number | null) => void;
+  updateCurrentOrder: () => void;
+  setCurrentAlias: (currentAlias: string | null) => void;
 }
 
 export const initialFederationContext: UseFederationStoreType = {
@@ -66,6 +72,11 @@ export const initialFederationContext: UseFederationStoreType = {
   setDelay: () => {},
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
+  currentOrder: null,
+  currentOrderId: null,
+  setCurrentOrderId: () => {},
+  updateCurrentOrder: () => {},
+  setCurrentAlias: () => {},
 };
 
 export const FederationContext = createContext<UseFederationStoreType>(initialFederationContext);
@@ -94,6 +105,9 @@ export const FederationContextProvider = ({
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
     setInterval(() => null, delay),
   );
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
+  const [currentAlias, setCurrentAlias] = useState<string | null>(null);
 
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
@@ -135,14 +149,41 @@ export const FederationContextProvider = ({
   const fetchCurrentOrder: () => void = () => {
     const slot = garage?.getSlot();
     const robot = slot?.getRobot();
-    if (slot?.token && slot?.activeShortAlias && robot?.activeOrderId) {
-      const coordinator = federation.getCoordinator(slot.activeShortAlias);
-      void coordinator?.fetchOrder(robot.activeOrderId, robot, slot.token).then((order) => {
+    if (slot?.token && currentAlias && currentOrderId && robot) {
+      const coordinator = federation.getCoordinator(currentAlias);
+      void coordinator?.fetchOrder(currentOrderId, robot, slot.token).then((order) => {
         onOrderReceived(order as Order);
       });
     } else {
       console.log('Hit no order, delay', defaultDelay);
       setTimer(setTimeout(fetchCurrentOrder, defaultDelay));
+    }
+  };
+
+  const updateCurrentOrder = (): void => {
+    if (currentOrderId !== null) {
+      const params = useParams();
+      const coordinator = federation.getCoordinator(params.shortAlias ?? '');
+      const slot = garage.getSlot();
+      const robot = slot?.getRobot();
+      if (robot != null && slot?.token != null) {
+        void federation.fetchRobot(garage, slot.token);
+        coordinator
+          .fetchOrder(currentOrderId, robot, slot.token)
+          .then((order) => {
+            if (order?.bad_request !== undefined) {
+              setBadOrder(order.bad_request);
+            } else if (order?.id) {
+              setCurrentOrder(order);
+              if (order?.is_participant) {
+                garage.updateOrder(order);
+              }
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
     }
   };
 
@@ -172,6 +213,17 @@ export const FederationContextProvider = ({
     }
   }, [open.profile, hostUrl, robotUpdatedAt]);
 
+  useEffect(() => {
+    if (currentOrderId === null) {
+      const slot = garage.getSlot();
+      const robot = slot?.getRobot();
+      if (robot?.activeOrderId) setCurrentOrderId(robot.activeOrderId);
+    } else {
+      setCurrentOrder(null);
+      updateCurrentOrder();
+    }
+  }, [currentOrderId, currentAlias]);
+
   return (
     <FederationContext.Provider
       value={{
@@ -180,6 +232,11 @@ export const FederationContextProvider = ({
         setDelay,
         coordinatorUpdatedAt,
         federationUpdatedAt,
+        currentOrder,
+        currentOrderId,
+        setCurrentOrderId,
+        updateCurrentOrder,
+        setCurrentAlias,
       }}
     >
       {children}

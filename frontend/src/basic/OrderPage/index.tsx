@@ -24,8 +24,9 @@ const OrderPage = (): JSX.Element => {
     hostUrl,
     origin,
   } = useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage, badOrder, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation, currentOrder, setCurrentAlias, currentOrderId, setCurrentOrderId } =
+    useContext<UseFederationStoreType>(FederationContext);
+  const { badOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
@@ -35,8 +36,6 @@ const OrderPage = (): JSX.Element => {
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
   const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
-  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-  const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     const coordinator = federation.getCoordinator(params.shortAlias ?? '');
@@ -50,40 +49,12 @@ const OrderPage = (): JSX.Element => {
     setBaseUrl(`${url}${basePath}`);
 
     const orderId = Number(params.orderId);
-    if (Boolean(orderId) && currentOrderId !== orderId) setCurrentOrderId(orderId);
+    if (Boolean(orderId) && currentOrderId !== orderId) {
+      setCurrentOrderId(orderId);
+      setCurrentAlias(coordinator.shortAlias);
+    }
     if (!acknowledgedWarning) setOpen({ ...closeAll, warning: true });
   }, [params]);
-
-  useEffect(() => {
-    setCurrentOrder(null);
-    updateCurrentOrder();
-  }, [currentOrderId]);
-
-  const updateCurrentOrder = (): void => {
-    if (currentOrderId !== null) {
-      const coordinator = federation.getCoordinator(params.shortAlias ?? '');
-      const slot = garage.getSlot();
-      const robot = slot?.getRobot();
-      if (robot != null && slot?.token != null) {
-        void federation.fetchRobot(garage, slot.token);
-        coordinator
-          .fetchOrder(currentOrderId, robot, slot.token)
-          .then((order) => {
-            if (order?.bad_request !== undefined) {
-              setBadOrder(order.bad_request);
-            } else if (order?.id) {
-              setCurrentOrder(order);
-              if (order?.is_participant) {
-                garage.updateOrder(order);
-              }
-            }
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      }
-    }
-  };
 
   const onClickCoordinator = function (): void {
     if (currentOrder?.shortAlias != null) {
@@ -99,9 +70,6 @@ const OrderPage = (): JSX.Element => {
 
   const orderDetailsSpace = currentOrder ? (
     <OrderDetails
-      shortAlias={String(currentOrder.shortAlias)}
-      currentOrder={currentOrder}
-      updateCurrentOrder={updateCurrentOrder}
       onClickCoordinator={onClickCoordinator}
       onClickGenerateRobot={() => {
         navigate('/robot');

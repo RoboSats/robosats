@@ -45,33 +45,27 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 import { type Order } from '../../models';
 
 interface OrderDetailsProps {
-  shortAlias: string;
-  currentOrder: Order;
-  updateCurrentOrder?: () => void;
   onClickCoordinator?: () => void;
   onClickGenerateRobot?: () => void;
 }
 
 const OrderDetails = ({
-  shortAlias,
-  currentOrder,
-  updateCurrentOrder = () => null,
   onClickCoordinator = () => null,
   onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, currentOrder } = useContext<UseFederationStoreType>(FederationContext);
   const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const [coordinator, setCoordinator] = useState<Coordinator | null>(
-    federation.getCoordinator(shortAlias),
+    federation.getCoordinator(currentOrder?.shortAlias),
   );
   const [currencyCode, setCurrencyCode] = useState<string | null>();
   const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
 
   useEffect(() => {
-    setCoordinator(federation.getCoordinator(shortAlias));
+    setCoordinator(federation.getCoordinator(currentOrder?.shortAlias));
     setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
   }, [currentOrder, orderUpdatedAt]);
 
@@ -531,12 +525,7 @@ const OrderDetails = ({
 
         {!currentOrder?.is_participant ? (
           <Grid item xs={12}>
-            <TakeButton
-              currentOrder={currentOrder}
-              info={coordinator.info}
-              updateCurrentOrder={updateCurrentOrder}
-              onClickGenerateRobot={onClickGenerateRobot}
-            />
+            <TakeButton info={coordinator.info} onClickGenerateRobot={onClickGenerateRobot} />
           </Grid>
         ) : (
           <></>

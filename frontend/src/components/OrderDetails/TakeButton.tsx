@@ -21,7 +21,7 @@ import Countdown from 'react-countdown';
 import currencies from '../../../static/assets/currencies.json';
 import { apiClient } from '../../services/api';
 
-import { type Order, type Info } from '../../models';
+import { type Info } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
@@ -30,9 +30,7 @@ import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface TakeButtonProps {
-  currentOrder: Order;
   info?: Info;
-  updateCurrentOrder?: () => void;
   onClickGenerateRobot?: () => void;
 }
 
@@ -42,17 +40,13 @@ interface OpenDialogsProps {
 }
 const closeAll = { inactiveMaker: false, confirmation: false };
 
-const TakeButton = ({
-  currentOrder,
-  info,
-  updateCurrentOrder = () => null,
-  onClickGenerateRobot = () => null,
-}: TakeButtonProps): JSX.Element => {
+const TakeButton = ({ info, onClickGenerateRobot = () => null }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, updateCurrentOrder, currentOrder } =
+    useContext<UseFederationStoreType>(FederationContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
