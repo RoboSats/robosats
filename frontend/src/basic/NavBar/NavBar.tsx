@@ -25,8 +25,6 @@ const NavBar = (): JSX.Element => {
     useContext<UseAppStoreType>(AppContext);
   const { garage, orderUpdatedAt, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
-  console.log('On NavBar "page" is:', page);
-
   const navigate = useNavigate();
   const location = useLocation();
   const smallBar = windowSize?.width < 50;
