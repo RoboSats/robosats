@@ -6,7 +6,7 @@ phrases = OrderedDict(
     [
         (
             "unsafe_alert",
-            "To protect your data and privacy use <1>Tor Browser</1> and visit a federation hosted <3>Onion</3> site. Or <5>host your own app.</5>",
+            "To fully enable RoboSats and protect your data and privacy, use <1>Tor Browser</1> and visit the federation hosted <3>Onion</3> site or <5>host your own app.</5>",
         ),
         (
             "let_us_know_hot_to_improve",

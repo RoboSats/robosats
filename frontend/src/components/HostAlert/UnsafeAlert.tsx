@@ -71,18 +71,18 @@ const UnsafeAlert = (): JSX.Element => {
         >
           <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
           <Trans i18nKey='unsafe_alert'>
-            <a>To protect your data and privacy use </a>
+            <a>To fully enable RoboSats and protect your data and privacy, use </a>
             <Link href='https://www.torproject.org/download/' target='_blank'>
               Tor Browser
             </Link>
-            <a> and visit a federation hosted </a>
+            <a> and visit the federation hosted </a>
             <Link
-              href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
+              href='http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion'
               target='_blank'
             >
-              Onion
+              <b>Onion</b>
             </Link>
-            <a> site. Or </a>
+            <a> site or </a>
             <Link href='https://apps.umbrel.com/app/robosats' target='_blank'>
               host your own app.
             </Link>
