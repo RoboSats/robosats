@@ -112,7 +112,6 @@ export const FederationContextProvider = ({
     let newDelay = defaultDelay;
     if (order?.bad_request) {
       newDelay = 99999999;
-      console.log('bad request on order, new delay', newDelay);
       setBadOrder(order.bad_request);
       garage.updateOrder(null);
     }
@@ -123,11 +122,10 @@ export const FederationContextProvider = ({
             ? statusToDelay[order.status]
             : statusToDelay[order.status] * 5 // If user is not looking at "order" tab, refresh less often.
           : 99999999;
-      console.log('has order id, new delay is', newDelay);
       garage.updateOrder(order);
       setBadOrder(undefined);
     }
-    console.log('setting delay!', newDelay);
+    clearInterval(timer);
     setDelay(newDelay);
     setTimer(setTimeout(fetchCurrentOrder, newDelay));
   };
@@ -141,7 +139,7 @@ export const FederationContextProvider = ({
         onOrderReceived(order as Order);
       });
     } else {
-      console.log('Hit no order, delay', defaultDelay);
+      clearInterval(timer);
       setTimer(setTimeout(fetchCurrentOrder, defaultDelay));
     }
   };
@@ -149,11 +147,10 @@ export const FederationContextProvider = ({
   useEffect(() => {
     clearInterval(timer);
     fetchCurrentOrder();
-    setDelay(defaultDelay);
     return () => {
       clearInterval(timer);
     };
-  }, [coordinatorUpdatedAt, federationUpdatedAt]);
+  }, [page]);
 
   useEffect(() => {
     if (page === 'offers') void federation.updateBook();

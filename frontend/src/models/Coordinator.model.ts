@@ -193,6 +193,9 @@ export class Coordinator {
           });
           void this.generateAllMakerAvatars(data);
           onDataLoad();
+        } else {
+          this.book = [];
+          onDataLoad();
         }
       })
       .catch((e) => {
