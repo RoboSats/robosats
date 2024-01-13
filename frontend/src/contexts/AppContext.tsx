@@ -1,6 +1,14 @@
-import { createContext, type Dispatch, useEffect, useState, type SetStateAction } from 'react';
+import React, {
+  createContext,
+  type Dispatch,
+  useEffect,
+  useState,
+  type SetStateAction,
+  ReactNode,
+} from 'react';
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
+import { ThemeProvider } from '@mui/material';
 
 import { Settings, type Version, type Origin, type Favorites } from '../models';
 
@@ -95,6 +103,10 @@ export interface WindowSize {
   height: number;
 }
 
+export interface AppContextProviderProps {
+  children: ReactNode;
+}
+
 export interface UseAppStoreType {
   theme?: Theme;
   torStatus: TorStatus;
@@ -148,7 +160,7 @@ export const initialAppContext: UseAppStoreType = {
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
 
-export const useAppStore = (): UseAppStoreType => {
+export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.Element => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 
@@ -175,8 +187,6 @@ export const useAppStore = (): UseAppStoreType => {
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
     initialAppContext.acknowledgedWarning,
   );
-
-  console.log('On AppContext "page" is:', page);
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -218,25 +228,31 @@ export const useAppStore = (): UseAppStoreType => {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   };
 
-  return {
-    theme,
-    torStatus,
-    settings,
-    setSettings,
-    page,
-    setPage,
-    slideDirection,
-    setSlideDirection,
-    navbarHeight,
-    open,
-    setOpen,
-    windowSize,
-    clientVersion,
-    acknowledgedWarning,
-    setAcknowledgedWarning,
-    hostUrl,
-    origin,
-    fav,
-    setFav,
-  };
+  return (
+    <AppContext.Provider
+      value={{
+        theme,
+        torStatus,
+        settings,
+        setSettings,
+        page,
+        setPage,
+        slideDirection,
+        setSlideDirection,
+        navbarHeight,
+        open,
+        setOpen,
+        windowSize,
+        clientVersion,
+        acknowledgedWarning,
+        setAcknowledgedWarning,
+        hostUrl,
+        origin,
+        fav,
+        setFav,
+      }}
+    >
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+    </AppContext.Provider>
+  );
 };

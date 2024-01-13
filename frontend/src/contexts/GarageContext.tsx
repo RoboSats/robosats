@@ -1,7 +1,18 @@
-import { createContext, type Dispatch, useState, type SetStateAction, useEffect } from 'react';
+import React, {
+  createContext,
+  type Dispatch,
+  useState,
+  type SetStateAction,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 import { defaultMaker, type Maker, Garage } from '../models';
 import { systemClient } from '../services/System';
+
+export interface GarageContextProviderProps {
+  children: ReactNode;
+}
 
 export interface UseGarageStoreType {
   garage: Garage;
@@ -25,7 +36,7 @@ export const initialGarageContext: UseGarageStoreType = {
 
 export const GarageContext = createContext<UseGarageStoreType>(initialGarageContext);
 
-export const useGarageStore = (): UseGarageStoreType => {
+export const GarageContextProvider = ({ children }: GarageContextProviderProps): JSX.Element => {
   // All garage data structured
   const [garage] = useState<Garage>(initialGarageContext.garage);
   const [maker, setMaker] = useState<Maker>(initialGarageContext.maker);
@@ -52,13 +63,19 @@ export const useGarageStore = (): UseGarageStoreType => {
     }
   }, [systemClient.loading]);
 
-  return {
-    garage,
-    maker,
-    setMaker,
-    badOrder,
-    setBadOrder,
-    robotUpdatedAt,
-    orderUpdatedAt,
-  };
+  return (
+    <GarageContext.Provider
+      value={{
+        garage,
+        maker,
+        setMaker,
+        badOrder,
+        setBadOrder,
+        robotUpdatedAt,
+        orderUpdatedAt,
+      }}
+    >
+      {children}
+    </GarageContext.Provider>
+  );
 };

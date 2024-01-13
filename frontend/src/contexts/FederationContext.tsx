@@ -1,4 +1,4 @@
-import {
+import React, {
   createContext,
   type Dispatch,
   useEffect,
@@ -6,6 +6,7 @@ import {
   type SetStateAction,
   useMemo,
   useContext,
+  ReactNode,
 } from 'react';
 
 import { type Coordinator, type Order, Federation } from '../models';
@@ -47,6 +48,10 @@ export interface fetchRobotProps {
   isRefresh?: boolean;
 }
 
+export interface FederationContextProviderProps {
+  children: ReactNode;
+}
+
 export interface UseFederationStoreType {
   federation: Federation;
   sortedCoordinators: string[];
@@ -65,7 +70,9 @@ export const initialFederationContext: UseFederationStoreType = {
 
 export const FederationContext = createContext<UseFederationStoreType>(initialFederationContext);
 
-export const useFederationStore = (): UseFederationStoreType => {
+export const FederationContextProvider = ({
+  children,
+}: FederationContextProviderProps): JSX.Element => {
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage, setBadOrder, robotUpdatedAt } =
@@ -101,7 +108,6 @@ export const useFederationStore = (): UseFederationStoreType => {
     setFederation(newFed);
   }, [settings.network, torStatus]);
 
-  console.log('On FederationContext "page" is:', page);
   const onOrderReceived = (order: Order): void => {
     let newDelay = defaultDelay;
     if (order?.bad_request) {
@@ -121,7 +127,6 @@ export const useFederationStore = (): UseFederationStoreType => {
       garage.updateOrder(order);
       setBadOrder(undefined);
     }
-    console.log('page:', page, 'Why remains as initial page?');
     console.log('setting delay!', newDelay);
     setDelay(newDelay);
     setTimer(setTimeout(fetchCurrentOrder, newDelay));
@@ -165,13 +170,19 @@ export const useFederationStore = (): UseFederationStoreType => {
         void federation.fetchRobot(garage, slot.token); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
-  }, [open.profile, hostUrl, robotUpdatedAt]);
+  }, [open.profile, hostUrl]);
 
-  return {
-    federation,
-    sortedCoordinators,
-    setDelay,
-    coordinatorUpdatedAt,
-    federationUpdatedAt,
-  };
+  return (
+    <FederationContext.Provider
+      value={{
+        federation,
+        sortedCoordinators,
+        setDelay,
+        coordinatorUpdatedAt,
+        federationUpdatedAt,
+      }}
+    >
+      {children}
+    </FederationContext.Provider>
+  );
 };

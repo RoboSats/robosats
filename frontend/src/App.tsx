@@ -1,8 +1,7 @@
 import React, { StrictMode, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
-import { CssBaseline, ThemeProvider } from '@mui/material';
-import { AppContext, useAppStore } from './contexts/AppContext';
+import { CssBaseline } from '@mui/material';
 import HostAlert from './components/HostAlert';
 import TorConnectionBadge from './components/TorConnection';
 
@@ -11,30 +10,25 @@ import i18n from './i18n/Web';
 
 import { systemClient } from './services/System';
 import ErrorBoundary from './components/ErrorBoundary';
-import { GarageContext, useGarageStore } from './contexts/GarageContext';
-import { FederationContext, useFederationStore } from './contexts/FederationContext';
+import { AppContextProvider } from './contexts/AppContext';
+import { GarageContextProvider } from './contexts/GarageContext';
+import { FederationContextProvider } from './contexts/FederationContext';
 
 const App = (): JSX.Element => {
-  const appStore = useAppStore();
-  const garageStore = useGarageStore();
-  const federationStore = useFederationStore();
-
   return (
     <StrictMode>
       <ErrorBoundary>
         <Suspense fallback='loading'>
           <I18nextProvider i18n={i18n}>
-            <AppContext.Provider value={appStore}>
-              <GarageContext.Provider value={garageStore}>
-                <FederationContext.Provider value={federationStore}>
-                  <ThemeProvider theme={appStore.theme}>
-                    <CssBaseline />
-                    {window.NativeRobosats === undefined ? <HostAlert /> : <TorConnectionBadge />}
-                    <Main />
-                  </ThemeProvider>
-                </FederationContext.Provider>
-              </GarageContext.Provider>
-            </AppContext.Provider>
+            <AppContextProvider>
+              <GarageContextProvider>
+                <FederationContextProvider>
+                  <CssBaseline />
+                  {window.NativeRobosats === undefined ? <HostAlert /> : <TorConnectionBadge />}
+                  <Main />
+                </FederationContextProvider>
+              </GarageContextProvider>
+            </AppContextProvider>
           </I18nextProvider>
         </Suspense>
       </ErrorBoundary>
