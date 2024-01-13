@@ -308,10 +308,9 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const submitStatement = function (): void {
-    const slot = garage.getSlot();
     let statement = dispute.statement;
     if (dispute.attachLogs) {
-      const payload = { statement, messages, token: slot?.token };
+      const payload = { statement, messages };
       statement = JSON.stringify(payload, null, 2);
     }
     setLoadingButtons({ ...noLoadingButtons, submitStatement: true });

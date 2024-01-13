@@ -11,7 +11,7 @@ export interface DisputeForm {
 
 export const defaultDispute: DisputeForm = {
   statement: '',
-  attachLogs: true,
+  attachLogs: false,
   badStatement: '',
 };
 
