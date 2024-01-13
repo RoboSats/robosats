@@ -170,7 +170,7 @@ export const FederationContextProvider = ({
         void federation.fetchRobot(garage, slot.token); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
-  }, [open.profile, hostUrl, robotUpdatedAt]);
+  }, [open.profile, hostUrl]);
 
   return (
     <FederationContext.Provider
