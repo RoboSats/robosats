@@ -340,7 +340,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
 const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { clientVersion, page } = useContext(AppContext);
+  const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const coordinator = federation.getCoordinator(shortAlias);
 
@@ -365,7 +365,6 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                   shortAlias={coordinator?.shortAlias}
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}
-                  flipHorizontally={false}
                 />
               </Grid>
               <Grid item>
@@ -632,6 +631,40 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
               </AccordionSummary>
               <AccordionDetails>
                 <List dense>
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <Dns />
+                    </ListItemIcon>
+                    <ListItemText secondary={t('Coordinator domain')}>
+                      <Link
+                        target='_blank'
+                        href={coordinator?.[settings.network][origin]}
+                        rel='noreferrer'
+                      >
+                        {`${coordinator?.[settings.network][origin]}`}
+                      </Link>
+                    </ListItemText>
+                  </ListItem>
+
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <RoboSatsNoTextIcon
+                        sx={{
+                          width: '1.4em',
+                          height: '1.4em',
+                          right: '0.2em',
+                          position: 'relative',
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={`${t('Coordinator')} ${coordinatorVersion} - ${t('Client')} ${String(
+                        clientVersion.short,
+                      )}`}
+                      secondary={t('RoboSats version')}
+                    />
+                  </ListItem>
+
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
                       <RoboSatsNoTextIcon

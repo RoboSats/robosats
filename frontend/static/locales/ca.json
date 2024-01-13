@@ -251,6 +251,7 @@
   "Coordinator Notice": "Coordinator Notice",
   "Coordinator commit hash": "Coordinator commit hash",
   "Coordinator description": "Coordinator description",
+  "Coordinator domain": "Coordinator domain",
   "Coordinator offline": "Coordinator offline",
   "Current onchain payout fee": "Cost actual de rebre onchain",
   "Development fund supporter: donates {{percent}}% to make RoboSats better.": "Development fund supporter: donates {{percent}}% to make RoboSats better.",
