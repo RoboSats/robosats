@@ -293,7 +293,7 @@ export class Coordinator {
     }
   };
 
-  fecthRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
+  fetchRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
     if (!this.enabled || !token) return null;
 
     const robot = garage?.getSlot(token)?.getRobot() ?? null;

@@ -40,14 +40,6 @@ const statusToDelay = [
   300000, // 'Taker lost dispute'
 ];
 
-export interface fetchRobotProps {
-  coordinator?: Coordinator;
-  newKeys?: { encPrivKey: string; pubKey: string };
-  newToken?: string;
-  slot?: number;
-  isRefresh?: boolean;
-}
-
 export interface FederationContextProviderProps {
   children: ReactNode;
 }
@@ -167,7 +159,7 @@ export const FederationContextProvider = ({
         void federation.fetchRobot(garage, slot.token); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
-  }, [open.profile, hostUrl]);
+  }, [open.profile]);
 
   return (
     <FederationContext.Provider

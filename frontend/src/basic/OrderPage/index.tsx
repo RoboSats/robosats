@@ -65,7 +65,6 @@ const OrderPage = (): JSX.Element => {
       const slot = garage.getSlot();
       const robot = slot?.getRobot();
       if (robot != null && slot?.token != null) {
-        void federation.fetchRobot(garage, slot.token);
         coordinator
           .fetchOrder(currentOrderId, robot, slot.token)
           .then((order) => {

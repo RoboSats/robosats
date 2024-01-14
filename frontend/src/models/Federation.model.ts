@@ -114,7 +114,7 @@ export class Federation {
   // Fetchs
   fetchRobot = async (garage: Garage, token: string): Promise<void> => {
     Object.values(this.coordinators).forEach((coor) => {
-      void coor.fecthRobot(garage, token);
+      void coor.fetchRobot(garage, token);
     });
   };
 
