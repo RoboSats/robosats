@@ -305,7 +305,7 @@
   "Generate a robot avatar first. Then create your own order.": "Сначала создайте аватар робота. Затем создайте свой ордер.",
   "You do not have a robot avatar": "У Вас нет аватара робота",
   "#29": "Phrases in components/Dialogs/Profile.tsx",
-  "Coordinators that know your robots": "Coordinators that know your robots",
+  "Coordinators that know your robot:": "Coordinators that know your robot:",
   "Your Robot": "Ваш Robot",
   "Your robot": "Ваш Робот",
   "#30": "Phrases in components/Dialogs/StoreToken.tsx",

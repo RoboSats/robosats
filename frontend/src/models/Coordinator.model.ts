@@ -74,14 +74,6 @@ export interface Origins {
   i2p: Origin | undefined;
 }
 
-export interface getEndpointProps {
-  coordinator: Coordinator;
-  network: 'mainnet' | 'testnet';
-  origin: Origin;
-  selfHosted: boolean;
-  hostUrl: string;
-}
-
 export class Coordinator {
   constructor(value: any) {
     this.longAlias = value.longAlias;

@@ -42,7 +42,7 @@ const RobotPage = (): JSX.Element => {
 
   useEffect(() => {
     const token = urlToken ?? garage.currentSlot;
-    if (token !== undefined && token !== null) {
+    if (token !== undefined && token !== null && page === 'robot') {
       setInputToken(token);
       if (window.NativeRobosats === undefined || torStatus === '"Done"') {
         getGenerateRobot(token);

@@ -635,13 +635,28 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                     <ListItemIcon>
                       <Dns />
                     </ListItemIcon>
-                    <ListItemText secondary={t('Coordinator domain')}>
+                    <ListItemText
+                      secondary={t('Coordinator domain')}
+                      primaryTypographyProps={{
+                        style: {
+                          maxWidth: '20em',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                        },
+                      }}
+                    >
                       <Link
                         target='_blank'
-                        href={coordinator?.[settings.network][origin]}
+                        href={
+                          coordinator?.[settings.network][
+                            settings.selfhostedClient ? 'onion' : origin
+                          ]
+                        }
                         rel='noreferrer'
                       >
-                        {`${coordinator?.[settings.network][origin]}`}
+                        {`${coordinator?.[settings.network][
+                          settings.selfhostedClient ? 'onion' : origin
+                        ]}`}
                       </Link>
                     </ListItemText>
                   </ListItem>

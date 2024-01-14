@@ -83,7 +83,6 @@ const MainDialogs = (): JSX.Element => {
       />
       <ProfileDialog
         open={open.profile}
-        baseUrl={hostUrl}
         onClose={() => {
           setOpen({ ...open, profile: false });
         }}

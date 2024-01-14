@@ -305,7 +305,7 @@
   "Generate a robot avatar first. Then create your own order.": "Primer genera un avatar de robot. A continuació, crea la teva pròpia oferta.",
   "You do not have a robot avatar": "No tens un avatar robot",
   "#29": "Phrases in components/Dialogs/Profile.tsx",
-  "Coordinators that know your robots": "Coordinators that know your robots",
+  "Coordinators that know your robot:": "Coordinators that know your robot:",
   "Your Robot": "El teu Robot",
   "Your robot": "El teu robot",
   "#30": "Phrases in components/Dialogs/StoreToken.tsx",

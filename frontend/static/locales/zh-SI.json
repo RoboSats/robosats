@@ -305,7 +305,7 @@
   "Generate a robot avatar first. Then create your own order.": "请先生成一个机器人头像，然后创建你自己的订单。",
   "You do not have a robot avatar": "你没有机器人头像",
   "#29": "Phrases in components/Dialogs/Profile.tsx",
-  "Coordinators that know your robots": "Coordinators that know your robots",
+  "Coordinators that know your robot:": "Coordinators that know your robot:",
   "Your Robot": "你的机器人",
   "Your robot": "你的机器人",
   "#30": "Phrases in components/Dialogs/StoreToken.tsx",

@@ -148,16 +148,22 @@ export const FederationContextProvider = ({
     if (page === 'offers') void federation.updateBook();
   }, [page]);
 
+  // use effects to fetchRobots on app start and network change
   useEffect(() => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
 
-    if (robot && garage.currentSlot) {
-      if (open.profile && Boolean(slot?.hashId) && slot?.token) {
-        void federation.fetchRobot(garage, slot?.token); // refresh/update existing robot
-      } else if (slot?.token && robot.encPrivKey && robot.pubKey) {
-        void federation.fetchRobot(garage, slot.token); // create new robot with existing token and keys (on network and coordinator change)
-      }
+    if (robot && garage.currentSlot && slot?.token && robot.encPrivKey && robot.pubKey) {
+      void federation.fetchRobot(garage, slot.token);
+    }
+  }, [settings.network]);
+  // use effects to fetchRobots on Profile open
+  useEffect(() => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+
+    if (open.profile && slot?.hashId && slot?.token) {
+      void federation.fetchRobot(garage, slot?.token); // refresh/update existing robot
     }
   }, [open.profile]);
 

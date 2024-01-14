@@ -23,10 +23,9 @@ import { type Coordinator } from '../../models';
 interface Props {
   open: boolean;
   onClose: () => void;
-  baseUrl: string;
 }
 
-const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element => {
+const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -92,7 +91,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
         </List>
 
         <Typography>
-          <b>{t('Coordinators that know your robots')}</b>
+          <b>{t('Coordinators that know your robot:')}</b>
         </Typography>
 
         {Object.values(federation.coordinators).map((coordinator: Coordinator): JSX.Element => {

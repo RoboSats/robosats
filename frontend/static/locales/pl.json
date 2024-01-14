@@ -305,7 +305,7 @@
   "Generate a robot avatar first. Then create your own order.": "Generate a robot avatar first. Then create your own order.",
   "You do not have a robot avatar": "You do not have a robot avatar",
   "#29": "Phrases in components/Dialogs/Profile.tsx",
-  "Coordinators that know your robots": "Coordinators that know your robots",
+  "Coordinators that know your robot:": "Coordinators that know your robot:",
   "Your Robot": "Your Robot",
   "Your robot": "Twój robot",
   "#30": "Phrases in components/Dialogs/StoreToken.tsx",
