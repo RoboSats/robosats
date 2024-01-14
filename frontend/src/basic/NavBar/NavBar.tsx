@@ -47,16 +47,20 @@ const NavBar = (): JSX.Element => {
   };
 
   useEffect(() => {
+    // re-render on orde rand robot updated at for latest orderId in tab
+  }, [robotUpdatedAt]);
+
+  useEffect(() => {
     // change tab (page) into the current route
     const pathPage: Page | string = location.pathname.split('/')[1];
     if (pathPage === 'index.html') {
       navigate('/robot');
       setPage('robot');
     }
-    if (isPage(pathPage) && pathPage.includes('order')) {
+    if (isPage(pathPage)) {
       setPage(pathPage);
     }
-  }, [location, navigate, orderUpdatedAt, robotUpdatedAt]);
+  }, [location]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
     const oldPos: number = pagesPosition[oldPage];
