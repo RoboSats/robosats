@@ -6,19 +6,23 @@ date:   2023-12-31 01:01:01 -0500
 categories: robosats update
 ---
 
-**Note** Note this is a very early release, so expect to find bugs! If you find a bug that is stopping you from continuing your order, recover your robot in a v0.5.3 client and continue as usual.
+**Note** this is a very early release, so expect to find bugs! If you find a bug that is stopping you from continuing your order, recover your robot in the v0.5.3 client of your coordinator and continue the trade as usual.
 {: .notice--primary}
 
-We are thrilled to announce the launch for testing the new version of RoboSats v0.6.0. This is the biggest ever upgrade to RoboSats. We have, figuratively, lifted the house and built a basement below it :)
+We are thrilled to announce the launch for testing of the new version of RoboSats v0.6.0. This is the biggest ever upgrade to RoboSats. We have, figuratively, lifted the house and built a basement below it :)
 
 This new version introduces a significant enhancement known as the **RoboSats Federation**, that effectively fully decentralizes RoboSats into many independent and fully redundant coordinators that will compete to host your orders.
 
 **Caution, READ!** Prior to hosting your order with a new coordinator, ensure you trust the RoboSats coordinator you select. A malicious p2p coordinator can potentially steal from you!
 {: .notice--secondary}
 
+## How to test the pre-release?
+The new federated client will now be permanently available in http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion
+(visit with Tor Browser) and http://dex.robosats.com (with extremely limited functionality). Once stable, it will be released as version v0.6.0 and you will be able to install it as usual on your node (e.g., [Umbrel](https://apps.umbrel.com/app/robosats), [StartOS](https://github.com/RoboSats/robosats-startos/releases), etc).
+
 ## What is RoboSats Federation?
 
-The RoboSats Federation is a set of rules that allows multiple RoboSats instances to work together under a unified client app. This federated client app enables users to seamlessly interact with any coordinator, track the coordinator reputation, verify transparently devFund donations, and more. The aim is to improve RoboSats robustness while keeping complexity down and providing robots a experience as close as possible to the app they are used to.
+The RoboSats Federation is a set of rules that allows multiple RoboSats instances to work together under a unified client app. This federated client app enables users to seamlessly interact with any coordinator, track the coordinator reputation, verify transparently devFund donations, and more. The aim is to improve RoboSats robustness while keeping complexity down for the user, providing robots a experience as close as possible to the app they are used to.
 
 ## Key Features of the New Version
 ### Multiple Coordinators
@@ -45,14 +49,14 @@ There is currently 4 registered coordinators:
 - [Satstralia](https://satstralia.com)
 - TheBigLake
 
-If you want to help testing the new client without experimenting with novel coordinators you should pick the "Experimental" coordinator. Experimental is the same infrastructure you have been using so far in the non-decentralized client.
+If you want to help testing the new client without experimenting with novel coordinators you should pick the "Experimental" coordinator. Experimental is the same coordinator infrastructure you have been using so far in the non-decentralized client.
 
 **They are also learning,** just like you. The RoboSats federation is new for everyone, so keep in mind some coordinators do not yet have much experience hosting trades. It is a learning experience for everyone.
 {: .notice--primary}
 
 ### DevFund Revenue
 
-One of the challenges with decentralized instances is the detachment of operations and code development. Maintaining and implementing new features into the codebase is only be supported by donations. The RoboSats Federation addresses this issue by allowing coordinators to voluntarily stream Sats to the RoboSats Development fund, ensuring continued development and maintenance. Coordinators can freely opt to not donate Sats for development. Coordinators that donate part of their revenue for development have some advantages such as, their orders are better positioned in the Order book and better support from the developers in case help is needed.
+Maintaining and implementing new features into the codebase is only supported by donations. The RoboSats Federation addresses this issue by allowing coordinators to voluntarily stream Sats to the RoboSats Development fund, ensuring continued development and maintenance. Coordinators can freely opt to not donate Sats for development. Coordinators that donate part of their revenue for development have some advantages such as, their orders are better positioned in the Order book and better support from the developers in case help is needed.
 
 ### Other improvements
 
