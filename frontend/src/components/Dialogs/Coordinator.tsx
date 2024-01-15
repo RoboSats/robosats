@@ -661,24 +661,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                     </ListItemText>
                   </ListItem>
 
-                  <ListItem {...listItemProps}>
-                    <ListItemIcon>
-                      <RoboSatsNoTextIcon
-                        sx={{
-                          width: '1.4em',
-                          height: '1.4em',
-                          right: '0.2em',
-                          position: 'relative',
-                        }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`${t('Coordinator')} ${coordinatorVersion} - ${t('Client')} ${String(
-                        clientVersion.short,
-                      )}`}
-                      secondary={t('RoboSats version')}
-                    />
-                  </ListItem>
+                  <Divider />
 
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
