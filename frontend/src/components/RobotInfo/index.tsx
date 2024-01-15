@@ -31,7 +31,7 @@ import { UserNinjaIcon } from '../Icons';
 import { getWebln } from '../../utils';
 import { signCleartextMessage } from '../../pgp';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface Props {
   coordinator: Coordinator;

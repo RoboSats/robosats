@@ -9,7 +9,6 @@ import OrderDetails from '../../components/OrderDetails';
 import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { type Order } from '../../models';
 import { WarningDialog } from '../../components/Dialogs';
 
 const OrderPage = (): JSX.Element => {

@@ -26,8 +26,7 @@ export interface OpenDialogs {
 }
 
 const MainDialogs = (): JSX.Element => {
-  const { open, setOpen, settings, clientVersion, hostUrl } =
-    useContext<UseAppStoreType>(AppContext);
+  const { open, setOpen, settings, clientVersion } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   return (

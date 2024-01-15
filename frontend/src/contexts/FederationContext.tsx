@@ -6,7 +6,7 @@ import React, {
   type SetStateAction,
   useMemo,
   useContext,
-  ReactNode,
+  type ReactNode,
 } from 'react';
 
 import { type Order, Federation } from '../models';

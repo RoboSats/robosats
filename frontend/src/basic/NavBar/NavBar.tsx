@@ -17,14 +17,14 @@ import {
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 const NavBar = (): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { page, setPage, settings, setSlideDirection, open, setOpen, windowSize, navbarHeight } =
     useContext<UseAppStoreType>(AppContext);
-  const { garage, orderUpdatedAt, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
 
   const navigate = useNavigate();
@@ -82,7 +82,7 @@ const NavBar = (): JSX.Element => {
       const lastOrderId = slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId;
       const param =
         newPage === 'order' ? `${shortAlias}/${String(activeOrderId ?? lastOrderId)}` : '';
-      if (shortAlias && (activeOrderId || lastOrderId)) {
+      if (newPage === 'order') {
         setCurrentOrderId({ id: activeOrderId ?? lastOrderId, shortAlias });
       }
       setTimeout(() => {

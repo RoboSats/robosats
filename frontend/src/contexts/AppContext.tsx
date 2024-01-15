@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState,
   type SetStateAction,
-  ReactNode,
+  type ReactNode,
 } from 'react';
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';

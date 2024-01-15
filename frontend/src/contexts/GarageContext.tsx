@@ -4,7 +4,7 @@ import React, {
   useState,
   type SetStateAction,
   useEffect,
-  ReactNode,
+  type ReactNode,
 } from 'react';
 
 import { defaultMaker, type Maker, Garage } from '../models';

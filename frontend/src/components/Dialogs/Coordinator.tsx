@@ -654,9 +654,11 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                         }
                         rel='noreferrer'
                       >
-                        {`${coordinator?.[settings.network][
-                          settings.selfhostedClient ? 'onion' : origin
-                        ]}`}
+                        {`${String(
+                          coordinator?.[settings.network][
+                            settings.selfhostedClient ? 'onion' : origin
+                          ],
+                        )}`}
                       </Link>
                     </ListItemText>
                   </ListItem>
