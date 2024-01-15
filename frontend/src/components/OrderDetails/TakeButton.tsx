@@ -32,7 +32,6 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 interface TakeButtonProps {
   currentOrder: Order;
   info?: Info;
-  updateCurrentOrder?: () => void;
   onClickGenerateRobot?: () => void;
 }
 
@@ -45,14 +44,13 @@ const closeAll = { inactiveMaker: false, confirmation: false };
 const TakeButton = ({
   currentOrder,
   info,
-  updateCurrentOrder = () => null,
   onClickGenerateRobot = () => null,
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -324,6 +322,7 @@ const TakeButton = ({
     const { url, basePath } = federation
       .getCoordinator(currentOrder.shortAlias)
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+    setCurrentOrderId({ id: null, shortAlias: null });
     apiClient
       .post(
         url + basePath,
@@ -338,7 +337,7 @@ const TakeButton = ({
         if (data?.bad_request !== undefined) {
           setBadRequest(data.bad_request);
         } else {
-          updateCurrentOrder();
+          setCurrentOrderId({ id: currentOrder?.id, shortAlias: currentOrder?.shortAlias });
           setBadRequest('');
         }
       })

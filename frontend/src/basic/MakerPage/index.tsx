@@ -14,7 +14,8 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
-  const { federation, setDelay } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, setDelay, setCurrentOrderId } =
+    useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ const MakerPage = (): JSX.Element => {
   const onOrderClicked = function (id: number, shortAlias: string): void {
     if (garage.getSlot()?.hashId) {
       setDelay(10000);
+      setCurrentOrderId({ id, shortAlias });
       navigate(`/order/${shortAlias}/${id}`);
     } else {
       setOpenNoRobot(true);
@@ -103,6 +105,7 @@ const MakerPage = (): JSX.Element => {
         >
           <MakerForm
             onOrderCreated={(shortAlias, id) => {
+              setCurrentOrderId({ id, shortAlias });
               navigate(`/order/${shortAlias}/${id}`);
             }}
             disableRequest={matches.length > 0 && !showMatches}

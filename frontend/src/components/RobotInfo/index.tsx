@@ -31,6 +31,7 @@ import { UserNinjaIcon } from '../Icons';
 import { getWebln } from '../../utils';
 import { signCleartextMessage } from '../../pgp';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface Props {
   coordinator: Coordinator;
@@ -39,6 +40,7 @@ interface Props {
 
 const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -133,6 +135,10 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
           {slot?.activeShortAlias === coordinator.shortAlias ? (
             <ListItemButton
               onClick={() => {
+                setCurrentOrderId({
+                  id: slot?.activeShortAlias,
+                  shortAlias: slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId,
+                });
                 navigate(
                   `/order/${String(slot?.activeShortAlias)}/${String(
                     slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId,
@@ -156,6 +162,10 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
           ) : (robot?.lastOrderId ?? 0) > 0 && slot?.lastShortAlias === coordinator.shortAlias ? (
             <ListItemButton
               onClick={() => {
+                setCurrentOrderId({
+                  id: slot?.activeShortAlias,
+                  shortAlias: slot?.getRobot(slot?.activeShortAlias ?? '')?.lastOrderId,
+                });
                 navigate(
                   `/order/${String(slot?.lastShortAlias)}/${String(
                     slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId,

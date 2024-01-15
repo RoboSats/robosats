@@ -22,6 +22,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -45,6 +46,7 @@ const RobotProfile = ({
 }: RobotProfileProps): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { garage, robotUpdatedAt, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -152,6 +154,7 @@ const RobotProfile = ({
           <Grid item>
             <Button
               onClick={() => {
+                setCurrentOrderId({ id: robot?.activeOrderId, shortAlias: slot?.activeShortAlias });
                 navigate(
                   `/order/${String(slot?.activeShortAlias)}/${String(robot?.activeOrderId)}`,
                 );
@@ -167,6 +170,7 @@ const RobotProfile = ({
             <Grid item>
               <Button
                 onClick={() => {
+                  setCurrentOrderId({ id: robot?.lastOrderId, shortAlias: slot?.activeShortAlias });
                   navigate(`/order/${String(slot?.lastShortAlias)}/${String(robot?.lastOrderId)}`);
                 }}
               >

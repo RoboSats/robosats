@@ -9,7 +9,7 @@ import React, {
   ReactNode,
 } from 'react';
 
-import { type Coordinator, type Order, Federation } from '../models';
+import { type Order, Federation } from '../models';
 
 import { federationLottery } from '../utils';
 
@@ -40,6 +40,11 @@ const statusToDelay = [
   300000, // 'Taker lost dispute'
 ];
 
+export interface CurrentOrderIdProps {
+  id: number | null;
+  shortAlias: string | null;
+}
+
 export interface FederationContextProviderProps {
   children: ReactNode;
 }
@@ -48,6 +53,9 @@ export interface UseFederationStoreType {
   federation: Federation;
   sortedCoordinators: string[];
   setDelay: Dispatch<SetStateAction<number>>;
+  currentOrderId: CurrentOrderIdProps;
+  setCurrentOrderId: Dispatch<SetStateAction<CurrentOrderIdProps>>;
+  currentOrder: Order | null;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
 }
@@ -56,6 +64,9 @@ export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation(),
   sortedCoordinators: [],
   setDelay: () => {},
+  currentOrderId: { id: null, shortAlias: null },
+  setCurrentOrderId: () => {},
+  currentOrder: null,
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
 };
@@ -67,8 +78,7 @@ export const FederationContextProvider = ({
 }: FederationContextProviderProps): JSX.Element => {
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
-  const { setMaker, garage, setBadOrder, robotUpdatedAt } =
-    useContext<UseGarageStoreType>(GarageContext);
+  const { setMaker, garage, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const [federation, setFederation] = useState(initialFederationContext.federation);
   const sortedCoordinators = useMemo(() => {
     const sortedCoordinators = federationLottery(federation);
@@ -81,6 +91,12 @@ export const FederationContextProvider = ({
     new Date().toISOString(),
   );
   const [federationUpdatedAt, setFederationUpdatedAt] = useState<string>(new Date().toISOString());
+  const [currentOrderId, setCurrentOrderId] = useState<CurrentOrderIdProps>(
+    initialFederationContext.currentOrderId,
+  );
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(
+    initialFederationContext.currentOrder,
+  );
 
   const [delay, setDelay] = useState<number>(defaultDelay);
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
@@ -106,6 +122,7 @@ export const FederationContextProvider = ({
       newDelay = 99999999;
       setBadOrder(order.bad_request);
       garage.updateOrder(null);
+      setCurrentOrder(null);
     }
     if (order?.id) {
       newDelay =
@@ -115,9 +132,11 @@ export const FederationContextProvider = ({
             : statusToDelay[order.status] * 5 // If user is not looking at "order" tab, refresh less often.
           : 99999999;
       garage.updateOrder(order);
+      setCurrentOrder(order);
       setBadOrder(undefined);
     }
     clearInterval(timer);
+    console.log('New Delay:', newDelay);
     setDelay(newDelay);
     setTimer(setTimeout(fetchCurrentOrder, newDelay));
   };
@@ -125,7 +144,12 @@ export const FederationContextProvider = ({
   const fetchCurrentOrder: () => void = () => {
     const slot = garage?.getSlot();
     const robot = slot?.getRobot();
-    if (slot?.token && slot?.activeShortAlias && robot?.activeOrderId) {
+    if (currentOrderId.id && currentOrderId.shortAlias) {
+      const coordinator = federation.getCoordinator(currentOrderId.shortAlias);
+      void coordinator?.fetchOrder(currentOrderId.id, robot, slot.token).then((order) => {
+        onOrderReceived(order as Order);
+      });
+    } else if (slot?.token && slot?.activeShortAlias && robot?.activeOrderId) {
       const coordinator = federation.getCoordinator(slot.activeShortAlias);
       void coordinator?.fetchOrder(robot.activeOrderId, robot, slot.token).then((order) => {
         onOrderReceived(order as Order);
@@ -137,12 +161,15 @@ export const FederationContextProvider = ({
   };
 
   useEffect(() => {
-    clearInterval(timer);
-    fetchCurrentOrder();
+    if (currentOrderId.id && currentOrderId.shortAlias) {
+      setCurrentOrder(null);
+      clearInterval(timer);
+      fetchCurrentOrder();
+    }
     return () => {
       clearInterval(timer);
     };
-  }, [page]);
+  }, [currentOrderId]);
 
   useEffect(() => {
     if (page === 'offers') void federation.updateBook();
@@ -160,7 +187,6 @@ export const FederationContextProvider = ({
   // use effects to fetchRobots on Profile open
   useEffect(() => {
     const slot = garage.getSlot();
-    const robot = slot?.getRobot();
 
     if (open.profile && slot?.hashId && slot?.token) {
       void federation.fetchRobot(garage, slot?.token); // refresh/update existing robot
@@ -172,6 +198,9 @@ export const FederationContextProvider = ({
       value={{
         federation,
         sortedCoordinators,
+        currentOrderId,
+        setCurrentOrderId,
+        currentOrder,
         setDelay,
         coordinatorUpdatedAt,
         federationUpdatedAt,

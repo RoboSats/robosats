@@ -47,7 +47,6 @@ import { type Order } from '../../models';
 interface OrderDetailsProps {
   shortAlias: string;
   currentOrder: Order;
-  updateCurrentOrder?: () => void;
   onClickCoordinator?: () => void;
   onClickGenerateRobot?: () => void;
 }
@@ -55,7 +54,6 @@ interface OrderDetailsProps {
 const OrderDetails = ({
   shortAlias,
   currentOrder,
-  updateCurrentOrder = () => null,
   onClickCoordinator = () => null,
   onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
@@ -534,7 +532,6 @@ const OrderDetails = ({
             <TakeButton
               currentOrder={currentOrder}
               info={coordinator.info}
-              updateCurrentOrder={updateCurrentOrder}
               onClickGenerateRobot={onClickGenerateRobot}
             />
           </Grid>

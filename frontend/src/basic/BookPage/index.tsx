@@ -17,7 +17,7 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
-  const { setDelay } = useContext<UseFederationStoreType>(FederationContext);
+  const { setDelay, setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -33,6 +33,7 @@ const BookPage = (): JSX.Element => {
   const onOrderClicked = function (id: number, shortAlias: string): void {
     if (garage.getSlot()?.hashId) {
       setDelay(10000);
+      setCurrentOrderId({ id, shortAlias });
       navigate(`/order/${shortAlias}/${id}`);
     } else {
       setOpenNoRobot(true);
