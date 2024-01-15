@@ -163,6 +163,7 @@ export const FederationContextProvider = ({
   useEffect(() => {
     if (currentOrderId.id && currentOrderId.shortAlias) {
       setCurrentOrder(null);
+      setBadOrder(undefined);
       clearInterval(timer);
       fetchCurrentOrder();
     }

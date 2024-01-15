@@ -60,7 +60,6 @@ const OrderDetails = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const [coordinator, setCoordinator] = useState<Coordinator | null>(
     federation.getCoordinator(shortAlias),
   );
@@ -71,10 +70,10 @@ const OrderDetails = ({
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias));
     setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
-  }, [currentOrder, orderUpdatedAt]);
+  }, [currentOrder]);
 
   const amountString = useMemo(() => {
-    if (currentOrder === null || currentOrder.amount === null) return;
+    if (currentOrder === null) return;
 
     if (currentOrder.currency === 1000) {
       return (
@@ -88,14 +87,14 @@ const OrderDetails = ({
     } else {
       return (
         amountToString(
-          currentOrder.amount.toString(),
+          currentOrder.amount?.toString(),
           currentOrder.amount > 0 ? false : currentOrder.has_range,
           currentOrder.min_amount,
           currentOrder.max_amount,
         ) + ` ${String(currencyCode)}`
       );
     }
-  }, [orderUpdatedAt, currencyCode]);
+  }, [currentOrder, currencyCode]);
 
   // Countdown Renderer callback with condition
   const countdownRenderer = function ({
@@ -208,7 +207,6 @@ const OrderDetails = ({
       send = t('You send via {{method}} {{amount}}', {
         amount: amountString,
         method: order.payment_method,
-        currencyCode,
       });
       receive = t('You receive via Lightning {{amount}} Sats (Approx)', {
         amount: sats,
@@ -239,8 +237,9 @@ const OrderDetails = ({
         method: order.payment_method,
       });
     }
+
     return { send, receive };
-  }, [orderUpdatedAt]);
+  }, [currentOrder, amountString]);
 
   return (
     <Grid container spacing={0}>

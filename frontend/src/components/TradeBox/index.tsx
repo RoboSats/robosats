@@ -648,7 +648,6 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
         baseContract.prompt = function () {
           return (
             <SuccessfulPrompt
-              baseUrl={baseUrl}
               order={order}
               ratePlatform={ratePlatform}
               onClickStartAgain={onStartAgain}
@@ -688,7 +687,6 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           baseContract.prompt = function () {
             return (
               <SuccessfulPrompt
-                baseUrl={baseUrl}
                 order={order}
                 ratePlatform={ratePlatform}
                 onClickStartAgain={onStartAgain}
