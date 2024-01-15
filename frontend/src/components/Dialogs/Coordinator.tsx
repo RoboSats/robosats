@@ -21,6 +21,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   AlertTitle,
+  ListItemButton,
 } from '@mui/material';
 
 import {
@@ -42,6 +43,7 @@ import {
   Language,
   Send,
   Tag,
+  Web,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -440,43 +442,29 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
             />
           </ListItem>
 
-          {coordinator?.mainnetNodesPubkeys?.[0] !== undefined && network === 'mainnet' ? (
-            <ListItem>
-              <ListItemIcon>
-                <AmbossIcon />
-              </ListItemIcon>
-              <ListItemText secondary={t('Mainnet LN Node')}>
-                <Link
-                  target='_blank'
-                  href={`https://amboss.space/node/${coordinator?.mainnetNodesPubkeys[0]}`}
-                  rel='noreferrer'
-                >
-                  {`${coordinator?.mainnetNodesPubkeys?.[0].slice(0, 12)}... (AMBOSS)`}
-                </Link>
-              </ListItemText>
-            </ListItem>
-          ) : (
-            <></>
-          )}
-
-          {coordinator?.testnetNodesPubkeys?.[0] !== undefined && network === 'testnet' ? (
-            <ListItem>
-              <ListItemIcon>
-                <Dns />
-              </ListItemIcon>
-              <ListItemText secondary={t('Testnet LN Node')}>
-                <Link
-                  target='_blank'
-                  href={`https://1ml.com/testnet/node/${coordinator?.testnetNodesPubkeys[0]}`}
-                  rel='noreferrer'
-                >
-                  {`${coordinator?.testnetNodesPubkeys[0].slice(0, 12)}... (1ML)`}
-                </Link>
-              </ListItemText>
-            </ListItem>
-          ) : (
-            <></>
-          )}
+          <ListItemButton
+            target='_blank'
+            href={coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin]}
+            rel='noreferrer'
+          >
+            <ListItemIcon>
+              <Web />
+            </ListItemIcon>
+            <ListItemText
+              secondary={t('Coordinator hosted web app')}
+              primaryTypographyProps={{
+                style: {
+                  maxWidth: '20em',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                },
+              }}
+            >
+              {`${String(
+                coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin],
+              )}`}
+            </ListItemText>
+          </ListItemButton>
         </List>
 
         {coordinator?.loadingInfo ? (
@@ -633,40 +621,6 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                 <List dense>
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
-                      <Dns />
-                    </ListItemIcon>
-                    <ListItemText
-                      secondary={t('Coordinator domain')}
-                      primaryTypographyProps={{
-                        style: {
-                          maxWidth: '20em',
-                          wordWrap: 'break-word',
-                          overflowWrap: 'break-word',
-                        },
-                      }}
-                    >
-                      <Link
-                        target='_blank'
-                        href={
-                          coordinator?.[settings.network][
-                            settings.selfhostedClient ? 'onion' : origin
-                          ]
-                        }
-                        rel='noreferrer'
-                      >
-                        {`${String(
-                          coordinator?.[settings.network][
-                            settings.selfhostedClient ? 'onion' : origin
-                          ],
-                        )}`}
-                      </Link>
-                    </ListItemText>
-                  </ListItem>
-
-                  <Divider />
-
-                  <ListItem {...listItemProps}>
-                    <ListItemIcon>
                       <RoboSatsNoTextIcon
                         sx={{
                           width: '1.4em',
@@ -778,7 +732,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                       >
                         {pn(parseFloat(coordinator?.info?.last_day_volume).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '1em', height: '1em' }}
+                          sx={{ width: '0.6em', height: '0.6em' }}
                           color={'text.secondary'}
                         />
                       </div>
@@ -802,7 +756,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                       >
                         {pn(parseFloat(coordinator?.info?.lifetime_volume).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '1em', height: '1em' }}
+                          sx={{ width: '0.6em', height: '0.6em' }}
                           color={'text.secondary'}
                         />
                       </div>
