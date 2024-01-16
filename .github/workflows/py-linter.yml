@@ -26,16 +26,5 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-      - run: pip install -r requirements_dev.txt
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          auto_fix: true
-          git_name: "Python Lint Action"
-          commit_message: "Fix code style issues with ${linter}"
-          commit: false
-          neutral_check_on_warning: true
-          black: true
-          flake8: true
-          # Flake8 doesn't support auto-fixing
-          flake8_auto_fix: false
+      - name: Ruff
+        uses: chartboost/ruff-action@v1
