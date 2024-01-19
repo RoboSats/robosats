@@ -47,7 +47,7 @@ Básicamente, hay cinco condiciones que provocan que un usuario pierda su fianza
 
 * No presentar la factura de pago como comprador de bitcoin dentro del límite de tiempo dado
 
-* No presentar el fideicomiso de la transacción como vendedor de bitcoin dentro del límite de tiempo dado
+* No presentar la fianza de la transacción como vendedor de bitcoin dentro del límite de tiempo dado
 
 * No confirmar que se recibió el fiat como vendedor de bitcoin
 
