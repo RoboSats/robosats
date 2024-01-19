@@ -10,7 +10,7 @@ sidebar:
 src: "_pages/docs/fr/03-understand/14-on-chain-payouts.md"
 ---
 
-Bien que RoboSats est une plateforme construite sur le Lightning Network, il existe une option pour l'acheteur de recevoir ses Sats à une adresse bitcoin on-chain. C'est ce qu'on appelle un paiement on-chain ou, parfois, un swap on-chain (à ne pas confondre avec [P2P Swaps](/docs/fr/swaps)). 
+Bien que RoboSats est une plateforme construite sur le Lightning Network, il existe une option pour l'acheteur de recevoir ses Sats à une adresse bitcoin on-chain. C'est ce qu'on appelle un paiement on-chain ou, parfois, un swap on-chain (à ne pas confondre avec [P2P Swaps](/docs/fr/swaps)).
 
 Dans l'interface utilisateur, cette option est disponible une fois que le preneur a verrouillé son obligation. Lorsque l'état de la commande est "En attente de la facture de l'acheteur", vous devriez voir deux options : "Lightning" et "Onchain"
 
