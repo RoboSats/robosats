@@ -283,6 +283,7 @@
   "Today active robots": "Robots actifs aujourd'hui",
   "Website": "Website",
   "X": "X",
+  "Zaps voluntarily for development": "Zaps voluntarily for development",
   "#24": "Phrases in components/Dialogs/EnableTelegram.tsx",
   "Browser": "Navigateur",
   "Enable": "Activer",

@@ -44,6 +44,7 @@ import {
   Send,
   Tag,
   Web,
+  VolunteerActivism,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -537,6 +538,19 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                     <ListItemText
                       primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
                       secondary={t('Current onchain payout fee')}
+                    />
+                  </ListItem>
+
+                  <Divider />
+
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <VolunteerActivism />
+                    </ListItemIcon>
+
+                    <ListItemText
+                      primary={`${coordinator?.badges?.donatesToDevFund}% of profits`}
+                      secondary={t('Zaps voluntarily for development')}
                     />
                   </ListItem>
 
