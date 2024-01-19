@@ -56,8 +56,8 @@ const InputWrapper = styled('div')(
           ? '#f44336'
           : sx.hoverBorderColor
         : error
-        ? '#dd0000'
-        : '#2f2f2f'
+          ? '#dd0000'
+          : '#2f2f2f'
     };
   }
 
@@ -68,8 +68,8 @@ const InputWrapper = styled('div')(
           ? '#f44336'
           : '#90caf9'
         : error
-        ? '#dd0000'
-        : '#1976d2'
+          ? '#dd0000'
+          : '#1976d2'
     };
   }
 

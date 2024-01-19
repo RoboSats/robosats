@@ -1,4 +1,4 @@
-name: "Docker: Client"
+name: 'Docker: Selfhosted Client'
 
 on:
   workflow_dispatch:

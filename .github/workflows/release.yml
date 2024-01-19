@@ -55,8 +55,15 @@ jobs:
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
-  client-image:
-    uses: RoboSats/robosats/.github/workflows/client-image.yml@main
+  selfhosted-client-image:
+    uses: RoboSats/robosats/.github/workflows/selfhosted-client-image.yml@main
+    needs: frontend-build
+    secrets: inherit
+    with:
+      semver: ${{ needs.check-versions.outputs.semver }}
+
+  web-client-image:
+    uses: RoboSats/robosats/.github/workflows/web-client-image.yml@main
     needs: frontend-build
     secrets: inherit
     with:

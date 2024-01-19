@@ -1,23 +1,197 @@
-[
-  {
-    "alias": "Inception",
-    "enabled": "true",
-    "description": "RoboSats original and experimental coordinator",
-    "coverLetter": "N/A",
+{
+  "exp": {
+    "longAlias": "Experimental",
+    "shortAlias": "exp",
+    "description": "RoboSats node for development and experimentation. This is the original RoboSats coordinator operated by the RoboSats devs since 2022.",
+    "motto": "Original Robohost. P2P FTW!",
+    "color": "#1976d2",
     "contact": {
       "email": "robosats@protonmail.com",
-      "telegram": "@robosats",
-      "twitter": "@robosats",
+      "telegram": "robosats",
+      "twitter": "robosats",
+      "reddit": "r/robosats",
       "matrix": "#robosats:matrix.org",
-      "website": "learn.robosats.com"
+      "website": "https://learn.robosats.com",
+      "nostr": "npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82",
+      "pgp": "/static/federation/pgp/B4AB5F19113D4125DDF217739C4585B561315571.asc",
+      "fingerprint": "B4AB5F19113D4125DDF217739C4585B561315571"
     },
-    "color": "#9C27B0",
-    "mainnetOnion": "robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-    "mainnetClearnet": "unsafe.robosats.com",
-    "testnetOnion": "robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-    "testnetClearnet": "unsafe.testnet.robosats.com",
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "robotsLove": true,
+      "hasLargeLimits": true
+    },
+    "policies": {
+      "Policy Name 1": "Experimental coordinator used for development. Use at your own risk.",
+      "Privacy Policy": "...",
+      "Data Policy": "..."
+    },
+    "mainnet": {
+      "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+      "clearnet": "https://unsafe.robosats.com",
+      "i2p": "http://r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p"
+    },
+    "testnet": {
+      "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "clearnet": "https://unsafe.testnet.robosats.com",
+      "i2p": ""
+    },
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
-    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"],
-    "logo": "/static/federation/inception.svg"
+    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
+  },
+  "temple": {
+    "longAlias": "Temple of Sats",
+    "shortAlias": "temple",
+    "description": "I am passionate about joining Robosats as a coordinator because I believe that peer-to-peer, non-KYC Bitcoin transactions are vital for the community's empowerment and autonomy. I aim to champion users' privacy, and provide a seamless experience for genuine Bitcoin enthusiasts.",
+    "motto": "Privacy and Integrity: Temple of Sats, where Bitcoin's essence thrives.",
+    "color": "#000",
+    "contact": {
+      "email": "cosmos178ftmm4edlahqzj376gwgqzd9re5x0x9h0tfsc@keplr.xyz",
+      "telegram": "@venividivici_fr",
+      "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
+      "matrix": "@venividivici13:matrix.org",
+      "nostr": "npub1wsqpvgpfwq6a4fs5whqxn7gtd9gqsll2p5qnfdu4ltr43s6wwxgsgk4xtl",
+      "pgp": "/static/federation/pgp/25791752E9661C1DE118A8C6F78CD3D6471B6789.asc",
+      "fingerprint": "25791752E9661C1DE118A8C6F78CD3D6471B6789"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "No Third-Party Sharing": "Under no circumstances will user information be shared with third parties.",
+      "Short-term storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!"
+    },
+    "mainnet": {
+      "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["030a425f5c69a29db30f6740d4e7df8f5612ef9955078ef4497490015464733dc8"],
+    "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"]
+  },
+  "satstralia": {
+    "longAlias": "Satstralia",
+    "shortAlias": "satstralia",
+    "description": "I'm happy to be part of Robosats in so many ways!",
+    "motto": "btc = ɔʇq",
+    "color": "#329239",
+    "contact": {
+      "email": "info@satstralia.com",
+      "telegram": "@satstralia",
+      "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2Fq0pIyShcBl0EP8le0D0xy2OfSrP1mQWg%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAcwmsC9GQwQEt40UNpYp4vKPhU_UnWXsXcVl-OJ57lC4%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22vNcyZH9C3eE6MHzRNpR3xA%3D%3D%22%7D",
+      "matrix": "#satstralia:matrix.org",
+      "pgp": "/static/federation/pgp/D1894C9862A9D02D47D96C84AE30B6904210DA14.asc",
+      "nostr": "npub1z94lxjf7m5snda0qc6s3kmpy6r4nfw74h78da9j6j4y8ym08zrrs459wpr",
+      "website": "https://satstralia.com",
+      "fingerprint": "D1894C9862A9D02D47D96C84AE30B6904210DA14"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 33,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://satstraoq35jffvkgpfoqld32nzw2siuvowanruindbfojowpwsjdgad.onion",
+      "clearnet": "https://unsafe.satstralia.com",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion",
+      "clearnet": "https://test.unsafe.satstralia.com",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["029c5b14214ca7c1f5334db539dbab266088ba43a40563551efb9458756a94cd94"],
+    "testnetNodesPubkeys": ["03607900c00c5fcc3f9d32da4ad687c73d95df4faa065e5320e77b41c5d76ef381"]
+  },
+  "lake": {
+    "longAlias": "TheBigLake",
+    "shortAlias": "lake",
+    "description": "Becoming a RoboSats coordinator represents boosting intrinsic values of decentralization and economic freedom. RoboSats solves the problem of KYC and loss of privacy that big Exchanges are forced to comply with. I believe that decentralizing the lightning nodes will enhance the robustness of the tool, allowing more users to join. I am excited to be part of this new phase of growth.",
+    "motto": "TheBigLake: The Lake of Economic Freedom.",
+    "color": "#000D28",
+    "contact": {
+      "email": "gabbygator184@proton.me",
+      "telegram": "@gabbygator184",
+      "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2FLsFHfMGI9rm3kUDz1jwXZf3uAYPUuhli%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJ8hrCl81w79Wx2qfae6cGR9rZpeHVoevAObBqNgzqGU%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion",
+      "matrix": "@gabbygator184:matrix.org",
+      "pgp": "/static/federation/pgp/EC4F94F629AA28242B54265F1ABE1CA3582A031A.asc",
+      "nostr": "npub17t2g2h0nnf7mvxtxvm5ydxs85ycumhqgmj48gj35gdplln655yxq68wj6f",
+      "fingerprint": "EC4F94F629AA28242B54265F1ABE1CA3582A031A"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
+    "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"]
+  },
+  "local": {
+    "longAlias": "Local Dev",
+    "shortAlias": "local",
+    "description": "This coordinator will only be available if you run a RoboSats coordinator on your own machine.",
+    "motto": "Buidl",
+    "color": "#000000",
+    "testnet": {
+      "onion": "",
+      "clearnet": "http://localhost:8000"
+    },
+    "badges": {
+      "donatesToDevFund": 0
+    },
+    "mainnet": {
+      "onion": "",
+      "clearnet": ""
+    },
+    "policies": {
+      "Development Policy": "Don't look around, just buidl"
+    },
+    "mainnetNodesPubkeys": ["..."],
+    "testnetNodesPubkeys": ["..."]
   }
-]
+}
