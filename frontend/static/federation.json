@@ -41,6 +41,49 @@
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
   },
+  "jonthdiaz": {
+    "longAlias": "Jonthdiaz",
+    "shortAlias": "Jonat",
+    "description": "Lightning :)",
+    "motto": "Echele ganass.....",
+    "color": "#000",
+    "contact": {
+      "email": "jonthdiaz@gmail.com",
+      "telegram": "@jonthdiaz",
+      "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
+      "matrix": "@jonthdiaz:matrix.org",
+      "nostr": "npub1l30sdpjgu8kl2gwz6aj47d44tz2440d4h5trn55a453u4z69zhjqeugfq2",
+      "pgp": "/static/federation/pgp/25791752E9661C1DE118A8C6F78CD3D6471B6789.asc",
+      "fingerprint": "257919"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "No Third-Party Sharing": "Under no circumstances will user information be shared with third parties.",
+      "Short-term storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!"
+    },
+    "mainnet": {
+      "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["030a425f5c69a29db30f6740d4e7df8f5612ef9955078ef4497490015464733dc8"],
+    "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"]
+  },
   "temple": {
     "longAlias": "Temple of Sats",
     "shortAlias": "temple",
