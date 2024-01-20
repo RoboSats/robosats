@@ -255,7 +255,7 @@ const BookTable = ({
           ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
           : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In'),
     };
-  }, []);
+  }, [fav.mode]);
 
   const amountObj = useCallback((width: number) => {
     return {
@@ -277,7 +277,7 @@ const BookTable = ({
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const currencyObj = useCallback((width: number) => {
     return {
@@ -322,7 +322,7 @@ const BookTable = ({
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const paymentSmallObj = useCallback((width: number) => {
     return {
