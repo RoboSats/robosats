@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Typography,
@@ -16,26 +16,24 @@ import { useTheme } from '@mui/system';
 import { AutocompletePayments } from '../MakerForm';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 import { FlagWithProps } from '../Icons';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import { type Favorites } from '../../models';
 import SwapCalls from '@mui/icons-material/SwapCalls';
 
 interface BookControlProps {
   width: number;
-  fav: Favorites;
-  setFav: (state: Favorites) => void;
   paymentMethod: string[];
   setPaymentMethods: () => void;
 }
 
 const BookControl = ({
   width,
-  fav,
-  setFav,
   paymentMethod,
   setPaymentMethods,
 }: BookControlProps): JSX.Element => {
+  const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
+
   const { t, i18n } = useTranslation();
   const theme = useTheme();
 
