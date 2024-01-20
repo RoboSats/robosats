@@ -312,7 +312,7 @@ const BookTable = ({
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const amountObj = useCallback((width: number) => {
     return {
@@ -339,7 +339,7 @@ const BookTable = ({
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const currencyObj = useCallback((width: number) => {
     return {
@@ -392,7 +392,7 @@ const BookTable = ({
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const paymentSmallObj = useCallback((width: number) => {
     return {
