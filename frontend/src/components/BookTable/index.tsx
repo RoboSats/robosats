@@ -106,7 +106,7 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { fav, setFav, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 
@@ -928,8 +928,6 @@ const BookTable = ({
           componentsProps={{
             toolbar: {
               width,
-              fav,
-              setFav,
               paymentMethod: paymentMethods,
               setPaymentMethods,
             },
@@ -966,8 +964,6 @@ const BookTable = ({
             componentsProps={{
               toolbar: {
                 width,
-                fav,
-                setFav,
                 paymentMethod: paymentMethods,
                 setPaymentMethods,
               },
