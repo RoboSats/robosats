@@ -13,17 +13,17 @@ src: "_pages/docs/es/03-understand/04-bonds.md"
 La **fianza de fidelidad** es un pequeño depósito que el usuario "bloquea" y que se desbloqueará después de que se complete la transacción; sin embargo, los usuarios pueden perder su fianza si no cumplen con las obligaciones del contrato.
 
 El **proceso de comercio de RoboSats** utiliza fianzas de fidelidad para incentivar tanto al creador de la orden como al tomador a seguir las reglas y no engañar a su compañero robot. Más específicamente, las fianzas son [facturas bloqueadas](https://github.com/lightningnetwork/lnd/pull/2022) utilizando la Red Lightning; ¡es la tecnología que hace posible RoboSats!
-Consulte [Comprender > Custodia de operaciones > ¿Qué es una factura retenida?](/docs/es/escrow/#what-is-a-hold-invoice) para comprender cómo funcionan en la práctica las facturas de retención.
+Consulte [Comprender > Custodia de operaciones > ¿Qué es una factura retenida?](/docs/es/escrow/#qué-es-una-factura-de-retención) para comprender cómo funcionan en la práctica las facturas de retención.
 
 Por defecto, la fianza es del 3% del monto total de la transacción. Alternativamente, los creadores de órdenes pueden personalizar este monto desde un 2% hasta un 15%. Fianzas más grandes significan más "compromiso" necesario para comerciar.
 
-La fianza no sale de tu billetera Lightning, pero ten en cuenta que algunas billeteras funcionan mejor con RoboSats que otras debido a la naturaleza del mecanismo de factura bloqueada de Lightning. Consulta [Entender > Billeteras](/docs/es/wallets/) para obtener información adicional.
+La fianza no sale de tu billetera Lightning, pero ten en cuenta que algunas wallets funcionan mejor con RoboSats que otras debido a la naturaleza del mecanismo de factura bloqueada de Lightning. Consulta [Entender > Wallets](/docs/es/wallets/) para obtener información adicional.
 
 *Nota: La opción que permite a los "Tomadores sin fianza" está en desarrollo pero no está disponible por el momento.*
 
 ## **Cómo bloquear una fianza**
 
-Primero, consulta [Entender > Billeteras](/docs/es/wallets/) para encontrar billeteras Lightning compatibles que facilitarán el uso de RoboSats. Dependiendo de la billetera, la factura puede mostrarse como un pago en tránsito, congelado o incluso como si estuviera fallando. ¡Consulta la lista de compatibilidad de billeteras!
+Primero, consulta [Entender > Wallets](/docs/es/wallets/) para encontrar wallets Lightning compatibles que facilitarán el uso de RoboSats. Dependiendo de la wallet, la factura puede mostrarse como un pago en tránsito, congelado o incluso como si estuviera fallando. ¡Consulta la lista de compatibilidad de wallets!
 
 Lee la guía correspondiente según si estás creando o tomando la orden:
 
@@ -33,7 +33,7 @@ Lee la guía correspondiente según si estás creando o tomando la orden:
 
 Después de que se completa la transacción y ambos robots están satisfechos, las fianzas del creador y el tomador se desbloquean. Técnicamente, la fianza bloqueada nunca salió de tu billetera; pero ten cuidado, si no sigues las obligaciones del contrato intentando engañar o cancelando unilateralmente, perderás tu fianza de fidelidad.
 
-Tu billetera puede tardar un tiempo en mostrar los fondos como desbloqueados en el saldo de tu cuenta. Algunas billeteras tienen dificultades para reconocer la factura bloqueada de Lightning como una retención temporal de tus fondos.
+Tu billetera puede tardar un tiempo en mostrar los fondos como desbloqueados en el saldo de tu cuenta. Algunas wallets tienen dificultades para reconocer la factura bloqueada de Lightning como una retención temporal de tus fondos.
 
 Si el problema persiste, ponte en contacto con el grupo de Telegram de RoboSats; pero ten cuidado con los estafadores que pueden contactarte directamente e hacerse pasar por el personal de RoboSats. El personal de RoboSats nunca se pondrá en contacto contigo primero. Consulta [Contribuir > Código > Canales de comunicación](/contribute/code/#communication-channels) para conocer los grupos de Telegram disponibles.
 
@@ -77,4 +77,4 @@ Hay una gran cantidad de aplicaciones y servicios disponibles donde se pueden ga
 
 Dado que la fianza es una retención temporal de tus fondos, incluso podrías pedir prestados satoshis a un amigo solo para la fianza de fidelidad. Después de que la fianza se desbloquea de una transacción exitosa, ¡simplemente devuelve los fondos a tu amigo!
 
-{% include improve %}
+{% include improve_es %}

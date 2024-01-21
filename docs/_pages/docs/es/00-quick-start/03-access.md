@@ -12,7 +12,7 @@ src: "_pages/docs/es/00-quick-start/03-access.md"
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> De manera privada con TOR
 
-Una forma segura y muy privada de usar RoboSats es a través de la dirección Onion. Necesitas el[navegador TOR](/docs/es/tor/).
+Una forma segura y muy privada de usar RoboSats es a través de la dirección Onion. Necesitas el [navegador TOR](/docs/es/tor/).
 
 > [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
 
@@ -74,4 +74,4 @@ Hay varios servicios tor2web que sirven como mirrors en caso de que uno de ellos
 > [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
 
 
-{% include improve %}
+{% include improve_es %}

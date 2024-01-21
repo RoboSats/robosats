@@ -1,16 +1,16 @@
 ---
 layout: single
-title: Premium sobre el Mercado
+title: Prima sobre el Mercado
 permalink: /docs/es/premium/
 toc: true
 toc_sticky: true
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/percent.svg"/>Premium'
+  title: '<img id="side-icon-verybig" src="/assets/vector/percent.svg"/>Prima'
   nav: docs
 src: "_pages/docs/es/03-understand/03-premium.md"
 ---
 
-La prima asociada con su orden de par a par es la diferencia de precio que existe por encima o por debajo de la tasa actual de bitcoin-fiat que se encuentra en sus intercambios centralizados típicos.
+La prima asociada con su orden de par a par es la diferencia de precio que existe por encima o por debajo de la tarifa actual de bitcoin-fiat que se encuentra en sus intercambios centralizados típicos.
 
 Al navegar por el libro de ordenes, el precio de intercambio de bitcoin de los ordenes en vivo se ajusta automáticamente para incluir la prima correspondiente de la orden.
 
@@ -20,7 +20,7 @@ En la parte inferior de la interfaz de robosats se encuentra la prima de precio 
 
 ## **Elegir una prima**
 
-Crea una orden, luego ingresa la "Prima sobre el mercado (%)", que puede ser un valor de porcentaje positivo, negativo o cero. De forma predeterminada, la prima del pedido tiene un precio relativo a la tasa de mercado de bitcoin-fiat.
+Crea una orden, luego ingresa la "Prima sobre el mercado (%)", que puede ser un valor de porcentaje positivo, negativo o cero. De forma predeterminada, la prima del pedido tiene un precio relativo a la tarifa de mercado de bitcoin-fiat.
 
 O, en lugar de la configuración predeterminada, los creadores de la orden pueden seleccionar el método fijo de precios explícito eligiendo una cantidad exacta de satoshis para intercambiar por la cantidad fiat dada.
 
@@ -52,6 +52,6 @@ La privacidad es valiosa tanto para el comprador como para el vendedor y siempre
 
 ## **Información Adicional**
 
-La prima relativa hace referencia a los tipos de cambio actuales de las API públicas, específicamente los precios de blockchain.io y yadio.io. Luego se calcula el precio medio de bitcoin en la moneda seleccionada y se muestra como la tasa de mercado que sigue su prima.
+La prima relativa hace referencia a los tipos de cambio actuales de las API públicas, específicamente los precios de blockchain.io y yadio.io. Luego se calcula el precio medio de bitcoin en la moneda seleccionada y se muestra como la tarifa de mercado que sigue su prima.
 
 La prima de 24 horas que se muestra en robosats está determinada por la mediana ponderada, no por la media, de los pedidos exitosos en las últimas 24 horas. Este método de cálculo es más resistente a los valores atípicos y más representativo del consenso del mercado entre pares. En otras palabras, el usuario debe ver este valor como la prima que aproximadamente puede esperar pagar por una orden.

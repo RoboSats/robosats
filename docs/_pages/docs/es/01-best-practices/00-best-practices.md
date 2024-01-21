@@ -10,4 +10,4 @@ src: "_pages/docs/es/01-best-practices/00-best-practices.md"
 
 Aunque RoboSats es muy privado y seguro desde el principio, siempre hay algunos pasos adicionales que puedes seguir para mejorar tu privacidad y minimizar riesgos.
 
-{% include wip%}
+{% include wip_es%}

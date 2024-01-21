@@ -10,4 +10,4 @@ sidebar:
 src: "_pages/docs/es/02-features/02-fast.md"
 ---
 
-{% include wip %}
+{% include wip_es %}

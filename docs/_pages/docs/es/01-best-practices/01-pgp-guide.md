@@ -7,7 +7,7 @@ toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>Encriptación PGP'
   nav: docs
-src: "_pages/docs/01-best-practices/01-pgp-guide.md"
+src: "_pages/docs/es/01-best-practices/01-pgp-guide.md"
 ---
 
 # Encriptación PGP en RoboSats
@@ -49,7 +49,7 @@ Si tu token es el correcto, habrás importado la clave privada para la comunicac
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-3.png" width="650"/>
 </div>
-Podemos ver cómo la aplicación frontal llamó a esta clave `"RoboSats ID<hash>"`. Este es el ID del robot, el segundo hash SHA256 de nuestro *token* secreto, y se usó originalmente para generar de manera determinista el apodo y la imagen de avatar del robot ([aprende más](/docs/es/private/#robot-avatar-generation-pipeline)).
+Podemos ver cómo la aplicación frontal llamó a esta clave `"RoboSats ID<hash>"`. Este es el ID del robot, el segundo hash SHA256 de nuestro *token* secreto, y se usó originalmente para generar de manera determinista el apodo y la imagen de avatar del robot ([aprende más](/docs/es/private/#generación-de-avatares-de-robot)).
 
 #### Importar la clave pública de tu compañero
 Solo necesitamos repetir los pasos anteriores para importar la clave pública de nuestro compañero.
@@ -187,4 +187,4 @@ Los datos cifrados deben copiarse incluyendo el encabezado `(-----BEGIN PGP MESS
 
 Si quieres leer un tutorial sobre cómo usar OpenKeychain para uso general, consulta [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/)
 
-{% include improve %}
+{% include improve_es %}
