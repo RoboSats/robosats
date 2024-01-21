@@ -2,7 +2,7 @@
 
 # generate LND grpc definitions
 cd api/lightning
-[ -d googleapis ] || git clone https://github.com/googleapis/googleapis.git googleapis
+[ -d googleapis ] || git clone https://github.com/googleapis/googleapis.git --depth=1 googleapis
 
 # LND Lightning proto
 curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
