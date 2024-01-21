@@ -7,7 +7,7 @@ toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/hand-peace.svg"/>Bonnes pratiques Fiat'
   nav: docs
-src: "_pages/docs/fr/01-best-practices/02-payment-methods_fr.md"
+src: "_pages/docs/fr/01-best-practices/02-payment-methods.md"
 ---
 
 Actuellement, il n'y a pas de restrictions sur la méthode de paiement en monnaie fiduciaire. Vous pouvez payer avec n'importe quelle méthode sur laquelle vous et votre correspondant vous êtes mis d'accord. Cela inclut les méthodes plus risquées telles que PayPal, Venmo et les applications de paiement en espèces. Vous pouvez obtenir plus de détails sur les caractéristiques et les différences de chaque méthode de paiement en monnaie fiduciaire à l'adresse suivante <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">wiki Bisq</a>. Les directives Bisq s'appliquent par défaut aux RoboSats.
