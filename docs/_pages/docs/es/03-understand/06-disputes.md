@@ -22,4 +22,4 @@ Existen otros chats grupales públicos disponibles, pero los problemas relaciona
 
 Consulta [Tutoriales > Leer (en inglés) > Disputas](/read/en/#disputes) para obtener una descripción general de ejemplo del proceso de disputa.
 
-{% include improve %}
+{% include improve_es %}

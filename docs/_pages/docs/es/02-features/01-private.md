@@ -31,4 +31,4 @@ Solo tu contraparte puede conocer cosas sobre ti mientras chateais. Mantén el c
 {: .notice--primary}
 
 
-{% include wip %}
+{% include wip_es %}

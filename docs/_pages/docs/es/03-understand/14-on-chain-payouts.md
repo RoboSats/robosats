@@ -45,4 +45,4 @@ El cuadro de diálogo de resumen de intercambio muestra el valor actual de las c
     <img src="/assets/images/understand/14-on-chain-payouts/exchange-summary.png"/>
 </div>
 
-% include improve %}
+% include improve_es %}
