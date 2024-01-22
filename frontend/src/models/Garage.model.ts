@@ -59,10 +59,9 @@ class Garage {
       const rawSlots = JSON.parse(slotsDump);
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
         if (rawSlot?.token) {
-          this.createSlot(rawSlot?.token);
           Object.keys(rawSlot.robots).forEach((shortAlias) => {
             const rawRobot = rawSlot.robots[shortAlias];
-            this.upsertRobot(rawRobot.token, shortAlias, rawRobot);
+            this.createRobot(rawRobot.token, shortAlias, rawRobot);
           });
           this.currentSlot = rawSlot?.token;
         }
@@ -79,22 +78,14 @@ class Garage {
     return currentToken ? this.slots[currentToken] ?? null : null;
   };
 
-  createSlot: (token: string) => Slot | null = (token) => {
-    if (token !== null) {
-      this.slots[token] = new Slot(token);
-      return this.slots[token];
-    }
-    return null;
-  };
-
   deleteSlot: (token?: string) => void = (token) => {
     const targetIndex = token ?? this.currentSlot;
     if (targetIndex) {
       Reflect.deleteProperty(this.slots, targetIndex);
       this.currentSlot = null;
+      this.save();
       this.triggerHook('onRobotUpdate');
       this.triggerHook('onOrderUpdate');
-      this.save();
     }
   };
 
@@ -111,7 +102,22 @@ class Garage {
   };
 
   // Robots
-  upsertRobot: (token: string, shortAlias: string, attributes: Record<any, any>) => void = (
+  createRobot: (token: string, shortAlias: string, attributes: Record<any, any>) => void = (
+    token,
+    shortAlias,
+    attributes,
+  ) => {
+    if (!token || !shortAlias) return;
+
+    if (this.getSlot(token) === null) {
+      this.slots[token] = new Slot(token);
+      this.slots[token]?.createRobot(shortAlias, attributes);
+      this.save();
+      this.triggerHook('onRobotUpdate');
+    }
+  };
+
+  updateRobot: (token: string, shortAlias: string, attributes: Record<any, any>) => void = (
     token,
     shortAlias,
     attributes,
@@ -120,14 +126,10 @@ class Garage {
 
     let slot = this.getSlot(token);
 
-    if (slot === null && token) {
-      slot = this.createSlot(token);
-    }
-
     if (slot != null) {
-      slot.upsertRobot(shortAlias, { token, ...attributes });
-      this.triggerHook('onRobotUpdate');
+      slot.updateRobot(shortAlias, { token, ...attributes });
       this.save();
+      this.triggerHook('onRobotUpdate');
     }
   };
 
@@ -149,8 +151,8 @@ class Garage {
       } else {
         slot.order = null;
       }
-      this.triggerHook('onOrderUpdate');
       this.save();
+      this.triggerHook('onOrderUpdate');
     }
   };
 }
