@@ -20,7 +20,7 @@ La condition préalable à l'utilisation de LN est l'existence d'un portefeuille
 
 Lorsque l'on utilise Lightning, les paiements sont effectués par le biais de factures. Le destinataire des Sats remet une facture à l'expéditeur des Sats, souvent sous la forme d'un code QR, demandant à l'expéditeur de payer le montant spécifique de Sats demandé par la facture. La facture commence par le préfixe "lnbc" et peut être décodée pour en inspecter le contenu, comme la quantité de Sats envoyée, l'ID du nœud auquel les Sats ont été envoyés, toute description fournie, etc.
 
-Dans sa forme actuelle, Lightning n'est pas totalement privé. Les utilisateurs doivent veiller à ne pas révéler d'informations sensibles lorsqu'ils envoient et reçoivent des paiements sur LN. Ne faites pas confiance à une source fermée et à un portefeuille dépositaire pour respecter vos informations, vous pouvez obtenir un plus grand degré de confidentialité en utilisant un portefeuille non dépositaire. De même, consultez [Best Practices > Proxy Wallets] (/docs/fr/proxy-wallets/) pour plus d'informations sur les problèmes de confidentialité lors de la réception de Sats sur LN.
+Dans sa forme actuelle, Lightning n'est pas totalement privé. Les utilisateurs doivent veiller à ne pas révéler d'informations sensibles lorsqu'ils envoient et reçoivent des paiements sur LN. Ne faites pas confiance à une source fermée et à un portefeuille dépositaire pour respecter vos informations, vous pouvez obtenir un plus grand degré de confidentialité en utilisant un portefeuille non dépositaire. De même, consultez [Best Practices > Proxy Wallets](/docs/fr/proxy-wallets/) pour plus d'informations sur les problèmes de confidentialité lors de la réception de Sats sur LN.
 
 ## **Réseau Lightning "Manigances"**
 

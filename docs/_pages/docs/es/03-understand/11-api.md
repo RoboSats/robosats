@@ -1,11 +1,11 @@
 ---
 layout: default
-title: RoboSats API
-permalink: /docs/fr/api/
+title: RoboSats API v0.1
+permalink: /docs/es/api-v0.1/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/cloud.svg"/>API'
   nav: docs
-src: "_pages/docs/fr/03-understand/11-api-latest.md"
+src: "_pages/docs/es/03-understand/11-api.md"
 ---
 
 {% include api-latest.html %}

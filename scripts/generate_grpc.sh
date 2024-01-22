@@ -2,36 +2,21 @@
 
 # generate LND grpc definitions
 cd api/lightning
-[ -d googleapis ] || git clone https://github.com/googleapis/googleapis.git googleapis
+[ -d googleapis ] || git clone https://github.com/googleapis/googleapis.git --depth=1 googleapis
 
-# LND Lightning proto
-curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
+echo "Downloading LND & CLN GRPC specs.."
+curl --parallel -o lightning.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto \
+    -o invoices.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto \
+    -o router.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto \
+    -o signer.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/signrpc/signer.proto \
+    -o verrpc.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/verrpc/verrpc.proto \
+    -o hold.proto https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/hold.proto \
+    -o primitives.proto https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/primitives.proto \
+    -o node.proto https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/node.proto
 
-# LND Invoices proto
-curl -o invoices.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. invoices.proto
-
-# LND Router proto
-curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. router.proto
-
-# LND Signer proto
-curl -o signer.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/signrpc/signer.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. signer.proto
-
-# LND Versioner proto
-curl -o verrpc.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/verrpc/verrpc.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. verrpc.proto
-
-# generate CLN grpc definitions
-curl -o hold.proto -s https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/hold.proto
-curl -o primitives.proto -s https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/primitives.proto
-curl -o node.proto -s https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/node.proto
+echo -n "Done\nBuilding api from GRPC specs..."
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto invoices.proto router.proto signer.proto verrpc.proto
 python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto hold.proto primitives.proto
-
-# delete googleapis
-rm -r googleapis
 
 # patch generated files relative imports
 # LND
@@ -51,8 +36,11 @@ sed -i 's/^import .*_pb2 as/from . \0/' hold_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' node_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' node_pb2_grpc.py
 
+echo -n "Done\nDeleting googleapi..."
+rm -rf googleapis # delete googleapis
+echo "Done"
+
 # On development environments the local volume will be mounted over these files. We copy pb2 and grpc files to /tmp/.
 # This way, we can find if these files are missing with our entrypoint.sh and copy them into the volume.
-
 cp -r *_pb2.py /tmp/
 cp -r *_grpc.py /tmp/

@@ -7,7 +7,7 @@ toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>Chiffrement PGP'
   nav: docs
-src: "_pages/docs/fr/01-best-practices/01-pgp-guide_fr.md"
+src: "_pages/docs/fr/01-best-practices/01-pgp-guide.md"
 ---
 
 Toutes les communications de RoboSats sont chiffrées par PGP. L'application client est entièrement transparente et offre un moyen facile de copier et d'exporter les clés PGP.

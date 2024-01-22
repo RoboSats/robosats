@@ -6,7 +6,7 @@ date:   2023-12-31 01:01:01 -0500
 categories: robosats update
 ---
 
-**Note** this is a very early release, so expect to find bugs! If you find a bug that is stopping you from continuing your order, recover your robot in the v0.5.3 client of your coordinator and continue the trade as usual.
+**Note** this is a very early release, so expect to find bugs! If you find a bug that is stopping you from continuing your order, recover your robot in the v0.5.3 client of your coordinator and continue the trade as usual. We keep a [list of known bugs here](https://github.com/RoboSats/robosats/issues/1069), please report if you find a new one :D
 {: .notice--primary}
 
 We are thrilled to announce the launch for testing of the new version of RoboSats v0.6.0. This is the biggest ever upgrade to RoboSats. We have, figuratively, lifted the house and built a basement below it :)
@@ -27,7 +27,7 @@ The RoboSats Federation is a set of rules that allows multiple RoboSats instance
 ## Key Features of the New Version
 ### Multiple Coordinators
 
-With the new version, RoboSats introduces the concept of coordinators or hosts. Coordinators will now compete to provide users with the best fees, support, uptime and reliability and overall user experience. Lightning node runners can become RoboSats coordinator in the federation, given they gain the trust of the users. The coordinators host the full infrastructure needed for the p2p trades, they route the lightning payments, they solve the disputes, and much more. Therefore **is important to pick always a coordinator you trust** when creating or taking a RoboSats order, given that, there are ways a coordinator could potentially steal from you (this is true for any p2p platform, not only RoboSats, regardless of escrow system, coordinators must always be trusted).
+With the new version, RoboSats introduces the concept of coordinators or hosts. Coordinators will now compete to provide users with the best fees, support, uptime and reliability and overall user experience. Lightning node runners can become RoboSats coordinator in the federation, given they gain the trust of the users. The coordinators host the full infrastructure needed for the p2p trades, they route the lightning payments, they solve the disputes, and much more. Therefore **is important to pick always a coordinator you trust** when creating or taking a RoboSats order, given that, there are ways a coordinator could potentially steal from you (this is true for any p2p btc/fiat on-off ramp, not only RoboSats, regardless of escrow system, coordinators must always be trusted).
 
 If you operate a lightning node and are interested in becoming a coordinator yourself, refer to the [RoboSats Federation basis](https://github.com/RoboSats/robosats/blob/main/federation.md)
 
@@ -66,6 +66,6 @@ Many other small improvements come in v0.6.0. For example, your Robot identity i
 
 Please note trust in a coordinator is paramount, a malicious or rogue p2p coordinators can always find ways to steal from the users. Always exercise caution and make sure to understand the potential risks before engaging with any coordinator. Research them by: exploring their coordinator profile in the RoboSats app, reading about them in their website and social media, asking other users about their experience, etc.
 
-## Acknoledgements
+## Acknowledgements
 
 The big push needed to get the Federation Client working would not have been possible without the contributions of KoalaSat and Reckless-Satoshi.
