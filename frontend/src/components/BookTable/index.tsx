@@ -106,7 +106,7 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { fav, setFav, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 
@@ -312,7 +312,7 @@ const BookTable = ({
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const amountObj = useCallback((width: number) => {
     return {
@@ -321,11 +321,11 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
-        const amount = fav.mode === 'swap' ? params.row.amount * 100000 : params.row.amount;
+        const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
         const minAmount =
-          fav.mode === 'swap' ? params.row.min_amount * 100000 : params.row.min_amount;
+          fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
         const maxAmount =
-          fav.mode === 'swap' ? params.row.max_amount * 100000 : params.row.max_amount;
+          fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -334,12 +334,12 @@ const BookTable = ({
             }}
           >
             {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
-              (fav.mode === 'swap' ? 'K Sats' : '')}
+              (fav.mode === 'swap' ? 'M Sats' : '')}
           </div>
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const currencyObj = useCallback((width: number) => {
     return {
@@ -392,7 +392,7 @@ const BookTable = ({
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const paymentSmallObj = useCallback((width: number) => {
     return {
@@ -928,8 +928,6 @@ const BookTable = ({
           componentsProps={{
             toolbar: {
               width,
-              fav,
-              setFav,
               paymentMethod: paymentMethods,
               setPaymentMethods,
             },
@@ -966,8 +964,6 @@ const BookTable = ({
             componentsProps={{
               toolbar: {
                 width,
-                fav,
-                setFav,
                 paymentMethod: paymentMethods,
                 setPaymentMethods,
               },
