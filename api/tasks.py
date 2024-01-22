@@ -104,7 +104,7 @@ def send_devfund_donation(order_id, proceeds, reason):
 
     order = Order.objects.get(id=order_id)
     coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")
-    donation_fraction = max(0.05, config("DEVFUND", cast=float, default=0.2))
+    donation_fraction = min(1.0, max(0.00, config("DEVFUND", cast=float, default=0.2)))
     message = f"Devfund donation; {coordinator_alias}; {order}; {donation_fraction}; {reason};"
     num_satoshis = int(proceeds * donation_fraction)
     routing_budget_sats = int(max(5, num_satoshis * 0.000_1))
