@@ -940,9 +940,9 @@ const BookTable = ({
             loadingOverlay: {
               variant: 'determinate',
               value:
-                ((federation.exchange.activeCoordinators -
+                ((federation.exchange.enabledCoordinators -
                   federation.exchange.loadingCoordinators) /
-                  federation.exchange.activeCoordinators) *
+                  federation.exchange.enabledCoordinators) *
                 100,
             },
           }}

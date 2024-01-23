@@ -61,7 +61,7 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
 
 export interface Exchange {
   info: ExchangeInfo;
-  activeCoordinators: number;
+  enabledCoordinators: number;
   onlineCoordinators: number;
   loadingCoordinators: number;
   totalCoordinators: number;
@@ -69,7 +69,7 @@ export interface Exchange {
 
 export const defaultExchange: Exchange = {
   info: defaultExchangeInfo,
-  activeCoordinators: 0,
+  enabledCoordinators: 0,
   onlineCoordinators: 0,
   loadingCoordinators: 0,
   totalCoordinators: 0,

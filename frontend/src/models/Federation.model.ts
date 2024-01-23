@@ -84,7 +84,7 @@ export class Federation {
         await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
       }
     }
-    this.updateActiveCoordinators();
+    this.updateEnabledCoordinators();
   };
 
   // On Testnet/Mainnet change
@@ -134,19 +134,19 @@ export class Federation {
 
   disableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].disable();
-    this.updateActiveCoordinators();
+    this.updateEnabledCoordinators();
     this.triggerHook('onCoordinatorUpdate');
   };
 
   enableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].enable(() => {
-      this.updateActiveCoordinators();
+      this.updateEnabledCoordinators();
       this.triggerHook('onCoordinatorUpdate');
     });
   };
 
-  updateActiveCoordinators = (): void => {
-    this.exchange.activeCoordinators = Object.values(this.coordinators).filter(
+  updateEnabledCoordinators = (): void => {
+    this.exchange.enabledCoordinators = Object.values(this.coordinators).filter(
       (c) => c.enabled,
     ).length;
   };
