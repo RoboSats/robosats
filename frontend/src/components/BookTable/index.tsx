@@ -113,9 +113,6 @@ const BookTable = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const orders = orderList ?? federation.book;
-  const loadingProgress = useMemo(() => {
-    return (federation.exchange.onlineCoordinators / federation.exchange.totalCoordinators) * 100;
-  }, [coordinatorUpdatedAt]);
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
@@ -942,7 +939,11 @@ const BookTable = ({
             },
             loadingOverlay: {
               variant: 'determinate',
-              value: loadingProgress,
+              value:
+                ((federation.exchange.enabledCoordinators -
+                  federation.exchange.loadingCoordinators) /
+                  federation.exchange.enabledCoordinators) *
+                100,
             },
           }}
           paginationModel={paginationModel}

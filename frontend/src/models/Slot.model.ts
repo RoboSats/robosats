@@ -4,7 +4,7 @@ import { robohash } from '../components/RobotAvatar/RobohashGenerator';
 import { generate_roboname } from 'robo-identities-wasm';
 
 class Slot {
-  constructor(token: string) {
+  constructor(token: string, shortAliases: string[], robotAttributes: Record<any, any>) {
     this.token = token;
 
     this.hashId = sha256(sha256(this.token));
@@ -13,7 +13,10 @@ class Slot {
     void robohash.generate(this.hashId, 'small');
     void robohash.generate(this.hashId, 'large');
 
-    this.robots = {};
+    this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
+      acc[shortAlias] = new Robot(robotAttributes);
+      return acc;
+    }, {});
     this.order = null;
 
     this.activeShortAlias = null;
@@ -47,25 +50,16 @@ class Slot {
     return null;
   };
 
-  createRobot = (shortAlias: string, attributes: Record<any, any>): Robot | null => {
-    if (this.robots[shortAlias] === undefined) {
-      this.robots[shortAlias] = new Robot(attributes ?? {});
-      return this.robots[shortAlias];
-    }
-
-    return null;
-  };
-
   updateRobot = (shortAlias: string, attributes: Record<any, any>): Robot | null => {
     this.robots[shortAlias].update(attributes);
 
-    if (attributes.lastOrderId !== undefined && attributes.lastOrderId != null) {
+    if (attributes.lastOrderId) {
       this.lastShortAlias = shortAlias;
       if (this.activeShortAlias === shortAlias) {
         this.activeShortAlias = null;
       }
     }
-    if (attributes.activeOrderId !== undefined && attributes.activeOrderId != null) {
+    if (attributes.activeOrderId) {
       this.activeShortAlias = attributes.shortAlias;
     }
 

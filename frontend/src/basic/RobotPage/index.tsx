@@ -65,11 +65,10 @@ const RobotPage = (): JSX.Element => {
     setInputToken(token);
     genKey(token)
       .then((key) => {
-        garage.createRobot(token, sortedCoordinators[0], {
+        garage.createRobot(token, sortedCoordinators, {
           token,
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,
-          shortAlias: sortedCoordinators[0],
         });
         void federation.fetchRobot(garage, token);
         garage.currentSlot = token;

@@ -61,8 +61,10 @@ export class Federation {
     this.book = Object.values(this.coordinators).reduce<PublicOrder[]>((array, coordinator) => {
       return [...array, ...coordinator.book];
     }, []);
-    this.loading = false;
     this.triggerHook('onCoordinatorUpdate');
+    this.exchange.loadingCoordinators =
+      this.exchange.loadingCoordinators < 1 ? 0 : this.exchange.loadingCoordinators - 1;
+    this.loading = this.exchange.loadingCoordinators > 0;
     if (Object.values(this.coordinators).every((coor) => coor.isUpdated())) {
       this.updateExchange();
       this.triggerHook('onFederationReady');
@@ -76,9 +78,13 @@ export class Federation {
       this.onCoordinatorSaved();
     };
     this.loading = true;
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
-      await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
+      if (coor.enabled) {
+        await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
+      }
     }
+    this.updateEnabledCoordinators();
   };
 
   // On Testnet/Mainnet change
@@ -87,10 +93,12 @@ export class Federation {
     for (const coor of Object.values(this.coordinators)) {
       await coor.updateUrl(settings, origin, hostUrl);
     }
+    this.loading = false;
   };
 
   update = async (): Promise<void> => {
-    this.loading = false;
+    this.loading = true;
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
       await coor.update(() => {
         this.onCoordinatorSaved();
@@ -99,7 +107,8 @@ export class Federation {
   };
 
   updateBook = async (): Promise<void> => {
-    this.loading = false;
+    this.loading = true;
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
       await coor.updateBook(() => {
         this.onCoordinatorSaved();
@@ -125,13 +134,21 @@ export class Federation {
 
   disableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].disable();
+    this.updateEnabledCoordinators();
     this.triggerHook('onCoordinatorUpdate');
   };
 
   enableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].enable(() => {
+      this.updateEnabledCoordinators();
       this.triggerHook('onCoordinatorUpdate');
     });
+  };
+
+  updateEnabledCoordinators = (): void => {
+    this.exchange.enabledCoordinators = Object.values(this.coordinators).filter(
+      (c) => c.enabled,
+    ).length;
   };
 }
 
