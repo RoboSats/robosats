@@ -17,7 +17,7 @@ You can donate the following ways:
 
  - **Tip the [RoboSats DevFund Node](https://amboss.space/node/{{site.robosats.node_id}}) via KeySend:**
   <div>
-    <lightning-widget name="DevFund Node" accent="#9c27b0" to="{{site.robosats.node_id}}" image="https://pbs.twimg.com/profile_images/1524391291475406850/ULKOymid_400x400.jpg"/>
+    <lightning-widget name="DevFund Node" accent="#9c27b0" to="robodevfund@zeuspay.com" image="https://pbs.twimg.com/profile_images/1524391291475406850/ULKOymid_400x400.jpg"/>
     <script src="https://embed.twentyuno.net/js/app.js"></script>
   </div>
 
