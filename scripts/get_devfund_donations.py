@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import base64
+from datetime import datetime
 
 devfund_data_path = os.path.normpath(os.path.join("..", "devfund_pubkey.json"))
 
@@ -19,7 +20,9 @@ response_data = r.json()
 
 for invoice in response_data["invoices"]:
     if invoice["is_keysend"] and invoice["htlcs"][0]["custom_records"]["34349334"]:
+        dt = datetime.fromtimestamp(int(invoice["creation_date"]))
         print(f"Index {invoice['add_index']}")
+        print(f'Timestamp {dt.strftime("%Y-%m-%d %H:%M:%S")}')
         print(
             f"{base64.b64decode(invoice['htlcs'][0]['custom_records']['34349334']).decode('utf-8')}"
         )
