@@ -59,10 +59,13 @@ class Garage {
       const rawSlots = JSON.parse(slotsDump);
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
         if (rawSlot?.token) {
+          this.slots[rawSlot.token] = new Slot(rawSlot.token, Object.keys(rawSlot.robots), {});
+
           Object.keys(rawSlot.robots).forEach((shortAlias) => {
             const rawRobot = rawSlot.robots[shortAlias];
-            this.createRobot(rawRobot.token, shortAlias, rawRobot);
+            this.updateRobot(rawSlot.token, shortAlias, rawRobot);
           });
+
           this.currentSlot = rawSlot?.token;
         }
       });
@@ -102,16 +105,15 @@ class Garage {
   };
 
   // Robots
-  createRobot: (token: string, shortAlias: string, attributes: Record<any, any>) => void = (
+  createRobot: (token: string, shortAliases: string[], attributes: Record<any, any>) => void = (
     token,
-    shortAlias,
+    shortAliases,
     attributes,
   ) => {
-    if (!token || !shortAlias) return;
+    if (!token || !shortAliases) return;
 
     if (this.getSlot(token) === null) {
-      this.slots[token] = new Slot(token);
-      this.slots[token]?.createRobot(shortAlias, attributes);
+      this.slots[token] = new Slot(token, shortAliases, attributes);
       this.save();
       this.triggerHook('onRobotUpdate');
     }
