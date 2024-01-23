@@ -65,7 +65,7 @@ const RobotPage = (): JSX.Element => {
     setInputToken(token);
     genKey(token)
       .then((key) => {
-        garage.upsertRobot(token, sortedCoordinators[0], {
+        garage.createRobot(token, sortedCoordinators[0], {
           token,
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,

@@ -47,10 +47,16 @@ class Slot {
     return null;
   };
 
-  upsertRobot = (shortAlias: string, attributes: Record<any, any>): Robot | null => {
-    if (this.robots[shortAlias] === undefined)
+  createRobot = (shortAlias: string, attributes: Record<any, any>): Robot | null => {
+    if (this.robots[shortAlias] === undefined) {
       this.robots[shortAlias] = new Robot(attributes ?? {});
+      return this.robots[shortAlias];
+    }
 
+    return null;
+  };
+
+  updateRobot = (shortAlias: string, attributes: Record<any, any>): Robot | null => {
     this.robots[shortAlias].update(attributes);
 
     if (attributes.lastOrderId !== undefined && attributes.lastOrderId != null) {

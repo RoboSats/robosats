@@ -319,7 +319,7 @@ export class Coordinator {
         console.log(e);
       });
 
-    garage.upsertRobot(token, this.shortAlias, {
+    garage.updateRobot(token, this.shortAlias, {
       ...newAttributes,
       tokenSHA256: authHeaders.tokenSHA256,
       loading: false,
@@ -378,7 +378,7 @@ export class Coordinator {
       },
       { tokenSHA256: robot.tokenSHA256 },
     );
-    garage.upsertRobot(slot?.token, this.shortAlias, {
+    garage.updateRobot(slot?.token, this.shortAlias, {
       earnedRewards: data?.successful_withdrawal === true ? 0 : robot.earnedRewards,
     });
 
@@ -400,7 +400,7 @@ export class Coordinator {
       { tokenSHA256: robot.tokenSHA256 },
     );
 
-    garage.upsertRobot(slot?.token, this.shortAlias, {
+    garage.updateRobot(slot?.token, this.shortAlias, {
       stealthInvoices: wantsStealth,
     });
 

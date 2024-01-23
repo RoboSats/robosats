@@ -292,54 +292,60 @@ const BookTable = ({
     };
   }, []);
 
-  const typeObj = useCallback((width: number) => {
-    return {
-      field: 'type',
-      headerName: t('Is'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            {params.row.type === 1
-              ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
-              : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
-          </div>
-        );
-      },
-    };
-  }, [fav.mode]);
+  const typeObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'type',
+        headerName: t('Is'),
+        width: width * fontSize,
+        renderCell: (params: any) => {
+          return (
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              }}
+            >
+              {params.row.type === 1
+                ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
+                : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
+            </div>
+          );
+        },
+      };
+    },
+    [fav.mode],
+  );
 
-  const amountObj = useCallback((width: number) => {
-    return {
-      field: 'amount',
-      headerName: t('Amount'),
-      type: 'number',
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
-        const minAmount =
-          fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
-        const maxAmount =
-          fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
-              (fav.mode === 'swap' ? 'M Sats' : '')}
-          </div>
-        );
-      },
-    };
-  }, [fav.mode]);
+  const amountObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'amount',
+        headerName: t('Amount'),
+        type: 'number',
+        width: width * fontSize,
+        renderCell: (params: any) => {
+          const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
+          const minAmount =
+            fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
+          const maxAmount =
+            fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
+          return (
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              }}
+            >
+              {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
+                (fav.mode === 'swap' ? 'M Sats' : '')}
+            </div>
+          );
+        },
+      };
+    },
+    [fav.mode],
+  );
 
   const currencyObj = useCallback((width: number) => {
     return {
@@ -369,30 +375,33 @@ const BookTable = ({
     };
   }, []);
 
-  const paymentObj = useCallback((width: number) => {
-    return {
-      field: 'payment_method',
-      headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            <PaymentStringAsIcons
-              othersText={t('Others')}
-              verbose={true}
-              size={1.7 * fontSize}
-              text={params.row.payment_method}
-            />
-          </div>
-        );
-      },
-    };
-  }, [fav.mode]);
+  const paymentObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'payment_method',
+        headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
+        width: width * fontSize,
+        renderCell: (params: any) => {
+          return (
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              }}
+            >
+              <PaymentStringAsIcons
+                othersText={t('Others')}
+                verbose={true}
+                size={1.7 * fontSize}
+                text={params.row.payment_method}
+              />
+            </div>
+          );
+        },
+      };
+    },
+    [fav.mode],
+  );
 
   const paymentSmallObj = useCallback((width: number) => {
     return {
