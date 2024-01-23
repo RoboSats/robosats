@@ -30,7 +30,7 @@ masthead_title           : # overrides the website title displayed in the masthe
 # breadcrumbs            : false # true, false (default)
 words_per_minute         :
 robosats:
-  node_id                : 0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e
+  node_id                : 037ff12b6a4e4bcb4b944b6d20af08cdff61b3461c1dff0d00a88697414d891bc7
   maker_fee              : 0.025        # In percent (%)
   taker_fee              : 0.175        # In percent (%)
   total_fee              : 0.2          # In percent (%)
