@@ -154,7 +154,7 @@ export const initialAppContext: UseAppStoreType = {
   clientVersion: getClientVersion(),
   setAcknowledgedWarning: () => {},
   acknowledgedWarning: false,
-  fav: { type: null, currency: 0, mode: 'fiat' },
+  fav: { type: null, currency: 0, mode: 'fiat', coordinator: 'any' },
   setFav: () => {},
 };
 
