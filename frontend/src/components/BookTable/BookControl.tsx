@@ -20,6 +20,8 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import SwapCalls from '@mui/icons-material/SwapCalls';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import RobotAvatar from '../RobotAvatar';
 
 interface BookControlProps {
   width: number;
@@ -33,6 +35,7 @@ const BookControl = ({
   setPaymentMethods,
 }: BookControlProps): JSX.Element => {
   const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t, i18n } = useTranslation();
   const theme = useTheme();
@@ -50,6 +53,11 @@ const BookControl = ({
   const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
     const currency = Number(e.target.value);
     setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
+  };
+
+  const handleHostChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+    const coordinator = String(e.target.value);
+    setFav({ ...fav, coordinator });
   };
 
   const handleTypeChange = function (mouseEvent: React.MouseEvent, val: number): void {
@@ -306,6 +314,63 @@ const BookControl = ({
             </Select>
           </Grid>
         ) : null}
+
+        {width > large ? (
+          <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+            <Typography variant='caption' color='text.secondary'>
+              {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('hosted by')}
+            </Typography>
+          </Grid>
+        ) : null}
+        <Grid item>
+          <Select
+            autoWidth
+            sx={{
+              height: '2.3em',
+              border: '0.5px solid',
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: '4px',
+              borderColor: 'text.disabled',
+              '&:hover': {
+                borderColor: 'text.primary',
+              },
+            }}
+            size='small'
+            label={t('Select Host')}
+            required={true}
+            value={fav.coordinator}
+            inputProps={{
+              style: { textAlign: 'center' },
+            }}
+            onChange={handleHostChange}
+          >
+            <MenuItem value='any'>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <FlagWithProps code='ANY' />
+              </div>
+            </MenuItem>
+            {Object.values(federation.coordinators).map((coordinator) =>
+              coordinator.enabled ? (
+                <MenuItem
+                  key={coordinator.shortAlias}
+                  value={coordinator.shortAlias}
+                  color='text.secondary'
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <RobotAvatar
+                      shortAlias={coordinator.shortAlias}
+                      style={{ width: '1.428em', height: '1.428em' }}
+                      smooth={true}
+                      small={true}
+                    />
+                  </div>
+                </MenuItem>
+              ) : (
+                <></>
+              ),
+            )}
+          </Select>
+        </Grid>
       </Grid>
       <Divider />
     </Box>

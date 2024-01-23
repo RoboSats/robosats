@@ -27,6 +27,14 @@ const filterByPayment = function (order: PublicOrder, paymentMethods: any[]): bo
   }
 };
 
+const filterByHost = function (order: PublicOrder, shortAlias: string): boolean {
+  if (shortAlias === 'any') {
+    return true;
+  } else {
+    return order.coordinatorShortAlias === shortAlias;
+  }
+};
+
 const filterByAmount = function (order: PublicOrder, filter: AmountFilter): boolean {
   const filterMaxAmount =
     Number(filter.amount !== '' ? filter.amount : filter.maxAmount) * (1 + filter.threshold);
@@ -66,13 +74,16 @@ const filterOrders = function ({
     const paymentMethodChecks =
       paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
     const amountChecks = amountFilter != null ? filterByAmount(order, amountFilter) : true;
+    const hostChecks =
+      baseFilter.coordinator != 'any' ? filterByHost(order, baseFilter.coordinator) : true;
     return (
       typeChecks &&
       modeChecks &&
       premiumChecks &&
       currencyChecks &&
       paymentMethodChecks &&
-      amountChecks
+      amountChecks &&
+      hostChecks
     );
   });
   return filteredOrders;
