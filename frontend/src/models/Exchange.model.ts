@@ -28,12 +28,12 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
   const premiums: number[] = [];
   const volumes: number[] = [];
   let highestVersion: Version = { major: 0, minor: 0, patch: 0 };
+  let active_robots_today: number = 0;
 
   const aggregations = [
     'num_public_buy_orders',
     'num_public_sell_orders',
     'book_liquidity',
-    'active_robots_today',
     'last_day_volume',
     'lifetime_volume',
   ];
@@ -43,6 +43,7 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
       premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
       volumes[index] = coordinator.info.last_day_volume;
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
+      active_robots_today = Math.max(active_robots_today, coordinator.info['active_robots_today']);
 
       aggregations.forEach((key: any) => {
         info[key] = Number(info[key]) + Number(coordinator.info[key]);
@@ -53,6 +54,7 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
 
   info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
   info.version = highestVersion;
+  info.active_robots_today = active_robots_today;
 
   return info;
 };
