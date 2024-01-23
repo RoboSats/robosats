@@ -31,6 +31,7 @@ const MakerPage = (): JSX.Element => {
         currency: fav.currency === 0 ? 1 : fav.currency,
         type: fav.type,
         mode: fav.mode,
+        coordinator: 'any',
       },
       premium: Number(maker.premium) ?? null,
       paymentMethods: maker.paymentMethods,
