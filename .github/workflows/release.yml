@@ -32,15 +32,10 @@ jobs:
 
         if [ "$coordinatorV" = "$clientV" ] && [ "$coordinatorV" = "$tagV" ] && [ "$coordinatorV" = "$androidV" ]; then
             echo "Versions match!"
-            echo '::set-output name=semver::'$semver
+            echo "semver=$semver" >> $GITHUB_OUTPUT   #echo '::set-output name=semver::'$semver
         else
             echo "Versions do not match! You might have forgotten to update the version on a component."; exit $ERRCODE;
         fi
-
-
-  integration-tests:
-    uses: RoboSats/robosats/.github/workflows/integration-tests.yml@main
-    needs: check-versions
 
   frontend-build:
     uses: RoboSats/robosats/.github/workflows/frontend-build.yml@main
@@ -48,23 +43,27 @@ jobs:
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
+  integration-tests:
+    uses: RoboSats/robosats/.github/workflows/integration-tests.yml@main
+    needs: [frontend-build, check-versions]
+
   coordinator-image:
     uses: RoboSats/robosats/.github/workflows/coordinator-image.yml@main
-    needs: [frontend-build] # django-test,
+    needs: [frontend-build, integration-tests, check-versions]
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   selfhosted-client-image:
     uses: RoboSats/robosats/.github/workflows/selfhosted-client-image.yml@main
-    needs: frontend-build
+    needs: [frontend-build, check-versions]
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   web-client-image:
     uses: RoboSats/robosats/.github/workflows/web-client-image.yml@main
-    needs: frontend-build
+    needs: [frontend-build, check-versions]
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
@@ -76,7 +75,7 @@ jobs:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   release:
-    needs: [check-versions, coordinator-image, client-image, android-build]
+    needs: [check-versions, integration-tests, coordinator-image, selfhosted-client-image, web-client-image, android-build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

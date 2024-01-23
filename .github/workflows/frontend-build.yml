@@ -7,6 +7,7 @@ on:
       semver:
         required: true
         type: string
+        default: ''
   push:
     branches: [ "main" ]
     paths: [ "frontend" ]
@@ -85,6 +86,8 @@ jobs:
 
     # Invoke pre-release image build if this was not a tag push
     # Docker images tagged only with short commit hash
+    - name: Print semver
+      run: echo The semver is ${{ github.event.inputs.semver }}
     - name: 'Invoke Coodinator Image CI'
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v121
