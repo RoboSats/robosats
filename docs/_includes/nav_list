@@ -1,4 +1,12 @@
+{% assign url = page.url %}
 {% assign navigation = site.data.navigation[include.nav] %}
+{% if url contains "/es/" %}
+  {% assign navigation = site.data.navigation_es[include.nav] %}
+{% endif %}
+{% if url contains "/fr/" %}
+  {% assign navigation = site.data.navigation_fr[include.nav] %}
+{% endif %}
+
 
 <nav class="nav__list">
   {% if page.sidebar.title %}<h3 class="nav__title" style="padding-left: 0;">{{ page.sidebar.title }}</h3>{% endif %}
@@ -6,6 +14,7 @@
   <label for="ac-toc">{{ site.data.ui-text[site.locale].menu_label | default: "Toggle Menu" }}</label>
   <ul class="nav__items">
     {% for nav in navigation %}
+
       <li>
         {% if nav.url %}
           <a href="{{ nav.url | relative_url }}"><span class="nav__sub-title">{{ nav.title }}</span></a>

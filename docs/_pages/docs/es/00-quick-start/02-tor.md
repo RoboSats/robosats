@@ -14,7 +14,7 @@ Una alternativa a TOR es el [proyecto I2P](/docs/es/access/#-de-manera-privada-c
 
 ## Problemas con TOR
 
-Utilizar TOR tiene desventajas tales como velocidades de conexión a la red más bajas, [tiempo de inactividad] esporádico (https://status.torproject.org/) debido a DDoS, y privacidad imperfecta con respecto a las técnicas de huella digital de sitios web.
+Utilizar TOR tiene desventajas tales como velocidades de conexión a la red más bajas, [tiempo de inactividad](https://status.torproject.org/) esporádico debido a DDoS, y privacidad imperfecta con respecto a las técnicas de huella digital de sitios web.
 
 Tenlo en cuenta cuando utilices RoboSats. Es importante hacer una copia de seguridad del token secreto de tu robot en caso de que la red TOR experimente problemas de conexión.
 

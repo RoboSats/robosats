@@ -186,4 +186,4 @@ Les données chiffrées doivent être copiées, y compris l'en-tête `(-----BEGI
 Si vous souhaitez lire un tutoriel plus facile sur la façon d'utiliser OpenKeychain à des fins générales, consultez [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/).
 
 
-{% include improve %}
+{% include improve_fr %}

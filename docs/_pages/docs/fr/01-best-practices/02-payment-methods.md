@@ -95,4 +95,4 @@ Sélectionnez ensuite "Amis ou famille" dans la page de choix du type de paiemen
 <img src="/assets/images/fiat-payment-methods/PayPal-choose-phone.png" width="230"/>
 </div>
 
-{% include improve %}
+{% include improve_fr %}

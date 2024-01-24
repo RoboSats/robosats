@@ -20,4 +20,4 @@ L'utilisation de TOR présente des inconvénients tels que des vitesses de conne
 
 Gardez cela à l'esprit lorsque vous utilisez RoboSats. Il est important de sauvegarder le jeton secret de votre robot au cas où le réseau TOR connaîtrait des problèmes de connexion.
 
-{% include improve %}
+{% include improve_fr %}
