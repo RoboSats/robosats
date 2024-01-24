@@ -1,6 +1,6 @@
 {
   "name": "robosats",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -42,7 +42,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^29.5.0",
     "metro-react-native-babel-preset": "^0.75.1",
-    "prettier": "^3.2.1",
+    "prettier": "^3.2.4",
     "react-test-renderer": "18.2.0",
     "typescript": "^5.3.3"
   },
