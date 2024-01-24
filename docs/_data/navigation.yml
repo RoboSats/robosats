@@ -91,6 +91,8 @@ tutorial:
       url: "/watch/fr/"
     - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/polish.svg"/> Polski</span>'
       url: "/watch/pl/"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/russian.svg"/> Русский</span>'
+      url: "/watch/ru/"
   - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/readme.svg"/>Read</span>'
     url: "/watch/en/"
     children:
@@ -100,6 +102,8 @@ tutorial:
       url: "/read/es/"
     - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/german.svg"/> Deutsch</span>'
       url: "/read/de/"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/russian.svg"/> Русский</span>'
+      url: "/read/ru/"
 
 contribute:
   - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/handshake-angle.svg"/>Contribute</span>'
