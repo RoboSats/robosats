@@ -359,7 +359,7 @@ const BookControl = ({
                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                     <RobotAvatar
                       shortAlias={coordinator.shortAlias}
-                      style={{ width: '1.428em', height: '1.428em' }}
+                      style={{ width: '1.55em', height: '1.55em' }}
                       smooth={true}
                       small={true}
                     />

@@ -108,6 +108,7 @@ export class Federation {
 
   updateBook = async (): Promise<void> => {
     this.loading = true;
+    this.triggerHook('onCoordinatorUpdate');
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
       await coor.updateBook(() => {
