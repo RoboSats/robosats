@@ -316,61 +316,63 @@ const BookControl = ({
         ) : null}
 
         {width > large ? (
-          <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-            <Typography variant='caption' color='text.secondary'>
-              {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('hosted by')}
-            </Typography>
-          </Grid>
-        ) : null}
-        <Grid item>
-          <Select
-            autoWidth
-            sx={{
-              height: '2.3em',
-              border: '0.5px solid',
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: '4px',
-              borderColor: 'text.disabled',
-              '&:hover': {
-                borderColor: 'text.primary',
-              },
-            }}
-            size='small'
-            label={t('Select Host')}
-            required={true}
-            value={fav.coordinator}
-            inputProps={{
-              style: { textAlign: 'center' },
-            }}
-            onChange={handleHostChange}
-          >
-            <MenuItem value='any'>
-              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <FlagWithProps code='ANY' />
-              </div>
-            </MenuItem>
-            {Object.values(federation.coordinators).map((coordinator) =>
-              coordinator.enabled ? (
-                <MenuItem
-                  key={coordinator.shortAlias}
-                  value={coordinator.shortAlias}
-                  color='text.secondary'
-                >
+          <>
+            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+              <Typography variant='caption' color='text.secondary'>
+                {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('hosted by')}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Select
+                autoWidth
+                sx={{
+                  height: '2.3em',
+                  border: '0.5px solid',
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: '4px',
+                  borderColor: 'text.disabled',
+                  '&:hover': {
+                    borderColor: 'text.primary',
+                  },
+                }}
+                size='small'
+                label={t('Select Host')}
+                required={true}
+                value={fav.coordinator}
+                inputProps={{
+                  style: { textAlign: 'center' },
+                }}
+                onChange={handleHostChange}
+              >
+                <MenuItem value='any'>
                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <RobotAvatar
-                      shortAlias={coordinator.shortAlias}
-                      style={{ width: '1.55em', height: '1.55em' }}
-                      smooth={true}
-                      small={true}
-                    />
+                    <FlagWithProps code='ANY' />
                   </div>
                 </MenuItem>
-              ) : (
-                <></>
-              ),
-            )}
-          </Select>
-        </Grid>
+                {Object.values(federation.coordinators).map((coordinator) =>
+                  coordinator.enabled ? (
+                    <MenuItem
+                      key={coordinator.shortAlias}
+                      value={coordinator.shortAlias}
+                      color='text.secondary'
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <RobotAvatar
+                          shortAlias={coordinator.shortAlias}
+                          style={{ width: '1.55em', height: '1.55em' }}
+                          smooth={true}
+                          small={true}
+                        />
+                      </div>
+                    </MenuItem>
+                  ) : (
+                    <></>
+                  ),
+                )}
+              </Select>
+            </Grid>
+          </>
+        ) : null}
       </Grid>
       <Divider />
     </Box>
