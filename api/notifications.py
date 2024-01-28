@@ -185,3 +185,9 @@ class Telegram:
             self.send_message(user.robot.telegram_chat_id, text)
 
         return
+
+    def coordinator_cancelled(self, order):
+        if order.maker.robot.telegram_enabled:
+            text = f"🛠️ Your order with ID {order.id} has been cancelled by the coordinator {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} for the upcoming maintenance stop."
+            self.send_message(order.maker.robot.telegram_chat_id, text)
+        return
