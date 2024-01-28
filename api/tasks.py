@@ -304,4 +304,7 @@ def send_notification(order_id=None, chat_message_id=None, message=None):
     elif message == "new_chat_message":
         telegram.new_chat_message(order, chat_message)
 
+    elif message == "coordinator_cancelled":
+        telegram.coordinator_cancelled(order)
+
     return

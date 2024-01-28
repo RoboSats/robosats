@@ -15,13 +15,11 @@ We do, however, get approached by very enthusiastic bitcoiners who want to boost
 
 You can donate the following ways:
 
- - **Zap us on Nostr:**
- All Nostr zaps will go towards the social media team.
- Here is the nPub for RoboSats account :
-
- ```
-npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
- ```
+ - **Tip the [RoboSats DevFund Node](https://amboss.space/node/{{site.robosats.node_id}}) via KeySend:**
+  <div>
+    <lightning-widget name="DevFund Node" accent="#9c27b0" to="robodevfund@vlt.ge" image="https://pbs.twimg.com/profile_images/1524391291475406850/ULKOymid_400x400.jpg"/>
+    <script src="https://embed.twentyuno.net/js/app.js"></script>
+  </div>
 
  - **Directly tip the developer working on the features you like.** Check the [active PRs](https://github.com/RoboSats/robosats/pulls) and show your support to the developers with via Lightning tips. Simply write a message, for example "@developer_name, I would like to fund your development of this feature with 6000 Sats". The developer should reply with an LN invoice with a long expiration time.
 
@@ -47,14 +45,13 @@ npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
  {{site.robosats.leaddev_paynym_code}}
  ```
 
- - **Tip the [experimental RoboSats coordinator](https://amboss.space/node/{{site.robosats.node_id}}) via KeySend:**
-  <div>
-    <lightning-widget name="Experimental Coordinator" accent="#9c27b0" to="{{site.robosats.node_id}}" image="https://pbs.twimg.com/profile_images/1524391291475406850/ULKOymid_400x400.jpg"/>
-    <script src="https://embed.twentyuno.net/js/app.js"></script>
-  </div>
+ - **Zap us on Nostr:**
+ All Nostr zaps will go towards the social media team.
+ Here is the nPub for RoboSats account :
 
-
-
+ ```
+npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
+ ```
 
 
 
