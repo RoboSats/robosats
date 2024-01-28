@@ -391,13 +391,13 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                 <Grid container>
                   <Grid item xs={6}>
                     <ListItemText secondary={t('Maker fee')}>
-                      {(coordinator?.info?.maker_fee ?? 0 * 100).toFixed(3)}%
+                      {((coordinator?.info?.maker_fee ?? 0) * 100).toFixed(3)}%
                     </ListItemText>
                   </Grid>
 
                   <Grid item xs={6}>
                     <ListItemText secondary={t('Taker fee')}>
-                      {(coordinator?.info?.taker_fee ?? 0 * 100).toFixed(3)}%
+                      {((coordinator?.info?.taker_fee ?? 0) * 100).toFixed(3)}%
                     </ListItemText>
                   </Grid>
                 </Grid>
