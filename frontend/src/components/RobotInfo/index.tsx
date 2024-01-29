@@ -92,11 +92,13 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     if (robot != null && slot?.token != null && robot.encPrivKey != null) {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, slot?.token).then(
         (signedInvoice) => {
+          console.log('Signed message:', signedInvoice);
           void coordinator.fetchReward(signedInvoice, garage, slot?.token).then((data) => {
+            console.log(data);
             setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
             setWithdrawn(data.successful_withdrawal);
-            setOpenClaimRewards(!(data.successful_withdrawal !== undefined));
+            setOpenClaimRewards(!data.successful_withdrawal);
           });
         },
       );
@@ -307,6 +309,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 80 }}>
                     <Button
                       sx={{ maxHeight: 38 }}
+                      disabled={rewardInvoice === ''}
                       onClick={(e) => {
                         handleSubmitInvoiceClicked(e, rewardInvoice);
                       }}

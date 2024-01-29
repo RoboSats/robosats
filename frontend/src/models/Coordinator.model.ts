@@ -372,7 +372,7 @@ export class Coordinator {
 
     const data = await apiClient.post(
       this.url,
-      `${this.basePath}`,
+      `${this.basePath}/api/reward/`,
       {
         invoice: signedInvoice,
       },
