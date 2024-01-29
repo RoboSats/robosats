@@ -49,7 +49,7 @@
     "color": "#000",
     "contact": {
       "email": "cosmos178ftmm4edlahqzj376gwgqzd9re5x0x9h0tfsc@keplr.xyz",
-      "telegram": "@venividivici_fr",
+      "telegram": "venividivici_fr",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
       "matrix": "@venividivici13:matrix.org",
       "nostr": "npub1wsqpvgpfwq6a4fs5whqxn7gtd9gqsll2p5qnfdu4ltr43s6wwxgsgk4xtl",
@@ -92,7 +92,7 @@
     "color": "#329239",
     "contact": {
       "email": "info@satstralia.com",
-      "telegram": "@satstralia",
+      "telegram": "satstralia",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2Fq0pIyShcBl0EP8le0D0xy2OfSrP1mQWg%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAcwmsC9GQwQEt40UNpYp4vKPhU_UnWXsXcVl-OJ57lC4%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22vNcyZH9C3eE6MHzRNpR3xA%3D%3D%22%7D",
       "matrix": "#satstralia:matrix.org",
       "pgp": "/static/federation/pgp/D1894C9862A9D02D47D96C84AE30B6904210DA14.asc",
@@ -136,7 +136,7 @@
     "color": "#000D28",
     "contact": {
       "email": "gabbygator184@proton.me",
-      "telegram": "@gabbygator184",
+      "telegram": "gabbygator184",
       "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2FLsFHfMGI9rm3kUDz1jwXZf3uAYPUuhli%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJ8hrCl81w79Wx2qfae6cGR9rZpeHVoevAObBqNgzqGU%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion",
       "matrix": "@gabbygator184:matrix.org",
       "pgp": "/static/federation/pgp/EC4F94F629AA28242B54265F1ABE1CA3582A031A.asc",
