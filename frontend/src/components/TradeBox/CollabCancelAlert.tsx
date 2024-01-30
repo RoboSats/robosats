@@ -10,11 +10,11 @@ interface CollabCancelAlertProps {
 const CollabCancelAlert = ({ order }: CollabCancelAlertProps): JSX.Element => {
   const { t } = useTranslation();
   let text = '';
-  if (order?.pending_cancel === true) {
+  if (order?.pending_cancel === true && order?.status === 9) {
     text = t('{{nickname}} is asking for a collaborative cancel', {
       nickname: order?.is_maker ? order?.taker_nick : order?.maker_nick,
     });
-  } else if (order?.asked_for_cancel === true) {
+  } else if (order?.asked_for_cancel === true && order?.status === 9) {
     text = t('You asked for a collaborative cancellation');
   }
 
