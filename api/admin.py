@@ -133,7 +133,13 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         if not obj.logs:
             return format_html("<b>No logs were recorded</b>")
         with_hyperlinks = objects_to_hyperlinks(obj.logs)
-        return format_html(f'<table style="width: 100%">{with_hyperlinks}</table>')
+        try:
+            html_logs = format_html(
+                f'<table style="width: 100%">{with_hyperlinks}</table>'
+            )
+        except Exception as e:
+            html_logs = f"An error occurred while formatting the parsed logs as HTML. Exception {e}"
+        return html_logs
 
     actions = [
         "cancel_public_order",

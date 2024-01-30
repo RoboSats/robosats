@@ -488,11 +488,19 @@ def objects_to_hyperlinks(logs: str) -> str:
     Used to format pretty logs for the Order admin panel.
     """
     objects = ["LNPayment", "Robot", "Order", "OnchainPayment", "MarketTick"]
-    for obj in objects:
-        logs = re.sub(
-            rf"{obj}\(([0-9a-fA-F\-A-F]+),\s*([^)]+)\)",
-            lambda m: f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>',
-            logs,
-            flags=re.DOTALL,
-        )
+    try:
+        for obj in objects:
+            logs = re.sub(
+                rf"{obj}\(([0-9a-fA-F\-A-F]+),\s*([^)]+)\)",
+                lambda m: f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>',
+                logs,
+                flags=re.DOTALL,
+            )
+
+    except re.error as e:
+        print("Error occurred:", e.msg)
+        print("Pattern:", e.pattern)
+        print("Position:", e.pos)
+        logs = f"An error occurred while parsing the logs. Exception {e}"
+
     return logs
