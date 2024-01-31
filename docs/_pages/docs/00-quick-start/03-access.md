@@ -10,14 +10,22 @@ sidebar:
 src: "_pages/docs/00-quick-start/03-access.md"
 ---
 
-## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> Privately with TOR
+## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> RoboSats federated client with TOR
 
-A safe and very private way to access RoboSats is through the Onion address. You need [TOR browser](/docs/tor/) and access via the link:
+A safe and very private way to access RoboSats federated client is through the Onion address. You need [TOR browser](/docs/tor/) and access via the link:
+
+> [<b>robodex</b>arjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion](http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion/)
+>
+> You can also open the shortcut [dex.robosats.com](https://dex.robosats.com) in Tor Browser and get instantly redirected to the Onion site.
+>
+> **Private:** Your connection is encrypted end-to-end and relaid by several layers of nodes, thus making tracking harder.
+{: .notice--primary}
+> 
+## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> RoboSats Experimental coordinator with TOR
+
+You can access the Experimental coordinator through this Onion address. You need [TOR browser](/docs/tor/) and access via the link:
 
 > [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
-
-**Private:** Your connection is encrypted end-to-end and relaid by several layers of nodes, thus making tracking harder.
-{: .notice--primary}
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> Privately with TOR-enabled Android App
 
