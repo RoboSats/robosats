@@ -31,7 +31,7 @@ jobs:
         run: echo "current_date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Submit pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "Update LNProxy relay list on ${{ env.current_date }}"
           committer: GitHub Action <action@github.com>
