@@ -69,7 +69,7 @@
     "i18next-browser-languagedetector": "^7.2.0",
     "i18next-http-backend": "^2.4.2",
     "install": "^0.13.0",
-    "js-sha256": "^0.10.1",
+    "js-sha256": "^0.11.0",
     "leaflet": "^1.9.4",
     "light-bolt11-decoder": "^3.0.0",
     "npm": "^10.4.0",
