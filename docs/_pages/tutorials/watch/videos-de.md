@@ -10,6 +10,9 @@ sidebar:
 src: "_pages/docs/tutorials/videos-de.md"
 ---
 
+#### OrangedMike: ROBOSATS - Bitcoin Kauf, Verkauf und Swap
+<iframe width="560" height="315" src="https://www.youtube.com/embed/f5LZzvEp_Zw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 #### Einundzwanzig: Bitcoin unabhängig und ohne Registrierung kaufen
 <iframe width="560" height="315" src="https://www.youtube.com/embed/kmd46irWXvw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 

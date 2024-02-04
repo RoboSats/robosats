@@ -11,6 +11,7 @@ from rest_framework.authtoken.models import TokenProxy
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
 from api.utils import objects_to_hyperlinks
+from api.tasks import send_notification
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -132,15 +133,53 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         if not obj.logs:
             return format_html("<b>No logs were recorded</b>")
         with_hyperlinks = objects_to_hyperlinks(obj.logs)
-        return format_html(f'<table style="width: 100%">{with_hyperlinks}</table>')
+        try:
+            html_logs = format_html(
+                f'<table style="width: 100%">{with_hyperlinks}</table>'
+            )
+        except Exception as e:
+            html_logs = f"An error occurred while formatting the parsed logs as HTML. Exception {e}"
+        return html_logs
 
     actions = [
+        "cancel_public_order",
         "maker_wins",
         "taker_wins",
         "return_everything",
         "successful_trade",
         "compute_median_trade_time",
     ]
+
+    @admin.action(description="Close public order")
+    def cancel_public_order(self, request, queryset):
+        """
+        Closes an existing Public/Paused order.
+        """
+        for order in queryset:
+            if order.status in [Order.Status.PUB, Order.Status.PAU]:
+                if Logics.return_bond(order.maker_bond):
+                    order.update_status(Order.Status.UCA)
+                    self.message_user(
+                        request,
+                        f"Order {order.id} successfully closed",
+                        messages.SUCCESS,
+                    )
+                    send_notification.delay(
+                        order_id=order.id, message="coordinator_cancelled"
+                    )
+                else:
+                    self.message_user(
+                        request,
+                        f"Could not unlock bond of {order.id}",
+                        messages.ERROR,
+                    )
+
+            else:
+                self.message_user(
+                    request,
+                    f"Order {order.id} is not public or paused",
+                    messages.ERROR,
+                )
 
     @admin.action(description="Solve dispute: maker wins")
     def maker_wins(self, request, queryset):
