@@ -6,7 +6,7 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/rocket.svg"/>Inicio rápido'
   nav: docs
 ---
-RoboSats es una manera fácil de intercambiar Bitcoin de forma privada por monedas nacionales. Simplifica la experiencia entre pares y utiliza hodl invoices para minimizar los requisitos de custodia y confianza.
+RoboSats es una manera fácil de intercambiar Bitcoin de forma privada por monedas nacionales. Simplifica la experiencia entre pares y utiliza facturas retenidas para minimizar los requisitos de custodia y confianza.
 
 **¡Vamos a ello!** Para empezar a usar RoboSats solo necesitas una [<i class='fa-solid fa-wallet'></i>  wallet Lightning](/docs/es/wallets/) y [un navegador con TOR](/docs/es/tor/).
 {: .notice--primary}

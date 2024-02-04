@@ -12,4 +12,4 @@ src: "_pages/docs/es/02-features/03-fast.md"
 
 <!-- TODO: Explain bonds, escrow, dispute resolution and community support. Be clear that this is an early development and experimental project, use with utmost caution. -->
 
-{% include wip %}
+{% include wip_es %}

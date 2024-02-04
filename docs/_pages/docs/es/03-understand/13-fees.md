@@ -17,7 +17,7 @@ Las comisiones de la plataforma se resumen en la siguiente tabla para enfatizar 
 | Comprador  | {{site.robosats.maker_fee}}% | {{site.robosats.taker_fee}}% |
 | Vendedor | {{site.robosats.maker_fee}}% | {{site.robosats.taker_fee}}% |
 
-*Nota: Se puede incurrir en tasas externas, como las tasas de enrutamiento de Lightning Network y las tasas de transacción en la cadena.
+*Nota: Se puede incurrir en tarifas externas, como las tarifas de enrutamiento de Lightning Network y las tarifas de transacción en la cadena.
 
 ## **Costes de plataforma en la práctica**
 
@@ -30,8 +30,8 @@ Si el precio de la orden es *relativo*, entonces la cantidad de Sats que se nego
 Hasta que se bloquea el bono del tomador, el precio de la orden continúa moviéndose con el mercado a lo largo del tiempo. Una vez que el bono taker está bloqueado para una orden con precio relativo, la cantidad de Sats que se negocia se calcula de la siguiente manera:
 
 ````
-tasa_prima = tasa_CEX * (1 + (prima / 100))
-trade_sats = cantidad / tasa_prima
+tarifa_prima = tarifa_CEX * (1 + (prima / 100))
+trade_sats = cantidad / tarifa_prima
 ````
 
 donde `trade_sats` son los Sats que se van a negociar, `premium` es lo que el creador de la orden definió durante la creación de la orden, y `CEX_rate` es el precio actual de cambio de bitcoin dada la moneda que se está utilizando.
@@ -68,7 +68,7 @@ En esencia, RoboSats añade a la `escrow_amount`, deduce de la `payout_amount`, 
 
 Las cuotas sirven para mejorar la experiencia del usuario final de la plataforma a través del desarrollo continuo, ofreciendo soporte multilingüe y elaborando guías para interactuar con la plataforma.
 
-A su vez, las tarifas recompensan a los desarrolladores y colaboradores voluntarios de GitHub por completar tareas que son [elegibles para ganar bitcoin](https://github.com/users/Reckless-Satoshi/projects/2). ¡Compruébalo! Si ganas Sats por tus contribuciones, las tasas en las que incurras al utilizar RoboSats estarán suficientemente cubiertas.
+A su vez, las tarifas recompensan a los desarrolladores y colaboradores voluntarios de GitHub por completar tareas que son [elegibles para ganar bitcoin](https://github.com/users/Reckless-Satoshi/projects/2). ¡Compruébalo! Si ganas Sats por tus contribuciones, las tarifas en las que incurras al utilizar RoboSats estarán suficientemente cubiertas.
 
 Implementar tarifas también ayuda a mitigar la oportunidad de ataques de denegación de servicio por parte de bots maliciosos que congestionan el coordinador RoboSats.
 
@@ -76,18 +76,18 @@ Implementar tarifas también ayuda a mitigar la oportunidad de ataques de denega
 
 Se puede incurrir en comisiones externas de la plataforma cuando se realizan pagos en la cadena (swaps en la cadena) y cuando se enrutan pagos a través de la Red Lightning.
 
-Al elegir recibir bitcoin en la cadena, se muestra un resumen de la tasa de minería (`fee_mining`) y la tasa de intercambio (`fee_swap`). El `payout_amount` para recibir on-chain se calcula de la siguiente manera:
+Al elegir recibir bitcoin en la cadena, se muestra un resumen de la tarifa de minería (`fee_mining`) y la tarifa de intercambio (`fee_swap`). El `payout_amount` para recibir on-chain se calcula de la siguiente manera:
 
 ````
 payout_amount = trade_sats - fee_sats - fee_mining - fee_swap
 ````
 
-La tasa de intercambio es una tasa adicional que RoboSats cobra por hacer el pago en la cadena y la tasa de minería es la tasa de la tasa en la cadena en sats/vbyte que se puede personalizar para adaptarse a sus necesidades. Consulte [Entender > Pagos en cadena](/docs/es/on-chain-payouts/) para obtener información adicional sobre los pagos en cadena.
+La tarifa de intercambio es una tarifa adicional que RoboSats cobra por hacer el pago on-chain y la tarifa de minería es la tarifa de la tarifa en la cadena en sats/vbyte que se puede personalizar para adaptarse a sus necesidades. Consulte [Entender > Pagos on-chain](/docs/es/on-chain-payouts/) para obtener información adicional sobre los pagos on-chain.
 
 RoboSats aprovecha la velocidad y la seguridad de la Red Lightning, por lo tanto los pagos enviados a través de la Red Lightning pueden incurrir en gastos dependiendo de la "ruta" necesaria que el pago debe tomar.
 
-Los usuarios pueden recibir pagos de forma privada a través de [lnproxy](https://lnproxy.org/), una sencilla herramienta de privacidad de la Red Lightning, pero su presupuesto de enrutamiento puede aumentar para cubrir las tarifas adicionales en las que incurre el servidor lnproxy. Consulte [Best Practices > Proxy Wallets](/docs/es/proxy-wallets/) para obtener más información sobre la recepción privada.
+Los usuarios pueden recibir pagos de forma privada a través de [lnproxy](https://lnproxy.org/), una sencilla herramienta de privacidad de la Red Lightning, pero su presupuesto de enrutamiento puede aumentar para cubrir las tarifas adicionales en las que incurre el servidor lnproxy. Consulte [Mejores Practicas > Proxy Wallets](/docs/es/proxy-wallets/) para obtener más información sobre la recepción privada.
 
-El usuario tiene la opción de especificar el presupuesto de enrutamiento de Lightning Network, que puede ayudar a reducir los fallos de enrutamiento. Consulta [Quick Start > Lightning Network](/docs/es/lightning/) para obtener más información sobre los fallos de enrutamiento.
+El usuario tiene la opción de especificar el presupuesto de enrutamiento de Lightning Network, que puede ayudar a reducir los fallos de enrutamiento. Consulta [Acceso Rápido > Lightning Network](/docs/es/lightning/) para obtener más información sobre los fallos de enrutamiento.
 
-{% include improve %}
+{% include improve_es %}

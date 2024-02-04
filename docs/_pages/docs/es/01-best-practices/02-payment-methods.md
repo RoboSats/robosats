@@ -20,9 +20,9 @@ Nota: Esta guía es una modificación de las reglas de intercambio de   <a href=
 
 ### Para ambos comprador y vendedor de bitcoin
 
-  1. Asegúrate de revisar la seccion <a href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md">Cómo usar </a>antes de empezar a intercambiar.<br>
+  1. Asegúrate de revisar la seccion <a href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/_pages/tutorials/read/how-to-use_es.md">Cómo usar </a>antes de empezar a intercambiar.<br>
   2. Indica el acuerdo claramente para evitar malentendidos.<br>
-  3. El método de pago fiat debería poder enviar y recibir instantáneamente porque la hodl invoice tiene un tiempo de expiración de 24 horas.<br>
+  3. El método de pago fiat debería poder enviar y recibir instantáneamente porque la factura retenida tiene un tiempo de expiración de 24 horas.<br>
 Si el temporizador llega al vencimiento, podría desencadenar una disputa y podría conducir a una pérdida de la fianza.<br>
   4. Después de que el tomador haya tomado la orden, ambas partes deben estar listas para pasar al siguiente paso antes de que expire el tiempo.<br>
   5. Ten en cuenta que nadie puede leer el chat entre tu y tu contraparte.
@@ -96,4 +96,4 @@ A continuación, selecciona "Enviar a un amigo" en la página de selección del 
 <img src="/assets/images/fiat-payment-methods/PayPal-choose-phone.png" width="230"/>
 </div>
 
-{% include improve %}
+{% include improve_es %}

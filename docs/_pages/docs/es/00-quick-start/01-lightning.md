@@ -16,11 +16,11 @@ RoboSats es experimental y, como tal, actualmente es respaldado por un [nodo coo
 
 ## **Usando de la Red Lightning**
 
-Un requisito previo para usar LN es una billetera. Se recomienda encarecidamente utilizar una billetera no custodial y de código abierto donde solo tú tengas las claves. Las billeteras custodiales y cerradas pueden recopilar información sobre tus transacciones, información de la cuenta y posiblemente otros metadatos. Además, recuerda que cualquier fondo mantenido en LN no se considera almacenamiento en frío, sino que está en una billetera "caliente" conectada a Internet. Para usar RoboSats, se recomienda utilizar una billetera que sea compatible con [facturas de retención de Lightning](/docs/es/escrow/#what-is-a-hold-invoice), consulta [Entender > Billeteras](/docs/es/wallets/) para obtener una lista no exhaustiva de la compatibilidad de las billeteras LN.
+Un requisito previo para usar LN es una wallet. Se recomienda encarecidamente utilizar una wallet no custodial y de código abierto donde solo tú tengas las claves. las wallet custodiales y cerradas pueden recopilar información sobre tus transacciones, información de la cuenta y posiblemente otros metadatos. Además, recuerda que cualquier fondo mantenido en LN no se considera almacenamiento en frío, sino que está en una wallet "caliente" conectada a Internet. Para usar RoboSats, se recomienda utilizar una wallet que sea compatible con [facturas de retención de Lightning](/docs/es/escrow/#qué-es-una-factura-de-retención), consulta [Entender > Wallets](/docs/es/wallets/) para obtener una lista no exhaustiva de la compatibilidad de las wallet LN.
 
 Al utilizar Lightning, los pagos se realizan mediante facturas. El receptor de Sats proporciona una factura al remitente de Sats, a menudo en forma de un código QR, solicitando al remitente que pague la cantidad específica de Sats solicitada por la factura. La factura comienza con el prefijo "lnbc" y se puede decodificar para inspeccionar su contenido, como la cantidad de Sats enviados, el ID del nodo al que se enviaron los Sats, cualquier descripción proporcionada, etc.
 
-La Red Lightning, tal y como está, no es completamente privada. Los usuarios deben tener cuidado de no revelar información sensible al enviar y recibir pagos en LN. No confíes en una billetera codigo cerrado y custodial para respetar tu información; puedes obtener un mayor grado de privacidad si usas una billetera no custodial. Además, consulta [Mejores Prácticas > Billeteras Proxy](/docs/es/proxy-wallets/) para obtener más información sobre preocupaciones de privacidad al recibir Sats a través de LN.
+La Red Lightning, tal y como está, no es completamente privada. Los usuarios deben tener cuidado de no revelar información sensible al enviar y recibir pagos en LN. No confíes en una wallet codigo cerrado y custodial para respetar tu información; puedes obtener un mayor grado de privacidad si usas una wallet no custodial. Además, consulta [Mejores Prácticas > Wallets Proxy](/docs/es/proxy-wallets/) para obtener más información sobre preocupaciones de privacidad al recibir Sats a través de LN.
 
 ## **"Travesuras" en la Red Lightning**
 
@@ -31,4 +31,4 @@ Al comprar bitcoin (recibir Sats en LN), la factura que proporcionas puede falla
 En caso de tal escenario, realiza una copia de seguridad segura del token privado de tu robot y verifica periódicamente el pago de tu pedido. Si el problema persiste, no dudes en comunicarte con el [grupo de soporte de SimpleX](/contribute/code/#communication-channels) para que el personal de RoboSats pueda investigar.
 
 
-{% include wip %}
+{% include wip_es %}
