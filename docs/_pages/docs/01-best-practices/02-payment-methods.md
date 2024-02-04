@@ -62,6 +62,16 @@ In Canada, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq-
 
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
 
+### Revolut via payment links
+
+In a Revolut payment, a `@revtag` is usually exchanged in the chat and can be verified in the payment history of the app making proof of payments easy.
+
+However, payment links, which have the format https://revolut.me/p/XXXXX, don't contain recipient address information.
+
+In a dispute, there's no recipient address reference and both buyer and seller could cheat. The payment link could be redeemed by an unknown third party complicit with either buyer or seller.
+
+Therefore, insist on receiving the `@revtag` when making a payment with Revolut to avoid these risks. The  `@revtag` can also be received as a link. This link would look like this: https://revolut.me/@revtag. 
+
 ### Paypal
 Paypal is one of the widely used fiat payment methods. However, with <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">PayPal buyer protection policy</a>, buyer can do fraudulent action by creating a refund request in PayPal after the trading process in RoboSats is finished and therefore taking both fiat and bitcoin all by themselves.
 
