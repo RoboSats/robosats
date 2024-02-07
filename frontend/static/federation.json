@@ -5,6 +5,8 @@
     "description": "RoboSats node for development and experimentation. This is the original RoboSats coordinator operated by the RoboSats devs since 2022.",
     "motto": "Original Robohost. P2P FTW!",
     "color": "#1976d2",
+    "established": "2022-03-01",
+    "size_limit": 0,
     "contact": {
       "email": "robosats@protonmail.com",
       "telegram": "robosats",
@@ -47,6 +49,8 @@
     "description": "I am passionate about joining Robosats as a coordinator because I believe that peer-to-peer, non-KYC Bitcoin transactions are vital for the community's empowerment and autonomy. I aim to champion users' privacy, and provide a seamless experience for genuine Bitcoin enthusiasts.",
     "motto": "Privacy and Integrity: Temple of Sats, where Bitcoin's essence thrives.",
     "color": "#000",
+    "established": "2023-12-02",
+    "size_limit": 0,
     "contact": {
       "email": "cosmos178ftmm4edlahqzj376gwgqzd9re5x0x9h0tfsc@keplr.xyz",
       "telegram": "venividivici_fr",
@@ -61,7 +65,7 @@
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
       "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -90,6 +94,8 @@
     "description": "I'm happy to be part of Robosats in so many ways!",
     "motto": "btc = ɔʇq",
     "color": "#329239",
+    "established": "2023-12-02",
+    "size_limit": 0,
     "contact": {
       "email": "info@satstralia.com",
       "telegram": "satstralia",
@@ -105,7 +111,7 @@
       "donatesToDevFund": 33,
       "hasGoodOpSec": true,
       "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -134,6 +140,8 @@
     "description": "Becoming a RoboSats coordinator represents boosting intrinsic values of decentralization and economic freedom. RoboSats solves the problem of KYC and loss of privacy that big Exchanges are forced to comply with. I believe that decentralizing the lightning nodes will enhance the robustness of the tool, allowing more users to join. I am excited to be part of this new phase of growth.",
     "motto": "TheBigLake: The Lake of Economic Freedom.",
     "color": "#000D28",
+    "established": "2023-12-30",
+    "size_limit": 0,
     "contact": {
       "email": "gabbygator184@proton.me",
       "telegram": "gabbygator184",
@@ -148,7 +156,7 @@
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
       "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",

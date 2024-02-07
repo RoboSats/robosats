@@ -81,6 +81,8 @@ export class Coordinator {
     this.description = value.description;
     this.motto = value.motto;
     this.color = value.color;
+    this.size_limit = value.size_limit;
+    this.established = value.established;
     this.policies = value.policies;
     this.contact = value.contact;
     this.badges = value.badges;
@@ -99,6 +101,8 @@ export class Coordinator {
   public description: string;
   public motto: string;
   public color: string;
+  public size_limit: number;
+  public established: string;
   public policies: Record<string, string> = {};
   public contact: Contact | undefined;
   public badges: Badges;
