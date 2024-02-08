@@ -126,6 +126,11 @@ const MakerForm = ({
     let minAmountLimit: number = limitList[index].min_amount * (1 + premium / 100);
     let maxAmountLimit: number = limitList[index].max_amount * (1 + premium / 100);
 
+    const coordinatorSizeLimit =
+      (federation.getCoordinator(maker.coordinator).size_limit / 100000000) *
+      limitList[index].price;
+    maxAmountLimit = Math.min(coordinatorSizeLimit, maxAmountLimit);
+
     // apply thresholds to ensure good request
     minAmountLimit = minAmountLimit * amountSafeThresholds[0];
     maxAmountLimit = maxAmountLimit * amountSafeThresholds[1];
@@ -134,7 +139,11 @@ const MakerForm = ({
 
   const updateSatoshisLimits = function (limitList: LimitList): void {
     const minAmount: number = limitList[1000].min_amount * 100000000;
-    const maxAmount: number = limitList[1000].max_amount * 100000000;
+    let maxAmount: number = limitList[1000].max_amount * 100000000;
+    maxAmount = Math.min(
+      federation.getCoordinator(maker.coordinator).size_limit / 100000000,
+      maxAmount,
+    );
     setSatoshisLimits([minAmount, maxAmount]);
   };
 

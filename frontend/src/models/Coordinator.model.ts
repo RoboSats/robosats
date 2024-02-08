@@ -74,15 +74,34 @@ export interface Origins {
   i2p: Origin | undefined;
 }
 
+function calculateSizeLimit(inputDate: Date): number {
+  const now = new Date();
+  const numDifficultyAdjustments = Math.ceil(
+    (now.getTime() - inputDate.getTime()) / (1000 * 60 * 60 * 24 * 14),
+  );
+
+  let value = 250000;
+  for (let i = 1; i < numDifficultyAdjustments; i++) {
+    value *= 1.3;
+    if (i >= 12) {
+      // after 12 difficulty adjustments (6 weeks) limit becomes 21 BTC (mature coordinator)
+      return 21 * 100000000;
+    }
+  }
+
+  return value;
+}
+
 export class Coordinator {
   constructor(value: any) {
+    const established = new Date(value.established);
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
     this.description = value.description;
     this.motto = value.motto;
     this.color = value.color;
-    this.size_limit = value.size_limit;
-    this.established = value.established;
+    this.size_limit = value.badges.isFounder ? 21 * 100000000 : calculateSizeLimit(established);
+    this.established = established;
     this.policies = value.policies;
     this.contact = value.contact;
     this.badges = value.badges;
@@ -102,7 +121,7 @@ export class Coordinator {
   public motto: string;
   public color: string;
   public size_limit: number;
-  public established: string;
+  public established: Date;
   public policies: Record<string, string> = {};
   public contact: Contact | undefined;
   public badges: Badges;
