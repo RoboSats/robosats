@@ -1,6 +1,6 @@
 {
   "exp": {
-    "longAlias": "Experimental",
+    "longAlias": "BitcoinVeneto",
     "shortAlias": "exp",
     "description": "RoboSats node for development and experimentation. This is the original RoboSats coordinator operated by the RoboSats devs since 2022.",
     "motto": "Original Robohost. P2P FTW!",
