@@ -58,6 +58,10 @@ export interface Info {
   maker_fee: number;
   taker_fee: number;
   bond_size: number;
+  min_order_size: number;
+  max_order_size: number;
+  swap_enabled: boolean;
+  max_swap: number;
   current_swap_fee_rate: number;
   network: 'mainnet' | 'testnet' | undefined;
   openUpdateClient: boolean;

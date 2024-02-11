@@ -45,6 +45,7 @@ import {
   Tag,
   Web,
   VolunteerActivism,
+  Circle,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -244,9 +245,10 @@ const ContactButtons = ({
 
 interface BadgesProps {
   badges: Badges | undefined;
+  size_limit: number | undefined;
 }
 
-const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
+const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
   const { t } = useTranslation();
   const sxProps = {
     width: '3em',
@@ -327,13 +329,13 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
         {...tooltipProps}
         title={
           <Typography align='center' variant='body2'>
-            {badges?.hasLargeLimits === true
+            {size_limit > 3000000
               ? t('Large limits: the coordinator has large trade limits.')
               : t('Does not have large trade limits.')}
           </Typography>
         }
       >
-        <Grid item sx={{ filter: badges?.hasLargeLimits === true ? undefined : 'grayscale(100%)' }}>
+        <Grid item sx={{ filter: size_limit > 3000000 ? undefined : 'grayscale(100%)' }}>
           <BadgeLimits sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -428,7 +430,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
               </ListItem>
             )}
           <ListItem>
-            <BadgesHall badges={coordinator?.badges} />
+            <BadgesHall badges={coordinator?.badges} size_limit={coordinator?.size_limit} />
           </ListItem>
 
           <ListItem>
@@ -507,6 +509,19 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
               </AccordionSummary>
               <AccordionDetails sx={{ padding: 0 }}>
                 <List dense>
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <Circle />
+                    </ListItemIcon>
+
+                    <ListItemText
+                      primary={`${pn(
+                        Math.min(coordinator?.size_limit, coordinator?.info?.max_order_size),
+                      )} Sats`}
+                      secondary={t('Maximum order size')}
+                    />
+                  </ListItem>
+
                   <Divider />
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
@@ -530,16 +545,47 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
 
                   <Divider />
 
-                  <ListItem {...listItemProps}>
-                    <ListItemIcon>
-                      <LinkIcon />
-                    </ListItemIcon>
+                  {coordinator?.info?.swap_enabled === false ? (
+                    <ListItem {...listItemProps}>
+                      <ListItemIcon>
+                        <LinkIcon />
+                      </ListItemIcon>
 
-                    <ListItemText
-                      primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
-                      secondary={t('Current onchain payout fee')}
-                    />
-                  </ListItem>
+                      <ListItemText
+                        primary={t('Onchain payouts disabled')}
+                        primaryTypographyProps={{ color: 'red' }}
+                        secondary={t('Current onchain payout status')}
+                      />
+                    </ListItem>
+                  ) : (
+                    <>
+                      <ListItem {...listItemProps}>
+                        <ListItemIcon>
+                          <LinkIcon />
+                        </ListItemIcon>
+
+                        <ListItemText
+                          primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
+                          secondary={t('Current onchain payout fee')}
+                        />
+                      </ListItem>
+
+                      <ListItem {...listItemProps}>
+                        <ListItemIcon />
+
+                        <ListItemText
+                          primary={`${pn(
+                            Math.min(
+                              coordinator?.size_limit,
+                              coordinator?.info?.max_order_size,
+                              coordinator?.info?.max_swap,
+                            ),
+                          )} Sats`}
+                          secondary={t('Maximum onchain swap size')}
+                        />
+                      </ListItem>
+                    </>
+                  )}
 
                   <Divider />
 

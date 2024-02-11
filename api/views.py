@@ -799,7 +799,7 @@ class InfoView(viewsets.ViewSet):
         context["min_order_size"] = config("MIN_ORDER_SIZE", cast=int, default=20000)
         context["max_order_size"] = config("MAX_ORDER_SIZE", cast=int, default=250000)
         context["swap_enabled"] = not config("DISABLE_ONCHAIN", cast=bool, default=True)
-        context["max_swap"] = config("MAX_SWAP_ALLOWED", cast=int, default=0)
+        context["max_swap"] = config("MAX_SWAP_AMOUNT", cast=int, default=0)
 
         try:
             context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(
