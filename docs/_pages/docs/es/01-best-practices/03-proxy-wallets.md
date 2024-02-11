@@ -50,4 +50,4 @@ factura original.
 Para aprender cualquier información sobre usted de una factura envuelta,
 un atacante tendría que confabularse con el servidor lnproxy que usaste.
 
-{% include wip %}
+{% include wip_es %}

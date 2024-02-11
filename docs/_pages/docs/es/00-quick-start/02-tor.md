@@ -18,4 +18,4 @@ Utilizar TOR tiene desventajas tales como velocidades de conexión a la red más
 
 Tenlo en cuenta cuando utilices RoboSats. Es importante hacer una copia de seguridad del token secreto de tu robot en caso de que la red TOR experimente problemas de conexión.
 
-{% include wip %}
+{% include wip_es %}

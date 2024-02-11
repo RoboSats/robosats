@@ -22,4 +22,4 @@ Cuantos más Sats intentes enviar a través de LN, más difícil será encontrar
 
 Para reducir los quebraderos de cabeza y agilizar la experiencia, se ha establecido un límite sensible a la realidad de la capacidad media de los canales de la Lightning Network. Por ejemplo, intentar recibir 10 millones de saturaciones puede no resultar rentable si la capacidad media de los canales de la red es [muy inferior a 10 millones de saturaciones](https://1ml.com/statistics).
 
-{% include improve %}
+{% include improve_es %}

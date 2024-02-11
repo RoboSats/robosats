@@ -16,23 +16,23 @@ El tiempo asignado para presentar (bloquear) un deposito de fianza es determinad
 
 Si el vendedor no bloquea el deposito de fianza dentro del límite de tiempo dado en el pedido, entonces el vendedor pierde su fianza de fidelidad. Consulta [Entender > Fianzas](/docs/es/bonds/) para obtener información adicional sobre las fianzas de fidelidad. Además, si se abre una disputa, los satoshis en la fianza se liberan al ganador de la disputa.
 
-Asegúrate de utilizar una billetera Lightning que funcione bien con RoboSats, consulta [Entender > Billeteras](/docs/es/wallets/) para obtener información adicional.
+Asegúrate de utilizar una wallet Lightning que funcione bien con RoboSats, consulta [Entender > Wallets](/docs/es/wallets/) para obtener información adicional.
 
 *Nota: El término "vendedor" se refiere a la venta de bitcoin, mientras que "comprador" se refiere a la compra de bitcoin.*
 
 ## **Qué es una Factura de Retención**
 
-Las facturas de retención de Lightning, también conocidas como facturas "hodl", son un tipo de factura que "bloquea" fondos en tu billetera y luego "desbloquea" esos fondos según el estado de la factura, según lo determine el receptor. En algunas billeteras, la interfaz de usuario describe este tipo de pago como un pago "en tránsito" o "congelado".
+Las facturas de retención de Lightning, también conocidas como facturas retenidas, son un tipo de factura que "bloquea" fondos en tu billetera y luego "desbloquea" esos fondos según el estado de la factura, según lo determine el receptor. En algunas wallets, la interfaz de usuario describe este tipo de pago como un pago "en tránsito" o "congelado".
 
 A diferencia de los pagos típicos de Lightning que se bloquean y liquidan inmediatamente cuando llega el pago, una factura de retención solo bloquea el pago pero aún no lo liquida. A partir de este momento, el remitente no puede revocar su pago y, por lo tanto, los fondos están bloqueados en tu billetera pero aún no han salido de ella. El receptor elige si liquida (completa) o desbloquea (cancela) el HTLC y la factura.
 
 En la práctica, la factura de retención de fianza está bloqueada hacia el nodo coordinador experimental de RoboSats. Esto significa que la factura se cobra exactamente cuando el vendedor hace clic en "Confirmar Fiat Recibido" y luego se paga la factura al comprador. Durante el tiempo que lleva liquidar el pago de Lightning al comprador, RoboSats tiene los fondos mientras intenta realizar repetidamente el pago al comprador.
 
-Este método es, en este momento, el enfoque más seguro para asegurar que los compañeros cumplan con su parte del trato, ya que aún no se ha demostrado prácticamente una factura de retención directa entre el vendedor y el comprador con billeteras convencionales.
+Este método es, en este momento, el enfoque más seguro para asegurar que los compañeros cumplan con su parte del trato, ya que aún no se ha demostrado prácticamente una factura de retención directa entre el vendedor y el comprador con wallets convencionales.
 
 ## **Cómo Presentar un deposito de fianza**
 
-Primero, consulta [Entender > Billeteras](/docs/es/wallets/) para conocer las billeteras Lightning compatibles que facilitarán el uso de RoboSats. Dependiendo de la billetera, los fondos bloqueados pueden mostrarse como un pago en tránsito, congelado o incluso como si fallara. ¡Revisa la lista de compatibilidad de la billetera!
+Primero, consulta [Entender > Wallets](/docs/es/wallets/) para conocer las wallet Lightning compatibles que facilitarán el uso de RoboSats. Dependiendo de la wallet, los fondos bloqueados pueden mostrarse como un pago en tránsito, congelado o incluso como si fallara. ¡Revisa la lista de compatibilidad de la wallet!
 
 Lee la guía relevante según si estás creando o tomando un pedido para vender bitcoin:
 
@@ -68,12 +68,12 @@ El robot tramposo correrá el riesgo de perder esa disputa y, consecuentemente, 
 
 Debido a los límites de tiempo involucrados en el proceso del pedido, se recomienda utilizar métodos de pago en fiat instantáneos para evitar exceder el temporizador de vencimiento. Consulta [Mejores Prácticas > Métodos de Pago](/docs/es/payment-methods/) para obtener información adicional.
 
-Aunque sea una ventana de tiempo muy pequeña (aproximadamente un segundo), el deposito de fianza podría perderse permanentemente si RoboSats se cerrara o desapareciera repentinamente entre el momento en que el vendedor confirma que se recibió el fiat y el momento en que la billetera Lightning del comprador registra los fondos de fianza liberados. Utiliza una billetera Lightning bien conectada con suficiente liquidez entrante para ayudar a evitar fallas en el enrutamiento y, por ende, minimizar cualquier ventana de oportunidad de este tipo.
+Aunque sea una ventana de tiempo muy pequeña (aproximadamente un segundo), el deposito de fianza podría perderse permanentemente si RoboSats se cerrara o desapareciera repentinamente entre el momento en que el vendedor confirma que se recibió el fiat y el momento en que la wallet Lightning del comprador registra los fondos de fianza liberados. Utiliza una wallet Lightning bien conectada con suficiente liquidez entrante para ayudar a evitar fallas en el enrutamiento y, por ende, minimizar cualquier ventana de oportunidad de este tipo.
 
 ## **Información Adicional**
 
-Algunas billeteras Lightning tienen dificultades para reconocer la factura de retención de Lightning como un bloqueo de fondos. Como vendedor, es necesario utilizar una billetera que permita múltiples HTLC pendientes, ya que deberás bloquear fondos para una fianza y luego un fideicomiso.
+Algunas wallets Lightning tienen dificultades para reconocer la factura de retención de Lightning como un bloqueo de fondos. Como vendedor, es necesario utilizar una wallet que permita múltiples HTLC pendientes, ya que deberás bloquear fondos para una fianza y luego un fideicomiso.
 
 Si surgen problemas, comunícate con el grupo de Telegram de RoboSats; pero ten cuidado con los estafadores que pueden contactarte directamente e impersonar al personal de RoboSats. El personal de RoboSats nunca se comunicará directamente contigo primero. Consulta [Contribuir > Código > Canales de Comunicación](/contribute/code/#communication-channels) para conocer los grupos de Telegram disponibles.
 
-{% include improve %}
+{% include improve_es %}

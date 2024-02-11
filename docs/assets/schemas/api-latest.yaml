@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.5.3
+  version: 0.5.4
   x-logo:
     url: https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
@@ -1006,6 +1006,19 @@ components:
           type: string
         network:
           type: string
+        min_order_size:
+          type: integer
+          description: Minimum order size in Sats
+        max_order_size:
+          type: integer
+          description: Maximum order size in Sats
+        swap_enabled:
+          type: boolean
+          description: Whether the option for onchain swap payouts is available or
+            not
+        max_swap:
+          type: integer
+          description: Maximum size for onchain swap payouts in Sats
         maker_fee:
           type: number
           format: double
@@ -1041,6 +1054,9 @@ components:
       - lifetime_volume
       - lnd_version
       - maker_fee
+      - max_order_size
+      - max_swap
+      - min_order_size
       - network
       - node_alias
       - node_id
@@ -1049,6 +1065,7 @@ components:
       - num_public_buy_orders
       - num_public_sell_orders
       - robosats_running_commit_hash
+      - swap_enabled
       - taker_fee
       - version
     ListOrder:

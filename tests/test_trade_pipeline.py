@@ -7,12 +7,15 @@ from django.urls import reverse
 
 from api.models import Currency, Order
 from api.tasks import cache_market
+from django.contrib.admin.sites import AdminSite
 from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
 from tests.utils.node import add_invoice, set_up_regtest_network
 from tests.utils.pgp import sign_message
 from tests.utils.trade import Trade
+
+from api.admin import OrderAdmin
 
 
 def read_file(file_path):
@@ -43,6 +46,15 @@ class TradeTest(BaseAPITestCase):
 
         # Take the first node balances snapshot
         compute_node_balance()
+
+    def assert_order_logs(self, order_id):
+        order = Order.objects.get(id=order_id)
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        try:
+            result = order_admin._logs(order)
+            self.assertIsInstance(result, str)
+        except Exception as e:
+            self.fail(f"Exception occurred: {e}")
 
     def test_login_superuser(self):
         """
@@ -225,6 +237,7 @@ class TradeTest(BaseAPITestCase):
             data["satoshis"], "Relative pricing order has non-null Satoshis"
         )
         self.assertIsNone(data["taker"], "New order's taker is not null")
+        self.assert_order_logs(data["id"])
 
     def test_get_order_created(self):
         """
@@ -270,6 +283,8 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
 
+        self.assert_order_logs(data["id"])
+
     def test_publish_order(self):
         """
         Tests a trade from order creation to published (maker bond locked).
@@ -298,6 +313,8 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
 
+        self.assert_order_logs(data["id"])
+
     def test_pause_unpause_order(self):
         """
         Tests pausing and unpausing a public order
@@ -322,6 +339,8 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
+
+        self.assert_order_logs(data["id"])
 
     def test_make_and_take_order(self):
         """
@@ -361,6 +380,8 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
+
+        self.assert_order_logs(data["id"])
 
     def test_make_and_lock_contract(self):
         """
@@ -406,6 +427,8 @@ class TradeTest(BaseAPITestCase):
 
         # Maker cancels order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
+
+        self.assert_order_logs(data["id"])
 
     def test_trade_to_locked_escrow(self):
         """
@@ -454,6 +477,8 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order(trade.maker_index)
         trade.cancel_order(trade.taker_index)
+
+        self.assert_order_logs(data["id"])
 
     def test_trade_to_submitted_invoice(self):
         """
@@ -509,6 +534,8 @@ class TradeTest(BaseAPITestCase):
         trade.cancel_order(trade.maker_index)
         trade.cancel_order(trade.taker_index)
 
+        self.assert_order_logs(data["id"])
+
     def test_trade_to_confirm_fiat_received_LN(self):
         """
         Tests a trade from order creation until fiat received is confirmed by seller/taker
@@ -533,6 +560,8 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["maker_locked"])
         self.assertFalse(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
+
+        self.assert_order_logs(data["id"])
 
     def test_successful_LN(self):
         """
@@ -561,6 +590,8 @@ class TradeTest(BaseAPITestCase):
         self.assertIsHash(data["maker_summary"]["preimage"])
         self.assertIsHash(data["maker_summary"]["payment_hash"])
 
+        self.assert_order_logs(data["id"])
+
     def test_successful_onchain(self):
         """
         Tests a trade from order creation until Sats sent to buyer
@@ -587,6 +618,8 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["is_disputed"])
         self.assertIsInstance(data["maker_summary"]["address"], str)
         self.assertIsHash(data["maker_summary"]["txid"])
+
+        self.assert_order_logs(data["id"])
 
     def test_cancel_public_order(self):
         """
@@ -667,6 +700,8 @@ class TradeTest(BaseAPITestCase):
         )
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NMBOND)
 
+        self.assert_order_logs(data["id"])
+
     def test_public_order_expires(self):
         """
         Tests the expiration of a public order
@@ -697,6 +732,8 @@ class TradeTest(BaseAPITestCase):
             Order.ExpiryReasons(Order.ExpiryReasons.NTAKEN).label,
         )
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NTAKEN)
+
+        self.assert_order_logs(data["id"])
 
     def test_taken_order_expires(self):
         """
@@ -731,6 +768,8 @@ class TradeTest(BaseAPITestCase):
         )
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NESINV)
 
+        self.assert_order_logs(data["id"])
+
     def test_escrow_locked_expires(self):
         """
         Tests the expiration of a public order
@@ -764,6 +803,8 @@ class TradeTest(BaseAPITestCase):
             Order.ExpiryReasons(Order.ExpiryReasons.NINVOI).label,
         )
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NINVOI)
+
+        self.assert_order_logs(data["id"])
 
     def test_chat(self):
         """
@@ -871,6 +912,8 @@ class TradeTest(BaseAPITestCase):
             Order.Status.MLD,
         )
 
+        self.assert_order_logs(data["id"])
+
     def test_order_expires_after_only_maker_messaged(self):
         """
         Tests the expiration of an order in chat where taker never messaged
@@ -910,6 +953,8 @@ class TradeTest(BaseAPITestCase):
             data["status"],
             Order.Status.TLD,
         )
+
+        self.assert_order_logs(data["id"])
 
     def test_withdraw_reward_after_unilateral_cancel(self):
         """
@@ -978,6 +1023,8 @@ class TradeTest(BaseAPITestCase):
             data["status"],
             Order.Status.DIS,
         )
+
+        self.assert_order_logs(data["id"])
 
     def test_ticks(self):
         """

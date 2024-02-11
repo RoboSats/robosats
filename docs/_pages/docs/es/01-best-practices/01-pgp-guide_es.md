@@ -84,4 +84,4 @@ Los datos cifrados deben copiarse incluyendo el encabezado `(-----BEGIN PGP MESS
 
 Si quieres leer un tutorial sobre cómo usar OpenKeychain para uso general, consulta [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/)
 
-{% include improve %}
+{% include improve_es %}

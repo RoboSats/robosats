@@ -13,14 +13,12 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 </div>
 
 ## Try it out!
-### **Bitcoin Mainnet**
-- **TOR URL:** [**RoboSats**6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
-- Clearnet URL: [unsafe.robosats.com](https://unsafe.robosats.com) (not recommended!)
-- Clearnet Mirrors: [unsafe2](https://unsafe2.robosats.com) || [unsafe3](https://unsafe3.robosats.com) (not recommended!)
+- **TOR URL:** [**RoboDex**arjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion](http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
+- Clearnet URL: [dex.robosats.com](https://unsafe.robosats.com) (not recommended!)
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best privacy. The Clearnet URL redirects to a third party Tor2web service. Your privacy cannot be guaranteed to be respected. Use clearnet only to check around the app, never use for trading!*
 
-- [Testnet and mirrors](https://learn.robosats.com/docs/access)
+*You can use Testnet Bitcoin by going to the Settings page and switching to Testnet*
 
 ## How to use it
 https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-b93f-250f80bc5bca.mp4
