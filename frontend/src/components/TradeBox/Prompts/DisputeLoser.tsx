@@ -11,7 +11,7 @@ export const DisputeLoserPrompt = (): JSX.Element => {
       <ListItem>
         <Typography variant='body2'>
           {t(
-            'Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case by contacting your coordinator.',
+            'Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case by contacting your coordinator. If you think your coordinator was unfair, please fill a claim via email to robosats@protonmail.com',
           )}
         </Typography>
       </ListItem>
