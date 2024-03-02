@@ -176,6 +176,47 @@
     "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
     "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"]
   },
+  "veneto": {
+    "longAlias": "BitcoinVeneto",
+    "shortAlias": "veneto",
+    "description": "Nati come gruppo di informatici con esperienze diverse, scoperti i bitcoin a fine 2013 ci siamo entusiasmati e dedicati al bitcoin, alla blockchain ed alle criptovalute in generale, in particolare aiutando, informando e seguendo nel percorso di alfabetizzazione nel mondo della valuta digitale tutte le Aziende ed i privati che negli ultimi anni ci hanno dato la loro fiducia.",
+    "motto": "Le Tue Guide NON Virtuali su Bitcoin, Blockchain e Crypto. In Veneto.",
+    "color": "#000D27",
+    "established": "2024-02-24",
+    "contact": {
+      "email": "bitcoinveneto@proton.me",
+      "website": "https://bitcoinvenetocenter.it",
+      "pgp": "/static/federation/pgp/498E269DDDF63969A215FED32A2C489EAF23D549.asc",
+      "fingerprint": "498E269DDDF63969A215FED32A2C489EAF23D549"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": true
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://mmhaqzuirth5rx7gl24d4773lknltjhik57k7ahec5iefktezv4b3uid.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://wsjyhbashc4zrrex6vijpryujggbka5plry2o62dxqoz3pxinblnj4ad.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["02c5b5972b05fba2cd2c2d9269a47bc478f73fae0f248a85cb1e5af60a07c1919d"],
+    "testnetNodesPubkeys": ["032b698c8143f293d138c0926594f11d119194ddedb513f63a944d14c094d0e54a"]
+  },
   "local": {
     "longAlias": "Local Dev",
     "shortAlias": "local",

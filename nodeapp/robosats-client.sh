@@ -56,6 +56,18 @@ testnet_lake_port=1004
 mainnet_lake_socat="socat tcp4-LISTEN:${mainnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 testnet_lake_socat="socat tcp4-LISTEN:${testnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
+################################
+# BitcoinVeneto
+# Mainnet
+mainnet_veneto_onion=mmhaqzuirth5rx7gl24d4773lknltjhik57k7ahec5iefktezv4b3uid.onion
+mainnet_veneto_port=105
+# Testnet
+testnet_veneto_onion=wsjyhbashc4zrrex6vijpryujggbka5plry2o62dxqoz3pxinblnj4ad.onion
+testnet_veneto_port=1005
+# socat cmd
+mainnet_veneto_socat="socat tcp4-LISTEN:${mainnet_veneto_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_veneto_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_veneto_socat="socat tcp4-LISTEN:${testnet_veneto_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_veneto_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+
 
 # RUN!
-$mainnet_exp_socat & $testnet_exp_socat & $mainnet_temple_socat & $testnet_temple_socat & $mainnet_satstralia_socat & $testnet_satstralia_socat& $mainnet_lake_socat & $testnet_lake_socat  & nginx
+$mainnet_exp_socat & $testnet_exp_socat & $mainnet_temple_socat & $testnet_temple_socat & $mainnet_satstralia_socat & $testnet_satstralia_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_veneto_socat & $testnet_veneto_socat & nginx
