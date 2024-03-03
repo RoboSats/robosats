@@ -95,4 +95,4 @@ Si vous trouvez une devise manquante dans RoboSats et pourtant disponible dans l
 
 Après avoir fusionné la pull request, la devise ajoutée sera désormais disponible dans RoboSats !
 
-{% include improve %}
+{% include improve_fr %}

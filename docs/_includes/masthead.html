@@ -7,17 +7,13 @@
         {% unless logo_path == empty %}
           <a class="site-logo" href="{{ '/' | relative_url }}"><img src="{{ logo_path | relative_url }}" alt="{{ site.masthead_title | default: site.title }}"></a>
         {% endunless %}
-        <a class="site-title" href="{{ '/' | relative_url }}">
+        <a class="site-title" href="{{ '/' | relative_url }}" style="white-space: nowrap;">
           {{ site.masthead_title | default: site.title }}
           {% if site.subtitle %}<span class="site-subtitle">{{ site.subtitle }}</span>{% endif %}
         </a>
-        <ul class="visible-links">
-          {%- for link in site.data.navigation.main -%}
-            <li class="masthead__menu-item">
-              <a href="{{ link.url | relative_url }}"{% if link.description %} title="{{ link.description }}"{% endif %}>{{ link.title }}</a>
-            </li>
-          {%- endfor -%}
+        <ul class="visible-links" id="navigation" style="overflow: visible;">
         </ul>
+
         {% if site.search == true %}
         <button class="search__toggle" type="button">
           <span class="visually-hidden">{{ site.data.ui-text[site.locale].search_label | default: "Toggle search" }}</span>
@@ -28,8 +24,38 @@
           <span class="visually-hidden">{{ site.data.ui-text[site.locale].menu_label | default: "Toggle menu" }}</span>
           <div class="navicon"></div>
         </button>
+         <select name="language" id="language">
+          </select>
         <ul class="hidden-links hidden"></ul>
       </nav>
     </div>
   </div>
 </div>
+
+<script src="/utils/mastheadHelper.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const languageStored = localStorage.getItem('language') || 'en';
+    // load the dropdown menu and get the element for later use
+    const languageDropdown = loadDropDownMenu(languageStored);
+
+    const currentUrl = window.location.href;
+    // get navigation file depending on localstorage, default navigation file in English
+    let navigationFile = getNavigationFile(languageStored);
+
+    // generate the navigation menu
+    generateNavigationMenu(navigationFile);
+
+  // match the page with the selected language, if the page is a tutorial or read page, do nothing
+  if(!currentUrl.includes('/watch/') && !currentUrl.includes('/read/')) {
+    languageDropdown.value = languageStored;
+    matchPageWithSelection(languageStored, currentUrl);
+  }
+
+  languageDropdown.addEventListener('change', (event) => {
+    const language = event.target.value;
+    localStorage.setItem('language', language);
+    matchPageWithSelection(language,currentUrl);
+  });
+});
+</script>

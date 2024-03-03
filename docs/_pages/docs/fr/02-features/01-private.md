@@ -31,4 +31,4 @@ Seul votre correspondant peut apprendre des choses sur vous pendant que vous dis
 {: .notice--primary}
 
 
-{% include wip %}
+{% include wip_fr %}

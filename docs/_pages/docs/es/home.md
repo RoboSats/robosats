@@ -38,14 +38,14 @@ feature_row:
     alt: "fast"
     title: "Lightning Fast"
     excerpt: "Intercambiar P2P nunca ha sido tan rápido! <br/>Las facturas retenidas de Lightning sirven como fianzas para una alta seguridad y velocidad. ¡De principio a fin antes de que el siguiente bloque sea minado!"
-    url: "/docs/fast/"
+    url: "/docs/es/fast/"
     btn_class: "btn--primary"
     btn_label: "Aprender mas"
   - image_path: /assets/images/misc/feature-private.png
     alt: "private"
     title: "Absolutamente Privado"
     excerpt: "Las mejores prácticas de privacidad por defecto. Simple y libre de KYC. Generarás un avatar Robot aleatorio de un solo uso. El intercambio es sólo Tor.<br/>"
-    url: "/docs/private/"
+    url: "/docs/es/private/"
     btn_class: "btn--primary"
     btn_label: "Aprender mas"
   - image_path: /assets/images/misc/feature-open-source.png

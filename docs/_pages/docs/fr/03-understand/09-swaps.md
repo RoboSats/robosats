@@ -57,4 +57,4 @@ Dans le cas d'un swap, il est préférable de maintenir la prime à 0 % ; mais s
 
 Il ne s'agit que de recommandations générales sur la prime à fixer pour démarrer avec les swaps, mais en fin de compte, c'est le marché qui fixe le prix... Alors, expérimentez et voyez ce qui fonctionne pour vous !
 
-{% include improve %}
+{% include improve_fr %}

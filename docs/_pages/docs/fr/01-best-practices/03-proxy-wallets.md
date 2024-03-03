@@ -49,4 +49,4 @@ où vous auriez utilisé votre facture originale.
 Pour obtenir des informations sur vous à partir d'une facture enveloppée,
 un attaquant devrait être de mèche avec le serveur lnproxy que vous avez utilisé.
 
-{% include wip %}
+{% include wip_fr %}
