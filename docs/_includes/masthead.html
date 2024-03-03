@@ -36,17 +36,17 @@
 <script>
   document.addEventListener('DOMContentLoaded', (event) => {
     const languageStored = localStorage.getItem('language') || 'en';
-    // load the dropdown menu and get the element for later use
+    /* load the dropdown menu and get the element for later use */
     const languageDropdown = loadDropDownMenu(languageStored);
 
     const currentUrl = window.location.href;
-    // get navigation file depending on localstorage, default navigation file in English
+    /* get navigation file depending on localstorage, default navigation file in English */
     let navigationFile = getNavigationFile(languageStored);
 
-    // generate the navigation menu
+    /* generate the navigation menu */
     generateNavigationMenu(navigationFile);
 
-  // match the page with the selected language, if the page is a tutorial or read page, do nothing
+  /* match the page with the selected language, if the page is a tutorial or read page, do nothing */
   if(!currentUrl.includes('/watch/') && !currentUrl.includes('/read/')) {
     languageDropdown.value = languageStored;
     matchPageWithSelection(languageStored, currentUrl);
