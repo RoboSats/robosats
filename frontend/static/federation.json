@@ -192,7 +192,7 @@
     "badges": {
       "isFounder": false,
       "donatesToDevFund": 30,
-      "hasGoodOpSec": true,
+      "hasGoodOpSec": false,
       "robotsLove": false,
       "hasLargeLimits": true
     },
