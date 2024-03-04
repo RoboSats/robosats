@@ -106,7 +106,7 @@ export const FederationContextProvider = ({
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
     const newFed = initialFederationContext.federation;
-    newFed.registerHook('onFederationReady', () => {
+    newFed.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
     });
     newFed.registerHook('onCoordinatorUpdate', () => {

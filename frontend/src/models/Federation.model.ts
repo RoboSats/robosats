@@ -11,7 +11,7 @@ import defaultFederation from '../../static/federation.json';
 import { getHost } from '../utils';
 import { updateExchangeInfo } from './Exchange.model';
 
-type FederationHooks = 'onCoordinatorUpdate' | 'onFederationReady';
+type FederationHooks = 'onCoordinatorUpdate' | 'onFederationUpdate';
 
 export class Federation {
   constructor() {
@@ -34,7 +34,7 @@ export class Federation {
     this.book = [];
     this.hooks = {
       onCoordinatorUpdate: [],
-      onFederationReady: [],
+      onFederationUpdate: [],
     };
     this.loading = true;
   }
@@ -67,7 +67,7 @@ export class Federation {
     this.loading = this.exchange.loadingCoordinators > 0;
     if (Object.values(this.coordinators).every((coor) => coor.isUpdated())) {
       this.updateExchange();
-      this.triggerHook('onFederationReady');
+      this.triggerHook('onFederationUpdate');
     }
   };
 
@@ -119,7 +119,7 @@ export class Federation {
 
   updateExchange = (): void => {
     this.exchange.info = updateExchangeInfo(this);
-    this.triggerHook('onCoordinatorUpdate');
+    this.triggerHook('onFederationUpdate');
   };
 
   // Fetchs
