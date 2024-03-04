@@ -40,7 +40,6 @@ import type Coordinator from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
-import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { type Order } from '../../models';
 

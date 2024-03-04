@@ -119,6 +119,7 @@ export class Federation {
 
   updateExchange = (): void => {
     this.exchange.info = updateExchangeInfo(this);
+    this.triggerHook('onCoordinatorUpdate');
   };
 
   // Fetchs

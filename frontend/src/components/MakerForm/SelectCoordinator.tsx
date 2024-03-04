@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import {
   Grid,
   Select,
@@ -7,6 +7,7 @@ import {
   Tooltip,
   Typography,
   type SelectChangeEvent,
+  CircularProgress,
 } from '@mui/material';
 
 import RobotAvatar from '../RobotAvatar';
@@ -16,13 +17,17 @@ import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface SelectCoordinatorProps {
-  coordinator: string;
-  setCoordinator: (coordinator: string) => void;
+  coordinatorAlias: string;
+  setCoordinator: (coordinatorAlias: string) => void;
 }
 
-const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setCoordinator }) => {
+const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
+  coordinatorAlias,
+  setCoordinator,
+}) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, sortedCoordinators, coordinatorUpdatedAt } =
+    useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -35,6 +40,11 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
   const handleCoordinatorChange = (e: SelectChangeEvent<string>): void => {
     setCoordinator(e.target.value);
   };
+
+  const coordinator = useMemo(
+    () => federation.getCoordinator(coordinatorAlias),
+    [coordinatorUpdatedAt],
+  );
 
   return (
     <Grid item>
@@ -68,17 +78,25 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
               xs={3}
               sx={{ cursor: 'pointer', position: 'relative', left: '0.3em', bottom: '0.1em' }}
               onClick={() => {
-                onClickCurrentCoordinator(coordinator);
+                onClickCurrentCoordinator(coordinatorAlias);
               }}
             >
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinator}
+                  shortAlias={coordinatorAlias}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={false}
                   small={true}
                 />
+                {(coordinator?.info === undefined ||
+                  Object.keys(coordinator?.limits).length === 0) && (
+                  <CircularProgress
+                    size={49}
+                    thickness={5}
+                    style={{ marginTop: -48, position: 'absolute' }}
+                  />
+                )}
               </Grid>
             </Grid>
 
@@ -90,20 +108,17 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
                 inputProps={{
                   style: { textAlign: 'center' },
                 }}
-                value={coordinator}
+                value={coordinatorAlias}
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
                 {sortedCoordinators.map((shortAlias: string): JSX.Element | null => {
                   let row: JSX.Element | null = null;
-                  if (
-                    shortAlias === coordinator ||
-                    (federation.getCoordinator(shortAlias).enabled === true &&
-                      federation.getCoordinator(shortAlias).info !== undefined)
-                  ) {
+                  const item = federation.getCoordinator(shortAlias);
+                  if (item.enabled === true) {
                     row = (
                       <MenuItem key={shortAlias} value={shortAlias}>
-                        <Typography>{federation.getCoordinator(shortAlias).longAlias}</Typography>
+                        <Typography>{item.longAlias}</Typography>
                       </MenuItem>
                     );
                   }

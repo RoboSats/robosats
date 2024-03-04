@@ -126,7 +126,7 @@ class Garage {
   ) => {
     if (!token || !shortAlias) return;
 
-    let slot = this.getSlot(token);
+    const slot = this.getSlot(token);
 
     if (slot != null) {
       slot.updateRobot(shortAlias, { token, ...attributes });

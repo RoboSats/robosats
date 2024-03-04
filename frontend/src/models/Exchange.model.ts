@@ -43,7 +43,7 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
       premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
       volumes[index] = coordinator.info.last_day_volume;
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
-      active_robots_today = Math.max(active_robots_today, coordinator.info['active_robots_today']);
+      active_robots_today = Math.max(active_robots_today, coordinator.info.active_robots_today);
 
       aggregations.forEach((key: any) => {
         info[key] = Number(info[key]) + Number(coordinator.info[key]);
