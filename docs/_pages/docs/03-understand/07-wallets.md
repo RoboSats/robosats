@@ -52,6 +52,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 
 ### Alby (browser extension)
 Alby is a browser extension compatible with WebLN standard. Given that RoboSats supports WebLN, the experience with Alby is probably best-in-class: you won't have to scan the QR codes or copy/paste generated invoices. Simply click on the Alby pop up to confirm the actions. You can connect the Alby extension to most of the popular nodes and wallets or simply let Alby host a custodial wallet for you.
+Default custodian wallet setup is not suitable for extensive trading as the transactions above a certain total summary will be rejected.
 
 Instructions to install Alby in Tor Browser:
 1. Install the Alby extension from the [Firefox add-ons store](https://addons.mozilla.org/en-US/firefox/addon/alby/)
