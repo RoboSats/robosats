@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   InputAdornment,
-  LinearProgress,
   ButtonGroup,
   Slider,
   Switch,
@@ -103,7 +102,7 @@ const MakerForm = ({
 
   useEffect(() => {
     updateCoordinatorInfo();
-  }, [maker.coordinator]);
+  }, [maker.coordinator, coordinatorUpdatedAt]);
 
   const updateCoordinatorInfo = (): void => {
     if (maker.coordinator != null) {
@@ -516,7 +515,9 @@ const MakerForm = ({
       (makerHasAmountRange && (minAmountError || maxAmountError)) ||
       (!makerHasAmountRange && maker.amount <= 0) ||
       (maker.isExplicit && (maker.badSatoshisText !== '' || maker.satoshis === '')) ||
-      (!maker.isExplicit && maker.badPremiumText !== '')
+      (!maker.isExplicit && maker.badPremiumText !== '') ||
+      federation.getCoordinator(maker.coordinator)?.info === undefined ||
+      federation.getCoordinator(maker.coordinator)?.limits === undefined
     );
   }, [maker, amountLimits, coordinatorUpdatedAt, fav.type, makerHasAmountRange]);
 
@@ -613,11 +614,6 @@ const MakerForm = ({
         }}
         zoom={maker.latitude != null && maker.longitude != null ? 6 : undefined}
       />
-      <Collapse in={Object.keys(limits).lenght === 0}>
-        <div style={{ display: Object.keys(limits) === 0 ? '' : 'none' }}>
-          <LinearProgress />
-        </div>
-      </Collapse>
       <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
           <Grid item>
@@ -1165,10 +1161,10 @@ const MakerForm = ({
       </Collapse>
 
       <SelectCoordinator
-        coordinator={maker.coordinator}
-        setCoordinator={(coordinator) => {
+        coordinatorAlias={maker.coordinator}
+        setCoordinator={(coordinatorAlias) => {
           setMaker((maker) => {
-            return { ...maker, coordinator };
+            return { ...maker, coordinator: coordinatorAlias };
           });
         }}
       />

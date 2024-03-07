@@ -69,13 +69,13 @@ const filterOrders = function ({
   const filteredOrders = orders.filter((order) => {
     const typeChecks = order.type === baseFilter.type || baseFilter.type == null;
     const modeChecks = baseFilter.mode === 'fiat' ? !(order.currency === 1000) : true;
-    const premiumChecks = premium != null ? filterByPremium(order, premium) : true;
+    const premiumChecks = premium !== null ? filterByPremium(order, premium) : true;
     const currencyChecks = order.currency === baseFilter.currency || baseFilter.currency === 0;
     const paymentMethodChecks =
       paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
-    const amountChecks = amountFilter != null ? filterByAmount(order, amountFilter) : true;
+    const amountChecks = amountFilter !== null ? filterByAmount(order, amountFilter) : true;
     const hostChecks =
-      baseFilter.coordinator != 'any' ? filterByHost(order, baseFilter.coordinator) : true;
+      baseFilter.coordinator !== 'any' ? filterByHost(order, baseFilter.coordinator) : true;
     return (
       typeChecks &&
       modeChecks &&

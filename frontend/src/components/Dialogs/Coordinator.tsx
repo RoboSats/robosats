@@ -545,7 +545,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
 
                   <Divider />
 
-                  {coordinator?.info?.swap_enabled === false ? (
+                  {!coordinator?.info?.swap_enabled ? (
                     <ListItem {...listItemProps}>
                       <ListItemIcon>
                         <LinkIcon />
