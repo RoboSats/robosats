@@ -324,6 +324,8 @@ export class Coordinator {
 
     if (!hasEnoughEntropy) return null;
 
+    garage.updateRobot(token, this.shortAlias, { loading: true });
+
     const newAttributes = await apiClient
       .get(this.url, `${this.basePath}/api/robot/`, authHeaders)
       .then((data: any) => {

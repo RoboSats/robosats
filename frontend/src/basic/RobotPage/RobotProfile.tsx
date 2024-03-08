@@ -75,6 +75,11 @@ const RobotProfile = ({
   const slot = garage.getSlot();
   const robot = slot?.getRobot();
 
+  console.log('robots', Object.values(slot?.robots ?? {}));
+  const loadingCoordinators = Object.values(slot?.robots ?? {}).filter(
+    (robot) => robot.loading,
+  ).length;
+  console.log('count', loadingCoordinators);
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
       <Grid
@@ -86,7 +91,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {slot?.hashId ? (
+          {slot?.hashId && loadingCoordinators === 0 ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -119,7 +124,7 @@ const RobotProfile = ({
             </Typography>
           ) : (
             <>
-              <b>{t('Building your robot!')}</b>
+              <b>{t(slot?.hashId ? 'Looking for orders!' : 'Building your robot!')}</b>
               <LinearProgress />
             </>
           )}
