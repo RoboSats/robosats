@@ -75,11 +75,10 @@ const RobotProfile = ({
   const slot = garage.getSlot();
   const robot = slot?.getRobot();
 
-  console.log('robots', Object.values(slot?.robots ?? {}));
   const loadingCoordinators = Object.values(slot?.robots ?? {}).filter(
     (robot) => robot.loading,
   ).length;
-  console.log('count', loadingCoordinators);
+
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
       <Grid
