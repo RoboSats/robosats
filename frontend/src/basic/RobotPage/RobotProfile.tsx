@@ -90,7 +90,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {slot?.hashId && loadingCoordinators === 0 ? (
+          {slot?.hashId ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -123,7 +123,7 @@ const RobotProfile = ({
             </Typography>
           ) : (
             <>
-              <b>{t(slot?.hashId ? 'Looking for orders!' : 'Building your robot!')}</b>
+              <b>{t('Building your robot!')}</b>
               <LinearProgress />
             </>
           )}
@@ -153,6 +153,13 @@ const RobotProfile = ({
             <></>
           )}
         </Grid>
+
+        {loadingCoordinators > 0 ? (
+          <Grid>
+            <b>{t('Looking for orders!')}</b>
+            <LinearProgress />
+          </Grid>
+        ) : null}
 
         {Boolean(robot?.activeOrderId) && Boolean(slot?.hashId) ? (
           <Grid item>
@@ -199,6 +206,13 @@ const RobotProfile = ({
               </Alert>
             </Grid>
           </Grid>
+        ) : null}
+
+        {!Boolean(robot?.activeOrderId) &&
+        slot?.hashId &&
+        !Boolean(robot?.lastOrderId) &&
+        loadingCoordinators === 0 ? (
+          <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
 
         <Grid

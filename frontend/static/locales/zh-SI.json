@@ -53,6 +53,8 @@
   "Delete Garage": "删除仓库",
   "Last order #{{orderID}}": "上一张订单 #{{orderID}}",
   "Logout": "登出",
+  "Looking for orders!": "Looking for orders!",
+  "No existing orders found": "No existing orders found",
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "重复使用交易身份会降低你相对其他用户、协调器和观察者的隐私。",
   "Robot Garage": "机器人仓库",
   "Store your token safely": "请安全地存储你的令牌",
