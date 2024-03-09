@@ -53,6 +53,8 @@
   "Delete Garage": "Delete Garage",
   "Last order #{{orderID}}": "Last order #{{orderID}}",
   "Logout": "Logout",
+  "Looking for orders!": "Looking for orders!",
+  "No existing orders found": "No existing orders found",
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "Reusing trading identity degrades your privacy against other users, coordinators and observers.",
   "Robot Garage": "Robot Garage",
   "Store your token safely": "Store your token safely",

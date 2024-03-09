@@ -75,6 +75,10 @@ const RobotProfile = ({
   const slot = garage.getSlot();
   const robot = slot?.getRobot();
 
+  const loadingCoordinators = Object.values(slot?.robots ?? {}).filter(
+    (robot) => robot.loading,
+  ).length;
+
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
       <Grid
@@ -150,6 +154,13 @@ const RobotProfile = ({
           )}
         </Grid>
 
+        {loadingCoordinators > 0 ? (
+          <Grid>
+            <b>{t('Looking for orders!')}</b>
+            <LinearProgress />
+          </Grid>
+        ) : null}
+
         {Boolean(robot?.activeOrderId) && Boolean(slot?.hashId) ? (
           <Grid item>
             <Button
@@ -195,6 +206,13 @@ const RobotProfile = ({
               </Alert>
             </Grid>
           </Grid>
+        ) : null}
+
+        {!Boolean(robot?.activeOrderId) &&
+        slot?.hashId &&
+        !Boolean(robot?.lastOrderId) &&
+        loadingCoordinators === 0 ? (
+          <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
 
         <Grid
