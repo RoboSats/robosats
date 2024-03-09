@@ -52,6 +52,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 
 ### Alby (browser extension)
 Alby is a browser extension compatible with WebLN standard. Given that RoboSats supports WebLN, the experience with Alby is probably best-in-class: you won't have to scan the QR codes or copy/paste generated invoices. Simply click on the Alby pop up to confirm the actions. You can connect the Alby extension to most of the popular nodes and wallets or simply let Alby host a custodial wallet for you.
+Default custodian wallet setup is not suitable for extensive trading as the transactions above a certain total summary will be rejected.
 
 Instructions to install Alby in Tor Browser:
 1. Install the Alby extension from the [Firefox add-ons store](https://addons.mozilla.org/en-US/firefox/addon/alby/)
@@ -76,7 +77,7 @@ Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transac
 Works as expected. The `lightning-cli pay <invoice>` command does not conclude while the payment is pending, but can use `lightning-cli paystatus <invoice>` to monitor the state.
 
 ### Electrum (Desktop)
-Experience using Electrum is limited. It does not seem to support more than one pending HTLC (even if there are multiple channels). This wallet is not recommended to use with RoboSats. However, it works well if you are a buyer, as only one hold invoice for the fidelity bond is needed. The payment shows as pending with a spinner for the duration of the locktime.
+Works as expected. Some payments and locks may fail depending on the Lightning node the channel is created to. Channels to ASINQ work fine.
 
 ### LND (CLI Interface)
 Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not user friendly and therefore not recommended to interact with RoboSats by beginners. However, everything works just fine. If you are using LNCLI regularly, then you will find no issue using it with RoboSats.
