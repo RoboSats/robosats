@@ -24,4 +24,4 @@ Plus vous essayez de faire passer de sats par LN, plus il est difficile de trouv
 
 Afin de réduire les prises de tête et de simplifier l'expérience, une limite a été mise en place, qui tient compte de la capacité moyenne des canaux du Réseau Lightning. Par exemple, essayer de recevoir 10M Sats peut ne jamais payer lorsque la capacité moyenne des canaux du réseau est [bien en dessous de 10M Sats](https://1ml.com/statistics).
 
-{% include improve %}
+{% include improve_fr %}

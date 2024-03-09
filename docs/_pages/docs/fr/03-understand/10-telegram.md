@@ -77,4 +77,4 @@ En d'autres termes, le robot saura que l'utilisateur 123456789 a lancé une aler
 
 Il est important de toujours garder cela à l'esprit. Certains sont prêts à sacrifier un certain degré de confidentialité en faveur de notifications pratiques, mais vous devez prendre en compte les compromis associés à la révélation des informations susmentionnées. La vie privée est ce que nous choisissons de révéler de manière sélective et c'est en fin de compte à l'utilisateur final de décider du degré de confidentialité qu'il souhaite donner à son expérience RoboSats.
 
-{% include improve %}
+{% include improve_fr %}

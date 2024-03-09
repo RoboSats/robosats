@@ -103,4 +103,4 @@ Si vous rencontrez des problèmes pour recevoir des fonds sur votre portefeuille
 
 N'hésitez pas à contacter le groupe de discussion public RoboSats [SimpleX](/contribute/code/#communication-channels) pour obtenir des conseils ou de l'aide sur l'utilisation des portefeuilles !
 
-{% include improve %}
+{% include improve_fr %}

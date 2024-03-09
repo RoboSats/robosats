@@ -64,4 +64,4 @@ La prime relative fait référence aux taux de change actuels des API publiques,
 
 La prime sur 24 heures affichée sur l'interface de la bourse est déterminée par la médiane pondérée, et non par la moyenne, des ordres réussis au cours des dernières 24 heures. Cette méthode de calcul est plus résistante aux valeurs aberrantes et plus représentative du consensus du marché de pair à pair. En d'autres termes, l'utilisateur final doit considérer cette valeur comme la prime qu'il peut approximativement s'attendre à payer pour un ordre.
 
-{% include improve %}
+{% include improve_fr %}
