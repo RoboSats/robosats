@@ -9,7 +9,7 @@ export interface Limit {
 export type LimitList = Record<string, Limit>;
 
 export const compareUpdateLimit = (baseL: Limit, newL: Limit): Limit => {
-  if (baseL == null) {
+  if (!baseL) {
     return newL;
   } else {
     const price = (baseL.price + newL.price) / 2;
