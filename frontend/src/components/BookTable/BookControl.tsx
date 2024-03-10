@@ -231,6 +231,8 @@ const BookControl = ({
               tooltipTitle=''
               addNewButtonText=''
               isFilter={true}
+              multiple={true}
+              optionsDisplayLimit={1}
             />
           </Grid>
         ) : null}

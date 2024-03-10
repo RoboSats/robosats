@@ -11,6 +11,7 @@ import {
   useTheme,
   type SxProps,
   type Theme,
+  Chip,
 } from '@mui/material';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 
@@ -114,8 +115,8 @@ const InputWrapper = styled('div')(
 
 interface TagProps {
   label: string;
-  icon: string;
-  onDelete: () => void;
+  icon?: string;
+  onDelete?: () => void;
   onClick: () => void;
 }
 
@@ -124,22 +125,53 @@ const Tag: React.FC<TagProps> = ({ label, icon, onDelete, onClick, ...other }) =
   const iconSize = 1.5 * theme.typography.fontSize;
   return (
     <div {...other}>
-      <div style={{ position: 'relative', left: '-5px', top: '0.28em' }} onClick={onClick}>
-        <PaymentIcon width={iconSize} height={iconSize} icon={icon} />
-      </div>
+      {icon ? (
+        <div style={{ position: 'relative', left: '-5px', top: '0.28em' }} onClick={onClick}>
+          <PaymentIcon width={iconSize} height={iconSize} icon={icon} />
+        </div>
+      ) : null}
       <span style={{ position: 'relative', left: '2px' }} onClick={onClick}>
         {label}
       </span>
-      <CloseIcon onClick={onDelete} />
+      <CloseIcon className='delete-icon' onClick={onDelete} />
     </div>
   );
 };
+
+const StyledChip = styled(Chip)(
+  ({ theme, sx }) => `
+  display: flex;
+  align-items: center;
+  height: ${String(sx?.height ?? '1.6rem')};
+  margin: 2px;
+  line-height: 1.5em;
+  background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
+  border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
+  border-radius: 2px;
+  box-sizing: content-box;
+  padding: 0;
+  outline: 0;
+  overflow: hidden;
+
+  &:focus {
+    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
+    background-color: ${theme.palette.mode === 'dark' ? '#003b57' : '#e6f7ff'};
+  }
+
+  & span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.928em;
+  }
+`,
+);
 
 const StyledTag = styled(Tag)(
   ({ theme, sx }) => `
   display: flex;
   align-items: center;
-  height: ${String(sx?.height ?? '2.1em')};
+  height: ${String(sx?.height ?? '1.6rem')};
   margin: 2px;
   line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
@@ -244,11 +276,19 @@ interface AutocompletePaymentsProps {
   sx: SxProps<Theme>;
   addNewButtonText: string;
   isFilter: boolean;
+  multiple: number;
+  optionsDisplayLimit?: number;
   listHeaderText: string;
 }
 
 const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
+  // ** State
+  const [val, setVal] = useState('');
+  const [showFilterInput, setShowFilterInput] = useState(false);
+
+  // ** Hooks
   const { t } = useTranslation();
+  const filterInputRef = React.useRef<HTMLInputElement>(null);
   const {
     getRootProps,
     getInputLabelProps,
@@ -258,7 +298,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     getOptionProps,
     groupedOptions,
     value,
-    focused = true,
+    popupOpen,
     setAnchorEl,
   } = useAutocomplete({
     fullWidth: true,
@@ -266,19 +306,23 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     multiple: true,
     value: props.value,
     options: props.optionsType === 'fiat' ? fiatMethods : swapMethods,
+    open: props.isFilter ? showFilterInput : undefined,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => {
-      setVal(e.target.value ?? '');
+      if (e?.target) setVal(e?.target?.value ?? '');
     },
     onChange: (event, value) => {
+      if (props.isFilter) setShowFilterInput(false);
       props.onAutocompleteChange(value);
+    },
+    onOpen: () => {
+      if (props.isFilter) setShowFilterInput(true);
     },
     onClose: () => {
       setVal(() => '');
     },
   });
 
-  const [val, setVal] = useState('');
   const fewerOptions = groupedOptions.length > 8 ? groupedOptions.slice(0, 8) : groupedOptions;
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
@@ -292,6 +336,21 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
       props.onAutocompleteChange(value);
     }
   }
+
+  const tagsToDisplay = value.length
+    ? props.optionsDisplayLimit
+      ? value.slice(0, props.optionsDisplayLimit)
+      : value
+    : [];
+
+  const qttHiddenTags = props.optionsDisplayLimit ? value.length - props.optionsDisplayLimit : 0;
+
+  React.useEffect(() => {
+    if (showFilterInput && props.isFilter) {
+      filterInputRef.current?.focus();
+      document.getElementById('payment-methods')?.focus();
+    }
+  }, [showFilterInput]);
 
   return (
     <Root>
@@ -320,25 +379,64 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
           <InputWrapper
             ref={setAnchorEl}
             error={Boolean(props.error)}
-            className={focused ? 'focused' : ''}
+            className={popupOpen ? 'focused' : ''}
             sx={{
               minHeight: '2.9em',
               maxHeight: '8.6em',
               hoverBorderColor: '#ffffff',
               ...props.sx,
             }}
+            onClick={(evt) => {
+              if (props.isFilter) {
+                if (evt.target instanceof HTMLElement && !evt.target.matches('.delete-icon')) {
+                  // Check if click is not on delete
+                  setShowFilterInput(!showFilterInput);
+                }
+              }
+            }}
           >
-            {value.map((option, index) => (
-              <StyledTag
-                key={index}
-                label={t(option.name)}
-                icon={option.icon}
-                onClick={props.onClick}
-                sx={{ height: '2.1em', ...(props.tagProps ?? {}) }}
-                {...getTagProps({ index })}
+            {!showFilterInput || !props.isFilter ? (
+              <>
+                {tagsToDisplay.map((option, index) => (
+                  <StyledTag
+                    key={index}
+                    label={t(option.name)}
+                    icon={option.icon}
+                    onClick={props.onClick}
+                    sx={{ height: '1.6rem', ...(props.tagProps ?? {}) }}
+                    {...getTagProps({ index })}
+                  />
+                ))}
+                {qttHiddenTags > 0 ? (
+                  <StyledChip
+                    sx={{ borderRadius: 1 }}
+                    label={`+${qttHiddenTags}`}
+                    sx={{ height: '1.6rem' }}
+                  />
+                ) : null}
+              </>
+            ) : null}
+            {value.length > 0 && !props.multiple ? null : (
+              <input
+                ref={filterInputRef}
+                autoFocus={true}
+                style={
+                  props.isFilter
+                    ? {
+                        position: 'absolute',
+                        backgroundColor: 'transparent',
+                        display: showFilterInput ? 'block' : 'none',
+                        width: '166px',
+                      }
+                    : {}
+                }
+                {...getInputProps()}
+                value={val}
+                onBlur={() => {
+                  if (props.isFilter) setShowFilterInput(false);
+                }}
               />
-            ))}
-            {value.length > 0 && props.isFilter ? null : <input {...getInputProps()} value={val} />}
+            )}
           </InputWrapper>
         </div>
       </Tooltip>
