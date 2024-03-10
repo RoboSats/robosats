@@ -880,7 +880,7 @@ const MakerForm = ({
               )}
               listHeaderText={t('You can add new methods')}
               addNewButtonText={t('Add New')}
-              asFilter={false}
+              isFilter={false}
               value={maker.paymentMethods}
             />
             {maker.badPaymentMethod && (

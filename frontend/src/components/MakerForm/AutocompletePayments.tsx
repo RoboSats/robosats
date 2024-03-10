@@ -344,7 +344,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
       </Tooltip>
       <Grow in={fewerOptions.length > 0}>
         <Listbox sx={props.listBoxProps?.sx ?? undefined} {...getListboxProps()}>
-          {!props.isFilter ? (
+          {props.listHeaderText ? (
             <div
               style={{
                 position: 'fixed',
