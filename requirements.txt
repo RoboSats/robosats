@@ -8,7 +8,7 @@ djangorestframework==3.14.0
 channels==4.0.0
 channels-redis==4.2.0
 celery==5.3.6
-grpcio==1.62.0
+grpcio==1.62.1
 googleapis-common-protos==1.62.0
 grpcio-tools==1.62.0
 numpy==1.26.0
