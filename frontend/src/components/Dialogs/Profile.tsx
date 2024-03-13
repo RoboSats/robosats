@@ -87,7 +87,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
 
               {loadingCoordinators > 0 ? (
                 <>
-                  <b>{t('Looking for your tobot!')}</b>
+                  <b>{t('Looking for your robot!')}</b>
                   <LinearProgress />
                 </>
               ) : (
