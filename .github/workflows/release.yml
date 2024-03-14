@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Release
         id: create-release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body_path: release_notes.md
           generate_release_notes: true
