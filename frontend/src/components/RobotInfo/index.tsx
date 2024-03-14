@@ -36,9 +36,10 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 interface Props {
   coordinator: Coordinator;
   onClose: () => void;
+  disabled?: boolean;
 }
 
-const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
+const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
@@ -117,7 +118,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const robot = slot?.getRobot(coordinator.shortAlias);
 
   return (
-    <Accordion>
+    <Accordion disabled={disabled}>
       <AccordionSummary expandIcon={<ExpandMore />}>
         {`${coordinator.longAlias}:`}
         {(robot?.earnedRewards ?? 0) > 0 && (
