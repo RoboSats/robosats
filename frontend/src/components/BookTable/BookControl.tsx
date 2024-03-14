@@ -229,9 +229,10 @@ const BookControl = ({
               helperText={''}
               label={fav.currency === 1000 ? t('DESTINATION') : t('METHOD')}
               tooltipTitle=''
-              listHeaderText=''
               addNewButtonText=''
               isFilter={true}
+              multiple={true}
+              optionsDisplayLimit={1}
             />
           </Grid>
         ) : null}
