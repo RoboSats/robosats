@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -34,11 +34,20 @@ interface Props {
 
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { federation } = useContext(FederationContext);
+  const { federation, federationUpdatedAt } = useContext(FederationContext);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
 
-  const loadingProgress = useMemo(() => {
-    return (federation.exchange.onlineCoordinators / federation.exchange.totalCoordinators) * 100;
-  }, [federation.exchange.onlineCoordinators, federation.exchange.totalCoordinators]);
+  useEffect(() => federation.updateExchange(), []);
+
+  useEffect(() => {
+    setLoadingProgress(
+      (federation.exchange.onlineCoordinators / federation.exchange.totalCoordinators) * 100,
+    );
+  }, [
+    federationUpdatedAt,
+    federation.exchange.onlineCoordinators,
+    federation.exchange.totalCoordinators,
+  ]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -69,7 +78,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={federation.exchange.totalCoordinators}
+              primary={federation.exchange.enabledCoordinators}
               secondary={t('Enabled RoboSats coordinators')}
             />
           </ListItem>

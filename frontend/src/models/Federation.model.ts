@@ -151,6 +151,7 @@ export class Federation {
     this.exchange.enabledCoordinators = Object.values(this.coordinators).filter(
       (c) => c.enabled,
     ).length;
+    this.triggerHook('onFederationUpdate');
   };
 }
 

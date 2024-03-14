@@ -1,5 +1,3 @@
-import { type Coordinator } from '../models';
-
 interface Version {
   major: number | null;
   minor: number | null;
@@ -61,58 +59,4 @@ const getHigherVer = (ver0: Version, ver1: Version): Version => {
   }
 };
 
-export const aggregateInfo = (federation: Coordinator[]): AggregatedInfo => {
-  const info = {
-    onlineCoordinators: 0,
-    totalCoordinators: 0,
-    num_public_buy_orders: 0,
-    num_public_sell_orders: 0,
-    book_liquidity: 0,
-    active_robots_today: 0,
-    last_day_nonkyc_btc_premium: 0,
-    last_day_volume: 0,
-    lifetime_volume: 0,
-    version: { major: 0, minor: 0, patch: 0 },
-  };
-  info.totalCoordinators = federation.length;
-  const addUp: toAdd[] = [
-    'num_public_buy_orders',
-    'num_public_sell_orders',
-    'book_liquidity',
-    'active_robots_today',
-    'last_day_volume',
-    'lifetime_volume',
-  ];
-
-  addUp.map((key) => {
-    let value = 0;
-    federation.map((coordinator) => {
-      if (coordinator.info != null) {
-        value = value + coordinator.info[key];
-      }
-      return null;
-    });
-    info[key] = value;
-    return null;
-  });
-
-  const premiums: number[] = [];
-  const volumes: number[] = [];
-  let highestVersion = { major: 0, minor: 0, patch: 0 };
-  federation.map((coordinator, index) => {
-    if (coordinator.info != null) {
-      info.onlineCoordinators = info.onlineCoordinators + 1;
-      premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
-      volumes[index] = coordinator.info.last_day_volume;
-      highestVersion = getHigherVer(highestVersion, coordinator.info.version);
-    }
-    return null;
-  });
-
-  info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
-  info.version = highestVersion;
-
-  return info;
-};
-
-export default aggregateInfo;
+export default getHigherVer;
