@@ -37,7 +37,9 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { federation, federationUpdatedAt } = useContext(FederationContext);
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
 
-  useEffect(() => federation.updateExchange(), []);
+  useEffect(() => {
+    if (open) federation.updateExchange();
+  }, [open]);
 
   useEffect(() => {
     setLoadingProgress(
