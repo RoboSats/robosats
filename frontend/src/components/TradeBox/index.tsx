@@ -118,7 +118,7 @@ interface Contract {
 const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   const { garage, orderUpdatedAt, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
 
   // Buttons and Dialogs
@@ -186,6 +186,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
             setBadOrder(data.bad_request);
           } else if (data.id !== undefined) {
             navigate(`/order/${String(currentOrder?.shortAlias)}/${String(data.id)}`);
+            setCurrentOrderId({ id: data.id, shortAlias: currentOrder?.shortAlias });
           }
         })
         .catch(() => {
