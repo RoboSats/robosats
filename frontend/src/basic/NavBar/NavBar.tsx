@@ -162,7 +162,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!slot?.hashId || !slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId}
+          disabled={!slot?.getRobot()?.activeOrderId}
           icon={<Assignment />}
           iconPosition='start'
         />
