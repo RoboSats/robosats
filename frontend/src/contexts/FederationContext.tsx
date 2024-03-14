@@ -80,13 +80,7 @@ export const FederationContextProvider = ({
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const [federation, setFederation] = useState(initialFederationContext.federation);
-  const sortedCoordinators = useMemo(() => {
-    const sortedCoordinators = federationLottery(federation);
-    setMaker((maker) => {
-      return { ...maker, coordinator: sortedCoordinators[0] };
-    }); // default MakerForm coordinator is decided via sorted lottery
-    return sortedCoordinators;
-  }, []);
+  const sortedCoordinators = useMemo(() => federationLottery(federation), []);
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
   );
@@ -102,6 +96,12 @@ export const FederationContextProvider = ({
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
     setInterval(() => null, delay),
   );
+
+  useEffect(() => {
+    setMaker((maker) => {
+      return { ...maker, coordinator: sortedCoordinators[0] };
+    }); // default MakerForm coordinator is decided via sorted lottery
+  }, []);
 
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
@@ -144,9 +144,9 @@ export const FederationContextProvider = ({
   const fetchCurrentOrder: () => void = () => {
     const slot = garage?.getSlot();
     const robot = slot?.getRobot();
-    if (currentOrderId.id && currentOrderId.shortAlias) {
+    if (robot && slot?.token && currentOrderId.id && currentOrderId.shortAlias) {
       const coordinator = federation.getCoordinator(currentOrderId.shortAlias);
-      void coordinator?.fetchOrder(currentOrderId.id, robot, slot.token).then((order) => {
+      void coordinator?.fetchOrder(currentOrderId.id, robot, slot?.token).then((order) => {
         onOrderReceived(order as Order);
       });
     } else if (slot?.token && slot?.activeShortAlias && robot?.activeOrderId) {

@@ -268,7 +268,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     options: props.optionsType === 'fiat' ? fiatMethods : swapMethods,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => {
-      setVal(e.target.value ?? '');
+      setVal(e?.target?.value ?? '');
     },
     onChange: (event, value) => {
       props.onAutocompleteChange(value);
