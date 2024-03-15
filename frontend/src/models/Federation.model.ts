@@ -65,10 +65,8 @@ export class Federation {
     this.exchange.loadingCoordinators =
       this.exchange.loadingCoordinators < 1 ? 0 : this.exchange.loadingCoordinators - 1;
     this.loading = this.exchange.loadingCoordinators > 0;
-    if (Object.values(this.coordinators).every((coor) => coor.isUpdated())) {
-      this.updateExchange();
-      this.triggerHook('onFederationUpdate');
-    }
+    this.updateExchange();
+    this.triggerHook('onFederationUpdate');
   };
 
   // Setup
