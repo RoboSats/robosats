@@ -154,7 +154,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {loadingCoordinators > 0 ? (
+        {loadingCoordinators > 0 && !Boolean(robot?.activeOrderId) ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />
