@@ -12,19 +12,17 @@ interface ExchangeInfo {
   version: Version;
 }
 
-const defaultExchangeInfo: ExchangeInfo = {
-  num_public_buy_orders: 0,
-  num_public_sell_orders: 0,
-  book_liquidity: 0,
-  active_robots_today: 0,
-  last_day_nonkyc_btc_premium: 0,
-  last_day_volume: 0,
-  lifetime_volume: 0,
-  version: { major: 0, minor: 0, patch: 0 },
-};
-
 export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
-  const info: ExchangeInfo = defaultExchangeInfo;
+  const info: ExchangeInfo = {
+    num_public_buy_orders: 0,
+    num_public_sell_orders: 0,
+    book_liquidity: 0,
+    active_robots_today: 0,
+    last_day_nonkyc_btc_premium: 0,
+    last_day_volume: 0,
+    lifetime_volume: 0,
+    version: { major: 0, minor: 0, patch: 0 },
+  };
   const premiums: number[] = [];
   const volumes: number[] = [];
   let highestVersion: Version = { major: 0, minor: 0, patch: 0 };
@@ -38,19 +36,20 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
     'lifetime_volume',
   ];
 
-  Object.values(federation.coordinators).forEach((coordinator, index) => {
-    if (coordinator.info !== undefined && coordinator.enabled === true) {
-      premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
-      volumes[index] = coordinator.info.last_day_volume;
-      highestVersion = getHigherVer(highestVersion, coordinator.info.version);
-      active_robots_today = Math.max(active_robots_today, coordinator.info.active_robots_today);
+  Object.values(federation.coordinators)
+    .filter((coor) => coor.isUpdated())
+    .forEach((coordinator, index) => {
+      if (coordinator.info !== undefined) {
+        premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
+        volumes[index] = coordinator.info.last_day_volume;
+        highestVersion = getHigherVer(highestVersion, coordinator.info.version);
+        active_robots_today = Math.max(active_robots_today, coordinator.info.active_robots_today);
 
-      aggregations.forEach((key: any) => {
-        info[key] = Number(info[key]) + Number(coordinator.info[key]);
-      });
-    }
-    return null;
-  });
+        aggregations.forEach((key: any) => {
+          info[key] = Number(info[key]) + Number(coordinator.info[key]);
+        });
+      }
+    });
 
   info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
   info.version = highestVersion;
@@ -68,7 +67,16 @@ export interface Exchange {
 }
 
 export const defaultExchange: Exchange = {
-  info: defaultExchangeInfo,
+  info: {
+    num_public_buy_orders: 0,
+    num_public_sell_orders: 0,
+    book_liquidity: 0,
+    active_robots_today: 0,
+    last_day_nonkyc_btc_premium: 0,
+    last_day_volume: 0,
+    lifetime_volume: 0,
+    version: { major: 0, minor: 0, patch: 0 },
+  },
   enabledCoordinators: 0,
   onlineCoordinators: 0,
   loadingCoordinators: 0,
