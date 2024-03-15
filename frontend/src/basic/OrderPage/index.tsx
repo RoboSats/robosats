@@ -49,10 +49,15 @@ const OrderPage = (): JSX.Element => {
     setBaseUrl(`${url}${basePath}`);
 
     const orderId = Number(params.orderId);
-    if (orderId && currentOrderId.id !== orderId && currentOrderId.shortAlias !== shortAlias)
+    if (
+      orderId &&
+      currentOrderId.id !== orderId &&
+      currentOrderId.shortAlias !== shortAlias &&
+      shortAlias
+    )
       setCurrentOrderId({ id: orderId, shortAlias });
     if (!acknowledgedWarning) setOpen({ ...closeAll, warning: true });
-  }, [params]);
+  }, [params, currentOrderId]);
 
   const onClickCoordinator = function (): void {
     if (currentOrder?.shortAlias != null) {
