@@ -96,6 +96,16 @@ export class Federation {
 
   update = async (): Promise<void> => {
     this.loading = true;
+    this.exchange.info = {
+      num_public_buy_orders: 0,
+      num_public_sell_orders: 0,
+      book_liquidity: 0,
+      active_robots_today: 0,
+      last_day_nonkyc_btc_premium: 0,
+      last_day_volume: 0,
+      lifetime_volume: 0,
+      version: { major: 0, minor: 0, patch: 0 },
+    };
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
       await coor.update(() => {
