@@ -46,6 +46,7 @@ import {
   Web,
   VolunteerActivism,
   Circle,
+  Flag,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -442,6 +443,17 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
               primary={coordinator?.description}
               primaryTypographyProps={{ sx: { maxWidth: '20em' } }}
               secondary={t('Coordinator description')}
+            />
+          </ListItem>
+
+          <ListItem>
+            <ListItemIcon>
+              <Flag />
+            </ListItemIcon>
+
+            <ListItemText
+              primary={coordinator?.established.toLocaleDateString(settings.language)}
+              secondary={t('Established')}
             />
           </ListItem>
 
