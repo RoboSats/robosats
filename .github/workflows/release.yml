@@ -32,7 +32,7 @@ jobs:
 
         if [ "$coordinatorV" = "$clientV" ] && [ "$coordinatorV" = "$tagV" ] && [ "$coordinatorV" = "$androidV" ]; then
             echo "Versions match!"
-            echo "semver=$semver" >> $GITHUB_OUTPUT   #echo '::set-output name=semver::'$semver
+            echo '::set-output name=semver::'$semver
         else
             echo "Versions do not match! You might have forgotten to update the version on a component."; exit $ERRCODE;
         fi
