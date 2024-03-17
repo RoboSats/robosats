@@ -1,54 +1,41 @@
-RoboSats v0.5.3 is now out! :rocket: RoboSats client apps before v0.5.1 are no longer be compatible.
+RoboSats v0.6.0 is now out! :rocket:
 
 # Changes
-## New Features: Face to face.
-We have introduced a new feature, F2F (Face-to-Face), allowing users to add a location for face-to-face cash trades. The book page now displays a map with all F2F orders. For privacy reasons, the exact location of your order is slightly randomized (uniform random 15 x 15 Km noise) when you click on the map to locate it. This means it's not possible to be precise, and the exact location can only be shared on the encrypted chat. Please note that using high-resolution maps can leak your IP to external tiling servers if you are not using Tor Browser.
+## New Features
+### Decentralization
+RoboSats v0.6.0 introduces a major upgrade, introducing the RoboSats Federation, a decentralized system of independent coordinators to host orders, enhancing the platform's robustness and user experience. This version is a significant step towards decentralization, allowing users to interact with any coordinator seamlessly.
 
-Of course, adding a geolocation tag to your order is only a good idea if you want to use face-to-face cash as a payment method. You can completely disregard this feature if you do not want to use this payment method.
+It's crucial to choose trustworthy coordinators due to the potential risks of malicious activity. The federated client is available for testing at specific URLs, with a stable release planned. Key features include multiple coordinators competing for users, decentralized instances for increased robustness, and a focus on coordinators profiles and trust.
 
-## RoboSats-deploy Coordinator Orchestration
-We have released the RoboSats-deploy coordinator orchestration in https://github.com/RoboSats/robosats-deploy
+Learn more in https://learn.robosats.com/robosats/update/pre-release-robosats-decentralized/
+
+### New avatar generator
+Your Robot identity is now generated in your client app, when previously, the robot identity was created by the coordinator. This allows now for super-fast Robot avatar and nickname generation that works even if your connection to the coordinators is down. The new robot avatars, are in fact, more diverse and better looking, however, the same token will now yield a different avatar when compared to v0.5.4 (but the robot identity remains the same, also keeping the same nickname).
 
 ## Bug Fixes and Performance Improvements
-- Dependency updates.
-- Small bug fixes.
-- Improved DB Writes performance related to last_login user field.
-- Fix small bug on order logging that made automatic dispute resolutions fail.
-- Devfund Donation Pubkey has been updated to RoboSats experimental LND2 node.
+The whole app architecture is new. There might be new bugs, solved bugs, worse performance and better performance: who knows!! :D
+
+## Special thanks
+Special thanks to @KoalaSat who has driven some of the largest development pushes needed to get The Federation Layer fully working.
 
 # Android
 
-**[Click to download universal RoboSats APK for Android](https://github.com/RoboSats/robosats/releases/download/v0.5.3-alpha/robosats-v0.5.3.alpha-universal.apk)**
-Smaller bundles for each CPU architecture available in the attachments.
-
-### Verify the app using GPG:
-
-1. [Download the ascii armored signature](https://github.com/Reckless-Satoshi/robosats/releases/download/v0.5.3-alpha/robosats-v0.5.3.alpha-universal.apk.asc)
-
-2. Run this command on a directory that contains the apk file and and the ascii armored signature.
-`gpg --verify robosats-v0.5.3.alpha-universal.apk.asc`
-
-3. Verify the signer is actually Reckless-Satoshi (fingerprints match): [B4AB5F19113D4125DDF217739C4585B561315571](https://keys.openpgp.org/vks/v1/by-fingerprint/B4AB5F19113D4125DDF217739C4585B561315571)
-
-Alternatively you can also verify with the release with the SHA256 checksum.
-
-Known missing features:
-- Android APK has no sound or notifications.
+The Android app is currently not supported on this early phase of the Federated app.
 
 
 # Docker Images
 
-[Coordinator Backend Image v0.5.3-alpha (Docker Hub)](https://hub.docker.com/r/recksato/robosats/tags?page=1&name=v0.5.3-alpha)
+[Coordinator Backend Image v0.6.0-alpha (Docker Hub)](https://hub.docker.com/r/recksato/robosats/tags?page=1&name=v0.6.0-alpha)
 
 
 ```bash
-docker pull recksato/robosats:v0.5.3-alpha
+docker pull recksato/robosats:v0.6.0-alpha
 ```
 
-[Client App Image v0.5.3-alpha (Docker Hub)](https://hub.docker.com/r/recksato/robosats-client/tags?page=1&name=v0.5.3-alpha)
+[Client App Image v0.6.0-alpha (Docker Hub)](https://hub.docker.com/r/recksato/robosats-client/tags?page=1&name=v0.6.0-alpha)
 
 ```bash
-docker pull recksato/robosats-client:v0.5.3-alpha
+docker pull recksato/robosats-client:v0.6.0-alpha
 ```
 
 See [nodeapp/docker-compose.yml](https://github.com/Reckless-Satoshi/robosats/blob/2cd9d748706a8dcc0f03006b483acc6000e0572a/nodeapp/docker-compose.yml) for an example docker-compose usage of the `robosats-client` image.
