@@ -74,8 +74,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
         // simple rule of three
         if (order.coordinatorShortAlias != null) {
           const limits = federation.getCoordinator(order.coordinatorShortAlias).limits;
-          order.base_amount =
-            (order.price * limits[currencyCode].price) / limits[order.currency].price;
+          const price = limits[currencyCode] ? limits[currencyCode].price : 0;
+          order.base_amount = (order.price * price) / price;
         }
         return order;
       });
@@ -309,7 +309,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   <Box justifyContent='center'>
                     {xType === 'base_amount'
                       ? `${center} ${String(currencyDict[currencyCode])}`
-                      : `${center}%`}
+                      : `${String(center.toPrecision(3))}%`}
                   </Box>
                 </Grid>
                 <Grid item>
