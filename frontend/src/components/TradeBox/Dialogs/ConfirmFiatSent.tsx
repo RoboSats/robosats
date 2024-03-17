@@ -16,7 +16,7 @@ import { LoadingButton } from '@mui/lab';
 interface ConfirmFiatSentDialogProps {
   open: boolean;
   loadingButton: boolean;
-  order: Order;
+  order: Order | null;
   onClose: () => void;
   onConfirmClick: () => void;
 }
@@ -29,8 +29,10 @@ export const ConfirmFiatSentDialog = ({
   onConfirmClick,
 }: ConfirmFiatSentDialogProps): JSX.Element => {
   const { t } = useTranslation();
-  const currencyCode = currencies[order.currency.toString()];
-  const amount = pn(parseFloat(parseFloat(order.amount).toFixed(order.currency == 1000 ? 8 : 4)));
+  const currencyCode = currencies[order?.currency.toString()];
+  const amount = pn(
+    parseFloat(parseFloat(order?.amount).toFixed(order?.currency === 1000 ? 8 : 4)),
+  );
 
   return (
     <Dialog open={open} onClose={onClose}>

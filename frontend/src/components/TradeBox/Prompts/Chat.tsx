@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, Typography, Tooltip, Collapse, IconButton } from '@mui/material';
+import { Grid, Typography, Tooltip, Collapse } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 
-import { type Order, type Robot } from '../../../models';
+import { type Order } from '../../../models';
 import { pn } from '../../../utils';
 import EncryptedChat, { type EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
+import { type UseGarageStoreType, GarageContext } from '../../../contexts/GarageContext';
 
 interface ChatPromptProps {
   order: Order;
-  robot: Robot;
   onClickConfirmSent: () => void;
   onClickUndoConfirmSent: () => void;
   loadingSent: boolean;
@@ -27,7 +27,6 @@ interface ChatPromptProps {
 
 export const ChatPrompt = ({
   order,
-  robot,
   onClickConfirmSent,
   onClickUndoConfirmSent,
   onClickConfirmReceived,
@@ -41,6 +40,7 @@ export const ChatPrompt = ({
   setMessages,
 }: ChatPromptProps): JSX.Element => {
   const { t } = useTranslation();
+  const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -51,10 +51,16 @@ export const ChatPrompt = ({
 
   const currencyCode: string = currencies[`${order.currency}`];
   const amount: string = pn(
-    parseFloat(parseFloat(order.amount).toFixed(order.currency == 1000 ? 8 : 4)),
+    Number(parseFloat(order.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4)),
   );
 
-  const disputeCountdownRenderer = function ({ hours, minutes }) {
+  const disputeCountdownRenderer = function ({
+    hours,
+    minutes,
+  }: {
+    hours: number;
+    minutes: number;
+  }): JSX.Element {
     return (
       <span>{`${t('To open a dispute you need to wait')} ${hours}h ${zeroPad(minutes)}m `}</span>
     );
@@ -63,12 +69,12 @@ export const ChatPrompt = ({
   useEffect(() => {
     // open dispute button enables 18h before expiry
     const now = Date.now();
-    const expires_at = new Date(order.expires_at);
-    expires_at.setHours(expires_at.getHours() - 18);
-    setEnableDisputeButton(now > expires_at);
-    setEnableDisputeTime(expires_at);
+    const expiresAt = new Date(order.expires_at);
+    expiresAt.setHours(expiresAt.getHours() - 18);
+    setEnableDisputeButton(now > expiresAt);
+    setEnableDisputeTime(expiresAt);
 
-    if (order.status == 9) {
+    if (order.status === 9) {
       // No fiat sent yet
       if (order.is_buyer) {
         setSentButton(true);
@@ -93,7 +99,7 @@ export const ChatPrompt = ({
           ),
         );
       }
-    } else if (order.status == 10) {
+    } else if (order.status === 10) {
       // Fiat has been sent already
       if (order.is_buyer) {
         setSentButton(false);
@@ -107,7 +113,7 @@ export const ChatPrompt = ({
         setText(t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it."));
       }
     }
-  }, [order]);
+  }, [orderUpdatedAt]);
 
   return (
     <Grid
@@ -127,12 +133,8 @@ export const ChatPrompt = ({
       <Grid item>
         <EncryptedChat
           status={order.status}
-          robot={robot}
           chatOffset={order.chat_last_index}
-          orderId={order.id}
-          takerNick={order.taker_nick}
-          makerNick={order.maker_nick}
-          userNick={order.ur_nick}
+          order={order}
           baseUrl={baseUrl}
           messages={messages}
           setMessages={setMessages}

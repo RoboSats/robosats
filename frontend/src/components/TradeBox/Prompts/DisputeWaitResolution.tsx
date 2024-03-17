@@ -11,7 +11,7 @@ export const DisputeWaitResolutionPrompt = (): JSX.Element => {
       <ListItem>
         <Typography variant='body2'>
           {t(
-            'Both statements have been received, wait for the staff to resolve the dispute. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com. If you did not provide a contact method, or are unsure whether you wrote it right, write us immediately.',
+            'Both statements have been received, wait for the staff to resolve the dispute. If you are hesitant about the state of the dispute or want to add more information, contact your order trade coordinator (the host) via one of their contact methods. If you did not provide a contact method, or are unsure whether you wrote it right, write your coordinator immediately.',
           )}
         </Typography>
       </ListItem>

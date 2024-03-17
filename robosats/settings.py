@@ -163,6 +163,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
+
 ROOT_URLCONF = "robosats.urls"
 IMPORT_EXPORT_USE_TRANSACTIONS = True
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -21,6 +21,8 @@ import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
 import { NewTabIcon } from '../../components/Icons';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -35,22 +37,22 @@ interface OnboardingProps {
 
 const Onboarding = ({
   setView,
-  robot,
   inputToken,
   setInputToken,
-  setRobot,
   badToken,
   getGenerateRobot,
-  baseUrl,
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const { setPage } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const generateToken = () => {
+  const generateToken = (): void => {
     setGeneratedToken(true);
     setInputToken(genBase62Token(36));
     setLoading(true);
@@ -59,11 +61,13 @@ const Onboarding = ({
     }, 1000);
   };
 
+  const slot = garage.getSlot();
+
   return (
     <Box>
       <Accordion expanded={step === '1'} disableGutters={true}>
         <AccordionSummary>
-          <Typography variant='h5' color={step == '1' ? 'text.primary' : 'text.disabled'}>
+          <Typography variant='h5' color={step === '1' ? 'text.primary' : 'text.disabled'}>
             {t('1. Generate a token')}
           </Typography>
         </AccordionSummary>
@@ -101,9 +105,7 @@ const Onboarding = ({
                         autoFocusTarget='copyButton'
                         inputToken={inputToken}
                         setInputToken={setInputToken}
-                        setRobot={setRobot}
                         badToken={badToken}
-                        robot={robot}
                         onPressEnter={() => null}
                       />
                     </Grid>
@@ -122,7 +124,6 @@ const Onboarding = ({
                         onClick={() => {
                           setStep('2');
                           getGenerateRobot(inputToken);
-                          setRobot({ ...robot, nickname: undefined });
                         }}
                         variant='contained'
                         size='large'
@@ -141,7 +142,7 @@ const Onboarding = ({
 
       <Accordion expanded={step === '2'} disableGutters={true}>
         <AccordionSummary>
-          <Typography variant='h5' color={step == '2' ? 'text.primary' : 'text.disabled'}>
+          <Typography variant='h5' color={step === '2' ? 'text.primary' : 'text.disabled'}>
             {t('2. Meet your robot identity')}
           </Typography>
         </AccordionSummary>
@@ -149,7 +150,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {robot.avatarLoaded && robot.nickname ? (
+                {slot?.hashId ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -162,7 +163,7 @@ const Onboarding = ({
 
             <Grid item sx={{ width: '13.5em' }}>
               <RobotAvatar
-                nickname={robot.nickname}
+                hashId={slot?.hashId ?? ''}
                 smooth={true}
                 style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
                 placeholderType='generating'
@@ -174,11 +175,10 @@ const Onboarding = ({
                   width: '12.4em',
                 }}
                 tooltipPosition='top'
-                baseUrl={baseUrl}
               />
             </Grid>
 
-            {robot.avatarLoaded && robot.nickname ? (
+            {slot?.hashId ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -197,7 +197,7 @@ const Onboarding = ({
                         width: '1.5em',
                       }}
                     />
-                    <b>{robot.nickname}</b>
+                    <b>{slot?.nickname}</b>
                     <Bolt
                       sx={{
                         color: '#fcba03',
@@ -210,7 +210,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={!!(robot.avatarLoaded && robot.nickname)}>
+              <Collapse in={!!slot?.hashId}>
                 <Button
                   onClick={() => {
                     setStep('3');
@@ -229,7 +229,7 @@ const Onboarding = ({
 
       <Accordion expanded={step === '3'} disableGutters={true}>
         <AccordionSummary>
-          <Typography variant='h5' color={step == '3' ? 'text.primary' : 'text.disabled'}>
+          <Typography variant='h5' color={step === '3' ? 'text.primary' : 'text.disabled'}>
             {t('3. Browse or create an order')}
           </Typography>
         </AccordionSummary>
@@ -249,6 +249,7 @@ const Onboarding = ({
                   color='primary'
                   onClick={() => {
                     navigate('/offers');
+                    setPage('offers');
                   }}
                 >
                   <Storefront /> <div style={{ width: '0.5em' }} />
@@ -258,6 +259,7 @@ const Onboarding = ({
                   color='secondary'
                   onClick={() => {
                     navigate('/create');
+                    setPage('create');
                   }}
                 >
                   <AddBox /> <div style={{ width: '0.5em' }} />

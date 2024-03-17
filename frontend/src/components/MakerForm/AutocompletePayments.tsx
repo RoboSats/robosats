@@ -2,7 +2,17 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAutocomplete from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
-import { Button, Fade, Tooltip, Typography, Grow, useTheme } from '@mui/material';
+import {
+  Button,
+  Fade,
+  Tooltip,
+  Typography,
+  Grow,
+  useTheme,
+  type SxProps,
+  type Theme,
+  Chip,
+} from '@mui/material';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 
 // Icons
@@ -20,12 +30,18 @@ const Root = styled('div')(
 const Label = styled('label')(
   ({ theme, error, sx }) => `
   color: ${
-    theme.palette.mode === 'dark' ? (error ? '#f44336' : '#cfcfcf') : error ? '#dd0000' : '#717171'
+    theme.palette.mode === 'dark'
+      ? error === true
+        ? '#f44336'
+        : '#cfcfcf'
+      : error === true
+        ? '#dd0000'
+        : '#717171'
   };
   pointer-events: none;
   position: relative;
   left: 1em;
-  top: ${sx.top};
+  top: ${String(sx.top) ?? '0.72em'};
   maxHeight: 0em;
   height: 0em;
   white-space: no-wrap;
@@ -35,14 +51,20 @@ const Label = styled('label')(
 
 const InputWrapper = styled('div')(
   ({ theme, error, sx }) => `
-  min-height: ${sx.minHeight};
-  max-height: ${sx.maxHeight};
+  min-height: ${String(sx.minHeight)};
+  max-height: ${String(sx.maxHeight)};
   border: 1px solid ${
-    theme.palette.mode === 'dark' ? (error ? '#f44336' : '#434343') : error ? '#dd0000' : '#c4c4c4'
+    theme.palette.mode === 'dark'
+      ? error === ''
+        ? '#f44336'
+        : '#434343'
+      : error === ''
+        ? '#dd0000'
+        : '#c4c4c4'
   };
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
-  border-color: ${sx.borderColor ? `border-color ${sx.borderColor}` : ''}
+  border-color: ${sx.borderColor !== undefined ? `border-color ${String(sx.borderColor)}` : ''}
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -52,10 +74,10 @@ const InputWrapper = styled('div')(
   &:hover {
     border-color: ${
       theme.palette.mode === 'dark'
-        ? error
+        ? error === true
           ? '#f44336'
-          : sx.hoverBorderColor
-        : error
+          : String(sx.hoverBorderColor)
+        : error === true
           ? '#dd0000'
           : '#2f2f2f'
     };
@@ -64,10 +86,10 @@ const InputWrapper = styled('div')(
   &.focused {
     border: 2px solid ${
       theme.palette.mode === 'dark'
-        ? error
+        ? error === true
           ? '#f44336'
           : '#90caf9'
-        : error
+        : error === true
           ? '#dd0000'
           : '#1976d2'
     };
@@ -93,31 +115,63 @@ const InputWrapper = styled('div')(
 
 interface TagProps {
   label: string;
-  icon: string;
-  onDelete: () => void;
+  icon?: string;
+  onDelete?: () => void;
   onClick: () => void;
 }
-const Tag = ({ label, icon, onDelete, onClick, ...other }: TagProps) => {
+
+const Tag: React.FC<TagProps> = ({ label, icon, onDelete, onClick, ...other }) => {
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
   return (
     <div {...other}>
-      <div style={{ position: 'relative', left: '-5px', top: '0.28em' }} onClick={onClick}>
-        <PaymentIcon width={iconSize} height={iconSize} icon={icon} />
-      </div>
+      {icon ? (
+        <div style={{ position: 'relative', left: '-5px', top: '0.28em' }} onClick={onClick}>
+          <PaymentIcon width={iconSize} height={iconSize} icon={icon} />
+        </div>
+      ) : null}
       <span style={{ position: 'relative', left: '2px' }} onClick={onClick}>
         {label}
       </span>
-      <CloseIcon onClick={onDelete} />
+      <CloseIcon className='delete-icon' onClick={onDelete} />
     </div>
   );
 };
+
+const StyledChip = styled(Chip)(
+  ({ theme, sx }) => `
+  display: flex;
+  align-items: center;
+  height: ${String(sx?.height ?? '1.6rem')};
+  margin: 2px;
+  line-height: 1.5em;
+  background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
+  border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
+  border-radius: 2px;
+  box-sizing: content-box;
+  padding: 0;
+  outline: 0;
+  overflow: hidden;
+
+  &:focus {
+    border-color: ${theme.palette.mode === 'dark' ? '#177ddc' : '#40a9ff'};
+    background-color: ${theme.palette.mode === 'dark' ? '#003b57' : '#e6f7ff'};
+  }
+
+  & span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.928em;
+  }
+`,
+);
 
 const StyledTag = styled(Tag)(
   ({ theme, sx }) => `
   display: flex;
   align-items: center;
-  height: ${sx.height};
+  height: ${String(sx?.height ?? '1.6rem')};
   margin: 2px;
   line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
@@ -163,7 +217,7 @@ const ListHeader = styled('span')(
 
 const Listbox = styled('ul')(
   ({ theme, sx }) => `
-  width: ${sx != null ? sx.width : '15.6em'};
+  width: ${String(sx?.width ?? '15.6em')};
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
@@ -209,8 +263,32 @@ const Listbox = styled('ul')(
 `,
 );
 
-export default function AutocompletePayments(props) {
+interface AutocompletePaymentsProps {
+  value: string;
+  optionsType: 'fiat' | 'swap';
+  onAutocompleteChange: (value: string) => void;
+  tooltipTitle: string;
+  labelProps: any;
+  tagProps: any;
+  listBoxProps: any;
+  error: string;
+  label: string;
+  sx: SxProps<Theme>;
+  addNewButtonText: string;
+  isFilter: boolean;
+  multiple: number;
+  optionsDisplayLimit?: number;
+  listHeaderText: string;
+}
+
+const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
+  // ** State
+  const [val, setVal] = useState('');
+  const [showFilterInput, setShowFilterInput] = useState(false);
+
+  // ** Hooks
   const { t } = useTranslation();
+  const filterInputRef = React.useRef<HTMLInputElement>(null);
   const {
     getRootProps,
     getInputLabelProps,
@@ -220,59 +298,79 @@ export default function AutocompletePayments(props) {
     getOptionProps,
     groupedOptions,
     value,
-    focused = 'true',
+    popupOpen,
     setAnchorEl,
   } = useAutocomplete({
     fullWidth: true,
     id: 'payment-methods',
     multiple: true,
     value: props.value,
-    options: props.optionsType == 'fiat' ? fiatMethods : swapMethods,
+    options: props.optionsType === 'fiat' ? fiatMethods : swapMethods,
+    open: props.isFilter ? showFilterInput : undefined,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => {
-      setVal(e ? (e.target.value ? e.target.value : '') : '');
+      if (e?.target) setVal(e?.target?.value ?? '');
     },
-    onChange: (event, value) => props.onAutocompleteChange(value),
+    onChange: (event, value) => {
+      if (props.isFilter) setShowFilterInput(false);
+      props.onAutocompleteChange(value);
+    },
+    onOpen: () => {
+      if (props.isFilter) setShowFilterInput(true);
+    },
     onClose: () => {
       setVal(() => '');
     },
   });
 
-  const [val, setVal] = useState('');
   const fewerOptions = groupedOptions.length > 8 ? groupedOptions.slice(0, 8) : groupedOptions;
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
 
-  function handleAddNew(inputProps) {
+  function handleAddNew(inputProps: any): void {
     fiatMethods.push({ name: inputProps.value, icon: 'custom' });
     const a = value.push({ name: inputProps.value, icon: 'custom' });
     setVal(() => '');
 
-    if (a || a == null) {
+    if (a !== undefined) {
       props.onAutocompleteChange(value);
     }
-    return false;
   }
+
+  const tagsToDisplay = value.length
+    ? props.optionsDisplayLimit
+      ? value.slice(0, props.optionsDisplayLimit)
+      : value
+    : [];
+
+  const qttHiddenTags = props.optionsDisplayLimit ? value.length - props.optionsDisplayLimit : 0;
+
+  React.useEffect(() => {
+    if (showFilterInput && props.isFilter) {
+      filterInputRef.current?.focus();
+      document.getElementById('payment-methods')?.focus();
+    }
+  }, [showFilterInput]);
 
   return (
     <Root>
       <Tooltip
         placement='top'
-        enterTouchDelay={props.tooltipTitle == '' ? 99999 : 300}
-        enterDelay={props.tooltipTitle == '' ? 99999 : 700}
+        enterTouchDelay={props.tooltipTitle === '' ? 99999 : 300}
+        enterDelay={props.tooltipTitle === '' ? 99999 : 700}
         enterNextDelay={2000}
         title={props.tooltipTitle}
       >
         <div {...getRootProps()}>
           <Fade
             appear={false}
-            in={fewerOptions.length == 0 && value.length == 0 && val.length == 0}
+            in={fewerOptions.length === 0 && value.length === 0 && val.length === 0}
           >
             <div style={{ height: 0, display: 'flex', alignItems: 'flex-start' }}>
               <Label
                 {...getInputLabelProps()}
-                sx={{ top: '0.72em', ...(props.labelProps ? props.labelProps.sx : {}) }}
-                error={props.error ? 'error' : null}
+                sx={{ top: '0.72em', ...(props.labelProps?.sx ?? {}) }}
+                error={Boolean(props.error)}
               >
                 {props.label}
               </Label>
@@ -280,31 +378,71 @@ export default function AutocompletePayments(props) {
           </Fade>
           <InputWrapper
             ref={setAnchorEl}
-            error={props.error ? 'error' : null}
-            className={focused ? 'focused' : ''}
+            error={Boolean(props.error)}
+            className={popupOpen ? 'focused' : ''}
             sx={{
               minHeight: '2.9em',
               maxHeight: '8.6em',
               hoverBorderColor: '#ffffff',
               ...props.sx,
             }}
+            onClick={(evt) => {
+              if (props.isFilter) {
+                if (evt.target instanceof HTMLElement && !evt.target.matches('.delete-icon')) {
+                  // Check if click is not on delete
+                  setShowFilterInput(!showFilterInput);
+                }
+              }
+            }}
           >
-            {value.map((option, index) => (
-              <StyledTag
-                label={t(option.name)}
-                icon={option.icon}
-                sx={{ height: '2.1em', ...(props.tagProps ? props.tagProps.sx : {}) }}
-                onClick={props.onClick}
-                {...getTagProps({ index })}
+            {!showFilterInput || !props.isFilter ? (
+              <>
+                {tagsToDisplay.map((option, index) => (
+                  <StyledTag
+                    key={index}
+                    label={t(option.name)}
+                    icon={option.icon}
+                    onClick={props.onClick}
+                    sx={{ height: '1.6rem', ...(props.tagProps ?? {}) }}
+                    {...getTagProps({ index })}
+                  />
+                ))}
+                {qttHiddenTags > 0 ? (
+                  <StyledChip
+                    sx={{ borderRadius: 1 }}
+                    label={`+${qttHiddenTags}`}
+                    sx={{ height: '1.6rem' }}
+                  />
+                ) : null}
+              </>
+            ) : null}
+            {value.length > 0 && !props.multiple ? null : (
+              <input
+                ref={filterInputRef}
+                autoFocus={true}
+                style={
+                  props.isFilter
+                    ? {
+                        position: 'absolute',
+                        backgroundColor: 'transparent',
+                        display: showFilterInput ? 'block' : 'none',
+                        width: '166px',
+                      }
+                    : {}
+                }
+                {...getInputProps()}
+                value={val}
+                onBlur={() => {
+                  if (props.isFilter) setShowFilterInput(false);
+                }}
               />
-            ))}
-            {value.length > 0 && props.isFilter ? null : <input {...getInputProps()} value={val} />}
+            )}
           </InputWrapper>
         </div>
       </Tooltip>
       <Grow in={fewerOptions.length > 0}>
-        <Listbox sx={props.listBoxProps ? props.listBoxProps.sx : undefined} {...getListboxProps()}>
-          {!props.isFilter ? (
+        <Listbox sx={props.listBoxProps?.sx ?? undefined} {...getListboxProps()}>
+          {props.listHeaderText ? (
             <div
               style={{
                 position: 'fixed',
@@ -341,7 +479,13 @@ export default function AutocompletePayments(props) {
           ))}
           {val != null || !props.isFilter ? (
             val.length > 2 ? (
-              <Button size='small' fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
+              <Button
+                size='small'
+                fullWidth={true}
+                onClick={() => {
+                  handleAddNew(getInputProps());
+                }}
+              >
                 <DashboardCustomizeIcon sx={{ width: '1em', height: '1em' }} />
                 {props.addNewButtonText}
               </Button>
@@ -353,7 +497,12 @@ export default function AutocompletePayments(props) {
       {/* Here goes what happens if there is no fewerOptions */}
       <Grow in={getInputProps().value.length > 0 && !props.isFilter && fewerOptions.length === 0}>
         <Listbox {...getListboxProps()}>
-          <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
+          <Button
+            fullWidth={true}
+            onClick={() => {
+              handleAddNew(getInputProps());
+            }}
+          >
             <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />
             {props.addNewButtonText}
           </Button>
@@ -361,4 +510,6 @@ export default function AutocompletePayments(props) {
       </Grow>
     </Root>
   );
-}
+};
+
+export default AutocompletePayments;

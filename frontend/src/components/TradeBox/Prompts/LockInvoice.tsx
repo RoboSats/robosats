@@ -32,14 +32,17 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
           { currencyCode },
         );
 
-  const depositHoursMinutes = function () {
+  const depositHoursMinutes = function (): {
+    deposit_timer_hours: number;
+    deposit_timer_minutes: number;
+  } {
     const hours = Math.floor(order.escrow_duration / 3600);
     const minutes = Math.floor((order.escrow_duration - hours * 3600) / 60);
     const dict = { deposit_timer_hours: hours, deposit_timer_minutes: minutes };
     return dict;
   };
 
-  const ExpirationWarning = function () {
+  const ExpirationWarning = function (): JSX.Element {
     return (
       <Typography variant='body2'>
         {t(
@@ -50,7 +53,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
     );
   };
 
-  const handleClickQR = () => {
+  const handleClickQR = (): void => {
     window.open(`lightning:${invoice}`);
   };
 
@@ -66,10 +69,10 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
         {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}
       </Grid>
 
-      {concept == 'bond' ? (
+      {concept === 'bond' ? (
         <Typography color='secondary' variant='h6' align='center'>
           <b>
-            {order.currency == 1000
+            {order.currency === 1000
               ? t(`${order.is_buyer ? 'SWAPPING INTO' : 'SWAPPING OUT of'} Lightning`)
               : t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}
           </b>

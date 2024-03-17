@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   List,
@@ -15,7 +15,7 @@ import {
   Typography,
   IconButton,
   Tooltip,
-  Button,
+  ListItemButton,
 } from '@mui/material';
 
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
@@ -36,57 +36,64 @@ import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { type Order, type Info } from '../../models';
+import type Coordinator from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type Order } from '../../models';
 
 interface OrderDetailsProps {
-  order: Order;
-  setOrder: (state: Order) => void;
-  info: Info;
-  baseUrl: string;
-  hasRobot: boolean;
+  shortAlias: string;
+  currentOrder: Order;
+  onClickCoordinator?: () => void;
   onClickGenerateRobot?: () => void;
 }
 
 const OrderDetails = ({
-  order,
-  info,
-  setOrder,
-  baseUrl,
-  hasRobot,
+  shortAlias,
+  currentOrder,
+  onClickCoordinator = () => null,
   onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-
-  const currencyCode: string = currencies[`${order.currency}`];
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const [coordinator, setCoordinator] = useState<Coordinator | null>(
+    federation.getCoordinator(shortAlias),
+  );
+  const [currencyCode, setCurrencyCode] = useState<string | null>();
   const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
 
+  useEffect(() => {
+    setCoordinator(federation.getCoordinator(shortAlias));
+    setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
+  }, [currentOrder]);
+
   const amountString = useMemo(() => {
-    // precision to 8 decimal if currency is BTC otherwise 4 decimals
-    if (order.currency == 1000) {
+    if (currentOrder === null) return;
+
+    if (currentOrder.currency === 1000) {
       return (
         amountToString(
-          order.amount * 100000000,
-          order.amount ? false : order.has_range,
-          order.min_amount * 100000000,
-          order.max_amount * 100000000,
+          (currentOrder.amount * 100000000).toString(),
+          currentOrder.amount > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount * 100000000,
+          currentOrder.max_amount * 100000000,
         ) + ' Sats'
       );
     } else {
       return (
         amountToString(
-          order.amount,
-          order.amount ? false : order.has_range,
-          order.min_amount,
-          order.max_amount,
-        ) + ` ${currencyCode}`
+          currentOrder.amount?.toString(),
+          currentOrder.amount > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount,
+          currentOrder.max_amount,
+        ) + ` ${String(currencyCode)}`
       );
     }
-  }, [order.currency, order.amount, order.min_amount, order.max_amount, order.has_range]);
+  }, [currentOrder, currencyCode]);
 
   // Countdown Renderer callback with condition
   const countdownRenderer = function ({
@@ -95,13 +102,13 @@ const OrderDetails = ({
     minutes,
     seconds,
     completed,
-  }: CountdownRenderProps) {
+  }: CountdownRenderProps): JSX.Element {
     if (completed) {
       // Render a completed state
       return <span> {t('The order has expired')}</span>;
     } else {
       let color = 'inherit';
-      const fraction_left = total / 1000 / order.total_secs_exp;
+      const fraction_left = total / 1000 / (currentOrder?.total_secs_exp ?? 1);
       // Make orange at 25% of time left
       if (fraction_left < 0.25) {
         color = theme.palette.warning.main;
@@ -121,18 +128,26 @@ const OrderDetails = ({
     }
   };
 
-  const timerRenderer = function (seconds: number) {
+  const timerRenderer = function (seconds: number): JSX.Element {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - hours * 3600) / 60);
     return (
       <span>
-        {hours > 0 ? hours + 'h' : ''} {minutes > 0 ? zeroPad(minutes) + 'm' : ''}{' '}
+        {hours > 0 ? `${hours}h` : ''} {minutes > 0 ? `${zeroPad(minutes)}m` : ''}{' '}
       </span>
     );
   };
 
   // Countdown Renderer callback with condition
-  const countdownPenaltyRenderer = function ({ minutes, seconds, completed }) {
+  const countdownPenaltyRenderer = ({
+    minutes,
+    seconds,
+    completed,
+  }: {
+    minutes: number;
+    seconds: number;
+    completed: boolean;
+  }): JSX.Element => {
     if (completed) {
       // Render a completed state
       return <span> {t('Penalty lifted, good to go!')}</span>;
@@ -153,15 +168,20 @@ const OrderDetails = ({
     let send: string = '';
     let receive: string = '';
     let sats: string = '';
+    const order = currentOrder;
 
-    const isBuyer = (order.type == 0 && order.is_maker) || (order.type == 1 && !order.is_maker);
-    const tradeFee = order.is_maker ? info?.maker_fee ?? 0 : info?.taker_fee ?? 0;
+    if (order === null) return {};
+
+    const isBuyer = (order.type === 0 && order.is_maker) || (order.type === 1 && !order.is_maker);
+    const tradeFee = order.is_maker
+      ? coordinator.info?.maker_fee ?? 0
+      : coordinator.info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
-    const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
+    const rate = order.amount > 0 ? order.amount / btc_now : Number(order.max_amount) / btc_now;
 
     if (isBuyer) {
-      if (order.amount) {
+      if (order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: -tradeFee,
@@ -181,18 +201,17 @@ const OrderDetails = ({
           routingBudget: defaultRoutingBudget,
           rate,
         });
-        sats = `${min}-${max}`;
+        sats = `${String(min)}-${String(max)}`;
       }
       send = t('You send via {{method}} {{amount}}', {
         amount: amountString,
         method: order.payment_method,
-        currencyCode,
       });
       receive = t('You receive via Lightning {{amount}} Sats (Approx)', {
         amount: sats,
       });
     } else {
-      if (order.amount) {
+      if (order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: tradeFee,
@@ -209,7 +228,7 @@ const OrderDetails = ({
           fee: tradeFee,
           rate,
         });
-        sats = `${min}-${max}`;
+        sats = `${String(min)}-${String(max)}`;
       }
       send = t('You send via Lightning {{amount}} Sats (Approx)', { amount: sats });
       receive = t('You receive via {{method}} {{amount}}', {
@@ -217,64 +236,85 @@ const OrderDetails = ({
         method: order.payment_method,
       });
     }
+
     return { send, receive };
-  }, [order.currency, order.satoshis_now, order.amount, order.has_range]);
+  }, [currentOrder, amountString]);
 
   return (
     <Grid container spacing={0}>
       <F2fMapDialog
-        latitude={order.latitude}
-        longitude={order.longitude}
+        latitude={currentOrder?.latitude}
+        longitude={currentOrder?.longitude}
         open={openWorldmap}
-        orderType={order.type || 0}
+        orderType={currentOrder?.type ?? 0}
         zoom={6}
         message={t(
           'The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.',
         )}
-        onClose={() => setOpenWorldmap(false)}
+        onClose={() => {
+          setOpenWorldmap(false);
+        }}
       />
       <Grid item xs={12}>
         <List dense={true}>
+          <ListItemButton
+            onClick={() => {
+              onClickCoordinator();
+            }}
+          >
+            {' '}
+            <Grid container direction='row' justifyContent='center' alignItems='center'>
+              <Grid item xs={2}>
+                <RobotAvatar shortAlias={coordinator.shortAlias} small={true} smooth={true} />
+              </Grid>
+              <Grid item xs={4}>
+                <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
+              </Grid>
+            </Grid>
+          </ListItemButton>
+
+          <Divider />
+
           <ListItem>
             <ListItemAvatar sx={{ width: '4em', height: '4em' }}>
               <RobotAvatar
-                statusColor={statusBadgeColor(order.maker_status)}
-                nickname={order.maker_nick}
-                tooltip={t(order.maker_status)}
-                orderType={order.type}
-                baseUrl={baseUrl}
+                statusColor={statusBadgeColor(currentOrder?.maker_status ?? '')}
+                hashId={currentOrder?.maker_hash_id}
+                tooltip={t(currentOrder?.maker_status ?? '')}
+                orderType={currentOrder?.type}
                 small={true}
               />
             </ListItemAvatar>
             <ListItemText
-              primary={`${order.maker_nick} (${
-                order.type
-                  ? t(order.currency == 1000 ? 'Swapping Out' : 'Seller')
-                  : t(order.currency == 1000 ? 'Swapping In' : 'Buyer')
+              primary={`${String(currentOrder?.maker_nick)} (${
+                currentOrder?.type === 1
+                  ? t(currentOrder?.currency === 1000 ? 'Swapping Out' : 'Seller')
+                  : t(currentOrder?.currency === 1000 ? 'Swapping In' : 'Buyer')
               })`}
               secondary={t('Order maker')}
             />
           </ListItem>
 
-          <Collapse in={order.is_participant && order.taker_nick !== 'None'}>
+          <Collapse in={currentOrder?.is_participant && currentOrder?.taker_nick !== 'None'}>
             <Divider />
             <ListItem>
               <ListItemText
-                primary={`${order.taker_nick} (${
-                  order.type
-                    ? t(order.currency == 1000 ? 'Swapping In' : 'Buyer')
-                    : t(order.currency == 1000 ? 'Swapping Out' : 'Seller')
+                primary={`${String(currentOrder?.taker_nick)} (${
+                  currentOrder?.type === 1
+                    ? t(currentOrder?.currency === 1000 ? 'Swapping In' : 'Buyer')
+                    : t(currentOrder?.currency === 1000 ? 'Swapping Out' : 'Seller')
                 })`}
                 secondary={t('Order taker')}
               />
               <ListItemAvatar>
                 <RobotAvatar
                   avatarClass='smallAvatar'
-                  statusColor={statusBadgeColor(order.taker_status)}
-                  nickname={order.taker_nick == 'None' ? undefined : order.taker_nick}
-                  tooltip={t(order.taker_status)}
-                  orderType={order.type === 0 ? 1 : 0}
-                  baseUrl={baseUrl}
+                  statusColor={statusBadgeColor(currentOrder?.taker_status ?? '')}
+                  hashId={
+                    currentOrder?.taker_hash_id === 'None' ? undefined : currentOrder?.taker_hash_id
+                  }
+                  tooltip={t(currentOrder?.taker_status ?? '')}
+                  orderType={currentOrder?.type === 0 ? 1 : 0}
                   small={true}
                 />
               </ListItemAvatar>
@@ -284,12 +324,15 @@ const OrderDetails = ({
             <Chip label={t('Order Details')} />
           </Divider>
 
-          <Collapse in={order.is_participant}>
+          <Collapse in={currentOrder?.is_participant}>
             <ListItem>
               <ListItemIcon>
                 <Article />
               </ListItemIcon>
-              <ListItemText primary={t(order.status_message)} secondary={t('Order status')} />
+              <ListItemText
+                primary={t(currentOrder?.status_message ?? '')}
+                secondary={t('Order status')}
+              />
             </ListItem>
             <Divider />
           </Collapse>
@@ -311,7 +354,7 @@ const OrderDetails = ({
             </ListItemIcon>
             <ListItemText
               primary={amountString}
-              secondary={order.amount ? 'Amount' : 'Amount Range'}
+              secondary={(currentOrder?.amount ?? 0) > 0 ? 'Amount' : 'Amount Range'}
             />
             <ListItemIcon>
               <IconButton
@@ -360,18 +403,24 @@ const OrderDetails = ({
                   size={1.42 * theme.typography.fontSize}
                   othersText={t('Others')}
                   verbose={true}
-                  text={order.payment_method}
+                  text={currentOrder?.payment_method}
                 />
               }
               secondary={
-                order.currency == 1000 ? t('Swap destination') : t('Accepted payment methods')
+                currentOrder?.currency === 1000
+                  ? t('Swap destination')
+                  : t('Accepted payment methods')
               }
             />
-            {order.payment_method.includes('Cash F2F') && (
+            {currentOrder?.payment_method.includes('Cash F2F') && (
               <ListItemIcon>
                 <Tooltip enterTouchDelay={0} title={t('F2F location')}>
                   <div>
-                    <IconButton onClick={() => setOpenWorldmap(true)}>
+                    <IconButton
+                      onClick={() => {
+                        setOpenWorldmap(true);
+                      }}
+                    >
                       <Map />
                     </IconButton>
                   </div>
@@ -387,24 +436,27 @@ const OrderDetails = ({
               <PriceChange />
             </ListItemIcon>
 
-            {order.price_now !== undefined ? (
+            {currentOrder?.price_now !== undefined ? (
               <ListItemText
                 primary={t('{{price}} {{currencyCode}}/BTC - Premium: {{premium}}%', {
-                  price: pn(order.price_now),
+                  price: pn(currentOrder?.price_now),
                   currencyCode,
-                  premium: order.premium_now,
+                  premium: currentOrder?.premium_now,
                 })}
                 secondary={t('Price and Premium')}
               />
             ) : null}
 
-            {!order.price_now && order.is_explicit ? (
-              <ListItemText primary={pn(order.satoshis)} secondary={t('Amount of Satoshis')} />
+            {currentOrder?.price_now === undefined && currentOrder?.is_explicit ? (
+              <ListItemText
+                primary={pn(currentOrder?.satoshis)}
+                secondary={t('Amount of Satoshis')}
+              />
             ) : null}
 
-            {!order.price_now && !order.is_explicit ? (
+            {currentOrder?.price_now === undefined && !currentOrder?.is_explicit ? (
               <ListItemText
-                primary={parseFloat(Number(order.premium).toFixed(2)) + '%'}
+                primary={`${parseFloat(Number(currentOrder?.premium).toFixed(2))}%`}
                 secondary={t('Premium over market price')}
               />
             ) : null}
@@ -418,7 +470,7 @@ const OrderDetails = ({
             </ListItemIcon>
             <Grid container>
               <Grid item xs={4.5}>
-                <ListItemText primary={order.id} secondary={t('Order ID')} />
+                <ListItemText primary={currentOrder?.id} secondary={t('Order ID')} />
               </Grid>
               <Grid item xs={7.5}>
                 <Grid container>
@@ -429,7 +481,7 @@ const OrderDetails = ({
                   </Grid>
                   <Grid item xs={10}>
                     <ListItemText
-                      primary={timerRenderer(order.escrow_duration)}
+                      primary={timerRenderer(currentOrder?.escrow_duration)}
                       secondary={t('Deposit timer')}
                     ></ListItemText>
                   </Grid>
@@ -439,39 +491,45 @@ const OrderDetails = ({
           </ListItem>
 
           {/* if order is in a status that does not expire, do not show countdown */}
-          <Collapse in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(order.status)}>
+          <Collapse in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(currentOrder?.status ?? 0)}>
             <Divider />
             <ListItem>
               <ListItemIcon>
                 <AccessTime />
               </ListItemIcon>
               <ListItemText secondary={t('Expires in')}>
-                <Countdown date={new Date(order.expires_at)} renderer={countdownRenderer} />
+                <Countdown
+                  date={new Date(currentOrder?.expires_at ?? '')}
+                  renderer={countdownRenderer}
+                />
               </ListItemText>
             </ListItem>
-            <LinearDeterminate totalSecsExp={order.total_secs_exp} expiresAt={order.expires_at} />
+            <LinearDeterminate
+              totalSecsExp={currentOrder?.total_secs_exp ?? 0}
+              expiresAt={currentOrder?.expires_at ?? ''}
+            />
           </Collapse>
         </List>
 
         {/* If the user has a penalty/limit */}
-        {order.penalty !== undefined ? (
+        {currentOrder?.penalty !== undefined ? (
           <Grid item xs={12}>
             <Alert severity='warning' sx={{ borderRadius: '0' }}>
-              <Countdown date={new Date(order.penalty)} renderer={countdownPenaltyRenderer} />
+              <Countdown
+                date={new Date(currentOrder?.penalty ?? '')}
+                renderer={countdownPenaltyRenderer}
+              />
             </Alert>
           </Grid>
         ) : (
           <></>
         )}
 
-        {!order.is_participant ? (
+        {!currentOrder?.is_participant ? (
           <Grid item xs={12}>
             <TakeButton
-              order={order}
-              setOrder={setOrder}
-              baseUrl={baseUrl}
-              hasRobot={hasRobot}
-              info={info}
+              currentOrder={currentOrder}
+              info={coordinator.info}
               onClickGenerateRobot={onClickGenerateRobot}
             />
           </Grid>

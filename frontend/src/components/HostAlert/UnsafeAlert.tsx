@@ -3,6 +3,33 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import { getHost } from '../../utils';
+import defaultFederation from '../../../static/federation.json';
+
+function federationUrls(): string[] {
+  const urls: string[] = [];
+
+  const removeProtocol = (url: string): string => {
+    return url.replace(/^https?:\/\/|\/\/$/, '');
+  };
+
+  for (const key in defaultFederation) {
+    const mainnet = defaultFederation[key].mainnet;
+    const testnet = defaultFederation[key].testnet;
+
+    // Add the URLs from the 'mainnet' and 'testnet' objects to the urls array
+    // if these are onion or i2p addresses
+    for (const safeOrigin of ['onion', 'i2p']) {
+      if (mainnet?.[safeOrigin]) urls.push(removeProtocol(mainnet[safeOrigin]));
+      if (testnet?.[safeOrigin]) urls.push(removeProtocol(testnet[safeOrigin]));
+    }
+  }
+
+  // web hosted frontend without coordinator
+  urls.push('robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion');
+  return urls;
+}
+
+export const safeUrls = federationUrls();
 
 const UnsafeAlert = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
@@ -11,20 +38,8 @@ const UnsafeAlert = (): JSX.Element => {
 
   const [unsafeClient, setUnsafeClient] = useState<boolean>(false);
 
-  // To do. Read from Coordinators Obj.
-  const safe_urls = [
-    'robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion',
-    'robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion',
-    'robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion',
-    'robosats.i2p',
-    'r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p',
-  ];
-
-  const checkClient = () => {
-    const http = new XMLHttpRequest();
-    const h = getHost();
-    const unsafe = !safe_urls.includes(h);
-
+  const checkClient = (): void => {
+    const unsafe = !safeUrls.includes(getHost());
     setUnsafeClient(unsafe);
   };
 
@@ -41,71 +56,42 @@ const UnsafeAlert = (): JSX.Element => {
   else if (unsafeClient) {
     return (
       <Paper elevation={6} className='unsafeAlert'>
-        {windowSize.width > 57 ? (
-          <Alert
-            severity='warning'
-            sx={{ maxHeight: '7em' }}
-            action={
-              <Button
-                onClick={() => {
-                  setShow(false);
-                }}
-              >
-                {t('Hide')}
-              </Button>
-            }
-          >
-            <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
-            <Trans i18nKey='desktop_unsafe_alert'>
-              <a>
-                Some features are disabled for your protection (e.g. chat) and you will not be able
-                to complete a trade without them. To protect your privacy and fully enable RoboSats,
-                use{' '}
-              </a>
-              <Link href='https://www.torproject.org/download/' target='_blank'>
-                Tor Browser
-              </Link>
-              <a> and visit the </a>
-              <Link
-                href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
-                target='_blank'
-              >
-                Onion
-              </Link>
-              <a> site.</a>
-            </Trans>
-          </Alert>
-        ) : (
-          <Alert severity='warning' sx={{ maxHeight: '8em' }}>
-            <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
-            <Trans i18nKey='phone_unsafe_alert'>
-              <a>You will not be able to complete a trade. Use </a>
-              <Link href='https://www.torproject.org/download/' target='_blank'>
-                Tor Browser
-              </Link>
-              <a> and visit the </a>
-              <Link
-                href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
-                target='_blank'
-              >
-                Onion
-              </Link>{' '}
-              <a> site.</a>
-            </Trans>
-            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-              <Button
-                className='hideAlertButton'
-                onClick={() => {
-                  setShow(false);
-                }}
-              >
-                {t('Hide')}
-              </Button>
-            </div>
-          </Alert>
-        )}
+        <Alert
+          severity='warning'
+          sx={{ maxHeight: windowSize?.width > 57 ? '7em' : '8em' }}
+          action={
+            <Button
+              onClick={() => {
+                setShow(false);
+              }}
+            >
+              {t('Hide')}
+            </Button>
+          }
+        >
+          <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
+          <Trans i18nKey='unsafe_alert'>
+            <a>To fully enable RoboSats and protect your data and privacy, use </a>
+            <Link href='https://www.torproject.org/download/' target='_blank'>
+              Tor Browser
+            </Link>
+            <a> and visit the federation hosted </a>
+            <Link
+              href='http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion'
+              target='_blank'
+            >
+              <b>Onion</b>
+            </Link>
+            <a> site or </a>
+            <Link href='https://apps.umbrel.com/app/robosats' target='_blank'>
+              host your own app.
+            </Link>
+          </Trans>
+        </Alert>
       </Paper>
     );
+  } else {
+    return <></>;
   }
 };
 

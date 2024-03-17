@@ -1,4 +1,4 @@
-_RoboSats Federation Basis v0.6.0~2_
+_RoboSats Federation Basis v0.6.0~3_
 
 ## Introduction
 RoboSats is a Free and Open Source project, anyone can spin up a new RoboSats backend instance. This is in fact ideal, given that the more backend instances there are, the more decentralized RoboSats becomes and the harder it is to stop. However, this decentralization creates some challenges:
@@ -95,6 +95,16 @@ Each RoboSats coordinator has a profile in the RoboSats app. The profile contain
 Some of these badges can be objectively measured and awarded. Other badges rely on the subjectivity of the development team. These will be generously awarded and only taken away after a warning.
 
 We also envision more badges in the future, for example milestones by number of trades coordinated (200, 1K, 5K, 25K, 100K, etc).
+
+## New coordinator limits.
+The RoboSats client app limits the size of order tha robots can place on newly joined coordinators. This way new coordinators can show their worth with smaller orders before handling all order sizes. The client allows orders of up to 250K Sats for completely new coordinators. The client will increase the size limite by 30% every 2016 blocks (that is, 2 weeks, same as the difficulty adjustment). After 6 months, a coordinator will be considered "mature" and able to host any order size. Coordinator that gained the "Founder" badge by joining before the v0.6.0 release are considered "mature".
+
+## New Coordinator Order Size Limits
+The RoboSats client application imposes limits on the order size that robots can place on newly established coordinators. This mechanism allows new coordinators to demonstrate their capabilities with progressively larger orders.
+
+New coordinators are initially restricted to hosting orders of up to 250,000 Sats. Over time, the order size limit increases. Specifically, the limit grows by 30% every 2016 blocks (2 weeks), the same cadence of the Bitcoin mining difficulty adjustment.
+
+After six months, or approximately 12,288 blocks, a coordinator reaches maturity and the app grants it the ability to handle orders of any size. Notably, coordinators that earned the "Founder" badge upon joining prior to the v0.6.0 release are considered mature and can process any order size immediately.
 
 ## Timeline
 

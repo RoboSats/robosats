@@ -20,11 +20,13 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import SwapCalls from '@mui/icons-material/SwapCalls';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import RobotAvatar from '../RobotAvatar';
 
 interface BookControlProps {
   width: number;
   paymentMethod: string[];
-  setPaymentMethods: () => void;
+  setPaymentMethods: (state: string[]) => void;
 }
 
 const BookControl = ({
@@ -33,6 +35,7 @@ const BookControl = ({
   setPaymentMethods,
 }: BookControlProps): JSX.Element => {
   const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t, i18n } = useTranslation();
   const theme = useTheme();
@@ -41,22 +44,27 @@ const BookControl = ({
     const typeZeroText = fav.mode === 'fiat' ? t('Buy') : t('Swap In');
     const typeOneText = fav.mode === 'fiat' ? t('Sell') : t('Swap Out');
     const small =
-      (typeZeroText.length + typeOneText.length) * 0.7 + (fav.mode == 'fiat' ? 16 : 7.5);
+      (typeZeroText.length + typeOneText.length) * 0.7 + (fav.mode === 'fiat' ? 16 : 7.5);
     const medium = small + 13;
     const large = medium + (t('and use').length + t('pay with').length) * 0.6 + 5;
     return [typeZeroText, typeOneText, small, medium, large];
   }, [i18n.language, fav.mode]);
 
-  const handleCurrencyChange = function (e) {
-    const currency = e.target.value;
+  const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+    const currency = Number(e.target.value);
     setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
   };
 
-  const handleTypeChange = function (mouseEvent, val) {
+  const handleHostChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+    const coordinator = String(e.target.value);
+    setFav({ ...fav, coordinator });
+  };
+
+  const handleTypeChange = function (mouseEvent: React.MouseEvent, val: number): void {
     setFav({ ...fav, type: val });
   };
 
-  const handleModeChange = function (mouseEvent, val) {
+  const handleModeChange = function (mouseEvent: React.MouseEvent, val: number): void {
     const mode = fav.mode === 'fiat' ? 'swap' : 'fiat';
     const currency = fav.mode === 'fiat' ? 1000 : 0;
     setFav({ ...fav, mode, currency });
@@ -195,7 +203,7 @@ const BookControl = ({
         {width > large ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
             <Typography variant='caption' color='text.secondary'>
-              {fav.currency == 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('pay with')}
+              {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('pay with')}
             </Typography>
           </Grid>
         ) : null}
@@ -216,14 +224,15 @@ const BookControl = ({
               listBoxProps={{ sx: { width: '13em' } }}
               onAutocompleteChange={setPaymentMethods}
               value={paymentMethod}
-              optionsType={fav.currency == 1000 ? 'swap' : 'fiat'}
+              optionsType={fav.currency === 1000 ? 'swap' : 'fiat'}
               error={false}
               helperText={''}
-              label={fav.currency == 1000 ? t('DESTINATION') : t('METHOD')}
+              label={fav.currency === 1000 ? t('DESTINATION') : t('METHOD')}
               tooltipTitle=''
-              listHeaderText=''
               addNewButtonText=''
               isFilter={true}
+              multiple={true}
+              optionsDisplayLimit={1}
             />
           </Grid>
         ) : null}
@@ -245,7 +254,7 @@ const BookControl = ({
               label={t('Select Payment Method')}
               required={true}
               renderValue={(value) =>
-                value == 'ANY' ? (
+                value === 'ANY' ? (
                   <CheckBoxOutlineBlankIcon style={{ position: 'relative', top: '0.1em' }} />
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -256,9 +265,9 @@ const BookControl = ({
               inputProps={{
                 style: { textAlign: 'center' },
               }}
-              value={paymentMethod[0] ? paymentMethod[0] : 'ANY'}
+              value={paymentMethod[0] ?? 'ANY'}
               onChange={(e) => {
-                setPaymentMethods(e.target.value == 'ANY' ? [] : [e.target.value]);
+                setPaymentMethods(e.target.value === 'ANY' ? [] : [e.target.value]);
               }}
             >
               <MenuItem value={'ANY'}>
@@ -305,6 +314,65 @@ const BookControl = ({
                   ))}
             </Select>
           </Grid>
+        ) : null}
+
+        {width > large ? (
+          <>
+            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+              <Typography variant='caption' color='text.secondary'>
+                {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('hosted by')}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Select
+                autoWidth
+                sx={{
+                  height: '2.3em',
+                  border: '0.5px solid',
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: '4px',
+                  borderColor: 'text.disabled',
+                  '&:hover': {
+                    borderColor: 'text.primary',
+                  },
+                }}
+                size='small'
+                label={t('Select Host')}
+                required={true}
+                value={fav.coordinator}
+                inputProps={{
+                  style: { textAlign: 'center' },
+                }}
+                onChange={handleHostChange}
+              >
+                <MenuItem value='any'>
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FlagWithProps code='ANY' />
+                  </div>
+                </MenuItem>
+                {Object.values(federation.coordinators).map((coordinator) =>
+                  coordinator.enabled ? (
+                    <MenuItem
+                      key={coordinator.shortAlias}
+                      value={coordinator.shortAlias}
+                      color='text.secondary'
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <RobotAvatar
+                          shortAlias={coordinator.shortAlias}
+                          style={{ width: '1.55em', height: '1.55em' }}
+                          smooth={true}
+                          small={true}
+                        />
+                      </div>
+                    </MenuItem>
+                  ) : (
+                    <></>
+                  ),
+                )}
+              </Select>
+            </Grid>
+          </>
         ) : null}
       </Grid>
       <Divider />

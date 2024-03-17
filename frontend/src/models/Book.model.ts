@@ -20,8 +20,10 @@ export interface PublicOrder {
   maker: number;
   escrow_duration: number;
   maker_nick: string;
+  maker_hash_id: string;
   price: number;
   maker_status: 'Active' | 'Seen recently' | 'Inactive';
+  coordinatorShortAlias?: string;
 }
 
 export interface Book {

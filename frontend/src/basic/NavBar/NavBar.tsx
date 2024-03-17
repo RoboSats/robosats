@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
-import { type Page } from '.';
+import { type Page, isPage } from '.';
 
 import {
   SettingsApplications,
@@ -16,33 +16,28 @@ import {
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
-interface NavBarProps {
-  width: number;
-  height: number;
-}
-
-const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
-  const {
-    robot,
-    page,
-    settings,
-    setPage,
-    setSlideDirection,
-    open,
-    setOpen,
-    currentOrder,
-    baseUrl,
-  } = useContext<UseAppStoreType>(AppContext);
-
+const NavBar = (): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { page, setPage, settings, setSlideDirection, open, setOpen, windowSize, navbarHeight } =
+    useContext<UseAppStoreType>(AppContext);
+  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+
   const navigate = useNavigate();
   const location = useLocation();
-  const smallBar = width < 50;
+  const smallBar = windowSize?.width < 50;
+  const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
+    ? {
+        position: 'relative',
+        bottom: garage.getSlot()?.hashId ? '0.9em' : '0.13em',
+        minWidth: '1em',
+      }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
 
   const pagesPosition = {
@@ -54,18 +49,22 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   };
 
   useEffect(() => {
+    // re-render on orde rand robot updated at for latest orderId in tab
+  }, [robotUpdatedAt]);
+
+  useEffect(() => {
     // change tab (page) into the current route
-    const pathPage: Page = location.pathname.split('/')[1];
-    if (pathPage == 'index.html') {
+    const pathPage: Page | string = location.pathname.split('/')[1];
+    if (pathPage === 'index.html') {
       navigate('/robot');
       setPage('robot');
     }
-    if (pathPage) {
+    if (isPage(pathPage)) {
       setPage(pathPage);
     }
   }, [location]);
 
-  const handleSlideDirection = function (oldPage: Page, newPage: Page) {
+  const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
     const oldPos: number = pagesPosition[oldPage];
     const newPos: number = pagesPosition[newPage];
     setSlideDirection(
@@ -73,13 +72,19 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
     );
   };
 
-  const changePage = function (mouseEvent: any, newPage: Page) {
-    if (newPage === 'none') {
-      return null;
-    } else {
+  const changePage = function (mouseEvent: any, newPage: Page): void {
+    if (newPage !== 'none') {
+      const slot = garage.getSlot();
       handleSlideDirection(page, newPage);
       setPage(newPage);
-      const param = newPage === 'order' ? currentOrder ?? '' : '';
+      const shortAlias = String(slot?.activeShortAlias);
+      const activeOrderId = slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId;
+      const lastOrderId = slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId;
+      const param =
+        newPage === 'order' ? `${shortAlias}/${String(activeOrderId ?? lastOrderId)}` : '';
+      if (newPage === 'order') {
+        setCurrentOrderId({ id: activeOrderId ?? lastOrderId, shortAlias });
+      }
       setTimeout(() => {
         navigate(`/${newPage}/${param}`);
       }, theme.transitions.duration.leavingScreen * 3);
@@ -88,35 +93,42 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
 
   useEffect(() => {
     setOpen(closeAll);
-  }, [page]);
+  }, [page, setOpen]);
+
+  const slot = garage.getSlot();
 
   return (
     <Paper
       elevation={6}
-      sx={{ height: `${height}em`, width: `100%`, position: 'fixed', bottom: 0, borderRadius: 0 }}
+      sx={{
+        height: `${navbarHeight}em`,
+        width: `100%`,
+        position: 'fixed',
+        bottom: 0,
+        borderRadius: 0,
+      }}
     >
       <Tabs
         TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
         variant='fullWidth'
         value={page}
-        indicatorColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
-        textColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
+        indicatorColor={color}
+        textColor={color}
         onChange={changePage}
       >
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={robot.nickname === null}
+          disabled={slot?.nickname === null}
           onClick={() => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            robot.nickname && robot.avatarLoaded ? (
+            slot?.hashId ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={robot.nickname}
-                baseUrl={baseUrl}
+                hashId={slot?.hashId}
               />
             ) : (
               <></>
@@ -150,7 +162,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!robot.avatarLoaded || currentOrder == undefined}
+          disabled={!slot?.getRobot()?.activeOrderId}
           icon={<Assignment />}
           iconPosition='start'
         />
@@ -166,11 +178,13 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('More')}
           value='none'
-          onClick={(e) => {
-            open.more ? null : setOpen({ ...open, more: true });
+          onClick={() => {
+            setOpen((open) => {
+              return { ...open, more: !open.more };
+            });
           }}
           icon={
-            <MoreTooltip open={open} setOpen={setOpen} closeAll={closeAll}>
+            <MoreTooltip>
               <MoreHoriz />
             </MoreTooltip>
           }

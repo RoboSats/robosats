@@ -16,10 +16,10 @@ const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
   let color = 'primary';
   if (status === 'unlocked') {
     Icon = LockOpen;
-    color = theme.palette.mode == 'dark' ? 'lightgreen' : 'green';
+    color = theme.palette.mode === 'dark' ? 'lightgreen' : 'green';
   } else if (status === 'settled') {
     Icon = Balance;
-    color = theme.palette.mode == 'dark' ? 'lightred' : 'red';
+    color = theme.palette.mode === 'dark' ? 'lightred' : 'red';
   }
 
   if (status === 'hide') {

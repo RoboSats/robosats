@@ -11,18 +11,16 @@ import {
   AccordionDetails,
   AccordionSummary,
 } from '@mui/material';
-import { pn } from '../../utils';
 
 // Icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface Props {
-  maxAmount: string;
   open: boolean;
   onClose: () => void;
 }
 
-const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
+const AboutDialog = ({ open, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
@@ -64,7 +62,7 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
               </p>
               <p>
                 {t(
-                  'At no point, AnonymousAlice01 and BafflingBob02 have to entrust the bitcoin funds to each other. In case they have a conflict, RoboSats staff will help resolving the dispute.',
+                  'At no point, AnonymousAlice01 and BafflingBob02 have to entrust the bitcoin funds to each other. In case they have a conflict, the RoboSats coordinator will help resolving the dispute.',
                 )}
                 {t('You can find a step-by-step description of the trade pipeline in ')}
                 <Link target='_blank' href='https://learn.robosats.com/docs/trade-pipeline/'>
@@ -75,6 +73,22 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
                   {t('How to use')}
                 </Link>
                 .
+              </p>
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion disableGutters={true}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>{t('What is a coordinator?')}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography component='div' variant='body2'>
+              <p>
+                {' '}
+                {t(
+                  'RoboSats is a decentralized exchange with multiple, fully redundant, trade coordinators. The coordinator provides the infrastructure for your trade: mantains the intermediary lightning node, does book keeping, and relays your encrypted chat messages. The coordinator is also the judge in case your order enters a dispute. The coordinator is a trusted role, make sure you trust your coordinator by exploring its profile, webpage, social media and the comments from other users online.',
+                )}
               </p>
             </Typography>
           </AccordionDetails>
@@ -103,8 +117,7 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
             <Typography component='div' variant='body2'>
               <p>
                 {t(
-                  'Maximum single trade size is {{maxAmount}} Satoshis to minimize lightning routing failure. There is no limits to the number of trades per day. A robot can only have one order at a time. However, you can use multiple robots simultaneously in different browsers (remember to back up your robot tokens!).',
-                  { maxAmount: pn(maxAmount) },
+                  'Each RoboSats coordinator will set a maximum trade size to minimize the hassle of lightning routing failures. There is no limits to the number of trades per day. A robot can only have one order at a time. However, you can use multiple robots simultaneously using the Robot garage. Remember to back up your robot tokens!',
                 )}{' '}
               </p>
             </Typography>
@@ -119,8 +132,7 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
             <Typography component='div' variant='body2'>
               <p>
                 {t(
-                  'RoboSats total fee for an order is {{tradeFee}}%. This fee is split to be covered by both: the order maker ({{makerFee}}%) and the order taker ({{takerFee}}%). In case an onchain address is used to received the Sats a variable swap fee applies. Check the exchange details by tapping on the bottom bar icon to see the current swap fee.',
-                  { tradeFee: '0.2', makerFee: '0.025', takerFee: '0.175' },
+                  'The trade fee is collected by the robosats coordinator as a compensation for their service. You can see the fees of each coordinator by checking out their profile. The trade fee is split to be covered by both: the order maker and the order taker. Typically, the maker fee will be significantly smaller than the taker fee. In case an onchain address is used to received the Sats a variable swap fee applies. The onchain payout fee can also be seen in the profile of the coordinator.',
                 )}{' '}
               </p>
               <p>
@@ -141,12 +153,24 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
               <p>
                 {' '}
                 {t(
-                  'RoboSats will never ask you for your name, country or ID. RoboSats does not custody your funds and does not care who you are. RoboSats does not collect or custody any personal data. For best anonymity use Tor Browser and access the .onion hidden service.',
+                  'The RoboSats client, which you run on your local machine or browser, does not collect or share your IP address, location, name, or personal data. The client encrypts your private messages, which can only be decrypted by your trade partner.',
+                )}{' '}
+              </p>
+              <p>
+                {' '}
+                {t(
+                  'The coordinator you choose will maintain a database of pseudonymous robots and orders for the application to function correctly. You can further enhance your privacy by using proxy nodes or coinjoining.',
+                )}{' '}
+              </p>
+              <p>
+                {' '}
+                {t(
+                  'Your trade partner will not know the destination of the Lightning payment. The permanence of the data collected by the coordinators depend on their privacy and data policies. If a dispute arises, a coordinator may request additional information. The specifics of this process can vary from coordinator to coordinator.',
                 )}{' '}
               </p>
               <p>
                 {t(
-                  'Your trading peer is the only one who can potentially guess anything about you. Keep your chat short and concise. Avoid providing non-essential information other than strictly necessary for the fiat payment.',
+                  'During a typical order, your trading peer is the only one who can potentially guess anything about you. Keep your chat short and concise. Avoid providing non-essential information other than strictly necessary for the fiat payment.',
                 )}{' '}
               </p>
             </Typography>
@@ -184,18 +208,20 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
               <p>
                 {' '}
                 {t(
-                  "The buyer and the seller never have to trust each other. Some trust on RoboSats is needed since linking the seller's hold invoice and buyer payment is not atomic (yet). In addition, disputes are solved by the RoboSats staff.",
+                  "The buyer and the seller never have to trust each other. Some trust on the coordinator is needed since linking the seller's hold invoice and buyer payment is not atomic. In addition, disputes are solved by the coordinator. Make sure to select a coordinator with good reputation.",
                 )}
               </p>
               <p>
                 {' '}
                 {t(
-                  "To be totally clear. Trust requirements are minimized. However, there is still one way RoboSats could run away with your satoshis: by not releasing the satoshis to the buyer. It could be argued that such move is not in RoboSats' interest as it would damage the reputation for a small payout. However, you should hesitate and only trade small quantities at a time. For large amounts use an onchain escrow service such as Bisq",
+                  "While trust requirements are minimized, there are ways for the coordinator to run away with your satoshis: for example, by not releasing the satoshis to the buyer. It could be argued that such move is not in the coordinator's interest as it would damage the reputation for a small payout. However, you should hesitate and only trade small quantities at a time. For large amounts you can use a high reputation DAO based escrow service such as Bisq",
                 )}
               </p>
               <p>
                 {' '}
-                {t('You can build more trust on RoboSats by inspecting the source code.')}{' '}
+                {t(
+                  'You can build more trust on the RoboSats and coordinator infrastructure by inspecting the source code.',
+                )}{' '}
                 <Link href='https://github.com/RoboSats/robosats'> {t('Project source code')}</Link>
                 .{' '}
               </p>
@@ -205,14 +231,14 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
 
         <Accordion disableGutters={true}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>{t('What happens if RoboSats suddenly disappears?')}</Typography>
+            <Typography>{t('What happens if my coordinator goes offline forever?')}</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography component='div' variant='body2'>
               <p>
                 {' '}
                 {t(
-                  'Your sats will return to you. Any hold invoice that is not settled would be automatically returned even if RoboSats goes down forever. This is true for both, locked bonds and trading escrows. However, there is a small window between the seller confirms FIAT RECEIVED and the moment the buyer receives the satoshis when the funds could be permanently lost if RoboSats disappears. This window is about 1 second long. Make sure to have enough inbound liquidity to avoid routing failures. If you have any problem, reach out trough the RoboSats public channels.',
+                  'Your sats will return to you. Any hold invoice that is not settled would be automatically returned even if the coordinator goes down forever. This is true for both, locked bonds and trading escrows. However, there is a small window between the seller confirms FIAT RECEIVED and the moment the buyer receives the satoshis when the funds could be permanently lost if the coordinator disappears. This window is usually about 1 second long. Make sure to have enough inbound liquidity to avoid routing failures. If you have any problem, reach out trough the RoboSats public channels or directly to your trade coordinator using one of the contact methods listed on their profile.',
                 )}
               </p>
             </Typography>
@@ -248,7 +274,7 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
                 )}
                 <Link href='https://t.me/robosats'>{t('(Telegram)')}</Link>
                 {t(
-                  '. RoboSats will never contact you. RoboSats will definitely never ask for your robot token.',
+                  '. RoboSats developers will never contact you. The developers or the coordinators will definitely never ask for your robot token.',
                 )}
               </p>
             </Typography>
@@ -263,4 +289,4 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
   );
 };
 
-export default InfoDialog;
+export default AboutDialog;

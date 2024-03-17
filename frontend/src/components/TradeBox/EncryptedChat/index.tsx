@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { type Robot } from '../../../models';
+import { type Order, type Robot } from '../../../models';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import EncryptedTurtleChat from './EncryptedTurtleChat';
 
 interface Props {
-  orderId: number;
+  order: Order;
   status: number;
-  takerNick: string;
-  makerNick: string;
-  userNick: string;
   chatOffset: number;
   baseUrl: string;
   messages: EncryptedChatMessage[];
@@ -33,10 +30,7 @@ export interface ServerMessage {
 }
 
 const EncryptedChat: React.FC<Props> = ({
-  orderId,
-  takerNick,
-  robot,
-  userNick,
+  order,
   chatOffset,
   baseUrl,
   setMessages,
@@ -48,11 +42,12 @@ const EncryptedChat: React.FC<Props> = ({
   return turtleMode ? (
     <EncryptedTurtleChat
       messages={messages}
-      robot={robot}
       setMessages={setMessages}
-      orderId={orderId}
-      takerNick={takerNick}
-      userNick={userNick}
+      order={order}
+      takerNick={order.taker_nick}
+      takerHashId={order.taker_hash_id}
+      makerHashId={order.maker_hash_id}
+      userNick={order.ur_nick}
       chatOffset={chatOffset}
       baseUrl={baseUrl}
       turtleMode={turtleMode}
@@ -62,11 +57,12 @@ const EncryptedChat: React.FC<Props> = ({
     <EncryptedSocketChat
       status={status}
       messages={messages}
-      robot={robot}
       setMessages={setMessages}
-      orderId={orderId}
-      takerNick={takerNick}
-      userNick={userNick}
+      order={order}
+      takerNick={order.taker_nick}
+      takerHashId={order.taker_hash_id}
+      makerHashId={order.maker_hash_id}
+      userNick={order.ur_nick}
       baseUrl={baseUrl}
       turtleMode={turtleMode}
       setTurtleMode={setTurtleMode}
