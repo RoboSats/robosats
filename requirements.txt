@@ -4,7 +4,7 @@ django-celery-beat==2.6.0
 django-celery-results==2.5.1
 django-model-utils==4.4.0
 django-redis==5.4.0
-djangorestframework==3.14.0
+djangorestframework==3.15.0
 channels==4.0.0
 channels-redis==4.2.0
 celery==5.3.6
