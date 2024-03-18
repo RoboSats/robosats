@@ -75,8 +75,17 @@ export class Federation {
       this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
       this.onCoordinatorSaved();
     };
+
     this.loading = true;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+
+    const host = getHost();
+    const url = `${window.location.protocol}//${host}`;
+    const tesnetHost = Object.values(this.coordinators).find((coor) => {
+      return Object.values(coor.testnet).includes(url);
+    });
+    if (tesnetHost) settings.network = 'testnet';
+
     for (const coor of Object.values(this.coordinators)) {
       if (coor.enabled) {
         await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
