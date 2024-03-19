@@ -1,12 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { apiClient } from '../../services/api';
+import React, { useContext } from 'react';
 import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 'react-leaflet';
 import { useTheme, LinearProgress } from '@mui/material';
-import { type GeoJsonObject } from 'geojson';
 import { DivIcon, type LeafletMouseEvent } from 'leaflet';
 import { type PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
-import getWorldmapGeojson from '../../geo/Web';
 import MarkerClusterGroup from '@christopherpickering/react-leaflet-markercluster';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
@@ -44,18 +41,7 @@ const Map = ({
   interactive = false,
 }: Props): JSX.Element => {
   const theme = useTheme();
-  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const [worldmap, setWorldmap] = useState<GeoJsonObject | undefined>();
-
-  useEffect(() => {
-    getWorldmapGeojson(apiClient, hostUrl)
-      .then((data) => {
-        setWorldmap(data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  }, []);
+  const { worldmap } = useContext<UseAppStoreType>(AppContext);
 
   const RobotMarker = (
     key: string | number,

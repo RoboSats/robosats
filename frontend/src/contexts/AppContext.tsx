@@ -9,6 +9,7 @@ import React, {
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 import { ThemeProvider } from '@mui/material';
+import { type GeoJsonObject } from 'geojson';
 
 import { Settings, type Version, type Origin, type Favorites } from '../models';
 
@@ -17,6 +18,8 @@ import { getClientVersion, getHost } from '../utils';
 import defaultFederation from '../../static/federation.json';
 import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
+import getWorldmapGeojson from '../geo/Web';
+import { apiClient } from '../services/api';
 
 const getWindowSize = function (fontSize: number): { width: number; height: number } {
   // returns window size in EM units
@@ -131,6 +134,7 @@ export interface UseAppStoreType {
   hostUrl: string;
   fav: Favorites;
   setFav: Dispatch<SetStateAction<Favorites>>;
+  worldmap?: GeoJsonObject;
 }
 
 export const initialAppContext: UseAppStoreType = {
@@ -156,6 +160,7 @@ export const initialAppContext: UseAppStoreType = {
   acknowledgedWarning: false,
   fav: { type: null, currency: 0, mode: 'fiat', coordinator: 'any' },
   setFav: () => {},
+  worldmap: undefined,
 };
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
@@ -187,6 +192,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
     initialAppContext.acknowledgedWarning,
   );
+  const [worldmap, setWorldmap] = useState<GeoJsonObject>();
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -221,6 +227,18 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
   }, []);
 
   useEffect(() => {
+    if (page === 'offers' && !worldmap) {
+      getWorldmapGeojson(apiClient, hostUrl)
+        .then((data) => {
+          setWorldmap(data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+  }, [page]);
+
+  useEffect(() => {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   }, [theme.typography.fontSize]);
 
@@ -250,6 +268,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
         origin,
         fav,
         setFav,
+        worldmap,
       }}
     >
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
