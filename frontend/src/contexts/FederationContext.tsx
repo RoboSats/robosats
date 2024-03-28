@@ -9,7 +9,7 @@ import React, {
   type ReactNode,
 } from 'react';
 
-import { type Order, Federation } from '../models';
+import { type Order, Federation, Settings } from '../models';
 
 import { federationLottery } from '../utils';
 
@@ -62,7 +62,7 @@ export interface UseFederationStoreType {
 }
 
 export const initialFederationContext: UseFederationStoreType = {
-  federation: new Federation(),
+  federation: new Federation('onion', new Settings(), ''),
   sortedCoordinators: [],
   setDelay: () => {},
   currentOrderId: { id: null, shortAlias: null },
@@ -80,7 +80,7 @@ export const FederationContextProvider = ({
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
-  const [federation, setFederation] = useState(initialFederationContext.federation);
+  const [federation] = useState(new Federation(origin, settings, hostUrl));
   const sortedCoordinators = useMemo(() => federationLottery(federation), []);
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
@@ -102,20 +102,19 @@ export const FederationContextProvider = ({
     setMaker((maker) => {
       return { ...maker, coordinator: sortedCoordinators[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
+    federation.registerHook('onFederationUpdate', () => {
+      setFederationUpdatedAt(new Date().toISOString());
+    });
+    federation.registerHook('onCoordinatorUpdate', () => {
+      setCoordinatorUpdatedAt(new Date().toISOString());
+    });
   }, []);
 
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
     if (window.NativeRobosats === undefined || torStatus === 'ON') {
-      const newFed = initialFederationContext.federation;
-      newFed.registerHook('onFederationUpdate', () => {
-        setFederationUpdatedAt(new Date().toISOString());
-      });
-      newFed.registerHook('onCoordinatorUpdate', () => {
-        setCoordinatorUpdatedAt(new Date().toISOString());
-      });
-      void newFed.start(origin, settings, hostUrl);
-      setFederation(newFed);
+      void federation.updateUrl(origin, settings, hostUrl);
+      void federation.update();
     }
   }, [settings.network, torStatus]);
 

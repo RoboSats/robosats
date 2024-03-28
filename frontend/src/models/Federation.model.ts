@@ -14,14 +14,14 @@ import { updateExchangeInfo } from './Exchange.model';
 type FederationHooks = 'onCoordinatorUpdate' | 'onFederationUpdate';
 
 export class Federation {
-  constructor() {
+  constructor(origin: Origin, settings: Settings, hostUrl: string) {
     this.coordinators = Object.entries(defaultFederation).reduce(
       (acc: Record<string, Coordinator>, [key, value]: [string, any]) => {
         if (getHost() !== '127.0.0.1:8000' && key === 'local') {
           // Do not add `Local Dev` unless it is running on localhost
           return acc;
         } else {
-          acc[key] = new Coordinator(value);
+          acc[key] = new Coordinator(value, origin, settings, hostUrl);
           return acc;
         }
       },
@@ -36,7 +36,16 @@ export class Federation {
       onCoordinatorUpdate: [],
       onFederationUpdate: [],
     };
+
     this.loading = true;
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+
+    const host = getHost();
+    const url = `${window.location.protocol}//${host}`;
+    const tesnetHost = Object.values(this.coordinators).find((coor) => {
+      return Object.values(coor.testnet).includes(url);
+    });
+    if (tesnetHost) settings.network = 'testnet';
   }
 
   public coordinators: Record<string, Coordinator>;
@@ -69,38 +78,10 @@ export class Federation {
     this.triggerHook('onFederationUpdate');
   };
 
-  // Setup
-  start = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
-    const onCoordinatorStarted = (): void => {
-      this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
-      this.onCoordinatorSaved();
-    };
-
-    this.loading = true;
-    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
-
-    const host = getHost();
-    const url = `${window.location.protocol}//${host}`;
-    const tesnetHost = Object.values(this.coordinators).find((coor) => {
-      return Object.values(coor.testnet).includes(url);
-    });
-    if (tesnetHost) settings.network = 'testnet';
-
+  updateUrl = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
     for (const coor of Object.values(this.coordinators)) {
-      if (coor.enabled) {
-        await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
-      }
+      coor.updateUrl(origin, settings, hostUrl);
     }
-    this.updateEnabledCoordinators();
-  };
-
-  // On Testnet/Mainnet change
-  updateUrls = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
-    this.loading = true;
-    for (const coor of Object.values(this.coordinators)) {
-      await coor.updateUrl(settings, origin, hostUrl);
-    }
-    this.loading = false;
   };
 
   update = async (): Promise<void> => {
@@ -115,9 +96,12 @@ export class Federation {
       lifetime_volume: 0,
       version: { major: 0, minor: 0, patch: 0 },
     };
+    this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.updateEnabledCoordinators();
     for (const coor of Object.values(this.coordinators)) {
       await coor.update(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
     }

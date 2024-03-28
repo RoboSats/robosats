@@ -97,7 +97,7 @@ function calculateSizeLimit(inputDate: Date): number {
 }
 
 export class Coordinator {
-  constructor(value: any) {
+  constructor(value: any, origin: Origin, settings: Settings, hostUrl: string) {
     const established = new Date(value.established);
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
@@ -115,6 +115,8 @@ export class Coordinator {
     this.testnetNodesPubkeys = value.testnetNodesPubkeys;
     this.url = '';
     this.basePath = '';
+
+    this.updateUrl(origin, settings, hostUrl);
   }
 
   // These properties are loaded from federation.json
@@ -145,22 +147,7 @@ export class Coordinator {
   public loadingLimits: boolean = false;
   public loadingRobot: boolean = true;
 
-  start = async (
-    origin: Origin,
-    settings: Settings,
-    hostUrl: string,
-    onUpdate: (shortAlias: string) => void = () => {},
-  ): Promise<void> => {
-    if (this.enabled !== true) return;
-    void this.updateUrl(settings, origin, hostUrl, onUpdate);
-  };
-
-  updateUrl = async (
-    settings: Settings,
-    origin: Origin,
-    hostUrl: string,
-    onUpdate: (shortAlias: string) => void = () => {},
-  ): Promise<void> => {
+  updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = hostUrl;
       this.basePath = `/${settings.network}/${this.shortAlias}`;
@@ -168,9 +155,6 @@ export class Coordinator {
       this.url = String(this[settings.network][origin]);
       this.basePath = '';
     }
-    void this.update(() => {
-      onUpdate(this.shortAlias);
-    });
   };
 
   update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
@@ -205,7 +189,6 @@ export class Coordinator {
     apiClient
       .get(this.url, `${this.basePath}/api/book/`)
       .then((data) => {
-        console.log('BOOK', data);
         if (!data?.not_found) {
           this.book = (data as PublicOrder[]).map((order) => {
             order.coordinatorShortAlias = this.shortAlias;

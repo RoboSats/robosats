@@ -14,7 +14,7 @@ export interface ReactNativeWebView {
 export interface NativeWebViewMessageHttp {
   id?: number;
   category: 'http';
-  type: 'post' | 'get' | 'put' | 'delete' | 'xhr';
+  type: 'post' | 'get' | 'put' | 'delete';
   path: string;
   baseUrl: string;
   headers?: object;
