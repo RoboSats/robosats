@@ -26,9 +26,10 @@ class RoboGenerator {
     const numCores = 8;
 
     for (let i = 0; i < numCores; i++) {
-      const worker = new Worker(new URL('./robohash.worker.ts', import.meta.url));
-      worker.onmessage = this.assignTasksToWorkers.bind(this);
-      this.workers.push({ worker, busy: false });
+      // FIXME
+      // const worker = new Worker(new URL('./robohash.worker.ts', import.meta.url));
+      // worker.onmessage = this.assignTasksToWorkers.bind(this);
+      // this.workers.push({ worker, busy: false });
     }
   }
 
@@ -81,6 +82,8 @@ class RoboGenerator {
     hash,
     size,
   ) => {
+    // FIXME
+    return '';
     const cacheKey = `${size}px;${hash}`;
     if (this.assetsCache[cacheKey]) {
       return this.assetsCache[cacheKey];

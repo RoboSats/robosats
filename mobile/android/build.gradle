@@ -9,7 +9,6 @@ buildscript {
         compileSdkVersion = 33
         targetSdkVersion = 33
         kotlin_version = "1.8.21"
-        kotlinVersion = "1.8.21" //for react-native-tor
 
         if (System.properties['os.arch'] == "aarch64") {
             // For M1 Users we need to use the NDK 24 which added support for aarch64

@@ -44,7 +44,7 @@ const RobotPage = (): JSX.Element => {
     const token = urlToken ?? garage.currentSlot;
     if (token !== undefined && token !== null && page === 'robot') {
       setInputToken(token);
-      if (window.NativeRobosats === undefined || torStatus === '"Done"') {
+      if (window.NativeRobosats === undefined || torStatus === 'ON') {
         getGenerateRobot(token);
         setView('profile');
       }
@@ -83,7 +83,7 @@ const RobotPage = (): JSX.Element => {
     garage.deleteSlot();
   };
 
-  if (!(window.NativeRobosats === undefined) && !(torStatus === 'DONE' || torStatus === '"Done"')) {
+  if (!(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
     return (
       <Paper
         elevation={12}
