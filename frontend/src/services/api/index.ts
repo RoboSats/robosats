@@ -11,7 +11,6 @@ export interface ApiClient {
   put: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object | undefined>;
   get: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined>;
   delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined>;
-  fileImageUrl?: (baseUrl: string, path: string) => Promise<string | undefined>;
 }
 
 export const apiClient: ApiClient =

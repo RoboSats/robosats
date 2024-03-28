@@ -23,7 +23,6 @@ const App = () => {
   useEffect(() => {
     TorModule.start();
     DeviceEventEmitter.addListener('TorStatus', (payload) => {
-      console.log(payload.torStatus);
       if (payload.torStatus === 'OFF') TorModule.restart();
       injectMessage({
         category: 'system',
@@ -114,14 +113,6 @@ const App = () => {
       } else if (data.type === 'delete') {
         torClient
           .delete(data.baseUrl, data.path, data.headers)
-          .then((response: object) => {
-            injectMessageResolve(data.id, response);
-          })
-          .catch((e) => onCatch(data.id, e))
-          .finally(TorModule.getTorStatus);
-      } else if (data.type === 'xhr') {
-        torClient
-          .request(data.baseUrl, data.path)
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
