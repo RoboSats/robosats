@@ -70,4 +70,4 @@ Il existe une myriade d'applications et de services disponibles qui permettent d
 
 Étant donné que l'obligation n'est qu'un blocage temporaire des fonds, vous pouvez demander à un ami de couvrir l'obligation de fidélité en payant le code QR à votre place. L'obligation est instantanément débloquée à la suite d'une transaction réussie !
 
-{% include improve %}
+{% include improve_fr %}

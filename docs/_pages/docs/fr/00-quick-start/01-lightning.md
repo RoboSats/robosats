@@ -30,4 +30,4 @@ Lors de l'achat de bitcoins (réception de Sats sur le LN), la facture que vous 
 
 Dans l'éventualité d'un tel scénario, sauvegardez en toute sécurité le jeton privé de votre robot et vérifiez de temps en temps le paiement de votre commande. Si le problème persiste, n'hésitez pas à contacter le [groupe d'assistance SimpleX](/contribute/code/#communication-channels) afin que le personnel de RoboSats puisse investiguer.
 
-{% include improve %}
+{% include improve_fr %}

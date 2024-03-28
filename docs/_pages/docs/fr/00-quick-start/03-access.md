@@ -79,4 +79,4 @@ Il existe plusieurs services tor2web qui servent de miroirs en cas d'indisponibi
 > [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
 > [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
 
-{% include improve %}
+{% include improve_fr %}

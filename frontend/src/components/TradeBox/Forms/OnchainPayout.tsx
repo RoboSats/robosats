@@ -39,7 +39,7 @@ export const OnchainPayoutForm = ({
   const invalidFee = onchain.miningFee < minMiningFee || onchain.miningFee > maxMiningFee;
   const costPerVByte = 280;
 
-  const handleMiningFeeChange = (e) => {
+  const handleMiningFeeChange = (e: React.ChangeEventHandler<HTMLInputElement>): void => {
     const miningFee = Number(e.target.value);
     setOnchain({ ...onchain, miningFee });
   };
@@ -67,12 +67,9 @@ export const OnchainPayoutForm = ({
 
         <ListItem>
           <ListItemText
-            primary={
-              pn(Math.floor((order.invoice_amount * order.swap_fee_rate) / 100)) +
-              ' Sats (' +
-              order.swap_fee_rate +
-              '%)'
-            }
+            primary={`${pn(Math.floor((order.invoice_amount * order.swap_fee_rate) / 100))} Sats (${
+              order.swap_fee_rate
+            }%)`}
             secondary={t('Swap fee')}
           />
         </ListItem>
@@ -81,12 +78,9 @@ export const OnchainPayoutForm = ({
 
         <ListItem>
           <ListItemText
-            primary={
-              pn(Math.floor(Math.max(minMiningFee, onchain.miningFee) * costPerVByte)) +
-              ' Sats (' +
-              Math.max(minMiningFee, onchain.miningFee) +
-              ' Sats/vByte)'
-            }
+            primary={`${pn(
+              Math.floor(Math.max(minMiningFee, onchain.miningFee) * costPerVByte),
+            )} Sats (${Math.max(minMiningFee, onchain.miningFee)} Sats/vByte)`}
             secondary={t('Mining fee')}
           />
         </ListItem>
@@ -115,8 +109,8 @@ export const OnchainPayoutForm = ({
         <Grid container direction='row' justifyContent='center' alignItems='flex-start' spacing={0}>
           <Grid item xs={7}>
             <TextField
-              error={onchain.badAddress != ''}
-              helperText={onchain.badAddress ? t(onchain.badAddress) : ''}
+              error={onchain.badAddress !== ''}
+              helperText={onchain.badAddress !== '' ? t(onchain.badAddress) : ''}
               label={t('Bitcoin Address')}
               required
               value={onchain.address}

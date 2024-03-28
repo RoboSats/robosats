@@ -19,7 +19,6 @@ import { pn, saveAsJson } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
 
 // Icons
-import { ExportIcon, FlagWithProps } from '../Icons';
 import {
   Schedule,
   PriceChange,
@@ -29,45 +28,49 @@ import {
   AccountBox,
   Link,
 } from '@mui/icons-material';
-import { RoboSatsNoTextIcon, SendReceiveIcon, BitcoinIcon } from '../Icons';
+import {
+  RoboSatsNoTextIcon,
+  SendReceiveIcon,
+  BitcoinIcon,
+  ExportIcon,
+  FlagWithProps,
+} from '../Icons';
 import { type TradeCoordinatorSummary, type TradeRobotSummary } from '../../models/Order.model';
 import { systemClient } from '../../services/System';
 
 interface Props {
   isMaker: boolean;
-  makerNick: string;
-  takerNick: string;
+  makerHashId: string;
+  takerHashId: string;
   currencyCode: string;
   makerSummary: TradeRobotSummary;
   takerSummary: TradeRobotSummary;
   platformSummary: TradeCoordinatorSummary;
   orderId: number;
-  baseUrl: string;
 }
 
 const TradeSummary = ({
   isMaker,
-  makerNick,
-  takerNick,
+  makerHashId,
+  takerHashId,
   currencyCode,
   makerSummary,
   takerSummary,
   platformSummary,
   orderId,
-  baseUrl,
 }: Props): JSX.Element => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const theme = useTheme();
 
   const [buttonValue, setButtonValue] = useState<number>(isMaker ? 0 : 2);
-  const userSummary = buttonValue == 0 ? makerSummary : takerSummary;
+  const userSummary = buttonValue === 0 ? makerSummary : takerSummary;
   const contractTimestamp = new Date(platformSummary.contract_timestamp ?? null);
-  const total_time = platformSummary.contract_total_time;
-  const hours = parseInt(total_time / 3600);
-  const mins = parseInt((total_time - hours * 3600) / 60);
-  const secs = parseInt(total_time - hours * 3600 - mins * 60);
+  const totalTime = platformSummary.contract_total_time;
+  const hours = parseInt(totalTime / 3600);
+  const mins = parseInt((totalTime - hours * 3600) / 60);
+  const secs = parseInt(totalTime - hours * 3600 - mins * 60);
 
-  const onClickExport = function () {
+  const onClickExport = function (): void {
     const summary = {
       order_id: orderId,
       currency: currencyCode,
@@ -118,9 +121,8 @@ const TradeSummary = ({
             }}
           >
             <RobotAvatar
-              baseUrl={baseUrl}
               style={{ height: '1.5em', width: '1.5em' }}
-              nickname={makerNick}
+              hashId={makerHashId}
               small={true}
             />
             &nbsp;
@@ -145,10 +147,9 @@ const TradeSummary = ({
             {t('Taker')}
             &nbsp;
             <RobotAvatar
-              baseUrl={baseUrl}
               avatarClass='smallAvatar'
               style={{ height: '1.5em', width: '1.5em' }}
-              nickname={takerNick}
+              hashId={takerHashId}
               small={true}
             />
           </ToggleButton>
@@ -272,7 +273,7 @@ const TradeSummary = ({
         </List>
       </div>
       {/* Platform Summary */}
-      <div style={{ display: buttonValue == 1 ? '' : 'none' }}>
+      <div style={{ display: buttonValue === 1 ? '' : 'none' }}>
         <List dense={true}>
           <ListItem>
             <ListItemIcon>

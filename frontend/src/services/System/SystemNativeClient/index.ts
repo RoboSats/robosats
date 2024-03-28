@@ -4,7 +4,7 @@ import NativeRobosats from '../../Native';
 class SystemNativeClient implements SystemClient {
   constructor() {
     window.NativeRobosats = new NativeRobosats();
-    window.NativeRobosats.postMessage({
+    void window.NativeRobosats.postMessage({
       category: 'system',
       type: 'init',
     }).then(() => {
@@ -29,7 +29,7 @@ class SystemNativeClient implements SystemClient {
 
   public setCookie: (key: string, value: string) => void = (key, value) => {
     delete window.NativeRobosats?.cookies[key];
-    window.NativeRobosats?.postMessage({
+    void window.NativeRobosats?.postMessage({
       category: 'system',
       type: 'setCookie',
       key,
@@ -40,7 +40,7 @@ class SystemNativeClient implements SystemClient {
   public deleteCookie: (key: string) => void = (key) => {
     delete window.NativeRobosats?.cookies[key];
 
-    window.NativeRobosats?.postMessage({
+    void window.NativeRobosats?.postMessage({
       category: 'system',
       type: 'deleteCookie',
       key,

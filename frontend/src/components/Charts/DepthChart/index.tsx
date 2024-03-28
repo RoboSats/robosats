@@ -20,19 +20,23 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { type PublicOrder, type Order } from '../../../models';
+import type PublicOrder from '../../../models';
 import { matchMedian } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import getNivoScheme from '../NivoScheme';
-import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import OrderTooltip from '../helpers/OrderTooltip';
+import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
 
 interface DepthChartProps {
   maxWidth: number;
   maxHeight: number;
   fillContainer?: boolean;
   elevation?: number;
-  onOrderClicked?: (id: number) => void;
+  onOrderClicked?: (id: number, shortAlias: string) => void;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
@@ -42,10 +46,12 @@ const DepthChart: React.FC<DepthChartProps> = ({
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
-  const { book, fav, info, limits, baseUrl } = useContext<UseAppStoreType>(AppContext);
+  const { fav } = useContext<UseAppStoreType>(AppContext);
+  const { federation, coordinatorUpdatedAt, federationUpdatedAt } =
+    useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const theme = useTheme();
-  const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
+  const [enrichedOrders, setEnrichedOrders] = useState<PublicOrder[]>([]);
   const [series, setSeries] = useState<Serie[]>([]);
   const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
@@ -61,18 +67,21 @@ const DepthChart: React.FC<DepthChartProps> = ({
   }, [fav.currency]);
 
   useEffect(() => {
-    if (Object.keys(limits.list).length > 0) {
-      const enriched = book.orders.map((order) => {
+    if (federation.book.length > 0) {
+      const enriched = federation.book.map((order) => {
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
         // simple rule of three
-        order.base_amount =
-          (order.price * limits.list[currencyCode].price) / limits.list[order.currency].price;
+        if (order.coordinatorShortAlias != null) {
+          const limits = federation.getCoordinator(order.coordinatorShortAlias).limits;
+          const price = limits[currencyCode] ? limits[currencyCode].price : 0;
+          order.base_amount = (order.price * price) / price;
+        }
         return order;
       });
       setEnrichedOrders(enriched);
     }
-  }, [limits.list, book.orders, currencyCode]);
+  }, [coordinatorUpdatedAt, currencyCode]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
@@ -82,10 +91,10 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   useEffect(() => {
     if (xType === 'base_amount') {
-      const prices: number[] = enrichedOrders.map((order) => order?.base_amount || 0);
+      const prices: number[] = enrichedOrders.map((order) => order?.base_amount ?? 0);
 
       const medianValue = ~~matchMedian(prices);
-      const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] || 1500;
+      const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] ?? 1500;
       const maxRange = maxValue - medianValue;
       const rangeSteps = maxRange / 10;
 
@@ -93,35 +102,35 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
     } else {
-      if (info.last_day_nonkyc_btc_premium === undefined) {
-        const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
+      if (federation.exchange.info?.last_day_nonkyc_btc_premium === undefined) {
+        const premiums: number[] = enrichedOrders.map((order) => order?.premium ?? 0);
         setCenter(~~matchMedian(premiums));
       } else {
-        setCenter(info.last_day_nonkyc_btc_premium);
+        setCenter(federation.exchange.info?.last_day_nonkyc_btc_premium);
       }
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, info.last_day_nonkyc_btc_premium, currencyCode]);
+  }, [enrichedOrders, xType, federationUpdatedAt, currencyCode]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =
       xType === 'base_amount'
         ? enrichedOrders.sort(
-            (order1, order2) => (order1?.base_amount || 0) - (order2?.base_amount || 0),
+            (order1, order2) => (order1?.base_amount ?? 0) - (order2?.base_amount ?? 0),
           )
         : enrichedOrders.sort((order1, order2) => order1.premium - order2.premium);
 
     const sortedBuyOrders: PublicOrder[] = sortedOrders
-      .filter((order) => order.type == 0)
+      .filter((order) => order.type === 0)
       .reverse();
-    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order.type == 1);
+    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order.type === 1);
 
     const buySerie: Datum[] = generateSerie(sortedBuyOrders);
     const sellSerie: Datum[] = generateSerie(sortedSellOrders);
 
-    const maxX: number = (center || 0) + xRange;
-    const minX: number = (center || 0) - xRange;
+    const maxX: number = (center ?? 0) + xRange;
+    const minX: number = (center ?? 0) - xRange;
 
     setSeries([
       {
@@ -136,7 +145,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const generateSerie = (orders: PublicOrder[]): Datum[] => {
-    if (center == undefined) {
+    if (center === undefined) {
       return [];
     }
 
@@ -144,7 +153,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     let serie: Datum[] = [];
     orders.forEach((order) => {
       const lastSumOrders = sumOrders;
-      sumOrders += (order.satoshis_now || 0) / 100000000;
+      sumOrders += (order.satoshis_now ?? 0) / 100000000;
       const datum: Datum[] = [
         {
           // Vertical Line
@@ -169,7 +178,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const closeSerie = (serie: Datum[], limitBottom: number, limitTop: number): Datum[] => {
-    if (serie.length == 0) {
+    if (serie.length === 0) {
       return [];
     }
 
@@ -197,11 +206,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
       d={props.lineGenerator([
         {
           y: 0,
-          x: props.xScale(center || 0),
+          x: props.xScale(center ?? 0),
         },
         {
           y: props.innerHeight,
-          x: props.xScale(center || 0),
+          x: props.xScale(center ?? 0),
         },
       ])}
       fill='none'
@@ -225,7 +234,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
   const formatAxisY = (value: number): string => `${value}BTC`;
   const handleOnClick: PointMouseHandler = (point: Point) => {
-    onOrderClicked(point.data?.order?.id);
+    onOrderClicked(point.data?.order?.id, point.data?.order?.coordinatorShortAlias);
   };
 
   const em = theme.typography.fontSize;
@@ -239,7 +248,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       }
     >
       <Paper variant='outlined' style={{ width: '100%', height: '100%' }}>
-        {center == undefined || enrichedOrders.length < 1 ? (
+        {center === undefined || enrichedOrders.length < 1 ? (
           <div
             style={{
               display: 'flex',
@@ -299,8 +308,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 <Grid item>
                   <Box justifyContent='center'>
                     {xType === 'base_amount'
-                      ? `${center} ${currencyDict[currencyCode]}`
-                      : `${center}%`}
+                      ? `${center} ${String(currencyDict[currencyCode])}`
+                      : `${String(center.toPrecision(3))}%`}
                   </Box>
                 </Grid>
                 <Grid item>

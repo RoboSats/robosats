@@ -9,7 +9,6 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Zelle', icon: 'zelle' },
   { name: 'Strike', icon: 'strike' },
   { name: 'WeChat Pay', icon: 'wechatpay' },
-  { name: 'Rebellion', icon: 'rebellion' },
   { name: 'Instant SEPA', icon: 'sepa' },
   { name: 'Interac e-Transfer', icon: 'interac' },
   { name: 'Wise', icon: 'wise' },

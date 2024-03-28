@@ -31,7 +31,7 @@ const F2fMapDialog = ({
   onClose = () => {},
   latitude,
   longitude,
-  interactive,
+  interactive = false,
   zoom,
   message = '',
 }: Props): JSX.Element => {
@@ -41,14 +41,14 @@ const F2fMapDialog = ({
   const [acceptedTilesWarning, setAcceptedTilesWarning] = useState<boolean>(false);
   const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
 
-  const onSave = () => {
-    if (position && position[0] && position[1]) {
+  const onSave: () => void = () => {
+    if (position?.[0] != null && position?.[1] != null) {
       onClose([position[0] + Math.random() * 0.1 - 0.05, position[1] + Math.random() * 0.1 - 0.05]);
     }
   };
 
   useEffect(() => {
-    if (open && latitude && longitude) {
+    if (open && latitude != null && longitude != null) {
       setPosition([latitude, longitude]);
     } else {
       setPosition(undefined);
@@ -59,7 +59,9 @@ const F2fMapDialog = ({
     <Dialog
       open={open}
       fullWidth
-      onClose={() => onClose()}
+      onClose={() => {
+        onClose();
+      }}
       aria-labelledby='worldmap-dialog-title'
       aria-describedby='worldmap-description'
       maxWidth={false}
@@ -154,15 +156,22 @@ const F2fMapDialog = ({
           </Grid>
           <Grid item>
             {interactive ? (
-              <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
+              <Button
+                color='primary'
+                variant='contained'
+                onClick={onSave}
+                disabled={position == null}
+              >
                 {t('Save')}
               </Button>
             ) : (
               <Button
                 color='primary'
                 variant='contained'
-                onClick={() => onClose()}
-                disabled={!position}
+                onClick={() => {
+                  onClose();
+                }}
+                disabled={position == null}
               >
                 {t('Close')}
               </Button>

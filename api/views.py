@@ -787,7 +787,8 @@ class InfoView(viewsets.ViewSet):
         context["alternative_name"] = config("ALTERNATIVE_NAME")
         context["node_alias"] = config("NODE_ALIAS")
         context["node_id"] = config("NODE_ID")
-        context["network"] = config("NETWORK")
+        context["network"] = config("NETWORK", cast=str, default="mainnet")
+        context["maker_fee"] = float(config("FEE")) * float(config("MAKER_FEE_SPLIT"))
         context["maker_fee"] = float(config("FEE")) * float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE")) * (
             1 - float(config("MAKER_FEE_SPLIT"))
@@ -795,6 +796,10 @@ class InfoView(viewsets.ViewSet):
         context["bond_size"] = settings.DEFAULT_BOND_SIZE
         context["notice_severity"] = config("NOTICE_SEVERITY", cast=str, default="none")
         context["notice_message"] = config("NOTICE_MESSAGE", cast=str, default="")
+        context["min_order_size"] = config("MIN_ORDER_SIZE", cast=int, default=20000)
+        context["max_order_size"] = config("MAX_ORDER_SIZE", cast=int, default=250000)
+        context["swap_enabled"] = not config("DISABLE_ONCHAIN", cast=bool, default=True)
+        context["max_swap"] = config("MAX_SWAP_AMOUNT", cast=int, default=0)
 
         try:
             context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(

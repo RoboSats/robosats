@@ -54,4 +54,4 @@ Votre identité peut être cachée par celle d'un robot, mais ce n'est pas une e
 
 Toutes les communications sur RoboSats sont chiffrés par PGP. Les messages de discussion chiffrés de pair-à-pair sont signés par chaque robot partenaire, ce qui prouve que personne n'a intercepté la discussion et est utile pour résoudre les litiges. Reportez-vous à [Bonnes pratiques > Chiffrement PGP simplifié](/docs/fr/pgp-encryption/) pour plus d'informations.
 
-{% include improve %}
+{% include improve_fr %}

@@ -5,6 +5,7 @@
     "description": "RoboSats node for development and experimentation. This is the original RoboSats coordinator operated by the RoboSats devs since 2022.",
     "motto": "Original Robohost. P2P FTW!",
     "color": "#1976d2",
+    "established": "2022-03-01",
     "contact": {
       "email": "robosats@protonmail.com",
       "telegram": "robosats",
@@ -47,11 +48,13 @@
     "description": "I am passionate about joining Robosats as a coordinator because I believe that peer-to-peer, non-KYC Bitcoin transactions are vital for the community's empowerment and autonomy. I aim to champion users' privacy, and provide a seamless experience for genuine Bitcoin enthusiasts.",
     "motto": "Privacy and Integrity: Temple of Sats, where Bitcoin's essence thrives.",
     "color": "#000",
+    "established": "2023-12-02",
     "contact": {
       "email": "cosmos178ftmm4edlahqzj376gwgqzd9re5x0x9h0tfsc@keplr.xyz",
-      "telegram": "@venividivici_fr",
+      "telegram": "templeofsats",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
       "matrix": "@venividivici13:matrix.org",
+      "website": "https://templeofsats.org",
       "nostr": "npub1wsqpvgpfwq6a4fs5whqxn7gtd9gqsll2p5qnfdu4ltr43s6wwxgsgk4xtl",
       "pgp": "/static/federation/pgp/25791752E9661C1DE118A8C6F78CD3D6471B6789.asc",
       "fingerprint": "25791752E9661C1DE118A8C6F78CD3D6471B6789"
@@ -61,7 +64,7 @@
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
       "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -90,9 +93,10 @@
     "description": "I'm happy to be part of Robosats in so many ways!",
     "motto": "btc = ɔʇq",
     "color": "#329239",
+    "established": "2023-12-02",
     "contact": {
       "email": "info@satstralia.com",
-      "telegram": "@satstralia",
+      "telegram": "satstralia",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2Fq0pIyShcBl0EP8le0D0xy2OfSrP1mQWg%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAcwmsC9GQwQEt40UNpYp4vKPhU_UnWXsXcVl-OJ57lC4%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22vNcyZH9C3eE6MHzRNpR3xA%3D%3D%22%7D",
       "matrix": "#satstralia:matrix.org",
       "pgp": "/static/federation/pgp/D1894C9862A9D02D47D96C84AE30B6904210DA14.asc",
@@ -105,7 +109,7 @@
       "donatesToDevFund": 33,
       "hasGoodOpSec": true,
       "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -134,9 +138,10 @@
     "description": "Becoming a RoboSats coordinator represents boosting intrinsic values of decentralization and economic freedom. RoboSats solves the problem of KYC and loss of privacy that big Exchanges are forced to comply with. I believe that decentralizing the lightning nodes will enhance the robustness of the tool, allowing more users to join. I am excited to be part of this new phase of growth.",
     "motto": "TheBigLake: The Lake of Economic Freedom.",
     "color": "#000D28",
+    "established": "2023-12-30",
     "contact": {
       "email": "gabbygator184@proton.me",
-      "telegram": "@gabbygator184",
+      "telegram": "gabbygator184",
       "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2FLsFHfMGI9rm3kUDz1jwXZf3uAYPUuhli%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJ8hrCl81w79Wx2qfae6cGR9rZpeHVoevAObBqNgzqGU%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion",
       "matrix": "@gabbygator184:matrix.org",
       "pgp": "/static/federation/pgp/EC4F94F629AA28242B54265F1ABE1CA3582A031A.asc",
@@ -148,7 +153,7 @@
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
       "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -170,6 +175,50 @@
     },
     "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
     "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"]
+  },
+  "veneto": {
+    "longAlias": "BitcoinVeneto",
+    "shortAlias": "veneto",
+    "description": "Nati come gruppo di informatici con esperienze diverse, scoperti i bitcoin a fine 2013 ci siamo entusiasmati e dedicati al bitcoin, alla blockchain ed alle criptovalute in generale, in particolare aiutando, informando e seguendo nel percorso di alfabetizzazione nel mondo della valuta digitale tutte le Aziende ed i privati che negli ultimi anni ci hanno dato la loro fiducia.",
+    "motto": "Le Tue Guide NON Virtuali su Bitcoin, Blockchain e Crypto. In Veneto.",
+    "color": "#000D27",
+    "established": "2024-02-24",
+    "contact": {
+      "email": "bitcoinveneto@proton.me",
+      "telegram": "BitcoinVeneto",
+      "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FSkIkI6EPd2D63F4xFKfHk7I1UGZVNn6k1QWZ5rcyr6w%3D%40smp9.simplex.im%2FczgLjsXvJhUg2w8fefNYP9yyqCBAcmuv%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJaunNKTLjskkHsZ3xdt8KPlnr9FrZgNNohn1d4a3Igs%253D%26srv%3Djssqzccmrcws6bhmn77vgmhfjmhwlyr3u7puw4erkyoosywgl67slqqd.onion",
+      "pgp": "/static/federation/pgp/498E269DDDF63969A215FED32A2C489EAF23D549.asc",
+      "nostr": "npub1098av3sr5788gydhstmcxrccwch86m48qq3fjx78ec2xhlpl8kjqxcpkd7",
+      "website": "https://bitcoinveneto.crypto",
+      "fingerprint": "498E269DDDF63969A215FED32A2C489EAF23D549"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": false,
+      "robotsLove": false,
+      "hasLargeLimits": true
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://mmhaqzuirth5rx7gl24d4773lknltjhik57k7ahec5iefktezv4b3uid.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://wsjyhbashc4zrrex6vijpryujggbka5plry2o62dxqoz3pxinblnj4ad.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["02c5b5972b05fba2cd2c2d9269a47bc478f73fae0f248a85cb1e5af60a07c1919d"],
+    "testnetNodesPubkeys": ["032b698c8143f293d138c0926594f11d119194ddedb513f63a944d14c094d0e54a"]
   },
   "local": {
     "longAlias": "Local Dev",

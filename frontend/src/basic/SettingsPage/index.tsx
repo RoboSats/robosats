@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { Grid, Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import FederationTable from '../../components/FederationTable';
 
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
@@ -12,7 +13,7 @@ const SettingsPage = (): JSX.Element => {
       elevation={12}
       sx={{
         padding: '0.6em',
-        width: '21em',
+        width: '20.5em',
         maxHeight: `${maxHeight}em`,
         overflow: 'auto',
         overflowX: 'clip',
@@ -20,7 +21,10 @@ const SettingsPage = (): JSX.Element => {
     >
       <Grid container>
         <Grid item>
-          <SettingsForm showNetwork={!(window.NativeRobosats === undefined)} />
+          <SettingsForm />
+        </Grid>
+        <Grid item>
+          <FederationTable maxHeight={18} />
         </Grid>
       </Grid>
     </Paper>

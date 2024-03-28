@@ -92,4 +92,4 @@ Les utilisateurs peuvent recevoir des paiements en privé via [lnproxy](https://
 
 L'utilisateur a la possibilité de spécifier le budget de routage du Lightning Network, ce qui peut aider à réduire les échecs de routage. Voir [Quick Start > Lightning Network](/docs/fr/lightning/) pour plus d'informations sur les échecs de routage.
 
-{% include improve %}
+{% include improve_fr %}

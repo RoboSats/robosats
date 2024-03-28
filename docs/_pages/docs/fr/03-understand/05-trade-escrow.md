@@ -74,4 +74,4 @@ Certains portefeuilles Lightning ont des difficultés à reconnaître la facture
 
 Si des problèmes surviennent, veuillez contacter le groupe SimpleX de RoboSats ; mais méfiez-vous des escrocs qui peuvent vous contacter directement et se faire passer pour des membres du personnel de RoboSats ! Le personnel de RoboSats ne vous contactera jamais directement en premier. Voir [Contribute > Code > Communication Channels](/contribute/code/#communication-channels) pour le lien vers le groupe SimpleX.
 
-{% include improve %}
+{% include improve_fr %}

@@ -6,86 +6,108 @@ import { useNavigate, useParams } from 'react-router-dom';
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
-import { apiClient } from '../../services/api';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { WarningDialog } from '../../components/Dialogs';
 
 const OrderPage = (): JSX.Element => {
   const {
     windowSize,
-    info,
-    order,
-    robot,
+    open,
+    setOpen,
+    acknowledgedWarning,
+    setAcknowledgedWarning,
     settings,
-    setOrder,
-    clearOrder,
-    currentOrder,
-    setCurrentOrder,
-    badOrder,
-    setBadOrder,
-    baseUrl,
     navbarHeight,
+    hostUrl,
+    origin,
   } = useContext<UseAppStoreType>(AppContext);
+  const { federation, currentOrder, currentOrderId, setCurrentOrderId } =
+    useContext<UseFederationStoreType>(FederationContext);
+  const { badOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
 
   const doublePageWidth: number = 50;
-  const maxHeight: number = (windowSize.height - navbarHeight) * 0.85 - 3;
+  const maxHeight: number = (windowSize?.height - navbarHeight) * 0.85 - 3;
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
+  const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {
-    if (currentOrder != params.orderId) {
-      clearOrder();
-      setCurrentOrder(Number(params.orderId));
-    }
-  }, [params.orderId]);
+    const shortAlias = params.shortAlias;
+    const coordinator = federation.getCoordinator(shortAlias ?? '');
+    const { url, basePath } = coordinator.getEndpoint(
+      settings.network,
+      origin,
+      settings.selfhostedClient,
+      hostUrl,
+    );
 
-  const renewOrder = function () {
-    if (order != undefined) {
-      const body = {
-        type: order.type,
-        currency: order.currency,
-        amount: order.has_range ? null : order.amount,
-        has_range: order.has_range,
-        min_amount: order.min_amount,
-        max_amount: order.max_amount,
-        payment_method: order.payment_method,
-        is_explicit: order.is_explicit,
-        premium: order.is_explicit ? null : order.premium,
-        satoshis: order.is_explicit ? order.satoshis : null,
-        public_duration: order.public_duration,
-        escrow_duration: order.escrow_duration,
-        bond_size: order.bond_size,
-        latitude: order.latitude,
-        longitude: order.longitude,
-      };
-      apiClient
-        .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
-        .then((data: any) => {
-          if (data.bad_request) {
-            setBadOrder(data.bad_request);
-          } else if (data.id) {
-            navigate('/order/' + data.id);
-          }
-        });
+    setBaseUrl(`${url}${basePath}`);
+
+    const orderId = Number(params.orderId);
+    if (
+      orderId &&
+      currentOrderId.id !== orderId &&
+      currentOrderId.shortAlias !== shortAlias &&
+      shortAlias
+    )
+      setCurrentOrderId({ id: orderId, shortAlias });
+    if (!acknowledgedWarning) setOpen({ ...closeAll, warning: true });
+  }, [params, currentOrderId]);
+
+  const onClickCoordinator = function (): void {
+    if (currentOrder?.shortAlias != null) {
+      setOpen((open) => {
+        return { ...open, coordinator: currentOrder?.shortAlias };
+      });
     }
   };
 
-  const startAgain = () => {
+  const startAgain = (): void => {
     navigate('/robot');
   };
 
+  const orderDetailsSpace = currentOrder ? (
+    <OrderDetails
+      shortAlias={String(currentOrder.shortAlias)}
+      currentOrder={currentOrder}
+      onClickCoordinator={onClickCoordinator}
+      onClickGenerateRobot={() => {
+        navigate('/robot');
+      }}
+    />
+  ) : (
+    <></>
+  );
+
+  const tradeBoxSpace = currentOrder ? (
+    <TradeBox baseUrl={baseUrl} onStartAgain={startAgain} />
+  ) : (
+    <></>
+  );
+
   return (
     <Box>
-      {order == undefined && badOrder == undefined ? <CircularProgress /> : null}
-      {badOrder != undefined ? (
+      <WarningDialog
+        open={open.warning}
+        onClose={() => {
+          setOpen(closeAll);
+          setAcknowledgedWarning(true);
+        }}
+        longAlias={federation.getCoordinator(params.shortAlias ?? '').longAlias}
+      />
+      {currentOrder === null && badOrder === undefined && <CircularProgress />}
+      {badOrder !== undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
           {t(badOrder)}
         </Typography>
       ) : null}
-      {order != undefined && badOrder == undefined ? (
-        order.is_participant ? (
+      {currentOrder !== null && badOrder === undefined ? (
+        currentOrder.is_participant ? (
           windowSize.width > doublePageWidth ? (
             // DOUBLE PAPER VIEW
             <Grid
@@ -105,14 +127,7 @@ const OrderPage = (): JSX.Element => {
                     overflow: 'auto',
                   }}
                 >
-                  <OrderDetails
-                    order={order}
-                    setOrder={setOrder}
-                    baseUrl={baseUrl}
-                    info={info}
-                    hasRobot={robot.avatarLoaded}
-                    onClickGenerateRobot={() => navigate('/robot')}
-                  />
+                  {orderDetailsSpace}
                 </Paper>
               </Grid>
               <Grid item xs={6} style={{ width: '21em' }}>
@@ -124,16 +139,7 @@ const OrderPage = (): JSX.Element => {
                     overflow: 'auto',
                   }}
                 >
-                  <TradeBox
-                    order={order}
-                    robot={robot}
-                    settings={settings}
-                    setOrder={setOrder}
-                    setBadOrder={setBadOrder}
-                    baseUrl={baseUrl}
-                    onRenewOrder={renewOrder}
-                    onStartAgain={startAgain}
-                  />
+                  {tradeBoxSpace}
                 </Paper>
               </Grid>
             </Grid>
@@ -143,7 +149,7 @@ const OrderPage = (): JSX.Element => {
               <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
                 <Tabs
                   value={tab}
-                  onChange={(mouseEvent, value) => {
+                  onChange={(_mouseEvent, value) => {
                     setTab(value);
                   }}
                   variant='fullWidth'
@@ -160,28 +166,8 @@ const OrderPage = (): JSX.Element => {
                   overflow: 'auto',
                 }}
               >
-                <div style={{ display: tab == 'order' ? '' : 'none' }}>
-                  <OrderDetails
-                    order={order}
-                    setOrder={setOrder}
-                    baseUrl={baseUrl}
-                    info={info}
-                    hasRobot={robot.avatarLoaded}
-                    onClickGenerateRobot={() => navigate('/robot')}
-                  />
-                </div>
-                <div style={{ display: tab == 'contract' ? '' : 'none' }}>
-                  <TradeBox
-                    order={order}
-                    robot={robot}
-                    settings={settings}
-                    setOrder={setOrder}
-                    setBadOrder={setBadOrder}
-                    baseUrl={baseUrl}
-                    onRenewOrder={renewOrder}
-                    onStartAgain={startAgain}
-                  />
-                </div>
+                <div style={{ display: tab === 'order' ? '' : 'none' }}>{orderDetailsSpace}</div>
+                <div style={{ display: tab === 'contract' ? '' : 'none' }}>{tradeBoxSpace}</div>
               </Paper>
             </Box>
           )
@@ -194,14 +180,7 @@ const OrderPage = (): JSX.Element => {
               overflow: 'auto',
             }}
           >
-            <OrderDetails
-              order={order}
-              setOrder={setOrder}
-              baseUrl={baseUrl}
-              info={info}
-              hasRobot={robot.avatarLoaded}
-              onClickGenerateRobot={() => navigate('/robot')}
-            />
+            {orderDetailsSpace}
           </Paper>
         )
       ) : (

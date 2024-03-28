@@ -36,6 +36,14 @@ class InfoSerializer(serializers.Serializer):
     node_alias = serializers.CharField()
     node_id = serializers.CharField()
     network = serializers.CharField()
+    min_order_size = serializers.IntegerField(help_text="Minimum order size in Sats")
+    max_order_size = serializers.IntegerField(help_text="Maximum order size in Sats")
+    swap_enabled = serializers.BooleanField(
+        help_text="Whether the option for onchain swap payouts is available or not"
+    )
+    max_swap = serializers.IntegerField(
+        help_text="Maximum size for onchain swap payouts in Sats"
+    )
     maker_fee = serializers.FloatField(help_text="Exchange's set maker fee")
     taker_fee = serializers.FloatField(help_text="Exchange's set taker fee ")
     bond_size = serializers.FloatField(help_text="Default bond size (percent)")

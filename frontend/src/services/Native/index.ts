@@ -9,11 +9,11 @@ class NativeRobosats {
 
   private messageCounter: number = 0;
 
-  private pendingMessages: Record<number, NativeRobosatsPromise> = {};
+  private readonly pendingMessages = new Map<number, NativeRobosatsPromise>();
 
   public cookies: Record<string, string> = {};
 
-  public loadCookie = (cookie: { key: string; value: string }) => {
+  public loadCookie = (cookie: { key: string; value: string }): void => {
     this.cookies[cookie.key] = cookie.value;
   };
 
@@ -21,9 +21,9 @@ class NativeRobosats {
     messageId,
     response = {},
   ) => {
-    if (this.pendingMessages[messageId]) {
-      this.pendingMessages[messageId].resolve(response);
-      delete this.pendingMessages[messageId];
+    if (this.pendingMessages.has(messageId)) {
+      this.pendingMessages.get(messageId)?.resolve(response);
+      this.pendingMessages.delete(messageId);
     }
   };
 
@@ -31,19 +31,19 @@ class NativeRobosats {
     messageId,
     response = {},
   ) => {
-    if (this.pendingMessages[messageId]) {
-      this.pendingMessages[messageId].reject(response);
-      delete this.pendingMessages[messageId];
+    if (this.pendingMessages.has(messageId)) {
+      this.pendingMessages.get(messageId)?.reject(response);
+      this.pendingMessages.delete(messageId);
     }
   };
 
   public onMessage: (message: NativeWebViewMessageSystem) => void = (message) => {
     if (message.type === 'torStatus') {
-      this.torDaemonStatus = message.detail || 'ERROR';
+      this.torDaemonStatus = message.detail ?? 'ERROR';
       window.dispatchEvent(new CustomEvent('torStatus', { detail: this.torDaemonStatus }));
     } else if (message.type === 'setCookie') {
       if (message.key !== undefined) {
-        this.cookies[message.key] = message.detail;
+        this.cookies[message.key] = String(message.detail);
       }
     }
   };
@@ -54,14 +54,14 @@ class NativeRobosats {
     this.messageCounter += 1;
     message.id = this.messageCounter;
     const json = JSON.stringify(message);
-    window.ReactNativeWebView?.postMessage(json);
+    void window.ReactNativeWebView?.postMessage(json);
 
-    return await new Promise<object>(async (resolve, reject) => {
-      if (message.id) {
-        this.pendingMessages[message.id] = {
+    return await new Promise<object>((resolve, reject) => {
+      if (message.id !== undefined) {
+        this.pendingMessages.set(message.id, {
           resolve,
           reject,
-        };
+        });
       }
     });
   };

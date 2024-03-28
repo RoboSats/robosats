@@ -48,4 +48,4 @@ La boîte de dialogue du résumé de l'échange affiche la valeur actuelle des f
     <img src="/assets/images/understand/14-on-chain-payouts/exchange-summary.png"/>
 </div>
 
-{% include improve %}
+{% include improve_fr %}

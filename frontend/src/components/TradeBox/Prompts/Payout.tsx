@@ -61,11 +61,11 @@ export const PayoutPrompt = ({
               amountFiat: pn(
                 parseFloat(
                   parseFloat(
-                    order.currency == 1000 ? order.amount * 100000000 : order.amount,
+                    order.currency === 1000 ? order.amount * 100000000 : order.amount,
                   ).toFixed(4),
                 ),
               ),
-              currencyCode: order.currency == 1000 ? 'Sats' : currencyCode,
+              currencyCode: order.currency === 1000 ? 'Sats' : currencyCode,
             },
           )}
         </Typography>
@@ -107,7 +107,7 @@ export const PayoutPrompt = ({
         </ToggleButtonGroup>
       </Grid>
 
-      <Grid item style={{ display: tab == 'lightning' ? '' : 'none' }}>
+      <Grid item style={{ display: tab === 'lightning' ? '' : 'none' }}>
         <LightningPayoutForm
           order={order}
           settings={settings}
@@ -119,7 +119,7 @@ export const PayoutPrompt = ({
       </Grid>
 
       {/* ONCHAIN PAYOUT TAB */}
-      <Grid item style={{ display: tab == 'onchain' ? '' : 'none' }}>
+      <Grid item style={{ display: tab === 'onchain' ? '' : 'none' }}>
         <OnchainPayoutForm
           order={order}
           loading={loadingOnchain}

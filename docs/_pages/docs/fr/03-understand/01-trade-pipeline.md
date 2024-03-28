@@ -38,4 +38,4 @@ Alice souhaite acheter des Sats à titre privé. Voici, étape par étape, ce qu
     <img src="/assets/images/trade-pipeline/seller-en.jpg" width="650"/>
 </div>
 
-{% include improve %}
+{% include improve_fr %}

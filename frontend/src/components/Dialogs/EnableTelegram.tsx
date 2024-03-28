@@ -27,12 +27,12 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): JSX
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const handleClickOpenBrowser = () => {
+  const handleClickOpenBrowser = (): void => {
     window.open(`https://t.me/${tgBotName}?start=${tgToken}`, '_blank').focus();
     setOpenEnableTelegram(false);
   };
 
-  const handleOpenTG = () => {
+  const handleOpenTG = (): void => {
     window.open(`tg://resolve?domain=${tgBotName}&start=${tgToken}`);
   };
 

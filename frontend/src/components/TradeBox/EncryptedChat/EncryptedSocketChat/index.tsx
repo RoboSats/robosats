@@ -1,10 +1,10 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Tooltip, TextField, Grid, Paper, Typography } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
-import { type Robot } from '../../../../models';
+import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
@@ -15,6 +15,12 @@ import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
 import ChatBottom from '../ChatBottom';
 import { sha256 } from 'js-sha256';
+import { type Order } from '../../../../models';
+import {
+  type UseFederationStoreType,
+  FederationContext,
+} from '../../../../contexts/FederationContext';
+import { type UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 
 const audioPath =
   window.NativeRobosats === undefined
@@ -22,11 +28,12 @@ const audioPath =
     : 'file:///android_asset/Web.bundle/assets/sounds';
 
 interface Props {
-  orderId: number;
+  order: Order;
   status: number;
-  robot: Robot;
   userNick: string;
   takerNick: string;
+  takerHashId: string;
+  makerHashId: string;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
   baseUrl: string;
@@ -35,11 +42,12 @@ interface Props {
 }
 
 const EncryptedSocketChat: React.FC<Props> = ({
-  orderId,
+  order,
   status,
-  robot,
   userNick,
   takerNick,
+  makerHashId,
+  takerHashId,
   messages,
   setMessages,
   baseUrl,
@@ -48,6 +56,9 @@ const EncryptedSocketChat: React.FC<Props> = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
+  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [connected, setConnected] = useState<boolean>(false);
@@ -64,10 +75,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!connected && robot.avatarLoaded) {
+    if (!connected && Boolean(garage.getSlot()?.hashId)) {
       connectWebsocket();
     }
-  }, [connected, robot]);
+  }, [connected, robotUpdatedAt]);
 
   // Make sure to not keep reconnecting once status is not Chat
   useEffect(() => {
@@ -87,28 +98,39 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
   useEffect(() => {
     if (messages.length > messageCount) {
-      audio.play();
+      void audio.play();
       setMessageCount(messages.length);
     }
   }, [messages, messageCount]);
 
   useEffect(() => {
-    if (serverMessages) {
+    if (serverMessages.length > 0) {
       serverMessages.forEach(onMessage);
     }
   }, [serverMessages]);
 
-  const connectWebsocket = () => {
+  const connectWebsocket = (): void => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+
+    if (!slot?.token) return;
+
+    const { url, basePath } = federation
+      .getCoordinator(order.shortAlias)
+      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+
     websocketClient
       .open(
-        `ws://${window.location.host}/ws/chat/${orderId}/?token_sha256_hex=${sha256(robot.token)}`,
+        `${url.replace(/^https?:\/\//, 'ws://') + basePath}/ws/chat/${
+          order.id
+        }/?token_sha256_hex=${sha256(slot?.token)}`,
       )
       .then((connection) => {
         setConnection(connection);
         setConnected(true);
 
         connection.send({
-          message: robot.pubKey,
+          message: robot?.pubKey,
           nick: userNick,
         });
 
@@ -121,16 +143,19 @@ const EncryptedSocketChat: React.FC<Props> = ({
         connection.onError(() => {
           setConnected(false);
         });
+      })
+      .catch(() => {
+        setConnected(false);
       });
   };
 
   const createJsonFile: () => object = () => {
     return {
       credentials: {
-        own_public_key: robot.pubKey,
+        own_public_key: garage.getSlot()?.getRobot()?.pubKey,
         peer_public_key: peerPubKey,
-        encrypted_private_key: robot.encPrivKey,
-        passphrase: robot.token,
+        encrypted_private_key: garage.getSlot()?.getRobot()?.encPrivKey,
+        passphrase: garage.getSlot()?.token,
       },
       messages,
     };
@@ -138,15 +163,16 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
   const onMessage: (message: any) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
-
-    if (dataFromServer && !receivedIndexes.includes(dataFromServer.index)) {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+    if (dataFromServer != null && !receivedIndexes.includes(dataFromServer.index)) {
       setReceivedIndexes((prev) => [...prev, dataFromServer.index]);
       setPeerConnected(dataFromServer.peer_connected);
       // If we receive a public key other than ours (our peer key!)
       if (
         connection != null &&
-        dataFromServer.message.substring(0, 36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
-        dataFromServer.message != robot.pubKey
+        dataFromServer.message.substring(0, 36) === `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
+        dataFromServer.message !== robot.pubKey
       ) {
         setPeerPubKey(dataFromServer.message);
         connection.send({
@@ -155,38 +181,36 @@ const EncryptedSocketChat: React.FC<Props> = ({
         });
       }
       // If we receive an encrypted message
-      else if (dataFromServer.message.substring(0, 27) == `-----BEGIN PGP MESSAGE-----`) {
-        decryptMessage(
+      else if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
-          dataFromServer.user_nick == userNick ? robot.pubKey : peerPubKey,
+          dataFromServer.user_nick === userNick ? robot.pubKey : peerPubKey,
           robot.encPrivKey,
-          robot.token,
+          slot.token,
         ).then((decryptedData) => {
           setWaitingEcho(waitingEcho ? decryptedData.decryptedMessage !== lastSent : false);
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
           setMessages((prev) => {
             const existingMessage = prev.find((item) => item.index === dataFromServer.index);
-            if (existingMessage) {
+            if (existingMessage != null) {
               return prev;
             } else {
-              return [
-                ...prev,
-                {
-                  index: dataFromServer.index,
-                  encryptedMessage: dataFromServer.message.split('\\').join('\n'),
-                  plainTextMessage: decryptedData.decryptedMessage,
-                  validSignature: decryptedData.validSignature,
-                  userNick: dataFromServer.user_nick,
-                  time: dataFromServer.time,
-                } as EncryptedChatMessage,
-              ].sort((a, b) => a.index - b.index);
+              const x: EncryptedChatMessage = {
+                index: dataFromServer.index,
+                encryptedMessage: dataFromServer.message.split('\\').join('\n'),
+                plainTextMessage: String(decryptedData.decryptedMessage),
+                validSignature: decryptedData.validSignature,
+                userNick: dataFromServer.user_nick,
+                time: dataFromServer.time,
+              };
+              return [...prev, x].sort((a, b) => a.index - b.index);
             }
           });
         });
       }
       // We allow plaintext communication. The user must write # to start
       // If we receive an plaintext message
-      else if (dataFromServer.message.substring(0, 1) == '#') {
+      else if (dataFromServer.message.substring(0, 1) === '#') {
         setMessages((prev: EncryptedChatMessage[]) => {
           const existingMessage = prev.find(
             (item) => item.plainTextMessage === dataFromServer.message,
@@ -194,32 +218,32 @@ const EncryptedSocketChat: React.FC<Props> = ({
           if (existingMessage != null) {
             return prev;
           } else {
-            return [
-              ...prev,
-              {
-                index: prev.length + 0.001,
-                encryptedMessage: dataFromServer.message,
-                plainTextMessage: dataFromServer.message,
-                validSignature: false,
-                userNick: dataFromServer.user_nick,
-                time: new Date().toString(),
-              } as EncryptedChatMessage,
-            ].sort((a, b) => a.index - b.index);
+            const x: EncryptedChatMessage = {
+              index: prev.length + 0.001,
+              encryptedMessage: dataFromServer.message,
+              plainTextMessage: dataFromServer.message,
+              validSignature: false,
+              userNick: dataFromServer.user_nick,
+              time: new Date().toString(),
+            };
+            return [...prev, x].sort((a, b) => a.index - b.index);
           }
         });
       }
     }
   };
 
-  const onButtonClicked = (e: any) => {
-    if (robot.token && value.includes(robot.token)) {
+  const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+    if (slot?.token !== undefined && value.includes(slot.token)) {
       alert(
         `Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
       setValue('');
     }
     // If input string contains '#' send unencrypted and unlogged message
-    else if (connection != null && value.substring(0, 1) == '#') {
+    else if (connection != null && value.substring(0, 1) === '#') {
       connection.send({
         message: value,
         nick: userNick,
@@ -228,15 +252,15 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
 
     // Else if message is not empty send message
-    else if (value != '') {
+    else if (value !== '') {
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
-      encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, robot.token)
+      encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
         .then((encryptedMessage) => {
           if (connection != null) {
             connection.send({
-              message: encryptedMessage.toString().split('\n').join('\\'),
+              message: String(encryptedMessage).split('\n').join('\\'),
               nick: userNick,
             });
           }
@@ -261,19 +285,19 @@ const EncryptedSocketChat: React.FC<Props> = ({
         onClose={() => {
           setAudit(false);
         }}
-        orderId={Number(orderId)}
+        orderId={Number(order.id)}
         messages={messages}
-        own_pub_key={robot.pubKey || ''}
-        own_enc_priv_key={robot.encPrivKey || ''}
-        peer_pub_key={peerPubKey || 'Not received yet'}
-        passphrase={robot.token || ''}
+        ownPubKey={garage.getSlot()?.getRobot()?.pubKey ?? ''}
+        ownEncPrivKey={garage.getSlot()?.getRobot()?.encPrivKey ?? ''}
+        peerPubKey={peerPubKey ?? 'Not received yet'}
+        passphrase={garage.getSlot()?.token ?? ''}
         onClickBack={() => {
           setAudit(false);
         }}
       />
       <Grid item>
         <ChatHeader
-          connected={connected && (peerPubKey ? true : false)}
+          connected={connected && Boolean(peerPubKey)}
           peerConnected={peerConnected}
           turtleMode={turtleMode}
           setTurtleMode={setTurtleMode}
@@ -298,7 +322,9 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   message={message}
                   isTaker={isTaker}
                   userConnected={userConnected}
-                  baseUrl={baseUrl}
+                  takerNick={takerNick}
+                  takerHashId={takerHashId}
+                  makerHashId={makerHashId}
                 />
               </li>
             );
@@ -326,7 +352,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
                 }}
                 helperText={
                   connected
-                    ? peerPubKey
+                    ? peerPubKey !== undefined
                       ? null
                       : t('Waiting for peer public key...')
                     : t('Connecting...')
@@ -341,7 +367,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
             <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={3}>
               <Button
                 fullWidth={true}
-                disabled={!connected || waitingEcho || !peerPubKey}
+                disabled={!connected || waitingEcho || peerPubKey === undefined}
                 type='submit'
                 variant='contained'
                 color='primary'
@@ -378,7 +404,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       </Grid>
       <Grid item>
         <ChatBottom
-          orderId={orderId}
+          orderId={order.id}
           audit={audit}
           setAudit={setAudit}
           createJsonFile={createJsonFile}

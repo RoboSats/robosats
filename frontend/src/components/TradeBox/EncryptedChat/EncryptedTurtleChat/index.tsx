@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
-import { type Robot } from '../../../../models';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,12 +13,20 @@ import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
 import { apiClient } from '../../../../services/api';
 import ChatBottom from '../ChatBottom';
+import { type UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import {
+  type UseFederationStoreType,
+  FederationContext,
+} from '../../../../contexts/FederationContext';
+import { type UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
+import { type Order } from '../../../../models';
 
 interface Props {
-  orderId: number;
-  robot: Robot;
+  order: Order;
   userNick: string;
   takerNick: string;
+  takerHashId: string;
+  makerHashId: string;
   chatOffset: number;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
@@ -34,10 +41,11 @@ const audioPath =
     : 'file:///android_asset/Web.bundle/assets/sounds';
 
 const EncryptedTurtleChat: React.FC<Props> = ({
-  orderId,
-  robot,
+  order,
   userNick,
   takerNick,
+  takerHashId,
+  makerHashId,
   chatOffset,
   messages,
   setMessages,
@@ -47,6 +55,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
@@ -62,13 +73,13 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
   useEffect(() => {
     if (messages.length > messageCount) {
-      audio.play();
+      void audio.play();
       setMessageCount(messages.length);
     }
   }, [messages, messageCount]);
 
   useEffect(() => {
-    if (serverMessages.length > 0 && peerPubKey) {
+    if (serverMessages.length > 0 && peerPubKey !== undefined) {
       serverMessages.forEach(onMessage);
     }
   }, [serverMessages, peerPubKey]);
@@ -80,40 +91,52 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   }, [chatOffset]);
 
   const loadMessages: () => void = () => {
+    const shortAlias = garage.getSlot()?.activeShortAlias;
+
+    if (!shortAlias) return;
+
+    const { url, basePath } = federation
+      .getCoordinator(shortAlias)
+      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     apiClient
-      .get(baseUrl, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, {
-        tokenSHA256: robot.tokenSHA256,
+      .get(url + basePath, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
+        tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
       .then((results: any) => {
-        if (results) {
+        if (results != null) {
           setPeerConnected(results.peer_connected);
           setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
           setServerMessages(results.messages);
         }
+      })
+      .catch((error) => {
+        setError(error.toString());
       });
   };
 
-  const createJsonFile: () => object = () => {
+  const createJsonFile = (): object => {
     return {
       credentials: {
-        own_public_key: robot.pubKey,
+        own_public_key: garage.getSlot()?.getRobot()?.pubKey,
         peer_public_key: peerPubKey,
-        encrypted_private_key: robot.encPrivKey,
-        passphrase: robot.token,
+        encrypted_private_key: garage.getSlot()?.getRobot()?.encPrivKey,
+        passphrase: garage.getSlot()?.token,
       },
       messages,
     };
   };
 
-  const onMessage: (dataFromServer: ServerMessage) => void = (dataFromServer) => {
-    if (dataFromServer) {
+  const onMessage = (dataFromServer: ServerMessage): void => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+    if (robot && dataFromServer != null) {
       // If we receive an encrypted message
-      if (dataFromServer.message.substring(0, 27) == `-----BEGIN PGP MESSAGE-----`) {
-        decryptMessage(
+      if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
-          dataFromServer.nick == userNick ? robot.pubKey : peerPubKey,
+          dataFromServer.nick === userNick ? robot.pubKey : peerPubKey,
           robot.encPrivKey,
-          robot.token,
+          slot.token,
         ).then((decryptedData) => {
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
           setLastIndex(lastIndex < dataFromServer.index ? dataFromServer.index : lastIndex);
@@ -122,71 +145,75 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             if (existingMessage != null) {
               return prev;
             } else {
-              return [
-                ...prev,
-                {
-                  index: dataFromServer.index,
-                  encryptedMessage: dataFromServer.message.split('\\').join('\n'),
-                  plainTextMessage: decryptedData.decryptedMessage,
-                  validSignature: decryptedData.validSignature,
-                  userNick: dataFromServer.nick,
-                  time: dataFromServer.time,
-                } as EncryptedChatMessage,
-              ].sort((a, b) => a.index - b.index);
+              const x: EncryptedChatMessage = {
+                index: dataFromServer.index,
+                encryptedMessage: dataFromServer.message.split('\\').join('\n'),
+                plainTextMessage: decryptedData.decryptedMessage,
+                validSignature: decryptedData.validSignature,
+                userNick: dataFromServer.nick,
+                time: dataFromServer.time,
+              };
+              return [...prev, x].sort((a, b) => a.index - b.index);
             }
           });
         });
       }
       // We allow plaintext communication. The user must write # to start
       // If we receive an plaintext message
-      else if (dataFromServer.message.substring(0, 1) == '#') {
-        setMessages((prev) => {
+      else if (dataFromServer.message.substring(0, 1) === '#') {
+        setMessages((prev: EncryptedChatMessage[]) => {
           const existingMessage = prev.find(
             (item) => item.plainTextMessage === dataFromServer.message,
           );
-          if (existingMessage) {
+          if (existingMessage != null) {
             return prev;
           } else {
-            return [
-              ...prev,
-              {
-                index: prev.length + 0.001,
-                encryptedMessage: dataFromServer.message,
-                plainTextMessage: dataFromServer.message,
-                validSignature: false,
-                userNick: dataFromServer.nick,
-                time: new Date().toString(),
-              } as EncryptedChatMessage,
-            ].sort((a, b) => a.index - b.index);
+            const x: EncryptedChatMessage = {
+              index: prev.length + 0.001,
+              encryptedMessage: dataFromServer.message,
+              plainTextMessage: dataFromServer.message,
+              validSignature: false,
+              userNick: dataFromServer.nick,
+              time: new Date().toString(),
+            };
+            return [...prev, x].sort((a, b) => a.index - b.index);
           }
         });
       }
     }
   };
 
-  const onButtonClicked = (e: any) => {
-    if (robot.token && value.includes(robot.token)) {
+  const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+
+    if (!robot) return;
+
+    if (slot?.token && value.includes(slot.token)) {
       alert(
         `Aye! You just sent your own robot robot.token  to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
       setValue('');
     }
     // If input string contains '#' send unencrypted and unlogged message
-    else if (value.substring(0, 1) == '#') {
+    else if (value.substring(0, 1) === '#') {
+      const { url, basePath } = federation
+        .getCoordinator(garage.getSlot()?.activeShortAlias ?? '')
+        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(
-          baseUrl,
+          url + basePath,
           `/api/chat/`,
           {
             PGP_message: value,
-            order_id: orderId,
+            order_id: order.id,
             offset: lastIndex,
           },
-          { tokenSHA256: robot.tokenSHA256 },
+          { tokenSHA256: robot?.tokenSHA256 ?? '' },
         )
         .then((response) => {
           if (response != null) {
-            if (response.messages) {
+            if (response.messages != null) {
               setPeerConnected(response.peer_connected);
               setServerMessages(response.messages);
             }
@@ -198,26 +225,29 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         });
     }
     // Else if message is not empty send message
-    else if (value != '') {
+    else if (value !== '' && Boolean(robot?.pubKey)) {
       setWaitingEcho(true);
       setLastSent(value);
-      encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, robot.token)
+      encryptMessage(value, robot?.pubKey, peerPubKey ?? '', robot?.encPrivKey, slot?.token)
         .then((encryptedMessage) => {
+          const { url, basePath } = federation
+            .getCoordinator(garage.getSlot()?.activeShortAlias ?? '')
+            .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
           apiClient
             .post(
-              baseUrl,
+              url + basePath,
               `/api/chat/`,
               {
-                PGP_message: encryptedMessage.toString().split('\n').join('\\'),
-                order_id: orderId,
+                PGP_message: String(encryptedMessage).split('\n').join('\\'),
+                order_id: order.id,
                 offset: lastIndex,
               },
-              { tokenSHA256: robot.tokenSHA256 },
+              { tokenSHA256: robot?.tokenSHA256 },
             )
             .then((response) => {
               if (response != null) {
                 setPeerConnected(response.peer_connected);
-                if (response.messages) {
+                if (response.messages != null) {
                   setServerMessages(response.messages);
                 }
               }
@@ -247,12 +277,12 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         onClose={() => {
           setAudit(false);
         }}
-        orderId={Number(orderId)}
+        orderId={Number(order.id)}
         messages={messages}
-        own_pub_key={robot.pubKey || ''}
-        own_enc_priv_key={robot.encPrivKey || ''}
-        peer_pub_key={peerPubKey || 'Not received yet'}
-        passphrase={robot.token || ''}
+        ownPubKey={garage.getSlot()?.getRobot()?.pubKey ?? ''}
+        ownEncPrivKey={garage.getSlot()?.getRobot()?.encPrivKey ?? ''}
+        peerPubKey={peerPubKey ?? 'Not received yet'}
+        passphrase={garage.getSlot()?.token ?? ''}
         onClickBack={() => {
           setAudit(false);
         }}
@@ -260,7 +290,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
       <Grid item>
         <ChatHeader
-          connected={peerPubKey ? true : false}
+          connected={Boolean(peerPubKey)}
           peerConnected={peerConnected}
           turtleMode={turtleMode}
           setTurtleMode={setTurtleMode}
@@ -285,7 +315,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                   message={message}
                   isTaker={isTaker}
                   userConnected={userConnected}
-                  baseUrl={baseUrl}
+                  takerNick={takerNick}
+                  takerHashId={takerHashId}
+                  makerHashId={makerHashId}
                 />
               </li>
             );
@@ -320,7 +352,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             </Grid>
             <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={3}>
               <Button
-                disabled={waitingEcho || !peerPubKey}
+                disabled={waitingEcho || peerPubKey === undefined}
                 type='submit'
                 variant='contained'
                 color='primary'
@@ -359,7 +391,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
       <Grid item>
         <ChatBottom
-          orderId={orderId}
+          orderId={order.id}
           audit={audit}
           setAudit={setAudit}
           createJsonFile={createJsonFile}

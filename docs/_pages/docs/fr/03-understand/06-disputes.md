@@ -24,4 +24,4 @@ Il existe d'autres groupes de discussion publics, mais les questions relatives a
 
 Reportez-vous à [Tutoriels > Lire (anglais) > Disputes](/read/en/#disputes) pour un exemple de présentation de la procédure de contestation.
 
-{% include improve %}
+{% include improve_fr %}
