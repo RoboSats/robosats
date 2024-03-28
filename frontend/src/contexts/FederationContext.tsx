@@ -15,6 +15,7 @@ import { federationLottery } from '../utils';
 
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
+import NativeRobosats from '../services/Native';
 
 // Refresh delays (ms) according to Order status
 const defaultDelay = 5000;
@@ -105,15 +106,17 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
-    const newFed = initialFederationContext.federation;
-    newFed.registerHook('onFederationUpdate', () => {
-      setFederationUpdatedAt(new Date().toISOString());
-    });
-    newFed.registerHook('onCoordinatorUpdate', () => {
-      setCoordinatorUpdatedAt(new Date().toISOString());
-    });
-    void newFed.start(origin, settings, hostUrl);
-    setFederation(newFed);
+    if (window.NativeRobosats === undefined || torStatus === 'ON') {
+      const newFed = initialFederationContext.federation;
+      newFed.registerHook('onFederationUpdate', () => {
+        setFederationUpdatedAt(new Date().toISOString());
+      });
+      newFed.registerHook('onCoordinatorUpdate', () => {
+        setCoordinatorUpdatedAt(new Date().toISOString());
+      });
+      void newFed.start(origin, settings, hostUrl);
+      setFederation(newFed);
+    }
   }, [settings.network, torStatus]);
 
   const onOrderReceived = (order: Order): void => {

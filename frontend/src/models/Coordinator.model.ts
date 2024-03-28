@@ -205,6 +205,7 @@ export class Coordinator {
     apiClient
       .get(this.url, `${this.basePath}/api/book/`)
       .then((data) => {
+        console.log('BOOK', data);
         if (!data?.not_found) {
           this.book = (data as PublicOrder[]).map((order) => {
             order.coordinatorShortAlias = this.shortAlias;
@@ -370,7 +371,6 @@ export class Coordinator {
     return await apiClient
       .get(this.url, `${this.basePath}/api/order/?order_id=${orderId}`, authHeaders)
       .then((data) => {
-        console.log('data', data);
         const order: Order = {
           ...defaultOrder,
           ...data,

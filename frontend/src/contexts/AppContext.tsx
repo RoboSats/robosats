@@ -37,7 +37,7 @@ export interface SlideDirection {
   out: 'left' | 'right' | undefined;
 }
 
-export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
+export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
 
 export const isNativeRoboSats = !(window.NativeRobosats === undefined);
 
@@ -155,8 +155,8 @@ export interface UseAppStoreType {
 
 export const initialAppContext: UseAppStoreType = {
   theme: undefined,
-  torStatus: 'NOTINIT',
-  settings: getSettings(),
+  torStatus: 'STARTING',
+  settings: new Settings(),
   setSettings: () => {},
   page: entryPage,
   setPage: () => {},
@@ -225,7 +225,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
         () => {
           setTorStatus(event?.detail);
         },
-        event?.detail === '"Done"' ? 5000 : 0,
+        event?.detail === 'ON' ? 5000 : 0,
       );
     });
   }, []);

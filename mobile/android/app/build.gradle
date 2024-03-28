@@ -271,6 +271,7 @@ android {
     packagingOptions {
         // Make sure libjsc.so does not packed in APK
         exclude "**/libjsc.so"
+        jniLibs.useLegacyPackaging = true
     }
 }
 
@@ -282,7 +283,9 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
-    implementation files("../../node_modules/react-native-tor/android/libs/sifir_android.aar")
+    implementation "io.matthewnelson.kotlin-components:kmp-tor:4.8.6-0-1.4.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
 
     if (enableHermes) {
         //noinspection GradleDynamicVersion
@@ -326,3 +329,5 @@ def isNewArchitectureEnabled() {
     // - Set an environment variable `ORG_GRADLE_PROJECT_newArchEnabled=true`
     return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
 }
+
+apply plugin: 'kotlin-android'
