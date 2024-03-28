@@ -1,5 +1,3 @@
-// import Tor from 'react-native-tor';
-
 import TorModule from '../../lib/native/TorModule';
 
 class TorClient {
