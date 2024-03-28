@@ -1,12 +1,6 @@
 import TorModule from '../../lib/native/TorModule';
 
 class TorClient {
-  daemon: object;
-
-  constructor() {
-    this.daemon = {};
-  }
-
   public get: (baseUrl: string, path: string, headers: object) => Promise<object> = async (
     baseUrl,
     path,
@@ -41,24 +35,6 @@ class TorClient {
           '{}',
         );
         resolve(JSON.parse(response));
-      } catch (error) {
-        reject(error);
-      }
-    });
-  };
-
-  public request: (baseUrl: string, path: string) => Promise<object> = async (
-    baseUrl: string,
-    path,
-  ) => {
-    return await new Promise<object>(async (resolve, reject) => {
-      try {
-        // const response = await this.daemon
-        //   .request(`${baseUrl}${path}`, 'GET', '', {}, true)
-        //   .then((resp) => {
-        //     resolve(resp);
-        //   });
-        // resolve(response);
       } catch (error) {
         reject(error);
       }
