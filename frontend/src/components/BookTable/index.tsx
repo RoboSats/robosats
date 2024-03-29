@@ -897,6 +897,11 @@ const BookTable = ({
       : orders;
   }, [showControls, orders, fav, paymentMethods]);
 
+  const loadingPercentage =
+    ((federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators) /
+      federation.exchange.enabledCoordinators) *
+    100;
+
   if (!fullscreen) {
     return (
       <Paper
@@ -928,12 +933,8 @@ const BookTable = ({
               setPaymentMethods,
             },
             loadingOverlay: {
-              variant: 'determinate',
-              value:
-                ((federation.exchange.enabledCoordinators -
-                  federation.exchange.loadingCoordinators) /
-                  federation.exchange.enabledCoordinators) *
-                100,
+              variant: loadingPercentage === 0 ? 'indeterminate' : 'determinate',
+              value: loadingPercentage,
             },
           }}
           paginationModel={paginationModel}
