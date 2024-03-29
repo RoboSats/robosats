@@ -30,6 +30,7 @@ class ApiNativeClient implements ApiClient {
   };
 
   private readonly parseResponse = (response: Record<string, any>): object => {
+    console.log('response', response);
     if (response.headers['set-cookie'] != null) {
       response.headers['set-cookie'].forEach((cookie: string) => {
         const keySplit: string[] = cookie.split('=');
@@ -88,41 +89,6 @@ class ApiNativeClient implements ApiClient {
       path,
       headers: this.getHeaders(auth),
     }).then(this.parseResponse);
-  };
-
-  public fileImageUrl: (baseUrl: string, path: string) => Promise<string | undefined> = async (
-    baseUrl,
-    path,
-  ) => {
-    if (path === '') {
-      return await Promise.resolve('');
-    }
-
-    if (this.assetsCache[path] != null) {
-      return await Promise.resolve(this.assetsCache[path]);
-    } else if (this.assetsPromises.has(path)) {
-      return await this.assetsPromises.get(path);
-    }
-
-    this.assetsPromises.set(
-      path,
-      new Promise<string>((resolve, reject) => {
-        window.NativeRobosats?.postMessage({
-          category: 'http',
-          type: 'xhr',
-          baseUrl,
-          path,
-        })
-          .then((fileB64: { b64Data: string }) => {
-            this.assetsCache[path] = `data:image/png;base64,${fileB64.b64Data}`;
-            this.assetsPromises.delete(path);
-            resolve(this.assetsCache[path]);
-          })
-          .catch(reject);
-      }),
-    );
-
-    return await this.assetsPromises.get(path);
   };
 }
 
