@@ -5,7 +5,7 @@ import TorClient from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { name as app_name, version as app_version } from './package.json';
-import TorModule from './lib/native/TorModule';
+import TorModule from './native/TorModule';
 
 const backgroundColors = {
   light: 'white',
