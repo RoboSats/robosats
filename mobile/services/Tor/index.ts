@@ -1,4 +1,4 @@
-import TorModule from '../../lib/native/TorModule';
+import TorModule from '../../native/TorModule';
 
 class TorClient {
   public get: (baseUrl: string, path: string, headers: object) => Promise<object> = async (
