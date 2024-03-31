@@ -3,7 +3,7 @@ import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
-import { robohash } from './RobohashGenerator';
+// import { robohash } from './RobohashGenerator';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
@@ -53,22 +53,22 @@ const RobotAvatar: React.FC<Props> = ({
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
-  useEffect(() => {
-    // TODO: HANDLE ANDROID AVATARS TOO (when window.NativeRobosats !== undefined)
-    if (hashId !== undefined) {
-      robohash
-        .generate(hashId, small ? 'small' : 'large')
-        .then((avatar) => {
-          setAvatarSrc(avatar);
-        })
-        .catch(() => {
-          setAvatarSrc('');
-        });
-      setTimeout(() => {
-        setActiveBackground(false);
-      }, backgroundFadeTime);
-    }
-  }, [hashId]);
+  // useEffect(() => {
+  //   // TODO: HANDLE ANDROID AVATARS TOO (when window.NativeRobosats !== undefined)
+  //   if (hashId !== undefined) {
+  //     robohash
+  //       .generate(hashId, small ? 'small' : 'large')
+  //       .then((avatar) => {
+  //         setAvatarSrc(avatar);
+  //       })
+  //       .catch(() => {
+  //         setAvatarSrc('');
+  //       });
+  //     setTimeout(() => {
+  //       setActiveBackground(false);
+  //     }, backgroundFadeTime);
+  //   }
+  // }, [hashId]);
 
   useEffect(() => {
     if (shortAlias !== undefined) {
