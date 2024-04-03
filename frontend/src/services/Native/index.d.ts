@@ -4,6 +4,7 @@ declare global {
   interface Window {
     ReactNativeWebView?: ReactNativeWebView;
     NativeRobosats?: NativeRobosats;
+    RobosatsSettings: 'web-basic' | 'web-pro' | 'selfhosted-basic' | 'selfhosted-pro';
   }
 }
 
