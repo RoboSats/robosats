@@ -5,21 +5,21 @@ permalink: /docs/esdisputes/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/life-ring.svg"/>Disputas'
   nav: docs
-src: "_pages/docs/es/03-understand/06-disputes.md"
+src: "_pages/docs/pt/03-understand/06-disputes.md"
 ---
 
-La mayoría de las veces, los conflictos surgen por una falta de comunicación entre compañeros. En muy raras ocasiones se producen intentos de fraude. En cualquier caso, es reconfortante saber que existe un proceso para resolver disputas y proteger al robot honrado.
+Com mais frequência do que não, disputas surgem devido a uma falta de comunicação entre os pares. Muito raramente há casos de tentativa de fraude. Independentemente disso, é reconfortante saber que existe um processo em vigor para resolver disputas e proteger o robô honesto!
 
-## **Soporte**
+## **Suporte**
 
-El soporte y la mediación de disputas están disponibles a través del chat grupal público de RoboSats SimpleX. Consulta [Contribute > Code > Communication Channels](/contribute/code/#communication-channels) para obtener el enlace de invitación a SimpleX.
+Suporte e mediação de disputas estão disponíveis por meio do chat público do grupo RoboSats no SimpleX. Consulte [Contribuir > Código > Canais de Comunicação](/contribute/code/#communication-channels) para obter o link de convite para o SimpleX.
 
-Existen otros chats grupales públicos disponibles, pero los problemas relacionados con disputas deben llevarse al chat grupal SimpleX.
+Existem outros chats de grupo públicos disponíveis, mas questões relacionadas a disputas devem ser levadas ao chat do grupo no SimpleX.
 
-*Nota: El personal de RoboSats NUNCA te enviará mensajes directos en privado. Ten cuidado con los estafadores que se hacen pasar por el personal de RoboSats y los administradores del grupo. Siempre debes ser cauteloso cuando alguien te pida que le envíes bitcoin para recibir ayuda.*
+_Nota: Os funcionários do RoboSats NUNCA entrarão em contato diretamente com você em particular. Fique atento a golpistas que se passam por funcionários do RoboSats e administradores de grupos. Você sempre deve estar atento quando alguém pedir para você enviar bitcoin para receber ajuda._
 
-## **Ejemplo de Disputa**
+## **Exemplo de disputa**
 
-Consulta [Tutoriales > Leer (en inglés) > Disputas](/read/en/#disputes) para obtener una descripción general de ejemplo del proceso de disputa.
+Consulte [Tutoriais > Leia (Inglês) > Disputas](/read/pt/#disputes) para obter uma visão geral do processo de disputa.
 
-{% include improve_es %}
+{% include improve_pt %}

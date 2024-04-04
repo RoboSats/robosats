@@ -1,48 +1,49 @@
 ---
 layout: single
-title: Pagos On-chain
-permalink: /docs/es/on-chain-payouts/
+title: Pagamentos on-chain
+permalink: /docs/pt/on-chain-payouts/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/link-solid.svg"/>Pagos on-chain'
+  title: '<img id="side-icon-verybig" src="/assets/vector/link-solid.svg"/>Pagamentos on-chain'
   nav: docs
-src: "_pages/docs/es/03-understand/14-on-chain-payouts.md"
+src: "_pages/docs/pt/03-understand/14-on-chain-payouts.md"
 ---
 
-Aunque Robosats es un exchange construido sobre la red lightning, hay una opción para que el comprador reciba sus sats en una dirección BTC on-chain. Esto se conoce como pago on-chain o, a veces,intercambio a on-chain (que no debe confundirse con [Swaps P2P](/docs/es/swaps/es)). En la interfaz de usuario, esta opción está disponible después de que el tomador haya bloqueado su fianza.
-Cuando el estado de la orden es "Esperando factura del comprador", deberías ver dos opciones: "Lightning" y "on-chain":
+Embora o RoboSats seja uma exchange construída em cima da Rede Lightning, há uma opção para o comprador receber seus Satoshis para um endereço de bitcoin on-chain. Isso é referido como um pagamento on-chain ou, às vezes, como uma troca on-chain (não deve ser confundido com [Trocas P2P](/docs/swaps)).
+
+Na interface do usuário, essa opção está disponível depois que o tomador bloqueou seu vínculo. Quando o status da ordem estiver em "Aguardando fatura do comprador", você deverá ver duas opções: "Lightning" e "Onchain".
 
 <div align="center">
     <img src="/assets/images/understand/14-on-chain-payouts/contract-box-on-waiting-for-buyer-invoice.png"/>
 </div>
 
-Cuando hagas click en la opción de dirección on-chain, veras lo siguiente:
+Ao clicar na opção de endereço on-chain, você verá o seguinte:
 
 <div align="center">
     <img src="/assets/images/understand/14-on-chain-payouts/on-chain-box.png"/>
 </div>
 
-Se muestra una descripción general de las tarifas y puedes ingresar una dirección bitcoin on-chain donde recibir el pago y también ingresa la tarifa de minería. La *Comisión de swap* es un comisión adicional que cobra Robosats por realizar el pago on-chain. Esto no incluye las comisiones del tomador/creador. La comisión del Swap se cobra sobre el importe después de deducir las comisiones de tomador/creador.
+Uma visão geral das taxas é exibida e você pode inserir um endereço de bitcoin on-chain para o pagamento, além de inserir as taxas de mineração. A _taxa de swap_ é uma taxa adicional que o RoboSats cobra para fazer o pagamento on-chain. Isso não inclui as taxas do tomador/criador. A taxa de Swap é cobrada sobre o montante após deduzir as taxas do tomador/criador.
 
-Además de la comisión de swap, también existe la tarifa de minería para la transacción on-chain. Puedes elegir la tarifa de minería que se adapte a tus necesidades. La entrada *Tarifa minera* te permite elegir la tarifa en sats/vbyte.
+Além da taxa de swap, há também a taxa de mineração para a transação on-chain. Você pode escolher a taxa de mineração que atende às suas necessidades do momento. A entrada da _taxa de mineração_ permite que você escolha a taxa de transação on-chain em sats/vbyte.
 
-Si la dirección on-chain es válida, entonces la orden pasa a la siguiente etapa como habitualmente. Al final, si la operación es exitosa, debería ver una pantalla con el id de transacción de pago:
+Se o endereço on-chain for válido, então o pedido avança para a próxima etapa como de costume. No final, se a negociação foi bem-sucedida, você deve ver uma tela algo assim com o ID da transação do pagamento:
 
 <div align="center">
     <img src="/assets/images/understand/14-on-chain-payouts/successful-trade-on-chain.png"/>
 </div>
 
-### Comisiones de pago on-chain
+### Taxas de pagamento on-chain
 
-Las comisiones de pago on-chain (también conocidas como comisiones de swap) van cambiando de vez en cuando. Puede oscilar entre el 1% y el 10%. Para obtener las comisiones actuales on-chain, puedes consultar el resumen de intercambio haciendo clic en el botón "%" de la pantalla de inicio:
+As taxas de pagamento on-chain (também conhecidas como taxas de swap) mudam de tempos em tempos. Elas podem variar de 1% a 10%. Para obter as taxas de pagamento on-chain atuais, você pode verificar o resumo da exchange clicando no botão "%" na tela inicial:
 
 <div align="center">
     <img src="/assets/images/understand/14-on-chain-payouts/exchange-info-icon.png"/>
 </div>
 
-El cuadro de diálogo de resumen de intercambio muestra el valor actual de las comisiones de pago on-chain:
+O diálogo do resumo da exchange exibe o valor atual das taxas de pagamento na cadeia:
 
 <div align="center">
     <img src="/assets/images/understand/14-on-chain-payouts/exchange-summary.png"/>
 </div>
 
-% include improve_es %}
+{% include improve_pt %}

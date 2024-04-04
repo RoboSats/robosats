@@ -1,80 +1,77 @@
 ---
 layout: single
 title: Maker and Taker Bonds
-permalink: /docs/es/bonds/
+permalink: /docs/pt/bonds/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/ticket-simple.svg"/>Bonds'
   nav: docs
-src: "_pages/docs/es/03-understand/04-bonds.md"
+src: "_pages/docs/pt/03-understand/04-bonds.md"
 ---
 
-La **fianza de fidelidad** es un pequeño depósito que el usuario "bloquea" y que se desbloqueará después de que se complete la transacción; sin embargo, los usuarios pueden perder su fianza si no cumplen con las obligaciones del contrato.
+O título de fidelidade é um pequeno depósito que o usuário “bloqueia” e que será desbloqueado após a conclusão da negociação; no entanto, os usuários podem perder o vínculo se não cumprirem as obrigações do contrato.
 
-El **proceso de comercio de RoboSats** utiliza fianzas de fidelidad para incentivar tanto al creador de la orden como al tomador a seguir las reglas y no engañar a su compañero robot. Más específicamente, las fianzas son [facturas bloqueadas](https://github.com/lightningnetwork/lnd/pull/2022) utilizando la Red Lightning; ¡es la tecnología que hace posible RoboSats!
-Consulte [Comprender > Custodia de operaciones > ¿Qué es una factura retenida?](/docs/es/escrow/#qué-es-una-factura-de-retención) para comprender cómo funcionan en la práctica las facturas de retención.
+O processo de comércio de RoboSats utiliza fianças de fidelidade para incentivar tanto o criador da ordem quanto o tomador a seguir as regras e não enganar seu companheiro robô. Mais especificamente, as fianças são [faturas bloqueadas](https://github.com/lightningnetwork/lnd/pull/2022) utilizando a Rede Lightning; é a tecnologia que torna possível o RoboSats! Consulte [Entender > Custódia de Operações > O que é uma fatura retida?](/docs/pt/escrow/#qué-es-una-factura-de-retención) para entender como funcionam na prática as faturas retidas.
 
-Por defecto, la fianza es del 3% del monto total de la transacción. Alternativamente, los creadores de órdenes pueden personalizar este monto desde un 2% hasta un 15%. Fianzas más grandes significan más "compromiso" necesario para comerciar.
+Por padrão, a fiança é de 3% do valor total da transação. Alternativamente, os criadores de ordens podem personalizar esse valor de 2% a 15%. Fianças maiores significam mais "comprometimento" necessário para negociar.
 
-La fianza no sale de tu billetera Lightning, pero ten en cuenta que algunas wallets funcionan mejor con RoboSats que otras debido a la naturaleza del mecanismo de factura bloqueada de Lightning. Consulta [Entender > Wallets](/docs/es/wallets/) para obtener información adicional.
+A fiança não sai da sua carteira Lightning, mas observe que algumas carteiras funcionam melhor com RoboSats do que outras devido à natureza do mecanismo de fatura bloqueada da Lightning. Consulte [Entender > Wallets](/docs/pt/wallets/) para obter informações adicionais.
 
-*Nota: La opción que permite a los "Tomadores sin fianza" está en desarrollo pero no está disponible por el momento.*
+_Nota: A opção que permite "Tomadores sem fiança" está em desenvolvimento, mas não está disponível no momento._
 
-## **Cómo bloquear una fianza**
+## **Como bloquear uma fiança**
 
-Primero, consulta [Entender > Wallets](/docs/es/wallets/) para encontrar wallets Lightning compatibles que facilitarán el uso de RoboSats. Dependiendo de la wallet, la factura puede mostrarse como un pago en tránsito, congelado o incluso como si estuviera fallando. ¡Consulta la lista de compatibilidad de wallets!
+Primeiro, consulte [Entender > Carteiras](/docs/pt/wallets/) para encontrar carteiras compatíveis com Lightning que facilitarão o uso do RoboSats. Dependendo da carteira, a fatura pode aparecer como um pagamento em trânsito, congelado ou até mesmo como falha. Confira a lista de compatibilidade de carteiras!
 
-Lee la guía correspondiente según si estás creando o tomando la orden:
+Leia o guia correspondente, dependendo se você está criando ou aceitando a ordem:
 
-* **Creador (Maker)**: Selecciona "Crear orden" y modifica las condiciones de la orden a tu gusto. La orden se puede personalizar para requerir una fianza diferente al 3% predeterminado del monto total de la transacción, variando desde un 2% hasta un 15%. Una vez completado, confirma con "Crear orden" y luego utiliza el siguiente código QR que se encuentra en el "Cuadro de contrato" con tu billetera Lightning para bloquear la cantidad indicada de satoshis para tu fianza. Siempre puedes cancelar la orden no tomada mientras esté activa y la fianza se desbloqueará automáticamente; sin embargo, si intentas cancelar la orden después de que sea tomada, perderás tu fianza. *Nota: Prepárate con tu billetera de antemano porque el cuadro de orden expira en diez minutos.*
+- **Criador (Maker)**: Selecione "Criar ordem" e ajuste as condições da ordem conforme sua preferência. A ordem pode ser personalizada para exigir uma fiança diferente dos 3% padrão do valor total da transação, variando de 2% a 15%. Depois de concluído, confirme com "Criar ordem" e então use o código QR a seguir encontrado na "Caixa de Contrato" com sua carteira Lightning para bloquear a quantia indicada de satoshis para sua fiança. Você sempre pode cancelar a ordem não aceita enquanto estiver ativa, e a fiança será desbloqueada automaticamente; no entanto, se você tentar cancelar a ordem depois de ser aceita, perderá sua fiança. _Nota: Prepare-se com sua carteira com antecedência, pois a caixa de ordem expira em dez minutos._
 
-* **Tomador (Taker)**: Explora el libro de órdenes y encuentra una orden a tu gusto. Simplemente selecciona la opción "Tomar orden" y luego utiliza el siguiente código QR que se encuentra en el "Cuadro de contrato" con tu billetera Lightning para bloquear la cantidad indicada de satoshis para tu fianza. *Nota: Prepárate con tu billetera de antemano porque el cuadro de orden expira en cuatro minutos. Si no procedes, la orden tomada vuelve a ser pública.*
+- **Tomador (Taker)**: Explore o livro de ordens e encontre uma ordem de sua preferência. Simplesmente selecione a opção "Aceitar ordem" e então use o código QR a seguir encontrado na "Caixa de Contrato" com sua carteira Lightning para bloquear a quantia indicada de satoshis para sua fiança. _Nota: Prepare-se com sua carteira com antecedência, pois a caixa de ordem expira em quatro minutos. Se você não prosseguir, a ordem aceita volta a ser pública._
 
-Después de que se completa la transacción y ambos robots están satisfechos, las fianzas del creador y el tomador se desbloquean. Técnicamente, la fianza bloqueada nunca salió de tu billetera; pero ten cuidado, si no sigues las obligaciones del contrato intentando engañar o cancelando unilateralmente, perderás tu fianza de fidelidad.
+Depois que a transação for concluída e ambos os robôs estiverem satisfeitos, as fianças do criador e do tomador serão desbloqueadas. Tecnicamente, a fiança bloqueada nunca saiu da sua carteira; mas tenha cuidado, se você não seguir as obrigações do contrato tentando enganar ou cancelando unilateralmente, perderá sua fiança de fidelidade.
 
-Tu billetera puede tardar un tiempo en mostrar los fondos como desbloqueados en el saldo de tu cuenta. Algunas wallets tienen dificultades para reconocer la factura bloqueada de Lightning como una retención temporal de tus fondos.
+Sua carteira pode levar um tempo para mostrar os fundos como desbloqueados no saldo da sua conta. Algumas carteiras têm dificuldades em reconhecer a fatura bloqueada da Lightning como uma retenção temporária dos seus fundos.
 
-Si el problema persiste, ponte en contacto con el grupo de Telegram de RoboSats; pero ten cuidado con los estafadores que pueden contactarte directamente e hacerse pasar por el personal de RoboSats. El personal de RoboSats nunca se pondrá en contacto contigo primero. Consulta [Contribuir > Código > Canales de comunicación](/contribute/code/#communication-channels) para conocer los grupos de Telegram disponibles.
+Se o problema persistir, entre em contato com o grupo de Telegram do RoboSats; mas tenha cuidado com os golpistas que podem entrar em contato diretamente e se passar pelo pessoal do RoboSats. O pessoal do RoboSats nunca entrará em contato com você primeiro. Consulte [Contribuir > Código > Canais de Comunicação](/contribute/code/#communication-channels) para conhecer os grupos de Telegram disponíveis.
 
-## **Perder tu fianza**
+## **Perder sua fiança**
 
-Básicamente, hay cinco condiciones que provocan que un usuario pierda su fianza:
+Basicamente, existem cinco condições que levam a um usuário a perder sua fiança:
 
-* Engañar o decepcionar a tu par (y perder la disputa de la orden)
+- Enganar ou decepcionar seu par (e perder a disputa da ordem)
 
-* Cancelar unilateralmente la orden sin la colaboración de tu par
+- Cancelar unilateralmente a ordem sem a colaboração do seu par
 
-* No presentar la factura de pago como comprador de bitcoin dentro del límite de tiempo dado
+- Não apresentar a fatura de pagamento como comprador de bitcoin dentro do prazo estabelecido
 
-* No presentar la fianza de la transacción como vendedor de bitcoin dentro del límite de tiempo dado
+- Não apresentar a fiança da transação como vendedor de bitcoin dentro do prazo estabelecido
 
-* No confirmar que se recibió el fiat como vendedor de bitcoin
+- Não confirmar o recebimento do fiat como vendedor de bitcoin
 
-Las condiciones anteriores se detallan más a continuación.
+Observe que você não perderá seu título como criador de pedidos se cancelar seu pedido _antes_ de ser recebido por um colega. As condições acima são expandidas em detalhes adicionais abaixo.
 
-Si el límite de tiempo para presentar la factura (comprador) o bloquear el fide
+Se o prazo para apresentar a fatura (comprador) ou bloquear a fiança (vendedor) expirar, a ordem será cancelada e o robô que não cumpriu sua parte perderá a fiança. Metade da fiança perdida vai para o robô honesto como compensação pelo tempo perdido.
 
-icomiso (vendedor) se agota, la orden caducará y el robot que no cumplió con su parte del trato perderá la fianza. La mitad de la fianza perdida va al robot honesto como compensación por el tiempo perdido.
+Portanto, não esqueça sua ordem, pois uma vez que um robô a aceita e bloqueia sua fiança de fidelidade, você pode perder sua fiança se o temporizador expirar. Certifique-se de lembrar sua ordem e fazer backup do token único do seu robô!
 
-Por lo tanto, no olvides tu orden porque una vez que un robot la toma y bloquea su fianza de fidelidad, podrías perder tu fianza si caduca el temporizador. ¡Asegúrate de recordar tu orden y respalda el token único de tu robot!
+Se você receber fiat mas não clicar em "Confirmar recebimento de fiat", corre o risco de perder sua fiança, pois uma disputa será aberta automaticamente e o pessoal do RoboSats verá que você não seguiu as regras do contrato.
 
-Si recibiste fiat pero no haces clic en "Confirmar recepción de fiat" en tu extremo, corres el riesgo de perder tu fianza, ya que se abre automáticamente una disputa y el personal de RoboSats encontrará que no seguiste las reglas del contrato.
+Devido aos prazos envolvidos no processo de ordem, é recomendável utilizar métodos de pagamento instantâneo em fiat para ajudar a reduzir as chances de perder sua fiança. Consulte [Melhores Práticas > Métodos de Pagamentos](/docs/pt/payment-methods/) para obter informações adicionais.
 
-Debido a los límites de tiempo involucrados en el proceso de orden, se recomienda utilizar métodos de pago instantáneo en fiat que ayuden a reducir las posibilidades de perder tu fianza. Consulta [Mejores prácticas > Métodos de pago](/docs/es/payment-methods/) para obtener información adicional.
+Não é recomendado abrir uma disputa apenas para cancelar uma ordem, pois um dos dois comerciantes perderá sua fiança de fidelidade, exceto em casos excepcionais que ficam a critério do pessoal do RoboSats.
 
-No se recomienda abrir una disputa solo para cancelar una orden porque uno de los dos comerciantes perderá su fianza de fidelidad, salvo casos excepcionales que quedan a discreción del personal de RoboSats.
+Como nota final, se o RoboSats desaparecer repentinamente ou fechar, as fianças serão desbloqueadas automaticamente, pois tecnicamente nunca saíram da sua carteira.
 
-Como nota al margen, si RoboSats desaparece repentinamente o se cierra, las fianzas se desbloquean automáticamente ya que técnicamente nunca salieron de tu billetera.
+## **Não tem bitcoin para as fianças?**
 
-## **¿No tienes bitcoin para las fianzas?**
+Como as fianças requerem uma fatura bloqueada da Lightning, o que você pode fazer se não tiver bitcoin desde o início? Embora a fiança geralmente seja apenas 3% do valor total da transação, isso apresenta uma barreira real para usar o RoboSats pela primeira vez se você não tiver satoshis disponíveis.
 
-Debido a que las fianzas requieren una factura bloqueada de Lightning, ¿qué puedes hacer si no tienes bitcoin desde el principio? Aunque la fianza suele ser solo del 3% de tu monto total de transacción, esto presenta una barrera real para usar RoboSats por primera vez si tu pila de satoshis no existe.
+Atualmente, os tomadores sem fiança não estão disponíveis; no entanto, esteja ciente de que isso está em desenvolvimento! Os tomadores sem fiança apresentam um maior risco para o criador da ordem, já que o tomador não tem nada em jogo. Pode ser razoável esperar prêmios mais altos em ordens que permitam tomadores sem fiança.
 
-Actualmente, los tomadores sin fianza no están disponibles; sin embargo, ¡ten en cuenta que esto está en desarrollo! Los tomadores sin fianza presentan un mayor riesgo para el creador de la orden, ya que el tomador no tiene nada en juego. Puede ser razonable esperar primas más altas en órdenes que permiten tomadores sin fianza.
+Existem muitos aplicativos e serviços disponíveis onde você pode ganhar pequenas quantidades de bitcoin. O RoboSats não endossa um aplicativo específico, mas os usuários relataram sucesso com aplicativos como [Stacker News](https://stacker.news/), [Fountain](https://www.fountain.fm/), [Carrot](https://www.earncarrot.com/), [THNDR](https://www.thndr.games/), etc.
 
-Hay una gran cantidad de aplicaciones y servicios disponibles donde se pueden ganar pequeñas cantidades de bitcoin. RoboSats no respalda una aplicación específica, pero los usuarios han informado éxito con aplicaciones como [Stacker News](https://stacker.news/), [Fountain](https://www.fountain.fm/), [Carrot](https://www.earncarrot.com/), [THNDR](https://www.thndr.games/), etc.
+Dado que a fiança é uma retenção temporária de seus fundos, você também pode pedir emprestado satoshis a um amigo apenas para a fiança de fidelidade. Depois que a fiança for desbloqueada de uma transação bem-sucedida, basta devolver os fundos ao seu amigo!
 
-Dado que la fianza es una retención temporal de tus fondos, incluso podrías pedir prestados satoshis a un amigo solo para la fianza de fidelidad. Después de que la fianza se desbloquea de una transacción exitosa, ¡simplemente devuelve los fondos a tu amigo!
-
-{% include improve_es %}
+{% include improve_pt %}

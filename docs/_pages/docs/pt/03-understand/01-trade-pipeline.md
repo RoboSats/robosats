@@ -2,30 +2,32 @@
 layout: single
 classes: wide
 title: "Trade Pipeline"
-permalink: /docs/es/trade-pipeline/
+permalink: /docs/pt/trade-pipeline/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/timeline.svg"/>Trade Pipeline'
   nav: docs
-src: "_pages/docs/es/03-understand/01-trade-pipeline.md"
+src: "_pages/docs/pt/03-understand/01-trade-pipeline.md"
 ---
 
-Alice quiere comprar Sats de manera privada. Esto es paso a paso lo que sucede cuando compra usando RoboSats.
+O trade pipeline do RoboSats é direto e simplificado. O fluxo geral de pedidos ao fazer e receber pedidos é apresentado abaixo em etapas numéricas e em um fluxograma.
 
-## Flujo de órdenes en pasos numéricos
+Alice quer comprar Sats em maneira privada. Isto é passo a passo o que acontece quando ela compra usando RoboSats:
 
-1. Alice genera un avatar (AdequateAlice01) usando su token aleatorio privado.
-2. Alice almacena de forma segura el token para poder recuperar AdequateAlice01 en el futuro.
-3. Alice hace una nueva orden y bloquea una factura retenida pequeña para publicarla (fianza de creador).
-4. Bob quiere vender satoshis, ve el pedido de Alice en el libro y lo toma.
-5. Bob escanea una factura retenida pequeña como su fianza de tomador. El contrato termina.
-6. Bob publica una factura retenida con los satoshis a negociar. Mientras Alice envía su invoice de recibir.
-7. En un chat privado, Bob le dice a Alice cómo enviarle el fiat.
-8. Alice le paga a Bob, luego confirman que el fiat ha sido enviado y recibido.
-9. Se cobra la factura retenida de Bob y se envían los satoshis a Alice.
-10. Las fianzas de Bob y Alice regresan automáticamente, ya que cumplieron con las reglas.
-11. Las fianzas serían cobradas (perdidas) en caso de cancelación unilateral o engaño (disputa perdida).
+## Fluxo de ordens em etapas numéricas
 
-##  Flujo de ordenes en el organigrama
+1. Alice gera um avatar (AdequateAlice01) usando seu token aleatório privado.
+2. Alice armazena o token com segurança caso precise recuperar AdequateAlice01 no futuro.
+3. Alice faz um novo pedido e bloqueia uma fatura de pequena retenção para publicá-la (maker bond).
+4. Bob quer vender Sats, vê o pedido de Alice no livro e aceita.
+5. Bob escaneia uma fatura de pequena retenção como seu título de tomador. O contrato é definitivo.
+6. Bob publica os Sats negociados com uma fatura suspensa. Enquanto Alice envia sua fatura de pagamento.
+7. Em um bate-papo privado, Bob diz a Alice como enviar fiat para ele.
+8. Alice paga a Bob e eles confirmam que o fiat foi enviado e recebido.
+9. A fatura de retenção comercial de Bob é cobrada e os Sats são enviados para Alice.
+10. Os títulos de Bob e Alice retornam automaticamente, desde que cumpram as regras.
+11. Os títulos seriam cobrados (perdidos) em caso de cancelamento unilateral ou fraude (disputa perdida).
+
+## Fluxo de ordens no fluxograma
 
 <div align="center">
     <img src="/assets/images/trade-pipeline/buyer-en.jpg" width="650"/>
@@ -35,4 +37,4 @@ Alice quiere comprar Sats de manera privada. Esto es paso a paso lo que sucede c
     <img src="/assets/images/trade-pipeline/seller-en.jpg" width="650"/>
 </div>
 
-{% include improve_es %}
+{% include improve_pt %}

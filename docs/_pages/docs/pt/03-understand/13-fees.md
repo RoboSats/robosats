@@ -1,93 +1,95 @@
 ---
 layout: single
-title: Comisiones de la plataforma
-permalink: /docs/es/fees/
+title: Comissões da plataforma
+permalink: /docs/pt/fees/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/hand-holding-hand.svg"/>Comisiones'
+  title: '<img id="side-icon-verybig" src="/assets/vector/hand-holding-hand.svg"/>Comissões'
   nav: docs
-src: "_pages/docs/es/03-understand/13-fees.md"
+src: "_pages/docs/pt/03-understand/13-fees.md"
 ---
 
-RoboSats cobra una comisión de {{site.robosats.total_fee}}% del importe total de la operación; esta comisión se distribuye entre el emisor y el receptor de la orden, que pagan {{site.robosats.maker_fee}}% y {{site.robosats.taker_fee}}%, respectivamente.
+RoboSats cobra uma taxa de {{site.robosats.total_fee}}% do montante total da negociação; essa taxa é distribuída entre o criador do pedido e o tomador do pedido, que pagam, respectivamente, {{site.robosats.maker_fee}}% e {{site.robosats.taker_fee}}%.
 
-Las comisiones de la plataforma se resumen en la siguiente tabla para enfatizar que el porcentaje de comisión depende de si usted hace o toma la orden:
+As taxas da plataforma estão resumidas na tabela abaixo para enfatizar que a porcentagem da taxa depende se você cria ou aceita a ordem
 
-| Lado   | Maker                        | Taker                        |
-|--------|------------------------------|------------------------------|
-| Comprador  | {{site.robosats.maker_fee}}% | {{site.robosats.taker_fee}}% |
-| Vendedor | {{site.robosats.maker_fee}}% | {{site.robosats.taker_fee}}% |
+| Lado      | Criador                      | Tomador                      |
+| --------- | ---------------------------- | ---------------------------- |
+| Comprador | {{site.robosats.maker_fee}}% | {{site.robosats.taker_fee}}% |
+| Vendedor  | {{site.robosats.maker_fee}}% | {{site.robosats.taker_fee}}% |
 
-*Nota: Se puede incurrir en tarifas externas, como las tarifas de enrutamiento de Lightning Network y las tarifas de transacción en la cadena.
+\*Nota: Taxas externas podem ser incorridas, como taxas de roteamento da Rede Lightning e taxas de transação on-chain.
 
-## **Costes de plataforma en la práctica**
+## **Taxas da Plataforma na Prática**
 
-La comisión total ({{site.robosats.total_fee}}%) se divide entre el creador y el receptor. El comprador paga una cantidad mayor ({{site.robosats.taker_fee}}%) que el vendedor ({{site.robosats.maker_fee}}%); esto está diseñado para animar a más vendedores y aumentar la liquidez disponible en la bolsa.
+A taxa total ({{site.robosats.total_fee}}%) é dividida entre o criador e o tomador. O tomador paga uma quantia maior ({{site.robosats.taker_fee}}%) do que o criador paga ({{site.robosats.maker_fee}}%); isso é projetado para incentivar mais criadores e, subsequentemente, aumentar a liquidez disponível na exchange.
 
-En la práctica, las comisiones se aplican cuando se presenta al usuario la presentación de la garantía de la operación (vendedor) o la factura de pago (comprador) después de que se bloquee la garantía del tomador.
+Na prática, as taxas são aplicadas quando o usuário é apresentado com a submissão do escrow de negociação (vendedor) ou fatura de pagamento (comprador) após o vínculo do tomador ser bloqueado.
 
-Si el precio de la orden es *relativo*, entonces la cantidad de Sats que se negocia en relación con el tipo de cambio fiat (que llamaremos `trade_sats`) fluctúa hasta que se bloquea el bono tomador. En los casos de precios de órdenes *explícitos*, la cantidad de Sats que se negocia es fija. Consulte [Entender > Precios](/docs/es/prices/) para obtener información adicional sobre los métodos de fijación de precios relativos y explícitos.
+Se a precificação do pedido for _relativa_, então a quantidade de Sats sendo negociada em relação à taxa de câmbio de fiat (vamos chamar de `trade_sats`) flutua até que o vínculo do tomador seja bloqueado. Em casos de precificação _explícita_ do pedido, a quantidade de Sats sendo negociada é fixa. Consulte [Entender > Preços](/docs/pt/prices/) para obter informações adicionais sobre os métodos de precificação relativa e explícita.
 
-Hasta que se bloquea el bono del tomador, el precio de la orden continúa moviéndose con el mercado a lo largo del tiempo. Una vez que el bono taker está bloqueado para una orden con precio relativo, la cantidad de Sats que se negocia se calcula de la siguiente manera:
+Até que o vínculo do tomador seja bloqueado, o preço da ordem continua a se mover com o mercado ao longo do tempo. Uma vez que o vínculo do tomador seja bloqueado para um pedido com preço relativo, a quantidade de Sats sendo negociada é calculada da seguinte forma:
 
-````
+```
 tarifa_prima = tarifa_CEX * (1 + (prima / 100))
 trade_sats = cantidad / tarifa_prima
-````
+```
 
-donde `trade_sats` son los Sats que se van a negociar, `premium` es lo que el creador de la orden definió durante la creación de la orden, y `CEX_rate` es el precio actual de cambio de bitcoin dada la moneda que se está utilizando.
+A onde `trade_sats` são os Satoshis que serão negociados, `premium` é o que o criador do pedido definiu durante a criação do pedido, e CEX_rate é o preço atual de câmbio do bitcoin dado a moeda que está sendo utilizada.
 
-Las comisiones de la plataforma (`fee_sats`) asociadas a tu orden se calculan usando la variable `trade_sats`:
-* Para maker:
-  ````
+As comissões da plataforma (`fee_sats`) associadas ao seu pedido são calculadas usando a variável `trade_sats`:
+
+- Para o criador:
+  ```
   fee_fraction = 0.002 * 0.125
                = 0.00025 ==> {{site.robosats.maker_fee}}%%.
   fee_sats = trade_sats * fee_fraction
-  ````
-* Para el tomador:
-  ````
+  ```
+- Para o tomador:
+  ```
   fee_fraction = 0.002 * (1 - 0.125)
                = 0.00175 ==> {{site.robosats.taker_fee}}%
   fee_sats = trade_sats * fee_fraction
-  ````
+  ```
 
-donde `fracción_de_tarifa` se combina para una tarifa de plataforma total compartida de {{site.robosats.total_fee}}%. Como se ha indicado anteriormente, el tomador paga una cantidad mayor ({{site.robosats.taker_fee}}%) que la que paga el creador ({{site.robosats.maker_fee}}%) para fomentar el crecimiento de la liquidez con más creadores de órdenes.
+onde `fee_fraction` se combina para uma taxa de plataforma total compartilhada de {{site.robosats.total_fee}}%. Como mencionado anteriormente, o tomador paga uma quantidade maior ({{site.robosats.taker_fee}}%) do que o criador paga ({{site.robosats.maker_fee}}%) para incentivar o crescimento da liquidez com mais criadores de ordens.
 
-RoboSats cobra las comisiones en el proceso de depósito en garantía (`escrow_amount`) y factura de pago (`payout_amount`) calculando lo siguiente:
-* Para el vendedor:
-  ````
+RoboSats cobra as comissões no processo de depósito em garantia (`escrow_amount`) e fatura de pagamento (`payout_amount`) calculando o seguinte:
+
+- Para o vendedor:
+  ```
   escrow_amount = trade_sats + fee_sats
-  ````
-* Para el comprador
-  ````
+  ```
+- Para o comprador
+  ```
   payout_amount = trade_sats - fee_sats
-  ````
+  ```
 
-En esencia, RoboSats añade a la `escrow_amount`, deduce de la `payout_amount`, y, dependiendo de si usted es el tomador de la orden o el ordenante, se aplica el apropiado `fee_fraction` cálculos.
+Em essência, o RoboSats adiciona ao `escrow_amount`, deduz do `payout_amount` e, dependendo se você é o tomador do pedido ou o criador do pedido, aplica os cálculos apropriados de `fee_fraction`.
 
-## **¿Por qué hay comisiones?**
+## **Por que ter taxas?**
 
-Las cuotas sirven para mejorar la experiencia del usuario final de la plataforma a través del desarrollo continuo, ofreciendo soporte multilingüe y elaborando guías para interactuar con la plataforma.
+As taxas funcionam para melhorar a experiência do usuário final da plataforma através do desenvolvimento contínuo, oferecendo suporte multilíngue e criando guias para interagir com a plataforma.
 
-A su vez, las tarifas recompensan a los desarrolladores y colaboradores voluntarios de GitHub por completar tareas que son [elegibles para ganar bitcoin](https://github.com/users/Reckless-Satoshi/projects/2). ¡Compruébalo! Si ganas Sats por tus contribuciones, las tarifas en las que incurras al utilizar RoboSats estarán suficientemente cubiertas.
+As taxas, por sua vez, recompensam os desenvolvedores voluntários do GitHub e os colaboradores por completar tarefas que são [elegíveis para ganhar bitcoin](https://github.com/users/Reckless-Satoshi/projects/2). Confira! Se você ganhar Satoshis por suas contribuições, então as taxas incorridas ao usar o RoboSats seriam suficientemente cobertas!
 
-Implementar tarifas también ayuda a mitigar la oportunidad de ataques de denegación de servicio por parte de bots maliciosos que congestionan el coordinador RoboSats.
+A implementação de taxas também ajuda a mitigar a oportunidade de ataques de negação de serviço por bots maliciosos congestionando o coordenador do RoboSats.
 
-## **Tarifas externas**
+## **Taxas externas**
 
-Se puede incurrir en comisiones externas de la plataforma cuando se realizan pagos en la cadena (swaps en la cadena) y cuando se enrutan pagos a través de la Red Lightning.
+Taxas externas da plataforma podem ser incorridas ao realizar pagamentos on-chain (swaps on-chain) e ao rotear pagamentos através da Rede Lightning.
 
-Al elegir recibir bitcoin en la cadena, se muestra un resumen de la tarifa de minería (`fee_mining`) y la tarifa de intercambio (`fee_swap`). El `payout_amount` para recibir on-chain se calcula de la siguiente manera:
+Ao escolher receber bitcoin on-chain, uma visão geral da taxa de mineração (`fee_mining`) e taxa de swap (`fee_swap`) é exibida. O `payout_amount` para receber on-chain é calculado da seguinte forma:
 
-````
+```
 payout_amount = trade_sats - fee_sats - fee_mining - fee_swap
-````
+```
 
-La tarifa de intercambio es una tarifa adicional que RoboSats cobra por hacer el pago on-chain y la tarifa de minería es la tarifa de la tarifa en la cadena en sats/vbyte que se puede personalizar para adaptarse a sus necesidades. Consulte [Entender > Pagos on-chain](/docs/es/on-chain-payouts/) para obtener información adicional sobre los pagos on-chain.
+A taxa de troca é uma taxa adicional que o RoboSats cobra para fazer o pagamento on-chain e a taxa de mineração é a taxa de transação na Blockchain em sats/vbyte que pode ser personalizada para atender às suas necessidades. Consulte [Entender > Pagamentos on-chain](/docs/pt/on-chain-payouts/) para obter informações adicionais sobre pagamentos na cadeia.
 
-RoboSats aprovecha la velocidad y la seguridad de la Red Lightning, por lo tanto los pagos enviados a través de la Red Lightning pueden incurrir en gastos dependiendo de la "ruta" necesaria que el pago debe tomar.
+O RoboSats aproveita a velocidade e segurança da Rede Lightning, portanto, pagamentos enviados através da Rede Lightning podem incorrer em taxas dependendo do "caminho" necessário que o pagamento deve percorrer.
 
-Los usuarios pueden recibir pagos de forma privada a través de [lnproxy](https://lnproxy.org/), una sencilla herramienta de privacidad de la Red Lightning, pero su presupuesto de enrutamiento puede aumentar para cubrir las tarifas adicionales en las que incurre el servidor lnproxy. Consulte [Mejores Practicas > Proxy Wallets](/docs/es/proxy-wallets/) para obtener más información sobre la recepción privada.
+Os usuários podem receber pagamentos de forma privada através do [lnproxy](https://lnproxy.org/), uma ferramenta simples de privacidade da Rede Lightning, mas seu orçamento de roteamento pode aumentar para cobrir taxas extras incorridas pelo servidor lnproxy. Consulte [Melhores Práticas > Proxy Wallets](/docs/pt/proxy-wallets/) para obter mais informações sobre recebimento privado.
 
-El usuario tiene la opción de especificar el presupuesto de enrutamiento de Lightning Network, que puede ayudar a reducir los fallos de enrutamiento. Consulta [Acceso Rápido > Lightning Network](/docs/es/lightning/) para obtener más información sobre los fallos de enrutamiento.
+O usuário tem a opção de especificar o orçamento de roteamento da Rede Lightning, o que pode ajudar a reduzir falhas de roteamento. Consulte [Acesse Rápido > Rede Lightning] para obter informações adicionais sobre falhas de roteamento.
 
-{% include improve_es %}
+{% include improve_pt %}

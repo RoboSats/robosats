@@ -1,110 +1,79 @@
 ---
 layout: single
-title: Notificaciones, alertas y grupos en Telegram
-permalink: /docs/es/telegram/
+title: Notificações, alertas e grupos no Telegram
+permalink: /docs/pt/telegram/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/telegram.svg"/>Telegram'
   nav: docs
-src: "_pages/docs/es/03-understand/10-telegram.md"
+src: "_pages/docs/pt/03-understand/10-telegram.md"
 ---
 
 <!-- Cover: telegram notification bot: how to enable (on phone and desktop). What are the privacy trade offs. Alert bot (Jacky). Telegram public support group, different language group. Warning: never reply to privates. Never share your robot token -->
 
-{% include wip_es %}
+## **Bot de Alerta RoboSats 🔔**
 
-**Robots Alert bot 🔔**
+Você pode encontrá-lo no Telegram com o nome de usuário @RobosatsAlertBot, cujo administrador é @jakyhack.
 
-Puedes encontrarlo en Telegram con el nombre de usuario @RobosatsAlertBot,
-cuyo administrador es @jakyhack.
+## **O que posso fazer com @RobosatsAlertBot?**
 
-**¿Que puedo hacer con @RobosatsAlertBot?**
+É um bot projetado para notificar quando um pedido que atende aos seus requisitos for publicado na RoboSats.
 
-Es un bot diseñado para notificarte cuando una orden que cumpla tus requerimientos
-sea posteada en el libro de ordenes de RoboSats.
+Isso significa que se você quiser "COMPRAR" Sats com "EUROS" com um prêmio máximo de "5%" pelos métodos de pagamento "BIZUM, PAYPAL, SEPA, STRIKE", diga ao @RobosatsAlertBot e ele cuidará de notificá-lo quando um negócio que atenda a esses requisitos for publicado na RoboSats.
 
-Esto quiere decir que si quieres "COMPRAR" satoshis con "EUROS" con una prima máxima
-del "5%" a través de los medios de pago "BIZUM,PAYPAL,SEPA,STRIKE", díselo a
-@RobosatsAlertBot y él se encargará de avisarte cuando una orden que cumple con
-estos requisitos se publique en robosats.
+## **Guia do usuário**
 
-**Guía de usuario**
+Acesse @RobosatsAlertBot e inicie o bot com o comando /start.
 
-Accede a @RobosatsAlertBot e inicia el bot con el comando /start
-
-A continuación, te dará a elegir entre 2 opciones, añadir una nueva alerta o listar
-las alertas que ya tienes configuradas (Obviamente cuando inicies el bot por primera
-vez no tendrás ninguna).
+Em seguida, ele lhe dará uma escolha entre 2 opções: adicionar um novo alerta ou listar os alertas que você já configurou. Obviamente, quando você inicia o bot pela primeira vez, você não terá nenhum alerta configurado.
 
 ![image](https://user-images.githubusercontent.com/47178010/170114653-f1d22f61-1db3-4a6a-b38c-5542a1b76648.png)
 
-Crea una nueva alerta haciendo clic en el botón "+ Add new alert" o usando el comando /new
+Prossiga para criar um novo alerta clicando no botão "+ Adicionar novo alerta" ou usando o comando /new.
 
-A partir de ese momento el bot está listo para guardar tus preferencias, te hará 4 preguntas:
-- ¿Qué es lo que quieres hacer? Podrás elegir entre comprar o vender, esto significa
-decirle al bot lo que quieres hacer dentro de Robosats.
+A partir desse momento, o bot está pronto para salvar suas preferências. Ele fará 4 perguntas:
+
+- O que você deseja fazer? Você poderá escolher entre comprar ou vender; isso significa dizer ao bot o que você deseja fazer dentro da RoboSats.
 
 ![image](https://user-images.githubusercontent.com/47178010/170114706-a4226028-50a5-414e-8ae8-c44f90833ff6.png)
 
-- ¿Cuál es tu moneda FIAT? Te dará una lista de monedas FIAT, solo elige la tuya
+- Qual é a sua moeda fiduciária? Ele lhe dará uma lista de moedas fiduciárias, basta escolher a sua.
 
 ![image](https://user-images.githubusercontent.com/47178010/170114837-3e83f1c9-035a-4b59-8c8e-043f77995a33.png)
 
-- ¿Cuál es la prima máxima que estás dispuesto a pagar? o ¿Cuál es la prima mínima
-que estás dispuesto a aceptar? Dependiendo de si quieres comprar o vender satoshis
-te hará una pregunta u otra.
+- Qual é o prêmio máximo que você está disposto a pagar? Ou qual é o prêmio mínimo que você está disposto a aceitar? Dependendo se você deseja comprar ou vender Sats, ele fará uma pergunta ou outra.
 
 ![image](https://user-images.githubusercontent.com/47178010/170115618-66117113-e702-4faa-b02d-a8101244f7da.png)
 
-- ¿Qué métodos de pago aceptas para realizar/recibir pagos con FIAT? Simplemente dile
-al bot qué métodos de pago estarías dispuesto a aceptar para tu intercambio.
-Informarle en el siguiente formato: "Revolut,SEPA,Strike,Bizum" (sin comillas).
-Si es indiferente al método de pago FIAT, simplemente envía: "Any" (sin comillas).
+- Quais métodos de pagamento você aceita para fazer/receber pagamento em moeda fiduciária? Basta informar ao bot quais métodos de pagamento você estaria disposto a aceitar para sua negociação. Informe-os no seguinte formato: "Revolut, SEPA, Strike, Bizum" (sem aspas). Se você for indiferente ao método de pagamento em moeda fiduciária, simplesmente envie: "Qualquer" (sem aspas).
 
 ![image](https://user-images.githubusercontent.com/47178010/170115693-7378b25a-93af-4ad3-ad7e-d0185364003d.png)
 
-
-Una vez informado todo esto, tu alerta está configurada correctamente. En caso de que
-se publique una orden en Robosats que cumpla con tus condiciones, @RobosatsAlertBot te
-notificará por telegram con un enlace al libro de ordenes para que puedas continuar con
-el intercambio si lo deseas. A continuación se muestra un ejemplo de una alerta.
+Uma vez que tudo isso tenha sido informado, seu alerta está configurado corretamente. No caso de um pedido ser publicado na RoboSats que atenda às suas condições, @RobosatsAlertBot irá notificá-lo via Telegram com um link para o livro de pedidos para que você possa prosseguir com sua negociação, se desejar. Abaixo está um exemplo de um alerta.
 
 ![image](https://user-images.githubusercontent.com/47178010/170116003-6316c10a-0c6f-44bc-8eb6-17a1df8e1f3f.png)
 
-**¿Con qué frecuencia mira robosats al libro de órdenes?**
+## **Com que frequência a RoboSats verifica o Livro de ofertas?**
 
-Robosats revisa el libro de órdenes cada minuto, esto quiere decir que el tiempo máximo
-que pasará desde que se publica una orden que cumple tus condiciones hasta que
-@RobosatsAlertBot te notifica será de 1 minuto.
+A RoboSats verifica o livro de ofertas a cada minuto; isso significa que o tempo máximo que passará desde a publicação de um pedido que atenda às suas condições até que @RobosatsAlertBot o notifique será de 1 minuto.
 
-**¿Una vez que @RobosatsAlertBot me haya notificado, ¿puedo usar esa misma alerta nuevamente?**
+## **Depois que @RobosatsAlertBot me notificar, posso usar o mesmo alerta novamente?**
 
-Sí, una vez que @RobosatsAlertBot te notifica, tu alerta permanece en deshabilitada,
-simplemente vuelve a habilitarla y @RobosatsAlertBot te notificará nuevamente cuando
-una orden cumpla con tus condiciones.
+Sim, assim que @RobosatsAlertBot notificar você, seu alerta permanecerá no estado desativado, basta ativá-lo novamente e @RobosatsAlertBot irá notificá-lo novamente quando um pedido atender às suas condições.
 
-**¿Qué puede ir mal?**
+## **O que pode dar errado?**
 
-No pasa nada, pero puede haber decepciones, es posible que las condiciones de tu alerta
-sean condiciones compartidas por muchos usuarios, esto significa que hay muchos usuarios
-que quieren encontrar una orden con las mismas (o muy similares) condiciones que tú.
-Esto significa que un pedido con condiciones muy restrictivas puede estar en el libro de
-órdenes muy poco tiempo porque algún otro usuario lo acepta antes que tú, por lo que el
-creador del bot recomienda tenerlo siempre con sonido.
+Nada de errado, mas pode haver decepções. É possível que as condições do seu alerta sejam compartilhadas por muitos usuários, o que significa que há muitos usuários que desejam encontrar uma negociação com as mesmas (ou muito semelhantes) condições que você. Isso significa que um pedido com condições muito restritivas pode estar no livro de pedidos por um tempo muito curto porque algum outro usuário o aceita antes de você, razão pela qual o criador do bot recomenda sempre tê-lo com som.
 
-**PÉRDIDA DE PRIVACIDAD**
+## **PERDA DE PRIVACIDADE**
 
-Robosats es un exchange enfocado en la privacidad del usuario, es por eso que no se
-utiliza KYC y su uso óptimo está orientado a ser utilizado con el navegador TOR.
+A RoboSats é uma exchange focada na privacidade do usuário porque informações pessoais não são necessárias. A configuração ideal para a RoboSats é através de um método de acesso recomendado como o navegador TOR privado.
 
-Una vez que abandonas TOR y vas a una aplicación de terceros (Telegram en este caso)
-estás perdiendo privacidad.
+Uma vez que você sai do TOR para um aplicativo de terceiros (ou seja, Telegram), você perde privacidade.
 
-Este bot, como cualquier otro, almacenará tu ID de usuario de Telegram, ya que es
-necesario para contactar con el usuario. También almacenará los datos de tu alerta.
+Este bot, como qualquer outro, armazenará o seu ID de usuário do Telegram, pois é necessário para entrar em contato com o usuário. Ele também armazenará os dados do seu alerta.
 
-Es decir, el bot sabrá que el usuario 123456789 tiene una alerta para comprar sats con
-euros con un máximo del 5% de prima a través de bizum o paypal o strike.
+Isso significa que o bot saberá que o usuário 123456789 tem um alerta para comprar Sats com EUROS com um prêmio máximo de 5% através de Bizum, PayPal ou Strike.
 
-Es importante tener esto siempre en cuenta. No debemos obsesionarnos con la privacidad,
-pero sí debemos tener en cuenta lo que damos y lo que no damos de ella.
+É importante sempre ter isso em mente. Alguns estão dispostos a sacrificar um grau de privacidade em favor de notificações convenientes, mas você deve considerar as compensações associadas à revelação das informações mencionadas acima. A privacidade é o que escolhemos revelar seletivamente e, em última análise, cabe ao usuário final decidir o quão privada deseja tornar sua experiência na RoboSats.
 
+{% include improve_pt %}

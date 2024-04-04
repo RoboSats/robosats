@@ -1,57 +1,58 @@
 ---
 layout: single
 title: P2P Swaps
-permalink: /docs/es/swaps/
+permalink: /docs/pt/swaps/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/arrow-right-arrow-left.svg"/>Swaps'
   nav: docs
-src: "_pages/docs/es/03-understand/09-swaps.md"
+src: "_pages/docs/pt/03-understand/09-swaps.md"
 ---
 
-Además de los diversos métodos de pago fiat disponibles, hay algo
-llamado *Destino Swap* también. Estos son métodos de pago, pero en BTC, en una red que no sea Lightning Network. Esto es útil si deseas intercambiar satoshis lightning por satoshis on-chain (o en cualquier otra red como Liquid BTC si lo prefiere). Este proceso de intercambio de satoshis en la red Lightning a cambio de satoshis on-chain generalmente se denomina "swap".
+Além dos vários métodos de pagamento em moeda fiduciária disponíveis, existem também algo chamado _Destinos Swap_. Estes são métodos de pagamento, mas para BTC, em uma rede diferente da Lightning Network.
 
-La siguiente tabla hace facil entender el swap en términos de "comprador" y "vendedor":
+Isso é útil se você quiser trocar Sats da Lightning por Sats on-chain (ou em qualquer outra rede como Liquid BTC, se preferir). Esse processo de trocar Sats na Rede Lightning por Sats on-chain geralmente é chamado de "swap".
 
-| Lado      | Vende       | Recibe     | Tipo Swap |
-|-----------|-------------|------------|-----------|
-| Vendedor  | ⚡BTC        | 🔗 BTC     | Swap out  |
-| Comprador | 🔗 BTC      | ⚡BTC       | Swap in   |
+A tabela abaixo simplifica o entendimento da troca em termos de "comprador" e "vendedor":
 
+| Lado      | Envia  | Recebe | Tipo Swap |
+| --------- | ------ | ------ | --------- |
+| Vendedor  | ⚡BTC  | 🔗 BTC | Swap out  |
+| Comprador | 🔗 BTC | ⚡BTC  | Swap in   |
 
-### Como hacer un swap P2P
+### Como fazer uma swap P2P
 
-Recuerda, en RoboSats siempre compras o vendes satoshis de Lightning. Si deseas recibir satoshis a través de Lightning a cambio de tus satoshis on-chain, crearás una orden de **COMPRA**. Por el contrario, si quieres recibir satoshis on-chain a cambio de tus satoshis Lightning, crearás una orden de *VENTA*.
+Lembre-se, no RoboSats você sempre compra ou vende Sats da Rede Lightning. Se você deseja receber Sats pela Rede Lightning em troca de seus Sats on-chain, então você cria um pedido de **COMPRA**. Por outro lado, se você deseja receber Sats on-chain em troca de seus Sats da Rede Lightning, então crie um pedido de _VENDA_ .
 
-En la pantalla de crear orden, selecciona "BTC" del menudo desplegable de moneda:
+Na tela de Criação de Pedido, selecione "BTC" no dropdown menu de moeda:
 
 <div align="center">
     <img src="/assets/images/understand/btc-swap-in-dropdown.png"/>
 </div>
 
-Selecciona el destino del Swap en el menú desplegable:
+Selecione seu Destino de Swap no dropdown menu:
 
 <div align="center">
     <img src="/assets/images/understand/swap-destination-selection.png"/>
 </div>
 
-A continuación, establece la cantidad o rango por el que desea hacer el swap. Recuerda que si tu es un vendedor, entonces recibirás BTC on-chain; si eres el comprador, enviarás BTC on-chain:
+Em seguida, defina a quantidade ou intervalo que você deseja trocar. Lembre-se de que se você for um vendedor, receberá BTC on-chain e se for o comprador, enviará BTC da on-chain:
 
 <div align="center">
     <img src="/assets/images/understand/amount-swap.png"/>
 </div>
 
-Luego simplemente crea la orden y espera a que un tomador tome la orden. En la sala de chat avanza como de costumbre, pero esta vez el método de pago es simplemente una dirección de bitcoin on-chain.
+Em seguida, basta criar a ordem e aguardar que um tomador aceite o seu pedido. Na sala de bate-papo, você avança como de costume, mas desta vez o método de pagamento é simplesmente um endereço de bitcoin on-chain.
 
-### Cantidad de orden y comisiones mineras
+### Valor da ordem e taxas de mineração
 
-La cantidad a enviar on-chain debe ser del valor exacto mencionado en la orden. El que envía sats on-chain debe cubrir las tarifas de minería (tarifas de transacción on-chain).
+O valor a ser enviado on-chain deve ser exatamente o valor mencionado no valor da ordem. O remetente dos sats on-chain precisa cobrir as taxas de mineração (taxas de transação on-chain).
 
-### Que prima debería poner?
+### Que prêmio devo definir?
 
-En el caso de los swaps, es mejor mantener la prima al 0%, pero si deseas hacer la oferta a tu contraparte, puedes seguir las siguientes recomendaciones:
+Em caso de swaps, é melhor manter o prêmio em 0%; mas se você quiser tornar a oferta um pouco mais atraente para a contraparte, então você pode seguir as recomendações abaixo:
 
-1. Si eres el **vendedor** - estarás **recibiendo** BTC on-chain; ajustar la prima un poco por debajo de 0% (ej. -0.1%, -0.5%) hará tu oferta mas atractiva. El tomador ya paga un 0.125% de comisión en el intercambio y además tiene que pagar las tarifas de minado para enviar BTC on-chain.
-2. Si eres el **comprador** - estarás **enviando** BTC on-chain; ajustar la prima un poco por encima de 0% (ej. 0.1%, 0.5%) hará tu oferta mas atractiva.
+1. Se você é o **vendedor** - você estará **recebendo** BTC on-chain; definir o prêmio ligeiramente abaixo de 0% (por exemplo, -0.1%, -0.5%) tornará sua oferta mais atraente. O tomador já paga {{site.robosats.taker_fee}}% de taxas na negociação, além de ter que pagar as taxas de mineração para enviar o BTC on-chain.
 
-Estas son solo recomendaciones generales sobre qué prima configurar para comenzar con swaps, pero al final del día, el precio es el que establece el mercado, por lo que experimenta y comprueba lo que funciona para ti.
+2. Se você é o **comprador** - você estará **enviando** BTC on-chain; definir o prêmio ligeiramente acima de 0% (por exemplo, 0.1%, 0.5%) tornará sua oferta mais atraente.
+
+Essas são apenas recomendações gerais sobre qual prêmio definir para começar com os swaps, mas no final do dia, o preço é determinado pelo mercado... Então, experimente e veja o que funciona para você!

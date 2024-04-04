@@ -1,79 +1,80 @@
 ---
 layout: single
-title: Deposito de fianza
-permalink: /docs/es/escrow/
+title: Depósito de fiança
+permalink: /docs/pt/escrow/
 toc: true
 toc_sticky: true
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/money-bill-transfer.svg"/>Deposito de fianza'
+  title: '<img id="side-icon-verybig" src="/assets/vector/money-bill-transfer.svg"/>Depósito de fiança'
   nav: docs
-src: "_pages/docs/es/03-understand/05-trade-escrow.md"
+src: "_pages/docs/pt/03-understand/05-trade-escrow.md"
 ---
 
-Cuando se vende bitcoin, se utiliza un deposito de fianza para proteger al comprador contra fraudes o impagos. la fianza actúa como una garantía de seguridad, aprovechando las [facturas de retención](https://github.com/lightningnetwork/lnd/pull/2022) de Lightning para una transacción sin confianza entre robots.
+Quando se vende bitcoin, uma garantia de segurança é utilizada na forma de uma garantia de comércio. O RoboSats aproveita as [faturas de retenção](https://github.com/lightningnetwork/lnd/pull/2022) da Lightning no sistema de garantia para proteger o comprador contra fraudes ou falta de pagamento por parte de seu par comercial.
 
-El tiempo asignado para presentar (bloquear) un deposito de fianza es determinado por el creador del pedido. El temporizador de vencimiento de la fianza predetermina a tres horas; sin embargo, esto se puede personalizar para variar entre una y ocho horas.
+O tempo designado para pagar (travar) uma garantia de comércio é determinado pelo criador do pedido. O temporizador de expiração da garantia padrão é de {{site.robosats.hours_submit_escrow}} horas; no entanto, isso pode ser personalizado para variar de 1 a 8 horas.
 
-Si el vendedor no bloquea el deposito de fianza dentro del límite de tiempo dado en el pedido, entonces el vendedor pierde su fianza de fidelidad. Consulta [Entender > Fianzas](/docs/es/bonds/) para obtener información adicional sobre las fianzas de fidelidad. Además, si se abre una disputa, los satoshis en la fianza se liberan al ganador de la disputa.
+Se o vendedor não trancar sua garantia de comércio dentro do limite de tempo dado, então o vendedor perde sua fiança de fidelidade. Consulte [Entender > Bonds](/docs/pt/bonds/) para obter informações adicionais sobre fianças de fidelidade. Além disso, se uma disputa for aberta, os Satoshis em garantia são liberados para o vencedor da disputa.
 
-Asegúrate de utilizar una wallet Lightning que funcione bien con RoboSats, consulta [Entender > Wallets](/docs/es/wallets/) para obtener información adicional.
+Certifique-se de usar uma carteira Lightning que funcione bem com o RoboSats, consulte [Entender > Carteiras](/docs/pt/wallets/) para obter informações adicionais.
 
-*Nota: El término "vendedor" se refiere a la venta de bitcoin, mientras que "comprador" se refiere a la compra de bitcoin.*
+_Nota: O termo "vendedor" refere-se à venda de bitcoin, enquanto "comprador" refere-se à compra de bitcoin._
 
-## **Qué es una Factura de Retención**
+## **O que é uma fatura de retenção?**
 
-Las facturas de retención de Lightning, también conocidas como facturas retenidas, son un tipo de factura que "bloquea" fondos en tu billetera y luego "desbloquea" esos fondos según el estado de la factura, según lo determine el receptor. En algunas wallets, la interfaz de usuario describe este tipo de pago como un pago "en tránsito" o "congelado".
+As faturas de retenção do Lightning, também conhecidas como faturas "hodl", são um tipo de fatura que "trava" fundos em sua carteira e então "desbloqueia" esses fundos dependendo do status da fatura, conforme determinado pelo receptor. Em algumas carteiras, a interface do usuário descreve esse tipo de pagamento como um pagamento "em trânsito" ou "congelado".
 
-A diferencia de los pagos típicos de Lightning que se bloquean y liquidan inmediatamente cuando llega el pago, una factura de retención solo bloquea el pago pero aún no lo liquida. A partir de este momento, el remitente no puede revocar su pago y, por lo tanto, los fondos están bloqueados en tu billetera pero aún no han salido de ella. El receptor elige si liquida (completa) o desbloquea (cancela) el HTLC y la factura.
+Ao contrário dos pagamentos típicos da Lightning que imediatamente são confirmados e liquidados quando o pagamento é recebido, uma fatura de retenção apenas confirma o pagamento, mas ainda não o liquida. A partir desse momento, o remetente não pode revogar seu pagamento e os fundos ficam assim bloqueados em sua carteira, mas ainda não saíram dela. O receptor escolhe se vai liquidar (completar) ou desbloquear (cancelar) o pagamento e a fatura.
 
-En la práctica, la factura de retención de fianza está bloqueada hacia el nodo coordinador experimental de RoboSats. Esto significa que la factura se cobra exactamente cuando el vendedor hace clic en "Confirmar Fiat Recibido" y luego se paga la factura al comprador. Durante el tiempo que lleva liquidar el pago de Lightning al comprador, RoboSats tiene los fondos mientras intenta realizar repetidamente el pago al comprador.
+Na prática, a fatura de retenção da garantia é bloqueada para o nó coordenador experimental do RoboSats. Isso significa que a fatura é cobrada exatamente quando o vendedor clica em "Confirmar Recebimento da Fiat" e então a fatura do comprador é paga. Durante o tempo necessário para liquidar o pagamento da Lightning para o comprador, o RoboSats tem os fundos enquanto tenta pagar repetidamente o comprador.
 
-Este método es, en este momento, el enfoque más seguro para asegurar que los compañeros cumplan con su parte del trato, ya que aún no se ha demostrado prácticamente una factura de retención directa entre el vendedor y el comprador con wallets convencionales.
+Este método é, no momento, a abordagem mais segura para garantir que os pares cumpram sua parte do acordo, uma vez que uma fatura de retenção direta entre vendedor e comprador ainda não foi demonstrada na prática com carteiras convencionais.
 
-## **Cómo Presentar un deposito de fianza**
+## **Como enviar um depósito de fiança**
 
-Primero, consulta [Entender > Wallets](/docs/es/wallets/) para conocer las wallet Lightning compatibles que facilitarán el uso de RoboSats. Dependiendo de la wallet, los fondos bloqueados pueden mostrarse como un pago en tránsito, congelado o incluso como si fallara. ¡Revisa la lista de compatibilidad de la wallet!
+Primeiro, consulte [Entender > Carteiras](/docs/pt/wallets/) para encontrar carteiras Lightning compatíveis que ajudarão a tornar o uso do RoboSats uma experiência mais tranquila. Dependendo da carteira, os fundos bloqueados podem ser exibidos como um pagamento em trânsito, congelado ou até mesmo falhando. Verifique a lista de compatibilidade da carteira!
 
-Lee la guía relevante según si estás creando o tomando un pedido para vender bitcoin:
+Leia o guia relevante dependendo se você está fazendo ou aceitando um pedido para vender bitcoin:
 
--   Creador: Selecciona "Hacer Pedido" y modifica las condiciones del pedido a tu gusto. El pedido se puede personalizar para requerir un "Tiempo de Espera de Depósito de fianza" (temporizador de vencimiento) diferente al predeterminado de tres horas, variando entre una y ocho horas. Cuando tu pedido en vivo sea tomado y el tomador haya presentado su fianza de fidelidad, usa el código QR que se muestra en la "Caja de Contratos" con tu billetera Lightning para bloquear la cantidad indicada de satoshis como garantía. *Nota: Los fondos de fianza se liberan al comprador una vez que seleccionas "Confirmar Fiat Recibido", lo que resuelve el pedido. Solo confirma después de que el fiat haya llegado a tu cuenta.*
--   Tomador: Navega por el libro de pedidos y encuentra un pedido de tu agrado. Simplemente selecciona la opción "Tomar Pedido" y bloquea tu fianza de fidelidad. Inmediatamente después de enviar la fianza, usa el siguiente código QR que se encuentra en la "Caja de Contratos" con tu billetera Lightning para bloquear la cantidad indicada de satoshis como garantía. *Nota: Los fondos de fianza se liberan al comprador una vez que seleccionas "Confirmar Fiat Recibido", lo que resuelve el pedido. Solo confirma después de que el fiat haya llegado a tu cuenta.*
+- Criador: Crie uma ordem e modifique as condições do pedido conforme desejar. O pedido pode ser personalizado para exigir um "Temporizador de Garantia/Fatura" (temporizador de expiração) diferente do padrão de {{site.robosats.hours_submit_escrow}} horas, variando de 1 a 8 horas. Quando sua ordem publicada for aceita e o tomador tiver enviado sua fiança de fidelidade, use o código QR mostrado com sua carteira Lightning para bloquear a quantidade indicada de Satoshis como colateral (garantia). _Nota: Os fundos da garantia são liberados para o comprador apenas quando você selecionar "Confirmar Recebimento do Fiat", o que liquida o pedido. Confirme apenas após o fiat ter sido recebido em sua conta._
 
-Tan pronto como el tomador del pedido bloquea su fianza, el comprador y el vendedor deben presentar la factura de pago y el deposito de fianza, respectivamente, dentro del límite de tiempo dado.
+- Tomador: Navegue pelo livro de ordens e encontre uma ordem de sua preferência. Clique em "Aceitar ordem" e bloqueie sua fiança de fidelidade. Imediatamente após enviar a fiança, use o código QR mostrado com sua carteira Lightning para bloquear a quantidade indicada de Satoshis como colateral (garantia). _Nota: Os fundos da garantia são liberados para o comprador apenas quando você selecionar "Confirmar Recebimento do Fiat", o que liquida o pedido. Confirme apenas após o fiat ter sido recebido em sua conta._
 
-De forma predeterminada, el temporizador de vencimiento es de tres horas; sin embargo, como creador del pedido, puedes personalizar el temporizador para que varíe entre una y ocho horas. En otras palabras, modifica el tiempo permitido para bloquear los fondos de fianza y proporcionar la factura de pago. Tal vez quieras una transacción rápida y establecer el temporizador a un máximo de una hora en lugar de tres horas.
+Assim que o tomador da ordem bloquear sua fiança, o comprador e o vendedor devem enviar a fatura de pagamento e a garantia de comércio, respectivamente, dentro do limite de tempo dado.
 
-Si bloqueas los fondos de fianza antes de que el comprador haya proporcionado la factura de pago, deberás esperar para chatear con tu par hasta después de que hayan proporcionado la factura.
+Por padrão, o temporizador de expiração é de {{site.robosats.hours_submit_escrow}} horas; no entanto, como criador do pedido, você pode personalizar o temporizador para ser de uma hora a oito horas. Em outras palavras, modifique o tempo permitido para bloquear os fundos da garantia e fornecer a fatura de pagamento. Talvez você queira uma transação rápida e configure o temporizador para o máximo de uma hora em vez de {{site.robosats.hours_submit_escrow}} horas.
 
-Si no bloqueas los fondos de fianza en absoluto, entonces el pedido expirará y el vendedor perderá su fianza. La mitad de la fianza perdida se destina al robot honesto como compensación por el tiempo perdido. Del mismo modo, si el comprador no proporciona la factura de pago dentro del límite de tiempo establecido, el comprador pierde su fianza.
+Se o vendedor bloquear os fundos da garantia antes de o comprador fornecer a fatura de pagamento, então o vendedor aguarda entrar na etapa de chat entre pares somente após o comprador fornecer sua fatura.
 
-Después de que se bloquea el deposito de fianza, el pedido no se puede cancelar excepto si tanto el creador como el tomador están de acuerdo en cancelarlo de manera colaborativa. Además, después de que el vendedor confirma que se recibió el fiat, el pedido ya no se puede cancelar de manera colaborativa. El pedido puede completarse con éxito o entrar en una disputa.
+Se o vendedor não bloquear os fundos da garantia de forma alguma, então a ordem expirará e o vendedor perderá sua fiança. Metade da fiança perdida vai para o comprador como compensação pelo tempo desperdiçado. Da mesma forma, se o comprador não fornecer a fatura de pagamento dentro do limite de tempo dado, então o comprador perde sua fiança, onde metade vai para o vendedor. Metade restante de uma fiança perdida é "doada" para o RoboSats!
 
-## **Cómo y Cuándo se Libera la fianza**
+Depois que o depósito for bloqueado, a ordem não poderá ser cancelada, a menos que tanto o criador quanto o tomador concordem em cancelá-lo de forma colaborativa. Além disso, depois que o vendedor confirmar que o decreto foi recebido, o pedido não poderá mais ser cancelado de forma colaborativa. O pedido pode ser concluído com sucesso ou entrar em disputa.
 
-El deposito de fianza siempre se libera a su legítimo propietario según el estado del comercio o, si es necesario, el resultado de la disputa. Hay dos escenarios que hacen que el deposito de fianza se libere:
+## **Como e quando a garantia é liberada?**
 
--   Completar un comercio exitoso (el vendedor confirma que se recibió el fiat)
--   Abrir una disputa si el comercio no tuvo éxito (el vendedor no confirmó intencionalmente que se recibió el fiat)
+A garantia de comércio é sempre liberada para seu verdadeiro proprietário dependendo do status do comércio ou, se necessário, do resultado da disputa. Existem dois cenários que fazem com que a fatura de retenção da garantia seja liberada:
 
-Los escenarios anteriores se expanden en detalle adicional a continuación.
+- Concluir um comércio bem-sucedido onde os fundos são enviados para o comprador (vendedor confirma que o fiat foi recebido)
+- Abrir uma disputa se o comércio não foi bem-sucedido onde os fundos são retidos até a resolução da disputa (vendedor intencionalmente não confirmou que o fiat foi recebido)
 
-Una vez que se coordina el método de pago en fiat con el comprador, el vendedor hace clic en "Confirmar Fiat Recibido" para finalizar el comercio, lo que libera los fondos de fianza al comprador. El vendedor solo debe confirmar que se recibió el fiat *después* de que aparezca en su posesión.
+Os cenários acima são expandidos com mais detalhes abaixo:
 
-Si nunca recibiste el pago en fiat del comprador, no hagas clic en "Confirmar Fiat Recibido" y, en su lugar, abre una disputa para que el personal de RoboSats la revise. Intentar hacer trampa al no confirmar intencionalmente que se recibió el fiat resulta en que se abra automáticamente una disputa en nombre del comprador.
+Assim que o método de pagamento fiat for coordenado com o comprador, o vendedor clica em "Confirmar Recebimento do Fiat" para encerrar o comércio, o que libera instantaneamente os fundos da garantia para o comprador. O vendedor deve confirmar que o fiat foi recebido após ele aparecer em sua posse.
 
-El robot tramposo correrá el riesgo de perder esa disputa y, consecuentemente, perderá su fianza. La totalidad de la fianza bloqueada se libera y se recompensa al robot honesto.
+Se você nunca recebeu o pagamento fiat do comprador, não clique em "Confirmar Recebimento do Fiat" e, em vez disso, abra uma disputa para que a equipe do RoboSats possa revisar. Tentar trapacear intencionalmente não confirmando que o fiat foi recebido resulta em uma disputa sendo aberta automaticamente em nome do comprador.
 
-¡No olvides tu pedido! Si tu par envió el fiat y el temporizador del pedido expira antes de que confirmes que se recibió el fiat, correrás el riesgo de perder la siguiente disputa, lo que a su vez hará que pierdas tu fianza. ¡Asegúrate de recordar tu pedido y respalda el token único de tu robot!
+O robô trapaceiro correrá o risco de perder essa disputa e, consequentemente, perderá sua fiança. A totalidade da garantia bloqueada será liberada e recompensada para o robô honesto.
 
-Debido a los límites de tiempo involucrados en el proceso del pedido, se recomienda utilizar métodos de pago en fiat instantáneos para evitar exceder el temporizador de vencimiento. Consulta [Mejores Prácticas > Métodos de Pago](/docs/es/payment-methods/) para obtener información adicional.
+Não se esqueça do sua ordem! Se seu par enviou o fiat e o temporizador do pedido expirar antes de você confirmar que o fiat foi recebido, então você corre o risco de perder a disputa subsequente, o que por sua vez fará com que sua fiança seja perdida. Tome cuidado para lembrar da sua ordem e faça backup do token único do seu robô!
 
-Aunque sea una ventana de tiempo muy pequeña (aproximadamente un segundo), el deposito de fianza podría perderse permanentemente si RoboSats se cerrara o desapareciera repentinamente entre el momento en que el vendedor confirma que se recibió el fiat y el momento en que la wallet Lightning del comprador registra los fondos de fianza liberados. Utiliza una wallet Lightning bien conectada con suficiente liquidez entrante para ayudar a evitar fallas en el enrutamiento y, por ende, minimizar cualquier ventana de oportunidad de este tipo.
+Devido aos limites de tempo envolvidos no processo de pedido, é recomendável usar métodos de pagamento fiat instantâneos para evitar exceder o temporizador de expiração. Esteja ciente de métodos de pagamento fiat que permitem que o comprador entre em contato com sua instituição fiat e solicite o estorno da transação. É recomendável usar métodos de pagamento que sejam irreversíveis. Consulte [Melhores Práticas > Métodos de Pagamentos](/docs/pt/payment-methods/) para obter informações adicionais.
 
-## **Información Adicional**
+Embora seja uma janela de tempo muito pequena (cerca de um segundo), a garantia de comércio pode ser permanentemente perdida se o RoboSats for desligado ou desaparecer repentinamente entre o momento em que o vendedor confirma que o fiat foi recebido e o momento em que a carteira Lightning do comprador registra os fundos da garantia liberados. Use uma carteira Lightning bem conectada, com liquidez inbound suficiente, para ajudar a evitar falhas de roteamento e, consequentemente, minimizar qualquer oportunidade nessa janela.
 
-Algunas wallets Lightning tienen dificultades para reconocer la factura de retención de Lightning como un bloqueo de fondos. Como vendedor, es necesario utilizar una wallet que permita múltiples HTLC pendientes, ya que deberás bloquear fondos para una fianza y luego un fideicomiso.
+## **Informações adicionais**
 
-Si surgen problemas, comunícate con el grupo de Telegram de RoboSats; pero ten cuidado con los estafadores que pueden contactarte directamente e impersonar al personal de RoboSats. El personal de RoboSats nunca se comunicará directamente contigo primero. Consulta [Contribuir > Código > Canales de Comunicación](/contribute/code/#communication-channels) para conocer los grupos de Telegram disponibles.
+Algumas carteiras Lightning têm dificuldade em reconhecer a fatura de retenção do Lightning como uma retenção de seus fundos. Como vendedor, é necessário usar uma carteira que permita múltiplos HTLCs pendentes, pois você precisará bloquear fundos para uma fiança e depois para uma garantia.
 
-{% include improve_es %}
+Se surgirem problemas, entre em contato com o grupo RoboSats no SimpleX; mas cuidado com os golpistas que podem entrar em contato diretamente com você e se passar por funcionários do RoboSats! Os funcionários do RoboSats nunca entrarão em contato diretamente com você primeiro. Veja [Contribuir > Código > Canais de Comunicação](/contribute/code/#communication-channels) para obter o link do grupo SimpleX.
+
+{% include improve_pt %}

@@ -1,13 +1,13 @@
 ---
 layout: single
-title: Compatibilidad de wallets RoboSats
-permalink: /docs/es/wallets/
+title: Carteiras compatíveis com RoboSats
+permalink: /docs/pt/wallets/
 toc: true
 toc_sticky: true
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/wallet.svg"/>Wallets'
+  title: '<img id="side-icon-verybig" src="/assets/vector/wallet.svg"/>Carteiras'
   nav: docs
-src: "_pages/docs/es/03-understand/07-wallets.md"
+src: "_pages/docs/pt/03-understand/07-wallets.md"
 
 # Icons
 good: "<i style='color:#1976d2' class='fa-solid fa-square-check fa-2xl'></i>"
@@ -23,9 +23,9 @@ thumbsdown: "<i style='color:#9c27b0' class='fa-solid fa-thumbs-down fa-2xl'></i
 unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
 bitcoin: "<i class='fa-solid fa-bitcoin-sign'></i>"
 ---
-Esta es una compilación no exhaustiva basada en la experiencia pasada de los usuarios. No hemos probado todas las wallets, si pruebas una wallet que aún no está cubierta, [informa aquí](https://github.com/Reckless-Satoshi/robosats/issues/44).
+Esta é uma compilação não exaustiva baseada na experiência anterior dos usuários. Não testamos todas as carteiras, se você tentar uma carteira que ainda não está coberta, [informe aqui](https://github.com/Reckless-Satoshi/robosats/issues/44).
 
-| Wallet | Versión | Dispositivo | UX<sup>1</sup> | Fianzas<sup>2</sup> | Pagos<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
+| Carteira | Versão | Dispositivo | UX<sup>1</sup> | Bonds<sup>2</sup> | Pagamentos<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
 |[Alby](#alby-extensión-de-navegador)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blink](#blink-móvil-antiguo-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
@@ -43,71 +43,80 @@ Esta es una compilación no exhaustiva basada en la experiencia pasada de los us
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Zeus](#zeus-móvil-lnd-cln-eclair-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 
-1. **UX:** ¿Muestra claramente la wallet que hay un pago "en transito" (factura retenida)?
-2. **Fianzas:** ¿Puede la wallet bloquear los invoices con tiempos de expiracioón largos necesarios para las fianzas?
-3. **Pagos:** ¿Puede la wallet recibir pagos de RoboSats después de comprar Sats?
-4. **Compatible:** ¿Es la wallet generalmente compatible con RoboSats?
-5. **Total:** ¿Es la wallet suficientemente compatible y estable para ser usada consistentemente sin problemas?
+1. **UX:** A carteira transmite claramente que existe um pagamento "em andamento" (fatura hodl)?
+2. **Bonds:** A carteira pode bloquear as faturas com prazo de validade longo necessárias para os bonds?
+3. **Pagamentos:** A carteira pode receber pagamentos da RoboSats depois que o usuário compra Sats?
+4. **Compatível:** A carteira é globalmente compatível de ponta a ponta com a RoboSats?
+5. **Total:** A carteira é compatível e estável o suficiente para ser usada consistentemente sem problemas?
 
-### Alby (extensión de navegador)
-Alby es una extensión de navegador compatible con el estándar WebLN. Dado que RoboSats es compatible con WebLN, la experiencia con Alby es probablemente la mejor de su clase: no tendrás que escanear los códigos QR ni generar invoices, simplemente haz clic en la ventana emergente de Alby para confirmar las acciones. Puedes conectar la extensión de Alby a la mayoría de los nodos y wallets populares, o simplemente dejar que Alby aloje una wallet de custodia para ti.
+### Alby (extensão de navegador)
+Alby é uma extensão de navegador compatível com o padrão WebLN. Considerando que a RoboSats suporta WebLN, a experiência com Alby provavelmente é de primeira qualidade: você não precisará escanear os códigos QR ou copiar/colar faturas geradas. Basta clicar no pop-up do Alby para confirmar as ações. Você pode conectar a extensão Alby à maioria dos nós e carteiras populares ou simplesmente permitir que o Alby hospede uma carteira custodial para você.
+A configuração padrão da carteira custodial não é adequada para negociações extensas, pois as transações acima de um determinado resumo total serão rejeitadas.
 
-Instrucciones especiales para instalar Alby en el navegador Tor:
-1. Instala la extensión de Alby desde [Firefox add-ons store](https://addons.mozilla.org/en-US/firefox/addon/alby/)
-2. Clicka en la extension de Alby y sigue los pasos para configurar tu wallet.
+Instruções para instalar o Alby no Navegador Tor:
 
-### Blink (Móvil, antiguo Bitcoin Beach Wallet)
-Funciona bien con RoboSats. Las facturas retenidas aparecen como "Pendiente" en el historial de transacciones. Los pagos a la wallet Blink funcionan según lo previsto. Wallet custodiado por Galoy que se originó en el proyecto Bitcoin Beach en El Salvador (anteriormente conocido como "Bitcoin Beach Wallet").
+1. Instale a extensão Alby na [loja de add-ons do Firefox](https://addons.mozilla.org/en-US/firefox/addon/alby/)
+2. Clique na extensão Alby e siga as instruções para configurar sua carteira.
 
-### Blixt (Android/iOS, backend ligero LND en el dispositivo)
-La mayoría de las pruebas de desarrollo para Robosats se han realizado con Blixt. Es una de las wallets Lightning más completas que existen. Sin embargo, genera malentendidos cuando las facturas retenidas están bloqueadas, ya que muestra una rueda giratoria con el pago en tránsito. El usuario debe verificar el sitio web (robosats) para confirmar. Blixt permite múltiples HTLC pendientes, esto es necesario como vendedor ya que necesita bloquear un bono de tomador/creador y luego un fideicomiso comercial (2 HTLC concurrentes pendientes). Eventualmente, también podría mostrarse como facturas pagadas/cargadas que aún están pendientes, especialmente si el usuario fuerza el cierre de blixt y lo vuelve a abrir. Ocasionalmente pueden mostrarse como fianzas que de hecho han sido devueltas.
+### Blink (Mobile, antigo Bitcoin Beach Wallet)
+Funciona bem com RoboSats. As faturas hodl (Bonds) aparecem como "Pendentes" no histórico de transações. Os pagamentos para a carteira Blink funcionam conforme o esperado. Carteira custodial da Galoy, originária do projeto Bitcoin Beach em El Salvador (anteriormente conhecida como "Bitcoin Beach Wallet").
 
-### Bluewallet (Móvil)
-Funciona bien. Pero están teniendo problemas en el modo custodial. Las fianzas que devuelve RoboSats se cobran a los usuarios (¿entonces Bluewallet se queda con ese saldo?). Y los bonos que se reparten... ¡Blue los cobra dos veces! Más información una vez que nos respondan. EDIT: ¡Blue ha confirmado que están trabajando para resolver pronto estos errores contables!
 
-### Breez (Móvil)
-Funciona bien con RoboSats. Breez es una wallet no custodial. Así que ten en cuenta la gestión de canales y cosas así. Es una interfaz versátil y fácil de usar.
+### Blixt (Android/iOS, backend leve LND no dispositivo)
+A maioria dos testes de desenvolvimento para RoboSats foi feita usando o Blixt. Esta é uma das carteiras Lightning mais completas disponíveis. No entanto, pode levar a mal-entendidos quando faturas hodl estão bloqueadas, pois mostra um spinner com o pagamento em trânsito. O usuário precisa verificar no site para confirmação. Blixt permite múltiplos HTLCs pendentes; isso é necessário como vendedor, pois você precisa bloquear um bond taker/maker e depois uma garantia de negociação (2 HTLCs pendentes concorrentes). Eventualmente, também pode exibir faturas pagas/carregadas que ainda estão pendentes, especialmente se o usuário fechar o Blixt à força e reabri-lo. Ocasionalmente, pode exibir faturas de fidelidade como pagas que na verdade foram devolvidas.
 
-### Cash App (móvil)
-Funciona bien con RoboSats. Las facturas retenidas  aparecen como "Pendientes" en el historial de transacciones. Los pagos a la wallet Cash App funcionan según lo previsto. wallet custodiada por Block, Inc, anteriormente conocido como Square, Inc, que está dirigido por Jack Dorsey.
+### Bluewallet (Mobile)
+Funciona bem. A Bluewallet encerrou seu serviço custodial. Anteriormente, o serviço custodial causava problemas onde as garantias que a RoboSats devolve são cobradas dos usuários e onde bonds cortados são cobrados duas vezes pela Bluewallet! Este era um bug conhecido por muito tempo na Bluewallet, então eles encerraram seu serviço custodial de LN (o que acabou tornando a experiência da RoboSats mais suave para os usuários).
 
-### Core Lightning / CLN (CLI Interface)
-Funciona como es esperado. El comando `lightning-cli pay <invoice>` no concluye mientras el pago está pendiente, pero puedes usar `lightning-cli paystatus <invoice>` para monitorear el estado.
+
+### Breez (Mobile)
+Funciona bem com RoboSats. Breez é uma carteira não custodial. Portanto, tenha em mente o gerenciamento de canais e coisas assim. É uma interface versátil e fácil de usar.
+
+### Cash App (Mobile)
+Funciona bem com RoboSats. As faturas hodl (Bonds) aparecem como "Pendentes" no histórico de transações. Os pagamentos para a carteira Cash App funcionam conforme o esperado. Carteira custodial da Block, Inc., anteriormente conhecida como Square, Inc., liderada por Jack Dorsey.
+
+### Core Lightning / CLN (Interface de Linha de Comando - CLI)
+Funciona conforme o esperado. O comando `lightning-cli pay <invoice>` não é concluído enquanto o pagamento está pendente, mas é possível usar `lightning-cli paystatus <invoice>` para monitorar o estado.
 
 ### Electrum (Desktop)
-La experiencia en el uso de Electrum es limitada. No parece admitir más de un HTLC pendiente (incluso si hay varios canales). No se recomienda usar esta wallet con RoboSats. Sin embargo, funciona bien si usted es un comprador, ya que solo se necesita una factura retenida para la fianza de fidelidad. El pago se muestra como pendiente con una rueda giratoria durante el tiempo de bloqueo.
+Funciona conforme o esperado. Alguns pagamentos e bloqueios podem falhar dependendo do nó Lightning para o qual o canal é criado. Canais para ASINQ funcionam bem.
 
-### LND (CLI Interface)
-Raw, muestra exactamente lo que está sucediendo y lo que sabe "IN_FLIGHT". No es fácil de usar y, por lo tanto, no se recomienda que los principiantes interactúen con Robosats. Sin embargo, todo funciona perfectamente. Si usas LNCLI regularmente, no encontrarás ningún problema para usarlo con RoboSats.
+### LND (Interface de Linha de Comando - CLI)
+Bruto; mostra exatamente o que está acontecendo e o que ele sabe "IN_FLIGHT". Não é amigável para o usuário e, portanto, não é recomendado interagir com a RoboSats para iniciantes. No entanto, tudo funciona perfeitamente. Se você estiver usando o LNCLI regularmente, então não encontrará problemas em usá-lo com a RoboSats.
 
-### Mash Wallet App (Mobile PWA & Desktop Web-Wallet)
-En general, la wallet [Mash](https://mash.com/consumer-experience/) funciona de extremo a extremo con Robosats tanto en la venta como en la compra a través de lightning. La mayoría de los detalles relevantes de la factura en la wallet mash se muestran y son claros para los usuarios durante todo el proceso. Cuando las transacciones se completan, se abren en la aplicación móvil tanto en el lado del remitente como en el del destinatario para resaltar que las transacciones se han completado. El equipo tiene un error abierto para solucionar este problema en breve (esta nota es del 21 de agosto de 2023).
+### Mash Wallet App (Mobile PWA e Desktop Web-Wallet)
+No geral, a carteira [Mash](https://mash.com/consumer-experience/) funciona end2end com a Robosats tanto na venda quanto na compra por meio do Lightning. A maioria dos detalhes relevantes da fatura na carteira Mash são mostrados e claros para os usuários durante todo o processo. Quando as transações são concluídas, elas são abertas no aplicativo móvel em ambos os lados, remetente e destinatário, para destacar que as transações foram concluídas. O único problema de UX é que a lista de faturas pendentes não mostra explicitamente faturas HOLD e há uma tela "giratória" no primeiro pagamento da fatura HOLD. A equipe tem um bug aberto para corrigir este problema em breve (esta observação é de 21 de agosto de 2023).
 
-### Muun (Móvil)
-Muun funciona igual de bien con las facturas retenidas que Blixt o LND. Puedes ser vendedor en RoboSats usando Muun y la experiencia de usuario será excelente. Sin embargo, para ser un comprador, debes enviar una dirección onchain donde recibir el pago, una invoice lightning no funcionará. Muun está haciendo un _ataque de desvío de tarifas_ a cualquier remitente que pague a Muun. Hay un salto obligatorio a través de un canal privado con una tarifa de +1500ppm. RoboSats estrictamente no enrutará el pago de un comprador por una pérdida neta. Dado que las tarifas de intercambio en RoboSats son del 0,2% y debe cubrir las tarifas de enrutamiento, **RoboSats nunca encontrará una ruta adecuada para un usuario de Muun**. Por el momento, RoboSats escaneará la invoice en busca de sugerencias de enrutamiento que potencialmente puedan codificar en un _ataque de desvío de tarifas_. Si se da el caso, la invoice será rechazada: envíe una dirección onchain en su lugar para un hacer un swap. Consulta [Entender > Pagos on-chain](/docs/es/on-chain-payouts/) para obtener más información sobre los intercambios on-chain. Es importante tener en cuenta que Muun tiene problemas en épocas de picos altos de comisiones on-chain. En cualquier caso, la solución para recibir a Muun es: o bien enviar una dirección on-chain o elegir un presupuesto de enrutamiento más alto después de activar el interruptor de "Opciones avanzadas".
+### Muun (Mobile)
+Semelhante ao Blixt ou LND, o Muun se dá bem com faturas hodl. Você pode ser um vendedor na RoboSats usando Muun e a experiência do usuário será ótima. No entanto, para ser um comprador ao usar Muun, você precisa fornecer um endereço na blockchain para o pagamento, já que uma fatura Lightning não funcionará. O Muun está _desviando taxas, atacando_ qualquer de forma sorrateira de qualquer remetente para a carteira Muun. Há um salto obrigatório por meio de um canal privado com uma taxa de +1500ppm. A RoboSats **não encaminhará um pagamento para um comprador que resulte em uma perda líquida**. Dado que as taxas de negociação da RoboSats são {{site.robosats.total_fee}}% e elas precisam cobrir as taxas de roteamento, a RoboSats nunca encontrará uma rota adequada para um usuário da carteira Muun. No momento, a RoboSats escaneará sua fatura por dicas de roteamento que possam potencialmente codificar um ataque às _taxas, _desviando_. Se esse truque for encontrado, então a fatura será rejeitada: forneça um endereço na blockchain em vez disso para uma troca instantânea. Consulte [Entender > Pagamentos on-chain](/docs/pt/on-chain-payouts/) para mais informações sobre trocas instantâneas. Importante notar que o Muun tem problemas durante períodos de aumento nas taxas da blockchain. Independentemente disso, a solução alternativa para receber no Muun é: ou fornecer um endereço na blockchain ou escolher um orçamento de roteamento mais alto após habilitar a opção "Opções Avançadas".
 
-### OBW (Móvil)
-Uno de los más simples y uno de los mejores. La factura retenida muestra como "sobre la marcha", no es de custodial y puede crear sus propios canales. Compra uno a un proveedor de liquidez o utilice Hosted Channels. Es mantenido por el gran Fiatjaf y es un fork del abandonado SBW.
-*Actualización 26-10-23: En este momento no tiene desarrollo ni soporte.
 
-### Phoenix (Móvil)
+### OBW (Mobile)
+Um dos mais simples e um dos melhores. A fatura hodl é exibida como "em voo", não é custodial e você pode criar seus próprios canais. Compre um de um provedor de liquidez ou use Canais Hospedados. É mantido pelo incrível Fiatjaf e é um fork do abandonado SBW.
+*Atualização 26-10-23: Neste momento, não há desenvolvimento ou suporte.
+
+### Phoenix (Mobile)
 Phoenix funciona muy bien como tomador de ordenes. Phoenix también funcionará bien como creador de ordenes, siempre que la configuración de la orden `duración pública` + `duración del depósito` sea inferior a 10 horas. De lo contrario, es posible que haya problemas para bloquear la fianza de creador. Si la duración total de los invoice de las fianzas/depositos supera los 450 bloques, Phoenix no permitirá que los usuarios bloqueen la fianza (`No se puede agregar htlc (...) razón = caducidad demasiado grande`).
 
-### SBW (Móvil)
-Desde la version 2.5 no soporta lightning
+O Phoenix funciona muito bem como tomador de ordens. O Phoenix também funcionará bem como criador de ordens, desde que a configuração do pedido `duração pública` + `duração do depósito` seja inferior a 10 horas. Caso contrário, pode haver problemas para bloquear a fiança do criador. Se a duração total das faturas das fianças/depósitos exceder 450 blocos, o Phoenix não permitirá que os usuários bloqueiem a fiança (`Não é possível adicionar HTLC (...) razão = expiração muito grande`).
 
-### Zeus (Móvil, LND, CLN, Eclair remote backend)
-Es una interfaz para LND, CLN y Eclair. Funciona como es esperado. Es extremadamente engañoso con una pantalla roja completa "TIME OUT" unos segundos después de enviar el HTLC. Sin embargo, si el usuario consulta en el sitio web, el invoice se bloquea correctamente.
+### SBW (Mobile)
+A partir da versão 2.5, não suporta Lightning.
 
-## <i class="fa-solid fa-code-pull-request"></i> Ayuda a mantener actualizada esta página
-Hay muchas wallets y todas siguen mejorando a la velocidad de la luz. Puedes contribuir al proyecto de código abierto RoboSats probando wallets, editando [el contenido de esta página](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{{page.src}}) y abriendo un [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
+### Zeus (Mobile, LND, CLN, Eclair remote backend)
+É uma interface para LND, CLN e Eclair. Funciona como esperado. É extremamente enganador com uma tela vermelha completa "TIME OUT" alguns segundos após o envio do HTLC. No entanto, se o usuário consultar o site, a fatura será bloqueada corretamente.
 
-## Información adicional
 
-Recibir Sats a través de Lightning no es completamente privado. Consulta [Mejores Practicas > Proxy Wallets](/docs/es/proxy-wallets/) para más información sobre cómo recibir Sats de forma privada.
+## <i class="fa-solid fa-code-pull-request"></i> Ajude a manter esta página atualizada
+Há muitas carteiras e todas continuam melhorando à velocidade da luz. Você pode contribuir para o projeto de código aberto RoboSats testando as carteiras, editando [o conteúdo desta página](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{{page.src}}) e abrindo um [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
 
-Si tienes problemas para recibir fondos en tu wallet (debido a problemas de gestión del canal, problemas de enrutamiento, problemas de la wallet, etc.), una solución rápida para recibir un pago rápido sería tener un segunda wallet a mano que esté bien conectado y con suficiente capacidad de canal. Podrías recibir Sats en tu segunda wallet y, una vez resueltos los problemas, enviarlos a tu wallet principal.
 
-¡No dudes en contactar con el grupo de chat público RoboSats [SimpleX](/contribute/code/#communication-channels) para pedir consejo o ayuda en el uso de los wallets!
+## Informações adicionais
 
-{% include improve_es %}
+Receber Sats via Lightning não é completamente privado. Consulte [Melhores Práticas > Proxy Wallets](/docs/pt/proxy-wallets/) para obter mais informações sobre receber Sats de forma privada.
+
+Se você estiver enfrentando problemas para receber fundos em sua carteira (devido a problemas de gerenciamento de canais, problemas de roteamento, problemas do lado da carteira, etc.), então uma solução rápida para receber um pagamento rápido seria ter uma segunda carteira à mão que esteja bem conectada e com capacidade de canal suficiente. Você poderia receber Sats em sua segunda carteira e, uma vez que os problemas forem resolvidos, então enviar para sua carteira principal.
+
+Não hesite em entrar em contato com o grupo de bate-papo público do RoboSats no [SimpleX](/contribute/code/#communication-channels) para obter conselhos ou ajuda no uso de carteiras!
+
+{% include improve_pt %}

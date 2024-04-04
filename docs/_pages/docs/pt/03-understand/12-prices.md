@@ -1,96 +1,99 @@
 ---
 layout: single
-title: Precio de las ordenes
-permalink: /docs/es/prices/
+title: Preço das ordens
+permalink: /docs/pt/prices/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/bitcoin.svg"/>Precios'
+  title: '<img id="side-icon-verybig" src="/assets/vector/bitcoin.svg"/>Preços'
   nav: docs
-src: "_pages/docs/es/03-understand/12-prices.md"
+src: "_pages/docs/pt/03-understand/12-prices.md"
 ---
 
-El precio es la tarifa fiat a la que el bitcoin se negoció por última vez en un exchange. En otras palabras, indica el precio de intercambio que un comprador y un vendedor estarían dispuestos a aceptar para una operación posterior entre bitcoin y fiat.
+O preço é a taxa fiduciária pela qual o bitcoin foi negociado pela última vez em uma exchange. Em outras palavras, ele indica o preço de troca que um comprador e um vendedor estariam dispostos a aceitar para uma negociação subsequente entre bitcoin e moeda fiduciária.
 
-Al hacer una orden, hay dos métodos diferentes de fijación de precios disponibles:
-* **Método de fijación de precios relativo**: deja que el precio de la orden se mueva con el mercado a lo largo del tiempo (dinámico).
-* **Método de fijación de precios explícito**: establece el precio de la orden utilizando una cantidad fija de satoshis (estático).
+Ao fazer uma ordem, existem dois métodos de precificação diferentes disponíveis:
 
-Cuando navegue por el libro de órdenes, el precio bitcoin-fiat de las órdenes en vivo que vea se ajustará automáticamente para incluir la prima correspondiente a la orden. Consulte [Entender > Prima](/docs/es/premium/) para obtener información adicional sobre las primas.
+- **Método de precificação Relativa**: permite que o preço da ordem se mova com o mercado ao longo do tempo (dinâmico).
+- **Método de precificação Explícito**: define o preço da ordem usando uma quantidade fixa de satoshis (estático).
 
-¡Si una moneda fiduciaria no está disponible en RoboSats, entonces se puede añadir fácilmente una nueva moneda mediante la apertura de una solicitud de extracción en [GitHub](https://github.com/RoboSats/robosats)!
+Ao navegar no livro de ordens, o preço bitcoin-fiat das ordens ativas que você vê é automaticamente ajustado para incluir o prêmio correspondente da ordem. Consulte [Entenda > Prêmio](/docs/pt/premium/) para informações adicionais sobre prêmios.
 
-***El método de precios explícitos se ha eliminado como opción por razones técnicas, pero podría volver en futuras actualizaciones. Actualmente, el precio de las órdenes sólo es relativo a la tarifa de mercado.
+Se uma moeda fiduciária não estiver disponível na RoboSats, então é possível adicionar facilmente uma nova moeda abrindo uma solicitação de Pull Request no [GitHub](https://github.com/RoboSats/robosats)!
 
-## Precios en la práctica
+_\*\*O método de precificação explícita foi removido como opção por razões técnicas, mas poderia potencialmente retornar em atualizações futuras. Atualmente, a precificação de pedidos é apenas relativa à taxa de mercado._
 
-Si el precio de la orden es *relativo*, entonces la cantidad de satoshis que se negocian en relación con el tipo de cambio fiat (llamaremos `trade_sats`) se "bloquea" una vez que el tomador de la orden bloquea su bono. Hasta que se bloquea el bono del tomador, el precio de la orden sigue moviéndose con el mercado a lo largo del tiempo.
+## Preços na prática
 
-Una vez que el bono del tomador se bloquea para una orden de precio relativo, la cantidad de satoshis que se negocian se calcula de la siguiente manera:
+Se a precificação da ordem for relativa, então a quantidade de satoshis sendo negociada em relação à taxa de câmbio fiat (vamos chamar de `trade_sats`) fica "travada" assim que o tomador do pedido bloqueia seu vínculo. Até que o vínculo do tomador seja bloqueado, o preço da ordem continua a se mover com o mercado ao longo do tempo.
 
-````
-tarifa_prima = tarifa_CEX * (1 + (prima / 100))
-trade_sats = importe / tarifa_prima
-````
+Uma vez que o vínculo do tomador é bloqueado para um pedido com preço relativo, a quantidade de satoshis sendo negociada é calculada da seguinte forma:
 
-donde `trade_sats` son los satoshis que se van a negociar, `prima` es lo que el creador de la orden definió durante la creación de la orden, y `tarifa_CEX` es el precio de cambio actual del bitcoin dada la divisa que se está utilizando.
+```
+tarifa_premio = tarifa_CEX * (1 + (premio / 100))
+trade_sats = importe / tarifa_premio
+```
 
-Las comisiones de la plataforma (`fee_sats`) asociadas a tu orden se calculan usando la variable `trade_sats`:
-* Para maker:
-  ````
+onde `trade_sats` são os satoshis a serem negociados, `premio` é o que o criador do pedido definiu durante a criação do pedido, e `tarifa_CEX` é o preço atual de troca de bitcoins dado a moeda que você está usando.
+
+As taxas da plataforma (`fee_sats`) associadas ao seu pedido são calculadas usando a variável `trade_sats`:
+
+- Para o criador:
+  ```
   fee_fraction = 0.002 * 0.125
                = 0.00025 ==> {{site.robosats.maker_fee}}%%.
   fee_sats = trade_sats * fee_fraction
-  ````
-* Para el tomador:
-  ````
+  ```
+- Para o tomador:
+  ```
   fee_fraction = 0.002 * (1 - 0.125)
                = 0.00175 ==> {{site.robosats.taker_fee}}%
   fee_sats = trade_sats * fee_fraction
-  ````
+  ```
 
-donde `fracción_de_tarifa` se combina para una tarifa total compartida de la plataforma de {{site.robosats.total_fee}}%; que se desglosa en {{site.robosats.maker_fee}}% y {{site.robosats.taker_fee}}% para maker y taker, respectivamente. Consulte [Entender > Tarifas](https://learn.robosats.com/docs/fees/) para obtener información adicional sobre las tarifas.
+onde `fee_fraction` se combina para uma taxa total compartilhada da plataforma de {{site.robosats.total_fee}}%; que é dividida em {{site.robosats.maker_fee}}% e {{site.robosats.taker_fee}}% para criador e tomador, respectivamente. Consulte [Entender > Taxas](https://learn.robosats.com/docs/fees/) para obter informações adicionais sobre as taxas.
 
-RoboSats cobra las tarifas en el proceso de depósito en garantía (`escrow_amount`) y la factura de pago (`payout_amount`) calculando lo siguiente:
-* Para el vendedor:
-  ````
+RoboSats cobra as taxas no processo de depósito em garantia (`escrow_amount`) e no valor de pagamento (`payout_amount`) calculando o seguinte:
+
+- Para o vendedor:
+  ```
   escrow_amount = trade_sats + fee_sats
-  ````
-* Para el comprador
-  ````
+  ```
+- Para o comprador
+  ```
   payout_amount = trade_sats - fee_sats
-  ````
+  ```
 
-En esencia, RoboSats añade a la `escrow_amount`, deduce de la `payout_amount`, y, dependiendo de si usted es el tomador de la orden o el ordenante, aplica los cálculos apropiados `fee_fraction`.
+Em essência, o RoboSats adiciona ao `escrow_amount`, subtrai do `payout_amount` e, dependendo se você é o tomador ou o criador do pedido, aplica os cálculos apropriados de `fee_fraction`.
 
-Si el precio de la orden es *explícito*, entonces la cantidad de satoshis que se negocia es fija, independientemente del tipo de cambio fiat actual (`CEX_rate`). Una vez creada la orden, los satoshis están bloqueados desde el principio; sin embargo, la prima asociada se moverá con el mercado a lo largo del tiempo en lugar del precio.
+Se a precificação do pedido for _explícita_, então a quantidade de satoshis sendo negociada é fixa, independentemente da taxa de câmbio de fiat atual (`CEX_rate`). Uma vez que a ordem é criada, os satoshis são bloqueados desde o início; no entanto, o prêmio associado se moverá com o mercado ao longo do tempo em vez do preço.
 
-## **Cómo determinan los exchange centralizados el tipo de mercado bitcoin-fiat**
+## **Como os exchanges centralizados determinam a taxa de mercado entre bitcoin-fiat**
 
-La tarifa de mercado global bitcoin-fiat se determina a través de un simple arbitraje bitcoin; esto hace que el precio fiat de bitcoin converja hacia los precios que se ven en los intercambios centralizados típicos.
+A taxa de mercado global entre bitcoin e moedas fiduciárias é determinada através de um simples arbitragem de bitcoin; isso faz com que o preço do bitcoin em moeda fiduciária convirja para os preços vistos nos típicos exchanges centralizados.
 
-Por ejemplo, si el exchange "A" cotiza el bitcoin a 10.000 $ y el exchange "B" a 10.100 $ (100$ de diferencia), comprar bitcoin en el exchange "A" y venderlo inmediatamente en el exchange "B" le reportará un beneficio de 100 $ (sin tener en cuenta las comisiones de negociación).
+Por exemplo, se a exchange "A" listar o bitcoin a $10.000 e a exchange "B" a $10.100 (uma diferença de $100), comprar bitcoin na exchange "A" e vendê-lo imediatamente na exchange "B" renderá um lucro de $100 (desconsiderando as taxas de negociação).
 
-Esta acción hará que suba el precio del bitcoin en el exchange "A" y que baje el precio del bitcoin en el exchange "B". Al final, el precio de ambos exchanges se aproxima y disminuyen las oportunidades de arbitraje rentable.
+Essa ação fará com que o preço do bitcoin na exchange "A" suba e o preço do bitcoin na exchange "B" desça. No final, o preço em ambas as exchanges se aproximará e as oportunidades de arbitragem lucrativa diminuirão.
 
-Los países que no permiten que grandes exchanges operen en su jurisdicción a menudo verán que el bitcoin se negocia a un precio más alto, o con una prima, debido a la dificultad para que los arbitrajistas intervengan y se beneficien de esa diferencia de precio.
+Países que não permitem que grandes exchanges operem em sua jurisdição muitas vezes verão o bitcoin sendo negociado a um preço mais alto, ou com um prêmio, devido à dificuldade para os arbitradores intervirem e se beneficiarem dessa diferença de preço.
 
-## **¿De dónde obtiene RoboSats información sobre precios?**
+## **De onde o RoboSats obtém informações sobre preços?**
 
-El precio de intercambio de bitcoin en RoboSats está determinado por los tipos de cambio actuales de las API públicas, específicamente los precios de blockchain.info y yadio.io. Dada la moneda que estás utilizando, el precio medio de bitcoin-fiat se calcula a partir de los tipos de cambio actuales.
+O preço de troca de bitcoin no RoboSats é determinado pelos atuais tipos de câmbio das APIs públicas, especificamente os preços de blockchain.info e yadio.io. Dada a moeda que você está usando, o preço médio entre bitcoin e moeda fiduciária é calculado a partir dos atuais tipos de câmbio.
 
-Los datos extraídos de blockchain.info y yadio.io son públicos y fácilmente verificables por cualquiera en cualquier momento.
+Os dados extraídos de blockchain.info e yadio.io são públicos e facilmente verificáveis por qualquer pessoa a qualquer momento.
 
-No dude en sugerir otros proveedores de API. RoboSats calcula el precio medio bitcoin-fiat de todas las APIs referenciadas. Añadir más APIs conduciría a precios más robustos y precisos en la plataforma.
+Sinta-se à vontade para sugerir outros provedores de API. O RoboSats calcula o preço médio entre bitcoin e moeda fiduciária de todas as APIs referenciadas. Adicionar mais APIs levaria a preços mais robustos e precisos na plataforma.
 
-## **Cómo añadir divisas**
+## **Como adicionar moedas**
 
-Todas las monedas disponibles en yadio.io y blockchain.info APIs deben estar disponibles en RoboSats también.
+Todas as moedas disponíveis nas APIs yadio.io e blockchain.info devem estar disponíveis também no RoboSats.
 
-¿No ves una divisa con la que quieras operar? Es muy fácil para los colaboradores añadir una nueva moneda mediante la apertura de una solicitud de extracción en el [GitHub](https://github.com/RoboSats/robosats).
+Não está vendo uma moeda com a qual deseja operar? É muito fácil para os colaboradores adicionar uma nova moeda abrindo uma solicitação de Pull Request no [GitHub](https://github.com/RoboSats/robosats).
 
-En primer lugar, compruebe el archivo actual [currencies.json](https://github.com/RoboSats/robosats/blob/main/frontend/static/assets/currencies.json) para verificar si la moneda que usted está buscando es, en efecto, falta en RoboSats.
+Primeiro, verifique o arquivo atual [currencies.json](https://github.com/RoboSats/robosats/blob/main/frontend/static/assets/currencies.json) para confirmar se a moeda que você está procurando realmente está faltando no RoboSats.
 
-Si encuentras una moneda que falta en RoboSats y también está disponible en cualquiera de las dos APIs referenciadas, entonces puedes editar directamente los archivos currencies.json y [FlagsWithProps.tsx](https://github.com/RoboSats/robosats/blob/main/frontend/src/components/FlagWithProps/FlagWithProps.tsx).
+Se encontrar uma moeda faltando no RoboSats e ela estiver disponível em qualquer uma das duas APIs referenciadas, então você pode editar diretamente os arquivos currencies.json e [FlagsWithProps.tsx](https://github.com/RoboSats/robosats/blob/main/frontend/src/components/FlagWithProps/FlagWithProps.tsx).
 
-Después de fusionar el pull request, la moneda añadida estará disponible en RoboSats.
+Após merge da solicitação de Pull Request, a moeda adicionada estará disponível no RoboSats.
 
-{% include wip_es %}
+{% include wip_pt %}
