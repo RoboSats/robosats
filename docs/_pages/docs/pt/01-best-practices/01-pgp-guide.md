@@ -1,153 +1,160 @@
 ---
 layout: single
-title: Encriptación fácil con PGP
-permalink: /docs/es/pgp-encryption/
+title: Criptografia fácil com PGP
+permalink: /docs/pt/pgp-encryption/
 toc: true
 toc_sticky: true
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>Encriptación PGP'
+  title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>Criptografia PGP'
   nav: docs
-src: "_pages/docs/es/01-best-practices/01-pgp-guide.md"
+src: "_pages/docs/pt/01-best-practices/01-pgp-guide.md"
 ---
 
-# Encriptación PGP en RoboSats
+Todas as comunicações no RoboSats são criptografadas por PGP. O aplicativo cliente é totalmente transparente e oferece uma maneira fácil de copiar e exportar as chaves PGP.
 
-Todas las comunicaciones en RoboSats están encriptadas con PGP. La aplicación del cliente es completamente transparente y ofrece una manera fácil de copiar y exportar las claves PGP.
+## Verifique a privacidade da sua comunicação
 
-## Verifica la privacidad de tu comunicación
+Você pode garantir a confidencialidade de seus dados verificando a implementação do padrão PGP pelo RoboSats. Qualquer implementação PGP de terceiros que permita importar chaves e mensagens pode ser usada para verificar o bate-papo do RoboSats. Neste pequeno guia usaremos a ferramenta de linha de comando [GnuPG](https://gnupg.org/).
 
-Puedes garantizar la confidencialidad de tus datos sensibles verificando la implementación del estándar PGP en RoboSats. Cualquier implementación de PGP de terceros que te permita importar claves y mensajes puede usarse para verificar el chat de RoboSats. En esta pequeña guía, usaremos la herramienta de línea de comandos [GnuPG](https://gnupg.org/).
+### Importar chaves para o GnuPG
 
-### Importar claves en GnuPG
-#### Importar tu clave privada encriptada
-Cada avatar de robot tiene una clave pública y una clave privada encriptada. Podemos importar la clave privada a GPG, primero la copiamos desde RoboSats:
+#### Importe sua chave privada criptografada
+
+Cada avatar de robô possui uma chave pública e uma chave privada criptografada. Podemos importar a chave privada para o GPG, primeiro copiamos do RoboSats:
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/copy-private-key.png" width="550"/>
 </div>
 
-Luego la importamos en GnuPG con el siguiente comando:
+Em seguida, importamos para o GnuPG com o seguinte comando:
 
 ```
-echo "<pega_tu_clave_privada_encriptada>" | gpg --import
+echo "<cole_sua_chave_privada_encriptada>" | gpg --import
 ```
 
-
-Se verá así:
+parecerá assim:
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-1.png" width="450"/>
 </div>
 
-Se te pedirá que ingreses la contraseña de la clave privada. Usamos nuestro *token* de robot **supersecreto** para desencriptarlo, tú eres el único que conoce el *token* del robot.
+Você será solicitado a inserir a frase secreta da chave privada. Nós usamos nosso **token** de robô _supersecreto_ para descriptografá-lo, você é o único que conhece o token do robô.
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-2.png" width="350"/>
 </div>
 
-Si tu token es el correcto, habrás importado la clave privada para la comunicación.
+Se o seu token for o correto, você deverá ter importado a chave privada para comunicação.
+
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-3.png" width="650"/>
 </div>
-Podemos ver cómo la aplicación frontal llamó a esta clave `"RoboSats ID<hash>"`. Este es el ID del robot, el segundo hash SHA256 de nuestro *token* secreto, y se usó originalmente para generar de manera determinista el apodo y la imagen de avatar del robot ([aprende más](/docs/es/private/#generación-de-avatares-de-robot)).
+Podemos ver como o aplicativo frontend nomeou essa chave `"RoboSats ID<hash>"`. Este é o ID do robô, o segundo hash SHA256 do nosso token secreto, e foi usado originalmente para gerar deterministicamente o apelido do robô e a imagem do avatar do robô ([saiba mais](/docs/private/#robot-avatar-generation-pipeline) ).
 
-#### Importar la clave pública de tu compañero
-Solo necesitamos repetir los pasos anteriores para importar la clave pública de nuestro compañero.
+#### Importe a chave pública do seu par
+
+Só precisamos repetir os passos acima para importar a chave pública da sua contraparte.
 
 ```
-echo "<pega_la_clave_publica_de_tu_companero>" | gpg --import
+echo "<cole_sua_chave_privada_encriptada>" | gpg --import
 ```
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-4.png" width="650"/>
 </div>
 
-Estamos listos. Hemos importado nuestra clave privada encriptada y la clave pública de nuestro compañero en GPG. Hasta ahora, todo parece estar bien.
+Estamos prontos. Importamos nossa chave privada criptografada e a chave pública de nosso parceiro GPG. Até agora, tudo ok.
 
-### Desencriptar y verificar mensajes con GnuPG
-#### Desencriptar mensaje
-Ahora intentemos leer uno de los mensajes encriptados que nuestro compañero nos envió y veamos si se pueden desencriptar con nuestra clave privada y están correctamente firmados por él.
+### Descriptografe e verifique mensagens com GnuPG
+
+#### Descriptografar mensagem
+
+Agora vamos tentar ler uma das mensagens criptografadas que nosso parceiro nos enviou e ver se elas podem ser descriptografadas com nossa chave privada e se estão corretamente assinadas por ele.
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/chat-1.png" width="320"/>
 </div>
 
-Haciendo clic en el icono del "ojo", podemos ver el mensaje PGP ASCII en bruto. Podemos hacer clic en el botón de copiar para llevarlo a GnuPG.
+Ao clicar no ícone "olho", podemos ver a mensagem bruta do Armored ASCII PGP. Podemos clicar no botão copiar para levá-lo ao GnuPG.
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/chat-2.png" width="320"/>
 </div>
 
-Todo lo que queda es desencriptar el mensaje PGP de nuestro compañero usando nuestra clave privada. Es muy probable que GnuPG nos pida nuevamente nuestro *token* para desencriptar nuestra clave privada.
+Tudo o que resta é descriptografar a mensagem PGP do nosso par usando nossa chave privada. É muito provável que o GnuPG nos peça novamente nosso _token_ para descriptografar nossa chave privada.
 
 ```
-echo "<pega_el_mensaje_de_tu_companero>" | gpg --decrypt
+echo "<cole_sua_chave_privada_encriptada>" | gpg --decrypt
 ```
 
-#### Verificación del mensaje encriptado
+#### Verificação da mensagem criptografada
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-5.png" width="650"/>
 </div>
 
-¡Voilà! Aquí está. Podemos estar seguros de que:
-1. El **mensaje encriptado dice** "¡Es tan genial que RoboSats tenga una forma tan transparente de verificar tu comunicación encriptada!" (Marcado en rojo)
-2. El mensaje solo puede ser desencriptado por 2 claves privadas: la nuestra y la de nuestro compañero. **¡Nadie más puede leerlo!** (marcado en azul)
-3. El mensaje **fue firmado por nuestro compañero**, debe ser él. Nadie se ha infiltrado en este chat pretendiendo ser tu compañero. (marcado en verde)
+Voilà! Aqui está. Podemos ter certeza de que:
 
-Dado que los mensajes son firmados por los robots que llevan el registro, nuestro *token* de robot es muy útil en caso de una disputa. Si tu compañero intenta engañarte y luego miente al personal encargado de resolver la disputa, ¡puedes demostrarlo! Es útil exportar el registro completo del chat como Json (haz clic en el botón de exportación) o, al menos, conservar tu *token* de robot. Con eso, puedes proporcionar evidencia excelente de que dijo algo diferente en el chat privado contigo.
+1. A **mensagem criptografada diz** "É tão legal que o RoboSats tem uma maneira tão transparente de verificar sua comunicação criptografada!" (Marcado em vermelho)
+2. A mensagem só pode ser descriptografada por 2 chaves privadas: a nossa e a do nosso parceiro. **Ninguém mais pode ler!** (marcado em azul)
+3. A mensagem **foi assinada pelo nosso peer**, deve ser ele. Ninguém se infiltrou neste chat fingindo ser seu parceiro. (marcado em verde)
 
-La aplicación frontal de RoboSats que se ejecuta en tu navegador realiza la tarea de encriptar, desencriptar y verificar cada mensaje. Pero en este tutorial lo hemos verificado de manera independiente y funciona como se espera: hemos verificado que **solo la persona con acceso al token del robot puede leer (desencriptar) y firmar mensajes** durante una transacción de RoboSats.
+Como as mensagens são assinadas pelos robôs que mantêm o registo, o nosso token de robô é muito útil em caso de disputa. Se o seu colega tentar traí-lo e depois mentir para a equipe encarregada de resolver a disputa, você pode provar isso! É útil exportar o log completo do chat como JSON (clique no botão exportar) ou, pelo menos, salvar o token do seu robô. Com eles você pode fornecer excelentes evidências de que ele disse algo diferente no bate-papo privado com você.
 
-**Consejo profesional:** Para verificar de manera independiente que tu token es absolutamente secreto y nunca se envía a un tercero, necesitarás ejecutar un sniffer de paquetes de solicitudes HTTP. También puedes verificar por ti mismo el [código fuente del frontend](https://github.com/RoboSats/robosats/tree/main/frontend/src).
+O aplicativo frontend do RoboSats executado em seu navegador faz o trabalho de criptografar, descriptografar e verificar cada mensagem. Mas neste tutorial verificamos de forma independente que funciona conforme o esperado: verificamos que **apenas a pessoa com acesso ao token do robô pode ler (descriptografar) e assinar mensagens** durante uma negociação RoboSats.
+
+**Dica Pro:** Para verificar de forma independente se o seu token é absolutamente secreto e nunca foi enviado a terceiros, você precisará executar um sniffer de pacotes de solicitação HTTP. Você também pode verificar você mesmo o [código-fonte do frontend](https://github.com/RoboSats/robosats/tree/main/frontend/src).
 {: .notice--secondary}
 
-## Legado: ¿Por qué se necesita la encriptación?
+## Legado: Por que a criptografia é necessária?
 
-Inicialmente, RoboSats no tenía una configuración de encriptación PGP incorporada. Por lo tanto, los usuarios tenían que hacerlo manualmente para asegurar que sus comunicaciones fueran privadas. A continuación, se presenta un documento antiguo para aprender cómo encriptar tu comunicación usando OpenKeychain en Android. Sin embargo, la misma herramienta también se puede usar para verificar el canal de encriptación incorporado. ¿Quién sabe? Tal vez quieras encriptar tus mensajes dos veces. Entonces, esta es tu guía.
+RoboSats inicialmente não tinha uma configuração de criptografia PGP integrada. Portanto, os usuários tinham que fazer isso manualmente para garantir que suas comunicações fossem privadas. O que se segue é um documento antigo para você aprender como criptografar sua comunicação sozinho usando OpenKeychain no Android. No entanto, a mesma ferramenta também pode ser usada para verificar o pipeline de criptografia integrado. Quem sabe? Talvez você queira criptografar duas vezes suas mensagens. Então este é o seu guia.
 
-Dado que RoboSats funciona a través de la red TOR, todas las comunicaciones están cifradas de extremo a extremo. Esto ayuda a prevenir que los datos en tránsito sean leídos o manipulados por ataques de intermediarios. Además, el protocolo TOR asegura que el usuario está conectado al nombre de dominio en la barra de direcciones del navegador, en este caso, la dirección oficial de RoboSats en TOR (robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion). Sin embargo, en RoboSats v0.1.0, los datos se transferían en texto plano a través del front-end y el back-end de la aplicación. Este comportamiento permitía la posibilidad de que un sniffer malintencionado en la computadora de cualquiera de las partes o incluso en el servidor de RoboSats en la capa de abstracción de la aplicación capturara datos sensibles intercambiados sobre información de pago en moneda fiduciaria. Esto representaría un ataque a la privacidad del propietario de los datos. Incluso si el chat de RoboSats estuviera completamente encriptado en cada paso, aún así no debes confiar en que los datos sensibles estén encriptados (ver la guía de verificación anterior). La mejor práctica para evitar este problema era usar encriptación asimétrica durante el intercambio de datos sensibles; esta guía muestra un método que garantiza la confidencialidad de los datos sensibles utilizando el estándar PGP.
+Como o RoboSats funciona na rede TOR, toda a comunicação é criptografada de ponta a ponta. Isso ajuda a evitar que dados em trânsito sejam lidos ou adulterados por ataques man-in-the-middle. Além disso, o protocolo TOR garante que o usuário esteja conectado ao nome de domínio na barra de endereço do navegador, neste caso o endereço tor oficial do RoboSats (robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion). No entanto, no RoboSats v0.1.0 os dados foram transferidos como texto simples através do front-end e back-end do aplicativo. Esse comportamento permitiu que dados confidenciais trocados em relação a informações de pagamento fiduciário pudessem ser capturados por um sniffer malicioso no computador de qualquer uma das partes ou mesmo no servidor RoboSats na camada de abstração do aplicativo. Isso representaria um ataque à privacidade do proprietário dos dados. Mesmo que o bate-papo do RoboSats tenha sido completamente criptografado em todas as etapas, você ainda não deve confiar que os dados confidenciais estejam criptografados (consulte o guia de verificação acima). A melhor prática para evitar este problema foi usar criptografia assimétrica durante a troca de dados confidenciais. Este guia mostra um método que garante a confidencialidade dos dados sensíveis usando o padrão PGP.
 
-### Aplicaciones PGP
+### Aplicativos PGP
 
 #### Android
-OpenKeychain es una aplicación de Android de código abierto que te permite crear y gestionar pares de claves criptográficas y firmar y/o encriptar/desencriptar texto y archivos. OpenKeychain se basa en el bien establecido estándar OpenPGP, haciendo que la encriptación sea compatible entre dispositivos y sistemas. La aplicación OpenKeychain se puede encontrar en [[F-droid.org]](https://f-droid.org/packages/org.sufficientlysecure.keychain/) o en la tienda Google Play [[Enlace]](https://play.google.com/store/apps/details?id=org.sufficientlysecure.keychain).
+
+OpenKeychain é um aplicativo Android de código aberto que permite criar e gerenciar pares de chaves criptográficas e assinar e/ou criptografar/descriptografar textos e arquivos. OpenKeychain é baseado no padrão OpenPGP bem estabelecido, tornando a criptografia compatível entre dispositivos e sistemas. O aplicativo OpenKeychain pode ser encontrado em F-droid.org [[Link]](https://f-droid.org/packages/org.sufficientlysecure.keychain/) ou na Google Play Store [[Link]](https:/ /play.google.com/store/apps/details?id=org.sufficientlysecure.keychain).
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide_es/OpenKeychain-logo.png" width="150"/>
 </div>
 
 #### iOS
-PGPro es una aplicación de iOS de código abierto que te permite crear y gestionar pares de claves criptográficas y firmar y/o encriptar/desencriptar texto y archivos. PGPro se basa en ObjectivePGP, que es compatible con OpenPGP. Puede encontrarse en su sitio web [[Enlace]](https://pgpro.app/) o en la tienda de aplicaciones de Apple [[Enlace]](https://apps.apple.com/us/app/pgpro/id1481696997).
+
+PGPro é um aplicativo iOS de código aberto que permite criar e gerenciar pares de chaves criptográficas e assinar e/ou criptografar/descriptografar textos e arquivos. PGPro é baseado em ObjectivePGP que é compatível com OpenPGP. Ele pode ser encontrado no site deles [[Link]](https://pgpro.app/) ou na App Store [[Link]](https://apps.apple.com/us/app/pgpro/id1481696997 ).
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide_es/OpenKeychain-logo.png" width="150"/>
 </div>
 
-#### Otros
-Para obtener una lista de software compatible con Windows, Mac OS y otros sistemas operativos, consulta [openpgp.org/software/](https://openpgp.org/software/). Dado que el concepto es el mismo, este método se puede replicar utilizando cualquier otra aplicación.
+#### Outros
 
-### Esquema de encriptación.
+Para uma lista de softwares compatíveis para Windows, Mac OS e outros sistemas operacionais, consulte [openpgp.org/software/](https://openpgp.org/software/). Como o conceito é o mesmo, este método pode ser replicado em qualquer outro aplicativo.
 
-En la mayoría de los casos, la información sensible que queremos proteger es la información de pago en moneda fiduciaria del vendedor, es decir, el número de teléfono, la cuenta de PayPal, etc. Por lo tanto, la imagen a continuación muestra el esquema de encriptación que garantiza que la información de pago del vendedor solo pueda ser leída por el comprador.
+### Esquema de criptografia.
+
+Na maioria dos casos, as informações confidenciais que gostaríamos de proteger são as informações de pagamento fiduciário do vendedor, ou seja, número de telefone, conta PayPal, etc. Portanto, a imagem abaixo mostra o esquema de criptografia que garante que as informações de pagamento do vendedor só possam ser lidas pelo comprador.
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide_es/encrypted-communication-schema_es.png" width="900"/>
 </div>
 
-El proceso de intercambio de datos se ha dividido en 3 pasos sencillos:
+O processo de troca de dados foi dividido em 3 etapas fáceis:
 
-- Creación de pares de claves por parte del comprador.
+- Criação de pares de chaves pelo comprador.
 
-- Compartir la clave pública del comprador con el vendedor.
+- Compartilhar a chave pública do comprador com o vendedor.
 
-- Intercambio de datos encriptados.
+- Troca de dados criptografados.
 
-### Guía paso a paso.
+### Guia passo a passo.
 
-#### Creación de pares de claves por parte del comprador.
+#### Criação de pares de chaves pelo comprador.
 
-El primer paso para garantizar la confidencialidad de los datos es crear un par de claves pública/privada. A continuación, se muestran los pasos para crear un par de claves en la aplicación OpenKeychain; este procedimiento solo necesita hacerlo el comprador. Este paso solo necesita hacerse una vez, no es necesario repetirlo cuando los compradores deseen comprar de nuevo, ya que en una transacción futura ya tendrán el par de claves.
+O primeiro passo para garantir a confidencialidade dos dados é criar um par de chaves pública/privada. Abaixo estão as etapas para criar um par de chaves no aplicativo OpenKeychain; Este procedimento só precisa ser feito pelo comprador. Este passo só precisa ser feito uma vez, não há necessidade de repeti-lo quando os compradores quiserem comprar novamente, pois em uma transação futura já terão o par de chaves.
 
 <br/>
 
@@ -157,9 +164,9 @@ El primer paso para garantizar la confidencialidad de los datos es crear un par 
 
 <br/>
 
-#### Compartir la clave pública del comprador con el vendedor.
+#### Compartilhar a chave pública do comprador com o vendedor.
 
-Ahora el comprador tiene dos claves, la clave privada debe conocerla únicamente su propietario (en este caso específico, el comprador, quien también la ha creado), y la clave pública puede ser conocida por cualquier otra persona (el vendedor). El vendedor necesita la clave pública del comprador para cifrar los datos sensibles, por lo que el comprador debe enviar el texto plano que representa la clave pública. Los pasos a continuación muestran cómo compartir el texto plano que representa la clave pública, así como cómo el vendedor la agrega a su aplicación OpenKeychain para usarla más tarde.
+Agora o comprador possui duas chaves, a chave privada deve ser conhecida apenas pelo seu proprietário (neste caso específico, o comprador, que também a criou), e a chave pública pode ser conhecida por qualquer outra pessoa (o vendedor). O vendedor precisa da chave pública do comprador para criptografar dados confidenciais, portanto o comprador deve enviar o texto simples que representa a chave pública. As etapas abaixo mostram como compartilhar o texto simples que representa a chave pública, bem como como o vendedor o adiciona ao aplicativo OpenKeychain para uso posterior.
 
 <br/>
 
@@ -169,11 +176,11 @@ Ahora el comprador tiene dos claves, la clave privada debe conocerla únicamente
 
 <br/>
 
-La clave debe copiarse, incluyendo el encabezado `(-----BEGIN PGP PUBLIC KEY BLOCK-----)` y el pie de página `(-----END PGP PUBLIC KEY BLOCK-----)` para el correcto funcionamiento de la aplicación.
+A chave deve ser copiada, incluindo o cabeçalho `(-----BEGIN PGP PUBLIC KEY BLOCK-----)` e o rodapé `(-----END PGP PUBLIC KEY BLOCK-----) ` para o correto funcionamento do aplicativo.
 
-### Intercambio de datos cifrados.
+### Troca de dados criptografados.
 
-Una vez que el vendedor tiene la clave pública del comprador, se puede aplicar el esquema de cifrado mostrado anteriormente. Los siguientes pasos describen el proceso de intercambio de datos cifrados.
+Assim que o vendedor tiver a chave pública do comprador, o esquema de criptografia mostrado acima pode ser aplicado. As etapas a seguir descrevem o processo de troca de dados criptografados.
 
 <br/>
 
@@ -183,8 +190,8 @@ Una vez que el vendedor tiene la clave pública del comprador, se puede aplicar 
 
 <br/>
 
-Los datos cifrados deben copiarse incluyendo el encabezado `(-----BEGIN PGP MESSAGE-----)` y el pie de página `(-----END PGP MESSAGE-----)` para el funcionamiento correcto de la aplicación. Si el comprador visualiza correctamente en la app los datos del vendedor significa que el intercambio ha sido exitoso y la confidencialidad de los datos está asegurada ya que la única clave que puede descifrarlos es la clave privada del comprador.
+Os dados criptografados devem ser copiados incluindo o cabeçalho `(-----BEGIN PGP MESSAGE-----)` e o rodapé `(-----END PGP MESSAGE-----)` para operação correta da aplicação. Se o comprador visualizar corretamente os dados do vendedor no aplicativo, significa que a troca foi bem-sucedida e a confidencialidade dos dados está garantida, pois a única chave que pode descriptografá-los é a chave privada do comprador.
 
-Si quieres leer un tutorial sobre cómo usar OpenKeychain para uso general, consulta [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/)
+Se você quiser ler um tutorial sobre como usar o OpenKeychain para uso geral, consulte [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/)
 
-{% include improve_es %}
+{% include improve_pt %}

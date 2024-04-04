@@ -1,13 +1,13 @@
 ---
 layout: single
-title: Buenas prácticas
-permalink: /docs/es/best-practices/
+title: Boas práticas
+permalink: /docs/pt/best-practices/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/hand-peace.svg"/>Buenas prácticas'
+  title: '<img id="side-icon-verybig" src="/assets/vector/hand-peace.svg"/>Boas práticas'
   nav: docs
-src: "_pages/docs/es/01-best-practices/00-best-practices.md"
+src: "_pages/docs/pt/01-best-practices/00-best-practices.md"
 ---
 
-Aunque RoboSats es muy privado y seguro desde el principio, siempre hay algunos pasos adicionales que puedes seguir para mejorar tu privacidad y minimizar riesgos.
+Embora o RoboSats seja muito privado e seguro desde o início. Sempre há algumas etapas adicionais que você pode seguir para melhorar sua privacidade e minimizar seus riscos.
 
-{% include wip_es%}
+{% include wip_pt%}

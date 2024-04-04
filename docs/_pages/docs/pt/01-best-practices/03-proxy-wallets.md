@@ -1,53 +1,53 @@
 ---
 layout: single
 title: "Wallets Proxy"
-permalink: /docs/es/proxy-wallets/
+permalink: /docs/pt/proxy-wallets/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/route.svg"/>Wallets Proxy'
   nav: docs
-src: "_pages/docs/es/01-best-practices/03-proxy-wallets.md"
+src: "_pages/docs/pt/01-best-practices/03-proxy-wallets.md"
 ---
 
-Recibir en la red lightning puede revelar información personal
-por lo que es importante tener en cuenta algunas cosas.
+Receber na Rede Lightning pode revelar informações pessoais
+por isso é importante manter algumas coisas em mente.
 
-Si tu nodo tiene canales públicos
-cualquier factura que hagas revelará los UTXOs que se usaron para abrir esos canales.
-Si esos UTXOs provienen de un intercambio KYC,
-entonces cualquiera con acceso a la base de datos del intercambio
-podrá vincular tus facturas lightning a tu identidad.
-Incluso si utilizas UTXOs coinjoined para abrir tus canales,
-o que arrancar su nodo exclusivamente mediante el pago de los canales de entrada,
-las facturas siguen siendo potencialmente comprometedoras
-ya que permiten a un atacante correlacionar diferentes
-pagos para saber que van a la misma entidad (tú).
-Además, si cierras esos canales
-los UTXOs resultantes seguirán ligados a esas
-transacciones.
-Si tu nodo sólo tiene canales no anunciados
-será más difícil encontrar tus UTXOs onchain
-pero seguirás teniendo el problema de la
-correlación de pagos.
+Se o seu nó tiver canais públicos,
+quaisquer faturas que você fizer revelarão os UTXOs que foram usados para abrir esses canais.
+Se esses UTXOs vierem de uma exchange KYC,
+então qualquer pessoa com acesso ao banco de dados da exchange
+poderá vincular suas faturas lightning à sua identidade.
+Mesmo se você usar UTXOs coinjoined para abrir seus canais,
+ou você inicializa seu nó exclusivamente pagando por canais de entrada,
+faturas ainda são potencialmente comprometedoras
+uma vez que permitem que um invasor correlacione diferentes
+pagamentos para saber que eles estão indo para a mesma entidade (você).
+Além disso, se você fechar esses canais,
+os UTXOs resultantes continuarão vinculados àqueles
+transações.
+Se o seu nó tiver apenas canais não anunciados
+será mais difícil encontrar seus UTXOs on-chain
+mas você ainda terá o problema de
+correlação de pagamento.
 
-Para pequeñas cantidades, el uso de una wallet proxy de custodia es una forma razonable de
-mejorar su privacidad al recibir en la red lightning.
-Recibir en una buena cartera de custodia sólo revelará los UTXO del custodio.
-Para conocer información sobre ti,
-el pagador de tus facturas tendría que confabularse con el custodio del monedero.
+Para pequenas quantias, usar uma carteira proxy de custódia é uma maneira razoável de
+melhore sua privacidade ao receber na rede lightning.
+Receber em uma boa carteira de custódia revelará apenas os UTXOs do custodiante.
+Para saber informações sobre você,
+o pagador de suas faturas teria que conspirar com o custodiante da carteira.
 
-Una alternativa sin custodia es usar un servidor lnproxy
-para envolver las facturas a su propio nodo y recibir a las facturas envueltas en su lugar.
-Simplemente genere una factura a su nodo y péguela en una interfaz web lnproxy.
-El servidor lnproxy devolverá una factura "envuelta" al nodo de lightning del servidor lnproxy.
-La factura empaquetada debe tener la misma
-descripción y hash de pago que la que pegó,
-y un importe ligeramente superior para tener en cuenta el enrutamiento.
-Debe verificar esto utilizando un descodificador de facturas como https://lightningdecoder.com .
-Si los hash de pago coinciden, puede estar seguro de que el nodo lnproxy
-no será capaz de robar sus fondos.
-A continuación, sólo tiene que utilizar la factura envuelta en cualquier lugar donde hubiera utilizado la factura original.
-factura original.
-Para aprender cualquier información sobre usted de una factura envuelta,
-un atacante tendría que confabularse con el servidor lnproxy que usaste.
+Uma alternativa sem custódia é usar um servidor lnproxy
+agrupar as faturas em seu próprio nó e receber as faturas agrupadas.
+Basta gerar uma fatura em seu nó e colá-la em uma interface web lnproxy.
+O servidor lnproxy retornará uma fatura "embrulhada" para o nó relâmpago do servidor lnproxy.
+A fatura embalada deve ter o mesmo
+descrição e hash de pagamento diferente daquele que você colou,
+e um valor um pouco maior para levar em conta o roteamento.
+Você deve verificar isso usando um decodificador de notas como https://lightningdecoder.com.
+Se os hashes de pagamento corresponderem, você pode ter certeza de que o nó lnproxy
+não será capaz de roubar seus fundos.
+Em seguida, basta usar a fatura embrulhada em qualquer lugar onde você usaria a fatura original.
+fatura original.
+Para saber qualquer informação sobre você em uma fatura embrulhada,
+um invasor teria que conspirar com o servidor lnproxy que você usou.
 
-{% include wip_es %}
+{% include wip_pt %}
