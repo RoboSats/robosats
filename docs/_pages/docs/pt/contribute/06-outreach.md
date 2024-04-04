@@ -1,25 +1,25 @@
 ---
 layout: single
-title: "Comparte"
-permalink: /contribute/es/outreach/
+title: "Divulgação"
+permalink: /contribute/pt/outreach/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/bullhorn.svg"/>Comparte'
+  title: '<img id="side-icon-verybig" src="/assets/vector/bullhorn.svg"/>Divulgação'
   nav: contribute
 toc: true
 toc_sticky: true
-src: "_pages/docs/es/contribute/06-outreach.md"
+src: "_pages/docs/pt/contribute/06-outreach.md"
 ---
 
-La mejor forma de apoyar a RoboSats es utilizarlo y recomendar a los demás que lo prueben. Sin pares que aporten liquidez a los libros de órdenes, las bolsas peer-to-peer como la nuestra dejarían de existir. Cuando los usuarios utilizan RoboSats e invitan a otros a probarlo, la liquidez aumenta y la plataforma puede admitir aún más usuarios.
+A melhor maneira de apoiar o RoboSats é simplesmente usá-lo e contar aos outros para experimentá-lo! Sem pares fornecendo liquidez para os livros de pedidos, trocas peer-to-peer como nós deixariam de existir! Quando os pares usam o RoboSats e convidam outros para experimentá-lo, a liquidez cresce e então a plataforma pode suportar ainda mais usuários!
 
-Lo mejor que podemos hacer es razonar con los usuarios por qué deben valorar su privacidad y evitar las bolsas contrarias a la privacidad. Consulte este [artículo](https://bitcoinmagazine.com/culture/the-value-of-p2p-bitcoin-exchanges), escrito por un colaborador de RoboSats, en el que se explican algunas de las razones por las que los usuarios deberían plantearse proteger su privacidad y utilizar intercambios P2P como RoboSats.
+O melhor que podemos fazer é argumentar com os usuários sobre por que eles deveriam valorizar sua privacidade e evitar trocas anti-privacidade. Consulte este [artigo](https://bitcoinmagazine.com/culture/the-value-of-p2p-bitcoin-exchanges), escrito por um colaborador do RoboSats, explicando algumas das razões pelas quais os usuários devem considerar proteger sua privacidade e usar trocas P2P como o RoboSats.
 
-## Redes sociales
+## Mídias Sociais
 
-Las redes sociales son una gran oportunidad para la publicidad boca a boca de RoboSats. Si has tenido una buena experiencia con RoboSats o tienes algo interesante que decir sobre el proyecto, ¡hazlo saber! Grítalo desde el cielo de los robots.
+As mídias sociais são uma ótima oportunidade para publicidade boca a boca do RoboSats. Se você teve uma ótima experiência usando o RoboSats ou tem uma visão interessante para compartilhar sobre o projeto, por favor, diga algo! Grite isso dos robo-céus!
 
-Por ejemplo, puedes publicarlo en Nostr y etiquetar la cuenta de Nostr de RoboSats (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqk3m82) para que pueda compartirse con los demás. O, si estás en Twitter, crea un tweet y etiqueta la cuenta [RoboSats Twitter](https://twitter.com/RoboSats).
+Por exemplo, você poderia postar no Nostr e marcar a conta RoboSats Nostr (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) para que ela possa ser compartilhada com outros! Ou, se estiver no Twitter, crie um tweet e marque a conta [Twitter do RoboSats](https://twitter.com/RoboSats).
 
-¡Cualquier ayuda será muy apreciada en este sector! Más liquidez en el libro de órdenes atrae a más usuarios y, por lo tanto, ¡más usuarios pueden aprovechar las ventajas de comprar y vender bitcoin de forma privada!
+Qualquer ajuda seria muito apreciada neste setor! Mais liquidez nos livros de pedidos atrai mais usuários e, assim, mais usuários podem aproveitar a compra e venda de bitcoin de forma privada!
 
-{% include improve_es %}
+{% include improve_pt %}

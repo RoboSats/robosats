@@ -1,21 +1,21 @@
 ---
 layout: single
 title: "Arte & Memes"
-permalink: /contribute/es/art/
+permalink: /contribute/pt/art/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/palette.svg"/>Arte'
   nav: contribute
 toc: true
 toc_sticky: true
-src: "_pages/docs/es/contribute/05-art.md"
+src: "_pages/docs/pt/contribute/05-art.md"
 ---
 
-¿Tienes talento artístico? Considera la posibilidad de dibujar fan arts y promocionar RoboSats a través de dulces imágenes. Una imagen vale más que mil palabras, y además genera más participación que los artículos largos. No buscamos a Vincent van Gogh ni a Pablo Picasso, sino a personas con ganas de dibujar y de compartir la buena noticia de la compra/venta entre iguales.
+Tem talento artístico? Considere desenhar fan art e promover o RoboSats por meio de visuais encantadores! Uma imagem vale mais que mil palavras e também gera mais engajamento do que artigos longos. Não estamos procurando por Vincent Van Gogh ou Pablo Picasso, apenas indivíduos empolgados que gostam de desenhar e compartilhar a boa palavra de comprar/vender de forma peer-to-peer!
 
-## Ideas
+## Ideias
 
-Aquí no hay límites. Si quieres hacer una lluvia de ideas, no dudes en enviar un mensaje a los [grupos públicos de apoyo SimpleX](https://learn.robosats.com/contribute/es/code/#canales-de-comunicación). ¡El coordinador de arte RoboSats es [@Red_Purdy](https://twitter.com/Red_Purdy) y puede ayudar a proporcionar ideas!
+Aqui não há limite aqui! Se você quiser fazer uma tempestade de ideias, sinta-se à vontade para enviar uma mensagem para os [grupos de suporte público do SimpleX](https://learn.robosats.com/contribute/pt/code/#canales-de-comunicación). O coordenador de arte do RoboSats é [@Red_Purdy](https://twitter.com/Red_Purdy) e pode ajudar a fornecer ideias!
 
-Un ejemplo del uso del arte para crear compromiso con la comunidad incluye [Telegram stickers](https://t.me/addstickers/Robosats1). Las pegatinas enlazadas muestran a la casi mascota Robotoshi.
+Um exemplo de uso de arte para criar engajamento com a comunidade inclui [Telegram stickers](https://t.me/addstickers/Robosats1). Os adesivos linkados apresentam o quase mascote Robotoshi.
 
-{% include improve_es %}
+{% include improve_pt %}

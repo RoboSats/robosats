@@ -1,31 +1,29 @@
 ---
 layout: single
 classes: wide
-title: "Dona al equipo del proyecto RoboSats"
-permalink: /contribute/es/donate/
+title: "Doe para o projeto de código aberto RoboSats"
+permalink: /contribute/pt/donate/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/bitcoin.svg"/>Dona'
+  title: '<img id="side-icon-verybig" src="/assets/vector/bitcoin.svg"/>Doe'
   nav: contribute
-src: "_pages/docs/es/contribute/07-donate.md"
+src: "_pages/docs/pt/contribute/07-donate.md"
 ---
 
-No creemos que el desarrollo de RoboSats deba depender de las donaciones para mantenerse con vida. El objetivo del proyecto es generar ingresos suficientes para cubrir los costes de desarrollo, servidor, liquidez y promoción. La **mejor manera de donar a RoboSats es utilizar activamente la herramienta** y contárselo a tus amigos.
+Não achamos que o desenvolvimento do RoboSats deva depender de doações para se manter vivo. O objetivo do projeto é gerar receita suficiente para cobrir os custos de desenvolvimento, servidor, liquidez e promoção. **A melhor forma de doar para o RoboSats é usar ativamente a ferramenta** e contar aos seus amigos.
 
-Sin embargo, algunos bitcoiners muy entusiastas se ponen en contacto con nosotros para impulsar el desarrollo y la longevidad de RoboSats. Apreciamos mucho estas donaciones, sobre todo porque la plataforma es todavía muy joven y sigue funcionando con pérdidas netas.
+No entanto, somos abordados por entusiastas de bitcoin muito animados que querem impulsionar ainda mais o desenvolvimento e a longevidade do RoboSats. Agradecemos muito essas doações, especialmente porque a plataforma ainda é muito jovem e ainda opera com prejuízo líquido.
 
-Puedes donar de las siguientes maneras:
+Você pode doar das seguintes maneiras:
 
- - **Envíanos un zapp en Nostr:**
- Todos los zaps de Nostr se destinarán al equipo de medios sociales.
- Aquí está la cuenta de nPub para RoboSats :
+- **Doar para [RoboSats DevFund Node](https://amboss.space/node/{{site.robosats.node_id}}) via KeySend:**
+<div>
+  <lightning-widget name="DevFund Node" accent="#9c27b0" to="robodevfund@vlt.ge" image="https://pbs.twimg.com/profile_images/1524391291475406850/ULKOymid_400x400.jpg"/>
+  <script src="https://embed.twentyuno.net/js/app.js"></script>
+</div>
 
- ```
-npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
- ```
+**Doar diretamente ao desenvolvedor que está trabalhando nas funcionalidades que você gosta**. Verifique os [PRs ativos](https://github.com/RoboSats/robosats/pulls) e mostre seu apoio aos desenvolvedores com gorjetas via Lightning. Basta escrever uma mensagem, por exemplo "@developer_name, gostaria de financiar o desenvolvimento dessa funcionalidade com 6000 Sats". O desenvolvedor deve responder com uma fatura LN com um longo tempo de expiração.
 
- - **Sugiere directamente a los desarrolladores que estén trabajando en las funciones que te gusten.** Consulta los [PR activos](https://github.com/RoboSats/robosats/pulls) y muestra tu apoyo a los desarrolladores a través de las sugerencias Lightning. Simplemente escribe un mensaje, por ejemplo "@nombre_del_desarrollador, me gustaría financiar el desarrollo de esta función con 6000 Sats". El desarrollador debería responder con una factura LN con un largo tiempo de expiración.
-
- - **Haz una donación a los devs de RoboSats via Paynym (BIP47): [{{site.robosats.paynym}}](https://paynym.is/{{site.robosats.paynym}})** código paynym:
+- **Doar para RoboSats devfund via Paynym (BIP47): [{{site.robosats.paynym}}](https://paynym.is/{{site.robosats.paynym}})** paynym code:
 
  <div align="center">
   <img style="border-radius: 50%; border: 4px solid #555;filter: drop-shadow(1px 1px 1px #000000);width:200px;height:200px" src="https://pbs.twimg.com/profile_images/1524391291475406850/ULKOymid_400x400.jpg"/><br/>
@@ -34,21 +32,25 @@ npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
 
 ```
  {{site.robosats.paynym_code}}
- ```
+```
 
- - **Tip the lead developer via Paynym (BIP47): [{{site.robosats.leaddev_paynym}}](https://paynym.is/{{site.robosats.leaddev_paynym}})** código paynym:
+- **Doar para lead developer via Paynym (BIP47): [{{site.robosats.leaddev_paynym}}](https://paynym.is/{{site.robosats.leaddev_paynym}})** paynym code:
 
  <div align="center">
   <img style="border-radius: 50%; border: 4px solid #555;filter: drop-shadow(1px 1px 1px #000000);width:200px;height:200px" src="https://pbs.twimg.com/profile_images/1501319536477282305/M7De9qEE_400x400.jpg"/><br/>
   <b>⚡Reckless_Satoshi⚡</b>
  </div>
 
- ```
- {{site.robosats.leaddev_paynym_code}}
- ```
+```
+{{site.robosats.leaddev_paynym_code}}
+```
 
- - **Tip the [experimental RoboSats coordinator](https://amboss.space/node/{{site.robosats.node_id}}) via KeySend:**
-  <div>
-    <lightning-widget name="Experimental Coordinator" accent="#9c27b0" to="{{site.robosats.node_id}}" image="https://pbs.twimg.com/profile_images/1524391291475406850/ULKOymid_400x400.jpg"/>
-    <script src="https://embed.twentyuno.net/js/app.js"></script>
-  </div>
+- **Zap us on Nostr:**
+  Todas as zaps do Nostr serão destinadas à equipe de mídia social.
+  Aqui está o nPub para a conta RoboSats:
+
+```
+npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
+```
+
+Você pode doar anonimamente ou nos enviar uma mensagem para que possamos reconhecer sua contribuição!

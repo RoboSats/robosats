@@ -1,23 +1,23 @@
 ---
 layout: single
-title: "Contribuye"
-permalink: /contribute/es/
+title: "Contribuir"
+permalink: /contribute/pt/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/handshake-angle.svg"/>Contribuye'
+  title: '<img id="side-icon-verybig" src="/assets/vector/handshake-angle.svg"/>Contribuir'
   nav: contribute
-src: "_pages/docs/es/contribute/00-contribute.md"
+src: "_pages/docs/pt/contribute/00-contribute.md"
 ---
 
-Robosats es un proyecto totalmente de código abierto y, como tal, ¡un esfuerzo impulsado por la comunidad! Puedes ayudar a RoboSats a mejorar de muchas maneras diferentes (ni siquiera necesitas saber codificar). Ayuda traduciendo, creando guías, simplemente diciendo a otros que usen RoboSats, ¡y mucho más!
+RoboSats é um projeto totalmente de código aberto e, como tal, é um esforço impulsionado pela comunidade! Você pode ajudar o RoboSats a melhorar de muitas maneiras diferentes (você nem precisa saber como programar). Ajude traduzindo, criando guias, simplesmente dizendo aos outros para usar o RoboSats e muito mais!
 
-Échales un vistazo:
+Confira:
 
-1. [Desarrollo](/contribute/es/code/)
-2. [Traducciones](/contribute/es/languages/)
-3. [Liquidez Lightning](/contribute/es/liquidity/)
-4. [Guías y video tutoriales](/contribute/es/guides/)
-5. [Arte](/contribute/es/art/)
-6. [Comparte](/contribute/es/outreach/)
-7. [Dona](/contribute/es/donate/)
+1. [Desenvolvimento](/contribute/pt/code/)
+2. [Traduções](/contribute/pt/languages/)
+3. [Liquidez Lightning](/contribute/pt/liquidity/)
+4. [Guias e videoaulas](/contribute/pt/guides/)
+5. [Arte](/contribute/pt/art/)
+6. [Conte a alguém](/contribute/pt/outreach/)
+7. [Doar](/contribute/pt/donate/)
 
-{% include improve_es %}
+{% include improve_pt %}

@@ -1,97 +1,99 @@
 ---
 layout: single
-title: "Develop RoboSats"
-permalink: /contribute/es/code/
+title: "Desenvolva RoboSats"
+permalink: /contribute/pt/code/
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/code.svg"/>Code'
+  title: '<img id="side-icon-verybig" src="/assets/vector/code.svg"/>Código'
   nav: contribute
 toc: true
 toc_sticky: true
-src: "_pages/es/contribute/01-development.md"
+src: "_pages/pt/contribute/01-development.md"
 ---
 
-Todo el mundo puede contribuir al desarrollo del proyecto de código abierto RoboSats. Si estás buscando un lugar donde empezar a contribuir, entonces echa un vistazo a la lista de temas que comparten la etiqueta ["good first issue"](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A "good+first+issue"); estos temas son buenos para los recién llegados.
+Qualquer pessoa pode contribuir para o desenvolvimento do projeto de código aberto RoboSats. Se você está procurando por um lugar para começar a contribuir, então confira a lista de problemas compartilhado ["good first issue"](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"); tais problemas são bons para iniciantes.
 
-Esta guía de contribución se basa en la [Guía de contribución de Bisq](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). Seguir las mejores prácticas del software libre ayuda a que el desarrollo se mantenga organizado a medida que el proyecto crece con nuevas características y se optimiza continuamente. Los futuros colaboradores te agradecerán que sigas estas buenas prácticas y que tu trabajo sea más fácil de desarrollar.
+Este guia de contribuição é baseado no [guia de contribuição do Bisq](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). Seguir as melhores práticas de software livre e de código aberto ajuda o desenvolvimento a permanecer organizado à medida que o projeto cresce com novos recursos e é continuamente otimizado. Futuros colaboradores irão agradecer por seguir essas melhores práticas e facilitar a construção sobre seu trabalho!
 
-## Canales de comunicación
+## Canais de comunicação
 
-*!!! Cuidado con los estafadores que se hacen pasar por administradores de RoboSats. Los administradores NUNCA te llamarán o enviarán mensajes privados.*
+_!!! Cuidado com golpistas que se passam por administradores do RoboSats. Os administradores NUNCA entrarão em contato privadamente com você por mensagem ou ligação._
 
-- **Simplex:** [Grupo principal RoboSats](https://simplex.chat/contact#/?v=1-2&smp=smp%3A%2F%2F0YuTwO05YJWS8rkjn9eLJDjQhFKvIYd8d4xG8X1blIU%3D%40smp8.simplex.im%2FyEX_vdhWew_FkovCQC3mRYRWZB1j_cBq%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAnrf9Jw3Ajdp4EQw71kqA64VgsIIzw8YNn68WjF09jFY%253D%26srv%3Dbeccx4yfxxbvyhqypaavemqurytl6hozr47wfc7uuecacjqdvwpw2xid.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22hWnMVPnJl-KT3-virDk0JA%3D%3D%22%7D). ¿Tienes preguntas o un problema? Encuentra apoyo comunitario en el chat público del grupo SimpleX. Si quieres pasar el rato con otros robots geniales y aprender más sobre RoboSats, entonces esas discusiones ocurren en los chats de grupo SimpleX, Nostr y Matrix.
+- **Simplex:** [Grupo Principal do RoboSats](https://simplex.chat/contact#/?v=1-2&smp=smp%3A%2F%2F0YuTwO05YJWS8rkjn9eLJDjQhFKvIYd8d4xG8X1blIU%3D%40smp8.simplex.im%2FyEX_vdhWew_FkovCQC3mRYRWZB1j_cBq%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAnrf9Jw3Ajdp4EQw71kqA64VgsIIzw8YNn68WjF09jFY%253D%26srv%3Dbeccx4yfxxbvyhqypaavemqurytl6hozr47wfc7uuecacjqdvwpw2xid.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22hWnMVPnJl-KT3-virDk0JA%3D%3D%22%7D). Tem perguntas ou um problema? Encontre suporte comunitário na conversa pública do grupo SimpleX. Se você quer se juntar a outros robôs legais e aprender mais sobre o RoboSats, então essas discussões acontecem no SimpleX, Nostr e nos grupos de chat Matrix.
 
-- **Nostr:** [Grupo General RoboSats](https://snort.social/e/note1tfwvglg8xz8420pfgav0dc9mqekv02nkpck2axefklrema7lk6wszmwxdy). Pasa el rato con otros robots geniales y no dudes en hacer preguntas sobre RoboSats. Además, la cuenta [Nostr RoboSats](https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) proporciona actualizaciones importantes del proyecto, consejos y trucos sobre el uso de RoboSats y otros comentarios centrados en la privacidad. Las preguntas y la participación son bienvenidas. Recuerda: los problemas que requieran la ayuda del personal de RoboSats deben dirigirse al chat principal del grupo SimpleX, donde las respuestas son más rápidas y el personal puede investigar más a fondo su problema.
+- **Nostr:** [Grupo Geral do RoboSats](https://snort.social/e/note1tfwvglg8xz8420pfgav0dc9mqekv02nkpck2axefklrema7lk6wszmwxdy). Junte-se a outros robôs legais e não hesite em fazer perguntas sobre o RoboSats! Além disso, a conta [RoboSats Nostr](npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) fornece atualizações importantes do projeto, dicas e truques de uso do RoboSats, e outros comentários centrados na privacidade. Perguntas e interações são bem-vindas. Lembre-se: problemas que exigem suporte da equipe do RoboSats devem ser direcionados para o grupo principal do SimpleX, onde as respostas são mais rápidas e a equipe pode investigar mais a fundo o seu problema.
 
-- **Matrix:** [Grupo de Desarrollo RoboSats](https://matrix.to/#/#robosats:matrix.org). Principal grupo de chat de comunicación de desarrolladores donde tienen lugar discusiones abiertas y técnicas sobre el desarrollo. La discusión sobre los cambios en el código se realiza en GitHub issues y pull requests (PRs).
+- **Matrix:** [Grupo de Desenvolvimento do RoboSats](https://matrix.to/#/#robosats:matrix.org). Grupo de chat principal de comunicação entre desenvolvedores, onde discussões abertas e técnicas sobre o desenvolvimento ocorrem. Discussões sobre mudanças de código acontecem em issues e pull requests (PRs) do GitHub.
 
-- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Anuncia actualizaciones del proyecto, comparte consejos y trucos sobre el uso de RoboSats y debate otros temas relacionados con la privacidad. No dudes en hacer preguntas y compartir tu experiencia con RoboSats. El personaje "Robotoshi", un robot amante de la privacidad y a veces descarado, dirige el Twitter de RoboSats e intenta responder a todas las preguntas. Ten en cuenta que el chat público del grupo Simplex antes mencionado puede ser más eficaz para buscar ayuda técnica y que los usuarios que busquen ayuda en disputas serán dirigidos al chat SimpleX.
+- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Anuncia atualizações do projeto, compartilha dicas e truques de uso do RoboSats e discute outros tópicos relacionados à privacidade. Sinta-se à vontade para fazer perguntas e compartilhar sua experiência usando o RoboSats! O personagem pseudônimo "Robotoshi", um robô amante da privacidade e às vezes atrevido, administra o Twitter do RoboSats e faz o possível para responder às perguntas! Lembre-se de que o grupo público do Simplex mencionado anteriormente pode ser mais eficaz para buscar ajuda técnica e usuários que buscam ajuda em disputas serão direcionados para o chat do SimpleX.
 
-## Flujo de trabajo de los colaboradores
+## Fluxo de Contribuição
 
-Todos los colaboradores de RoboSats envían cambios a través de pull requests. El flujo de trabajo es el siguiente:
- - Fork el repositorio
- - Crear una rama a partir de la rama `main`
- - Haz commit de los cambios
- - Elimina/Squash commits redundantes o innecesarios
- - Envíe un pull request desde tu rama a la rama `main` del repositorio principal
- - Realiza cambios en el pull request si los revisores lo solicitan y pide una nueva revisión
+Todos os contribuidores do RoboSats enviam alterações através de pull requests. O fluxo de trabalho é o seguinte:
 
-Los pull requests deben centrarse en un único cambio. No mezcle, por ejemplo, refactorizaciones con una corrección de errores o la implementación de una nueva característica. Esta práctica facilita a los colaboradores la revisión de cada pull request.
+- Faça um fork do repositório
+- Crie um branch de tópico a partir do branch main
+- Faça commits nas alterações
+- Agrupe commits redundantes ou desnecessários
+- Envie um pull request do seu branch de tópico de volta para o branch main do repositório principal
+- Faça alterações no pull request se os revisores solicitarem e solicite uma nova revisão
 
-## Revisión de Pull Requests
+Os pull requests devem se concentrar em uma única alteração. Não misture, por exemplo, refatorações com correção de bugs ou implementação de um novo recurso. Essa prática facilita para os outros contribuidores revisarem cada pull request.
 
-Robosats sigue el flujo de revisión establecido por el proyecto Bitcoin Core. Lo siguiente es una adaptación de la [Bitcoin Core contributor documentation](https://github.com/bitcoin/bitcoin/blob/master/CONTRIBUTING.md#peer-review):
+## Revisão de Pull Requests
 
-Cualquiera puede participar en la revisión por pares que se expresa mediante comentarios en el pull request. Típicamente los revisores revisarán el código en busca de errores obvios, así como probar el parche y opinar sobre los méritos técnicos del parche. Los mantenedores del proyecto tienen en cuenta la revisión por pares a la hora de determinar si hay consenso para fusionar una pull request (recuerda que las discusiones pueden haberse repartido entre GitHub y Telegram). El siguiente lenguaje se utiliza en los comentarios de pull-request:
- - `ACK` significa "He probado el código y estoy de acuerdo en que se fusione";
- - `NACK` significa "No estoy de acuerdo en que esto se fusione", y debe ir acompañado de una justificación técnica sólida. Los NACK que no vayan acompañados de una justificación pueden no tenerse en cuenta;
- - `utACK` significa "No he probado el código, pero lo he revisado y parece correcto, estoy de acuerdo en que se fusione";
- - El `concepto ACK` significa "Estoy de acuerdo con el principio general de esta solicitud de extracción";
- - `Nit` se refiere a problemas triviales, a menudo no bloqueantes.
+O RoboSats segue o fluxo de revisão estabelecido pelo projeto Bitcoin Core. O seguinte é adaptado da documentação de contribuidores do [Bitcoin Core](https://github.com/bitcoin/bitcoin/blob/master/CONTRIBUTING.md#peer-review):
 
-Tenga en cuenta que los Pull Requests marcados con `NACK` y/o `Change requested` de GitHub se cierran a los 30 días si no se atienden.
+Qualquer pessoa pode participar da revisão por pares, que é expressa por comentários no pull request. Normalmente, os revisores irão revisar o código em busca de erros óbvios, além de testar o conjunto de patches e opinar sobre os méritos técnicos do patch. Os mantenedores do projeto levam em consideração a revisão por pares ao determinar se há consenso para mesclar um pull request (lembre-se de que as discussões podem ter sido espalhadas pelo GitHub e pelo Telegram). A seguinte linguagem é usada nos comentários de pull requests:
 
-## Compensación para desarrolladores (Programa piloto)
+- `ACK` significa "Testei o código e concordo que deve ser mesclado";
+- `NACK` significa "Discordo que isso deva ser mesclado" e deve ser acompanhado de uma justificativa técnica sólida. NACKs sem justificativa podem ser ignorados;
+- `utACK` significa "Não testei o código, mas revisei e parece OK, concordo que pode ser mesclado";
+- `Concept ACK` ACK significa "Concordo com o princípio geral deste pull request";
+- `Nit` refere-se a questões triviais, muitas vezes não bloqueadoras.
 
-[Consulta el estado actual de las tareas compensadas para desarrolladores en el proyecto de Github](https://github.com/users/Reckless-Satoshi/projects/2/views/5)
+Observe que os Pull Requests marcados como `NACK` e/ou `Change requested` pelo GitHub são fechados após 30 dias se não forem abordados.
 
-Por el momento, RoboSats es un proyecto joven y sin financiación, pero ha demostrado la capacidad de generar ingresos suficientes para cubrir a duras penas los costes operativos. Un programa de compensación a los desarrolladores es la mejor manera de garantizar el apoyo sostenido de la base de código. Por el momento, las contribuciones de código al núcleo del proyecto recibirán pequeñas recompensas más parecidas a una propina que a una compensación monetaria significativa. El procedimiento piloto para el desarrollo compensado:
+## Remuneração para Desenvolvedores (Programa Piloto)
 
-1. El desarrollador abre un PR con la descripción del trabajo que va a realizar, incluyendo opcionalmente la cantidad de Sats que cree que merece el trabajo.
-2. Se produce una oferta/negociación para fijar una cantidad de Sats hasta llegar a un acuerdo. Todo el mundo es bienvenido a expresar su opinión sobre si la compensación es adecuada para el RP.
-3. El trabajo se lleva a cabo: ¡construir, construir, construir!
-4. La revisión tiene lugar. Una vez que los mantenedores dan el visto bueno a la fusión...
-5. El desarrollador presenta una factura LN (con un largo plazo de vencimiento). La factura se paga en el momento de la fusión.
+[Verifique o estado atual das tarefas de desenvolvimento compensadas no Projeto do GitHub](https://github.com/users/Reckless-Satoshi/projects/2/views/5)
 
-Cada paso (negociación, envío de código, revisión y envío de factura) debe realizarse públicamente en GitHub (es decir, nada de mensajes privados ni similares). Póngase en contacto con el jefe del equipo de desarrollo (@reckless-satoshi) por adelantado si tiene dudas sobre si su contribución es adecuada para recibir una compensación. Actualmente, sólo las contribuciones a la funcionalidad y mantenimiento del frontend o backend son elegibles para compensaciones (por el momento, esto excluye: arte, traducciones, etc.).
+Atualmente, o RoboSats é um projeto jovem e sem financiamento, mas mostrou a capacidade de gerar receita suficiente para cobrir apenas os custos operacionais. Um programa de remuneração para desenvolvedores é a melhor maneira de garantir o apoio sustentado da base de código. Por enquanto, contribuições de código para o projeto principal receberão pequenas recompensas mais próximas de uma gorjeta do que de uma compensação monetária significativa. O procedimento piloto para desenvolvimento compensado é o seguinte:
 
-## Convenciones de estilo y codificación
+1. O desenvolvedor abre um PR com a descrição do trabalho que será realizado, incluindo opcionalmente a quantidade de Sats que ele acha que o trabalho merece.
+2. Uma oferta/negociação ocorre para definir uma quantidade de Sats até que seja acordada. Todos são bem-vindos para expressar opinião sobre se a compensação é adequada para o PR.
+3. O trabalho acontece: construir, construir, construir!
+4. A revisão ocorre. Uma vez que os mantenedores dão o OK para o merge....
+5. O desenvolvedor envia uma fatura LN (com um longo prazo de validade). A fatura é paga no merge.
 
-### Configurar nombre de usuario Git y metadatos de correo electrónico
+Cada etapa (negociação, submissão de código, revisão e submissão de fatura) deve ocorrer publicamente no GitHub (ou seja, sem mensagens privadas e similares). Entre em contato com o líder da equipe de desenvolvimento (@reckless-satoshi) antecipadamente se tiver dúvidas sobre se sua contribuição é adequada para compensação. Atualmente, apenas contribuições para a funcionalidade central do frontend ou backend e manutenção são elegíveis para compensações (por enquanto, isso exclui: arte, traduções, etc.).
 
-Ver https://help.github.com/articles/setting-your-username-in-git/ para instrucciones.
+## Estilo e Convenções de Codificação
 
-### Escribir mensajes de commits bien formados
+### Configure metadados de nome de usuário e e-mail do Git
+
+Ver https://help.github.com/articles/setting-your-username-in-git/ para instruções.
+
+### Escreva mensagens de commit bem formadas
 
 De https://chris.beams.io/posts/git-commit/#seven-rules:
 
- 1. Separa el asunto del cuerpo con una línea en blanco
- 2. Limite la línea de asunto a 50 caracteres (*)
- 3. Escriba el asunto en mayúsculas
- 4. No termine el asunto con un punto
- 5. Utilice el modo imperativo en el asunto
- 6. Envuelva el cuerpo a 72 caracteres (*)
- 7. Utilice el cuerpo para explicar qué y por qué en lugar de cómo.
+1.  Separe o assunto do corpo com uma linha em branco
+2.  Limite a linha de assunto a 50 caracteres (\*)
+3.  Capitalize a linha de assunto
+4.  Não termine a linha de assunto com um ponto
+5.  Use o modo imperativo na linha de assunto
+6.  Quebre o corpo em 72 caracteres (\*)
+7.  Use o corpo para explicar o que e por que vs. como
 
-### Firma tus commits con GPG
+### Assine seus commits com GPG
 
-Ver https://github.com/blog/2144-gpg-signature-verification para más información y
-https://help.github.com/articles/signing-commits-with-gpg/ para instrucciones.
+Ver https://github.com/blog/2144-gpg-signature-verification para mais informações e
+https://help.github.com/articles/signing-commits-with-gpg/ para instruções.
 
-### Use un editor que soporte Editorconfig
+### Use um editor que suporte Editorconfig
 
-La configuración [.editorconfig](.editorconfig) de este repositorio asegura una gestión consistente de los espacios en blanco. La mayoría de los editores modernos lo soportan de forma nativa o con un plugin. Vea http://editorconfig.org para más detalles.
+As configurações [.editorconfig](.editorconfig) neste repositório garantem o gerenciamento consistente de espaços em branco. A maioria dos editores modernos o suporta nativamente ou com plugin. Consulte http://editorconfig.org para obter detalhes.
 
-### Mantener limpio el historial de git
+### Mantenha o histórico do git limpo
 
-Es muy importante mantener el historial git claro, ligero y fácilmente navegable. Esto significa que los contribuidores deben asegurarse de que sus pull requests incluyen sólo commits significativos (si son redundantes o fueron añadidas después de una revisión, deben ser eliminadas) y _no merge commits_.
+É muito importante manter o histórico do git claro, leve e facilmente navegável. Isso significa que os contribuidores devem garantir que seus pull requests incluam apenas commits significativos (se forem redundantes ou foram adicionados após uma revisão, devem ser removidos) e _nenhum commit de merge_.
