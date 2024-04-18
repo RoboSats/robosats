@@ -139,7 +139,7 @@ class Telegram:
                     text = f"⚖️ Hey {user.username}, a dispute has been opened on your order with ID {str(order.id)}."
                 self.send_message(user.robot.telegram_chat_id, text)
 
-        admin_chat_id = config("TELEGRAM_ADMIN_CHAT_ID")
+        admin_chat_id = config("TELEGRAM_COORDINATOR_CHAT_ID")
 
         if len(admin_chat_id) == 0:
             return
