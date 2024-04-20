@@ -1028,7 +1028,7 @@ const MakerForm = ({
                       views={['hours', 'minutes']}
                       inputFormat='HH:mm'
                       mask='__:__'
-                      componentsProps={{
+                      slotProps={{
                         textField: {
                           InputProps: {
                             style: {
@@ -1061,7 +1061,7 @@ const MakerForm = ({
                       views={['hours', 'minutes']}
                       inputFormat='HH:mm'
                       mask='__:__'
-                      componentsProps={{
+                      slotProps={{
                         textField: {
                           InputProps: {
                             style: {
