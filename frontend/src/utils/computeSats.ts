@@ -16,7 +16,7 @@ const computeSats = ({
 }: computeSatsProps): string | undefined => {
   const rateWithPremium = rate + premium / 100;
   let sats = (amount / rateWithPremium) * 100000000;
-  sats = sats * (1 + fee) * (1 - routingBudget);
+  sats = sats * (1 - fee) * (1 - routingBudget);
   return pn(Math.round(sats));
 };
 
