@@ -20,9 +20,9 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        python-tag: ['3.11.6-slim-bookworm', '3.12.1-slim-bookworm']
-        lnd-version: ['v0.17.3-beta']
-        cln-version: ['v23.11.2']
+        python-tag: ['3.12.3-slim-bookworm', '3.13-rc-slim-bookworm']
+        lnd-version: ['v0.17.4-beta']
+        cln-version: ['v23.11.2','v24.02']
         ln-vendor: ['LND'] #, 'CLN']
 
     steps:
