@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from decouple import config
 from django.conf import settings
@@ -54,9 +53,6 @@ from control.models import AccountingDay, BalanceLog
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
-
-avatar_path = Path(settings.AVATAR_ROOT)
-avatar_path.mkdir(parents=True, exist_ok=True)
 
 
 class MakerView(CreateAPIView):

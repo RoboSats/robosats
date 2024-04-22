@@ -1,16 +1,13 @@
 import hashlib
 from datetime import timedelta
-from pathlib import Path
 
 from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User, update_last_login
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
-from robohash import Robohash
 
 from api.nick_generator.nick_generator import NickGenerator
 from api.utils import base91_to_hex, hex_to_base91, is_valid_token, validate_pgp_keys
@@ -18,9 +15,6 @@ from api.utils import base91_to_hex, hex_to_base91, is_valid_token, validate_pgp
 NickGen = NickGenerator(
     lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
 )
-
-avatar_path = Path(settings.AVATAR_ROOT)
-avatar_path.mkdir(parents=True, exist_ok=True)
 
 
 class DisableCSRFMiddleware(object):
@@ -157,21 +151,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 user.robot.public_key = public_key
             if not user.robot.encrypted_private_key:
                 user.robot.encrypted_private_key = encrypted_private_key
-
-            # Generate avatar. Does not replace if existing.
-            image_path = avatar_path.joinpath(nickname + ".webp")
-            if not image_path.exists():
-                rh = Robohash(hash)
-                rh.assemble(roboset="set1", bgset="any")  # for backgrounds ON
-                with open(image_path, "wb") as f:
-                    rh.img.save(f, format="WEBP", quality=80)
-
-                image_small_path = avatar_path.joinpath(nickname + ".small.webp")
-                with open(image_small_path, "wb") as f:
-                    resized_img = rh.img.resize((80, 80))
-                    resized_img.save(f, format="WEBP", quality=80)
-
-            user.robot.avatar = "static/assets/avatars/" + nickname + ".webp"
 
             update_last_login(None, user)
             user.save()
