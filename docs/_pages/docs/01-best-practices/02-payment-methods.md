@@ -62,6 +62,14 @@ In Canada, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq-
 
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
 
+### Instant SEPA Payment Guidelines
+
+Instant SEPA is a widely adopted payment method across Europe, offering fast and efficient cashless transactions. However, it comes with a significant risk for sellers, including the potential for chargebacks. To mitigate these risks, it is advisable for sellers to request the buyer's information before sharing their SEPA details. This information could include the buyer's country, full name, and bank account number. By obtaining this information, sellers can reduce the risk of fraudulent transactions, such as triangle attacks, while buyers, sharing this information does not decrease their privacy, as they are not exposing any additional information that the seller would not have access to anyway after the SEPA transfer.
+
+For buyers, it is crucial to comply with sellers' if they request personal information when they are initiating SEPA transactions. Failure to provide this information can lead to the seller raising an immediate dispute, which sellers are likely to win (the seller will also earn the buyer's bond in this specific case). Therefore, it is in the best interest of buyers to cooperate with sellers' requests for information.
+
+Sellers are encouraged to share a link to this guide with their buyers when requesting information. This ensures that both parties are informed and understand the importance of this step when using Instant SEPA.
+
 ### Revolut via payment links
 
 In a Revolut payment, a `@revtag` is usually exchanged in the chat and can be verified in the payment history of the app making proof of payments easy.
@@ -70,7 +78,7 @@ However, payment links, which have the format https://revolut.me/p/XXXXX, don't 
 
 In a dispute, there's no recipient address reference and both buyer and seller could cheat. The payment link could be redeemed by an unknown third party complicit with either buyer or seller.
 
-Therefore, insist on receiving the `@revtag` when making a payment with Revolut to avoid these risks. The  `@revtag` can also be received as a link. This link would look like this: https://revolut.me/@revtag. 
+Therefore, insist on receiving the `@revtag` when making a payment with Revolut to avoid these risks. The  `@revtag` can also be received as a link. This link would look like this: https://revolut.me/@revtag.
 
 ### Paypal
 Paypal is one of the widely used fiat payment methods. However, with <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">PayPal buyer protection policy</a>, buyer can do fraudulent action by creating a refund request in PayPal after the trading process in RoboSats is finished and therefore taking both fiat and bitcoin all by themselves.
