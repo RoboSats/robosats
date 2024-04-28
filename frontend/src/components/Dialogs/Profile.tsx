@@ -64,7 +64,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <ListItem className='profileNickname'>
             <ListItemText>
               <Typography component='h6' variant='h6'>
-                {garage.getSlot()?.nickname !== undefined && (
+                {!garage.getSlot()?.nickname && (
                   <div style={{ position: 'relative', left: '-7px' }}>
                     <div
                       style={{

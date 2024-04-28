@@ -132,8 +132,11 @@ const App = () => {
       }
     } else if (data.category === 'roboidentities') {
       if (data.type === 'roboname') {
-        const roboname = RoboIdentitiesModule.generateRoboname(data.detail);
-        injectMessageResolve(data.id, roboname);
+        const roboname = await RoboIdentitiesModule.generateRoboname(data.detail);
+        injectMessageResolve(data.id, { roboname });
+      } else if (data.type === 'robohash') {
+        const robohash = await RoboIdentitiesModule.generateRobohash(data.detail);
+        injectMessageResolve(data.id, { robohash });
       }
     }
   };

@@ -5,6 +5,7 @@ import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
 // import { robohash } from './RobohashGenerator';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { roboidentitiesClient } from '../../services/Roboidentities';
 
 interface Props {
   shortAlias?: string | undefined;
@@ -53,22 +54,21 @@ const RobotAvatar: React.FC<Props> = ({
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
-  // useEffect(() => {
-  //   // TODO: HANDLE ANDROID AVATARS TOO (when window.NativeRobosats !== undefined)
-  //   if (hashId !== undefined) {
-  //     robohash
-  //       .generate(hashId, small ? 'small' : 'large')
-  //       .then((avatar) => {
-  //         setAvatarSrc(avatar);
-  //       })
-  //       .catch(() => {
-  //         setAvatarSrc('');
-  //       });
-  //     setTimeout(() => {
-  //       setActiveBackground(false);
-  //     }, backgroundFadeTime);
-  //   }
-  // }, [hashId]);
+  useEffect(() => {
+    if (hashId !== undefined) {
+      roboidentitiesClient
+        .generateRobohash(hashId, small ? 'small' : 'large')
+        .then((avatar) => {
+          setAvatarSrc(avatar);
+        })
+        .catch(() => {
+          setAvatarSrc('');
+        });
+      setTimeout(() => {
+        setActiveBackground(false);
+      }, backgroundFadeTime);
+    }
+  }, [hashId]);
 
   useEffect(() => {
     if (shortAlias !== undefined) {

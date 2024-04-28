@@ -3,6 +3,7 @@ import RoboidentitiesClientWebClient from './RoboidentitiesWebClient';
 
 export interface RoboidentitiesClient {
   generateRoboname: (initialString: string) => Promise<string>;
+  generateRobohash: (initialString: string, size: string) => Promise<string>;
 }
 
 export const roboidentitiesClient: RoboidentitiesClient =

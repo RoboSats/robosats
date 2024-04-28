@@ -8,13 +8,12 @@ class Slot {
     this.token = token;
 
     this.hashId = sha256(sha256(this.token));
-    this.nickname = '';
+    this.nickname = null;
     roboidentitiesClient.generateRoboname(this.hashId).then((nickname) => {
       this.nickname = nickname;
     });
-    // trigger RoboHash avatar generation in webworker and store in RoboHash class cache.
-    // void robohash.generate(this.hashId, 'small');
-    // void robohash.generate(this.hashId, 'large');
+    roboidentitiesClient.generateRobohash(this.hashId, 'small');
+    roboidentitiesClient.generateRobohash(this.hashId, 'large');
 
     this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
       acc[shortAlias] = new Robot(robotAttributes);

@@ -81,7 +81,7 @@ class RoboGenerator {
     hash,
     size,
   ) => {
-    const cacheKey = `${size}px;${hash}`;
+    const cacheKey = `${hash};${size}`;
     if (this.assetsCache[cacheKey]) {
       return this.assetsCache[cacheKey];
     } else {

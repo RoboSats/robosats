@@ -7,6 +7,15 @@ class RoboidentitiesClientWebClient implements RoboidentitiesClient {
       // resolve(generate_roboname(initialString))
     });
   };
+
+  public generateRobohash: (initialString: string, size: string) => Promise<string> = async (
+    initialString,
+    size,
+  ) => {
+    return new Promise<string>(async (resolve, _reject) => {
+      // resolve(generate_roboname(initialString))
+    });
+  };
 }
 
 export default RoboidentitiesClientWebClient;

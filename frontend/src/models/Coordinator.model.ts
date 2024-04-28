@@ -6,6 +6,7 @@ import {
   type Order,
   type Garage,
 } from '.';
+import { roboidentitiesClient } from '../services/Roboidentities';
 import { apiClient } from '../services/api';
 import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
@@ -174,9 +175,9 @@ export class Coordinator {
   };
 
   generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
-    // for (const order of data) {
-    //   void robohash.generate(order.maker_hash_id, 'small');
-    // }
+    for (const order of data) {
+      roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
+    }
   };
 
   loadBook = (onDataLoad: () => void = () => {}): void => {
