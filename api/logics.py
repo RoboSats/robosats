@@ -145,7 +145,6 @@ class Logics:
             return True, None
 
         country = location_country(order.longitude, order.latitude)
-        print(country, "COUNTRYYY")
         if country in GEOBLOCKED_COUNTRIES:
             return False, {
                 "bad_request": f"The coordinator does not support orders in {country}"
