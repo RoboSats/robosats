@@ -1,7 +1,7 @@
 import math
 from datetime import timedelta
 
-from decouple import config
+from decouple import config, Csv
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
@@ -9,7 +9,7 @@ from django.utils import timezone
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
 from api.tasks import send_devfund_donation, send_notification
-from api.utils import get_minning_fee, validate_onchain_address
+from api.utils import get_minning_fee, validate_onchain_address, location_country
 from chat.models import Message
 
 FEE = float(config("FEE"))
@@ -28,6 +28,8 @@ BLOCK_TIME = float(config("BLOCK_TIME"))
 MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(
     config("MAX_MINING_NETWORK_SPEEDUP_EXPECTED")
 )
+
+GEOBLOCKED_COUNTRIES = config("GEOBLOCKED_COUNTRIES", cast=Csv(), default=[])
 
 
 class Logics:
@@ -136,6 +138,19 @@ class Logics:
                 }
 
         return True, None
+
+    @classmethod
+    def validate_location(cls, order) -> bool:
+        if not (order.latitude or order.longitude):
+            return True, None
+
+        country = location_country(order.longitude, order.latitude)
+        if country in GEOBLOCKED_COUNTRIES:
+            return False, {
+                "bad_request": f"The coordinator does not support orders in {country}"
+            }
+        else:
+            return True, None
 
     def validate_amount_within_range(order, amount):
         if amount > float(order.max_amount) or amount < float(order.min_amount):

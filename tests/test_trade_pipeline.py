@@ -239,6 +239,38 @@ class TradeTest(BaseAPITestCase):
         self.assertIsNone(data["taker"], "New order's taker is not null")
         self.assert_order_logs(data["id"])
 
+    def test_make_order_on_blocked_country(self):
+        """
+        Test the creation of an F2F order on a geoblocked location
+        """
+        trade = Trade(
+            self.client,
+            # latitude and longitud in Aruba. One of the countries blocked in the example conf.
+            maker_form={
+                "type": 0,
+                "currency": 1,
+                "has_range": True,
+                "min_amount": 21,
+                "max_amount": 101.7,
+                "payment_method": "Advcash Cash F2F",
+                "is_explicit": False,
+                "premium": 3.34,
+                "public_duration": 69360,
+                "escrow_duration": 8700,
+                "bond_size": 3.5,
+                "latitude": -11.8014,  # Angola AGO
+                "longitude": 17.3575,
+            },
+        )  # init of Trade calls make_order() with the default maker form.
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(
+            data["bad_request"], "The coordinator does not support orders in AGO"
+        )
+
     def test_get_order_created(self):
         """
         Tests the creation of an order and the first request to see details,
