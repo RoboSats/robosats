@@ -20,6 +20,9 @@ import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 import getWorldmapGeojson from '../geo/Web';
 import { apiClient } from '../services/api';
+import SettingsSelfhosted from '../models/Settings.default.basic.selfhosted';
+import SettingsSelfhostedPro from '../models/Settings.default.pro.selfhosted';
+import SettingsPro from '../models/Settings.default.pro';
 
 const getWindowSize = function (fontSize: number): { width: number; height: number } {
   // returns window size in EM units
@@ -101,6 +104,19 @@ const getOrigin = (network = 'mainnet'): Origin => {
   return origin;
 };
 
+const getSettings = (): Settings => {
+  let settings = new Settings();
+  if (window.RobosatsSettings === 'selfhosted-basic') {
+    settings = new SettingsSelfhosted();
+  } else if (window.RobosatsSettings === 'selfhosted-pro') {
+    settings = new SettingsSelfhostedPro();
+  } else if (window.RobosatsSettings === 'web-pro') {
+    settings = new SettingsPro();
+  }
+
+  return settings;
+};
+
 export interface WindowSize {
   width: number;
   height: number;
@@ -175,7 +191,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
   const hostUrl = initialAppContext.hostUrl;
   const origin = initialAppContext.origin;
 
-  const [settings, setSettings] = useState<Settings>(initialAppContext.settings);
+  const [settings, setSettings] = useState<Settings>(getSettings());
   const [theme, setTheme] = useState<Theme>(() => {
     return makeTheme(settings);
   });

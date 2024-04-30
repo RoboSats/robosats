@@ -24,6 +24,7 @@ import {
   type GridPaginationModel,
   type GridColDef,
   type GridValidRowModel,
+  GridSlotsComponent,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -38,31 +39,13 @@ import RobotAvatar from '../RobotAvatar';
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import headerStyleFix from '../DataGrid/HeaderFix';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
     pointerEvents: 'none',
   },
-  // Temporary fix for regression for hidden column labels on Mobile:
-  // https://github.com/mui/mui-x/issues/9776#issuecomment-1648306844
-  '@media (hover: none)': {
-    '&& .MuiDataGrid-menuIcon': {
-      width: 0,
-      visibility: 'hidden',
-    },
-    '&& .MuiDataGrid-sortIcon': {
-      width: 0,
-      visibility: 'hidden',
-    },
-  },
-  '&& .MuiDataGrid-columnHeader--sorted .MuiDataGrid-menuIcon': {
-    width: 'auto',
-    visibility: 'visible',
-  },
-  '&& .MuiDataGrid-columnHeader--sorted .MuiDataGrid-sortIcon': {
-    width: 'auto',
-    visibility: 'visible',
-  },
+  ...{ headerStyleFix },
 });
 
 const premiumColor = function (baseColor: string, accentColor: string, point: number): string {
@@ -204,12 +187,12 @@ const BookTable = ({
       renderCell: (params: any) => {
         return (
           <ListItemButton
-            style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
+            style={{ cursor: 'pointer' }}
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            <ListItemAvatar>
+            <ListItemAvatar sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}>
               <RobotAvatar
                 hashId={params.row.maker_hash_id}
                 style={{ width: '3.215em', height: '3.215em' }}
@@ -221,7 +204,10 @@ const BookTable = ({
                 small={true}
               />
             </ListItemAvatar>
-            <ListItemText primary={params.row.maker_nick} />
+            <ListItemText
+              primary={params.row.maker_nick}
+              sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}
+            />
           </ListItemButton>
         );
       },
@@ -236,7 +222,7 @@ const BookTable = ({
       renderCell: (params: any) => {
         return (
           <div
-            style={{ position: 'relative', left: '-0.34em', cursor: 'pointer' }}
+            style={{ position: 'relative', left: '-0.34em', cursor: 'pointer', bottom: '0.2em' }}
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
@@ -270,12 +256,12 @@ const BookTable = ({
       renderCell: (params: any) => {
         return (
           <ListItemButton
-            style={{ cursor: 'pointer', position: 'relative', left: '-1.54em' }}
+            style={{ cursor: 'pointer' }}
             onClick={() => {
               onClickCoordinator(params.row.coordinatorShortAlias);
             }}
           >
-            <ListItemAvatar>
+            <ListItemAvatar sx={{ position: 'relative', left: '-1.54em', bottom: '0.4em' }}>
               <RobotAvatar
                 shortAlias={params.row.coordinatorShortAlias}
                 style={{ width: '3.215em', height: '3.215em' }}
@@ -364,8 +350,9 @@ const BookTable = ({
             }}
           >
             {currencyCode}
-            <div style={{ width: '0.3em' }} />
-            <FlagWithProps code={currencyCode} />
+            <div style={{ position: 'relative', left: '0.3em', bottom: '0.7em' }}>
+              <FlagWithProps code={currencyCode} />
+            </div>
           </div>
         );
       },
@@ -386,12 +373,14 @@ const BookTable = ({
                 onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
               }}
             >
-              <PaymentStringAsIcons
-                othersText={t('Others')}
-                verbose={true}
-                size={1.7 * fontSize}
-                text={params.row.payment_method}
-              />
+              <div style={{ position: 'relative', top: '0.4em' }}>
+                <PaymentStringAsIcons
+                  othersText={t('Others')}
+                  verbose={true}
+                  size={1.7 * fontSize}
+                  text={params.row.payment_method}
+                />
+              </div>
             </div>
           );
         },
@@ -410,7 +399,8 @@ const BookTable = ({
           <div
             style={{
               position: 'relative',
-              left: '-4px',
+              left: '-0.25em',
+              top: '0.3em',
               cursor: 'pointer',
             }}
             onClick={() => {
@@ -545,7 +535,7 @@ const BookTable = ({
         const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
         return (
           <Box
-            sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}
+            sx={{ position: 'relative', display: 'inline-flex', left: '0.3em', top: '0.5em' }}
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
@@ -880,19 +870,19 @@ const BookTable = ({
   };
 
   const gridComponents = useMemo(() => {
-    const components: GridComponentProps = {
-      LoadingOverlay: LinearProgress,
+    const components: GridSlotsComponent = {
+      loadingOverlay: LinearProgress,
     };
 
     if (showNoResults) {
-      components.NoResultsOverlay = NoResultsOverlay;
-      components.NoRowsOverlay = NoResultsOverlay;
+      components.noResultsOverlay = NoResultsOverlay;
+      components.noRowsOverlay = NoResultsOverlay;
     }
     if (showFooter) {
-      components.Footer = Footer;
+      components.footer = Footer;
     }
     if (showControls) {
-      components.Toolbar = BookControl;
+      components.toolbar = BookControl;
     }
     return components;
   }, [showNoResults, showFooter, showControls, fullscreen]);
@@ -935,8 +925,8 @@ const BookTable = ({
             setColumnVisibilityModel(newColumnVisibilityModel);
           }}
           hideFooter={!showFooter}
-          components={gridComponents}
-          componentsProps={{
+          slots={gridComponents}
+          slotProps={{
             toolbar: {
               width,
               paymentMethod: paymentMethods,
@@ -967,12 +957,12 @@ const BookTable = ({
             loading={federation.loading}
             columns={columns}
             hideFooter={!showFooter}
-            components={gridComponents}
+            slots={gridComponents}
             columnVisibilityModel={columnVisibilityModel}
             onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
               setColumnVisibilityModel(newColumnVisibilityModel);
             }}
-            componentsProps={{
+            slotProps={{
               toolbar: {
                 width,
                 paymentMethod: paymentMethods,

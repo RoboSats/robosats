@@ -1,7 +1,7 @@
 import { systemClient } from '../services/System';
 import BaseSettings from './Settings.model';
 
-class Settings extends BaseSettings {
+class SettingsSelfhosted extends BaseSettings {
   constructor() {
     super();
     const fontSizeCookie = systemClient.getItem('settings_fontsize_basic');
@@ -12,4 +12,4 @@ class Settings extends BaseSettings {
   public selfhostedClient: boolean = true;
 }
 
-export default Settings;
+export default SettingsSelfhosted;

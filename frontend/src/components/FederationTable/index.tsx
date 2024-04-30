@@ -7,6 +7,7 @@ import RobotAvatar from '../RobotAvatar';
 import { Link, LinkOff } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import headerStyleFix from '../DataGrid/HeaderFix';
 
 interface FederationTableProps {
   maxWidth?: number;
@@ -225,6 +226,7 @@ const FederationTable = ({
       }
     >
       <DataGrid
+        sx={headerStyleFix}
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}

@@ -1,4 +1,5 @@
 from decouple import config
+from decimal import Decimal
 from rest_framework import serializers
 
 from .models import MarketTick, Order
@@ -583,7 +584,7 @@ class UpdateOrderSerializer(serializers.Serializer):
     )
     routing_budget_ppm = serializers.IntegerField(
         default=0,
-        min_value=0,
+        min_value=Decimal(0),
         max_value=100_001,
         allow_null=True,
         required=False,

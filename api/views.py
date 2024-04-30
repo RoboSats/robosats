@@ -166,6 +166,10 @@ class MakerView(CreateAPIView):
         if not valid:
             return Response(context, status.HTTP_400_BAD_REQUEST)
 
+        valid, context = Logics.validate_location(order)
+        if not valid:
+            return Response(context, status.HTTP_400_BAD_REQUEST)
+
         order.save()
         order.log(
             f"Order({order.id},{order}) created by Robot({request.user.robot.id},{request.user})"
