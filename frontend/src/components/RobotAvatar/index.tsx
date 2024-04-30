@@ -3,9 +3,8 @@ import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
-// import { robohash } from './RobohashGenerator';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { roboidentitiesClient } from '../../services/Roboidentities';
+import { roboidentitiesClient } from '../../services/Roboidentities/Web';
 
 interface Props {
   shortAlias?: string | undefined;

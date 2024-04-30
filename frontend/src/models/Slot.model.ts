@@ -1,7 +1,6 @@
 import { sha256 } from 'js-sha256';
 import { Robot, type Order } from '.';
-// import { robohash } from '../components/RobotAvatar/RobohashGenerator';
-import { roboidentitiesClient } from '../services/Roboidentities';
+import { roboidentitiesClient } from '../services/Roboidentities/Web';
 
 class Slot {
   constructor(token: string, shortAliases: string[], robotAttributes: Record<any, any>) {

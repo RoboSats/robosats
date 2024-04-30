@@ -6,12 +6,11 @@ import {
   type Order,
   type Garage,
 } from '.';
-import { roboidentitiesClient } from '../services/Roboidentities';
+import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { apiClient } from '../services/api';
 import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
 import { defaultOrder } from './Order.model';
-// import { robohash } from '../components/RobotAvatar/RobohashGenerator';
 
 export interface Contact {
   nostr?: string | undefined;

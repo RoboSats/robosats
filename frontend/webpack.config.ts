@@ -57,6 +57,15 @@ const configMobile: Configuration = {
         },
       },
       {
+        test: path.resolve(__dirname, 'src/services/Roboidentities/Web.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/services/Roboidentities/Native.ts'),
+          async: true,
+        },
+      },
+      {
         test: path.resolve(__dirname, 'src/components/RobotAvatar/placeholder.json'),
         loader: 'file-replace-loader',
         options: {
