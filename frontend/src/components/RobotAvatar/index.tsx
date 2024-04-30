@@ -77,9 +77,7 @@ const RobotAvatar: React.FC<Props> = ({
         );
       } else {
         setAvatarSrc(
-          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}${
-            small ? ' .small' : ''
-          }.webp`,
+          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}.webp`,
         );
       }
       setTimeout(() => {
