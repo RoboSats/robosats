@@ -15,7 +15,7 @@ export interface ReactNativeWebView {
 export interface NativeWebViewMessageHttp {
   id?: number;
   category: 'http';
-  type: 'post' | 'get' | 'put' | 'delete' | 'xhr';
+  type: 'post' | 'get' | 'put' | 'delete';
   path: string;
   baseUrl: string;
   headers?: object;
@@ -30,7 +30,19 @@ export interface NativeWebViewMessageSystem {
   detail?: string;
 }
 
-export declare type NativeWebViewMessage = NativeWebViewMessageHttp | NativeWebViewMessageSystem;
+export interface NativeWebViewMessageRoboidentities {
+  id?: number;
+  category: 'roboidentities';
+  type: 'roboname' | 'robohash';
+  string?: string;
+  size?: string;
+}
+
+export declare type NativeWebViewMessage =
+  | NativeWebViewMessageHttp
+  | NativeWebViewMessageSystem
+  | NativeWebViewMessageRoboidentities
+  | NA;
 
 export interface NativeRobosatsPromise {
   resolve: (value: object | PromiseLike<object>) => void;

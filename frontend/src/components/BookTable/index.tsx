@@ -45,7 +45,6 @@ const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
     pointerEvents: 'none',
   },
-  ...{ headerStyleFix },
 });
 
 const premiumColor = function (baseColor: string, accentColor: string, point: number): string {
@@ -897,6 +896,11 @@ const BookTable = ({
       : orders;
   }, [showControls, orders, fav, paymentMethods]);
 
+  const loadingPercentage =
+    ((federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators) /
+      federation.exchange.enabledCoordinators) *
+    100;
+
   if (!fullscreen) {
     return (
       <Paper
@@ -908,6 +912,7 @@ const BookTable = ({
         }
       >
         <ClickThroughDataGrid
+          sx={headerStyleFix}
           localeText={localeText}
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
@@ -928,12 +933,8 @@ const BookTable = ({
               setPaymentMethods,
             },
             loadingOverlay: {
-              variant: 'determinate',
-              value:
-                ((federation.exchange.enabledCoordinators -
-                  federation.exchange.loadingCoordinators) /
-                  federation.exchange.enabledCoordinators) *
-                100,
+              variant: loadingPercentage === 0 ? 'indeterminate' : 'determinate',
+              value: loadingPercentage,
             },
           }}
           paginationModel={paginationModel}
@@ -949,6 +950,7 @@ const BookTable = ({
       <Dialog open={fullscreen} fullScreen={true}>
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
           <ClickThroughDataGrid
+            sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
             headerHeight={3.25 * theme.typography.fontSize}

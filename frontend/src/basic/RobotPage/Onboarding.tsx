@@ -178,7 +178,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {slot?.hashId ? (
+            {slot?.nickname ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>

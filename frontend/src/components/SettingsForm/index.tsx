@@ -226,7 +226,6 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               value={settings.network}
               onChange={(e, network) => {
                 setSettings({ ...settings, network });
-                void federation.updateUrls(origin, { ...settings, network }, hostUrl);
                 systemClient.setItem('settings_network', network);
               }}
             >
