@@ -29,7 +29,7 @@ MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(
     config("MAX_MINING_NETWORK_SPEEDUP_EXPECTED")
 )
 
-GEOBLOCKED_COUNTRIES = config("GEOBLOCKED_COUNTRIES", cast=Csv(), default=[])
+GEOBLOCKED_COUNTRIES = config("GEOBLOCKED_COUNTRIES", cast=Csv(), default="")
 
 
 class Logics:
