@@ -45,7 +45,6 @@ const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
     pointerEvents: 'none',
   },
-  ...{ headerStyleFix },
 });
 
 const premiumColor = function (baseColor: string, accentColor: string, point: number): string {
@@ -913,6 +912,7 @@ const BookTable = ({
         }
       >
         <ClickThroughDataGrid
+          sx={headerStyleFix}
           localeText={localeText}
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
@@ -950,6 +950,7 @@ const BookTable = ({
       <Dialog open={fullscreen} fullScreen={true}>
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
           <ClickThroughDataGrid
+            sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
             headerHeight={3.25 * theme.typography.fontSize}
