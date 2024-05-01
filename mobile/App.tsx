@@ -6,6 +6,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { name as app_name, version as app_version } from './package.json';
 import TorModule from './native/TorModule';
+import RoboIdentitiesModule from './native/RoboIdentitiesModule';
 
 const backgroundColors = {
   light: 'white',
@@ -128,6 +129,14 @@ const App = () => {
         setCookie(data.key, data.detail);
       } else if (data.type === 'deleteCookie') {
         EncryptedStorage.removeItem(data.key);
+      }
+    } else if (data.category === 'roboidentities') {
+      if (data.type === 'roboname') {
+        const roboname = await RoboIdentitiesModule.generateRoboname(data.detail);
+        injectMessageResolve(data.id, { roboname });
+      } else if (data.type === 'robohash') {
+        const robohash = await RoboIdentitiesModule.generateRobohash(data.detail);
+        injectMessageResolve(data.id, { robohash });
       }
     }
   };

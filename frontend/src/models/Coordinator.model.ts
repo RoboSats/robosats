@@ -6,11 +6,11 @@ import {
   type Order,
   type Garage,
 } from '.';
+import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { apiClient } from '../services/api';
 import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
 import { defaultOrder } from './Order.model';
-// import { robohash } from '../components/RobotAvatar/RobohashGenerator';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -174,9 +174,9 @@ export class Coordinator {
   };
 
   generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
-    // for (const order of data) {
-    //   void robohash.generate(order.maker_hash_id, 'small');
-    // }
+    for (const order of data) {
+      roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
+    }
   };
 
   loadBook = (onDataLoad: () => void = () => {}): void => {

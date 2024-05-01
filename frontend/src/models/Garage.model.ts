@@ -59,7 +59,9 @@ class Garage {
       const rawSlots = JSON.parse(slotsDump);
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
         if (rawSlot?.token) {
-          this.slots[rawSlot.token] = new Slot(rawSlot.token, Object.keys(rawSlot.robots), {});
+          this.slots[rawSlot.token] = new Slot(rawSlot.token, Object.keys(rawSlot.robots), {}, () =>
+            this.triggerHook('onRobotUpdate'),
+          );
 
           Object.keys(rawSlot.robots).forEach((shortAlias) => {
             const rawRobot = rawSlot.robots[shortAlias];
@@ -113,9 +115,10 @@ class Garage {
     if (!token || !shortAliases) return;
 
     if (this.getSlot(token) === null) {
-      this.slots[token] = new Slot(token, shortAliases, attributes);
+      this.slots[token] = new Slot(token, shortAliases, attributes, () =>
+        this.triggerHook('onRobotUpdate'),
+      );
       this.save();
-      this.triggerHook('onRobotUpdate');
     }
   };
 

@@ -43,7 +43,6 @@ public class TorModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void sendRequest(String action, String url, String headers, String body, final Promise promise) throws JSONException {
-        Log.d("RobosatsUrl", url);
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
                 .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
@@ -75,7 +74,6 @@ public class TorModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                Log.d("RobosatsCode", String.valueOf(response.code()));
                 String body = response.body() != null ? response.body().string() : "{}";
                 JSONObject headersJson = new JSONObject();
                 response.headers().names().forEach(name -> {

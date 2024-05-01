@@ -1,17 +1,24 @@
 import { sha256 } from 'js-sha256';
 import { Robot, type Order } from '.';
-// import { robohash } from '../components/RobotAvatar/RobohashGenerator';
-// import { generate_roboname } from 'robo-identities-wasm';
+import { roboidentitiesClient } from '../services/Roboidentities/Web';
 
 class Slot {
-  constructor(token: string, shortAliases: string[], robotAttributes: Record<any, any>) {
+  constructor(
+    token: string,
+    shortAliases: string[],
+    robotAttributes: Record<any, any>,
+    onRobotUpdate: () => void,
+  ) {
     this.token = token;
 
     this.hashId = sha256(sha256(this.token));
-    this.nickname = 'No Nick Display (WIP)';
-    // trigger RoboHash avatar generation in webworker and store in RoboHash class cache.
-    // void robohash.generate(this.hashId, 'small');
-    // void robohash.generate(this.hashId, 'large');
+    this.nickname = null;
+    roboidentitiesClient.generateRoboname(this.hashId).then((nickname) => {
+      this.nickname = nickname;
+      onRobotUpdate();
+    });
+    roboidentitiesClient.generateRobohash(this.hashId, 'small');
+    roboidentitiesClient.generateRobohash(this.hashId, 'large');
 
     this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
       acc[shortAlias] = new Robot(robotAttributes);
@@ -22,6 +29,7 @@ class Slot {
     this.activeShortAlias = null;
     this.lastShortAlias = null;
     this.copiedToken = false;
+    onRobotUpdate();
   }
 
   token: string | null;
