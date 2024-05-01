@@ -3,13 +3,19 @@ import { Robot, type Order } from '.';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 
 class Slot {
-  constructor(token: string, shortAliases: string[], robotAttributes: Record<any, any>) {
+  constructor(
+    token: string,
+    shortAliases: string[],
+    robotAttributes: Record<any, any>,
+    onRobotUpdate: () => void,
+  ) {
     this.token = token;
 
     this.hashId = sha256(sha256(this.token));
     this.nickname = null;
     roboidentitiesClient.generateRoboname(this.hashId).then((nickname) => {
       this.nickname = nickname;
+      onRobotUpdate();
     });
     roboidentitiesClient.generateRobohash(this.hashId, 'small');
     roboidentitiesClient.generateRobohash(this.hashId, 'large');
@@ -23,6 +29,7 @@ class Slot {
     this.activeShortAlias = null;
     this.lastShortAlias = null;
     this.copiedToken = false;
+    onRobotUpdate();
   }
 
   token: string | null;

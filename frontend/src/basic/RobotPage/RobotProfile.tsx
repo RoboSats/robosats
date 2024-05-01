@@ -90,7 +90,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {slot?.hashId ? (
+          {slot?.nickname ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
