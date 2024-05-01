@@ -207,7 +207,7 @@ const OrderDetails = ({
         amount: amountString,
         method: order.payment_method,
       });
-      receive = t('You receive via Lightning {{amount}} Sats (Approx)', {
+      receive = t('You receive {{amount}} Sats (Approx)', {
         amount: sats,
       });
     } else {
