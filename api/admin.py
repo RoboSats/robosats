@@ -18,8 +18,15 @@ admin.site.unregister(User)
 admin.site.unregister(TokenProxy)
 
 
+class RobotInline(admin.StackedInline):
+    model = Robot
+    can_delete = False
+    show_change_link = True
+
+
 @admin.register(User)
 class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
+    inlines = [RobotInline]
     list_display = (
         "id",
         "robot_link",
