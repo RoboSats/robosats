@@ -63,8 +63,19 @@ class ETokenAdmin(AdminChangeLinksMixin, TokenAdmin):
         return obj.user.robot.avatar_tag()
 
 
+class LNPaymentInline(admin.StackedInline):
+    model = LNPayment
+    can_delete = True
+    fields = ("num_satoshis", "status", "routing_budget_sats", "description")
+    readonly_fields = ("num_satoshis", "status", "routing_budget_sats", "description")
+    show_change_link = True
+    show_full_result_count = True
+    extra = 0
+
+
 @admin.register(Order)
 class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+    inlines = [LNPaymentInline]
     list_display = (
         "id",
         "type",
@@ -369,8 +380,61 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
             return float(obj.amount)
 
 
+class OrderInline(admin.StackedInline):
+    model = Order
+    can_delete = False
+    show_change_link = True
+    extra = 0
+    fields = (
+        "id",
+        "type",
+        "maker",
+        "taker",
+        "status",
+        "amount",
+        "currency",
+        "last_satoshis",
+        "is_disputed",
+        "is_fiat_sent",
+        "created_at",
+        "expires_at",
+        "payout_tx",
+        "payout",
+        "maker_bond",
+        "taker_bond",
+        "trade_escrow",
+    )
+    readonly_fields = fields
+
+
+class PayoutOrderInline(OrderInline):
+    verbose_name = "Order Paid"
+    fk_name = "payout"
+
+
+class MakerBondOrderInline(OrderInline):
+    verbose_name = "Order Made"
+    fk_name = "maker_bond"
+
+
+class TakerBondOrderInline(OrderInline):
+    verbose_name = "Order Taken"
+    fk_name = "taker_bond"
+
+
+class EscrowOrderInline(OrderInline):
+    verbose_name = "Order Escrow"
+    fk_name = "trade_escrow"
+
+
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+    inlines = [
+        PayoutOrderInline,
+        MakerBondOrderInline,
+        TakerBondOrderInline,
+        EscrowOrderInline,
+    ]
     list_display = (
         "hash",
         "concept",
