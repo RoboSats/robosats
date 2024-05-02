@@ -893,7 +893,7 @@ class Logics:
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
                 return False, {
-                    "bad_request": "You can only submit an invoice after expiration or 3 failed attempts"
+                    "bad_invoice": "You can only submit an invoice after expiration or 3 failed attempts"
                 }
 
         # cancel onchain_payout if existing
@@ -910,30 +910,24 @@ class Logics:
             return False, payout["context"]
 
         if order.payout:
-            order.payout.invoice = invoice
-            order.payout.status = LNPayment.Status.VALIDI
-            order.payout.num_satoshis = num_satoshis
-            order.payout.description = payout["description"]
-            order.payout.payment_hash = payout["payment_hash"]
-            order.payout.created_at = payout["created_at"]
-            order.payout.expires_at = payout["expires_at"]
-            order.payout.save()
-        else:
-            order.payout = LNPayment.objects.create(
-                concept=LNPayment.Concepts.PAYBUYER,
-                type=LNPayment.Types.NORM,
-                sender=User.objects.get(username=ESCROW_USERNAME),
-                receiver=user,
-                routing_budget_ppm=routing_budget_ppm,
-                routing_budget_sats=routing_budget_sats,
-                invoice=invoice,
-                status=LNPayment.Status.VALIDI,
-                num_satoshis=num_satoshis,
-                description=payout["description"],
-                payment_hash=payout["payment_hash"],
-                created_at=payout["created_at"],
-                expires_at=payout["expires_at"],
-            )
+            if order.payout.payment_hash == payout["payment_hash"]:
+                return False, {"bad_invoice": "You must submit a NEW invoice"}
+
+        order.payout = LNPayment.objects.create(
+            concept=LNPayment.Concepts.PAYBUYER,
+            type=LNPayment.Types.NORM,
+            sender=User.objects.get(username=ESCROW_USERNAME),
+            receiver=user,
+            routing_budget_ppm=routing_budget_ppm,
+            routing_budget_sats=routing_budget_sats,
+            invoice=invoice,
+            status=LNPayment.Status.VALIDI,
+            num_satoshis=num_satoshis,
+            description=payout["description"],
+            payment_hash=payout["payment_hash"],
+            created_at=payout["created_at"],
+            expires_at=payout["expires_at"],
+        )
 
         order.is_swap = False
         order.save(update_fields=["payout", "is_swap"])
