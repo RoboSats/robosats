@@ -909,26 +909,31 @@ class Logics:
         if not payout["valid"]:
             return False, payout["context"]
 
-        order.payout, _ = LNPayment.objects.update_or_create(
-            concept=LNPayment.Concepts.PAYBUYER,
-            type=LNPayment.Types.NORM,
-            sender=User.objects.get(username=ESCROW_USERNAME),
-            # In case this user has other payouts, update the one related to this order.
-            order_paid_LN=order,
-            receiver=user,
-            routing_budget_ppm=routing_budget_ppm,
-            routing_budget_sats=routing_budget_sats,
-            # if there is a LNPayment matching these above, it updates that one with defaults below.
-            defaults={
-                "invoice": invoice,
-                "status": LNPayment.Status.VALIDI,
-                "num_satoshis": num_satoshis,
-                "description": payout["description"],
-                "payment_hash": payout["payment_hash"],
-                "created_at": payout["created_at"],
-                "expires_at": payout["expires_at"],
-            },
-        )
+        if order.payout:
+            order.payout.invoice = invoice
+            order.payout.status = LNPayment.Status.VALIDI
+            order.payout.num_satoshis = num_satoshis
+            order.payout.description = payout["description"]
+            order.payout.payment_hash = payout["payment_hash"]
+            order.payout.created_at = payout["created_at"]
+            order.payout.expires_at = payout["expires_at"]
+            order.payout.save()
+        else:
+            order.payout = LNPayment.objects.create(
+                concept=LNPayment.Concepts.PAYBUYER,
+                type=LNPayment.Types.NORM,
+                sender=User.objects.get(username=ESCROW_USERNAME),
+                receiver=user,
+                routing_budget_ppm=routing_budget_ppm,
+                routing_budget_sats=routing_budget_sats,
+                invoice=invoice,
+                status=LNPayment.Status.VALIDI,
+                num_satoshis=num_satoshis,
+                description=payout["description"],
+                payment_hash=payout["payment_hash"],
+                created_at=payout["created_at"],
+                expires_at=payout["expires_at"],
+            )
 
         order.is_swap = False
         order.save(update_fields=["payout", "is_swap"])
