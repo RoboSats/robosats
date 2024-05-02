@@ -238,6 +238,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file("../../keystore.jks")
+            keyAlias System.getenv("KEY_ALIAS")
+            storePassword System.getenv("KEY_STORE_PASS")
+            keyPassword System.getenv("KEY_PASS")
+        }
     }
     buildTypes {
         debug {
@@ -246,7 +252,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -272,6 +278,13 @@ android {
         // Make sure libjsc.so does not packed in APK
         exclude "**/libjsc.so"
         jniLibs.useLegacyPackaging = true
+    }
+
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
     }
 }
 
