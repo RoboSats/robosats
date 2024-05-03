@@ -64,7 +64,7 @@
     "base-ex": "^0.8.1",
     "country-flag-icons": "^1.5.11",
     "date-fns": "^2.30.0",
-    "file-replace-loader": "^1.4.0",
+    "file-replace-loader": "^1.4.2",
     "i18next": "^23.2.11",
     "i18next-browser-languagedetector": "^7.2.1",
     "i18next-http-backend": "^2.5.0",
