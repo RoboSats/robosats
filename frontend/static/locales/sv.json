@@ -464,7 +464,7 @@
   "The order has expired": "Ordern har förfallit",
   "The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.": "The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.",
   "You cannot take an order yet! Wait {{timeMin}}m {{timeSec}}s": "Du kan inte ta en order ännu! Vänta {{timeMin}}m {{timeSec}}s",
-  "You receive via Lightning {{amount}} Sats (Approx)": "You receive via Lightning {{amount}} Sats (Approx)",
+  "You receive {{amount}} Sats (Approx)": "You receive {{amount}} Sats (Approx)",
   "You receive via {{method}} {{amount}}": "You receive via {{method}} {{amount}}",
   "You send via Lightning {{amount}} Sats (Approx)": "You send via Lightning {{amount}} Sats (Approx)",
   "You send via {{method}} {{amount}}": "You send via {{method}} {{amount}}",

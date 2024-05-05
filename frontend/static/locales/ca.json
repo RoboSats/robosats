@@ -464,7 +464,7 @@
   "The order has expired": "L'ordre ha expirat",
   "The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.": "The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.",
   "You cannot take an order yet! Wait {{timeMin}}m {{timeSec}}s": "Encara no pots prendre cap ordre! Espera {{timeMin}}m {{timeSec}}s",
-  "You receive via Lightning {{amount}} Sats (Approx)": "Tu reps via Lightning {{amount}} Sats (Approx)",
+  "You receive {{amount}} Sats (Approx)": "Tu reps via Lightning {{amount}} Sats (Approx)",
   "You receive via {{method}} {{amount}}": "Reps via {{method}} {{amount}}",
   "You send via Lightning {{amount}} Sats (Approx)": "Tu envies via Lightning {{amount}} Sats (Approx)",
   "You send via {{method}} {{amount}}": "Envies via {{method}} {{amount}}",
