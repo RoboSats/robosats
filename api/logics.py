@@ -893,7 +893,7 @@ class Logics:
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
                 return False, {
-                    "bad_request": "You can only submit an invoice after expiration or 3 failed attempts"
+                    "bad_invoice": "You can only submit an invoice after expiration or 3 failed attempts"
                 }
 
         # cancel onchain_payout if existing
@@ -909,25 +909,24 @@ class Logics:
         if not payout["valid"]:
             return False, payout["context"]
 
-        order.payout, _ = LNPayment.objects.update_or_create(
+        if order.payout:
+            if order.payout.payment_hash == payout["payment_hash"]:
+                return False, {"bad_invoice": "You must submit a NEW invoice"}
+
+        order.payout = LNPayment.objects.create(
             concept=LNPayment.Concepts.PAYBUYER,
             type=LNPayment.Types.NORM,
             sender=User.objects.get(username=ESCROW_USERNAME),
-            # In case this user has other payouts, update the one related to this order.
-            order_paid_LN=order,
             receiver=user,
             routing_budget_ppm=routing_budget_ppm,
             routing_budget_sats=routing_budget_sats,
-            # if there is a LNPayment matching these above, it updates that one with defaults below.
-            defaults={
-                "invoice": invoice,
-                "status": LNPayment.Status.VALIDI,
-                "num_satoshis": num_satoshis,
-                "description": payout["description"],
-                "payment_hash": payout["payment_hash"],
-                "created_at": payout["created_at"],
-                "expires_at": payout["expires_at"],
-            },
+            invoice=invoice,
+            status=LNPayment.Status.VALIDI,
+            num_satoshis=num_satoshis,
+            description=payout["description"],
+            payment_hash=payout["payment_hash"],
+            created_at=payout["created_at"],
+            expires_at=payout["expires_at"],
         )
 
         order.is_swap = False
