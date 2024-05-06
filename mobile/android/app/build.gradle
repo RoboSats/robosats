@@ -297,7 +297,7 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
     implementation "io.matthewnelson.kotlin-components:kmp-tor:4.8.6-0-1.4.4"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
 
     if (enableHermes) {
