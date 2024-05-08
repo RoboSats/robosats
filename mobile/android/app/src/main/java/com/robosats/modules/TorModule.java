@@ -83,11 +83,7 @@ public class TorModule extends ReactContextBaseJavaModule {
                         throw new RuntimeException(e);
                     }
                 });
-                if (response.code() != 200 && response.code() != 201) {
-                    Log.d("RobosatsError", "Request error code: " + response.code());
-                } else if (response.isSuccessful()) {
-                    promise.resolve("{\"json\":" + body + ", \"headers\": " + headersJson +"}");
-                }
+                promise.resolve("{\"json\":" + body + ", \"headers\": " + headersJson +"}");
             }
         });
     }
