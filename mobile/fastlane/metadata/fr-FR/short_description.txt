@@ -1,1 +1,0 @@
-Nostr client pour Android. Le seul réseau social non censuré.
