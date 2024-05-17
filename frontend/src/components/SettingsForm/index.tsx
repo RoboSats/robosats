@@ -26,6 +26,7 @@ import {
   AccountBalance,
   AttachMoney,
   QrCode,
+  ControlPoint,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';

@@ -1,5 +1,5 @@
 import { sha256 } from 'js-sha256';
-import { Robot, type Order } from '.';
+import { Coordinator, Garage, Robot, type Order } from '.';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 
 class Slot {
@@ -72,6 +72,18 @@ class Slot {
     }
 
     return this.robots[shortAlias];
+  };
+
+  syncCoordinator: (coordinator: Coordinator, garage: Garage) => void = (coordinator, garage) => {
+    const defaultRobot = this.getRobot();
+    if (defaultRobot?.token) {
+      this.robots[coordinator.shortAlias] = new Robot({
+        token: defaultRobot.token,
+        pubKey: defaultRobot.pubKey,
+        encPrivKey: defaultRobot.encPrivKey,
+      });
+      coordinator.fetchRobot(garage, defaultRobot.token);
+    }
   };
 }
 

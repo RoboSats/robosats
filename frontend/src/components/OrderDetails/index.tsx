@@ -265,7 +265,12 @@ const OrderDetails = ({
             {' '}
             <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid item xs={2}>
-                <RobotAvatar shortAlias={coordinator.shortAlias} small={true} smooth={true} />
+                <RobotAvatar
+                  shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
+                  hashId={coordinator.federated ? undefined : coordinator.shortAlias}
+                  small={true}
+                  smooth={true}
+                />
               </Grid>
               <Grid item xs={4}>
                 <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />

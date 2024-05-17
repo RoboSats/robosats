@@ -127,7 +127,7 @@ const ContactButtons = ({
         </Grid>
       )}
 
-      {pgp !== undefined && (
+      {pgp && fingerprint && (
         <Grid item>
           <Tooltip
             enterTouchDelay={0}
@@ -368,7 +368,8 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
             <Grid container direction='column' alignItems='center' padding={0}>
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinator?.shortAlias}
+                  shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
+                  hashId={coordinator?.federated ? undefined : coordinator?.shortAlias}
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}
                 />
