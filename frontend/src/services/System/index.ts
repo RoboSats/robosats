@@ -1,5 +1,6 @@
 import SystemNativeClient from './SystemNativeClient';
 import SystemWebClient from './SystemWebClient';
+import SystemDesktopClient from './SystemDesktopClient';
 
 export interface SystemClient {
   loading: boolean;
@@ -17,4 +18,4 @@ export const systemClient: SystemClient =
   // react-native-web view of the RoboSats Android app.
   window.navigator.userAgent.includes('robosats')
     ? new SystemNativeClient()
-    : new SystemWebClient();
+    : window.navigator.userAgent.includes('Electron')? new SystemDesktopClient() : new SystemWebClient();

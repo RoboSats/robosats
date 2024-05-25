@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter,HashRouter ,BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
@@ -10,7 +10,9 @@ import Notifications from '../components/Notifications';
 import { useTranslation } from 'react-i18next';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
-const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
+//const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
+
+const Router = (window.NativeRobosats === undefined && window.DesktopRobosats === undefined)? BrowserRouter : window.DesktopRobosats === 'Desktop-App' ? HashRouter : MemoryRouter;
 
 const TestnetTypography = styled(Typography)({
   height: 0,

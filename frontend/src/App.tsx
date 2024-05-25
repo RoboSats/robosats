@@ -24,7 +24,7 @@ const App = (): JSX.Element => {
               <GarageContextProvider>
                 <FederationContextProvider>
                   <CssBaseline />
-                  {window.NativeRobosats === undefined ? <HostAlert /> : <TorConnectionBadge />}
+                  {(window.NativeRobosats === undefined && window.DesktopRobosats === undefined )? <HostAlert /> : <TorConnectionBadge />}
                   <Main />
                 </FederationContextProvider>
               </GarageContextProvider>

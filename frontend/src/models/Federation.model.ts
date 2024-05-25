@@ -21,7 +21,8 @@ export class Federation {
           // Do not add `Local Dev` unless it is running on localhost
           return acc;
         } else {
-          acc[key] = new Coordinator(value, origin, settings, hostUrl);
+          acc[key] = new Coordinator(value, origin, settings, hostUrl.substring(hostUrl.indexOf("http://")+7));
+
           return acc;
         }
       },
