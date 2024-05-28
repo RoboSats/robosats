@@ -89,7 +89,7 @@ const getHostUrl = (network = 'mainnet'): string => {
     host = defaultFederation.exp[network]['onion'];
     protocol = 'http:';
   }
-  const hostUrl = `${protocol}//${host}`;
+  const hostUrl = `${host}`;
   return hostUrl;
 };
 
