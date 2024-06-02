@@ -1539,7 +1539,7 @@ components:
           type: string
         maker_status:
           type: string
-          description: Status of the nick - "Active" or "Inactive"
+          description: Status of the nick - "Active", "Seen Recently" or "Inactive"
         price:
           type: integer
           description: Price in order's fiat currency
