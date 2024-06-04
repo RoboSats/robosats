@@ -43,13 +43,11 @@ class BaseSettings {
           : i18n.resolvedLanguage.substring(0, 2);
 
     const networkCookie = systemClient.getItem('settings_network');
-
     this.network = networkCookie && networkCookie !== '' ? networkCookie : 'mainnet';
     this.host = getHost();
 
     const useProxy = systemClient.getItem('settings_use_proxy');
-    this.useProxy =
-      useProxy === 'true' || (useProxy !== 'false' && window.NativeRobosats !== undefined);
+    this.useProxy = window.NativeRobosats !== undefined && useProxy !== 'false';
 
     apiClient.useProxy = this.useProxy;
   }
