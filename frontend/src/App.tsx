@@ -10,13 +10,11 @@ import i18n from './i18n/Web';
 
 import { systemClient } from './services/System';
 import ErrorBoundary from './components/ErrorBoundary';
-import { AppContext, AppContextProvider, UseAppStoreType } from './contexts/AppContext';
+import { AppContextProvider } from './contexts/AppContext';
 import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
 
 const App = (): JSX.Element => {
-  const { settings } = useContext<UseAppStoreType>(AppContext);
-
   return (
     <StrictMode>
       <ErrorBoundary>
