@@ -26,7 +26,7 @@ jobs:
 
     - name: 'Download main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v5
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
@@ -42,7 +42,7 @@ jobs:
 
     - name: 'Download pro.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v5
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
