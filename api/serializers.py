@@ -2,7 +2,7 @@ from decouple import config
 from decimal import Decimal
 from rest_framework import serializers
 
-from .models import MarketTick, Order
+from .models import MarketTick, Order, Notification
 
 RETRY_TIME = int(config("RETRY_TIME"))
 
@@ -488,6 +488,21 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "longitude",
             "chat_last_index",
         )
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    description = serializers.CharField(required=False)
+
+    class Meta:
+        model = Notification
+        fields = ("title", "description")
+
+
+class ListNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ("title", "description")
 
 
 class OrderPublicSerializer(serializers.ModelSerializer):

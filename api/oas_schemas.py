@@ -378,6 +378,21 @@ class BookViewSchema:
     }
 
 
+class NotificationSchema:
+    get = {
+        "summary": "Get robot notifications",
+        "description": "Get a list of notifications sent to the robot.",
+        "parameters": [
+            OpenApiParameter(
+                name="created_at",
+                location=OpenApiParameter.QUERY,
+                description=("Shows notifications created AFTER this date."),
+                type=str,
+            ),
+        ],
+    }
+
+
 class RobotViewSchema:
     get = {
         "summary": "Get robot info",

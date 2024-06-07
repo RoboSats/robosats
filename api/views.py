@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.http import HttpResponseBadRequest
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
@@ -14,8 +16,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.logics import Logics
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
-from api.notifications import Telegram
+from api.models import (
+    Currency,
+    LNPayment,
+    MarketTick,
+    OnchainPayment,
+    Order,
+    Notification,
+)
+from api.notifications import Notifications
 from api.oas_schemas import (
     BookViewSchema,
     HistoricalViewSchema,
@@ -28,6 +37,7 @@ from api.oas_schemas import (
     RobotViewSchema,
     StealthViewSchema,
     TickViewSchema,
+    NotificationSchema,
 )
 from api.serializers import (
     ClaimRewardSerializer,
@@ -39,6 +49,8 @@ from api.serializers import (
     StealthSerializer,
     TickSerializer,
     UpdateOrderSerializer,
+    NotificationSerializer,
+    ListNotificationSerializer,
 )
 from api.utils import (
     compute_avg_premium,
@@ -659,7 +671,7 @@ class RobotView(APIView):
         context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
-        context = {**context, **Telegram.get_context(user)}
+        context = {**context, **Notifications.get_context(user)}
 
         # return active order or last made order if any
         has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
@@ -728,6 +740,35 @@ class BookView(ListAPIView):
             book_data.append(data)
 
         return Response(book_data, status=status.HTTP_200_OK)
+
+
+class NotificationsView(ListAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    @extend_schema(**NotificationSchema.get)
+    def get(self, request, format=None):
+        user = request.user
+        queryset = Notification.objects.filter(user=user)
+        created_at = request.GET.get("created_at")
+
+        if created_at:
+            created_at = parse_datetime(created_at)
+            if not created_at:
+                return HttpResponseBadRequest("Invalid date format")
+
+        queryset = Order.objects.filter(created_at__gte=created_at)
+
+        notification_data = []
+        for notification in queryset:
+            data = ListNotificationSerializer(notification).data
+            data["title"] = str(notification.title)
+            data["description"] = str(notification.description)
+
+            notification_data.append(data)
+
+        return Response(notification_data, status=status.HTTP_200_OK)
 
 
 class InfoView(viewsets.ViewSet):
