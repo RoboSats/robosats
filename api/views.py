@@ -14,8 +14,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.logics import Logics
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
-from api.notifications import Telegram
+from api.models import (
+    Currency,
+    LNPayment,
+    MarketTick,
+    OnchainPayment,
+    Order,
+    Notification,
+)
+from api.notifications import Notifications
 from api.oas_schemas import (
     BookViewSchema,
     HistoricalViewSchema,
@@ -28,6 +35,7 @@ from api.oas_schemas import (
     RobotViewSchema,
     StealthViewSchema,
     TickViewSchema,
+    NotificationSchema,
 )
 from api.serializers import (
     ClaimRewardSerializer,
@@ -39,6 +47,7 @@ from api.serializers import (
     StealthSerializer,
     TickSerializer,
     UpdateOrderSerializer,
+    ListNotificationSerializer,
 )
 from api.utils import (
     compute_avg_premium,
@@ -659,7 +668,7 @@ class RobotView(APIView):
         context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
-        context = {**context, **Telegram.get_context(user)}
+        context = {**context, **Notifications.get_context(user)}
 
         # return active order or last made order if any
         has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
@@ -728,6 +737,35 @@ class BookView(ListAPIView):
             book_data.append(data)
 
         return Response(book_data, status=status.HTTP_200_OK)
+
+
+class NotificationsView(ListAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = ListNotificationSerializer
+
+    @extend_schema(**NotificationSchema.get)
+    def get(self, request, format=None):
+        # robot = request.user.robot
+        queryset = Notification.objects.all().order_by("created_at")
+        # created_at = request.GET.get("created_at")
+
+        # if created_at:
+        #     created_at = parse_datetime(created_at)
+        #     if not created_at:
+        #         return HttpResponseBadRequest("Invalid date format")
+        #     queryset = queryset.filter(created_at__gte=created_at)
+
+        notification_data = []
+        for notification in queryset:
+            data = self.serializer_class(notification).data
+            data["title"] = str(notification.title)
+            data["description"] = str(notification.description)
+            data["order_id"] = notification.order.id
+
+            notification_data.append(data)
+
+        return Response(notification_data, status=status.HTTP_200_OK)
 
 
 class InfoView(viewsets.ViewSet):
