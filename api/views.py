@@ -758,7 +758,7 @@ class NotificationsView(ListAPIView):
             if not created_at:
                 return HttpResponseBadRequest("Invalid date format")
 
-        queryset = Order.objects.filter(created_at__gte=created_at)
+        queryset = queryset.filter(created_at__gte=created_at)
 
         notification_data = []
         for notification in queryset:
