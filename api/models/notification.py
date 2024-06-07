@@ -2,7 +2,7 @@
 import uuid
 
 from decouple import config
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Order
 from django.db import models
 from django.utils import timezone
 
@@ -26,6 +26,7 @@ class Notification(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, default=None)
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, default=None)
 
     # notification details
     title = models.CharField(max_length=120, null=False, default=None)

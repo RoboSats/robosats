@@ -765,6 +765,7 @@ class NotificationsView(ListAPIView):
             data = ListNotificationSerializer(notification).data
             data["title"] = str(notification.title)
             data["description"] = str(notification.description)
+            data["order_id"] = str(notification.order.id)
 
             notification_data.append(data)
 

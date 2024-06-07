@@ -496,13 +496,13 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ("title", "description")
+        fields = ("title", "description", "order_id")
 
 
 class ListNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ("title", "description")
+        fields = ("title", "description", "order_id")
 
 
 class OrderPublicSerializer(serializers.ModelSerializer):

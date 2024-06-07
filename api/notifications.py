@@ -30,17 +30,19 @@ class Notifications:
 
         return context
 
-    def send_message(self, robot, title, description):
+    def send_message(self, order, robot, title, description):
         """Save a message for a user and sends it to Telegram"""
-        self.save_message(robot, title, description)
-        self.send_telegram_message(robot.telegram_chat_id, title, description)
+        self.save_message(order, robot, title, description)
+        if robot.telegram_enabled:
+            self.send_telegram_message(robot.telegram_chat_id, title, description)
 
-    def save_message(self, robot, title, description):
+    def save_message(self, order, robot, title, description):
         """Save a message for a user"""
         notification = Notification()
         notification.title = title
         notification.description = description
         notification.user = robot
+        notification.order = order
         notification.save()
 
     def send_telegram_message(self, chat_id, title, description):
@@ -65,110 +67,96 @@ class Notifications:
             title = f"🔔 Hola {user.username}, te enviaré notificaciones sobre tus órdenes en RoboSats."
         else:
             title = f"🔔 Hey {user.username}, I will send you notifications about your RoboSats orders."
-        self.send_message(user.robot.telegram_chat_id, title)
+        self.send_telegram_message(user.robot.telegram_chat_id, title)
         user.robot.telegram_welcomed = True
         user.robot.save(update_fields=["telegram_welcomed"])
         return
 
     def order_taken_confirmed(self, order):
-        if order.maker.robot.telegram_enabled:
-            lang = order.maker.robot.telegram_lang_code
-            if lang == "es":
-                title = f"✅ Hey {order.maker.username} ¡Tu orden con ID {order.id} ha sido tomada por {order.taker.username}!🥳"
-                description = (
-                    f"Visita http://{self.site}/order/{order.id} para continuar."
-                )
-            else:
-                title = f"✅ Hey {order.maker.username}, your order was taken by {order.taker.username}!🥳"
-                description = f"Visit http://{self.site}/order/{order.id} to proceed with the trade."
-            self.send_message(order.maker.robot.telegram_chat_id, title, description)
+        lang = order.maker.robot.telegram_lang_code
+        if lang == "es":
+            title = f"✅ Hey {order.maker.username} ¡Tu orden con ID {order.id} ha sido tomada por {order.taker.username}!🥳"
+            description = f"Visita http://{self.site}/order/{order.id} para continuar."
+        else:
+            title = f"✅ Hey {order.maker.username}, your order was taken by {order.taker.username}!🥳"
+            description = (
+                f"Visit http://{self.site}/order/{order.id} to proceed with the trade."
+            )
+        self.send_message(order, order.maker.robot, title, description)
 
-        if order.taker.robot.telegram_enabled:
-            lang = order.taker.robot.telegram_lang_code
-            if lang == "es":
-                title = f"✅ Hey {order.taker.username}, acabas de tomar la orden con ID {order.id}."
-            else:
-                title = f"✅ Hey {order.taker.username}, you just took the order with ID {order.id}."
-            self.send_message(order.taker.robot.telegram_chat_id, title)
+        lang = order.taker.robot.telegram_lang_code
+        if lang == "es":
+            title = f"✅ Hey {order.taker.username}, acabas de tomar la orden con ID {order.id}."
+        else:
+            title = f"✅ Hey {order.taker.username}, you just took the order with ID {order.id}."
+        self.send_message(order, order.taker.robot, title)
 
         return
 
     def fiat_exchange_starts(self, order):
         for user in [order.maker, order.taker]:
-            if user.robot.telegram_enabled:
-                lang = user.robot.telegram_lang_code
-                if lang == "es":
-                    title = f"✅ Hey {user.username}, el depósito de garantía y el recibo del comprador han sido recibidos. Es hora de enviar el dinero fiat."
-                    description = f"Visita http://{self.site}/order/{order.id} para hablar con tu contraparte."
-                else:
-                    title = f"✅ Hey {user.username}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat."
-                    description = f"Visit http://{self.site}/order/{order.id} to talk with your counterpart."
-                self.send_message(user.robot.telegram_chat_id, title, description)
+            lang = user.robot.telegram_lang_code
+            if lang == "es":
+                title = f"✅ Hey {user.username}, el depósito de garantía y el recibo del comprador han sido recibidos. Es hora de enviar el dinero fiat."
+                description = f"Visita http://{self.site}/order/{order.id} para hablar con tu contraparte."
+            else:
+                title = f"✅ Hey {user.username}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat."
+                description = f"Visit http://{self.site}/order/{order.id} to talk with your counterpart."
+            self.send_message(order, user.robot, title, description)
         return
 
     def order_expired_untaken(self, order):
-        if order.maker.robot.telegram_enabled:
-            lang = order.maker.robot.telegram_lang_code
-            if lang == "es":
-                title = f"😪 Hey {order.maker.username}, tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot."
-                description = (
-                    f"Visita http://{self.site}/order/{order.id} para renovarla."
-                )
-            else:
-                title = f"😪 Hey {order.maker.username}, your order with ID {order.id} has expired without a taker."
-                description = f"Visit http://{self.site}/order/{order.id} to renew it."
-            self.send_message(order.maker.robot.telegram_chat_id, title, description)
+        lang = order.maker.robot.telegram_lang_code
+        if lang == "es":
+            title = f"😪 Hey {order.maker.username}, tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot."
+            description = f"Visita http://{self.site}/order/{order.id} para renovarla."
+        else:
+            title = f"😪 Hey {order.maker.username}, your order with ID {order.id} has expired without a taker."
+            description = f"Visit http://{self.site}/order/{order.id} to renew it."
+        self.send_message(order, order.maker.robot, title, description)
         return
 
     def trade_successful(self, order):
         for user in [order.maker, order.taker]:
-            if user.robot.telegram_enabled:
-                lang = user.robot.telegram_lang_code
-                if lang == "es":
-                    title = (
-                        f"🥳 ¡Tu orden con ID {order.id} ha finalizado exitosamente!"
-                    )
-                    description = (
-                        "⚡ Únete a nosotros en @robosats_es y ayúdanos a mejorar."
-                    )
-                else:
-                    title = (
-                        f"🥳 Your order with ID {order.id} has finished successfully!"
-                    )
-                    description = "⚡ Join us @robosats and help us improve."
-                self.send_message(user.robot.telegram_chat_id, title, description)
+            lang = user.robot.telegram_lang_code
+            if lang == "es":
+                title = f"🥳 ¡Tu orden con ID {order.id} ha finalizado exitosamente!"
+                description = (
+                    "⚡ Únete a nosotros en @robosats_es y ayúdanos a mejorar."
+                )
+            else:
+                title = f"🥳 Your order with ID {order.id} has finished successfully!"
+                description = "⚡ Join us @robosats and help us improve."
+            self.send_message(order, user.robot, title, description)
         return
 
     def public_order_cancelled(self, order):
-        if order.maker.robot.telegram_enabled:
-            lang = order.maker.robot.telegram_lang_code
-            if lang == "es":
-                title = f"❌ Hey {order.maker.username}, has cancelado tu orden pública con ID {order.id}."
-            else:
-                title = f"❌ Hey {order.maker.username}, you have cancelled your public order with ID {order.id}."
-            self.send_message(order.maker.robot.telegram_chat_id, title)
+        lang = order.maker.robot.telegram_lang_code
+        if lang == "es":
+            title = f"❌ Hey {order.maker.username}, has cancelado tu orden pública con ID {order.id}."
+        else:
+            title = f"❌ Hey {order.maker.username}, you have cancelled your public order with ID {order.id}."
+        self.send_message(order, order.maker.robot, title)
         return
 
     def collaborative_cancelled(self, order):
         for user in [order.maker, order.taker]:
-            if user.robot.telegram_enabled:
-                lang = user.robot.telegram_lang_code
-                if lang == "es":
-                    title = f"❌ Hey {user.username}, tu orden con ID {str(order.id)} fue cancelada colaborativamente."
-                else:
-                    title = f"❌ Hey {user.username}, your order with ID {str(order.id)} has been collaboratively cancelled."
-                self.send_message(user.robot.telegram_chat_id, title)
+            lang = user.robot.telegram_lang_code
+            if lang == "es":
+                title = f"❌ Hey {user.username}, tu orden con ID {str(order.id)} fue cancelada colaborativamente."
+            else:
+                title = f"❌ Hey {user.username}, your order with ID {str(order.id)} has been collaboratively cancelled."
+            self.send_message(order, user.robot, title)
         return
 
     def dispute_opened(self, order):
         for user in [order.maker, order.taker]:
-            if user.robot.telegram_enabled:
-                lang = user.robot.telegram_lang_code
-                if lang == "es":
-                    title = f"⚖️ Hey {user.username}, la orden con ID {str(order.id)} ha entrado en disputa."
-                else:
-                    title = f"⚖️ Hey {user.username}, a dispute has been opened on your order with ID {str(order.id)}."
-                self.send_message(user.robot.telegram_chat_id, title)
+            lang = user.robot.telegram_lang_code
+            if lang == "es":
+                title = f"⚖️ Hey {user.username}, la orden con ID {str(order.id)} ha entrado en disputa."
+            else:
+                title = f"⚖️ Hey {user.username}, a dispute has been opened on your order with ID {str(order.id)}."
+            self.send_message(order, user.robot, title)
 
         admin_chat_id = config("TELEGRAM_COORDINATOR_CHAT_ID")
 
@@ -186,18 +174,17 @@ class Notifications:
         return
 
     def order_published(self, order):
-        if order.maker.robot.telegram_enabled:
-            lang = order.maker.robot.telegram_lang_code
-            # In weird cases the order cannot be found (e.g. it is cancelled)
-            queryset = Order.objects.filter(maker=order.maker)
-            if len(queryset) == 0:
-                return
-            order = queryset.last()
-            if lang == "es":
-                title = f"✅ Hey {order.maker.username}, tu orden con ID {str(order.id)} es pública en el libro de ordenes."
-            else:
-                title = f"✅ Hey {order.maker.username}, your order with ID {str(order.id)} is public in the order book."
-            self.send_message(order.maker.robot.telegram_chat_id, title)
+        lang = order.maker.robot.telegram_lang_code
+        # In weird cases the order cannot be found (e.g. it is cancelled)
+        queryset = Order.objects.filter(maker=order.maker)
+        if len(queryset) == 0:
+            return
+        order = queryset.last()
+        if lang == "es":
+            title = f"✅ Hey {order.maker.username}, tu orden con ID {str(order.id)} es pública en el libro de ordenes."
+        else:
+            title = f"✅ Hey {order.maker.username}, your order with ID {str(order.id)} is public in the order book."
+        self.send_message(order, order.maker.robot, title)
         return
 
     def new_chat_message(self, order, chat_message):
@@ -225,14 +212,12 @@ class Notifications:
             notification_reason = f"(You receive this notification because this was the first in-chat message. You will only be notified again if there is a gap bigger than {TIMEGAP} minutes between messages)"
 
         user = chat_message.receiver
-        if user.robot.telegram_enabled:
-            title = f"💬 Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}. {notification_reason}"
-            self.send_message(user.robot.telegram_chat_id, title)
+        title = f"💬 Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}. {notification_reason}"
+        self.send_message(order, user.robot, title)
 
         return
 
     def coordinator_cancelled(self, order):
-        if order.maker.robot.telegram_enabled:
-            title = f"🛠️ Your order with ID {order.id} has been cancelled by the coordinator {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} for the upcoming maintenance stop."
-            self.send_message(order.maker.robot.telegram_chat_id, title)
+        title = f"🛠️ Your order with ID {order.id} has been cancelled by the coordinator {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} for the upcoming maintenance stop."
+        self.send_message(order, order.maker.robot, title)
         return
