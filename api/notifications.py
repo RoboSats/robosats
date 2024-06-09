@@ -1,9 +1,10 @@
 from secrets import token_urlsafe
 
 from decouple import config
-
-from api.models import Order
-from api.models import Notification
+from api.models import (
+    Order,
+    Notification,
+)
 from api.utils import get_session
 
 
