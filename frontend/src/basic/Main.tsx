@@ -53,6 +53,7 @@ const Main: React.FC = () => {
       )}
 
       <MainBox navbarHeight={navbarHeight}>
+        
         <Routes>
           {['/robot/:token?', '/', ''].map((path, index) => {
             return (
