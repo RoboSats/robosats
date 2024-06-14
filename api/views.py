@@ -749,8 +749,8 @@ class NotificationsView(ListAPIView):
 
     @extend_schema(**NotificationSchema.get)
     def get(self, request, format=None):
-        user = request.user
-        queryset = Notification.objects.filter(user=user)
+        robot = request.user.robot
+        queryset = Notification.objects.filter(robot=robot)
         created_at = request.GET.get("created_at")
 
         if created_at:
