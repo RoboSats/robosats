@@ -24,7 +24,7 @@ import {
   type GridPaginationModel,
   type GridColDef,
   type GridValidRowModel,
-  GridSlotsComponent,
+  type GridSlotsComponent,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';

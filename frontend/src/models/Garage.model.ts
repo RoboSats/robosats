@@ -60,7 +60,7 @@ class Garage {
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
         if (rawSlot?.token) {
           this.slots[rawSlot.token] = new Slot(rawSlot.token, Object.keys(rawSlot.robots), {}, () =>
-            this.triggerHook('onRobotUpdate'),
+            { this.triggerHook('onRobotUpdate'); },
           );
 
           Object.keys(rawSlot.robots).forEach((shortAlias) => {
@@ -116,7 +116,7 @@ class Garage {
 
     if (this.getSlot(token) === null) {
       this.slots[token] = new Slot(token, shortAliases, attributes, () =>
-        this.triggerHook('onRobotUpdate'),
+        { this.triggerHook('onRobotUpdate'); },
       );
       this.save();
     }

@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "node --max-old-space-size=4096 ./node_modules/.bin/webpack --watch --progress --mode development",
     "test": "jest",
-    "build": "webpack --config webpack.config.ts --mode development",
-    "builds": "react-scripts build",
+    "build": "webpack --config webpack.config.ts --mode production",
     "lint": "eslint src/**/*.{ts,tsx}",
     "lint:fix": "eslint --fix 'src/**/*.{ts,tsx}'",
     "format": "prettier --write '**/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"

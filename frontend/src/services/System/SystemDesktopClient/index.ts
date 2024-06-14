@@ -16,8 +16,7 @@ class SystemDesktopClient implements SystemClient {
       textArea.value = value;
       // make the textarea out of viewport
       textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      textArea.style.top = '-999999px';
+      textArea.style.visibility = 'hidden';
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();

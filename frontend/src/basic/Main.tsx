@@ -10,7 +10,16 @@ import Notifications from '../components/Notifications';
 import { useTranslation } from 'react-i18next';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
-const Router = (window.NativeRobosats === undefined && window.DesktopRobosats === undefined)? BrowserRouter : window.DesktopRobosats === 'Desktop-App' ? HashRouter : MemoryRouter;
+function getRouter() {
+  if (window.NativeRobosats === undefined && window.RobosatsClient === undefined) {
+    return BrowserRouter;
+  } else if (window.RobosatsClient === 'desktop-app') {
+    return HashRouter;
+  } else {
+    return MemoryRouter;
+  }
+}
+const Router = getRouter();
 
 const TestnetTypography = styled(Typography)({
   height: 0,

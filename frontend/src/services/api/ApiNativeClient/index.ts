@@ -2,7 +2,7 @@ import { type ApiClient, type Auth } from '..';
 import { systemClient } from '../../System';
 
 class ApiNativeClient implements ApiClient {
-  private assetsCache: Record<string, string> = {};
+  private readonly assetsCache: Record<string, string> = {};
   private readonly assetsPromises = new Map<string, Promise<string | undefined>>();
 
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
