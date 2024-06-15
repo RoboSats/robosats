@@ -628,6 +628,13 @@ class UpdateOrderSerializer(serializers.Serializer):
     mining_fee_rate = serializers.DecimalField(
         max_digits=6, decimal_places=3, allow_null=True, required=False, default=None
     )
+    current_status = serializers.IntegerField(
+        min_value=Decimal(0),
+        max_value=18,
+        allow_null=True,
+        required=False,
+        help_text="Current order status for the client",
+    )
 
 
 class ClaimRewardSerializer(serializers.Serializer):

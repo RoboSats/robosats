@@ -659,7 +659,19 @@ class TradeTest(BaseAPITestCase):
         """
         trade = Trade(self.client)
         trade.publish_order()
-        trade.cancel_order()
+
+        trade.cancel_order(current_status_int=6)
+
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(
+            data["bad_request"], "Wrong status, current one is 1"
+        )
+
+        trade.cancel_order(current_status_int=1)
 
         data = trade.response.json()
 

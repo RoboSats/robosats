@@ -245,6 +245,11 @@ class OrderViewSchema:
                 - `17` - Maker lost dispute
                 - `18` - Taker lost dispute
 
+                The client can specify `current_status` to make sure that the
+                order is cancelled just if it is in right status.
+                If the order is not in the specified status, the server will
+                return an error without cancelling the trade.
+
                 Note that there are penalties involved for cancelling a order
                 mid-trade so use this action carefully:
 

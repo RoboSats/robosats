@@ -511,6 +511,7 @@ class OrderView(viewsets.ViewSet):
         mining_fee_rate = serializer.data.get("mining_fee_rate")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
+        current_status_int = serializer.data.get("current_status", None)
 
         # 1) If action is take, it is a taker request!
         if action == "take":
@@ -586,7 +587,19 @@ class OrderView(viewsets.ViewSet):
 
         # 3) If action is cancel
         elif action == "cancel":
-            valid, context = Logics.cancel_order(order, request.user)
+            if current_status_int is None:
+                current_status = None
+            else:
+                if current_status_int < 0 or current_status_int >= len(Order.Status):
+                    return Response(
+                        {"bad_request": "current_status is not in the correct range"},
+                        status.HTTP_400_BAD_REQUEST
+                    )
+                current_status = Order.Status(current_status_int)
+
+            valid, context = Logics.cancel_order(
+                order, request.user, current_status=current_status
+            )
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
