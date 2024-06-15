@@ -90,9 +90,9 @@ class CLNNode:
     @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
-        request = hold_pb2.DecodeBolt11Request(bolt11=invoice)
-        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.DecodeBolt11(request)
+        nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
+        request = node_pb2.DecodeRequest(string=invoice)
+        response = nodestub.Decode(request)
         return response
 
     @classmethod
@@ -286,7 +286,7 @@ class CLNNode:
         hold_payment["preimage"] = preimage.hex()
         hold_payment["payment_hash"] = response.payment_hash.hex()
         hold_payment["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp)
+            datetime.fromtimestamp(payreq_decoded.created_at)
         )
         hold_payment["expires_at"] = timezone.make_aware(
             datetime.fromtimestamp(response.expires_at)
@@ -418,7 +418,7 @@ class CLNNode:
 
         # Some wallet providers (e.g. Muun) force routing through a private channel with high fees >1500ppm
         # These payments will fail. So it is best to let the user know in advance this invoice is not valid.
-        route_hints = payreq_decoded.route_hints.hints
+        route_hints = payreq_decoded.routes.hints
 
         # Max amount RoboSats will pay for routing
         if routing_budget_ppm == 0:
@@ -438,8 +438,8 @@ class CLNNode:
                 route_cost = 0
                 # ...add up the cost of every hinted hop...
                 for hop_hint in hinted_route.hops:
-                    route_cost += hop_hint.feebase.msat / 1_000
-                    route_cost += hop_hint.feeprop * num_satoshis / 1_000_000
+                    route_cost += hop_hint.fee_base_msat.msat / 1_000
+                    route_cost += hop_hint.fee_proportional_millionths * num_satoshis / 1_000_000
 
                 # ...and store the cost of the route to the array
                 routes_cost.append(route_cost)
@@ -466,7 +466,7 @@ class CLNNode:
             return payout
 
         payout["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp)
+            datetime.fromtimestamp(payreq_decoded.created_at)
         )
         payout["expires_at"] = payout["created_at"] + timedelta(
             seconds=payreq_decoded.expiry
