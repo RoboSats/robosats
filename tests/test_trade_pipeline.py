@@ -1012,8 +1012,8 @@ class TradeTest(BaseAPITestCase):
         invoice = add_invoice("robot", response.json()["earned_rewards"])
         signed_payout_invoice = sign_message(
             invoice,
-            passphrase_path=f"tests/robots/{trade.taker_index}/token",
-            private_key_path=f"tests/robots/{trade.taker_index}/enc_priv_key",
+            passphrase_path=f"tests/robots/{trade.maker_index}/token",
+            private_key_path=f"tests/robots/{trade.maker_index}/enc_priv_key",
         )
         body = {
             "invoice": signed_payout_invoice,
