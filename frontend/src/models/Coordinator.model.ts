@@ -145,7 +145,7 @@ export class Coordinator {
   public loadingInfo: boolean = false;
   public limits: LimitList = {};
   public loadingLimits: boolean = false;
-  public loadingRobot: boolean = true;
+  public loadingRobot: string | null;
 
   updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
@@ -185,6 +185,7 @@ export class Coordinator {
     if (this.loadingBook) return;
 
     this.loadingBook = true;
+    this.book = [];
 
     apiClient
       .get(this.url, `${this.basePath}/api/book/`)
@@ -297,7 +298,7 @@ export class Coordinator {
   };
 
   fetchRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
-    if (!this.enabled || !token) return null;
+    if (!this.enabled || !token || this.loadingRobot === token) return null;
 
     const robot = garage?.getSlot(token)?.getRobot() ?? null;
     const authHeaders = robot?.getAuthHeaders();
@@ -307,6 +308,8 @@ export class Coordinator {
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
     if (!hasEnoughEntropy) return null;
+
+    this.loadingRobot = token;
 
     garage.updateRobot(token, this.shortAlias, { loading: true });
 
@@ -330,7 +333,8 @@ export class Coordinator {
       })
       .catch((e) => {
         console.log(e);
-      });
+      })
+      .finally(() => (this.loadingRobot = null));
 
     garage.updateRobot(token, this.shortAlias, {
       ...newAttributes,

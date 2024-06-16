@@ -7,6 +7,7 @@ export interface Auth {
 }
 
 export interface ApiClient {
+  useProxy: boolean;
   post: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object | undefined>;
   put: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object | undefined>;
   get: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined>;

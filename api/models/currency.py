@@ -1,5 +1,6 @@
 import json
 
+from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -18,7 +19,7 @@ class Currency(models.Model):
         decimal_places=4,
         default=None,
         null=True,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(Decimal(0))],
     )
     timestamp = models.DateTimeField(default=timezone.now)
 

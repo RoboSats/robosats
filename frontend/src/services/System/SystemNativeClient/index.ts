@@ -28,7 +28,7 @@ class SystemNativeClient implements SystemClient {
   };
 
   public setCookie: (key: string, value: string) => void = (key, value) => {
-    delete window.NativeRobosats?.cookies[key];
+    window.NativeRobosats?.loadCookie({ key, value });
     void window.NativeRobosats?.postMessage({
       category: 'system',
       type: 'setCookie',
