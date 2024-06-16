@@ -267,7 +267,7 @@ const OrderDetails = ({
               <Grid item xs={2}>
                 <RobotAvatar
                   shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
-                  hashId={coordinator.federated ? undefined : coordinator.shortAlias}
+                  hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
                   small={true}
                   smooth={true}
                 />

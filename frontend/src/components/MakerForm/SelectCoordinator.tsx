@@ -80,7 +80,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               <Grid item>
                 <RobotAvatar
                   shortAlias={coordinator?.federated ? coordinator.shortAlias : undefined}
-                  hashId={coordinator?.federated ? undefined : coordinator.shortAlias}
+                  hashId={coordinator?.federated ? undefined : coordinator.mainnet.onion}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={false}
