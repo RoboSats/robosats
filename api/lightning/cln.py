@@ -236,7 +236,7 @@ class CLNNode:
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
         response = holdstub.HoldInvoiceCancel(request)
 
-        return response.state == hold_pb2.HoldInvoiceCancelResponse.Holdstate.CANCELED
+        return response.state == hold_pb2.Holdstate.CANCELED
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
@@ -247,7 +247,7 @@ class CLNNode:
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
         response = holdstub.HoldInvoiceSettle(request)
 
-        return response.state == hold_pb2.HoldInvoiceSettleResponse.Holdstate.SETTLED
+        return response.state == hold_pb2.Holdstate.SETTLED
 
     @classmethod
     def gen_hold_invoice(
@@ -272,7 +272,7 @@ class CLNNode:
 
         request = hold_pb2.HoldInvoiceRequest(
             description=description,
-            amount_msat=primitives__pb2.Amount(msat=num_satoshis * 1_000),
+            amount_msat=hold_pb2.Amount(msat=num_satoshis * 1_000),
             label=f"Order:{order_id}-{lnpayment_concept}-{time}",
             expiry=invoice_expiry,
             cltv=cltv_expiry_blocks,
@@ -309,13 +309,13 @@ class CLNNode:
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.OPEN:
+        if response.state == hold_pb2.Holdstate.OPEN:
             pass
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.SETTLED:
+        if response.state == hold_pb2.Holdstate.SETTLED:
             pass
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.CANCELED:
+        if response.state == hold_pb2.Holdstate.CANCELED:
             pass
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.ACCEPTED:
+        if response.state == hold_pb2.Holdstate.ACCEPTED:
             lnpayment.expiry_height = response.htlc_expiry
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
@@ -359,7 +359,7 @@ class CLNNode:
         except Exception as e:
             # If it fails at finding the invoice: it has been expired for more than an hour (and could be paid or just expired).
             # In RoboSats DB we make a distinction between cancelled and returned
-            #  (cln-grpc-hodl has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
+            #  (holdinvoice plugin has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
             if "empty result for listdatastore_state" in str(e):
                 print(str(e))
                 request2 = node_pb2.ListinvoicesRequest(
@@ -439,7 +439,9 @@ class CLNNode:
                 # ...add up the cost of every hinted hop...
                 for hop_hint in hinted_route.hops:
                     route_cost += hop_hint.fee_base_msat.msat / 1_000
-                    route_cost += hop_hint.fee_proportional_millionths * num_satoshis / 1_000_000
+                    route_cost += (
+                        hop_hint.fee_proportional_millionths * num_satoshis / 1_000_000
+                    )
 
                 # ...and store the cost of the route to the array
                 routes_cost.append(route_cost)
@@ -869,4 +871,4 @@ class CLNNode:
             else:
                 raise e
 
-        return response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.SETTLED
+        return response.state == hold_pb2.Holdstate.SETTLED

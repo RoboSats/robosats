@@ -77,16 +77,16 @@ services:
     network_mode: service:bitcoind
 
   coordinator-CLN:
-    image: elementsproject/lightningd:${CLN_VERSION:-v23.08.1}
+    image: elementsproject/lightningd:${CLN_VERSION:-v24.05}
     restart: always
     container_name: coordinator-CLN
     environment:
       LIGHTNINGD_NETWORK: 'regtest'
     volumes:
       - cln:/root/.lightning
-      - ./docker/cln/plugins/cln-grpc-hold:/root/.lightning/plugins/cln-grpc-hold
+      - ./docker/cln/plugins/holdinvoice:/root/.lightning/plugins/holdinvoice
       - bitcoin:/root/.bitcoin
-    command: --regtest --wumbo --bitcoin-rpcuser=test --bitcoin-rpcpassword=test --log-level=debug --rest-host=0.0.0.0 --rest-port=3010 --bind-addr=127.0.0.1:9737 --max-concurrent-htlcs=483 --grpc-port=9999 --grpc-hold-port=9998 --important-plugin=/root/.lightning/plugins/cln-grpc-hold --database-upgrade=true
+    command: --regtest --wumbo --bitcoin-rpcuser=test --bitcoin-rpcpassword=test --log-level=debug --rest-host=0.0.0.0 --rest-port=3010 --bind-addr=127.0.0.1:9737 --max-concurrent-htlcs=483 --grpc-port=9999 --grpc-hold-port=9998 --important-plugin=/root/.lightning/plugins/holdinvoice --database-upgrade=true
     depends_on:
       - bitcoind
     network_mode: service:bitcoind
