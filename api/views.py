@@ -540,6 +540,7 @@ class OrderView(viewsets.ViewSet):
         mining_fee_rate = serializer.data.get("mining_fee_rate")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
+        cancel_status = serializer.data.get("cancel_status")
 
         # 1) If action is take, it is a taker request!
         if action == "take":
@@ -571,7 +572,7 @@ class OrderView(viewsets.ViewSet):
 
         # 2) If action is cancel
         elif action == "cancel":
-            valid, context = Logics.cancel_order(order, request.user)
+            valid, context = Logics.cancel_order(order, request.user, cancel_status)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 

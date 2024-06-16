@@ -1974,6 +1974,9 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,3})?$
           nullable: true
+        cancel_status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
       required:
       - action
     Version:
