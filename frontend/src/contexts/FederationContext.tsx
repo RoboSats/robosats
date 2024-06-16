@@ -111,12 +111,14 @@ export const FederationContextProvider = ({
   }, []);
 
   useEffect(() => {
-    // On bitcoin network change we reset book, limits and federation info and fetch everything again
-    if (window.NativeRobosats === undefined || torStatus === 'ON') {
+    if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
       void federation.update();
+
+      const token = garage.getSlot()?.getRobot()?.token;
+      if (token) void federation.fetchRobot(garage, token);
     }
-  }, [settings.network, torStatus]);
+  }, [settings.network, settings.useProxy, torStatus]);
 
   const onOrderReceived = (order: Order): void => {
     let newDelay = defaultDelay;
@@ -178,15 +180,6 @@ export const FederationContextProvider = ({
     if (page === 'offers') void federation.updateBook();
   }, [page]);
 
-  // use effects to fetchRobots on app start and network change
-  useEffect(() => {
-    const slot = garage.getSlot();
-    const robot = slot?.getRobot();
-
-    if (robot && garage.currentSlot && slot?.token && robot.encPrivKey && robot.pubKey) {
-      void federation.fetchRobot(garage, slot.token);
-    }
-  }, [settings.network]);
   // use effects to fetchRobots on Profile open
   useEffect(() => {
     const slot = garage.getSlot();

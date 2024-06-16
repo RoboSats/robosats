@@ -222,6 +222,7 @@ export const SuccessfulPrompt = ({
             takerSummary={order.taker_summary}
             platformSummary={order.platform_summary}
             orderId={order.id}
+            coordinatorLongAlias={federation.getCoordinator(order.shortAlias)?.longAlias}
           />
         </Grid>
       ) : (
