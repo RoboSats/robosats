@@ -21,6 +21,7 @@ export interface SubmitActionProps {
   statement?: string;
   rating?: number;
   amount?: number;
+  cancel_status?: number;
 }
 
 export interface TradeRobotSummary {
