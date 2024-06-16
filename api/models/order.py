@@ -1,6 +1,7 @@
 # We use custom seeded UUID generation during testing
 import uuid
 
+from decimal import Decimal
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -90,7 +91,10 @@ class Order(models.Model):
         decimal_places=2,
         default=0,
         null=True,
-        validators=[MinValueValidator(-100), MaxValueValidator(999)],
+        validators=[
+            MinValueValidator(Decimal(-100)),
+            MaxValueValidator(Decimal(999))
+        ],
         blank=True,
     )
     # explicit
@@ -135,8 +139,8 @@ class Order(models.Model):
         default=settings.DEFAULT_BOND_SIZE,
         null=False,
         validators=[
-            MinValueValidator(settings.MIN_BOND_SIZE),  # 2  %
-            MaxValueValidator(settings.MAX_BOND_SIZE),  # 15 %
+            MinValueValidator(Decimal(settings.MIN_BOND_SIZE)),  # 2  %
+            MaxValueValidator(Decimal(settings.MAX_BOND_SIZE)),  # 15 %
         ],
         blank=False,
     )
@@ -147,8 +151,8 @@ class Order(models.Model):
         decimal_places=6,
         null=True,
         validators=[
-            MinValueValidator(-90),
-            MaxValueValidator(90),
+            MinValueValidator(Decimal(-90)),
+            MaxValueValidator(Decimal(90)),
         ],
         blank=True,
     )
@@ -157,8 +161,8 @@ class Order(models.Model):
         decimal_places=6,
         null=True,
         validators=[
-            MinValueValidator(-180),
-            MaxValueValidator(180),
+            MinValueValidator(Decimal(-180)),
+            MaxValueValidator(Decimal(180)),
         ],
         blank=True,
     )
