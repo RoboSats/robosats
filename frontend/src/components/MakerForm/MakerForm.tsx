@@ -91,12 +91,6 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    // Why?
-    // const slot = garage.getSlot();
-    // if (slot?.token) void federation.fetchRobot(garage, slot?.token);
-  }, [garage.currentSlot]);
-
-  useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
   }, [coordinatorUpdatedAt]);
 

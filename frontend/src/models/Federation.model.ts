@@ -100,7 +100,7 @@ export class Federation {
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
     for (const coor of Object.values(this.coordinators)) {
-      await coor.update(() => {
+      coor.update(() => {
         this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
@@ -109,10 +109,11 @@ export class Federation {
 
   updateBook = async (): Promise<void> => {
     this.loading = true;
+    this.book = [];
     this.triggerHook('onCoordinatorUpdate');
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
-      await coor.updateBook(() => {
+      coor.updateBook(() => {
         this.onCoordinatorSaved();
       });
     }
