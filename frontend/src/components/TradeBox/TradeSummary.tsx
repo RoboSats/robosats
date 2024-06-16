@@ -43,6 +43,7 @@ interface Props {
   makerHashId: string;
   takerHashId: string;
   currencyCode: string;
+  coordinatorLongAlias: string;
   makerSummary: TradeRobotSummary;
   takerSummary: TradeRobotSummary;
   platformSummary: TradeCoordinatorSummary;
@@ -54,6 +55,7 @@ const TradeSummary = ({
   makerHashId,
   takerHashId,
   currencyCode,
+  coordinatorLongAlias,
   makerSummary,
   takerSummary,
   platformSummary,
@@ -72,6 +74,7 @@ const TradeSummary = ({
 
   const onClickExport = function (): void {
     const summary = {
+      coordinator: coordinatorLongAlias,
       order_id: orderId,
       currency: currencyCode,
       maker: makerSummary,
