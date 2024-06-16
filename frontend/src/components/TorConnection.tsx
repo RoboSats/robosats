@@ -55,14 +55,14 @@ const TorIndicator = ({
 };
 
 const TorConnectionBadge = (): JSX.Element => {
-  const { torStatus } = useContext<UseAppStoreType>(AppContext);
+  const { torStatus, settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
 
-  if (window?.NativeRobosats == null) {
+  if (window?.NativeRobosats == null || !settings.useProxy) {
     return <></>;
   }
 
-  if (torStatus === 'NOTINIT') {
+  if (torStatus === 'OFF' || torStatus === 'STOPPING') {
     return (
       <TorIndicator
         color='primary'
@@ -80,7 +80,7 @@ const TorConnectionBadge = (): JSX.Element => {
         title={t('Connecting to TOR network')}
       />
     );
-  } else if (torStatus === '"Done"' || torStatus === 'DONE') {
+  } else if (torStatus === 'ON') {
     return <TorIndicator color='success' progress={false} title={t('Connected to TOR network')} />;
   } else {
     return (

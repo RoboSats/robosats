@@ -98,8 +98,8 @@ class Trade:
 
         response = self.client.post(path, maker_form, **headers)
 
+        self.response = response
         if response.status_code == 201:
-            self.response = response
             self.order_id = response.json()["id"]
 
     def get_order(self, robot_index=1, first_encounter=False):

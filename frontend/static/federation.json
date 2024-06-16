@@ -25,9 +25,9 @@
       "hasLargeLimits": true
     },
     "policies": {
-      "Policy Name 1": "Experimental coordinator used for development. Use at your own risk.",
-      "Privacy Policy": "...",
-      "Data Policy": "..."
+      "Experimental": "Experimental coordinator used for development. Use at your own risk.",
+      "Dispute Policy": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Non eligible countries": "USA citizens and residents are not allowed to use the Experimental coordinator. F2F transactions are explicitly blocked at creation time for US locations. If a US citizen or resident violates this rule and is found out to be using the Experimental coordinator during a dispute process, they will be denied further service and the dispute mediation will be terminated."
     },
     "mainnet": {
       "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",

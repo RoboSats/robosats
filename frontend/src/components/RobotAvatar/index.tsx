@@ -3,8 +3,8 @@ import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
-import { robohash } from './RobohashGenerator';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { roboidentitiesClient } from '../../services/Roboidentities/Web';
 
 interface Props {
   shortAlias?: string | undefined;
@@ -54,10 +54,9 @@ const RobotAvatar: React.FC<Props> = ({
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    // TODO: HANDLE ANDROID AVATARS TOO (when window.NativeRobosats !== undefined)
     if (hashId !== undefined) {
-      robohash
-        .generate(hashId, small ? 'small' : 'large')
+      roboidentitiesClient
+        .generateRobohash(hashId, small ? 'small' : 'large')
         .then((avatar) => {
           setAvatarSrc(avatar);
         })
@@ -78,9 +77,7 @@ const RobotAvatar: React.FC<Props> = ({
         );
       } else {
         setAvatarSrc(
-          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}${
-            small ? ' .small' : ''
-          }.webp`,
+          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}.webp`,
         );
       }
       setTimeout(() => {

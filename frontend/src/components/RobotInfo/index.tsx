@@ -95,7 +95,6 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
         (signedInvoice) => {
           console.log('Signed message:', signedInvoice);
           void coordinator.fetchReward(signedInvoice, garage, slot?.token).then((data) => {
-            console.log(data);
             setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
             setWithdrawn(data.successful_withdrawal);

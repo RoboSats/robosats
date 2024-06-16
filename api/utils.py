@@ -479,6 +479,33 @@ def is_valid_token(token: str) -> bool:
     return all(c in charset for c in token)
 
 
+def location_country(lon: float, lat: float) -> str:
+    """
+    Returns the country code of a lon/lat location
+    """
+
+    from shapely.geometry import shape, Point
+    from shapely.prepared import prep
+
+    # Load the GeoJSON data from a local file
+    with open("frontend/static/assets/geo/countries-coastline-10km.geo.json") as f:
+        countries_geojeson = json.load(f)
+
+    # Prepare the countries for reverse geocoding
+    countries = {}
+    for feature in countries_geojeson["features"]:
+        geom = feature["geometry"]
+        country_code = feature["properties"]["A3"]
+        countries[country_code] = prep(shape(geom))
+
+    point = Point(lon, lat)
+    for country_code, geom in countries.items():
+        if geom.contains(point):
+            return country_code
+
+    return "unknown"
+
+
 def objects_to_hyperlinks(logs: str) -> str:
     """
     Parses strings that have Object(ID,NAME) that match API models.

@@ -6,6 +6,7 @@ from channels.middleware import BaseMiddleware
 from django.contrib.auth.models import AnonymousUser, User, update_last_login
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
+from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -73,8 +74,11 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             return response
 
         if not is_valid_token(token_sha256_b91):
-            raise AuthenticationFailed(
-                "Robot token SHA256 was provided in the header. However it is not a valid 39 or 40 characters Base91 string."
+            return JsonResponse(
+                {
+                    "bad_request": "Robot token SHA256 was provided in the header. However it is not a valid 39 or 40 characters Base91 string."
+                },
+                status=400,
             )
 
         # Check if it is an existing robot.
@@ -117,8 +121,11 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
 
             if not public_key or not encrypted_private_key:
-                raise AuthenticationFailed(
-                    "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys"
+                return JsonResponse(
+                    {
+                        "bad_request": "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys"
+                    },
+                    status=400,
                 )
             (
                 valid,
@@ -127,7 +134,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 encrypted_private_key,
             ) = validate_pgp_keys(public_key, encrypted_private_key)
             if not valid:
-                raise AuthenticationFailed(bad_keys_context)
+                return JsonResponse({"bad_request": bad_keys_context}, status=400)
 
             # Hash the token_sha256, only 1 iteration.
             # This is the second SHA256 of the user token, aka RoboSats ID

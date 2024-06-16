@@ -71,6 +71,7 @@ jobs:
   android-build:
     uses: RoboSats/robosats/.github/workflows/android-build.yml@main
     needs: [frontend-build, check-versions]
+    secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 

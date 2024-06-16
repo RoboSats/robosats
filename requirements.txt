@@ -1,4 +1,4 @@
-django==5.0.4
+django==5.0.6
 django-admin-relation-links==0.2.5
 django-celery-beat==2.6.0
 django-celery-results==2.5.1
@@ -19,10 +19,11 @@ ring==0.10.1
 gunicorn==22.0.0
 psycopg2==2.9.9
 SQLAlchemy==2.0.16
-django-import-export==3.3.8
+django-import-export==4.0.7
 requests[socks]
+shapely==2.0.4
 python-gnupg==0.5.2
-daphne==4.1.0
+daphne==4.1.2
 drf-spectacular==0.27.2
 drf-spectacular-sidecar==2024.4.1
 django-cors-headers==4.3.1

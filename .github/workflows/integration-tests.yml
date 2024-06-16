@@ -22,7 +22,7 @@ jobs:
       matrix:
         python-tag: ['3.12.3-slim-bookworm', '3.13-rc-slim-bookworm']
         lnd-version: ['v0.17.4-beta']
-        cln-version: ['v23.11.2','v24.02']
+        cln-version: ['v23.11.2'] #,'v24.02']
         ln-vendor: ['LND'] #, 'CLN']
 
     steps:

@@ -6,11 +6,11 @@ import {
   type Order,
   type Garage,
 } from '.';
+import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { apiClient } from '../services/api';
 import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
 import { defaultOrder } from './Order.model';
-import { robohash } from '../components/RobotAvatar/RobohashGenerator';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -97,7 +97,7 @@ function calculateSizeLimit(inputDate: Date): number {
 }
 
 export class Coordinator {
-  constructor(value: any) {
+  constructor(value: any, origin: Origin, settings: Settings, hostUrl: string) {
     const established = new Date(value.established);
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
@@ -115,6 +115,8 @@ export class Coordinator {
     this.testnetNodesPubkeys = value.testnetNodesPubkeys;
     this.url = '';
     this.basePath = '';
+
+    this.updateUrl(origin, settings, hostUrl);
   }
 
   // These properties are loaded from federation.json
@@ -143,24 +145,9 @@ export class Coordinator {
   public loadingInfo: boolean = false;
   public limits: LimitList = {};
   public loadingLimits: boolean = false;
-  public loadingRobot: boolean = true;
+  public loadingRobot: string | null;
 
-  start = async (
-    origin: Origin,
-    settings: Settings,
-    hostUrl: string,
-    onUpdate: (shortAlias: string) => void = () => {},
-  ): Promise<void> => {
-    if (this.enabled !== true) return;
-    void this.updateUrl(settings, origin, hostUrl, onUpdate);
-  };
-
-  updateUrl = async (
-    settings: Settings,
-    origin: Origin,
-    hostUrl: string,
-    onUpdate: (shortAlias: string) => void = () => {},
-  ): Promise<void> => {
+  updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = hostUrl;
       this.basePath = `/${settings.network}/${this.shortAlias}`;
@@ -168,9 +155,6 @@ export class Coordinator {
       this.url = String(this[settings.network][origin]);
       this.basePath = '';
     }
-    void this.update(() => {
-      onUpdate(this.shortAlias);
-    });
   };
 
   update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
@@ -191,7 +175,7 @@ export class Coordinator {
 
   generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
     for (const order of data) {
-      void robohash.generate(order.maker_hash_id, 'small');
+      roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
     }
   };
 
@@ -201,6 +185,7 @@ export class Coordinator {
     if (this.loadingBook) return;
 
     this.loadingBook = true;
+    this.book = [];
 
     apiClient
       .get(this.url, `${this.basePath}/api/book/`)
@@ -313,7 +298,7 @@ export class Coordinator {
   };
 
   fetchRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
-    if (!this.enabled || !token) return null;
+    if (!this.enabled || !token || this.loadingRobot === token) return null;
 
     const robot = garage?.getSlot(token)?.getRobot() ?? null;
     const authHeaders = robot?.getAuthHeaders();
@@ -323,6 +308,8 @@ export class Coordinator {
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
     if (!hasEnoughEntropy) return null;
+
+    this.loadingRobot = token;
 
     garage.updateRobot(token, this.shortAlias, { loading: true });
 
@@ -346,7 +333,8 @@ export class Coordinator {
       })
       .catch((e) => {
         console.log(e);
-      });
+      })
+      .finally(() => (this.loadingRobot = null));
 
     garage.updateRobot(token, this.shortAlias, {
       ...newAttributes,
@@ -370,7 +358,6 @@ export class Coordinator {
     return await apiClient
       .get(this.url, `${this.basePath}/api/order/?order_id=${orderId}`, authHeaders)
       .then((data) => {
-        console.log('data', data);
         const order: Order = {
           ...defaultOrder,
           ...data,

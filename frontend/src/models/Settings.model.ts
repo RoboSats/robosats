@@ -1,5 +1,6 @@
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
+import { apiClient } from '../services/api';
 import { getHost } from '../utils';
 
 export type Language =
@@ -42,8 +43,13 @@ class BaseSettings {
           : i18n.resolvedLanguage.substring(0, 2);
 
     const networkCookie = systemClient.getItem('settings_network');
-    this.network = networkCookie !== '' ? networkCookie : 'mainnet';
+    this.network = networkCookie && networkCookie !== '' ? networkCookie : 'mainnet';
     this.host = getHost();
+
+    const useProxy = systemClient.getItem('settings_use_proxy');
+    this.useProxy = window.NativeRobosats !== undefined && useProxy !== 'false';
+
+    apiClient.useProxy = this.useProxy;
   }
 
   public frontend: 'basic' | 'pro' = 'basic';
@@ -56,6 +62,7 @@ class BaseSettings {
   public host?: string;
   public unsafeClient: boolean = false;
   public selfhostedClient: boolean = false;
+  public useProxy: boolean;
 }
 
 export default BaseSettings;

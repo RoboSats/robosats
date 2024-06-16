@@ -1,7 +1,7 @@
 import math
 from datetime import timedelta
 
-from decouple import config
+from decouple import config, Csv
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
@@ -9,7 +9,7 @@ from django.utils import timezone
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
 from api.tasks import send_devfund_donation, send_notification
-from api.utils import get_minning_fee, validate_onchain_address
+from api.utils import get_minning_fee, validate_onchain_address, location_country
 from chat.models import Message
 
 FEE = float(config("FEE"))
@@ -28,6 +28,8 @@ BLOCK_TIME = float(config("BLOCK_TIME"))
 MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(
     config("MAX_MINING_NETWORK_SPEEDUP_EXPECTED")
 )
+
+GEOBLOCKED_COUNTRIES = config("GEOBLOCKED_COUNTRIES", cast=Csv(), default="")
 
 
 class Logics:
@@ -136,6 +138,19 @@ class Logics:
                 }
 
         return True, None
+
+    @classmethod
+    def validate_location(cls, order) -> bool:
+        if not (order.latitude or order.longitude):
+            return True, None
+
+        country = location_country(order.longitude, order.latitude)
+        if country in GEOBLOCKED_COUNTRIES:
+            return False, {
+                "bad_request": f"The coordinator does not support orders in {country}"
+            }
+        else:
+            return True, None
 
     def validate_amount_within_range(order, amount):
         if amount > float(order.max_amount) or amount < float(order.min_amount):
@@ -878,7 +893,7 @@ class Logics:
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
                 return False, {
-                    "bad_request": "You can only submit an invoice after expiration or 3 failed attempts"
+                    "bad_invoice": "You can only submit an invoice after expiration or 3 failed attempts"
                 }
 
         # cancel onchain_payout if existing
@@ -894,25 +909,24 @@ class Logics:
         if not payout["valid"]:
             return False, payout["context"]
 
-        order.payout, _ = LNPayment.objects.update_or_create(
+        if order.payout:
+            if order.payout.payment_hash == payout["payment_hash"]:
+                return False, {"bad_invoice": "You must submit a NEW invoice"}
+
+        order.payout = LNPayment.objects.create(
             concept=LNPayment.Concepts.PAYBUYER,
             type=LNPayment.Types.NORM,
             sender=User.objects.get(username=ESCROW_USERNAME),
-            # In case this user has other payouts, update the one related to this order.
-            order_paid_LN=order,
             receiver=user,
             routing_budget_ppm=routing_budget_ppm,
             routing_budget_sats=routing_budget_sats,
-            # if there is a LNPayment matching these above, it updates that one with defaults below.
-            defaults={
-                "invoice": invoice,
-                "status": LNPayment.Status.VALIDI,
-                "num_satoshis": num_satoshis,
-                "description": payout["description"],
-                "payment_hash": payout["payment_hash"],
-                "created_at": payout["created_at"],
-                "expires_at": payout["expires_at"],
-            },
+            invoice=invoice,
+            status=LNPayment.Status.VALIDI,
+            num_satoshis=num_satoshis,
+            description=payout["description"],
+            payment_hash=payout["payment_hash"],
+            created_at=payout["created_at"],
+            expires_at=payout["expires_at"],
         )
 
         order.is_swap = False

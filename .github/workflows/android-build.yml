@@ -6,6 +6,15 @@ on:
       semver:
         required: true
         type: string
+    secrets:
+      KEYSTORE:
+        required: true
+      KEY_ALIAS:
+        required: true
+      KEY_PASS:
+        required: true
+      KEY_STORE_PASS:
+        required: true
   push:
     branches: [ "main" ]
     paths: [ "mobile", "frontend" ]
@@ -54,10 +63,37 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
 
+      - name: Decode Keystore
+        id: decode_keystore
+        uses: timheuer/base64-to-file@v1.2
+        with:
+          fileName: 'keystore.jks'
+          fileDir: './'
+          encodedString: ${{ secrets.KEYSTORE }}
+
       - name: 'Build Android Release'
         run: |
           cd mobile/android
           ./gradlew assembleRelease
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+          KEY_STORE_PASS: ${{ secrets.KEY_STORE_PASS }}
+
+
+      - name: 'Check for non-FOSS libraries'
+        run: |
+          wget https://github.com/iBotPeaches/Apktool/releases/download/v2.7.0/apktool_2.7.0.jar
+          wget https://github.com/iBotPeaches/Apktool/raw/master/scripts/linux/apktool
+          # clone the repo
+          git clone https://gitlab.com/IzzyOnDroid/repo.git
+          # create a directory for Apktool and move the apktool* files there
+          mkdir -p repo/lib/radar/tool
+          mv apktool* repo/lib/radar/tool
+          # create an alias for ease of use
+          chmod u+x repo/lib/radar/tool/apktool
+          mv repo/lib/radar/tool/apktool_2.7.0.jar repo/lib/radar/tool/apktool.jar
+          repo/bin/scanapk.php mobile/android/app/build/outputs/apk/release/app-universal-release.apk
 
       - name: 'Get Commit Hash'
         id: commit
