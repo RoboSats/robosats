@@ -178,7 +178,7 @@ const OrderDetails = ({
       : coordinator.info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
-    const rate = order.amount > 0 ? order.amount / btc_now : Number(order.max_amount) / btc_now;
+    const rate = Number(order.max_amount ?? order.amount) / btc_now;
 
     if (isBuyer) {
       if (order.amount > 0) {
