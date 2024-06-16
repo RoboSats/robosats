@@ -152,6 +152,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
     mining_fee_rate?: number;
     statement?: string;
     rating?: number;
+    cancel_status?: number;
   }
 
   const renewOrder = function (): void {
@@ -203,6 +204,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
     mining_fee_rate,
     statement,
     rating,
+    cancel_status
   }: SubmitActionProps): void {
     const robot = garage.getSlot()?.getRobot();
     const currentOrder = garage.getSlot()?.order;
@@ -219,6 +221,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           mining_fee_rate,
           statement,
           rating,
+          cancel_status
         },
         { tokenSHA256: robot?.tokenSHA256 },
       )
@@ -245,8 +248,14 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const cancel = function (): void {
+    const order = garage.getSlot()?.order;
+    const noConfirmation = Boolean(order?.is_maker && [0, 1, 2].includes(order?.status));
+
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
-    submitAction({ action: 'cancel' });
+    submitAction({
+        action: 'cancel',
+        cancel_status: noConfirmation ? order?.status : undefined
+    });
   };
 
   const openDispute = function (): void {
