@@ -8,7 +8,6 @@ from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
-from rest_framework.exceptions import AuthenticationFailed
 
 from api.nick_generator.nick_generator import NickGenerator
 from api.utils import base91_to_hex, hex_to_base91, is_valid_token, validate_pgp_keys
