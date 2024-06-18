@@ -67,9 +67,11 @@ const RobotProfile = ({
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
-    garage.currentSlot = e.target.value;
-    setInputToken(garage.getSlot()?.token ?? '');
-    setLoading(true);
+    if (e?.target?.value) {
+      garage.setCurrentSlot(e.target.value as string);
+      setInputToken(garage.getSlot()?.token ?? '');
+      setLoading(true);
+    }
   };
 
   const slot = garage.getSlot();

@@ -22,8 +22,8 @@ jobs:
       matrix:
         python-tag: ['3.12.3-slim-bookworm', '3.13-rc-slim-bookworm']
         lnd-version: ['v0.17.4-beta']
-        cln-version: ['v23.11.2'] #,'v24.02']
-        ln-vendor: ['LND'] #, 'CLN']
+        cln-version: ['v24.05']
+        ln-vendor: ['LND', 'CLN']
 
     steps:
     - name: 'Checkout'
@@ -56,7 +56,6 @@ jobs:
       env:
         LND_VERSION: ${{ matrix.lnd-version }}
         CLN_VERSION: ${{ matrix.cln-version }}
-        BITCOIND_VERSION: ${{ matrix.bitcoind-version }}
         ROBOSATS_ENVS_FILE: ".env-sample"
 
     - name: Wait for coordinator (django server)
