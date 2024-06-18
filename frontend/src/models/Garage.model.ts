@@ -106,6 +106,11 @@ class Garage {
     return slot;
   };
 
+  setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {
+    this.currentSlot = currentSlot;
+    this.triggerHook('onRobotUpdate');
+  };
+
   // Robots
   createRobot: (token: string, shortAliases: string[], attributes: Record<any, any>) => void = (
     token,

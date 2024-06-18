@@ -71,7 +71,7 @@ const RobotPage = (): JSX.Element => {
           encPrivKey: key.encryptedPrivateKeyArmored,
         });
         void federation.fetchRobot(garage, token);
-        garage.currentSlot = token;
+        garage.setCurrentSlot(token);
       })
       .catch((error) => {
         console.error('Error:', error);
