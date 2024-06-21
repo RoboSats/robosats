@@ -239,6 +239,16 @@ class TradeTest(BaseAPITestCase):
         self.assertIsNone(data["taker"], "New order's taker is not null")
         self.assert_order_logs(data["id"])
 
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            0,
+            "There is only one notification",
+        )
+
     def test_make_order_on_blocked_country(self):
         """
         Test the creation of an F2F order on a geoblocked location
@@ -347,6 +357,17 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            1,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+
     def test_pause_unpause_order(self):
         """
         Tests pausing and unpausing a public order
@@ -368,6 +389,17 @@ class TradeTest(BaseAPITestCase):
 
         self.assertResponse(trade.response)
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            2,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
@@ -415,6 +447,17 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            2,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+
     def test_make_and_lock_contract(self):
         """
         Tests a trade from order creation to taker bond locked.
@@ -437,6 +480,17 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
 
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            2,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+
         # Maker GET
         trade.get_order(trade.maker_index)
         data = trade.response.json()
@@ -456,6 +510,17 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["maker_locked"])
         self.assertTrue(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            2,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
         # Maker cancels order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
@@ -483,6 +548,17 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["taker_locked"])
         self.assertTrue(data["escrow_locked"])
 
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            3,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order(trade.taker_index)
 
@@ -505,6 +581,17 @@ class TradeTest(BaseAPITestCase):
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
         self.assertFalse(data["is_fiat_sent"])
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            4,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order(trade.maker_index)
@@ -532,6 +619,17 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
         self.assertFalse(data["is_fiat_sent"])
 
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            5,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order(trade.maker_index)
         trade.cancel_order(trade.taker_index)
@@ -555,6 +653,17 @@ class TradeTest(BaseAPITestCase):
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.FSE).label)
         self.assertTrue(data["is_fiat_sent"])
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            6,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.undo_confirm_sent(trade.maker_index)
@@ -594,6 +703,17 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["escrow_locked"])
 
         self.assert_order_logs(data["id"])
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            7,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
     def test_successful_LN(self):
         """
@@ -702,6 +822,17 @@ class TradeTest(BaseAPITestCase):
             "This order has been cancelled collaborativelly",
         )
 
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            6,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+
     def test_created_order_expires(self):
         """
         Tests the expiration of a public order
@@ -733,6 +864,17 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NMBOND)
 
         self.assert_order_logs(data["id"])
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            6,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
     def test_public_order_expires(self):
         """
@@ -766,6 +908,17 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NTAKEN)
 
         self.assert_order_logs(data["id"])
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            6,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
     def test_taken_order_expires(self):
         """
@@ -801,6 +954,17 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NESINV)
 
         self.assert_order_logs(data["id"])
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            6,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
     def test_escrow_locked_expires(self):
         """
@@ -889,6 +1053,17 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(response)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {})  # Nothing in the response
+
+        trade.get_notifications()
+        # Checks
+        self.assertResponse(trade.response)
+        notifications_data = trade.response.json()
+        self.assertEqual(
+            notifications_data.count,
+            8,
+            "There is only one notification",
+        )
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
         # Get the two chatroom messages as maker
         response = self.client.get(path + params, **maker_headers)

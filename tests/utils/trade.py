@@ -111,6 +111,15 @@ class Trade:
         headers = self.get_robot_auth(robot_index, first_encounter)
         self.response = self.client.get(path + params, **headers)
 
+    def get_notifications(self, created_at=0, robot_index=1, first_encounter=False):
+        """
+        Fetch the latest state of the order
+        """
+        path = reverse("notifications")
+        params = f"?created_at={created_at}"
+        headers = self.get_robot_auth(robot_index, first_encounter)
+        self.response = self.client.get(path + params, **headers)
+
     @patch("api.tasks.send_notification.delay", send_notification)
     def cancel_order(self, robot_index=1):
         path = reverse("order")
