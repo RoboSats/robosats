@@ -246,7 +246,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             0,
-            "There is only one notification",
+            "User has no notification",
         )
 
     def test_make_order_on_blocked_country(self):
@@ -364,7 +364,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             1,
-            "There is only one notification",
+            "User has a new order notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -397,7 +397,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             2,
-            "There is only one notification",
+            "User has a new order start notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -454,7 +454,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             2,
-            "There is only one notification",
+            "User has a new order start notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -486,8 +486,8 @@ class TradeTest(BaseAPITestCase):
         notifications_data = trade.response.json()
         self.assertEqual(
             notifications_data.count,
-            2,
-            "There is only one notification",
+            3,
+            "User has a bond locked notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -518,7 +518,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             2,
-            "There is only one notification",
+            "User has a bond locked notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -555,7 +555,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             3,
-            "There is only one notification",
+            "User has a scrow locked notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -589,7 +589,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             4,
-            "There is only one notification",
+            "User has a new order ready notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -625,8 +625,8 @@ class TradeTest(BaseAPITestCase):
         notifications_data = trade.response.json()
         self.assertEqual(
             notifications_data.count,
-            5,
-            "There is only one notification",
+            4,
+            "User has a new order ready notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -661,7 +661,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             6,
-            "There is only one notification",
+            "User has a new fiat sent notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -711,7 +711,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             7,
-            "There is only one notification",
+            "User has a new fiat received notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -829,7 +829,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             6,
-            "There is only one notification",
+            "User has a new order cancelled notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -872,7 +872,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             6,
-            "There is only one notification",
+            "User has a new order expired notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -916,7 +916,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             6,
-            "There is only one notification",
+            "User has a new order expired notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -962,7 +962,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             6,
-            "There is only one notification",
+            "User has a new order expired notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
@@ -1061,7 +1061,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             notifications_data.count,
             8,
-            "There is only one notification",
+            "User has a new chat notification",
         )
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
