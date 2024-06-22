@@ -1,5 +1,5 @@
 {
-  "name": "desktop-app",
+  "name": "Robosats",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,9 +7,9 @@
     "start": "electron .",
     "compile": "./node_modules/.bin/tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package:linux": "npx @electron/packager . Robosats  --platform=linux --arch=x64 --overwrite to force  --out=release-builds",
-    "package-win": "npx @electron/packager . Robosats  --platform=win32 --arch=ia32 --icon=./static/assets/images/favicon-96x96.png --overwrite   --out=release-builds",
-    "package-mac": "npx @electron/packager . Robosats  --platform=darwin --arch=x64 --icon=./static/assets/images/favicon-96x96.png --overwrite    --out=release-builds"
+    "package-linux": "npx @electron/packager . Robosats  --platform=linux --arch=x64 --icon=./assets/icon/Robosats.svg --overwrite  --out=release-builds",
+    "package-win": "npx @electron/packager . Robosats  --platform=win32 --arch=ia32 --icon=./assets/icon/Robosats.ico --overwrite   --out=release-builds",
+    "package-mac": "npx @electron/packager . Robosats  --platform=darwin --arch=x64 --icon=./assets/icon/Robosats.icns --overwrite    --out=release-builds"
   },
   "author": "",
   "license": "ISC",
