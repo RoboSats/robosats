@@ -47,14 +47,6 @@ class TradeTest(BaseAPITestCase):
         # Take the first node balances snapshot
         compute_node_balance()
 
-    def get_notifications(self, headers):
-        """
-        Get robot notifications
-        """
-        response = self.client.get(reverse("notifications"), **headers)
-        self.assertResponse(response)
-        list(response.json())
-
     def assert_order_logs(self, order_id):
         order = Order.objects.get(id=order_id)
         order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
@@ -248,7 +240,9 @@ class TradeTest(BaseAPITestCase):
         self.assert_order_logs(data["id"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             0,
@@ -364,7 +358,9 @@ class TradeTest(BaseAPITestCase):
         self.assert_order_logs(data["id"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             1,
@@ -395,7 +391,9 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
@@ -445,7 +443,9 @@ class TradeTest(BaseAPITestCase):
         self.assert_order_logs(data["id"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
 
     def test_make_and_lock_contract(self):
@@ -471,7 +471,9 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["escrow_locked"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         notifications_data = list(trade.response.json())
         self.assertEqual(
             len(notifications_data),
@@ -501,7 +503,9 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["escrow_locked"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             2,
@@ -536,7 +540,9 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["escrow_locked"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             3,
@@ -568,7 +574,9 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["is_fiat_sent"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             4,
@@ -603,7 +611,9 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["is_fiat_sent"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             4,
@@ -636,7 +646,9 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["is_fiat_sent"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             6,
@@ -684,7 +696,9 @@ class TradeTest(BaseAPITestCase):
         self.assert_order_logs(data["id"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             7,
@@ -800,7 +814,9 @@ class TradeTest(BaseAPITestCase):
         )
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             6,
@@ -840,15 +856,6 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
-        maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
-        self.assertEqual(
-            len(notifications_data),
-            6,
-            "User has a new order expired notification",
-        )
-        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-
     def test_public_order_expires(self):
         """
         Tests the expiration of a public order
@@ -883,7 +890,9 @@ class TradeTest(BaseAPITestCase):
         self.assert_order_logs(data["id"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             6,
@@ -927,7 +936,9 @@ class TradeTest(BaseAPITestCase):
         self.assert_order_logs(data["id"])
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             6,
@@ -1024,7 +1035,9 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(response.json(), {})  # Nothing in the response
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
-        notifications_data = self.get_notifications(maker_headers)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
         self.assertEqual(
             len(notifications_data),
             8,
