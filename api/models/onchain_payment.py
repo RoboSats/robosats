@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -58,7 +59,10 @@ class OnchainPayment(models.Model):
         default=2.05,
         null=False,
         blank=False,
-        validators=[MinValueValidator(1), MaxValueValidator(999)],
+        validators=[
+            MinValueValidator(Decimal(1)),
+            MaxValueValidator(Decimal(999))
+        ],
     )
     mining_fee_rate = models.DecimalField(
         max_digits=6,
@@ -66,7 +70,10 @@ class OnchainPayment(models.Model):
         default=2.05,
         null=False,
         blank=False,
-        validators=[MinValueValidator(1), MaxValueValidator(999)],
+        validators=[
+            MinValueValidator(Decimal(1)),
+            MaxValueValidator(Decimal(999))
+        ],
     )
     mining_fee_sats = models.PositiveBigIntegerField(default=0, null=False, blank=False)
 

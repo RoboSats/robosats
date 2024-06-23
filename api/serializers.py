@@ -494,7 +494,8 @@ class OrderPublicSerializer(serializers.ModelSerializer):
     maker_nick = serializers.CharField(required=False)
     maker_hash_id = serializers.CharField(required=False)
     maker_status = serializers.CharField(
-        help_text='Status of the nick - "Active" or "Inactive"', required=False
+        help_text='Status of the nick - "Active", "Seen Recently" or "Inactive"',
+        required=False,
     )
     price = serializers.FloatField(
         help_text="Price in order's fiat currency", required=False

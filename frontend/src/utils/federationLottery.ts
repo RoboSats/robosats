@@ -45,7 +45,6 @@ export default function federationLottery(federation: Federation): string[] {
 //     federation[shortAlias] = { badges:{ donatesToDevFund }};
 // }
 
-// console.log(federation)
 // return federation;
 // }
 
@@ -58,5 +57,4 @@ export default function federationLottery(federation: Federation): string[] {
 //     results.push(rankedCoordinators);
 // }
 
-// console.log(results)
 // }

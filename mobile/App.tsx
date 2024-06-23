@@ -71,6 +71,7 @@ const App = () => {
     loadCookie('settings_mode');
     loadCookie('settings_light_qr');
     loadCookie('settings_network');
+    loadCookie('settings_use_proxy');
     loadCookie('garage_slots').then(() => injectMessageResolve(responseId));
   };
 
