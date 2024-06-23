@@ -210,8 +210,8 @@ class Notifications:
             notification_reason = f"(You receive this notification because this was the first in-chat message. You will only be notified again if there is a gap bigger than {TIMEGAP} minutes between messages)"
 
         user = chat_message.receiver
-        title = f"💬 Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}. {notification_reason}"
-        self.send_message(order, user.robot, title)
+        title = f"💬 Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}."
+        self.send_message(order, user.robot, title, notification_reason)
 
         return
 

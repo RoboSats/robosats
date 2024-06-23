@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.http import HttpResponseBadRequest
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
@@ -746,15 +748,15 @@ class NotificationsView(ListAPIView):
 
     @extend_schema(**NotificationSchema.get)
     def get(self, request, format=None):
-        # robot = request.user.robot
-        queryset = Notification.objects.all().order_by("created_at")
-        # created_at = request.GET.get("created_at")
+        robot = request.user.robot
+        queryset = Notification.objects.filter(robot=robot).order_by("-created_at")
+        created_at = request.GET.get("created_at")
 
-        # if created_at:
-        #     created_at = parse_datetime(created_at)
-        #     if not created_at:
-        #         return HttpResponseBadRequest("Invalid date format")
-        #     queryset = queryset.filter(created_at__gte=created_at)
+        if created_at:
+            created_at = parse_datetime(created_at)
+            if not created_at:
+                return HttpResponseBadRequest("Invalid date format")
+            queryset = queryset.filter(created_at__gte=created_at)
 
         notification_data = []
         for notification in queryset:
