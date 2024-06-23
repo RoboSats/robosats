@@ -1,4 +1,4 @@
 import RoboidentitiesClientWebClient from './RoboidentitiesWebClient';
-import { RoboidentitiesClient } from './type';
+import { type RoboidentitiesClient } from './type';
 
 export const roboidentitiesClient: RoboidentitiesClient = new RoboidentitiesClientWebClient();

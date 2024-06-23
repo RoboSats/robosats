@@ -22,6 +22,7 @@ export class Federation {
           return acc;
         } else {
           acc[key] = new Coordinator(value, origin, settings, hostUrl);
+
           return acc;
         }
       },

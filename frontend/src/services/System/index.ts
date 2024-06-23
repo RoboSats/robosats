@@ -1,5 +1,6 @@
 import SystemNativeClient from './SystemNativeClient';
 import SystemWebClient from './SystemWebClient';
+import SystemDesktopClient from './SystemDesktopClient';
 
 export interface SystemClient {
   loading: boolean;
@@ -12,9 +13,18 @@ export interface SystemClient {
   deleteItem: (key: string) => void;
 }
 
-export const systemClient: SystemClient =
-  // If userAgent has "RoboSats", we assume the app is running inside of the
-  // react-native-web view of the RoboSats Android app.
-  window.navigator.userAgent.includes('robosats')
-    ? new SystemNativeClient()
-    : new SystemWebClient();
+function getSystemClient(): SystemClient {
+  if (window.navigator.userAgent.includes('robosats')) {
+    // If userAgent has "RoboSats", we assume the app is running inside of the
+    // react-native-web view of the RoboSats Android app.
+    return new SystemNativeClient();
+  } else if (window.navigator.userAgent.includes('Electron')) {
+    // If userAgent has "Electron", we assume the app is running inside of an Electron app.
+    return new SystemDesktopClient();
+  } else {
+    // Otherwise, we assume the app is running in a web browser.
+    return new SystemWebClient();
+  }
+}
+
+export const systemClient: SystemClient = getSystemClient();
