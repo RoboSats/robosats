@@ -31,9 +31,9 @@ npm run start
 To package the app for different platforms (Linux, Windows, macOS), use the corresponding npm commands:
 
 ```bash
-npm run package:linux
-npm run package:win
-npm run package:mac
+npm run package-linux
+npm run package-win
+npm run package-mac
 ```
 
 ### Additional Information
