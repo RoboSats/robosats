@@ -16,6 +16,7 @@ import { federationLottery } from '../utils';
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
 import NativeRobosats from '../services/Native';
+import { Origins } from '../models/Coordinator.model';
 
 // Refresh delays (ms) according to Order status
 const defaultDelay = 5000;
@@ -175,9 +176,13 @@ export const FederationContextProvider = ({
         enabled: true,
       };
       if (settings.network === 'mainnet') {
-        attributes.mainnet = url;
+        attributes.mainnet = {
+          onion: url,
+        } as Origins;
       } else {
-        attributes.testnet = url;
+        attributes.testnet = {
+          onion: url,
+        } as Origins;
       }
       federation.addCoordinator(origin, settings, hostUrl, attributes);
       const newCoordinator = federation.coordinators[alias];

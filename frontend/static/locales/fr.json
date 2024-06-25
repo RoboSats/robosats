@@ -78,7 +78,7 @@
   "Add": "Add",
   "Alias": "Alias",
   "Alias already exists": "Alias already exists",
-  "Invalid URL": "Invalid URL",
+  "Invalid Onion URL": "Invalid Onion URL",
   "URL": "URL",
   "#14": "Phrases in components/TorConnection.tsx",
   "Connected to TOR network": "Connecté au réseau TOR",
