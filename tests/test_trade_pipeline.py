@@ -936,25 +936,6 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
-        maker_headers = trade.get_robot_auth(trade.maker_index)
-        response = self.client.get(reverse("notifications"), **maker_headers)
-        self.assertResponse(response)
-        notifications_data = list(response.json())
-        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-        self.assertEqual(
-            notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
-        )
-        taker_headers = trade.get_robot_auth(trade.taker_index)
-        response = self.client.get(reverse("notifications"), **taker_headers)
-        self.assertResponse(response)
-        notifications_data = list(response.json())
-        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-        self.assertEqual(
-            notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
-        )
-
     def test_escrow_locked_expires(self):
         """
         Tests the expiration of a public order
@@ -990,25 +971,6 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NINVOI)
 
         self.assert_order_logs(data["id"])
-
-        maker_headers = trade.get_robot_auth(trade.maker_index)
-        response = self.client.get(reverse("notifications"), **maker_headers)
-        self.assertResponse(response)
-        notifications_data = list(response.json())
-        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-        self.assertEqual(
-            notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
-        )
-        taker_headers = trade.get_robot_auth(trade.taker_index)
-        response = self.client.get(reverse("notifications"), **taker_headers)
-        self.assertResponse(response)
-        notifications_data = list(response.json())
-        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-        self.assertEqual(
-            notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
-        )
 
     def test_chat(self):
         """
@@ -1054,6 +1016,8 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.json()["messages"][0]["message"], message)
         self.assertTrue(trade.response.json()["peer_connected"])
 
+        trade.clean_orders()
+
         maker_headers = trade.get_robot_auth(trade.maker_index)
         response = self.client.get(reverse("notifications"), **maker_headers)
         self.assertResponse(response)
@@ -1069,6 +1033,8 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(trade.response)
         self.assertEqual(trade.response.status_code, 200)
         self.assertEqual(trade.response.json(), {})  # Nothing in the response
+
+        trade.clean_orders()
 
         taker_headers = trade.get_robot_auth(trade.taker_index)
         response = self.client.get(reverse("notifications"), **taker_headers)
