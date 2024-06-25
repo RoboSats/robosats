@@ -25,7 +25,7 @@ const SettingsPage = (): JSX.Element => {
         setNewAlias('');
         setNewUrl('');
       } else {
-        setError(t('Invalid URL'));
+        setError(t('Invalid Onion URL'));
       }
     }
   };
