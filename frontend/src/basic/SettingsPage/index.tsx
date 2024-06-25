@@ -14,7 +14,7 @@ const SettingsPage = (): JSX.Element => {
   const [newUrl, setNewUrl] = useState<string>('');
   const [error, setError] = useState<string>();
   // Regular expression to match a valid .onion URL
-  const onionUrlPattern = /^(http:\/\/|https:\/\/)?[a-zA-Z2-7]{16,56}\.onion$/;
+  const onionUrlPattern = /^(http:\/\/|https:\/\/)[a-zA-Z2-7]{16,56}\.onion$/;
 
   const addCoordinator = () => {
     if (federation.coordinators[newAlias]) {
