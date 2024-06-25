@@ -9,39 +9,34 @@ import {
 } from '.';
 import defaultFederation from '../../static/federation.json';
 import { getHost } from '../utils';
+import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 
 type FederationHooks = 'onCoordinatorUpdate' | 'onFederationUpdate';
 
 export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
-    this.coordinators = Object.entries(defaultFederation).reduce(
-      (acc: Record<string, Coordinator>, [key, value]: [string, any]) => {
-        if (getHost() !== '127.0.0.1:8000' && key === 'local') {
-          // Do not add `Local Dev` unless it is running on localhost
-          return acc;
-        } else {
-          acc[key] = new Coordinator(value, origin, settings, hostUrl);
-          return acc;
-        }
-      },
-      {},
-    );
-    this.exchange = {
-      ...defaultExchange,
-      totalCoordinators: Object.keys(this.coordinators).length,
-    };
+    this.coordinators = {};
+    this.exchange = { ...defaultExchange };
     this.book = [];
     this.hooks = {
       onCoordinatorUpdate: [],
       onFederationUpdate: [],
     };
 
-    this.loading = true;
+    Object.keys(defaultFederation).forEach((key) => {
+      if (key !== 'local' || getHost() === '127.0.0.1:8000') {
+        // Do not add `Local Dev` unless it is running on localhost
+        this.addCoordinator(origin, settings, hostUrl, defaultFederation[key]);
+      }
+    });
+
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.loading = true;
 
     const host = getHost();
     const url = `${window.location.protocol}//${host}`;
+
     const tesnetHost = Object.values(this.coordinators).find((coor) => {
       return Object.values(coor.testnet).includes(url);
     });
@@ -54,6 +49,22 @@ export class Federation {
   public loading: boolean;
 
   public hooks: Record<FederationHooks, Array<() => void>>;
+
+  addCoordinator = (
+    origin: Origin,
+    settings: Settings,
+    hostUrl: string,
+    attributes: Record<any, any>,
+  ) => {
+    const value = {
+      ...coordinatorDefaultValues,
+      ...attributes,
+    };
+    this.coordinators[value.shortAlias] = new Coordinator(value, origin, settings, hostUrl);
+    this.exchange.totalCoordinators = Object.keys(this.coordinators).length;
+    this.updateEnabledCoordinators();
+    this.triggerHook('onFederationUpdate');
+  };
 
   // Hooks
   registerHook = (hookName: FederationHooks, fn: () => void): void => {

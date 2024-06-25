@@ -1,4 +1,4 @@
-import { type Order } from '.';
+import { Coordinator, type Order } from '.';
 import { systemClient } from '../services/System';
 import { saveAsJson } from '../utils';
 import Slot from './Slot.model';
@@ -62,12 +62,10 @@ class Garage {
           this.slots[rawSlot.token] = new Slot(rawSlot.token, Object.keys(rawSlot.robots), {}, () =>
             this.triggerHook('onRobotUpdate'),
           );
-
           Object.keys(rawSlot.robots).forEach((shortAlias) => {
             const rawRobot = rawSlot.robots[shortAlias];
             this.updateRobot(rawSlot.token, shortAlias, rawRobot);
           });
-
           this.currentSlot = rawSlot?.token;
         }
       });
@@ -164,6 +162,13 @@ class Garage {
       this.save();
       this.triggerHook('onOrderUpdate');
     }
+  };
+
+  // Coordinators
+  syncCoordinator: (coordinator: Coordinator) => void = (coordinator) => {
+    Object.values(this.slots).forEach((slot) => {
+      slot.syncCoordinator(coordinator, this);
+    });
   };
 }
 

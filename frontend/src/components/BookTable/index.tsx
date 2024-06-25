@@ -253,6 +253,7 @@ const BookTable = ({
       headerName: t('Host'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const coordinator = federation.coordinators[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
             style={{ cursor: 'pointer' }}
@@ -262,7 +263,8 @@ const BookTable = ({
           >
             <ListItemAvatar sx={{ position: 'relative', left: '-1.54em', bottom: '0.4em' }}>
               <RobotAvatar
-                shortAlias={params.row.coordinatorShortAlias}
+                shortAlias={coordinator.federated ? params.row.coordinatorShortAlias : undefined}
+                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 small={true}
@@ -900,7 +902,6 @@ const BookTable = ({
     ((federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators) /
       federation.exchange.enabledCoordinators) *
     100;
-
   if (!fullscreen) {
     return (
       <Paper

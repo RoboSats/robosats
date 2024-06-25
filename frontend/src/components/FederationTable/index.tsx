@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useContext } from 'react';
+import React, { useCallback, useEffect, useState, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, useTheme, Checkbox, CircularProgress, Typography, Grid } from '@mui/material';
 import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
@@ -21,9 +21,9 @@ const FederationTable = ({
   fillContainer = false,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, sortedCoordinators, coordinatorUpdatedAt } =
+  const { federation, sortedCoordinators, coordinatorUpdatedAt, federationUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
-  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { setOpen, settings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
 
@@ -43,7 +43,7 @@ const FederationTable = ({
     if (useDefaultPageSize) {
       setPageSize(defaultPageSize);
     }
-  }, [coordinatorUpdatedAt]);
+  }, [coordinatorUpdatedAt, federationUpdatedAt]);
 
   const localeText = {
     MuiTablePagination: { labelRowsPerPage: t('Coordinators per page:') },
@@ -62,6 +62,7 @@ const FederationTable = ({
       headerName: t('Coordinator'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const coordinator = federation.coordinators[params.row.shortAlias];
         return (
           <Grid
             container
@@ -76,7 +77,8 @@ const FederationTable = ({
           >
             <Grid item>
               <RobotAvatar
-                shortAlias={params.row.shortAlias}
+                shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
+                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 small={true}
@@ -212,10 +214,13 @@ const FederationTable = ({
     }
   };
 
-  const reorderedCoordinators = sortedCoordinators.reduce((coordinators, key) => {
-    coordinators[key] = federation.coordinators[key];
-    return coordinators;
-  }, {});
+  const reorderedCoordinators = useMemo(() => {
+    return sortedCoordinators.reduce((coordinators, key) => {
+      coordinators[key] = federation.coordinators[key];
+
+      return coordinators;
+    }, {});
+  }, [settings.network, federationUpdatedAt]);
 
   return (
     <Box

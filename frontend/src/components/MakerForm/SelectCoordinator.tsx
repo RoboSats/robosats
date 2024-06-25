@@ -26,8 +26,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   setCoordinator,
 }) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { federation, sortedCoordinators, coordinatorUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -41,10 +40,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
     setCoordinator(e.target.value);
   };
 
-  const coordinator = useMemo(
-    () => federation.getCoordinator(coordinatorAlias),
-    [coordinatorUpdatedAt],
-  );
+  const coordinator = federation.getCoordinator(coordinatorAlias);
 
   return (
     <Grid item>
@@ -83,7 +79,8 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
             >
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinatorAlias}
+                  shortAlias={coordinator?.federated ? coordinator.shortAlias : undefined}
+                  hashId={coordinator?.federated ? undefined : coordinator.mainnet.onion}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={false}
