@@ -650,3 +650,6 @@ node
 mobile/html/Web.bundle/js*
 mobile/html/Web.bundle/css*
 mobile/html/Web.bundle/assets*
+
+# Protocol Buffers
+api/lightning/*.proto
