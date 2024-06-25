@@ -1143,7 +1143,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
         taker_headers = trade.get_robot_auth(trade.taker_index)
         response = self.client.get(reverse("notifications"), **taker_headers)
@@ -1152,7 +1152,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
     def test_order_expires_after_only_maker_messaged(self):
@@ -1204,7 +1204,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
         taker_headers = trade.get_robot_auth(trade.taker_index)
         response = self.client.get(reverse("notifications"), **taker_headers)
@@ -1213,7 +1213,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
     def test_withdraw_reward_after_unilateral_cancel(self):
@@ -1293,7 +1293,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
         taker_headers = trade.get_robot_auth(trade.taker_index)
         response = self.client.get(reverse("notifications"), **taker_headers)
@@ -1302,7 +1302,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            f"✅ Hey {data['maker_nick']}, your or",
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
     def test_ticks(self):
