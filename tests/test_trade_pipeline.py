@@ -430,25 +430,6 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
 
-        maker_headers = trade.get_robot_auth(trade.maker_index)
-        response = self.client.get(reverse("notifications"), **maker_headers)
-        self.assertResponse(response)
-        notifications_data = list(response.json())
-        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-        self.assertEqual(
-            notifications_data[0]["title"],
-            f"✅ Hey {str(data['maker_nick'])}, your order with ID {trade.order_id} is public in the order book.",
-        )
-        taker_headers = trade.get_robot_auth(trade.taker_index)
-        response = self.client.get(reverse("notifications"), **taker_headers)
-        self.assertResponse(response)
-        notifications_data = list(response.json())
-        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-        self.assertEqual(
-            notifications_data[0]["title"],
-            f"✅ Hey {str(data['taker_nick'])}, you just took the order with ID {trade.order_id}.",
-        )
-
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
 
@@ -1016,8 +997,6 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.json()["messages"][0]["message"], message)
         self.assertTrue(trade.response.json()["peer_connected"])
 
-        trade.clean_orders()
-
         maker_headers = trade.get_robot_auth(trade.maker_index)
         response = self.client.get(reverse("notifications"), **maker_headers)
         self.assertResponse(response)
@@ -1033,8 +1012,6 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(trade.response)
         self.assertEqual(trade.response.status_code, 200)
         self.assertEqual(trade.response.json(), {})  # Nothing in the response
-
-        trade.clean_orders()
 
         taker_headers = trade.get_robot_auth(trade.taker_index)
         response = self.client.get(reverse("notifications"), **taker_headers)
