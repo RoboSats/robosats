@@ -1021,9 +1021,10 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(response)
         notifications_data = list(response.json())
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        # Does not receive notification because user is online
         self.assertEqual(
             notifications_data[0]["title"],
-            f"💬 Hey {maker_nick}, a new chat message in-app was sent to you by {taker_nick} for order ID {trade.order_id}.",
+            f"✅ Hey {maker_nick}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat.",
         )
 
         # Get the two chatroom messages as maker
