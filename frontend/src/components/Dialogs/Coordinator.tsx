@@ -344,7 +344,7 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
   );
 };
 
-const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props): JSX.Element => {
+const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.Element => {
   const { t } = useTranslation();
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -369,7 +369,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
               <Grid item>
                 <RobotAvatar
                   shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
-                  hashId={coordinator?.federated ? undefined : coordinator?.shortAlias}
+                  hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}
                 />
