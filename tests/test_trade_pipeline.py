@@ -997,14 +997,14 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.json()["messages"][0]["message"], message)
         self.assertTrue(trade.response.json()["peer_connected"])
 
-        maker_headers = trade.get_robot_auth(trade.maker_index)
-        response = self.client.get(reverse("notifications"), **maker_headers)
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
         self.assertResponse(response)
         notifications_data = list(response.json())
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            "✅ Hey your order wit",
+            f"💬 Hey {taker_nick}, a new chat message in-app was sent to you by {maker_nick} for order ID {trade.order_id}.",
         )
 
         # Post new message as taker without offset, so response should not have messages.
@@ -1013,14 +1013,14 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertEqual(trade.response.json(), {})  # Nothing in the response
 
-        taker_headers = trade.get_robot_auth(trade.taker_index)
-        response = self.client.get(reverse("notifications"), **taker_headers)
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
         self.assertResponse(response)
         notifications_data = list(response.json())
         self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
         self.assertEqual(
             notifications_data[0]["title"],
-            "✅ Hey your order wit",
+            f"💬 Hey {maker_nick}, a new chat message in-app was sent to you by {taker_nick} for order ID {trade.order_id}.",
         )
 
         # Get the two chatroom messages as maker
