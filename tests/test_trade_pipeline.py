@@ -1008,10 +1008,13 @@ class TradeTest(BaseAPITestCase):
         )
 
         # Post new message as taker without offset, so response should not have messages.
-        trade.send_chat_message(message, trade.taker_index)
+        trade.send_chat_message(message + " 2", trade.taker_index)
         self.assertResponse(trade.response)
         self.assertEqual(trade.response.status_code, 200)
-        self.assertEqual(trade.response.json(), {})  # Nothing in the response
+        self.assertEqual(trade.response.json()["messages"][0]["message"], message)
+        self.assertEqual(
+            trade.response.json()["messages"][1]["message"], message + " 2"
+        )
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
         response = self.client.get(reverse("notifications"), **maker_headers)
