@@ -284,6 +284,30 @@ paths:
                     type: string
                     description: Reason for the failure
           description: ''
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      description: Get a list of notifications sent to the robot.
+      summary: Get robot notifications
+      parameters:
+      - in: query
+        name: created_at
+        schema:
+          type: string
+        description: Shows notifications created AFTER this date.
+      tags:
+      - notifications
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListNotification'
+          description: ''
   /api/order/:
     get:
       operationId: order_retrieve
@@ -1070,6 +1094,20 @@ components:
       - swap_enabled
       - taker_fee
       - version
+    ListNotification:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 240
+        description:
+          type: string
+          maxLength: 240
+        order_id:
+          type: integer
+          readOnly: true
+      required:
+      - order_id
     ListOrder:
       type: object
       properties:
