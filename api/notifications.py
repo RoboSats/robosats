@@ -219,3 +219,47 @@ class Notifications:
         title = f"🛠️ Your order with ID {order.id} has been cancelled by the coordinator {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} for the upcoming maintenance stop."
         self.send_message(order, order.maker.robot, title)
         return
+
+    def dispute_closed(self, order):
+        lang = order.maker.robot.telegram_lang_code
+        if order.status == Order.Status.MLD:
+            # Maker lost dispute
+            looser = order.maker
+            winner = order.taker
+        elif order.status == Order.Status.TLD:
+            # Taker lost dispute
+            looser = order.taker
+            winner = order.maker
+
+        lang = looser.robot.telegram_lang_code
+        if lang == "es":
+            title = f"⚖️ Hey {looser.username}, has perdido la disputa en la orden con ID {str(order.id)}."
+        else:
+            title = f"⚖️ Hey {looser.username}, you lost the dispute on your order with ID {str(order.id)}."
+        self.send_message(order, looser.robot, title)
+
+        lang = winner.robot.telegram_lang_code
+        if lang == "es":
+            title = f"⚖️ Hey {winner.username}, has ganado la disputa en la orden con ID {str(order.id)}."
+        else:
+            title = f"⚖️ Hey {winner.username}, you won the dispute on your order with ID {str(order.id)}."
+        self.send_message(order, winner.robot, title)
+
+        return
+
+    def lightning_failed(self, order):
+        lang = order.maker.robot.telegram_lang_code
+        if order.type == Order.Types.BUY:
+            buyer = order.maker
+        else:
+            buyer = order.taker
+
+        if lang == "es":
+            title = f"⚡❌ Hey {buyer.username}, el pago lightning en la order con ID {str(order.id)} ha fallado."
+            description = "Intentalo de nuevo con una nueva factura o con otra wallet."
+        else:
+            title = f"⚡❌ Hey {buyer.username}, the lightning payment on your order with ID {str(order.id)} failed."
+            description = "Try again with a new invoice or from another wallet."
+
+        self.send_message(order, buyer.robot, title, description)
+        return

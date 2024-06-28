@@ -1163,6 +1163,60 @@ class TradeTest(BaseAPITestCase):
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
+    # def test_dispute_closed_maker_wins(self):
+    #     trade = Trade(self.client)
+    #     trade.publish_order()
+    #     trade.take_order()
+    #     trade.lock_taker_bond()
+    #     trade.lock_escrow(trade.taker_index)
+    #     trade.submit_payout_invoice(trade.maker_index)
+
+    #     trade.change_order_status(Order.Status.TLD)
+
+    #     trade.clean_orders()
+
+    #     maker_headers = trade.get_robot_auth(trade.maker_index)
+    #     response = self.client.get(reverse("notifications"), **maker_headers)
+    #     self.assertResponse(response)
+    #     notifications_data = list(response.json())
+    #     self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+    #     self.assertEqual(
+    #         notifications_data[0]["title"],
+    #         f"⚖️ Hey {data['maker_nick']}, you won the dispute on your order with ID {str(trade.order_id)}."
+    #     )
+    #     taker_headers = trade.get_robot_auth(trade.taker_index)
+    #     response = self.client.get(reverse("notifications"), **taker_headers)
+    #     self.assertResponse(response)
+    #     notifications_data = list(response.json())
+    #     self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+    #     self.assertEqual(
+    #         notifications_data[0]["title"],
+    #         f"⚖️ Hey {data['taker_nick']}, you lost the dispute on your order with ID {str(trade.order_id)}."
+    #     )
+
+    def test_lightning_payment_failed(self):
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        trade.change_order_status(Order.Status.FAI)
+
+        trade.clean_orders()
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚡❌ Hey {maker_nick}, the lightning payment on your order with ID {str(trade.order_id)} failed.",
+        )
+
     def test_withdraw_reward_after_unilateral_cancel(self):
         """
         Tests withdraw rewards as taker after maker cancels order unilaterally
