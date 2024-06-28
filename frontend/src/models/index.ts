@@ -13,7 +13,7 @@ export type { Maker } from './Maker.model';
 export type { Book, PublicOrder } from './Book.model';
 export type { Language } from './Settings.model';
 export type { Favorites } from './Favorites.model';
-export type { Contact, Info, Version, Origin } from './Coordinator.model';
+export type { Contact, Info, Version, Origin, RoboNotification } from './Coordinator.model';
 
 export { defaultMaker } from './Maker.model';
 export { defaultExchange } from './Exchange.model';

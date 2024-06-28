@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import Close from '@mui/icons-material/Close';
 import { type Page } from '../../basic/NavBar';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { Order, RoboNotification, Slot } from '../../models';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface NotificationsProps {
   rewards: number | undefined;
@@ -23,8 +25,8 @@ interface NotificationsProps {
 interface NotificationMessage {
   title: string;
   severity: 'error' | 'warning' | 'info' | 'success';
-  onClick: () => void;
-  sound: HTMLAudioElement | undefined;
+  onClick?: () => void;
+  sound?: HTMLAudioElement;
   timeout: number;
   pageTitle: string;
 }
@@ -69,13 +71,28 @@ const Notifications = ({
 }: NotificationsProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+<<<<<<< HEAD
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+=======
+  const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
+  const defaultDelay = 5000;
+  const position = windowWidth > 60 ? { top: '4em', right: '0em' } : { top: '0.5em', left: '50%' };
+>>>>>>> 29f784e9 (Web notifications)
 
-  const [message, setMessage] = useState<NotificationMessage>(emptyNotificationMessage);
+  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [inFocus, setInFocus] = useState<boolean>(true);
   const [titleAnimation, setTitleAnimation] = useState<NodeJS.Timer | undefined>(undefined);
   const [show, setShow] = useState<boolean>(false);
+  const [lastNoticiationCheck, setLastNoticiationCheck] = useState<string>(
+    new Date().toISOString(),
+  );
+  const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
+  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
+    setInterval(() => null, defaultDelay),
+  );
 
+<<<<<<< HEAD
   // Keep last values to trigger effects on change
   const [oldOrderStatus, setOldOrderStatus] = useState<number | undefined>(undefined);
   const [oldRewards, setOldRewards] = useState<number>(0);
@@ -88,6 +105,12 @@ const Notifications = ({
     navigate(`/order/${String(garage.getSlot()?.activeOrder?.id)}`);
     setShow(false);
   };
+=======
+  // // Keep last values to trigger effects on change
+  // const [oldOrderStatus, setOldOrderStatus] = useState<number | undefined>(undefined);
+  // const [oldRewards, setOldRewards] = useState<number>(0);
+  // const [oldChatIndex, setOldChatIndex] = useState<number>(0);
+>>>>>>> 29f784e9 (Web notifications)
 
   interface MessagesProps {
     bondLocked: NotificationMessage;
@@ -110,7 +133,6 @@ const Notifications = ({
         `${garage.getSlot()?.activeOrder?.is_maker === true ? 'Maker' : 'Taker'} bond locked`,
       ),
       severity: 'info',
-      onClick: moveToOrderPage,
       sound: audio.ding,
       timeout: 10000,
       pageTitle: `${t('✅ Bond!')} - ${basePageTitle}`,
@@ -118,7 +140,6 @@ const Notifications = ({
     escrowLocked: {
       title: t(`Order collateral locked`),
       severity: 'info',
-      onClick: moveToOrderPage,
       sound: audio.ding,
       timeout: 10000,
       pageTitle: `${t('✅ Escrow!')} -  ${basePageTitle}`,
@@ -126,7 +147,6 @@ const Notifications = ({
     taken: {
       title: t('Order has been taken!'),
       severity: 'success',
-      onClick: moveToOrderPage,
       sound: audio.takerFound,
       timeout: 30000,
       pageTitle: `${t('🥳 Taken!')} - ${basePageTitle}`,
@@ -134,7 +154,6 @@ const Notifications = ({
     expired: {
       title: t('Order has expired'),
       severity: 'warning',
-      onClick: moveToOrderPage,
       sound: audio.ding,
       timeout: 30000,
       pageTitle: `${t('😪 Expired!')} - ${basePageTitle}`,
@@ -142,7 +161,6 @@ const Notifications = ({
     chat: {
       title: t('Order chat is open'),
       severity: 'info',
-      onClick: moveToOrderPage,
       sound: audio.chat,
       timeout: 30000,
       pageTitle: `${t('💬 Chat!')} - ${basePageTitle}`,
@@ -150,7 +168,6 @@ const Notifications = ({
     successful: {
       title: t('Trade finished successfully!'),
       severity: 'success',
-      onClick: moveToOrderPage,
       sound: audio.successful,
       timeout: 10000,
       pageTitle: `${t('🙌 Funished!')} - ${basePageTitle}`,
@@ -158,7 +175,6 @@ const Notifications = ({
     routingFailed: {
       title: t('Lightning routing failed'),
       severity: 'warning',
-      onClick: moveToOrderPage,
       sound: audio.ding,
       timeout: 20000,
       pageTitle: `${t('❗⚡ Routing Failed')} - ${basePageTitle}`,
@@ -166,7 +182,6 @@ const Notifications = ({
     dispute: {
       title: t('Order has been disputed'),
       severity: 'warning',
-      onClick: moveToOrderPage,
       sound: audio.ding,
       timeout: 40000,
       pageTitle: `${t('⚖️ Disputed!')} - ${basePageTitle}`,
@@ -174,7 +189,6 @@ const Notifications = ({
     disputeWinner: {
       title: t('You won the dispute'),
       severity: 'success',
-      onClick: moveToOrderPage,
       sound: audio.ding,
       timeout: 30000,
       pageTitle: `${t('👍 dispute')} - ${basePageTitle}`,
@@ -182,7 +196,6 @@ const Notifications = ({
     disputeLoser: {
       title: t('You lost the dispute'),
       severity: 'error',
-      onClick: moveToOrderPage,
       sound: audio.ding,
       timeout: 30000,
       pageTitle: `${t('👎 dispute')} - ${basePageTitle}`,
@@ -201,13 +214,13 @@ const Notifications = ({
     chatMessage: {
       title: t('New chat message'),
       severity: 'info',
-      onClick: moveToOrderPage,
       sound: audio.chat,
       timeout: 3000,
       pageTitle: `${t('💬 message!')} - ${basePageTitle}`,
     },
   };
 
+<<<<<<< HEAD
   const notify = function (message: NotificationMessage): void {
     if (message.title !== '') {
       setMessage(message);
@@ -234,6 +247,9 @@ const Notifications = ({
 
     if (order === undefined || order === null) return;
 
+=======
+  const handleStatus = function (notification: RoboNotification, order: Order): void {
+>>>>>>> 29f784e9 (Web notifications)
     let message = emptyNotificationMessage;
 
     // Order status descriptions:
@@ -256,43 +272,50 @@ const Notifications = ({
     // 17: 'Maker lost dispute'
     // 18: 'Taker lost dispute'
 
-    if (status === 5 && oldStatus !== 5) {
+    const defaultOnClick = () => {
+      navigate(`/order/${order.shortAlias}/${order.id}`);
+      setShow(false);
+    };
+
+    if (notification.order_status === 5) {
       message = Messages.expired;
-    } else if (oldStatus === undefined) {
-      message = emptyNotificationMessage;
-    } else if (order.is_maker && status > 0 && oldStatus === 0) {
+    } else if (notification.order_status === 1) {
       message = Messages.bondLocked;
-    } else if (order.is_taker && status > 5 && oldStatus <= 5) {
+    } else if (order.is_taker && notification.order_status === 6) {
       message = Messages.bondLocked;
-    } else if (order.is_maker && status > 5 && oldStatus <= 5) {
+    } else if (order.is_maker && notification.order_status === 6) {
       message = Messages.taken;
-    } else if (order.is_seller && status > 7 && oldStatus < 7) {
+    } else if (order.is_seller && notification.order_status > 7) {
       message = Messages.escrowLocked;
-    } else if ([9, 10].includes(status) && oldStatus < 9) {
+    } else if ([9, 10].includes(notification.order_status)) {
       message = Messages.chat;
-    } else if (order.is_seller && [13, 14, 15].includes(status) && oldStatus < 13) {
+    } else if (order.is_seller && [13, 14, 15].includes(notification.order_status)) {
       message = Messages.successful;
-    } else if (order.is_buyer && status === 14 && oldStatus !== 14) {
+    } else if (order.is_buyer && notification.order_status === 14) {
       message = Messages.successful;
-    } else if (order.is_buyer && status === 15 && oldStatus < 14) {
+    } else if (order.is_buyer && notification.order_status === 15) {
       message = Messages.routingFailed;
-    } else if (status === 11 && oldStatus < 11) {
+    } else if (notification.order_status === 11) {
       message = Messages.dispute;
     } else if (
-      ((order.is_maker && status === 18) || (order.is_taker && status === 17)) &&
-      oldStatus < 17
+      (order.is_maker && notification.order_status === 18) ||
+      (order.is_taker && notification.order_status === 17)
     ) {
       message = Messages.disputeWinner;
     } else if (
-      ((order.is_maker && status === 17) || (order.is_taker && status === 18)) &&
-      oldStatus < 17
+      (order.is_maker && notification.order_status === 17) ||
+      (order.is_taker && notification.order_status === 18)
     ) {
       message = Messages.disputeLoser;
     }
 
-    notify(message);
+    notify({
+      ...message,
+      onClick: message.onClick ?? defaultOnClick,
+    });
   };
 
+<<<<<<< HEAD
   // Notify on order status change
   useEffect(() => {
     const order = garage.getSlot()?.activeOrder;
@@ -308,16 +331,45 @@ const Notifications = ({
       }
     }
   }, [slotUpdatedAt]);
-
-  // Notify on rewards change
-  useEffect(() => {
-    if (rewards !== undefined) {
-      if (rewards > oldRewards) {
-        notify(Messages.rewards);
+=======
+  const notify: (message: NotificationMessage) => void = (message) => {
+    if (message.title !== '') {
+      setShow(true);
+      setTimeout(() => {
+        setShow(false);
+      }, message.timeout);
+      void audio.ding.play();
+      if (!inFocus) {
+        setTitleAnimation(
+          setInterval(() => {
+            const title = document.title;
+            document.title = title === basePageTitle ? message.pageTitle : basePageTitle;
+          }, 1000),
+        );
       }
-      setOldRewards(rewards);
     }
-  }, [rewards]);
+  };
+
+  const fetchNotifications: () => void = () => {
+    clearInterval(timer);
+    Object.values(garage.slots).forEach((slot: Slot) => {
+      const coordinator = federation.getCoordinator(slot.activeShortAlias);
+      coordinator
+        .fetchNotifications(garage, slot.token, lastNoticiationCheck)
+        .then((data: RoboNotification[]) => {
+          data.forEach((notification) => handleStatus(notification, slot.order));
+        })
+        .finally(() => {
+          setLastNoticiationCheck(new Date().toISOString());
+          setTimer(setTimeout(fetchNotifications, defaultDelay));
+        });
+    });
+  };
+>>>>>>> 29f784e9 (Web notifications)
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [orderUpdatedAt, rewards]);
 
   // Set blinking page title and clear on visibility change > infocus
   useEffect(() => {
@@ -338,32 +390,38 @@ const Notifications = ({
   }, []);
 
   return (
-    <StyledTooltip
-      open={show}
-      placement={windowWidth > 60 ? 'left' : 'bottom'}
-      title={
-        <Alert
-          severity={message.severity}
-          action={
-            <IconButton
-              color='inherit'
-              size='small'
-              onClick={() => {
-                setShow(false);
-              }}
+    <>
+      {notifications.map((notification) => (
+        <StyledTooltip
+          open
+          placement={windowWidth > 60 ? 'left' : 'bottom'}
+          title={
+            <Alert
+              severity={notification.severity}
+              action={
+                <IconButton
+                  color='inherit'
+                  size='small'
+                  onClick={() => {
+                    setNotifications((array) => {
+                      return array.filter((n) => n.title !== notification.title);
+                    });
+                  }}
+                >
+                  <Close fontSize='inherit' />
+                </IconButton>
+              }
             >
-              <Close fontSize='inherit' />
-            </IconButton>
+              <div style={{ cursor: 'pointer' }} onClick={notification.onClick}>
+                {notification.title}
+              </div>
+            </Alert>
           }
         >
-          <div style={{ cursor: 'pointer' }} onClick={message.onClick}>
-            {message.title}
-          </div>
-        </Alert>
-      }
-    >
-      <div style={{ ...position, visibility: 'hidden', position: 'absolute' }} />
-    </StyledTooltip>
+          <div style={{ ...position, visibility: 'hidden', position: 'absolute' }} />
+        </StyledTooltip>
+      ))}
+    </>
   );
 };
 
