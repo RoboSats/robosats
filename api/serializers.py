@@ -493,7 +493,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 class ListNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ("title", "description", "order_id", "order_status")
+        fields = ("title", "description", "order_id", "status")
 
 
 class OrderPublicSerializer(serializers.ModelSerializer):

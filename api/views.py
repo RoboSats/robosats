@@ -764,7 +764,7 @@ class NotificationsView(ListAPIView):
             data["title"] = str(notification.title)
             data["description"] = str(notification.description)
             data["order_id"] = notification.order.id
-            data["order_status"] = notification.order.status
+            data["status"] = notification.order.status
 
             notification_data.append(data)
 
