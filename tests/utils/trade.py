@@ -271,3 +271,10 @@ class Trade:
         order = Order.objects.get(id=self.order_id)
         order.expires_at = datetime.now()
         order.save()
+
+    @patch("api.tasks.send_notification.delay", send_notification)
+    def change_order_status(self, status):
+        # Change order expiry to now
+        order = Order.objects.get(id=self.order_id)
+        order.status = status
+        order.save()
