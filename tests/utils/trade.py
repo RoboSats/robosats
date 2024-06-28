@@ -276,5 +276,4 @@ class Trade:
     def change_order_status(self, status):
         # Change order expiry to now
         order = Order.objects.get(id=self.order_id)
-        order.status = status
-        order.save()
+        order.update_status(status)
