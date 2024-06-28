@@ -31,6 +31,13 @@ export interface Version {
   patch: number;
 }
 
+export interface RoboNotification {
+  title: string;
+  description: string;
+  order_status: number;
+  order_id: number;
+}
+
 export interface Badges {
   isFounder?: boolean | undefined;
   donatesToDevFund: number;
@@ -208,7 +215,7 @@ export class Coordinator {
     });
   };
 
-  generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
+  generateAllMakerAvatars = async (data: PublicOrder[]): Promise<void> => {
     for (const order of data) {
       roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
     }
@@ -230,7 +237,7 @@ export class Coordinator {
             order.coordinatorShortAlias = this.shortAlias;
             return order;
           });
-          void this.generateAllMakerAvatars(data);
+          void this.generateAllMakerAvatars(data as PublicOrder[]);
           onDataLoad();
         } else {
           this.book = [];
@@ -456,6 +463,27 @@ export class Coordinator {
     });
 
     return null;
+  };
+
+  fetchNotifications = async (
+    garage: Garage,
+    index: string,
+    gteISODate: string,
+  ): Promise<RoboNotification[]> => {
+    if (!this.enabled) return [];
+
+    const slot = garage.getSlot(index);
+    const robot = slot?.getRobot();
+
+    if (!(slot?.token != null) || !(robot?.encPrivKey != null)) return [];
+
+    const data = await apiClient.get(
+      this.url,
+      `${this.basePath}/api/notifications/?created_at=${gteISODate}`,
+      { tokenSHA256: robot.tokenSHA256 },
+    );
+
+    return data as RoboNotification[];
   };
 }
 
