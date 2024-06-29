@@ -1171,7 +1171,7 @@ class TradeTest(BaseAPITestCase):
     #     trade.lock_escrow(trade.taker_index)
     #     trade.submit_payout_invoice(trade.maker_index)
 
-    #     trade.change_order_status(Order.Status.TLD)
+    #     # Admin resolves dispute
 
     #     trade.clean_orders()
 
