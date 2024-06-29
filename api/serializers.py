@@ -491,9 +491,16 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class ListNotificationSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField(
+        help_text="The `status` of the order when the notification was trigered",
+    )
     class Meta:
         model = Notification
         fields = ("title", "description", "order_id", "status")
+
+    def get_status(self, notification) -> int:
+        return notification.order.status
+
 
 
 class OrderPublicSerializer(serializers.ModelSerializer):
