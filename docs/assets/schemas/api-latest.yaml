@@ -1106,8 +1106,13 @@ components:
         order_id:
           type: integer
           readOnly: true
+        status:
+          type: integer
+          readOnly: true
+          description: The `status` of the order when the notification was trigered
       required:
       - order_id
+      - status
     ListOrder:
       type: object
       properties:
