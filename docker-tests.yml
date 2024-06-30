@@ -15,7 +15,7 @@ version: '3.9'
 services:
   bitcoind:
     image: ruimarinho/bitcoin-core:${BITCOIND_VERSION:-24.0.1}-alpine
-    container_name: btc
+    container_name: test-btc
     restart: always
     ports:
       - "8000:8000"
@@ -50,7 +50,7 @@ services:
 
   coordinator-LND:
     image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
-    container_name: coordinator-LND
+    container_name: test-coordinator-LND
     restart: always
     volumes:
       - bitcoin:/root/.bitcoin/
@@ -83,7 +83,7 @@ services:
   coordinator-CLN:
     image: elementsproject/lightningd:${CLN_VERSION:-v24.05}
     restart: always
-    container_name: coordinator-CLN
+    container_name: test-coordinator-CLN
     environment:
       LIGHTNINGD_NETWORK: 'regtest'
     volumes:
@@ -97,7 +97,7 @@ services:
 
   robot-LND:
     image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
-    container_name: robot-LND
+    container_name: test-robot-LND
     restart: always
     volumes:
       - bitcoin:/root/.bitcoin/
@@ -129,7 +129,7 @@ services:
 
   redis:
     image: redis:${REDIS_VERSION:-7.2.1}-alpine
-    container_name: redis
+    container_name: test-redis
     restart: always
     volumes:
       - redisdata:/data
@@ -141,7 +141,7 @@ services:
       args:
         DEVELOPMENT: True
     image: backend-image
-    container_name: coordinator
+    container_name: test-coordinator
     restart: always
     environment:
       DEVELOPMENT: True
@@ -171,7 +171,7 @@ services:
 
   postgres:
     image: postgres:${POSTGRES_VERSION:-14.2}-alpine
-    container_name: sql
+    container_name: test-sql
     restart: always
     environment:
       POSTGRES_PASSWORD: 'example'
