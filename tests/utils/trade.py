@@ -5,7 +5,7 @@ from django.urls import reverse
 from api.management.commands.clean_orders import Command as CleanOrders
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Order
-from api.tasks import follow_send_payment, send_notification
+from api.tasks import follow_send_payment, send_notification, send_order_nostr_event
 from tests.utils.node import (
     add_invoice,
     create_address,
@@ -156,6 +156,7 @@ class Trade:
             wait_nodes_sync()
 
     @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_order_nostr_event.delay", send_order_nostr_event)
     def publish_order(self):
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         self.get_order()

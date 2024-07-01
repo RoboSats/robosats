@@ -5,17 +5,17 @@
 
 # docker-compose -f docker-tests.yml --env-file tests/compose.env down --volumes
 
-# docker exec -it btc bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test createwallet default
-# docker exec -it btc bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test -generate 101
+# docker exec -it btc-test bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test createwallet default
+# docker exec -it btc-test bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test -generate 101
 
-# docker exec -it coordinator-LND lncli --network=regtest getinfo
-# docker exec -it robot-LND lncli --network=regtest --rpcserver localhost:10010 getinfo
+# docker exec -it coordinator-LND-test lncli --network=regtest getinfo
+# docker exec -it robot-LND-test lncli --network=regtest --rpcserver localhost:10010 getinfo
 
 version: '3.9'
 services:
   bitcoind:
     image: ruimarinho/bitcoin-core:${BITCOIND_VERSION:-24.0.1}-alpine
-    container_name: btc
+    container_name: btc-test
     restart: always
     ports:
       - "8000:8000"
@@ -50,7 +50,7 @@ services:
 
   coordinator-LND:
     image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
-    container_name: coordinator-LND
+    container_name: coordinator-LND-test
     restart: always
     volumes:
       - bitcoin:/root/.bitcoin/
@@ -83,7 +83,7 @@ services:
   coordinator-CLN:
     image: elementsproject/lightningd:${CLN_VERSION:-v24.05}
     restart: always
-    container_name: coordinator-CLN
+    container_name: coordinator-CLN-test
     environment:
       LIGHTNINGD_NETWORK: 'regtest'
     volumes:
@@ -97,7 +97,7 @@ services:
 
   robot-LND:
     image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
-    container_name: robot-LND
+    container_name: robot-LND-test
     restart: always
     volumes:
       - bitcoin:/root/.bitcoin/
@@ -129,7 +129,7 @@ services:
 
   redis:
     image: redis:${REDIS_VERSION:-7.2.1}-alpine
-    container_name: redis
+    container_name: redis-test
     restart: always
     volumes:
       - redisdata:/data
@@ -141,7 +141,7 @@ services:
       args:
         DEVELOPMENT: True
     image: backend-image
-    container_name: coordinator
+    container_name: coordinator-test
     restart: always
     environment:
       DEVELOPMENT: True
@@ -171,7 +171,7 @@ services:
 
   postgres:
     image: postgres:${POSTGRES_VERSION:-14.2}-alpine
-    container_name: sql
+    container_name: sql-test
     restart: always
     environment:
       POSTGRES_PASSWORD: 'example'
@@ -179,10 +179,18 @@ services:
       POSTGRES_DB: 'postgres'
     network_mode: service:bitcoind
 
+  rnostr:
+    build: https://github.com/rnostr/rnostr.git
+    container_name: rnostr-test
+    restart: unless-stopped
+    volumes:
+      - ./nodeapp/rnostr/config/rnostr.toml:/rnostr/config/rnostr.toml:r
+    network_mode: service:bitcoind
+
   # celery-worker:
   #   image: backend-image
   #   pull_policy: never
-  #   container_name: celery-worker
+  #   container_name: celery-worker-test
   #   restart: always
   #   environment:
   #     DEVELOPMENT: True
