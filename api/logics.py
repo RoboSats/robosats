@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
-from api.tasks import send_devfund_donation, send_notification
+from api.tasks import send_devfund_donation, send_notification, send_order_nostr_event
 from api.utils import get_minning_fee, validate_onchain_address, location_country
 from chat.models import Message
 
@@ -1207,6 +1207,8 @@ class Logics:
         order.payout_tx = None
 
         order.save()  # update all fields
+
+        send_order_nostr_event.delay(order_id=order.id)
 
         order.log(f"Order({order.id},{str(order)}) is public in the order book")
         return

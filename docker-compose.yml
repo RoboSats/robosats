@@ -163,6 +163,7 @@ services:
     ports:
       - 8000:8000     # dev frontend build
       - 12596:12596   # umbrel frontend
+      - 888:888   # nostr
 
   lnd:
     build: ./docker/lnd
@@ -225,6 +226,14 @@ services:
     network_mode: service:tor
     volumes:
       - ./node/db:/var/lib/postgresql/data
+
+  rnostr:
+    build: https://github.com/rnostr/rnostr.git
+    container_name: rnostr-dev
+    restart: unless-stopped
+    volumes:
+      - ./nodeapp/rnostr/config/rnostr.toml:/rnostr/config/rnostr.toml:r
+    network_mode: service:tor
 
   # # Postgresql for CLN
   # postgres-cln:

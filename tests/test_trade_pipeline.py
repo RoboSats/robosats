@@ -16,7 +16,7 @@ from tests.utils.pgp import sign_message
 from tests.utils.trade import Trade
 
 from api.admin import OrderAdmin
-
+from nostr_sdk import Kind, Filter
 
 def read_file(file_path):
     """
