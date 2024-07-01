@@ -1,6 +1,5 @@
-import time
 import pygeohash
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Filter
+from nostr_sdk import Keys, Client, EventBuilder, NostrSigner
 from api.models import Order
 from decouple import config
 
@@ -18,10 +17,9 @@ class Nostr:
         # Add relays and connect
         await client.add_relays(["ws://localhost:888"])
         await client.connect()
-    
-        event = EventBuilder(38383, "", generate_tags(order)).to_event(keys)
-        output = await client.send_event(event)
 
+        event = EventBuilder(38383, "", self.generate_tags(order)).to_event(keys)
+        output = await client.send_event(event)
         print(f"Nostr event sent: {output}")
 
     def generate_tags(self, order):
@@ -35,13 +33,15 @@ class Nostr:
             ["fa", order.amount],
             ["pm", order.payment_method.split(" ")],
             ["premium", order.premium_percentile],
-            ["source", f"{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}"],
+            [
+                "source",
+                f"{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
+            ],
             ["expiration", order.expires_at.timestamp()],
             ["y", "robosats"],
-            ["coordinator", config("COORDINATOR_ALIAS", cast=str)]
-            ["z", "order"],
+            ["coordinator", config("COORDINATOR_ALIAS", cast=str)]["z", "order"],
             ["n", order.network],
             ["layer", "lightning"],
             ["g", pygeohash.encode(order.latitude, order.longitude)],
-            ["bond", order.bond]
+            ["bond", order.bond],
         ]

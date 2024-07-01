@@ -263,12 +263,12 @@ def send_order_nostr_event(order_id=None, message=None):
         nostr = Nostr()
         if message == "new":
             coroutine = nostr.send_new_order_event(order)
-
         if coroutine:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(coroutine)
 
     return
+
 
 @shared_task(name="send_notification", ignore_result=True, time_limit=120)
 def send_notification(order_id=None, chat_message_id=None, message=None):
