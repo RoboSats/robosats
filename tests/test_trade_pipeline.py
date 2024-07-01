@@ -17,7 +17,6 @@ from tests.utils.trade import Trade
 
 from api.admin import OrderAdmin
 
-
 def read_file(file_path):
     """
     Read a file and return its content.

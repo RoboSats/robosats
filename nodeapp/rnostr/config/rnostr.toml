@@ -1,0 +1,145 @@
+# Configuration
+# All duration format reference https://docs.rs/duration-str/latest/duration_str/
+#
+# config relay information
+[information]
+name = "rnostr"
+description = "A high-performance and scalable nostr relay written in Rust."
+software = "https://github.com/rnostr/rnostr"
+# pubkey = ""
+# contact = ""
+
+# config data path
+[data]
+# the data path (restart required)
+# the events db path is $path/events
+path = "./data"
+
+# Query filter timeout time, default no timeout.
+db_query_timeout = "100ms"
+
+# config network
+[network]
+# Interface to listen on. Use 0.0.0.0 to listen on all interfaces (restart required)
+host = "127.0.0.1"
+# Listen port (restart required)
+port = 888
+
+# real ip header (default empty)
+# ie: cf-connecting-ip, x-real-ip, x-forwarded-for
+# real_ip_header = "x-forwarded-for"
+
+# redirect to other site when user access the http index page
+# index_redirect_to = "https://example.com"
+
+# heartbeat timeout (default 120 seconds, must bigger than heartbeat interval)
+# How long before lack of client response causes a timeout
+# heartbeat_timeout = "2m"
+
+# heartbeat interval (default 60 seconds)
+# How often heartbeat pings are sent
+# heartbeat_interval = "1m"
+
+# config thread (restart required)
+[thread]
+# number of http server threads (restart required)
+# default 0 will use the num of cpus
+# http = 0
+
+# number of read event threads (restart required)
+# default 0 will use the num of cpus
+# reader = 0
+
+[limitation]
+# this is the maximum number of bytes for incoming JSON. default 512K
+max_message_length = 524288
+# total number of subscriptions that may be active on a single websocket connection to this relay. default 20
+max_subscriptions = 1
+# maximum number of filter values in each subscription. default 10
+max_filters = 10
+# the relay server will clamp each filter's limit value to this number. This means the client won't be able to get more than this number of events from a single subscription filter. default 300
+max_limit = 300
+# maximum length of subscription id as a string. default 100
+max_subid_length = 100
+# for authors and ids filters which are to match against a hex prefix, you must provide at least this many hex digits in the prefix. default 10
+min_prefix = 10
+# in any event, this is the maximum number of elements in the tags list. default 5000
+max_event_tags = 15
+# Events older than this will be rejected. default 3 years
+max_event_time_older_than_now = 94608000
+# Events newer than this will be rejected. default 15 minutes
+max_event_time_newer_than_now = 900
+
+# Metrics extension, get the metrics data from https://example.com/metrics?auth=auth_key
+[metrics]
+enabled = false
+# change the auth key
+auth = "auth_key"
+
+# Auth extension
+[auth]
+enabled = false
+
+# # Authenticate the command 'REQ' get event, subscribe filter
+# [auth.req]
+# # only the list IP are allowed to req
+# ip_whitelist = ["127.0.0.1"]
+# # only the list IP are denied to req
+# ip_blacklist = ["127.0.0.1"]
+# # Restrict on nip42 verified pubkey, so client needs to implement nip42 and authenticate success
+# pubkey_whitelist = ["xxxxxx"]
+# pubkey_blacklist = ["xxxx"]
+
+# # Authenticate the command 'EVENT' write event
+# [auth.event]
+# ip_whitelist = ["127.0.0.1"]
+# ip_blacklist = ["127.0.0.1"]
+# # Restrict on nip42 verified pubkey, so client needs to implement nip42 and authenticate success
+# pubkey_whitelist = ["xxxxxx"]
+# pubkey_blacklist = ["xxxx"]
+# # Restrict on event author pubkey, No need nip42 authentication
+# event_pubkey_whitelist = ["xxxxxx"]
+# event_pubkey_blacklist = ["xxxx"]
+
+# IP Rate limiter extension
+[rate_limiter]
+enabled = false
+
+# # interval at second for clearing invalid data to free up memory.
+# # 0 will be converted to default 60 seconds
+# clear_interval = "60s"
+
+# # rate limiter ruler list when write event per user client IP
+# [[rate_limiter.event]]
+# # name of rate limiter, used by metrics
+# name = "all"
+# # description will notice the user when rate limiter exceeded
+# description = "allow only ten events per minute"
+# period = "1m"
+# limit = 10
+
+# # only limit for kinds
+# # support kind list: [1, 2, 3]
+# # kind ranges included(start) to excluded(end): [[0, 10000], [30000, 40000]]
+# # mixed: [1, 2, [30000, 40000]]
+# kinds = [[0, 40000]]
+
+# # skip when ip in whitelist
+# ip_whitelist = ["127.0.0.1"]
+
+# [[rate_limiter.event]]
+# name = "kind 10000"
+# description = "allow only five write events per minute when event kind between 0 to 10000"
+# period = "60s"
+# limit = 5
+# kinds = [[0, 10000]]
+
+# NIP-45 Count extension
+# use carefully. see README.md#count
+[count]
+enabled = false
+
+# NIP-50 Search extension
+# use carefully. see README.md#search
+[search]
+enabled = false
