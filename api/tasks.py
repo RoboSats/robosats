@@ -1,3 +1,4 @@
+import asyncio
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -250,6 +251,24 @@ def cache_market():
         print("SOFT LIMIT REACHED. Could not fetch current external market prices.")
         return
 
+
+@shared_task(name="", ignore_result=True, time_limit=120)
+def send_order_nostr_event(order_id=None, message=None):
+    if order_id:
+        from api.models import Order
+        from api.nostr import Nostr
+
+        order = Order.objects.get(id=order_id)
+
+        nostr = Nostr()
+        if message == "new":
+            coroutine = nostr.send_new_order_event(order)
+
+        if coroutine:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(coroutine)
+
+    return
 
 @shared_task(name="send_notification", ignore_result=True, time_limit=120)
 def send_notification(order_id=None, chat_message_id=None, message=None):

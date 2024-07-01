@@ -182,7 +182,7 @@ services:
   # celery-worker:
   #   image: backend-image
   #   pull_policy: never
-  #   container_name: celery-worker
+  #   container_name: test-celery-worker
   #   restart: always
   #   environment:
   #     DEVELOPMENT: True
@@ -204,6 +204,15 @@ services:
   #   depends_on:
   #     - redis
   #   network_mode: service:bitcoind
+
+  rnostr:
+    build: https://github.com/rnostr/rnostr.git
+    container_name: test-rnostr
+    restart: unless-stopped
+    volumes:
+      - ./nodeapp/rnostr/config/rnostr.toml:/rnostr/config/rnostr.toml:r
+    network_mode: service:bitcoind
+
 
 volumes:
   redisdata:
