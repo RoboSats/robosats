@@ -660,3 +660,6 @@ nodeapp/*.html
 
 # Protocol Buffers
 api/lightning/*.proto
+
+# Traditional environment
+regtest/

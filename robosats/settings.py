@@ -59,7 +59,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 SESSION_COOKIE_HTTPONLY = False
 
 # Logging settings
-if os.environ.get("LOG_TO_CONSOLE"):
+if config("LOG_TO_CONSOLE", cast=bool, default=False):
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -70,12 +70,12 @@ if os.environ.get("LOG_TO_CONSOLE"):
         },
         "root": {
             "handlers": ["console"],
-            "level": "WARNING",
+            "level": str(config("LOGGER_LEVEL", cast=str, default="WARNING")),
         },
         "loggers": {
             "api.utils": {
                 "handlers": ["console"],
-                "level": "WARNING",
+                "level": str(config("LOGGER_LEVEL", cast=str, default="WARNING")),
             },
         },
     }
