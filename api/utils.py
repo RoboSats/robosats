@@ -188,8 +188,7 @@ def get_exchange_rates(currencies):
                             blockchain_rates.append(
                                 float(blockchain_prices[currency]["last"])
                             )
-                        except Exception as e:
-                            print(e)
+                        except Exception:
                             blockchain_rates.append(np.nan)
                 api_rates.append(blockchain_rates)
 
