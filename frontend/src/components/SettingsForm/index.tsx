@@ -253,7 +253,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                 onChange={(_e, useProxy) => {
                   setSettings({ ...settings, useProxy });
                   systemClient.setItem('settings_use_proxy', String(useProxy));
-                  apiClient.useProxy = useProxy
+                  apiClient.useProxy = useProxy;
                 }}
               >
                 <ToggleButton value={true} color='primary'>
