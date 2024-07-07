@@ -203,7 +203,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           mining_fee_rate,
           statement,
           rating,
-		  cancel_status
+          cancel_status
         })
         .then((data: Order) => {
           setOpen(closeAll);

@@ -1085,8 +1085,17 @@ class TradeTest(BaseAPITestCase):
 
         trade.cancel_order(trade.maker_index)
         data = trade.response.json()
+        self.assertEqual(
+            data["bad_request"], "This order has been cancelled by the maker"
+        )
 
         trade.get_order(trade.taker_index)
+        data = trade.response.json()
+        self.assertEqual(
+            data["bad_request"], "This order has been cancelled by the maker"
+        )
+
+        trade.get_order(trade.third_index)
         data = trade.response.json()
         self.assertEqual(
             data["bad_request"], "This order has been cancelled by the maker"
