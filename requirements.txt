@@ -11,7 +11,7 @@ celery==5.4.0
 grpcio==1.62.0
 googleapis-common-protos==1.63.0
 grpcio-tools==1.62.0
-numpy==1.26.4
+numpy==2.0.0
 Pillow==10.1.0
 python-decouple==3.8
 requests==2.31.0
