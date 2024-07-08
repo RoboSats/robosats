@@ -103,6 +103,8 @@ INSTALLED_APPS = [
     "frontend",
     "drf_spectacular",
     "drf_spectacular_sidecar",  # required for Django collectstatic discovery
+    "django_otp",
+    "django_otp.plugins.otp_totp",
 ]
 
 REST_FRAMEWORK = {
@@ -154,6 +156,7 @@ MIDDLEWARE = [
     "robosats.middleware.DisableCSRFMiddleware",
     "robosats.middleware.SplitAuthorizationHeaderMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "robosats.middleware.RobotTokenSHA256AuthenticationMiddleWare",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",

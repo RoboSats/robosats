@@ -28,3 +28,5 @@ drf-spectacular==0.27.2
 drf-spectacular-sidecar==2024.7.1
 django-cors-headers==4.4.0
 base91==1.0.1
+django-otp==1.5.0
+qrcode==7.4.2

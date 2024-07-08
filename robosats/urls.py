@@ -15,19 +15,30 @@ Including another URLconf
 """
 
 from decouple import config
+from django.apps import apps
 from django.conf import settings
-from django.contrib import admin
 from django.urls import include, path
+
+from django_otp.admin import OTPAdminSite
+
+
+class OTPAdmin(OTPAdminSite):
+    pass
+
+
+admin_site = OTPAdmin(name="OTPAdmin")
+for model in apps.get_models():
+    admin_site.register(model)
 
 VERSION = settings.VERSION
 
 urlpatterns = [
-    path("coordinator/", admin.site.urls),
+    path("coordinator/", admin_site.urls),
     path("api/", include("api.urls")),
     # path('chat/', include('chat.urls')),
     path("", include("frontend.urls")),
 ]
 
-admin.site.site_header = f"RoboSats Coordinator: {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} {config('NETWORK', cast=str, default='')} (v{VERSION['major']}.{VERSION['minor']}.{VERSION['patch']})".title()
-admin.site.index_title = "Coordinator administration"
-admin.site.site_title = "RoboSats Coordinator Admin"
+admin_site.site_header = f"RoboSats Coordinator: {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} {config('NETWORK', cast=str, default='')} (v{VERSION['major']}.{VERSION['minor']}.{VERSION['patch']})".title()
+admin_site.index_title = "Coordinator administration"
+admin_site.site_title = "RoboSats Coordinator Admin"
