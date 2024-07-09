@@ -1110,6 +1110,9 @@ components:
           type: integer
           readOnly: true
           description: The `status` of the order when the notification was trigered
+        created_at:
+          type: string
+          format: date-time
       required:
       - order_id
       - status
