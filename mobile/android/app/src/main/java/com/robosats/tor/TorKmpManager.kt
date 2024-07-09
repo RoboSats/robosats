@@ -28,7 +28,7 @@ import kotlinx.coroutines.*
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-class TorKmpManager(application : Application) {
+class TorKmp(application : Application) {
 
     private val TAG = "TorListener"
 
@@ -385,5 +385,17 @@ class TorKmpManager(application : Application) {
                 }
             }
         }
+    }
+}
+
+object TorKmpManager {
+    private lateinit var torKmp: TorKmp
+
+    fun getTorKmpObject(): TorKmp {
+        return torKmp
+    }
+
+    fun updateTorKmpObject(newKmpObject: TorKmp) {
+        torKmp = newKmpObject
     }
 }

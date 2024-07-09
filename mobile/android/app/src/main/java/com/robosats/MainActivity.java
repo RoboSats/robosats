@@ -13,6 +13,7 @@ import androidx.work.WorkManager;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
 import com.robosats.workers.NotificationWorker;
 
@@ -75,7 +76,7 @@ public class MainActivity extends ReactActivity {
 //                    ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
     OneTimeWorkRequest workRequest =
             new OneTimeWorkRequest.Builder(NotificationWorker.class)
-                    .setInitialDelay(5, TimeUnit.SECONDS)
+                    .setInitialDelay(25, TimeUnit.SECONDS)
                     .build();
 
     WorkManager.getInstance(getApplicationContext())

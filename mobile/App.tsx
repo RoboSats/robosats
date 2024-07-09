@@ -7,6 +7,7 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import { name as app_name, version as app_version } from './package.json';
 import TorModule from './native/TorModule';
 import RoboIdentitiesModule from './native/RoboIdentitiesModule';
+import NotificationsModule from './native/NotificationsModule';
 
 const backgroundColors = {
   light: 'white',
@@ -62,6 +63,7 @@ const App = () => {
           webViewRef.current?.injectJavaScript(
             `(function() {window.NativeRobosats?.loadCookie(${json});})();`,
           );
+          return value;
         }
       });
     };
@@ -72,7 +74,10 @@ const App = () => {
     loadCookie('settings_light_qr');
     loadCookie('settings_network');
     loadCookie('settings_use_proxy');
-    loadCookie('garage_slots').then(() => injectMessageResolve(responseId));
+    loadCookie('garage_slots').then((slots) => {
+      NotificationsModule.monitorOrders(slots ?? '{}');
+      injectMessageResolve(responseId);
+    });
   };
 
   const onCatch = (dataId: string, event: any) => {

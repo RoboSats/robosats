@@ -4,6 +4,7 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
+import com.robosats.modules.NotificationsModule;
 import com.robosats.modules.RoboIdentitiesModule;
 import com.robosats.modules.TorModule;
 
@@ -23,6 +24,7 @@ public class RobosatsPackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
 
         modules.add(new TorModule(reactContext));
+        modules.add(new NotificationsModule(reactContext));
         modules.add(new RoboIdentitiesModule(reactContext));
 
         return modules;
