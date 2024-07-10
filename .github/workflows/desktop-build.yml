@@ -1,0 +1,83 @@
+name: "Build: Desktop"
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: [ "main" ]
+    paths: [ "desktopApp", "frontend" ]
+  pull_request:
+    branches: [ "main" ]
+    paths: [ "desktopApp", "frontend" ]
+
+jobs:
+  build-desktop:
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          cd desktopApp
+          npm install
+      
+      - name: Install zip utility
+        run: |
+          apt-get update
+          apt-get install -y zip
+
+      - name: Build for macOS
+        run: |
+          cd desktopApp
+          npm run package-mac
+
+      - name: Build for Windows
+        run: |
+          cd desktopApp
+          npm run package-win
+      
+      - name: Build for Linux
+        run: |
+          cd desktopApp
+          npm run package-linux
+      
+      - name: Create ZIP for macOS Build
+        run: |
+          cd desktopApp/release-builds/
+          zip -r /desktopApp-mac.zip ./Robosats-darwin-x64/*
+
+      - name: Create ZIP for Windows Build
+        run: |
+          cd desktopApp/release-builds/
+          zip -r /desktopApp-win.zip ./Robosats-win32-ia32/*
+
+      - name: Create ZIP for Linux Build
+        run: |
+          cd desktopApp/release-builds/
+          zip -r /desktopApp-linux.zip ./Robosats-linux-x64/*
+
+      - name: Upload macOS Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktopApp-mac.zip
+          path: desktopApp/release-builds/desktopApp-mac.zip
+
+      - name: Upload Windows Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktopApp-win.zip
+          path: desktopApp/release-builds/desktopApp-win.zip
+
+      - name: Upload Linux Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktopApp-linux.zip
+          path: desktopApp/release-builds/desktopApp-linux.zip
+
