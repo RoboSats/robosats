@@ -1,7 +1,4 @@
 import hashlib
-import time
-
-from .utils import human_format
 
 
 class NickGenerator:
@@ -94,7 +91,7 @@ class NickGenerator:
             # if self.verbose:
             #     print(f"Adverb: {adv}, id {adv_id}.")
         else:
-            adv_id, adv, remainder = 0, "", nick_id
+            adv, remainder = "", nick_id
 
         # Compute adjective id
         if self.use_adj:
