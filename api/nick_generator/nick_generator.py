@@ -1,5 +1,11 @@
 import hashlib
 
+# UNUSED
+# import time
+
+# UNUSED
+# from .utils import human_format
+
 
 class NickGenerator:
     """
