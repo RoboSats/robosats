@@ -109,6 +109,18 @@ class Garage {
     this.triggerHook('onRobotUpdate');
   };
 
+  getSlotByOrder: (coordinator: string, orderID: number) => Slot | null = (
+    coordinator,
+    orderID,
+  ) => {
+    return (
+      Object.values(this.slots).find((slot) => {
+        const robot = slot.getRobot(coordinator);
+        return slot.activeShortAlias === coordinator && robot?.activeOrderId === orderID;
+      }) ?? null
+    );
+  };
+
   // Robots
   createRobot: (token: string, shortAliases: string[], attributes: Record<any, any>) => void = (
     token,

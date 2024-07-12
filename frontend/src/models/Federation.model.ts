@@ -8,6 +8,7 @@ import {
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
+import { systemClient } from '../services/System';
 import { getHost } from '../utils';
 import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
@@ -90,9 +91,12 @@ export class Federation {
   };
 
   updateUrl = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
+    const federationUrls = {};
     for (const coor of Object.values(this.coordinators)) {
       coor.updateUrl(origin, settings, hostUrl);
+      federationUrls[coor.shortAlias] = coor.url;
     }
+    systemClient.setCookie('federation', JSON.stringify(federationUrls));
   };
 
   update = async (): Promise<void> => {

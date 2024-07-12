@@ -1,8 +1,10 @@
 package com.robosats;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -15,6 +17,10 @@ import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.robosats.workers.NotificationWorker;
 
 import java.util.concurrent.TimeUnit;
@@ -25,12 +31,35 @@ public class MainActivity extends ReactActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    Bundle extras = getIntent().getExtras();
+    if (extras != null) {
+        String coordinator = extras.getString("coordinator");
+        String token = extras.getString("token");
+        int order_id = extras.getInt("order_id", 0);
+        if (order_id > 0) {
+            navigateToPage(coordinator, order_id);
+        }
+    }
+
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATIONS);
     } else {
       // Permission already granted, schedule your work
-      schedulePeriodicTask();
+        scheduleFirstNotificationTask();
+        schedulePeriodicNotificationTask();
     }
+  }
+
+  @Override
+  public void onNewIntent(Intent intent) {
+      super.onNewIntent(intent);
+      if (intent != null) {
+          String coordinator = intent.getStringExtra("coordinator");
+          int order_id = intent.getIntExtra("order_id", 0);
+          if (order_id > 0) {
+              navigateToPage(coordinator, order_id);
+          }
+      }
   }
 
   /**
@@ -57,7 +86,8 @@ public class MainActivity extends ReactActivity {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        schedulePeriodicTask();
+          scheduleFirstNotificationTask();
+          schedulePeriodicNotificationTask();
       } else {
         // Permission denied, handle accordingly
         // Maybe show a message to the user explaining why the permission is necessary
@@ -65,15 +95,39 @@ public class MainActivity extends ReactActivity {
     }
   }
 
-  private void schedulePeriodicTask() {
-//    // Trigger the WorkManager setup and enqueueing here
-//    PeriodicWorkRequest periodicWorkRequest =
-//            new PeriodicWorkRequest.Builder(NotificationWorker.class, 15, TimeUnit.MINUTES)
-//                    .build();
-//
-//    WorkManager.getInstance(getApplicationContext())
-//            .enqueueUniquePeriodicWork("RobosatsNotificationsWork",
-//                    ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+  private void navigateToPage(String coordinator, Integer order_id) {
+      ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
+      if (reactContext != null) {
+          WritableMap payload = Arguments.createMap();
+          payload.putString("coordinator", coordinator);
+          payload.putInt("order_id", order_id);
+          reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                  .emit("navigateToPage", payload);
+      }
+  }
+
+  private void scheduleFirstNotificationTask() {
+    OneTimeWorkRequest workRequest =
+            new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                    .setInitialDelay(20, TimeUnit.SECONDS)
+                    .build();
+
+    WorkManager.getInstance(getApplicationContext())
+            .enqueue(workRequest);
+  }
+
+  private void schedulePeriodicNotificationTask() {
+    // Trigger the WorkManager setup and enqueueing here
+    PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(NotificationWorker.class, 15, TimeUnit.MINUTES)
+                    .build();
+
+    WorkManager.getInstance(getApplicationContext())
+            .enqueueUniquePeriodicWork("RobosatsNotificationsWork",
+                    ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+  }
+
+  private void scheduleInitialTask() {
     OneTimeWorkRequest workRequest =
             new OneTimeWorkRequest.Builder(NotificationWorker.class)
                     .setInitialDelay(25, TimeUnit.SECONDS)

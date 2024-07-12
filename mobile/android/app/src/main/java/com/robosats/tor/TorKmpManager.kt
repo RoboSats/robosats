@@ -27,6 +27,7 @@ import io.matthewnelson.kmp.tor.manager.R
 import kotlinx.coroutines.*
 import java.net.InetSocketAddress
 import java.net.Proxy
+import java.util.concurrent.ExecutionException
 
 class TorKmp(application : Application) {
 
@@ -391,6 +392,7 @@ class TorKmp(application : Application) {
 object TorKmpManager {
     private lateinit var torKmp: TorKmp
 
+    @Throws(UninitializedPropertyAccessException::class)
     fun getTorKmpObject(): TorKmp {
         return torKmp
     }

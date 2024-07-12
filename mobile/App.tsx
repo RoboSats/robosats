@@ -8,6 +8,7 @@ import { name as app_name, version as app_version } from './package.json';
 import TorModule from './native/TorModule';
 import RoboIdentitiesModule from './native/RoboIdentitiesModule';
 import NotificationsModule from './native/NotificationsModule';
+import SystemModule from './native/SystemModule';
 
 const backgroundColors = {
   light: 'white',
@@ -24,6 +25,13 @@ const App = () => {
 
   useEffect(() => {
     TorModule.start();
+    DeviceEventEmitter.addListener('navigateToPage', (payload) => {
+      injectMessage({
+        category: 'system',
+        type: 'navigateToPage',
+        detail: payload,
+      });
+    });
     DeviceEventEmitter.addListener('TorStatus', (payload) => {
       if (payload.torStatus === 'OFF') TorModule.restart();
       injectMessage({
@@ -73,7 +81,9 @@ const App = () => {
     loadCookie('settings_mode');
     loadCookie('settings_light_qr');
     loadCookie('settings_network');
-    loadCookie('settings_use_proxy');
+    loadCookie('settings_use_proxy').then((useProxy) => {
+      SystemModule.useProxy(useProxy ?? 'true');
+    });
     loadCookie('garage_slots').then((slots) => {
       NotificationsModule.monitorOrders(slots ?? '{}');
       injectMessageResolve(responseId);
@@ -133,6 +143,13 @@ const App = () => {
         Clipboard.setString(data.detail);
       } else if (data.type === 'setCookie') {
         setCookie(data.key, data.detail);
+        if (data.key === 'federation') {
+          SystemModule.setFederation(data.detail ?? '{}');
+        } else if (data.key === 'garage_slots') {
+          NotificationsModule.monitorOrders(data.detail ?? '{}');
+        } else if (data.key === 'settings_use_proxy') {
+          SystemModule.useProxy(data.detail ?? 'true');
+        }
       } else if (data.type === 'deleteCookie') {
         EncryptedStorage.removeItem(data.key);
       }
