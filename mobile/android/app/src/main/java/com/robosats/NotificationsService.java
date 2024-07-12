@@ -1,23 +1,23 @@
-package com.robosats.workers;
+package com.robosats;
 
 import android.app.Application;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.work.Worker;
-import androidx.work.WorkerParameters;
 
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.robosats.MainActivity;
-import com.robosats.R;
 import com.robosats.tor.TorKmp;
 import com.robosats.tor.TorKmpManager;
 
@@ -26,10 +26,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.Proxy;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import kotlin.UninitializedPropertyAccessException;
@@ -39,21 +45,82 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class NotificationWorker extends Worker {
+public class NotificationsService extends Service {
+    private Handler handler;
+    private Runnable periodicTask;
     private static final String CHANNEL_ID = "robosats_notifications";
+    private static final int NOTIFICATION_ID = 76453;
+    private static final long INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
     private static final String PREFS_NAME_NOTIFICATION = "Notifications";
     private static final String PREFS_NAME_SYSTEM = "System";
     private static final String KEY_DATA_SLOTS = "Slots";
     private static final String KEY_DATA_PROXY = "UsePoxy";
     private static final String KEY_DATA_FEDERATION = "Federation";
 
-    public NotificationWorker(Context context, WorkerParameters params) {
-        super(context, params);
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     @Override
-    public Result doWork() {
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        createNotificationChannel();
+        startForeground(NOTIFICATION_ID, buildServiceNotification());
 
+        handler = new Handler();
+        periodicTask = new Runnable() {
+            @Override
+            public void run() {
+                Log.d("NotificationsService", "Running periodic task");
+                executeBackgroundTask();
+                handler.postDelayed(periodicTask, INTERVAL_MS);
+            }
+        };
+
+        Log.d("NotificationsService", "Squeduling periodic task");
+        handler.postDelayed(periodicTask, 5000);
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (handler != null && periodicTask != null) {
+            handler.removeCallbacks(periodicTask);
+        }
+
+        stopForeground(true);
+    }
+
+    private void createNotificationChannel() {
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "Robosats",
+                NotificationManager.IMPORTANCE_DEFAULT
+        );
+        manager.createNotificationChannel(channel);
+    }
+
+    private void executeBackgroundTask() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(this::checkNotifications);
+        executor.shutdown();
+    }
+
+    private Notification buildServiceNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Tor Notifications")
+                .setContentText("The app will run on the background to send you notifications about your orders.")
+                .setSmallIcon(R.mipmap.ic_icon)
+                .setTicker("Robosats");
+
+        return builder.build();
+    }
+
+    public void checkNotifications() {
+        Log.d("NotificationsService", "checkNotifications");
         SharedPreferences sharedPreferences =
                 getApplicationContext()
                         .getSharedPreferences(PREFS_NAME_NOTIFICATION, ReactApplicationContext.MODE_PRIVATE);
@@ -69,19 +136,13 @@ public class NotificationWorker extends Worker {
                 JSONObject slot = (JSONObject) slots.get(robotToken);
                 JSONObject robots = slot.getJSONObject("robots");
                 JSONObject coordinatorRobot;
-                String activeShortAlias;
-                try {
-                    activeShortAlias = slot.getString("activeShortAlias");
-                    coordinatorRobot = robots.getJSONObject(activeShortAlias);
-                    fetchNotifications(coordinatorRobot, activeShortAlias);
-                } catch (JSONException | InterruptedException e) {
-                    Log.d("JSON error", String.valueOf(e));
-                }
+                String shortAlias = slot.getString("activeShortAlias");
+                coordinatorRobot = robots.getJSONObject(shortAlias);
+                fetchNotifications(coordinatorRobot, shortAlias);
             }
-        } catch (JSONException e) {
-            Log.d("JSON error", String.valueOf(e));
+        } catch (JSONException | InterruptedException e) {
+            Log.d("NotificationsService", "Error reading garage: " + e);
         }
-        return Result.success();
     }
 
     private void fetchNotifications(JSONObject robot, String coordinator) throws JSONException, InterruptedException {
@@ -93,11 +154,11 @@ public class NotificationWorker extends Worker {
         JSONObject federation = new JSONObject(sharedPreferences.getString(KEY_DATA_FEDERATION, "{}"));
         long unix_time_millis = sharedPreferences.getLong(token, 0);
         String url = federation.getString(coordinator) + "/api/notifications";
-//        if (unix_time_millis > 0) {
-//            String last_created_at = String
-//                    .valueOf(LocalDateTime.ofInstant(Instant.ofEpochMilli(unix_time_millis), ZoneId.of("UTC")));
-//            url += "?created_at=" + last_created_at;
-//        }
+        if (unix_time_millis > 0) {
+            String last_created_at = String
+                    .valueOf(LocalDateTime.ofInstant(Instant.ofEpochMilli(unix_time_millis), ZoneId.of("UTC")));
+            url += "?created_at=" + last_created_at;
+        }
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
@@ -120,7 +181,7 @@ public class NotificationWorker extends Worker {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 displayErrorNotification();
-                Log.d("RobosatsError", e.toString());
+                Log.d("NotificationsService", "Error fetching coordinator: " + e.toString());
             }
 
             @Override
@@ -142,8 +203,17 @@ public class NotificationWorker extends Worker {
 
                         displayOrderNotification(order_id, notification.getString("title"), coordinator);
 
+                        long milliseconds;
+                        try {
+                            String created_at = notification.getString("created_at");
+                            LocalDateTime datetime = LocalDateTime.parse(created_at, DateTimeFormatter.ISO_DATE_TIME);
+                            milliseconds = datetime.toInstant(ZoneOffset.UTC).toEpochMilli() + 1000;
+                        } catch (JSONException e) {
+                            milliseconds = System.currentTimeMillis();
+                        }
+
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putLong(token, System.currentTimeMillis());
+                        editor.putLong(token, milliseconds);
                         editor.apply();
                     }
                 } catch (JSONException e) {
@@ -158,11 +228,6 @@ public class NotificationWorker extends Worker {
         NotificationManager notificationManager = (NotificationManager)
                 getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                order_id.toString(),
-                NotificationManager.IMPORTANCE_HIGH);
-        notificationManager.createNotificationChannel(channel);
-
         Intent intent = new Intent(this.getApplicationContext(), MainActivity.class);
         intent.putExtra("coordinator", coordinator);
         intent.putExtra("order_id", order_id);
@@ -173,7 +238,7 @@ public class NotificationWorker extends Worker {
                 new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                         .setContentTitle("Order #" + order_id)
                         .setContentText(message)
-                        .setSmallIcon(R.mipmap.ic_launcher_round)
+                        .setSmallIcon(R.mipmap.ic_icon)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setContentIntent(pendingIntent)
                         .setAutoCancel(true);
@@ -185,16 +250,11 @@ public class NotificationWorker extends Worker {
         NotificationManager notificationManager = (NotificationManager)
                 getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                "robosats_error",
-                NotificationManager.IMPORTANCE_HIGH);
-        notificationManager.createNotificationChannel(channel);
-
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                         .setContentTitle("Connection Error")
                         .setContentText("There was an error while connecting to the Tor network.")
-                        .setSmallIcon(R.mipmap.ic_launcher_round)
+                        .setSmallIcon(R.mipmap.ic_icon)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true);
 
@@ -225,4 +285,3 @@ public class NotificationWorker extends Worker {
         return torKmp;
     }
 }
-

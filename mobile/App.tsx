@@ -26,6 +26,7 @@ const App = () => {
   useEffect(() => {
     TorModule.start();
     DeviceEventEmitter.addListener('navigateToPage', (payload) => {
+      window.navigateToPage = payload;
       injectMessage({
         category: 'system',
         type: 'navigateToPage',
@@ -61,6 +62,17 @@ const App = () => {
     webViewRef.current?.injectJavaScript(
       `(function() {window.NativeRobosats?.onMessage(${json});})();`,
     );
+  };
+
+  const onLoadEnd = () => {
+    if (window.navigateToPage) {
+      injectMessage({
+        category: 'system',
+        type: 'navigateToPage',
+        detail: window.navigateToPage,
+      });
+      window.navigateToPage = undefined;
+    }
   };
 
   const init = (responseId: string) => {
@@ -207,6 +219,7 @@ const App = () => {
         allowsLinkPreview={false}
         renderLoading={() => <Text></Text>}
         onError={(syntheticEvent) => <Text>{syntheticEvent.type}</Text>}
+        onLoadEnd={() => setTimeout(onLoadEnd, 3000)}
       />
     </SafeAreaView>
   );

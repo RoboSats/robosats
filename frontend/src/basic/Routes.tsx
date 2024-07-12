@@ -13,6 +13,7 @@ const Routes: React.FC = () => {
 
   useEffect(() => {
     window.addEventListener('navigateToPage', (event) => {
+      console.log('navigateToPage', JSON.stringify(event));
       const orderId = event?.detail?.order_id;
       const coordinator = event?.detail?.coordinator;
       if (orderId && coordinator) {

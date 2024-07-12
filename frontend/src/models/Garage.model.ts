@@ -99,6 +99,7 @@ class Garage {
     const slot = this.getSlot(token);
     if (attributes) {
       if (attributes.copiedToken !== undefined) slot?.setCopiedToken(attributes.copiedToken);
+      this.save();
       this.triggerHook('onRobotUpdate');
     }
     return slot;
@@ -106,6 +107,7 @@ class Garage {
 
   setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {
     this.currentSlot = currentSlot;
+    this.save();
     this.triggerHook('onRobotUpdate');
   };
 
@@ -181,6 +183,7 @@ class Garage {
     Object.values(this.slots).forEach((slot) => {
       slot.syncCoordinator(coordinator, this);
     });
+    this.save();
   };
 }
 
