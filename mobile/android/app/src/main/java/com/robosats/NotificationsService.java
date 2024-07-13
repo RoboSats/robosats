@@ -114,7 +114,10 @@ public class NotificationsService extends Service {
                 .setContentTitle("Tor Notifications")
                 .setContentText("The app will run on the background to send you notifications about your orders.")
                 .setSmallIcon(R.mipmap.ic_icon)
-                .setTicker("Robosats");
+                .setTicker("Robosats")
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setOngoing(true)
+                .setAutoCancel(false);
 
         return builder.build();
     }
@@ -239,7 +242,7 @@ public class NotificationsService extends Service {
                         .setContentTitle("Order #" + order_id)
                         .setContentText(message)
                         .setSmallIcon(R.mipmap.ic_icon)
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentIntent(pendingIntent)
                         .setAutoCancel(true);
 
@@ -255,7 +258,7 @@ public class NotificationsService extends Service {
                         .setContentTitle("Connection Error")
                         .setContentText("There was an error while connecting to the Tor network.")
                         .setSmallIcon(R.mipmap.ic_icon)
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setAutoCancel(true);
 
         notificationManager.notify(0, builder.build());
