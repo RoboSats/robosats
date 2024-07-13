@@ -112,7 +112,7 @@ public class NotificationsService extends Service {
     private Notification buildServiceNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Tor Notifications")
-                .setContentText("The app will run on the background to send you notifications about your orders.")
+                .setContentText("The app will run in the background to send notifications about your orders.")
                 .setSmallIcon(R.mipmap.ic_icon)
                 .setTicker("Robosats")
                 .setPriority(NotificationCompat.PRIORITY_MIN)
