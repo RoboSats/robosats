@@ -761,10 +761,7 @@ class NotificationsView(ListAPIView):
         notification_data = []
         for notification in queryset:
             data = self.serializer_class(notification).data
-            data["title"] = str(notification.title)
-            data["description"] = str(notification.description)
             data["order_id"] = notification.order.id
-
             notification_data.append(data)
 
         return Response(notification_data, status=status.HTTP_200_OK)
