@@ -303,4 +303,10 @@ def send_notification(order_id=None, chat_message_id=None, message=None):
     elif message == "coordinator_cancelled":
         notifications.coordinator_cancelled(order)
 
+    elif message == "dispute_closed":
+        notifications.dispute_closed(order)
+
+    elif message == "lightning_failed":
+        notifications.lightning_failed(order)
+
     return

@@ -210,6 +210,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     f"Dispute of order {order.id} solved successfully on favor of the maker",
                     messages.SUCCESS,
                 )
+                send_notification.delay(order_id=order.id, message="dispute_closed")
 
             else:
                 self.message_user(
@@ -248,6 +249,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     f"Dispute of order {order.id} solved successfully on favor of the taker",
                     messages.SUCCESS,
                 )
+                send_notification.delay(order_id=order.id, message="dispute_closed")
 
             else:
                 self.message_user(
