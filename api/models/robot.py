@@ -1,12 +1,8 @@
-from pathlib import Path
-
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.html import mark_safe
 
 
 class Robot(models.Model):
