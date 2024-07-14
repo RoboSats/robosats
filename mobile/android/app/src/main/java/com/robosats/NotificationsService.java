@@ -110,14 +110,19 @@ public class NotificationsService extends Service {
     }
 
     private Notification buildServiceNotification() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Tor Notifications")
-                .setContentText("The app will run in the background to send notifications about your orders.")
+                .setContentText("Running in the background to check every 5 minutes for notifications.")
                 .setSmallIcon(R.mipmap.ic_icon)
                 .setTicker("Robosats")
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setOngoing(true)
-                .setAutoCancel(false);
+                .setAutoCancel(false)
+                .setContentIntent(pendingIntent);
 
         return builder.build();
     }
