@@ -253,7 +253,7 @@ def cache_market():
 
 
 @shared_task(name="", ignore_result=True, time_limit=120)
-def send_order_nostr_event(order_id=None, message=None):
+def nostr_send_order_event(order_id=None):
     if order_id:
         from api.models import Order
         from api.nostr import Nostr
@@ -261,8 +261,7 @@ def send_order_nostr_event(order_id=None, message=None):
         order = Order.objects.get(id=order_id)
 
         nostr = Nostr()
-        if message == "new":
-            coroutine = nostr.send_new_order_event(order)
+        coroutine = nostr.send_order_event(order)
         if coroutine:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(coroutine)

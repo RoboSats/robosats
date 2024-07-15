@@ -205,14 +205,14 @@ services:
   #     - redis
   #   network_mode: service:bitcoind
 
-  # strfry:
-  #   build: https://github.com/hoytech/strfry.git
-  #   container_name: test-strfry
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./nodeapp/strfry/config/strfry.conf:/strfry/strfry.conf:r
-  #   network_mode: service:bitcoind
-
+  strfry:
+    image: dockurr/strfry:0.9.6
+    container_name: test-strfry
+    restart: unless-stopped
+    volumes:
+      - ./nodeapp/strfry/db:/app/strfry-db
+      - ./nodeapp/strfry/config/strfry.conf:/etc/strfry.conf:r
+    network_mode: service:bitcoind
 
 volumes:
   redisdata:
