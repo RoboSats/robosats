@@ -1,41 +1,44 @@
 import React, { useContext } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Box, Slide, Typography, styled } from '@mui/material';
-import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
-
-import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage, NavBar, MainDialogs } from './';
-import RobotAvatar from '../components/RobotAvatar';
+import { Box, Slide, styled } from '@mui/material';
+import { type UseAppStoreType, AppContext } from '../contexts/AppContext';
+import {
+  TopNavBar,
+  NavBar,
+  RobotPage,
+  MakerPage,
+  BookPage,
+  OrderPage,
+  SettingsPage,
+  MainDialogs,
+} from './';
 import Notifications from '../components/Notifications';
-
 import { useTranslation } from 'react-i18next';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
-const TestnetTypography = styled(Typography)({
-  height: 0,
-});
-
-interface MainBoxProps {
-  navbarHeight: number;
-}
-
-const MainBox = styled(Box)<MainBoxProps>((props) => ({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: `translate(-50%, -50%) translate(0,  -${props.navbarHeight / 2}em)`,
+const MainContent = styled(Box)(({ theme }) => ({
+  marginTop: '100px',
+  marginBottom: '80px',
+  padding: theme.spacing(2),
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  height: 'calc(100vh - 180px)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
 }));
 
 const Main: React.FC = () => {
   const { t } = useTranslation();
-  const { settings, page, slideDirection, setOpen, windowSize, navbarHeight } =
+  const { settings, page, slideDirection, setOpen, windowSize } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   return (
     <Router>
-      <RobotAvatar style={{ display: 'none' }} hashId={garage.getSlot()?.hashId} />
+      <TopNavBar />
       <Notifications
         page={page}
         openProfile={() => {
@@ -44,36 +47,25 @@ const Main: React.FC = () => {
         rewards={garage.getSlot()?.getRobot()?.earnedRewards}
         windowWidth={windowSize?.width}
       />
-      {settings.network === 'testnet' ? (
-        <TestnetTypography color='secondary' align='center'>
-          <i>{t('Using Testnet Bitcoin')}</i>
-        </TestnetTypography>
-      ) : (
-        <></>
-      )}
-
-      <MainBox navbarHeight={navbarHeight}>
+      <MainContent>
         <Routes>
-          {['/robot/:token?', '/', ''].map((path, index) => {
-            return (
-              <Route
-                path={path}
-                element={
-                  <Slide
-                    direction={page === 'robot' ? slideDirection.in : slideDirection.out}
-                    in={page === 'robot'}
-                    appear={slideDirection.in !== undefined}
-                  >
-                    <div>
-                      <RobotPage />
-                    </div>
-                  </Slide>
-                }
-                key={index}
-              />
-            );
-          })}
-
+          {['/robot/:token?', '/', ''].map((path, index) => (
+            <Route
+              path={path}
+              element={
+                <Slide
+                  direction={page === 'robot' ? slideDirection.in : slideDirection.out}
+                  in={page === 'robot'}
+                  appear={slideDirection.in !== undefined}
+                >
+                  <div>
+                    <RobotPage />
+                  </div>
+                </Slide>
+              }
+              key={index}
+            />
+          ))}
           <Route
             path={'/offers'}
             element={
@@ -88,7 +80,6 @@ const Main: React.FC = () => {
               </Slide>
             }
           />
-
           <Route
             path='/create'
             element={
@@ -103,7 +94,6 @@ const Main: React.FC = () => {
               </Slide>
             }
           />
-
           <Route
             path='/order/:shortAlias/:orderId'
             element={
@@ -118,7 +108,6 @@ const Main: React.FC = () => {
               </Slide>
             }
           />
-
           <Route
             path='/settings'
             element={
@@ -134,7 +123,7 @@ const Main: React.FC = () => {
             }
           />
         </Routes>
-      </MainBox>
+      </MainContent>
       <NavBar />
       <MainDialogs />
     </Router>
