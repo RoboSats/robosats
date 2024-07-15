@@ -27,6 +27,7 @@ services:
       - "9998:9998"
       - "5432:5432"
       - "6379:6379"
+      - "7777:7777"
     volumes:
       - bitcoin:/bitcoin/.bitcoin/
       - ./tests/bitcoind/entrypoint.sh:/entrypoint.sh
@@ -210,8 +211,8 @@ services:
     container_name: test-strfry
     restart: unless-stopped
     volumes:
-      - ./nodeapp/strfry/db:/app/strfry-db
-      - ./nodeapp/strfry/config/strfry.conf:/etc/strfry.conf:r
+      - ./tests/strfry/db:/app/strfry-db
+      - ./tests/strfry/config/strfry.conf:/etc/strfry.conf:r
     network_mode: service:bitcoind
 
 volumes:

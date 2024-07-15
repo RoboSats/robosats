@@ -163,7 +163,6 @@ services:
     ports:
       - 8000:8000     # dev frontend build
       - 12596:12596   # umbrel frontend
-      - 7777:7777   # nostr
 
   lnd:
     build: ./docker/lnd
@@ -228,11 +227,12 @@ services:
       - ./node/db:/var/lib/postgresql/data
 
   strfry:
-    build: https://github.com/hoytech/strfry.git
+    image: dockurr/strfry:0.9.6
     container_name: strfry-dev
     restart: unless-stopped
     volumes:
-      - ./nodeapp/strfry/config/strfry.conf:/app/strfry.conf:r
+      - ./node/strfry/db:/app/strfry-db
+      - ./docker/strfry/config/strfry.conf:/etc/strfry.conf:r
     network_mode: service:tor
 
   # # Postgresql for CLN

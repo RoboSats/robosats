@@ -1,4 +1,3 @@
-import asyncio
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -261,10 +260,7 @@ def nostr_send_order_event(order_id=None):
         order = Order.objects.get(id=order_id)
 
         nostr = Nostr()
-        coroutine = nostr.send_order_event(order)
-        if coroutine:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(coroutine)
+        nostr.send_order_event(order)
 
     return
 

@@ -11,6 +11,9 @@ class Nostr:
 
     async def send_order_event(self, order):
         """Creates the event and sends it to the coordinator relay"""
+
+        print("Sending nostr event")
+
         # Initialize with coordinator Keys
         keys = Keys.generate()
         signer = NostrSigner.keys(keys)
