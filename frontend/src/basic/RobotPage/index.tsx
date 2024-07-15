@@ -85,11 +85,10 @@ const RobotPage = (): JSX.Element => {
 
   if (settings.useProxy && !(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
     return (
-      <Paper
-        elevation={12}
-        style={{
-          width: `${width}em`,
-          maxHeight: `${maxHeight}em`,
+      <Box
+        sx={{
+          width: '100vw',
+          height: 'auto',
         }}
       >
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
@@ -129,54 +128,70 @@ const RobotPage = (): JSX.Element => {
             </Alert>
           </Grid>
         </Grid>
-      </Paper>
+      </Box>
     );
   } else {
     return (
-      <Paper
-        elevation={12}
-        style={{
-          width: `${width}em`,
-          maxHeight: `${maxHeight}em`,
-          overflow: 'auto',
-          overflowX: 'clip',
+      <Box
+        sx={{
+          width: '100vw',
+          height: 'auto',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '2em',
         }}
       >
-        {view === 'welcome' ? (
-          <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={width} />
-        ) : null}
+        <Paper
+          elevation={0}
+          sx={{
+            width: '80vw',
+            maxWidth: '1200px',
+            maxHeight: '85vh',
+            overflow: 'auto',
+            overflowX: 'clip',
+            backgroundColor: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+            padding: '1em',
+          }}
+        >
+          {view === 'welcome' ? (
+            <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={1200} />
+          ) : null}
 
-        {view === 'onboarding' ? (
-          <Onboarding
-            setView={setView}
-            badToken={badToken}
-            inputToken={inputToken}
-            setInputToken={setInputToken}
-            getGenerateRobot={getGenerateRobot}
-          />
-        ) : null}
+          {view === 'onboarding' ? (
+            <Onboarding
+              setView={setView}
+              badToken={badToken}
+              inputToken={inputToken}
+              setInputToken={setInputToken}
+              getGenerateRobot={getGenerateRobot}
+            />
+          ) : null}
 
-        {view === 'profile' ? (
-          <RobotProfile
-            setView={setView}
-            logoutRobot={logoutRobot}
-            width={width}
-            inputToken={inputToken}
-            setInputToken={setInputToken}
-            getGenerateRobot={getGenerateRobot}
-          />
-        ) : null}
+          {view === 'profile' ? (
+            <RobotProfile
+              setView={setView}
+              logoutRobot={logoutRobot}
+              width={1200}
+              inputToken={inputToken}
+              setInputToken={setInputToken}
+              getGenerateRobot={getGenerateRobot}
+            />
+          ) : null}
 
-        {view === 'recovery' ? (
-          <Recovery
-            setView={setView}
-            badToken={badToken}
-            inputToken={inputToken}
-            setInputToken={setInputToken}
-            getRecoverRobot={getGenerateRobot}
-          />
-        ) : null}
-      </Paper>
+          {view === 'recovery' ? (
+            <Recovery
+              setView={setView}
+              badToken={badToken}
+              inputToken={inputToken}
+              setInputToken={setInputToken}
+              getRecoverRobot={getGenerateRobot}
+            />
+          ) : null}
+        </Paper>
+      </Box>
     );
   }
 };
