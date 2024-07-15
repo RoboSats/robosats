@@ -15,7 +15,7 @@ class Nostr:
         client = Client(signer)
 
         # Add relays and connect
-        await client.add_relays(["ws://localhost:888"])
+        await client.add_relays(["ws://localhost:7777"])
         await client.connect()
 
         event = EventBuilder(38383, "", self.generate_tags(order)).to_event(keys)
