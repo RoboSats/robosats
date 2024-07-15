@@ -11,28 +11,117 @@ import {
   LinearProgress,
   Link,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Stepper,
+  Step,
+  StepLabel,
+  StepConnector,
+  styled,
+  stepConnectorClasses,
+  Paper,
+  useTheme,
+  useMediaQuery,
+  IconButton,
 } from '@mui/material';
-import { type Robot } from '../../models';
-import { Casino, Bolt, Check, Storefront, AddBox, School } from '@mui/icons-material';
+import {
+  Check,
+  Casino,
+  SmartToy,
+  Storefront,
+  AddBox,
+  School,
+  ContentCopy,
+} from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
-import { NewTabIcon } from '../../components/Icons';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
-interface OnboardingProps {
-  setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
-  robot: Robot;
-  setRobot: (state: Robot) => void;
-  inputToken: string;
-  setInputToken: (state: string) => void;
-  getGenerateRobot: (token: string) => void;
-  badToken: string;
-  baseUrl: string;
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: '8px 8px 0px 0px rgba(0, 0, 0, 0.2)',
+  borderRadius: '16px',
+  border: '2px solid #000',
+  padding: theme.spacing(2),
+  color: theme.palette.text.primary,
+  width: '100%',
+  maxWidth: '500px',
+  margin: '0 auto',
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  justifyContent: 'center',
+  textAlign: 'center',
+  padding: theme.spacing(1),
+  borderRadius: '8px',
+  border: '2px solid #000',
+  boxShadow: '4px 4px 0px 0px rgba(0, 0, 0, 0.2)',
+  textTransform: 'none',
+  fontWeight: 'bold',
+  width: '100%',
+  '&:hover': {
+    boxShadow: '6px 6px 0px 0px rgba(0, 0, 0, 0.3)',
+  },
+}));
+
+const StyledStepConnector = styled(StepConnector)(({ theme }) => ({
+  [`&.${stepConnectorClasses.alternativeLabel}`]: {
+    top: 22,
+    left: 'calc(-50% + 20px)',
+    right: 'calc(50% + 20px)',
+  },
+  [`&.${stepConnectorClasses.active}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+  [`&.${stepConnectorClasses.completed}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+  [`& .${stepConnectorClasses.line}`]: {
+    borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : '#eaeaf0',
+    borderTopWidth: 3,
+    borderRadius: 1,
+  },
+}));
+
+const StyledStepIconRoot = styled('div')<{ ownerState: { active?: boolean; completed?: boolean } }>(
+  ({ theme, ownerState }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#ccc',
+    zIndex: 1,
+    color: '#fff',
+    width: 44,
+    height: 44,
+    display: 'flex',
+    borderRadius: '50%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...(ownerState.active && {
+      backgroundColor: theme.palette.primary.main,
+      boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+    }),
+    ...(ownerState.completed && {
+      backgroundColor: theme.palette.primary.main,
+    }),
+  }),
+);
+
+function StyledStepIcon(props: StepIconProps) {
+  const { active, completed, className } = props;
+
+  const icons: { [index: string]: React.ReactElement } = {
+    1: <Casino />,
+    2: <SmartToy />,
+    3: <Storefront />,
+  };
+
+  return (
+    <StyledStepIconRoot ownerState={{ active, completed }} className={className}>
+      {icons[String(props.icon)]}
+    </StyledStepIconRoot>
+  );
 }
 
 const Onboarding = ({
@@ -44,6 +133,8 @@ const Onboarding = ({
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -63,43 +154,77 @@ const Onboarding = ({
 
   const slot = garage.getSlot();
 
+  const steps = [
+    t('1. Generate a token'),
+    t('2. Meet your robot identity'),
+    t('3. Browse or create an order'),
+  ];
+
   return (
-    <Box>
-      <Accordion expanded={step === '1'} disableGutters={true}>
-        <AccordionSummary>
-          <Typography variant='h5' color={step === '1' ? 'text.primary' : 'text.disabled'}>
-            {t('1. Generate a token')}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
-            <Grid item>
-              <Typography>
-                {t(
-                  'This temporary key gives you access to a unique and private robot identity for your trade.',
-                )}
-              </Typography>
-            </Grid>
+    <Box
+      sx={{
+        mt: 3,
+        mb: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        px: 2,
+        width: '100%',
+      }}
+    >
+      <Stepper
+        alternativeLabel={!isMobile}
+        orientation={isMobile ? 'horizontal' : 'horizontal'}
+        activeStep={parseInt(step) - 1}
+        connector={<StyledStepConnector />}
+        sx={{ width: '100%', mb: 3 }}
+      >
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel StepIconComponent={StyledStepIcon}>{isMobile ? null : label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+
+      <StyledPaper elevation={3}>
+        {step === '1' && (
+          <>
+            <Typography variant='h6' gutterBottom align='center'>
+              {t('1. Generate a token')}
+            </Typography>
+            <Typography variant='body2' align='center' sx={{ mb: 2 }}>
+              {t(
+                'This temporary key gives you access to a unique and private robot identity for your trade.',
+              )}
+            </Typography>
             {!generatedToken ? (
-              <Grid item>
-                <Button autoFocus onClick={generateToken} variant='contained' size='large'>
-                  <Casino />
-                  {t('Generate token')}
-                </Button>
-              </Grid>
+              <Box display='flex' justifyContent='center'>
+                <StyledButton
+                  onClick={generateToken}
+                  variant='contained'
+                  size='large'
+                  fullWidth={false}
+                >
+                  {t('Generate Token')}
+                </StyledButton>
+              </Box>
             ) : (
-              <Grid item>
-                <Collapse in={generatedToken}>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
-                    <Grid item>
-                      <Alert variant='outlined' severity='info'>
-                        <b>{`${t('Store it somewhere safe!')} `}</b>
+              <Collapse in={generatedToken}>
+                <Grid container direction='column' alignItems='center' spacing={2}>
+                  <Grid item xs={12}>
+                    <Alert variant='outlined' severity='info' sx={{ mb: 2 }}>
+                      <Typography variant='body2'>
+                        <strong>{t('Store it somewhere safe!')}</strong>
+                      </Typography>
+                      <Typography variant='body2'>
                         {t(
-                          `This token is the one and only key to your robot and trade. You will need it later to recover your order or check its status.`,
+                          'This token is the one and only key to your robot and trade. You will need it later to recover your order or check its status.',
                         )}
-                      </Alert>
-                    </Grid>
-                    <Grid item sx={{ width: '100%' }}>
+                      </Typography>
+                    </Alert>
+                  </Grid>
+                  <Grid item xs={12} sx={{ width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                       <TokenInput
                         loading={loading}
                         autoFocusTarget='copyButton'
@@ -107,203 +232,156 @@ const Onboarding = ({
                         setInputToken={setInputToken}
                         badToken={badToken}
                         onPressEnter={() => null}
+                        sx={{ flexGrow: 1 }}
                       />
-                    </Grid>
-                    <Grid item>
-                      <Typography>
-                        {t('You can also add your own random characters into the token or')}
-                        <Button size='small' onClick={generateToken}>
-                          <Casino />
-                          {t('roll again')}
-                        </Button>
-                      </Typography>
-                    </Grid>
-
-                    <Grid item>
-                      <Button
+                      <IconButton
+                        onClick={() => navigator.clipboard.writeText(inputToken)}
+                        size='small'
+                      >
+                        <ContentCopy />
+                      </IconButton>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box display='flex' justifyContent='center'>
+                      <StyledButton
                         onClick={() => {
                           setStep('2');
                           getGenerateRobot(inputToken);
                         }}
                         variant='contained'
                         size='large'
+                        startIcon={<Check />}
+                        fullWidth={false}
                       >
-                        <Check />
                         {t('Continue')}
-                      </Button>
-                    </Grid>
+                      </StyledButton>
+                    </Box>
                   </Grid>
-                </Collapse>
-              </Grid>
+                </Grid>
+              </Collapse>
             )}
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
+          </>
+        )}
 
-      <Accordion expanded={step === '2'} disableGutters={true}>
-        <AccordionSummary>
-          <Typography variant='h5' color={step === '2' ? 'text.primary' : 'text.disabled'}>
-            {t('2. Meet your robot identity')}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1}>
-            <Grid item>
-              <Typography>
-                {slot?.hashId ? (
-                  t('This is your trading avatar')
-                ) : (
-                  <>
-                    <b>{t('Building your robot!')}</b>
-                    <LinearProgress />
-                  </>
-                )}
-              </Typography>
-            </Grid>
-
-            <Grid item sx={{ width: '13.5em' }}>
+        {step === '2' && (
+          <>
+            <Typography variant='h6' gutterBottom align='center'>
+              {t('2. Meet your robot identity')}
+            </Typography>
+            <Typography variant='body2' align='center' sx={{ mb: 2 }}>
+              {slot?.hashId ? t('This is your trading avatar') : t('Building your robot!')}
+            </Typography>
+            {!slot?.hashId && <LinearProgress sx={{ mb: 2 }} />}
+            <Box display='flex' justifyContent='center' sx={{ mb: 2 }}>
               <RobotAvatar
                 hashId={slot?.hashId ?? ''}
                 smooth={true}
-                style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
+                style={{ width: '150px', height: '150px' }}
                 placeholderType='generating'
                 imageStyle={{
-                  transform: '',
                   border: '2px solid #555',
-                  filter: 'drop-shadow(1px 1px 1px #000000)',
-                  height: '12.4em',
-                  width: '12.4em',
+                  borderRadius: '50%',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
                 }}
                 tooltipPosition='top'
               />
-            </Grid>
-
-            {slot?.nickname ? (
-              <Grid item>
-                <Typography align='center'>{t('Hi! My name is')}</Typography>
-                <Typography component='h5' variant='h5'>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Bolt
-                      sx={{
-                        color: '#fcba03',
-                        height: '1.5em',
-                        width: '1.5em',
-                      }}
-                    />
-                    <b>{slot?.nickname}</b>
-                    <Bolt
-                      sx={{
-                        color: '#fcba03',
-                        height: '1.5em',
-                        width: '1.5em',
-                      }}
-                    />
-                  </div>
+            </Box>
+            {slot?.nickname && (
+              <>
+                <Typography variant='body2' align='center'>
+                  {t('Hi! My name is')}
                 </Typography>
-              </Grid>
-            ) : null}
-            <Grid item>
-              <Collapse in={!!slot?.hashId}>
-                <Button
-                  onClick={() => {
-                    setStep('3');
-                  }}
-                  variant='contained'
-                  size='large'
-                >
-                  <Check />
-                  {t('Continue')}
-                </Button>
-              </Collapse>
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
+                <Typography variant='h6' align='center' sx={{ mt: 1, mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <SmartToy sx={{ color: '#fcba03', fontSize: '1.2em', mr: 1 }} />
+                    <strong>{slot.nickname}</strong>
+                    <SmartToy sx={{ color: '#fcba03', fontSize: '1.2em', ml: 1 }} />
+                  </Box>
+                </Typography>
+              </>
+            )}
+            <Box display='flex' justifyContent='center'>
+              <StyledButton
+                onClick={() => setStep('3')}
+                variant='contained'
+                size='large'
+                startIcon={<Check />}
+                disabled={!slot?.hashId}
+                fullWidth={false}
+              >
+                {t('Continue')}
+              </StyledButton>
+            </Box>
+          </>
+        )}
 
-      <Accordion expanded={step === '3'} disableGutters={true}>
-        <AccordionSummary>
-          <Typography variant='h5' color={step === '3' ? 'text.primary' : 'text.disabled'}>
-            {t('3. Browse or create an order')}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
-            <Grid item>
-              <Typography>
-                {t(
-                  'RoboSats is a peer-to-peer marketplace. You can browse the public offers or create a new one.',
-                )}
-              </Typography>
-            </Grid>
-
-            <Grid item>
-              <ButtonGroup variant='contained'>
-                <Button
-                  color='primary'
+        {step === '3' && (
+          <>
+            <Typography variant='h6' gutterBottom align='center'>
+              {t('3. Browse or create an order')}
+            </Typography>
+            <Typography variant='body2' align='center' sx={{ mb: 2 }}>
+              {t(
+                'RoboSats is a peer-to-peer marketplace. You can browse the public offers or create a new one.',
+              )}
+            </Typography>
+            <Box display='flex' justifyContent='center' sx={{ mb: 2 }}>
+              <ButtonGroup
+                variant='contained'
+                size='large'
+                orientation={isMobile ? 'vertical' : 'horizontal'}
+                fullWidth={isMobile}
+              >
+                <StyledButton
                   onClick={() => {
                     navigate('/offers');
                     setPage('offers');
                   }}
+                  startIcon={<Storefront />}
                 >
-                  <Storefront /> <div style={{ width: '0.5em' }} />
                   {t('Offers')}
-                </Button>
-                <Button
-                  color='secondary'
+                </StyledButton>
+                <StyledButton
                   onClick={() => {
                     navigate('/create');
                     setPage('create');
                   }}
+                  startIcon={<AddBox />}
+                  color='secondary'
                 >
-                  <AddBox /> <div style={{ width: '0.5em' }} />
                   {t('Create')}
-                </Button>
+                </StyledButton>
               </ButtonGroup>
-            </Grid>
-
-            <Grid item>
-              <Typography>
-                {`${t('If you need help on your RoboSats journey join our public support')} `}
-                <Link target='_blank' href='https://t.me/robosats_es' rel='noreferrer'>
-                  {t('Telegram group')}
-                </Link>
-                {`, ${t('or visit the robot school for documentation.')} `}
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Button
+            </Box>
+            <Typography variant='body2' align='center' sx={{ mb: 2 }}>
+              {t('If you need help on your RoboSats journey join our public support')}{' '}
+              <Link href='https://t.me/robosats_es' target='_blank' rel='noreferrer'>
+                {t('Telegram group')}
+              </Link>
+              , {t('or visit the robot school for documentation.')}
+            </Typography>
+            <Box display='flex' justifyContent='center' sx={{ mb: 2 }}>
+              <StyledButton
                 component={Link}
                 href='https://learn.robosats.com'
                 target='_blank'
                 color='inherit'
                 variant='contained'
+                startIcon={<School />}
+                fullWidth={isMobile}
               >
-                <School /> <div style={{ width: '0.5em' }} />
                 {t('Learn RoboSats')}
-                <div style={{ width: '0.5em' }} />
-                <NewTabIcon sx={{ width: '0.8em' }} />
+              </StyledButton>
+            </Box>
+            <Box display='flex' justifyContent='center'>
+              <Button color='inherit' onClick={() => setView('profile')}>
+                {t('See Profile')}
               </Button>
-            </Grid>
-            <Grid item sx={{ position: 'relative', top: '0.6em' }}>
-              <Button
-                color='inherit'
-                onClick={() => {
-                  setView('profile');
-                }}
-              >
-                {t('See profile')}
-              </Button>
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
+            </Box>
+          </>
+        )}
+      </StyledPaper>
     </Box>
   );
 };
