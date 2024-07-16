@@ -9,7 +9,7 @@ import { FederationContext, UseFederationStoreType } from '../../contexts/Federa
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const { federation, addNewCoordinator } = useContext<UseFederationStoreType>(FederationContext);
-  const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
+  const maxHeight = (windowSize.height * 0.65)
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
   const [error, setError] = useState<string>();
