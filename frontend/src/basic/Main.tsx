@@ -18,18 +18,6 @@ import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContex
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
-const MainContent = styled(Box)(({ theme }) => ({
-  marginTop: '100px',
-  marginBottom: '80px',
-  padding: theme.spacing(2),
-  overflowY: 'auto',
-  overflowX: 'hidden',
-  height: 'calc(100vh - 180px)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-}));
-
 const Main: React.FC = () => {
   const { t } = useTranslation();
   const { settings, page, slideDirection, setOpen, windowSize } =
@@ -130,4 +118,19 @@ const Main: React.FC = () => {
   );
 };
 
+// Styled components
+const MainContent = styled(Box)(({ theme }) => ({
+  marginTop: '100px',
+  marginBottom: '80px',
+  padding: theme.spacing(2),
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  height: 'calc(100vh - 180px)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+}));
+
 export default Main;
+
+

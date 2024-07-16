@@ -5,9 +5,9 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   Paper,
-  styled,
   useTheme,
   useMediaQuery,
+  styled,
 } from '@mui/material';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
@@ -19,24 +19,6 @@ import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppCo
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { type Page, isPage } from '.';
-
-const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
-  width: '100%',
-  maxWidth: '100%',
-  padding: theme.spacing(0.5, 0),
-  borderRadius: 'inherit',
-}));
-
-const StyledBottomNavigationAction = styled(BottomNavigationAction)(({ theme }) => ({
-  minWidth: 'auto',
-  padding: theme.spacing(0.5, 0),
-  '& .MuiBottomNavigationAction-label': {
-    fontSize: '0.75rem',
-  },
-  '& .MuiSvgIcon-root': {
-    fontSize: '1.5rem',
-  },
-}));
 
 const NavBar = (): JSX.Element => {
   const { t } = useTranslation();
@@ -103,35 +85,7 @@ const NavBar = (): JSX.Element => {
   }, [page, setOpen]);
 
   return (
-    <Paper
-      sx={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        ...(isMobile
-          ? {
-              boxShadow: 'none',
-              backgroundColor: theme.palette.background.paper,
-              borderTop: `2px solid black`,
-              borderRadius: '0',
-            }
-          : {
-              bottom: theme.spacing(2),
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '95%',
-              maxWidth: 600,
-              borderRadius: '8px',
-              boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
-              border: `2px solid black`,
-              backgroundColor: theme.palette.background.paper,
-              overflow: 'hidden',
-            }),
-      }}
-      elevation={isMobile ? 0 : 3}
-    >
+    <StyledPaper elevation={isMobile ? 0 : 3} $isMobile={isMobile}>
       <StyledBottomNavigation value={value} onChange={changePage} showLabels>
         <StyledBottomNavigationAction
           label={t('Robot')}
@@ -160,8 +114,54 @@ const NavBar = (): JSX.Element => {
           icon={<SettingsOutlinedIcon />}
         />
       </StyledBottomNavigation>
-    </Paper>
+    </StyledPaper>
   );
 };
+
+// Styled components
+const StyledPaper = styled(Paper)<{ $isMobile: boolean }>(({ theme, $isMobile }) => ({
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  zIndex: 1000,
+  ...($isMobile
+    ? {
+        boxShadow: 'none',
+        backgroundColor: theme.palette.background.paper,
+        borderTop: `2px solid black`,
+        borderRadius: '0',
+      }
+    : {
+        bottom: theme.spacing(2),
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '95%',
+        maxWidth: 600,
+        borderRadius: '8px',
+        boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
+        border: `2px solid black`,
+        backgroundColor: theme.palette.background.paper,
+        overflow: 'hidden',
+      }),
+}));
+
+const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
+  width: '100%',
+  maxWidth: '100%',
+  padding: theme.spacing(0.5, 0),
+  borderRadius: 'inherit',
+}));
+
+const StyledBottomNavigationAction = styled(BottomNavigationAction)(({ theme }) => ({
+  minWidth: 'auto',
+  padding: theme.spacing(0.5, 0),
+  '& .MuiBottomNavigationAction-label': {
+    fontSize: '0.75rem',
+  },
+  '& .MuiSvgIcon-root': {
+    fontSize: '1.5rem',
+  },
+}));
 
 export default NavBar;

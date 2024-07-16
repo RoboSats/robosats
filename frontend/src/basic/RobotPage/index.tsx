@@ -9,6 +9,7 @@ import {
   Typography,
   useTheme,
   AlertTitle,
+  styled,
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
@@ -85,12 +86,7 @@ const RobotPage = (): JSX.Element => {
 
   if (settings.useProxy && !(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
     return (
-      <Box
-        sx={{
-          width: '100vw',
-          height: 'auto',
-        }}
-      >
+      <StyledConnectingBox>
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
           <Grid item>
             <Typography align='center' variant='h6'>
@@ -105,8 +101,8 @@ const RobotPage = (): JSX.Element => {
                   <stop offset={1} stopColor={theme.palette.secondary.main} />
                 </linearGradient>
               </svg>
-              <CircularProgress thickness={3} style={{ width: '11.2em', height: '11.2em' }} />
-              <Box sx={{ position: 'fixed', top: '4.6em' }}>
+              <CircularProgress thickness={3} sx={{ width: '11.2em', height: '11.2em' }} />
+              <StyledTorIconBox>
                 <TorIcon
                   sx={{
                     fill: 'url(#linearColors)',
@@ -116,7 +112,7 @@ const RobotPage = (): JSX.Element => {
                     left: '0.7em',
                   }}
                 />
-              </Box>
+              </StyledTorIconBox>
             </Box>
           </Grid>
           <Grid item>
@@ -128,39 +124,17 @@ const RobotPage = (): JSX.Element => {
             </Alert>
           </Grid>
         </Grid>
-      </Box>
+      </StyledConnectingBox>
     );
   } else {
     return (
-      <Box
-        sx={{
-          width: '100vw',
-          height: 'auto',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '2em',
-        }}
-      >
-        <Paper
-          elevation={0}
-          sx={{
-            width: '80vw',
-            maxWidth: '1200px',
-            maxHeight: '85vh',
-            overflow: 'auto',
-            overflowX: 'clip',
-            backgroundColor: 'transparent',
-            border: 'none',
-            boxShadow: 'none',
-            padding: '1em',
-          }}
-        >
-          {view === 'welcome' ? (
+      <StyledMainBox>
+        <StyledPaper>
+          {view === 'welcome' && (
             <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={1200} />
-          ) : null}
+          )}
 
-          {view === 'onboarding' ? (
+          {view === 'onboarding' && (
             <Onboarding
               setView={setView}
               badToken={badToken}
@@ -168,9 +142,9 @@ const RobotPage = (): JSX.Element => {
               setInputToken={setInputToken}
               getGenerateRobot={getGenerateRobot}
             />
-          ) : null}
+          )}
 
-          {view === 'profile' ? (
+          {view === 'profile' && (
             <RobotProfile
               setView={setView}
               logoutRobot={logoutRobot}
@@ -179,9 +153,9 @@ const RobotPage = (): JSX.Element => {
               setInputToken={setInputToken}
               getGenerateRobot={getGenerateRobot}
             />
-          ) : null}
+          )}
 
-          {view === 'recovery' ? (
+          {view === 'recovery' && (
             <Recovery
               setView={setView}
               badToken={badToken}
@@ -189,11 +163,43 @@ const RobotPage = (): JSX.Element => {
               setInputToken={setInputToken}
               getRecoverRobot={getGenerateRobot}
             />
-          ) : null}
-        </Paper>
-      </Box>
+          )}
+        </StyledPaper>
+      </StyledMainBox>
     );
   }
 };
+
+// Styled components
+const StyledConnectingBox = styled(Box)({
+  width: '100vw',
+  height: 'auto',
+});
+
+const StyledTorIconBox = styled(Box)({
+  position: 'fixed',
+  top: '4.6em',
+});
+
+const StyledMainBox = styled(Box)({
+  width: '100vw',
+  height: 'auto',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '2em',
+});
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  width: '80vw',
+  maxWidth: '1200px',
+  maxHeight: '85vh',
+  overflow: 'auto',
+  overflowX: 'clip',
+  backgroundColor: 'transparent',
+  border: 'none',
+  boxShadow: 'none',
+  padding: '1em',
+}));
 
 export default RobotPage;
