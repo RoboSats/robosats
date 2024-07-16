@@ -23,30 +23,166 @@ import RobotAvatar from '../../components/RobotAvatar';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { useTranslation } from 'react-i18next';
 
+
+const TopNavBar = (): JSX.Element => {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  const { setOpen, open } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const slot = garage.getSlot();
+
+  const navItems = [
+    { label: 'Robosats Info', key: 'info' },
+    { label: 'Learn Robosats', key: 'learn' },
+    { label: 'Community', key: 'community' },
+    { label: 'Exchange Summary', key: 'exchange' },
+  ];
+
+  const toggleDrawer = (open: boolean) => () => {
+    setDrawerOpen(open);
+  };
+
+  const handleLogoClick = () => {
+    setOpen({ ...closeAll, client: !open.client });
+  };
+
+  return (
+    <>
+      <StyledAppBar
+        position='fixed'
+        elevation={drawerOpen ? 0 : 3}
+        $isMobile={isMobile}
+        $drawerOpen={drawerOpen}
+      >
+        <StyledToolbar>
+          <svg width={0} height={0}>
+            <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
+              <stop offset={0} stopColor={theme.palette.primary.main} />
+              <stop offset={1} stopColor={theme.palette.secondary.main} />
+            </linearGradient>
+          </svg>
+          {isMobile ? (
+            <>
+              <IconButton edge='start' aria-label='menu' onClick={toggleDrawer(true)}>
+                {drawerOpen ? (
+                  <StyledIcon as={CloseIcon} $isDark={theme.palette.mode === 'dark'} />
+                ) : (
+                  <StyledIcon as={MenuIcon} $isDark={theme.palette.mode === 'dark'} />
+                )}
+              </IconButton>
+              <MobileToolbarContent>
+                <IconButton
+                  edge='end'
+                  onClick={() => {
+                    setOpen({ ...closeAll, profile: !open.profile });
+                  }}
+                  style={{ visibility: slot?.hashId ? 'visible' : 'hidden' }}
+                >
+                  {slot?.hashId ? (
+                    <StyledRobotAvatar
+                      avatarClass={
+                        theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'
+                      }
+                      hashId={slot?.hashId}
+                    />
+                  ) : (
+                    <StyledAccountIcon />
+                  )}
+                </IconButton>
+              </MobileToolbarContent>
+              <StyledDrawer
+                anchor='left'
+                open={drawerOpen}
+                onClose={toggleDrawer(false)}
+                BackdropProps={{ invisible: true }}
+              >
+                <List>
+                  <StyledLogoListItem button onClick={handleLogoClick}>
+                    <StyledDrawerRoboSatsTextIcon />
+                  </StyledLogoListItem>
+                  <Divider />
+                  {navItems.map((item) => (
+                    <StyledListItem
+                      button
+                      key={item.key}
+                      onClick={() => setOpen({ ...closeAll, [item.key]: !open[item.key] })}
+                    >
+                      <ListItemText primary={t(item.label)} />
+                    </StyledListItem>
+                  ))}
+                </List>
+              </StyledDrawer>
+            </>
+          ) : (
+            <>
+              <StyledDesktopRoboSatsTextIcon onClick={handleLogoClick} />
+              <CenterBox>
+                {navItems.map((item) => (
+                  <CenterButton
+                    key={item.key}
+                    onClick={() => setOpen({ ...closeAll, [item.key]: !open[item.key] })}
+                  >
+                    {t(item.label)}
+                  </CenterButton>
+                ))}
+              </CenterBox>
+              <IconButton
+                edge='end'
+                onClick={() => {
+                  setOpen({ ...closeAll, profile: !open.profile });
+                }}
+                style={{ visibility: slot?.hashId ? 'visible' : 'hidden' }}
+              >
+                {slot?.hashId ? (
+                  <StyledRobotAvatar
+                    avatarClass={
+                      theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'
+                    }
+                    hashId={slot?.hashId}
+                  />
+                ) : (
+                  <StyledAccountIcon />
+                )}
+              </IconButton>
+            </>
+          )}
+        </StyledToolbar>
+      </StyledAppBar>
+    </>
+  );
+};
+
+// Styled components
 const NAVBAR_HEIGHT = '64px';
 
-const StyledAppBar = styled(AppBar)(({ theme, isMobile, drawerOpen }) => ({
-  height: NAVBAR_HEIGHT,
-  display: 'flex',
-  justifyContent: 'center',
-  boxShadow: isMobile ? 'none' : '8px 8px 0px 0px rgba(0,0,0,1)',
-  backgroundColor: theme.palette.background.paper,
-  borderBottom: isMobile ? `2px solid ${theme.palette.mode === 'dark' ? '#fff' : '#000'}` : '',
-  border: !isMobile ? `2px solid ${theme.palette.mode === 'dark' ? '#fff' : '#000'}` : '',
-  borderRadius: isMobile ? '0' : '1vw',
-  padding: isMobile ? '0' : '1vh',
-  top: isMobile ? 0 : theme.spacing(2),
-  left: '50%',
-  transform: 'translateX(-50%)',
-  width: isMobile ? '100%' : 'calc(100% - 64px)',
-  position: 'fixed',
-  zIndex: 1100,
-  ...(drawerOpen &&
-    isMobile && {
-      background: 'none',
-      backgroundColor: theme.palette.background.paper,
-    }),
-}));
+const StyledAppBar = styled(AppBar)<{ $isMobile: boolean; $drawerOpen: boolean }>(
+  ({ theme, $isMobile, $drawerOpen }) => ({
+    height: NAVBAR_HEIGHT,
+    display: 'flex',
+    justifyContent: 'center',
+    boxShadow: $isMobile ? 'none' : '8px 8px 0px 0px rgba(0,0,0,1)',
+    backgroundColor: theme.palette.background.paper,
+    borderBottom: $isMobile ? `2px solid ${theme.palette.mode === 'dark' ? '#fff' : '#000'}` : '',
+    border: !$isMobile ? `2px solid ${theme.palette.mode === 'dark' ? '#fff' : '#000'}` : '',
+    borderRadius: $isMobile ? '0' : '1vw',
+    padding: $isMobile ? '0' : '1vh',
+    top: $isMobile ? 0 : theme.spacing(2),
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: $isMobile ? '100%' : 'calc(100% - 64px)',
+    position: 'fixed',
+    zIndex: 1100,
+    ...($drawerOpen &&
+      $isMobile && {
+        background: 'none',
+        backgroundColor: theme.palette.background.paper,
+      }),
+  })
+);
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
@@ -81,170 +217,54 @@ const MobileToolbarContent = styled(Box)(({ theme }) => ({
   marginLeft: theme.spacing(2),
 }));
 
-const TopNavBar = (): JSX.Element => {
-  const theme = useTheme();
-  const { t } = useTranslation();
-  const { setOpen, open } = useContext<UseAppStoreType>(AppContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+const StyledIcon = styled('svg')<{ $isDark: boolean }>(({ $isDark }) => ({
+  color: $isDark ? '#fff' : '#000',
+}));
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+const StyledRobotAvatar = styled(RobotAvatar)({
+  width: '2.5em',
+  height: '2.5em',
+});
 
-  const slot = garage.getSlot();
+const StyledAccountIcon = styled(AccountCircleIcon)({
+  fontSize: '1.5em',
+});
 
-  const navItems = [
-    { label: 'Robosats Info', key: 'info' },
-    { label: 'Learn Robosats', key: 'learn' },
-    { label: 'Community', key: 'community' },
-    { label: 'Exchange Summary', key: 'exchange' },
-  ];
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  '& .MuiDrawer-paper': {
+    marginTop: NAVBAR_HEIGHT,
+    borderLeft: '2px solid black',
+    borderRight: '2px solid black',
+    borderBottom: '2px solid black',
+    width: '100%',
+    maxWidth: '300px',
+  },
+}));
 
-  const toggleDrawer = (open: boolean) => () => {
-    setDrawerOpen(open);
-  };
+const StyledListItem = styled(ListItem)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  padding: theme.spacing(2),
+}));
 
-  const handleLogoClick = () => {
-    setOpen({ ...closeAll, client: !open.client });
-  };
+const StyledLogoListItem = styled(ListItem)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  padding: theme.spacing(2),
+  justifyContent: 'center', 
+}));
 
-  return (
-    <>
-      <StyledAppBar
-        position='fixed'
-        elevation={drawerOpen ? 0 : 3}
-        isMobile={isMobile}
-        drawerOpen={drawerOpen}
-      >
-        <StyledToolbar>
-          <svg width={0} height={0}>
-            <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
-              <stop offset={0} stopColor={theme.palette.primary.main} />
-              <stop offset={1} stopColor={theme.palette.secondary.main} />
-            </linearGradient>
-          </svg>
-          {isMobile ? (
-            <>
-              <IconButton edge='start' aria-label='menu' onClick={toggleDrawer(true)}>
-                {drawerOpen ? (
-                  <CloseIcon style={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
-                ) : (
-                  <MenuIcon style={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
-                )}
-              </IconButton>
-              <MobileToolbarContent>
-                <IconButton
-                  edge='end'
-                  onClick={() => {
-                    setOpen({ ...closeAll, profile: !open.profile });
-                  }}
-                  style={{ visibility: slot?.hashId ? 'visible' : 'hidden' }}
-                >
-                  {slot?.hashId ? (
-                    <RobotAvatar
-                      style={{ width: '2.5em', height: '2.5em' }}
-                      avatarClass={
-                        theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'
-                      }
-                      hashId={slot?.hashId}
-                    />
-                  ) : (
-                    <AccountCircleIcon style={{ fontSize: '1.5em' }} />
-                  )}
-                </IconButton>
-              </MobileToolbarContent>
-              <Drawer
-                anchor='left'
-                open={drawerOpen}
-                onClose={toggleDrawer(false)}
-                BackdropProps={{ invisible: true }}
-                PaperProps={{
-                  style: {
-                    marginTop: NAVBAR_HEIGHT,
-                    borderLeft: '2px solid black',
-                    borderRight: '2px solid black',
-                    borderBottom: '2px solid black',
-                  },
-                }}
-              >
-                <List>
-                  <ListItem
-                    button
-                    onClick={handleLogoClick}
-                    sx={{ borderBottom: '1px solid black' }}
-                  >
-                    <RoboSatsTextIcon
-                      sx={{
-                        height: '2em',
-                        width: 'auto',
-                        cursor: 'pointer',
-                        fill: 'url(#linearColors)',
-                      }}
-                    />
-                  </ListItem>
-                  <Divider />
-                  {navItems.map((item) => (
-                    <ListItem
-                      button
-                      key={item.key}
-                      onClick={() => setOpen({ ...closeAll, [item.key]: !open[item.key] })}
-                      sx={{
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                        padding: theme.spacing(2),
-                      }}
-                    >
-                      <ListItemText primary={t(item.label)} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Drawer>
-            </>
-          ) : (
-            <>
-              <RoboSatsTextIcon
-                sx={{
-                  height: '1.5em',
-                  width: 'auto',
-                  cursor: 'pointer',
-                  marginLeft: -2,
-                  fill: 'url(#linearColors)',
-                }}
-                onClick={handleLogoClick}
-              />
-              <CenterBox>
-                {navItems.map((item) => (
-                  <CenterButton
-                    key={item.key}
-                    onClick={() => setOpen({ ...closeAll, [item.key]: !open[item.key] })}
-                  >
-                    {t(item.label)}
-                  </CenterButton>
-                ))}
-              </CenterBox>
-              <IconButton
-                edge='end'
-                onClick={() => {
-                  setOpen({ ...closeAll, profile: !open.profile });
-                }}
-                style={{ visibility: slot?.hashId ? 'visible' : 'hidden' }}
-              >
-                {slot?.hashId ? (
-                  <RobotAvatar
-                    style={{ width: '2.5em', height: '2.5em' }}
-                    avatarClass={
-                      theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'
-                    }
-                    hashId={slot?.hashId}
-                  />
-                ) : (
-                  <AccountCircleIcon style={{ fontSize: '1.5em' }} />
-                )}
-              </IconButton>
-            </>
-          )}
-        </StyledToolbar>
-      </StyledAppBar>
-    </>
-  );
-};
+const StyledDesktopRoboSatsTextIcon = styled(RoboSatsTextIcon)(({ theme }) => ({
+  height: '1.5em', 
+  width: 'auto',
+  cursor: 'pointer',
+  marginLeft: theme.spacing(-1),
+  fill: 'url(#linearColors)',
+}));
+
+const StyledDrawerRoboSatsTextIcon = styled(RoboSatsTextIcon)(({ theme }) => ({
+  height: '2em', 
+  width: 'auto',
+  cursor: 'pointer',
+  fill: 'url(#linearColors)',
+}));
 
 export default TopNavBar;

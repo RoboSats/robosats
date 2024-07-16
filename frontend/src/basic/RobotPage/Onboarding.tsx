@@ -37,91 +37,12 @@ import { genBase62Token } from '../../utils';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.background.paper,
-  boxShadow: '8px 8px 0px 0px rgba(0, 0, 0, 0.2)',
-  borderRadius: '16px',
-  border: '2px solid #000',
-  padding: theme.spacing(2),
-  color: theme.palette.text.primary,
-  width: '100%',
-  maxWidth: '500px',
-  margin: '0 auto',
-}));
-
-const StyledButton = styled(Button)(({ theme }) => ({
-  justifyContent: 'center',
-  textAlign: 'center',
-  padding: theme.spacing(1),
-  borderRadius: '8px',
-  border: '2px solid #000',
-  boxShadow: '4px 4px 0px 0px rgba(0, 0, 0, 0.2)',
-  textTransform: 'none',
-  fontWeight: 'bold',
-  width: '100%',
-  '&:hover': {
-    boxShadow: '6px 6px 0px 0px rgba(0, 0, 0, 0.3)',
-  },
-}));
-
-const StyledStepConnector = styled(StepConnector)(({ theme }) => ({
-  [`&.${stepConnectorClasses.alternativeLabel}`]: {
-    top: 22,
-    left: 'calc(-50% + 20px)',
-    right: 'calc(50% + 20px)',
-  },
-  [`&.${stepConnectorClasses.active}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      borderColor: theme.palette.primary.main,
-    },
-  },
-  [`&.${stepConnectorClasses.completed}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      borderColor: theme.palette.primary.main,
-    },
-  },
-  [`& .${stepConnectorClasses.line}`]: {
-    borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : '#eaeaf0',
-    borderTopWidth: 3,
-    borderRadius: 1,
-  },
-}));
-
-const StyledStepIconRoot = styled('div')<{ ownerState: { active?: boolean; completed?: boolean } }>(
-  ({ theme, ownerState }) => ({
-    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#ccc',
-    zIndex: 1,
-    color: '#fff',
-    width: 44,
-    height: 44,
-    display: 'flex',
-    borderRadius: '50%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...(ownerState.active && {
-      backgroundColor: theme.palette.primary.main,
-      boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
-    }),
-    ...(ownerState.completed && {
-      backgroundColor: theme.palette.primary.main,
-    }),
-  }),
-);
-
-function StyledStepIcon(props: StepIconProps) {
-  const { active, completed, className } = props;
-
-  const icons: { [index: string]: React.ReactElement } = {
-    1: <Casino />,
-    2: <SmartToy />,
-    3: <Storefront />,
-  };
-
-  return (
-    <StyledStepIconRoot ownerState={{ active, completed }} className={className}>
-      {icons[String(props.icon)]}
-    </StyledStepIconRoot>
-  );
+interface OnboardingProps {
+  setView: (view: string) => void;
+  inputToken: string;
+  setInputToken: (token: string) => void;
+  badToken: boolean;
+  getGenerateRobot: (token: string) => void;
 }
 
 const Onboarding = ({
@@ -161,17 +82,7 @@ const Onboarding = ({
   ];
 
   return (
-    <Box
-      sx={{
-        mt: 3,
-        mb: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        px: 2,
-        width: '100%',
-      }}
-    >
+    <OnboardingContainer>
       <Stepper
         alternativeLabel={!isMobile}
         orientation={isMobile ? 'horizontal' : 'horizontal'}
@@ -274,18 +185,13 @@ const Onboarding = ({
             </Typography>
             {!slot?.hashId && <LinearProgress sx={{ mb: 2 }} />}
             <Box display='flex' justifyContent='center' sx={{ mb: 2 }}>
-              <RobotAvatar
-                hashId={slot?.hashId ?? ''}
-                smooth={true}
-                style={{ width: '150px', height: '150px' }}
-                placeholderType='generating'
-                imageStyle={{
-                  border: '2px solid #555',
-                  borderRadius: '50%',
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                }}
-                tooltipPosition='top'
-              />
+              <RobotAvatarContainer>
+                <RobotAvatar
+                  hashId={slot?.hashId ?? ''}
+                  smooth={true}
+                  placeholderType='generating'
+                />
+              </RobotAvatarContainer>
             </Box>
             {slot?.nickname && (
               <>
@@ -293,11 +199,11 @@ const Onboarding = ({
                   {t('Hi! My name is')}
                 </Typography>
                 <Typography variant='h6' align='center' sx={{ mt: 1, mb: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <NicknameContainer>
                     <SmartToy sx={{ color: '#fcba03', fontSize: '1.2em', mr: 1 }} />
                     <strong>{slot.nickname}</strong>
                     <SmartToy sx={{ color: '#fcba03', fontSize: '1.2em', ml: 1 }} />
-                  </Box>
+                  </NicknameContainer>
                 </Typography>
               </>
             )}
@@ -315,7 +221,6 @@ const Onboarding = ({
             </Box>
           </>
         )}
-
         {step === '3' && (
           <>
             <Typography variant='h6' gutterBottom align='center'>
@@ -382,8 +287,122 @@ const Onboarding = ({
           </>
         )}
       </StyledPaper>
-    </Box>
+    </OnboardingContainer>
   );
 };
 
+// Styled components
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: '8px 8px 0px 0px rgba(0, 0, 0, 0.2)',
+  borderRadius: '16px',
+  border: '2px solid #000',
+  padding: theme.spacing(2),
+  color: theme.palette.text.primary,
+  width: '100%',
+  maxWidth: '500px',
+  margin: '0 auto',
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  justifyContent: 'center',
+  textAlign: 'center',
+  padding: theme.spacing(1),
+  borderRadius: '8px',
+  border: '2px solid #000',
+  boxShadow: '4px 4px 0px 0px rgba(0, 0, 0, 0.2)',
+  textTransform: 'none',
+  fontWeight: 'bold',
+  width: '100%',
+  '&:hover': {
+    boxShadow: '6px 6px 0px 0px rgba(0, 0, 0, 0.3)',
+  },
+}));
+
+const OnboardingContainer = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  width: '100%',
+}));
+
+const RobotAvatarContainer = styled(Box)(({ theme }) => ({
+  width: '150px',
+  height: '150px',
+  border: '2px solid #555',
+  borderRadius: '50%',
+  boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+}));
+
+const NicknameContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledStepConnector = styled(StepConnector)(({ theme }) => ({
+  [`&.${stepConnectorClasses.alternativeLabel}`]: {
+    top: 22,
+    left: 'calc(-50% + 20px)',
+    right: 'calc(50% + 20px)',
+  },
+  [`&.${stepConnectorClasses.active}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+  [`&.${stepConnectorClasses.completed}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+  [`& .${stepConnectorClasses.line}`]: {
+    borderColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : '#eaeaf0',
+    borderTopWidth: 3,
+    borderRadius: 1,
+  },
+}));
+
+const StyledStepIconRoot = styled('div')<{ ownerState: { active?: boolean; completed?: boolean } }>(
+  ({ theme, ownerState }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#ccc',
+    zIndex: 1,
+    color: '#fff',
+    width: 44,
+    height: 44,
+    display: 'flex',
+    borderRadius: '50%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...(ownerState.active && {
+      backgroundColor: theme.palette.primary.main,
+      boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+    }),
+    ...(ownerState.completed && {
+      backgroundColor: theme.palette.primary.main,
+    }),
+  }),
+);
+
+function StyledStepIcon(props: StepIconProps) {
+  const { active, completed, className } = props;
+
+  const icons: { [index: string]: React.ReactElement } = {
+    1: <Casino />,
+    2: <SmartToy />,
+    3: <Storefront />,
+  };
+
+  return (
+    <StyledStepIconRoot ownerState={{ active, completed }} className={className}>
+      {icons[String(props.icon)]}
+    </StyledStepIconRoot>
+  );
+}
+
 export default Onboarding;
+
