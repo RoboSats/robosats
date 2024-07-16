@@ -53,7 +53,7 @@ class Nostr:
             ["expiration", order.expires_at.timestamp()],
             ["y", "robosats", config("COORDINATOR_ALIAS", cast=str)],
             ["n", order.network],
-            ["layer", "lightning"],
+            ["layer", self.get_layer_tag(order)],
             ["g", pygeohash.encode(order.latitude, order.longitude)],
             ["bond", order.bond],
             ["z", "order"],
@@ -63,4 +63,10 @@ class Nostr:
         if order.status == Order.Status.PUB:
             return "pending"
         else:
-            return "canceled"
+            return "success"
+
+    def get_layer_tag(self, order):
+        if order.type == Order.Types.SELL:
+            return ["onchain", "lightning"]
+        else:
+            return ["lightning"]
