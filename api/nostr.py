@@ -12,10 +12,13 @@ class Nostr:
     async def send_order_event(self, order):
         """Creates the event and sends it to the coordinator relay"""
 
+        if config("NOSTR_NSEC", cast=str, default="") == "":
+            return
+
         print("Sending nostr event")
 
         # Initialize with coordinator Keys
-        keys = Keys.generate()
+        keys = Keys.parse(config("NOSTR_NSEC", cast=str))
         signer = NostrSigner.keys(keys)
         client = Client(signer)
 
@@ -24,6 +27,7 @@ class Nostr:
         await client.connect()
 
         event = EventBuilder(38383, "", self.generate_tags(order)).to_event(keys)
+        event.custom_created_at(order.created_at.timestamp())
         output = await client.send_event(event)
         print(f"Nostr event sent: {output}")
 
@@ -38,7 +42,7 @@ class Nostr:
             ["k", order.type.lower()],
             ["f", order.currency],
             ["s", self.get_status_tag(order)],
-            ["amt", order.last_satoshis],
+            ["amt", "0"],
             ["fa", order.amount],
             ["pm", order.payment_method.split(" ")],
             ["premium", order.premium_percentile],
@@ -47,13 +51,12 @@ class Nostr:
                 f"{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
             ],
             ["expiration", order.expires_at.timestamp()],
-            ["y", "robosats"],
+            ["y", "robosats", config("COORDINATOR_ALIAS", cast=str)],
             ["n", order.network],
             ["layer", "lightning"],
             ["g", pygeohash.encode(order.latitude, order.longitude)],
             ["bond", order.bond],
             ["z", "order"],
-            ["coordinator", config("COORDINATOR_ALIAS", cast=str)],
         ]
 
     def get_status_tag(self, order):
