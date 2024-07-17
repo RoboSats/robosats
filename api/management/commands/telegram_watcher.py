@@ -50,16 +50,16 @@ class Command(BaseCommand):
                 parts = message.split(" ")
                 if len(parts) < 2:
                     self.notifications.send_telegram_message(
-                        chat_id=result["message"]["from"]["id"],
-                        text='You must enable the notifications bot using the RoboSats client. Click on your "Robot robot" -> "Enable Telegram" and follow the link or scan the QR code.',
+                        result["message"]["from"]["id"],
+                        'You must enable the notifications bot using the RoboSats client. Click on your "Robot robot" -> "Enable Telegram" and follow the link or scan the QR code.',
                     )
                     continue
                 token = parts[-1]
                 robot = Robot.objects.filter(telegram_token=token).first()
                 if not robot:
                     self.notifications.send_telegram_message(
-                        chat_id=result["message"]["from"]["id"],
-                        text=f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
+                        result["message"]["from"]["id"],
+                        f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
                     )
                     continue
 
