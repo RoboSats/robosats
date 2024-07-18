@@ -52,7 +52,6 @@ class Command(BaseCommand):
                     self.notifications.send_telegram_message(
                         result["message"]["from"]["id"],
                         'You must enable the notifications bot using the RoboSats client. Click on your "Robot robot" -> "Enable Telegram" and follow the link or scan the QR code.',
-                        "",
                     )
                     continue
                 token = parts[-1]
@@ -61,7 +60,6 @@ class Command(BaseCommand):
                     self.notifications.send_telegram_message(
                         result["message"]["from"]["id"],
                         f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
-                        "",
                     )
                     continue
 
