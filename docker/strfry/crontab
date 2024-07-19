@@ -21,4 +21,4 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # m h  dom mon dow   command
-*/1 * * * * /app/strfry --config /app/strfry.conf sync wss://nostr.satstralia.com --dir both >> /var/log/cron.log 2>&1
+*/1 * * * * /app/strfry --config /app/strfry.conf sync wss://nostr.satstralia.com --filter '{"kinds":[38383]}' --dir both >> /var/log/cron.log 2>&1
