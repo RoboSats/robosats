@@ -1,11 +1,11 @@
 FROM dockurr/strfry:0.9.6
 
-USER root
+RUN apk add --no-cache dcron curl iproute2
 
-RUN apk add --no-cache dcron
+ADD . /app
 
-RUN crontab -u root /etc/crontab
+COPY entrypoint.sh /etc/strfry/entrypoint.sh
 
-ENTRYPOINT ["/etc/entrypoint.sh"]
+RUN chmod +x /etc/strfry/entrypoint.sh
 
-CMD ["$@"]
+ENTRYPOINT ["/etc/strfry/entrypoint.sh"]

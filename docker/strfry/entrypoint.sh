@@ -1,3 +1,5 @@
 #!/bin/sh
 
-crond -f -l 8
+crontab /app/crontab
+
+crond -f -l 8 & /app/strfry.sh

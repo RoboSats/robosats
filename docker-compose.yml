@@ -228,12 +228,12 @@ services:
 
   strfry:
     build: ./docker/strfry
-    command: /app/strfry.sh
     container_name: strfry-dev
     restart: unless-stopped
     volumes:
+      - ./docker/strfry/strfry.conf:/app/strfry.conf
       - ./node/strfry/db:/app/strfry-db
-      - ./docker/strfry:/etc/strfry
+      - ./node/strfry/log/:/var/log/
     network_mode: service:tor
 
   # # Postgresql for CLN
