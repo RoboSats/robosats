@@ -232,6 +232,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./docker/strfry/strfry.conf:/app/strfry.conf
+      - ./docker/strfry/sync.sh:/app/sync.sh
       - ./node/strfry/db:/app/strfry-db
       - ./node/strfry/log/:/var/log/
     network_mode: service:tor
