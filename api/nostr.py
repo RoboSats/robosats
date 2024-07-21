@@ -36,7 +36,7 @@ class Nostr:
             f"{config("COORDINATOR_ALIAS", cast=str)}{order.id}".encode("utf-8")
         ).hexdigest()
 
-        return [
+        tags = [
             ["d", uuid.UUID(hashed_id)],
             ["name", order.maker.robot_name],
             ["k", order.type.lower()],
@@ -45,7 +45,7 @@ class Nostr:
             ["amt", "0"],
             ["fa", order.amount],
             ["pm", order.payment_method.split(" ")],
-            ["premium", order.premium_percentile],
+            ["premium", order.premium_percentile * 100],
             [
                 "source",
                 f"{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
@@ -54,10 +54,14 @@ class Nostr:
             ["y", "robosats", config("COORDINATOR_ALIAS", cast=str)],
             ["n", order.network],
             ["layer", self.get_layer_tag(order)],
-            ["g", pygeohash.encode(order.latitude, order.longitude)],
             ["bond", order.bond],
             ["z", "order"],
         ]
+
+        if order.latitude and order.longitude:
+            tags.extend([["g", pygeohash.encode(order.latitude, order.longitude)]])
+
+        return tags
 
     def get_status_tag(self, order):
         if order.status == Order.Status.PUB:
