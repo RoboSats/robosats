@@ -653,3 +653,6 @@ mobile/html/Web.bundle/assets*
 
 # Protocol Buffers
 api/lightning/*.proto
+
+# Traditional environment
+regtest/
