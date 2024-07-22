@@ -195,3 +195,35 @@ jobs:
           asset_path: desktopApp-mac.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac.zip
           asset_content_type: application/zip
+
+      - name: 'Download linux Build Artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux.zip
+          path: .
+      - name: 'Upload linux Build Artifact'
+        id: upload-release-linux-zip-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: desktopApp-linux.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux.zip
+          asset_content_type: application/zip
+
+      - name: 'Download window Build Artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win.zip
+          path: .
+      - name: 'Upload macOS Build Artifact'
+        id: upload-release-win-zip-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: desktopApp-win.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win.zip
+          asset_content_type: application/zip
