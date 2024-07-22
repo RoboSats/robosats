@@ -6,15 +6,6 @@ on:
       semver:
         required: true
         type: string
-    secrets:
-      KEYSTORE:
-        required: true
-      KEY_ALIAS:
-        required: true
-      KEY_PASS:
-        required: true
-      KEY_STORE_PASS:
-        required: true
   push:
     branches: [ "main" ]
     paths: [ "desktopApp", "frontend" ]
