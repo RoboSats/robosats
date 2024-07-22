@@ -42,7 +42,9 @@ try:
 except Exception:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
 
-LND_GRPC_HOST = config("LND_GRPC_HOST")
+LND_GRPC_HOST = \
+    str(config("LND_GRPC_HOST", cast=str, default="localhost")) + \
+    ":" + str(config("LND_GRPC_PORT", cast=str, default="10009"))
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
