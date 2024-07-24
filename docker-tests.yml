@@ -207,13 +207,14 @@ services:
   #   network_mode: service:bitcoind
 
   strfry:
-    image: dockurr/strfry:0.9.6
-    container_name: test-strfry
+    build: ./docker/strfry
+    container_name: strfry-dev
     restart: unless-stopped
     volumes:
-      - ./tests/strfry/db:/app/strfry-db
-      - ./tests/strfry/config/strfry.conf:/etc/strfry.conf:r
-    network_mode: service:bitcoind
+      - ./test/strfry/strfry.conf:/etc/strfry.conf:ro
+      - ./test/strfry/onion_urls.txt:/etc/strfry/onion_urls.txt:ro
+      - ./test/strfry/db:/app/strfry-db:rw
+    network_mode: service:tor
 
 volumes:
   redisdata:

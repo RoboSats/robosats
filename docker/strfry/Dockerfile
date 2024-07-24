@@ -9,6 +9,7 @@ RUN echo "TorPort 9050" >> /etc/tor/torsocks.conf
 COPY crontab /tmp/crontab
 RUN cat /tmp/crontab > /etc/crontabs/root
 
+COPY sync.sh /etc/strfry/sync.sh
 COPY entrypoint.sh /etc/strfry/entrypoint.sh
 
 RUN chmod +x /etc/strfry/entrypoint.sh
