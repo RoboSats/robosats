@@ -234,7 +234,6 @@ services:
       - ./docker/strfry/strfry.conf:/etc/strfry.conf:ro
       - ./docker/strfry/sync.sh:/app/sync.sh:ro
       - ./node/strfry/db:/app/strfry-db:rw
-      - ./node/strfry/log/:/var/log:rw
     network_mode: service:tor
 
   # # Postgresql for CLN

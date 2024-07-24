@@ -1,11 +1,14 @@
 FROM dockurr/strfry:0.9.6
 
-RUN apk add --no-cache dcron torsocks
+RUN apk add --no-cache torsocks
 
 RUN echo "TorAddress 127.0.0.1" >> /etc/tor/torsocks.conf
 RUN echo "TorPort 9050" >> /etc/tor/torsocks.conf
 
-COPY crontab /app/crontab
+# Setting up crontab
+COPY crontab /tmp/crontab
+RUN cat /tmp/crontab > /etc/crontabs/root
+
 COPY entrypoint.sh /etc/strfry/entrypoint.sh
 
 RUN chmod +x /etc/strfry/entrypoint.sh
