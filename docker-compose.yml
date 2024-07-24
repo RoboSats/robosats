@@ -231,10 +231,10 @@ services:
     container_name: strfry-dev
     restart: unless-stopped
     volumes:
-      - ./docker/strfry/strfry.conf:/etc/strfry.conf
-      - ./docker/strfry/sync.sh:/app/sync.sh
-      - ./node/strfry/db:/app/strfry-db
-      - ./node/strfry/log/:/var/log/
+      - ./docker/strfry/strfry.conf:/etc/strfry.conf:ro
+      - ./docker/strfry/sync.sh:/app/sync.sh:ro
+      - ./node/strfry/db:/app/strfry-db:rw
+      - ./node/strfry/log/:/var/log:rw
     network_mode: service:tor
 
   # # Postgresql for CLN
