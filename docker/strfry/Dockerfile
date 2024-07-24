@@ -13,5 +13,6 @@ COPY sync.sh /etc/strfry/sync.sh
 COPY entrypoint.sh /etc/strfry/entrypoint.sh
 
 RUN chmod +x /etc/strfry/entrypoint.sh
+RUN chmod +x /etc/strfry/sync.sh
 
 ENTRYPOINT ["/etc/strfry/entrypoint.sh"]
