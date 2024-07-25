@@ -1,5 +1,6 @@
 package com.robosats.modules;
 
+import android.app.Application;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.robosats.tor.TorKmp;
 import com.robosats.tor.TorKmpManager;
 
 import org.json.JSONException;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import kotlin.UninitializedPropertyAccessException;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -30,10 +33,11 @@ import okhttp3.Response;
 
 
 public class TorModule extends ReactContextBaseJavaModule {
-    private TorKmpManager torKmpManager;
     private ReactApplicationContext context;
     public TorModule(ReactApplicationContext reactContext) {
         context = reactContext;
+        TorKmp torKmpManager = new TorKmp((Application) context.getApplicationContext());
+        TorKmpManager.INSTANCE.updateTorKmpObject(torKmpManager);
     }
 
     @Override
@@ -42,11 +46,12 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void sendRequest(String action, String url, String headers, String body, final Promise promise) throws JSONException {
+    public void sendRequest(String action, String url, String headers, String body, final Promise promise) throws JSONException, UninitializedPropertyAccessException {
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
                 .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
-                .proxy(torKmpManager.getProxy()).build();
+                .proxy(TorKmpManager.INSTANCE.getTorKmpObject().getProxy())
+                .build();
 
         Request.Builder requestBuilder = new Request.Builder().url(url);
 
@@ -89,8 +94,8 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getTorStatus() {
-        String torState = torKmpManager.getTorState().getState().name();
+    public void getTorStatus() throws UninitializedPropertyAccessException {
+        String torState = TorKmpManager.INSTANCE.getTorKmpObject().getTorState().getState().name();
         WritableMap payload = Arguments.createMap();
         payload.putString("torStatus", torState);
         context
@@ -99,8 +104,8 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void isConnected() {
-        String isConnected = String.valueOf(torKmpManager.isConnected());
+    public void isConnected() throws UninitializedPropertyAccessException {
+        String isConnected = String.valueOf(TorKmpManager.INSTANCE.getTorKmpObject().isConnected());
         WritableMap payload = Arguments.createMap();
         payload.putString("isConnected", isConnected);
         context
@@ -109,8 +114,8 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void isStarting() {
-        String isStarting = String.valueOf(torKmpManager.isStarting());
+    public void isStarting() throws UninitializedPropertyAccessException {
+        String isStarting = String.valueOf(TorKmpManager.INSTANCE.getTorKmpObject().isStarting());
         WritableMap payload = Arguments.createMap();
         payload.putString("isStarting", isStarting);
         context
@@ -119,8 +124,8 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void stop() {
-        torKmpManager.getTorOperationManager().stopQuietly();
+    public void stop() throws UninitializedPropertyAccessException {
+        TorKmpManager.INSTANCE.getTorKmpObject().getTorOperationManager().stopQuietly();
         WritableMap payload = Arguments.createMap();
         context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -128,9 +133,8 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void start() {
-        torKmpManager = new TorKmpManager(context.getCurrentActivity().getApplication());
-        torKmpManager.getTorOperationManager().startQuietly();
+    public void start() throws InterruptedException, UninitializedPropertyAccessException {
+        TorKmpManager.INSTANCE.getTorKmpObject().getTorOperationManager().startQuietly();
         WritableMap payload = Arguments.createMap();
         context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -138,9 +142,10 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void restart() {
-        torKmpManager = new TorKmpManager(context.getCurrentActivity().getApplication());
-        torKmpManager.getTorOperationManager().restartQuietly();
+    public void restart() throws UninitializedPropertyAccessException {
+        TorKmp torKmp = new TorKmp(context.getCurrentActivity().getApplication());
+        TorKmpManager.INSTANCE.updateTorKmpObject(torKmp);
+        TorKmpManager.INSTANCE.getTorKmpObject().getTorOperationManager().restartQuietly();
         WritableMap payload = Arguments.createMap();
         context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -148,8 +153,8 @@ public class TorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void newIdentity() {
-        torKmpManager.newIdentity(context.getCurrentActivity().getApplication());
+    public void newIdentity() throws UninitializedPropertyAccessException {
+        TorKmpManager.INSTANCE.getTorKmpObject().newIdentity(context.getCurrentActivity().getApplication());
         WritableMap payload = Arguments.createMap();
         context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)

@@ -1,3 +1,4 @@
+import { redirect } from 'react-router-dom';
 import {
   type NativeRobosatsPromise,
   type NativeWebViewMessage,
@@ -45,6 +46,8 @@ class NativeRobosats {
       if (message.key !== undefined) {
         this.cookies[message.key] = String(message.detail);
       }
+    } else if (message.type === 'navigateToPage') {
+      window.dispatchEvent(new CustomEvent('navigateToPage', { detail: message?.detail }));
     }
   };
 

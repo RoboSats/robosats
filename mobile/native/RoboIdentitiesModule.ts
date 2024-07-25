@@ -2,8 +2,8 @@ import { NativeModules } from 'react-native';
 const { RoboIdentitiesModule } = NativeModules;
 
 interface RoboIdentitiesModuleInterface {
-  generateRoboname: (initialString: String) => Promise<string>;
-  generateRobohash: (initialString: String) => Promise<string>;
+  generateRoboname: (initialString: string) => Promise<string>;
+  generateRobohash: (initialString: string) => Promise<string>;
 }
 
 export default RoboIdentitiesModule as RoboIdentitiesModuleInterface;
