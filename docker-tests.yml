@@ -206,16 +206,6 @@ services:
   #     - redis
   #   network_mode: service:bitcoind
 
-  strfry:
-    build: ./docker/strfry
-    container_name: strfry-dev
-    restart: unless-stopped
-    volumes:
-      - ./test/strfry/strfry.conf:/etc/strfry.conf:ro
-      - ./test/strfry/onion_urls.txt:/etc/strfry/onion_urls.txt:ro
-      - ./test/strfry/db:/app/strfry-db:rw
-    network_mode: service:tor
-
 volumes:
   redisdata:
   bitcoin:
