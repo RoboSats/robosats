@@ -41,7 +41,7 @@ function createWindow() {
     var mainWindow = new electron_1.BrowserWindow({
         width: 1200,
         height: 800,
-        icon: path.join(__dirname, 'static/assets/images/favicon-32x32.png'),
+        icon: path.join(__dirname, '/static/assets/images/favicon-32x32.png'),
         webPreferences: {
             nodeIntegration: false, // Disable Node.js integration in the renderer
             contextIsolation: true, // Enable context isolation for security
