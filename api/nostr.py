@@ -3,7 +3,7 @@ import hashlib
 import uuid
 
 from asgiref.sync import sync_to_async
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag
+from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag, Timestamp
 from api.models import Order
 from decouple import config
 
@@ -30,12 +30,13 @@ class Nostr:
 
         robot_name = await self.get_robot_name(order)
         currency = await self.get_robot_currency(order)
+        created_at = Timestamp.from_secs(int(order.created_at.timestamp()))
 
         event = (
             EventBuilder(
                 Kind(38383), "", self.generate_tags(order, robot_name, currency)
             )
-            .custom_created_at(int(order.created_at.timestamp()))
+            .custom_created_at(created_at)
             .to_event(keys)
         )
         output = await client.send_event(event)
