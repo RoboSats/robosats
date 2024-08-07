@@ -35,7 +35,7 @@ class Nostr:
             EventBuilder(
                 Kind(38383), "", self.generate_tags(order, robot_name, currency)
             )
-            .custom_created_at(order.created_at.timestamp())
+            .custom_created_at(int(order.created_at.timestamp()))
             .to_event(keys)
         )
         output = await client.send_event(event)
@@ -70,14 +70,14 @@ class Nostr:
                     f"http://{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
                 ]
             ),
-            Tag.parse(["expiration", int(order.expires_at.timestamp())]),
+            Tag.parse(["expiration", str(int(order.expires_at.timestamp()))]),
             Tag.parse(["y", "robosats", config("COORDINATOR_ALIAS", cast=str)]),
             Tag.parse(["n", str(config("NETWORK"))]),
             Tag.parse(["layer"] + self.get_layer_tag(order)),
             Tag.parse(["bond", str(order.bond_size)]),
             Tag.parse(["z", "order"]),
         ]
-        print(tags)
+
         if order.latitude and order.longitude:
             tags.extend(
                 [Tag.parse(["g", pygeohash.encode(order.latitude, order.longitude)])]
