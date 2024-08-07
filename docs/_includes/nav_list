@@ -6,6 +6,9 @@
 {% if url contains "/fr/" %}
   {% assign navigation = site.data.navigation_fr[include.nav] %}
 {% endif %}
+{% if url contains "/pt/" %}
+  {% assign navigation = site.data.navigation_pt[include.nav] %}
+{% endif %}
 
 
 <nav class="nav__list">
