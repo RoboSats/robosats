@@ -30,3 +30,4 @@ django-cors-headers==4.4.0
 base91==1.0.1
 nostr-sdk==0.32.2
 pygeohash==1.2.0
+asgiref == 3.8.1

@@ -1,7 +1,9 @@
 import pygeohash
 import hashlib
 import uuid
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner
+
+from asgiref.sync import sync_to_async
+from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag
 from api.models import Order
 from decouple import config
 
@@ -26,38 +28,56 @@ class Nostr:
         await client.add_relays(["ws://localhost:7777"])
         await client.connect()
 
-        event = EventBuilder(38383, "", self.generate_tags(order)).to_event(keys)
-        event.custom_created_at(order.created_at.timestamp())
+        robot_name = await self.get_robot_name(order)
+        currency = await self.get_robot_currency(order)
+
+        event = (
+            EventBuilder(
+                Kind(38383),
+                "",
+                Tag.parse(self.generate_tags(order, robot_name, currency)),
+            )
+            .custom_created_at(order.created_at.timestamp())
+            .to_event(keys)
+        )
         output = await client.send_event(event)
         print(f"Nostr event sent: {output}")
 
-    def generate_tags(self, order):
+    @sync_to_async
+    def get_robot_name(self, order):
+        return order.maker.username
+
+    @sync_to_async
+    def get_robot_currency(self, order):
+        return str(order.currency)
+
+    def generate_tags(self, order, robot_name, currency):
         hashed_id = hashlib.md5(
             f"{config("COORDINATOR_ALIAS", cast=str)}{order.id}".encode("utf-8")
         ).hexdigest()
 
         tags = [
-            ["d", uuid.UUID(hashed_id)],
-            ["name", order.maker.robot_name],
-            ["k", order.type.lower()],
-            ["f", order.currency],
+            ["d", str(uuid.UUID(hashed_id))],
+            ["name", robot_name],
+            ["k", "sell" if order.type == Order.Types.SELL else "buy"],
+            ["f", currency],
             ["s", self.get_status_tag(order)],
             ["amt", "0"],
-            ["fa", order.amount],
-            ["pm", order.payment_method.split(" ")],
-            ["premium", order.premium_percentile * 100],
+            ["fa", str(order.amount)],
+            ["pm"] + order.payment_method.split(" "),
+            ["premium", str(order.premium)],
             [
                 "source",
-                f"{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
+                f"http://{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
             ],
-            ["expiration", order.expires_at.timestamp()],
+            ["expiration", int(order.expires_at.timestamp())],
             ["y", "robosats", config("COORDINATOR_ALIAS", cast=str)],
-            ["n", order.network],
-            ["layer", self.get_layer_tag(order)],
-            ["bond", order.bond],
+            ["n", str(config("NETWORK"))],
+            ["layer"] + self.get_layer_tag(order),
+            ["bond", str(order.bond_size)],
             ["z", "order"],
         ]
-
+        print(tags)
         if order.latitude and order.longitude:
             tags.extend([["g", pygeohash.encode(order.latitude, order.longitude)]])
 
