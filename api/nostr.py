@@ -39,8 +39,8 @@ class Nostr:
             .custom_created_at(created_at)
             .to_event(keys)
         )
-        output = await client.send_event(event)
-        print(f"Nostr event sent: {output}")
+        await client.send_event(event)
+        print(f"Nostr event sent: {event.as_json()}")
 
     @sync_to_async
     def get_robot_name(self, order):
@@ -68,11 +68,11 @@ class Nostr:
             Tag.parse(
                 [
                     "source",
-                    f"http://{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
+                    f"http://{config("HOST_NAME")}/order/{config("COORDINATOR_ALIAS", cast=str).lower()}/{order.id}",
                 ]
             ),
             Tag.parse(["expiration", str(int(order.expires_at.timestamp()))]),
-            Tag.parse(["y", "robosats", config("COORDINATOR_ALIAS", cast=str)]),
+            Tag.parse(["y", "robosats", config("COORDINATOR_ALIAS", cast=str).lower()]),
             Tag.parse(["n", str(config("NETWORK"))]),
             Tag.parse(["layer"] + self.get_layer_tag(order)),
             Tag.parse(["bond", str(order.bond_size)]),
