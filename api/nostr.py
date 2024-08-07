@@ -33,9 +33,7 @@ class Nostr:
 
         event = (
             EventBuilder(
-                Kind(38383),
-                "",
-                Tag.parse(self.generate_tags(order, robot_name, currency)),
+                Kind(38383), "", self.generate_tags(order, robot_name, currency)
             )
             .custom_created_at(order.created_at.timestamp())
             .to_event(keys)
@@ -57,29 +55,33 @@ class Nostr:
         ).hexdigest()
 
         tags = [
-            ["d", str(uuid.UUID(hashed_id))],
-            ["name", robot_name],
-            ["k", "sell" if order.type == Order.Types.SELL else "buy"],
-            ["f", currency],
-            ["s", self.get_status_tag(order)],
-            ["amt", "0"],
-            ["fa", str(order.amount)],
-            ["pm"] + order.payment_method.split(" "),
-            ["premium", str(order.premium)],
-            [
-                "source",
-                f"http://{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
-            ],
-            ["expiration", int(order.expires_at.timestamp())],
-            ["y", "robosats", config("COORDINATOR_ALIAS", cast=str)],
-            ["n", str(config("NETWORK"))],
-            ["layer"] + self.get_layer_tag(order),
-            ["bond", str(order.bond_size)],
-            ["z", "order"],
+            Tag.parse(["d", str(uuid.UUID(hashed_id))]),
+            Tag.parse(["name", robot_name]),
+            Tag.parse(["k", "sell" if order.type == Order.Types.SELL else "buy"]),
+            Tag.parse(["f", currency]),
+            Tag.parse(["s", self.get_status_tag(order)]),
+            Tag.parse(["amt", "0"]),
+            Tag.parse(["fa", str(order.amount)]),
+            Tag.parse(["pm"] + order.payment_method.split(" ")),
+            Tag.parse(["premium", str(order.premium)]),
+            Tag.parse(
+                [
+                    "source",
+                    f"http://{config("HOST_NAME")}/{config("COORDINATOR_ALIAS")}/order/{order.id}",
+                ]
+            ),
+            Tag.parse(["expiration", int(order.expires_at.timestamp())]),
+            Tag.parse(["y", "robosats", config("COORDINATOR_ALIAS", cast=str)]),
+            Tag.parse(["n", str(config("NETWORK"))]),
+            Tag.parse(["layer"] + self.get_layer_tag(order)),
+            Tag.parse(["bond", str(order.bond_size)]),
+            Tag.parse(["z", "order"]),
         ]
         print(tags)
         if order.latitude and order.longitude:
-            tags.extend([["g", pygeohash.encode(order.latitude, order.longitude)]])
+            tags.extend(
+                [Tag.parse(["g", pygeohash.encode(order.latitude, order.longitude)])]
+            )
 
         return tags
 
