@@ -141,7 +141,7 @@ def get_devfund_pubkey(network: str) -> str:
     """
 
     session = get_session()
-    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubey.json"
+    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubkey.json"
 
     try:
         response = session.get(url)
