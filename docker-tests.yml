@@ -27,6 +27,7 @@ services:
       - "9998:9998"
       - "5432:5432"
       - "6379:6379"
+      - "7777:7777"
     volumes:
       - bitcoin:/bitcoin/.bitcoin/
       - ./tests/bitcoind/entrypoint.sh:/entrypoint.sh
@@ -182,7 +183,7 @@ services:
   # celery-worker:
   #   image: backend-image
   #   pull_policy: never
-  #   container_name: celery-worker
+  #   container_name: test-celery-worker
   #   restart: always
   #   environment:
   #     DEVELOPMENT: True
