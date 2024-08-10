@@ -55,7 +55,7 @@ export class Federation {
     settings: Settings,
     hostUrl: string,
     attributes: Record<any, any>,
-  ) => {
+  ): void => {
     const value = {
       ...coordinatorDefaultValues,
       ...attributes,
@@ -111,7 +111,7 @@ export class Federation {
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
     for (const coor of Object.values(this.coordinators)) {
-      coor.update(() => {
+      void coor.update(() => {
         this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
@@ -124,7 +124,7 @@ export class Federation {
     this.triggerHook('onCoordinatorUpdate');
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
-      coor.updateBook(() => {
+      void coor.updateBook(() => {
         this.onCoordinatorSaved();
       });
     }
