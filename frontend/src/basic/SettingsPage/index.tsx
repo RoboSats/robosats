@@ -4,7 +4,7 @@ import SettingsForm from '../../components/SettingsForm';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
 import { t } from 'i18next';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
@@ -16,7 +16,7 @@ const SettingsPage = (): JSX.Element => {
   // Regular expression to match a valid .onion URL
   const onionUrlPattern = /^((http|https):\/\/)?[a-zA-Z2-7]{16,56}\.onion$/;
 
-  const addCoordinator = () => {
+  const addCoordinator: () => void = () => {
     if (federation.coordinators[newAlias]) {
       setError(t('Alias already exists'));
     } else {
@@ -65,7 +65,9 @@ const SettingsPage = (): JSX.Element => {
               variant='outlined'
               size='small'
               value={newAlias}
-              onChange={(e) => setNewAlias(e.target.value)}
+              onChange={(e) => {
+                setNewAlias(e.target.value);
+              }}
             />
             <TextField
               id='outlined-basic'
@@ -73,7 +75,9 @@ const SettingsPage = (): JSX.Element => {
               variant='outlined'
               size='small'
               value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
+              onChange={(e) => {
+                setNewUrl(e.target.value);
+              }}
             />
             <Button
               sx={{ maxHeight: 38 }}

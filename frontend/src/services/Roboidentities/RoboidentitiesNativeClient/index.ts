@@ -31,8 +31,8 @@ class RoboidentitiesNativeClient implements RoboidentitiesClient {
           type: 'robohash',
           detail: key,
         });
-        const result = response ? Object.values(response)[0] : '';
-        const image = `data:image/png;base64,${result}`;
+        const result: string = response ? Object.values(response)[0] : '';
+        const image: string = `data:image/png;base64,${result}`;
         this.robohashes[key] = image;
         return image;
       }

@@ -14,7 +14,6 @@ import {
   LinearProgress,
   IconButton,
   Tooltip,
-  type LinearProgressProps,
   styled,
 } from '@mui/material';
 import {
@@ -24,7 +23,7 @@ import {
   type GridPaginationModel,
   type GridColDef,
   type GridValidRowModel,
-  GridSlotsComponent,
+  type GridSlotsComponent,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -830,14 +829,6 @@ const BookTable = ({
       </Grid>
     );
   };
-
-  interface GridComponentProps {
-    LoadingOverlay: (props: LinearProgressProps) => JSX.Element;
-    NoResultsOverlay?: (props: any) => JSX.Element;
-    NoRowsOverlay?: (props: any) => JSX.Element;
-    Footer?: (props: any) => JSX.Element;
-    Toolbar?: (props: any) => JSX.Element;
-  }
 
   const NoResultsOverlay = function (): JSX.Element {
     return (
