@@ -4,14 +4,14 @@ import { robohash } from './RobohashGenerator';
 
 class RoboidentitiesClientWebClient implements RoboidentitiesClient {
   public generateRoboname: (initialString: string) => Promise<string> = async (initialString) => {
-    return new Promise<string>(async (resolve, _reject) => {
+    return await new Promise<string>((resolve, _reject) => {
       resolve(generate_roboname(initialString));
     });
   };
 
   public generateRobohash: (initialString: string, size: 'small' | 'large') => Promise<string> =
     async (initialString, size) => {
-      return robohash.generate(initialString, size);
+      return await robohash.generate(initialString, size);
     };
 }
 

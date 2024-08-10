@@ -37,13 +37,13 @@ class Notifications:
         if robot.telegram_enabled:
             self.send_telegram_message(robot.telegram_chat_id, title, description)
 
-    def save_message(self, order, robot, title, description):
+    def save_message(self, order, robot, title, description=""):
         """Save a message for a user"""
         Notification.objects.create(
             title=title, description=description, robot=robot, order=order
         )
 
-    def send_telegram_message(self, chat_id, title, description):
+    def send_telegram_message(self, chat_id, title, description=""):
         """sends a message to a user with telegram notifications enabled"""
 
         bot_token = config("TELEGRAM_TOKEN")
