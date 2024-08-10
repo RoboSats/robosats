@@ -5,7 +5,7 @@ import ApiWebClient from '../ApiWebClient';
 class ApiNativeClient implements ApiClient {
   public useProxy = true;
 
-  private webClient: ApiClient = new ApiWebClient();
+  private readonly webClient: ApiClient = new ApiWebClient();
 
   private readonly assetsPromises = new Map<string, Promise<string | undefined>>();
 
@@ -55,7 +55,7 @@ class ApiNativeClient implements ApiClient {
 
   public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> =
     async (baseUrl, path, auth) => {
-      if (!this.useProxy) return this.webClient.delete(baseUrl, path, auth);
+      if (!this.useProxy) return await this.webClient.delete(baseUrl, path, auth);
       return await window.NativeRobosats?.postMessage({
         category: 'http',
         type: 'delete',
@@ -71,7 +71,7 @@ class ApiNativeClient implements ApiClient {
     body: object,
     auth?: Auth,
   ) => Promise<object | undefined> = async (baseUrl, path, body, auth) => {
-    if (!this.useProxy) return this.webClient.post(baseUrl, path, body, auth);
+    if (!this.useProxy) return await this.webClient.post(baseUrl, path, body, auth);
     return await window.NativeRobosats?.postMessage({
       category: 'http',
       type: 'post',
@@ -87,7 +87,7 @@ class ApiNativeClient implements ApiClient {
     path,
     auth,
   ) => {
-    if (!this.useProxy) return this.webClient.get(baseUrl, path, auth);
+    if (!this.useProxy) return await this.webClient.get(baseUrl, path, auth);
     return await window.NativeRobosats?.postMessage({
       category: 'http',
       type: 'get',

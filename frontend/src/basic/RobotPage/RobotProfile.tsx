@@ -156,7 +156,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {loadingCoordinators > 0 && !Boolean(robot?.activeOrderId) ? (
+        {loadingCoordinators > 0 && !robot?.activeOrderId ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />
@@ -210,9 +210,9 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {!Boolean(robot?.activeOrderId) &&
+        {!robot?.activeOrderId &&
         slot?.hashId &&
-        !Boolean(robot?.lastOrderId) &&
+        !robot?.lastOrderId &&
         loadingCoordinators === 0 ? (
           <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
