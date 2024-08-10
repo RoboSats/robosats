@@ -409,9 +409,8 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                 ))}
                 {qttHiddenTags > 0 ? (
                   <StyledChip
-                    sx={{ borderRadius: 1 }}
                     label={`+${qttHiddenTags}`}
-                    sx={{ height: '1.6rem' }}
+                    sx={{ borderRadius: 1, height: '1.6rem' }}
                   />
                 ) : null}
               </>
