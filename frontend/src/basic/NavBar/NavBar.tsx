@@ -17,15 +17,13 @@ import {
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 const NavBar = (): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { page, setPage, settings, setSlideDirection, open, setOpen, windowSize, navbarHeight } =
     useContext<UseAppStoreType>(AppContext);
-  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,7 +48,7 @@ const NavBar = (): JSX.Element => {
 
   useEffect(() => {
     // re-render on orde rand robot updated at for latest orderId in tab
-  }, [robotUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   useEffect(() => {
     // change tab (page) into the current route
@@ -77,14 +75,10 @@ const NavBar = (): JSX.Element => {
       const slot = garage.getSlot();
       handleSlideDirection(page, newPage);
       setPage(newPage);
-      const shortAlias = String(slot?.activeShortAlias);
-      const activeOrderId = slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId;
-      const lastOrderId = slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId;
-      const param =
-        newPage === 'order' ? `${shortAlias}/${String(activeOrderId ?? lastOrderId)}` : '';
-      if (newPage === 'order') {
-        setCurrentOrderId({ id: activeOrderId ?? lastOrderId, shortAlias });
-      }
+
+      const shortAlias = slot?.activeOrder?.shortAlias;
+      const orderId = slot?.activeOrder?.id;
+      const param = newPage === 'order' ? `${String(shortAlias)}/${String(orderId)}` : '';
       setTimeout(() => {
         navigate(`/${newPage}/${param}`);
       }, theme.transitions.duration.leavingScreen * 3);
@@ -162,7 +156,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!slot?.getRobot()?.activeOrderId}
+          disabled={!slot?.activeOrder}
           icon={<Assignment />}
           iconPosition='start'
         />

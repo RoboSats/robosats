@@ -20,7 +20,6 @@ interface ChatPromptProps {
   loadingReceived: boolean;
   onClickDispute: () => void;
   loadingDispute: boolean;
-  baseUrl: string;
   messages: EncryptedChatMessage[];
   setMessages: (state: EncryptedChatMessage[]) => void;
 }
@@ -35,12 +34,11 @@ export const ChatPrompt = ({
   loadingReceived,
   onClickDispute,
   loadingDispute,
-  baseUrl,
   messages,
   setMessages,
 }: ChatPromptProps): JSX.Element => {
   const { t } = useTranslation();
-  const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -113,7 +111,7 @@ export const ChatPrompt = ({
         setText(t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it."));
       }
     }
-  }, [orderUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   return (
     <Grid
@@ -135,7 +133,6 @@ export const ChatPrompt = ({
           status={order.status}
           chatOffset={order.chat_last_index}
           order={order}
-          baseUrl={baseUrl}
           messages={messages}
           setMessages={setMessages}
         />

@@ -36,7 +36,6 @@ interface Props {
   makerHashId: string;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
-  baseUrl: string;
   turtleMode: boolean;
   setTurtleMode: (state: boolean) => void;
 }
@@ -50,14 +49,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
   takerHashId,
   messages,
   setMessages,
-  baseUrl,
   turtleMode,
   setTurtleMode,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
-  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
@@ -78,7 +76,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     if (!connected && Boolean(garage.getSlot()?.hashId)) {
       connectWebsocket();
     }
-  }, [connected, robotUpdatedAt]);
+  }, [connected, slotUpdatedAt]);
 
   // Make sure to not keep reconnecting once status is not Chat
   useEffect(() => {

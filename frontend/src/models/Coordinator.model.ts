@@ -1,16 +1,7 @@
-import {
-  type Robot,
-  type LimitList,
-  type PublicOrder,
-  type Settings,
-  type Order,
-  type Garage,
-} from '.';
+import { type LimitList, type PublicOrder, type Settings } from '.';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { apiClient } from '../services/api';
-import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
-import { defaultOrder } from './Order.model';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -180,7 +171,6 @@ export class Coordinator {
   public loadingInfo: boolean = false;
   public limits: LimitList = {};
   public loadingLimits: boolean = false;
-  public loadingRobot: string | null;
 
   updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
@@ -330,132 +320,6 @@ export class Coordinator {
     } else {
       return { url: String(this[network][origin]), basePath: '' };
     }
-  };
-
-  fetchRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
-    if (!this.enabled || !token || this.loadingRobot === token) return null;
-
-    const robot = garage?.getSlot(token)?.getRobot() ?? null;
-    const authHeaders = robot?.getAuthHeaders();
-
-    if (!authHeaders) return null;
-
-    const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
-
-    if (!hasEnoughEntropy) return null;
-
-    this.loadingRobot = token;
-
-    garage.updateRobot(token, this.shortAlias, { loading: true });
-
-    const newAttributes = await apiClient
-      .get(this.url, `${this.basePath}/api/robot/`, authHeaders)
-      .then((data: any) => {
-        return {
-          nickname: data.nickname,
-          activeOrderId: data.active_order_id ?? null,
-          lastOrderId: data.last_order_id ?? null,
-          earnedRewards: data.earned_rewards ?? 0,
-          stealthInvoices: data.wants_stealth,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          found: data?.found,
-          last_login: data.last_login,
-          pubKey: data.public_key,
-          encPrivKey: data.encrypted_private_key,
-        };
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => (this.loadingRobot = null));
-
-    garage.updateRobot(token, this.shortAlias, {
-      ...newAttributes,
-      tokenSHA256: authHeaders.tokenSHA256,
-      loading: false,
-      bitsEntropy,
-      shannonEntropy,
-      shortAlias: this.shortAlias,
-    });
-
-    return garage.getSlot(this.shortAlias)?.getRobot() ?? null;
-  };
-
-  fetchOrder = async (orderId: number, robot: Robot, token: string): Promise<Order | null> => {
-    if (!this.enabled) return null;
-    if (!token) return null;
-
-    const authHeaders = robot.getAuthHeaders();
-    if (!authHeaders) return null;
-
-    return await apiClient
-      .get(this.url, `${this.basePath}/api/order/?order_id=${orderId}`, authHeaders)
-      .then((data) => {
-        const order: Order = {
-          ...defaultOrder,
-          ...data,
-          shortAlias: this.shortAlias,
-        };
-        return order;
-      })
-      .catch((e) => {
-        console.log(e);
-        return null;
-      });
-  };
-
-  fetchReward = async (
-    signedInvoice: string,
-    garage: Garage,
-    index: string,
-  ): Promise<null | {
-    bad_invoice?: string;
-    successful_withdrawal?: boolean;
-  }> => {
-    if (!this.enabled) return null;
-
-    const slot = garage.getSlot(index);
-    const robot = slot?.getRobot();
-
-    if (!slot?.token || !robot?.encPrivKey) return null;
-
-    const data = await apiClient.post(
-      this.url,
-      `${this.basePath}/api/reward/`,
-      {
-        invoice: signedInvoice,
-      },
-      { tokenSHA256: robot.tokenSHA256 },
-    );
-    garage.updateRobot(slot?.token, this.shortAlias, {
-      earnedRewards: data?.successful_withdrawal === true ? 0 : robot.earnedRewards,
-    });
-
-    return data ?? {};
-  };
-
-  fetchStealth = async (wantsStealth: boolean, garage: Garage, index: string): Promise<null> => {
-    if (!this.enabled) return null;
-
-    const slot = garage.getSlot(index);
-    const robot = slot?.getRobot();
-
-    if (!(slot?.token != null) || !(robot?.encPrivKey != null)) return null;
-
-    await apiClient.post(
-      this.url,
-      `${this.basePath}/api/stealth/`,
-      { wantsStealth },
-      { tokenSHA256: robot.tokenSHA256 },
-    );
-
-    garage.updateRobot(slot?.token, this.shortAlias, {
-      stealthInvoices: wantsStealth,
-    });
-
-    return null;
   };
 }
 

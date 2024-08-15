@@ -45,7 +45,6 @@ const RobotPage = (): JSX.Element => {
     if (token !== undefined && token !== null && page === 'robot') {
       setInputToken(token);
       if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
-        getGenerateRobot(token);
         setView('profile');
       }
     }
@@ -70,7 +69,7 @@ const RobotPage = (): JSX.Element => {
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,
         });
-        void federation.fetchRobot(garage, token);
+        void garage.fetchRobot(federation, token);
         garage.setCurrentSlot(token);
       })
       .catch((error) => {

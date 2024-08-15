@@ -5,10 +5,12 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
 import { t } from 'i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const { federation, addNewCoordinator } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
@@ -26,6 +28,7 @@ const SettingsPage = (): JSX.Element => {
           fullNewUrl = `http://${newUrl}`;
         }
         addNewCoordinator(newAlias, fullNewUrl);
+        garage.syncCoordinator(federation, newAlias);
         setNewAlias('');
         setNewUrl('');
       } else {

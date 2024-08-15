@@ -47,8 +47,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   onOrderClicked = () => null,
 }) => {
   const { fav } = useContext<UseAppStoreType>(AppContext);
-  const { federation, coordinatorUpdatedAt, federationUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<PublicOrder[]>([]);
@@ -81,7 +80,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       });
       setEnrichedOrders(enriched);
     }
-  }, [coordinatorUpdatedAt, currencyCode]);
+  }, [federationUpdatedAt, currencyCode]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
