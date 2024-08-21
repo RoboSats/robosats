@@ -205,11 +205,16 @@ public class NotificationsService extends Service {
                 });
                 try {
                     JSONArray results = new JSONArray(body);
-                    if (results.length() > 0) {
-                        JSONObject notification = results.getJSONObject(0);
+                    for (int i=0; i < results.length(); i++) {
+                        JSONObject notification = results.getJSONObject(i);
                         Integer order_id = notification.getInt("order_id");
+                        String title = notification.getString("title");
 
-                        displayOrderNotification(order_id, notification.getString("title"), coordinator);
+                        if (title.isEmpty()) {
+                            continue;
+                        }
+
+                        displayOrderNotification(order_id, title, coordinator);
 
                         long milliseconds;
                         try {
@@ -223,6 +228,7 @@ public class NotificationsService extends Service {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putLong(token, milliseconds);
                         editor.apply();
+                        break;
                     }
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
