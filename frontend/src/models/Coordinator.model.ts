@@ -72,6 +72,39 @@ export interface Info {
 
 export type Origin = 'onion' | 'i2p' | 'clearnet';
 
+export const coordinatorDefaultValues = {
+  longAlias: '',
+  shortAlias: '',
+  description: '',
+  motto: '',
+  color: '#000',
+  size_limit: 21 * 100000000,
+  established: new Date(),
+  policies: {},
+  contact: {
+    email: '',
+    telegram: '',
+    simplex: '',
+    matrix: '',
+    website: '',
+    nostr: '',
+    pgp: '',
+    fingerprint: '',
+  },
+  badges: {
+    isFounder: false,
+    donatesToDevFund: 0,
+    hasGoodOpSec: false,
+    robotsLove: false,
+    hasLargeLimits: false,
+  },
+  mainnet: undefined,
+  testnet: undefined,
+  mainnetNodesPubkeys: '',
+  testnetNodesPubkeys: '',
+  federated: true,
+};
+
 export interface Origins {
   clearnet: Origin | undefined;
   onion: Origin | undefined;
@@ -102,6 +135,7 @@ export class Coordinator {
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
     this.description = value.description;
+    this.federated = value.federated;
     this.motto = value.motto;
     this.color = value.color;
     this.size_limit = value.badges.isFounder ? 21 * 100000000 : calculateSizeLimit(established);
@@ -122,6 +156,7 @@ export class Coordinator {
   // These properties are loaded from federation.json
   public longAlias: string;
   public shortAlias: string;
+  public federated: boolean;
   public enabled?: boolean = true;
   public description: string;
   public motto: string;
@@ -175,7 +210,7 @@ export class Coordinator {
 
   generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
     for (const order of data) {
-      roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
+      void roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
     }
   };
 

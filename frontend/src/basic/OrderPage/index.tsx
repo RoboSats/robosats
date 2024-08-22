@@ -39,24 +39,26 @@ const OrderPage = (): JSX.Element => {
   useEffect(() => {
     const shortAlias = params.shortAlias;
     const coordinator = federation.getCoordinator(shortAlias ?? '');
-    const { url, basePath } = coordinator.getEndpoint(
-      settings.network,
-      origin,
-      settings.selfhostedClient,
-      hostUrl,
-    );
+    if (coordinator) {
+      const endpoint = coordinator?.getEndpoint(
+        settings.network,
+        origin,
+        settings.selfhostedClient,
+        hostUrl,
+      );
 
-    setBaseUrl(`${url}${basePath}`);
+      if (endpoint) setBaseUrl(`${endpoint?.url}${endpoint?.basePath}`);
 
-    const orderId = Number(params.orderId);
-    if (
-      orderId &&
-      currentOrderId.id !== orderId &&
-      currentOrderId.shortAlias !== shortAlias &&
-      shortAlias
-    )
-      setCurrentOrderId({ id: orderId, shortAlias });
-    if (!acknowledgedWarning) setOpen({ ...closeAll, warning: true });
+      const orderId = Number(params.orderId);
+      if (
+        orderId &&
+        currentOrderId.id !== orderId &&
+        currentOrderId.shortAlias !== shortAlias &&
+        shortAlias
+      )
+        setCurrentOrderId({ id: orderId, shortAlias });
+      if (!acknowledgedWarning) setOpen({ ...closeAll, warning: true });
+    }
   }, [params, currentOrderId]);
 
   const onClickCoordinator = function (): void {
@@ -98,7 +100,7 @@ const OrderPage = (): JSX.Element => {
           setOpen(closeAll);
           setAcknowledgedWarning(true);
         }}
-        longAlias={federation.getCoordinator(params.shortAlias ?? '').longAlias}
+        longAlias={federation.getCoordinator(params.shortAlias ?? '')?.longAlias}
       />
       {currentOrder === null && badOrder === undefined && <CircularProgress />}
       {badOrder !== undefined ? (

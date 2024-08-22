@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import {
@@ -30,8 +30,7 @@ import {
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
 import SwapCalls from '@mui/icons-material/SwapCalls';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { apiClient } from '../../services/api';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -39,8 +38,6 @@ interface SettingsFormProps {
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
   const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -251,6 +248,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                 onChange={(_e, useProxy) => {
                   setSettings({ ...settings, useProxy });
                   systemClient.setItem('settings_use_proxy', String(useProxy));
+                  apiClient.useProxy = useProxy;
                 }}
               >
                 <ToggleButton value={true} color='primary'>

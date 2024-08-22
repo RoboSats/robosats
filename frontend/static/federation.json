@@ -72,7 +72,10 @@
       "No Third-Party Sharing": "Under no circumstances will user information be shared with third parties.",
       "Short-term storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
       "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
-      "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!"
+      "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!",
+      "Rule 3:": "To protect our users, the use of this coordinator for Cash Face-to-Face (F2F) transactions within the United States territory is not allowed.",
+      "Rule 4:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction.",
+      "Rule 5:": "In accordance with U.S. regulations, residents of the United States are prohibited from using this coordinator. If you are a U.S. resident, you must not engage in any transactions on this platform. This restriction is in place to comply with U.S. regulatory requirements and to protect both the platform and its users from potential issues. As the system is built on the tor network, and the transfer of FIAT happens in a p2p fashion without passing through this coordinator, we are unable to collect or store user information, including but not limited to, the location of users. This means that this coordinator will not and cannot proactively ban any user from trading, but it also mean that users agree to ensure that their activities on the platform are lawful to their jurisdiction."
     },
     "mainnet": {
       "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",

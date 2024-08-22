@@ -70,8 +70,8 @@ const RobotAvatar: React.FC<Props> = ({
   }, [hashId]);
 
   useEffect(() => {
-    if (shortAlias !== undefined) {
-      if (window.NativeRobosats === undefined) {        
+    if (shortAlias && shortAlias !== '') {
+      if (!window.NativeRobosats) {
         setAvatarSrc(
           `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`,
         );

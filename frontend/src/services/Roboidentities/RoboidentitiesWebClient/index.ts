@@ -4,7 +4,7 @@ import { robohash } from './RobohashGenerator';
 
 class RoboidentitiesClientWebClient implements RoboidentitiesClient {
   public generateRoboname: (initialString: string) => Promise<string> = async (initialString) => {
-    return await new Promise<string>(async (resolve, _reject) => {
+    return await new Promise<string>((resolve, _reject) => {
       resolve(generate_roboname(initialString));
     });
   };

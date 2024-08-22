@@ -1,4 +1,4 @@
-import { type Order } from '.';
+import { type Coordinator, type Order } from '.';
 import { systemClient } from '../services/System';
 import { saveAsJson } from '../utils';
 import Slot from './Slot.model';
@@ -59,15 +59,18 @@ class Garage {
       const rawSlots = JSON.parse(slotsDump);
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
         if (rawSlot?.token) {
-          this.slots[rawSlot.token] = new Slot(rawSlot.token, Object.keys(rawSlot.robots), {}, () =>
-            { this.triggerHook('onRobotUpdate'); },
+          this.slots[rawSlot.token] = new Slot(
+            rawSlot.token,
+            Object.keys(rawSlot.robots),
+            {},
+            () => {
+              this.triggerHook('onRobotUpdate');
+            },
           );
-
           Object.keys(rawSlot.robots).forEach((shortAlias) => {
             const rawRobot = rawSlot.robots[shortAlias];
             this.updateRobot(rawSlot.token, shortAlias, rawRobot);
           });
-
           this.currentSlot = rawSlot?.token;
         }
       });
@@ -80,7 +83,7 @@ class Garage {
   // Slots
   getSlot: (token?: string) => Slot | null = (token) => {
     const currentToken = token ?? this.currentSlot;
-    return currentToken ? this.slots[currentToken] ?? null : null;
+    return currentToken ? (this.slots[currentToken] ?? null) : null;
   };
 
   deleteSlot: (token?: string) => void = (token) => {
@@ -120,9 +123,9 @@ class Garage {
     if (!token || !shortAliases) return;
 
     if (this.getSlot(token) === null) {
-      this.slots[token] = new Slot(token, shortAliases, attributes, () =>
-        { this.triggerHook('onRobotUpdate'); },
-      );
+      this.slots[token] = new Slot(token, shortAliases, attributes, () => {
+        this.triggerHook('onRobotUpdate');
+      });
       this.save();
     }
   };
@@ -164,6 +167,13 @@ class Garage {
       this.save();
       this.triggerHook('onOrderUpdate');
     }
+  };
+
+  // Coordinators
+  syncCoordinator: (coordinator: Coordinator) => void = (coordinator) => {
+    Object.values(this.slots).forEach((slot) => {
+      slot.syncCoordinator(coordinator, this);
+    });
   };
 }
 

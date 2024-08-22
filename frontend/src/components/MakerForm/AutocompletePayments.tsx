@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAutocomplete } from '@mui/base/useAutocomplete';
+import useAutocomplete from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
 import {
   Button,
@@ -409,9 +409,8 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                 ))}
                 {qttHiddenTags > 0 ? (
                   <StyledChip
-                    sx={{ borderRadius: 1 }}
                     label={`+${qttHiddenTags}`}
-                    sx={{ height: '1.6rem' }}
+                    sx={{ borderRadius: 1, height: '1.6rem' }}
                   />
                 ) : null}
               </>
