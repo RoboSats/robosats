@@ -46,7 +46,7 @@ class Order(models.Model):
         DIS = 11, "In dispute"
         CCA = 12, "Collaboratively cancelled"
         PAY = 13, "Sending satoshis to buyer"
-        SUC = 14, "Sucessful trade"
+        SUC = 14, "Successful trade"
         FAI = 15, "Failed lightning network routing"
         WFR = 16, "Wait for dispute resolution"
         MLD = 17, "Maker lost dispute"
