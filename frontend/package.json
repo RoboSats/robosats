@@ -75,7 +75,7 @@
     "npm": "^10.8.1",
     "openpgp": "^5.11.0",
     "react": "^18.2.0",
-    "react-countdown": "^2.3.5",
+    "react-countdown": "^2.3.6",
     "react-dom": "^18.2.0",
     "react-grid-layout": "^1.4.4",
     "react-i18next": "^14.1.2",
