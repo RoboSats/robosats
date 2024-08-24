@@ -478,6 +478,7 @@ class LNDNode:
             payment_request=lnpayment.invoice,
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=timeout_seconds,
+            amp=True,
         )
 
         routerstub = router_pb2_grpc.RouterStub(cls.channel)
@@ -536,6 +537,7 @@ class LNDNode:
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=timeout_seconds,
             allow_self_payment=True,
+            amp=True,
         )
 
         order = lnpayment.order_paid_LN
