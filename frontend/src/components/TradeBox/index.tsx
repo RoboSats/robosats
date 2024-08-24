@@ -639,7 +639,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
         }
         break;
 
-      // 14: 'Sucessful trade'
+      // 14: 'Successful trade'
       case 14:
         baseContract.title = 'Trade finished!';
         baseContract.titleColor = 'success';
