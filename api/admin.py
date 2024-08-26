@@ -11,7 +11,6 @@ from rest_framework.authtoken.models import TokenProxy
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
 from api.utils import objects_to_hyperlinks
-from api.tasks import send_notification
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -164,9 +163,6 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                         f"Order {order.id} successfully closed",
                         messages.SUCCESS,
                     )
-                    send_notification.delay(
-                        order_id=order.id, message="coordinator_cancelled"
-                    )
                 else:
                     self.message_user(
                         request,
@@ -210,7 +206,6 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     f"Dispute of order {order.id} solved successfully on favor of the maker",
                     messages.SUCCESS,
                 )
-                send_notification.delay(order_id=order.id, message="dispute_closed")
 
             else:
                 self.message_user(
@@ -249,7 +244,6 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     f"Dispute of order {order.id} solved successfully on favor of the taker",
                     messages.SUCCESS,
                 )
-                send_notification.delay(order_id=order.id, message="dispute_closed")
 
             else:
                 self.message_user(

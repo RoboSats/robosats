@@ -57,6 +57,18 @@ class Notifications:
             except Exception:
                 pass
 
+    def status_change(self, order):
+        Notification.objects.create(
+            title="", description="", robot=order.maker.robot, order=order
+        )
+
+        if order.taker:
+            Notification.objects.create(
+                title="", description="", robot=order.taker.robot, order=order
+            )
+
+        return
+
     def welcome(self, user):
         """User enabled Telegram Notifications"""
         lang = user.robot.telegram_lang_code
@@ -213,11 +225,6 @@ class Notifications:
         title = f"💬 Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}."
         self.send_message(order, user.robot, title, notification_reason)
 
-        return
-
-    def coordinator_cancelled(self, order):
-        title = f"🛠️ Your order with ID {order.id} has been cancelled by the coordinator {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} for the upcoming maintenance stop."
-        self.send_message(order, order.maker.robot, title)
         return
 
     def dispute_closed(self, order):

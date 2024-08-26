@@ -251,7 +251,6 @@ def cache_market():
         print("SOFT LIMIT REACHED. Could not fetch current external market prices.")
         return
 
-
 @shared_task(name="", ignore_result=True, time_limit=120)
 def nostr_send_order_event(order_id=None):
     if order_id:
@@ -265,63 +264,70 @@ def nostr_send_order_event(order_id=None):
 
     return
 
-
-@shared_task(name="send_notification", ignore_result=True, time_limit=120)
-def send_notification(order_id=None, chat_message_id=None, message=None):
-    if order_id:
+@shared_task(name="send_chat_notification", ignore_result=True, time_limit=120)
+def send_chat_notification(message_id=None, order_id=None):
+    if message_id and order_id:
         from api.models import Order
+        from chat.models import Message
+        from api.notifications import Notifications
 
         order = Order.objects.get(id=order_id)
-    elif chat_message_id:
-        from chat.models import Message
+        chat_message = Message.objects.get(id=message_id)
+        notifications = Notifications()
 
-        chat_message = Message.objects.get(id=chat_message_id)
-        order = chat_message.order
-
-    from api.notifications import Notifications
-
-    notifications = Notifications()
-
-    if message == "welcome":
-        notifications.welcome(order)
-
-    elif message == "order_expired_untaken":
-        notifications.order_expired_untaken(order)
-
-    elif message == "trade_successful":
-        notifications.trade_successful(order)
-
-    elif message == "public_order_cancelled":
-        notifications.public_order_cancelled(order)
-
-    elif message == "taker_expired_b4bond":
-        notifications.taker_expired_b4bond(order)
-
-    elif message == "order_published":
-        notifications.order_published(order)
-
-    elif message == "order_taken_confirmed":
-        notifications.order_taken_confirmed(order)
-
-    elif message == "fiat_exchange_starts":
-        notifications.fiat_exchange_starts(order)
-
-    elif message == "dispute_opened":
-        notifications.dispute_opened(order)
-
-    elif message == "collaborative_cancelled":
-        notifications.collaborative_cancelled(order)
-
-    elif message == "new_chat_message":
         notifications.new_chat_message(order, chat_message)
 
-    elif message == "coordinator_cancelled":
-        notifications.coordinator_cancelled(order)
 
-    elif message == "dispute_closed":
-        notifications.dispute_closed(order)
+@shared_task(name="send_telegram_notification", ignore_result=True, time_limit=120)
+def send_telegram_notification(chat_id=None, message=None):
+    if chat_id:
+        from api.notifications import Notifications
 
-    elif message == "lightning_failed":
-        notifications.lightning_failed(order)
+        notifications = Notifications()
+
+        notifications.send_telegram_message(chat_id, message)
+
+
+@shared_task(name="send_status_notification", ignore_result=True, time_limit=120)
+def send_status_notification(order_id=None, status=None):
+    if order_id:
+        from api.models import Order
+        from api.notifications import Notifications
+
+        order = Order.objects.get(id=order_id)
+        notifications = Notifications()
+
+        if status == Order.Status.EXP:
+            notifications.order_expired_untaken(order)
+
+        elif status == Order.Status.PAY or status == Order.Status.SUC:
+            notifications.trade_successful(order)
+
+        elif status == Order.Status.UCA:
+            notifications.public_order_cancelled(order)
+
+        elif status == Order.Status.PUB:
+            notifications.order_published(order)
+
+        elif status == Order.Status.WF2:
+            notifications.order_taken_confirmed(order)
+
+        elif status == Order.Status.CHA:
+            notifications.fiat_exchange_starts(order)
+
+        elif status == Order.Status.DIS:
+            notifications.dispute_opened(order)
+
+        elif status == Order.Status.CCA:
+            notifications.collaborative_cancelled(order)
+
+        elif status == Order.Status.TLD or status == Order.Status.MLD:
+            notifications.dispute_closed(order)
+
+        elif status == Order.Status.FAI:
+            notifications.lightning_failed(order)
+
+        else:
+            notifications.status_change(order)
 
     return

@@ -5,7 +5,11 @@ from django.urls import reverse
 from api.management.commands.clean_orders import Command as CleanOrders
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Order
-from api.tasks import follow_send_payment, send_notification
+from api.tasks import (
+    follow_send_payment,
+    send_status_notification,
+    send_chat_notification,
+)
 from tests.utils.node import (
     add_invoice,
     create_address,
@@ -111,7 +115,7 @@ class Trade:
         headers = self.get_robot_auth(robot_index, first_encounter)
         self.response = self.client.get(path + params, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def cancel_order(self, robot_index=1):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -119,14 +123,14 @@ class Trade:
         body = {"action": "cancel"}
         self.response = self.client.post(path + params, body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_chat_notification.delay", send_chat_notification)
     def send_chat_message(self, message, robot_index=1):
         path = reverse("chat")
         headers = self.get_robot_auth(robot_index)
         body = {"PGP_message": message, "order_id": self.order_id, "offset": 0}
         self.response = self.client.post(path, data=body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def pause_order(self, robot_index=1):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -134,13 +138,13 @@ class Trade:
         body = {"action": "pause"}
         self.response = self.client.post(path + params, body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def follow_hold_invoices(self):
         # A background thread checks every 5 second the status of invoices. We invoke directly during test.
         follower = FollowInvoices()
         follower.follow_hold_invoices()
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def clean_orders(self):
         # A background thread checks every 5 second order expirations. We invoke directly during test.
         cleaner = CleanOrders()
@@ -155,7 +159,7 @@ class Trade:
             generate_blocks(create_address("robot"), 1)
             wait_nodes_sync()
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def publish_order(self):
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         self.get_order()
@@ -170,7 +174,7 @@ class Trade:
         # Get order
         self.get_order()
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def take_order(self):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -178,7 +182,7 @@ class Trade:
         body = {"action": "take", "amount": self.take_amount}
         self.response = self.client.post(path + params, body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def lock_taker_bond(self):
         # Takers's first order fetch. Should trigger maker bond hold invoice generation.
         self.get_order(self.taker_index)
@@ -193,7 +197,7 @@ class Trade:
         # Get order
         self.get_order(self.taker_index)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def lock_escrow(self, robot_index):
         # Takers's order fetch. Should trigger trade escrow bond hold invoice generation.
         self.get_order(robot_index)
@@ -208,7 +212,7 @@ class Trade:
         # Get order
         self.get_order()
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def submit_payout_address(self, robot_index=1):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -227,7 +231,7 @@ class Trade:
         }
         self.response = self.client.post(path + params, body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def submit_payout_invoice(self, robot_index=1, routing_budget=0):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -249,7 +253,7 @@ class Trade:
 
         self.response = self.client.post(path + params, body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def confirm_fiat(self, robot_index=1):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -257,7 +261,7 @@ class Trade:
         body = {"action": "confirm"}
         self.response = self.client.post(path + params, body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def undo_confirm_sent(self, robot_index=1):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -265,14 +269,14 @@ class Trade:
         body = {"action": "undo_confirm"}
         self.response = self.client.post(path + params, body, **headers)
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def expire_order(self):
         # Change order expiry to now
         order = Order.objects.get(id=self.order_id)
         order.expires_at = datetime.now()
         order.save()
 
-    @patch("api.tasks.send_notification.delay", send_notification)
+    @patch("api.tasks.send_status_notification.delay", send_status_notification)
     def change_order_status(self, status):
         # Change order expiry to now
         order = Order.objects.get(id=self.order_id)

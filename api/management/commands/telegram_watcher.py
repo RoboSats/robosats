@@ -6,8 +6,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from api.models import Robot
-from api.notifications import Notifications
 from api.utils import get_session
+from api.tasks import send_telegram_notification
 
 
 class Command(BaseCommand):
@@ -17,7 +17,6 @@ class Command(BaseCommand):
     bot_token = config("TELEGRAM_TOKEN")
     updates_url = f"https://api.telegram.org/bot{bot_token}/getUpdates"
     session = get_session()
-    notifications = Notifications()
 
     def handle(self, *args, **options):
         offset = 0
@@ -49,7 +48,7 @@ class Command(BaseCommand):
                     continue
                 parts = message.split(" ")
                 if len(parts) < 2:
-                    self.notifications.send_telegram_message(
+                    send_telegram_notification.delay(
                         result["message"]["from"]["id"],
                         'You must enable the notifications bot using the RoboSats client. Click on your "Robot robot" -> "Enable Telegram" and follow the link or scan the QR code.',
                     )
@@ -57,7 +56,7 @@ class Command(BaseCommand):
                 token = parts[-1]
                 robot = Robot.objects.filter(telegram_token=token).first()
                 if not robot:
-                    self.notifications.send_telegram_message(
+                    send_telegram_notification.delay(
                         result["message"]["from"]["id"],
                         f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
                     )
