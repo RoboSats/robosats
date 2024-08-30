@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Paper,
   Grid,
   CircularProgress,
   Box,
@@ -129,42 +128,40 @@ const RobotPage = (): JSX.Element => {
   } else {
     return (
       <StyledMainBox>
-        <StyledPaper>
-          {view === 'welcome' && (
-            <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={1200} />
-          )}
+        {view === 'welcome' && (
+          <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={1200} />
+        )}
 
-          {view === 'onboarding' && (
-            <Onboarding
-              setView={setView}
-              badToken={badToken}
-              inputToken={inputToken}
-              setInputToken={setInputToken}
-              getGenerateRobot={getGenerateRobot}
-            />
-          )}
+        {view === 'onboarding' && (
+          <Onboarding
+            setView={setView}
+            badToken={badToken}
+            inputToken={inputToken}
+            setInputToken={setInputToken}
+            getGenerateRobot={getGenerateRobot}
+          />
+        )}
 
-          {view === 'profile' && (
-            <RobotProfile
-              setView={setView}
-              logoutRobot={logoutRobot}
-              width={1200}
-              inputToken={inputToken}
-              setInputToken={setInputToken}
-              getGenerateRobot={getGenerateRobot}
-            />
-          )}
+        {view === 'profile' && (
+          <RobotProfile
+            setView={setView}
+            logoutRobot={logoutRobot}
+            width={1200}
+            inputToken={inputToken}
+            setInputToken={setInputToken}
+            getGenerateRobot={getGenerateRobot}
+          />
+        )}
 
-          {view === 'recovery' && (
-            <Recovery
-              setView={setView}
-              badToken={badToken}
-              inputToken={inputToken}
-              setInputToken={setInputToken}
-              getRecoverRobot={getGenerateRobot}
-            />
-          )}
-        </StyledPaper>
+        {view === 'recovery' && (
+          <Recovery
+            setView={setView}
+            badToken={badToken}
+            inputToken={inputToken}
+            setInputToken={setInputToken}
+            getRecoverRobot={getGenerateRobot}
+          />
+        )}
       </StyledMainBox>
     );
   }
@@ -174,11 +171,13 @@ const RobotPage = (): JSX.Element => {
 const StyledConnectingBox = styled(Box)({
   width: '100vw',
   height: 'auto',
+  backgroundColor: 'transparent', 
 });
 
 const StyledTorIconBox = styled(Box)({
   position: 'fixed',
   top: '4.6em',
+  backgroundColor: 'transparent', 
 });
 
 const StyledMainBox = styled(Box)({
@@ -188,18 +187,9 @@ const StyledMainBox = styled(Box)({
   justifyContent: 'center',
   alignItems: 'center',
   padding: '2em',
-});
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  width: '80vw',
-  maxWidth: '1200px',
-  maxHeight: '85vh',
-  overflow: 'auto',
-  overflowX: 'clip',
   backgroundColor: 'transparent',
   border: 'none',
-  boxShadow: 'none',
-  padding: '1em',
-}));
+  boxShadow: 'none', 
+});
 
 export default RobotPage;

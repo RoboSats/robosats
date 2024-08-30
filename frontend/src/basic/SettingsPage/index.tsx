@@ -1,19 +1,20 @@
 import React, { useContext, useState } from 'react';
-import { Button, Grid, List, ListItem, Paper, TextField, Typography } from '@mui/material';
+import { Button, Grid, Paper, TextField, Typography, Box } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
 import { t } from 'i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { styled } from '@mui/system';
 
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const { federation, addNewCoordinator } = useContext<UseFederationStoreType>(FederationContext);
-  const maxHeight = (windowSize.height * 0.65)
+  const maxHeight = (windowSize.height * 0.65);
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
   const [error, setError] = useState<string>();
-  // Regular expression to match a valid .onion URL
+
   const onionUrlPattern = /^((http|https):\/\/)?[a-zA-Z2-7]{16,56}\.onion$/;
 
   const addCoordinator: () => void = () => {
@@ -35,31 +36,22 @@ const SettingsPage = (): JSX.Element => {
   };
 
   return (
-    <Paper
-      elevation={12}
-      sx={{
-        padding: '0.6em',
-        width: '20.5em',
-        maxHeight: `${maxHeight}em`,
-        overflow: 'auto',
-        overflowX: 'clip',
-      }}
-    >
+    <SettingsContainer elevation={12}>
       <Grid container>
-        <Grid item>
+        <LeftGrid item xs={12} md={6}>
           <SettingsForm />
-        </Grid>
-        <Grid item>
-          <FederationTable maxHeight={18} />
-        </Grid>
-        <Grid item>
-          <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
-            {error}
-          </Typography>
-        </Grid>
-        <List>
-          <ListItem>
-            <TextField
+        </LeftGrid>
+        <RightGrid item xs={12} md={6}>
+          <FederationTableWrapper>
+            <FederationTable maxHeight={18} />
+          </FederationTableWrapper>
+          {error && (
+            <ErrorTypography align='center' component='h2' variant='subtitle2' color='secondary'>
+              {error}
+            </ErrorTypography>
+          )}
+          <InputContainer>
+            <StyledTextField
               id='outlined-basic'
               label={t('Alias')}
               variant='outlined'
@@ -69,7 +61,7 @@ const SettingsPage = (): JSX.Element => {
                 setNewAlias(e.target.value);
               }}
             />
-            <TextField
+            <StyledTextField
               id='outlined-basic'
               label={t('URL')}
               variant='outlined'
@@ -79,8 +71,7 @@ const SettingsPage = (): JSX.Element => {
                 setNewUrl(e.target.value);
               }}
             />
-            <Button
-              sx={{ maxHeight: 38 }}
+            <StyledButton
               disabled={false}
               onClick={addCoordinator}
               variant='contained'
@@ -89,12 +80,83 @@ const SettingsPage = (): JSX.Element => {
               type='submit'
             >
               {t('Add')}
-            </Button>
-          </ListItem>
-        </List>
+            </StyledButton>
+          </InputContainer>
+        </RightGrid>
       </Grid>
-    </Paper>
+    </SettingsContainer>
   );
 };
+
+// Styled Components
+const SettingsContainer = styled(Paper)(({ theme }) => ({
+  display: 'flex',
+  width: '80vw',
+  height: '70vh',
+  margin: '0 auto',
+  border: '2px solid #000',
+  borderRadius: '8px',
+  overflow: 'hidden',
+  boxShadow: '8px 8px 0px #000',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    width: '90vw',
+    height: 'fit-content',
+    marginTop: '30rem',
+  },
+}));
+
+const LeftGrid = styled(Grid)(({ theme }) => ({
+  padding: '2rem',
+  borderRight: '2px solid #000',
+  [theme.breakpoints.down('md')]: {
+    padding: '1rem',
+    borderRight: 'none',
+  },
+}));
+
+const RightGrid = styled(Grid)(({ theme }) => ({
+  padding: '2rem',
+  display: 'flex',
+  flexDirection: 'column',
+  [theme.breakpoints.down('md')]: {
+    padding: '1rem',
+  },
+}));
+
+const FederationTableWrapper = styled(Box)({
+  flexGrow: 1,
+  '& > *': {
+    width: '100% !important',
+  },
+});
+
+const ErrorTypography = styled(Typography)({
+  // You can add specific styles for the error message here if needed
+});
+
+const InputContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(2),
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+  },
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  flexGrow: 1,
+  [theme.breakpoints.down('sm')]: {
+    marginBottom: theme.spacing(2),
+  },
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  maxHeight: 40,
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+  },
+}));
 
 export default SettingsPage;
