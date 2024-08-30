@@ -3,17 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Button, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import DepthChart from '../../components/Charts/DepthChart';
-
 import { NoRobotDialog } from '../../components/Dialogs';
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
 
 // Icons
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
@@ -126,7 +125,7 @@ const BookPage = (): JSX.Element => {
             <Grid item>
               <BookTable
                 maxWidth={maxBookTableWidth} // EM units
-                maxHeight={windowSize.height * 0.825 - 5} // EM units
+                maxHeight={windowSize.height * 0.65} // Adjusted height to reduce rows
                 fullWidth={windowSize.width} // EM units
                 fullHeight={windowSize.height} // EM units
                 defaultFullscreen={false}
@@ -137,14 +136,14 @@ const BookPage = (): JSX.Element => {
               <Grid item>
                 <DepthChart
                   maxWidth={chartWidthEm} // EM units
-                  maxHeight={(windowSize.height * 0.825 - 5) / 2} // EM units
+                  maxHeight={(windowSize.height * 0.65) / 2} // Adjusted height
                   onOrderClicked={onOrderClicked}
                 />
               </Grid>
               <Grid item>
                 <MapChart
                   maxWidth={chartWidthEm} // EM units
-                  maxHeight={(windowSize.height * 0.825 - 5) / 2} // EM units
+                  maxHeight={(windowSize.height * 0.65) / 2} // Adjusted height
                   onOrderClicked={onOrderClicked}
                 />
               </Grid>
@@ -153,19 +152,19 @@ const BookPage = (): JSX.Element => {
         ) : view === 'depth' ? (
           <DepthChart
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.825 - 5} // EM units
+            maxHeight={windowSize.height * 0.65} // Adjusted height
             onOrderClicked={onOrderClicked}
           />
         ) : view === 'map' ? (
           <MapChart
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.825 - 5} // EM units
+            maxHeight={windowSize.height * 0.6} // Adjusted height
             onOrderClicked={onOrderClicked}
           />
         ) : (
           <BookTable
             maxWidth={windowSize.width * 0.97} // EM units
-            maxHeight={windowSize.height * 0.825 - 5} // EM units
+            maxHeight={windowSize.height * 0.624} // Adjusted height to reduce rows
             fullWidth={windowSize.width} // EM units
             fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}

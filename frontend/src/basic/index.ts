@@ -5,3 +5,4 @@ export { default as NavBar } from './NavBar';
 export { default as OrderPage } from './OrderPage';
 export { default as RobotPage } from './RobotPage';
 export { default as SettingsPage } from './SettingsPage';
+export { default as TopNavBar } from './TopNavBar';

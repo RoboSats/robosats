@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Paper,
   Grid,
   CircularProgress,
   Box,
@@ -9,6 +8,7 @@ import {
   Typography,
   useTheme,
   AlertTitle,
+  styled,
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
@@ -85,13 +85,7 @@ const RobotPage = (): JSX.Element => {
 
   if (settings.useProxy && !(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
     return (
-      <Paper
-        elevation={12}
-        style={{
-          width: `${width}em`,
-          maxHeight: `${maxHeight}em`,
-        }}
-      >
+      <StyledConnectingBox>
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
           <Grid item>
             <Typography align='center' variant='h6'>
@@ -106,8 +100,8 @@ const RobotPage = (): JSX.Element => {
                   <stop offset={1} stopColor={theme.palette.secondary.main} />
                 </linearGradient>
               </svg>
-              <CircularProgress thickness={3} style={{ width: '11.2em', height: '11.2em' }} />
-              <Box sx={{ position: 'fixed', top: '4.6em' }}>
+              <CircularProgress thickness={3} sx={{ width: '11.2em', height: '11.2em' }} />
+              <StyledTorIconBox>
                 <TorIcon
                   sx={{
                     fill: 'url(#linearColors)',
@@ -117,7 +111,7 @@ const RobotPage = (): JSX.Element => {
                     left: '0.7em',
                   }}
                 />
-              </Box>
+              </StyledTorIconBox>
             </Box>
           </Grid>
           <Grid item>
@@ -129,24 +123,16 @@ const RobotPage = (): JSX.Element => {
             </Alert>
           </Grid>
         </Grid>
-      </Paper>
+      </StyledConnectingBox>
     );
   } else {
     return (
-      <Paper
-        elevation={12}
-        style={{
-          width: `${width}em`,
-          maxHeight: `${maxHeight}em`,
-          overflow: 'auto',
-          overflowX: 'clip',
-        }}
-      >
-        {view === 'welcome' ? (
-          <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={width} />
-        ) : null}
+      <StyledMainBox>
+        {view === 'welcome' && (
+          <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={1200} />
+        )}
 
-        {view === 'onboarding' ? (
+        {view === 'onboarding' && (
           <Onboarding
             setView={setView}
             badToken={badToken}
@@ -154,20 +140,20 @@ const RobotPage = (): JSX.Element => {
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
           />
-        ) : null}
+        )}
 
-        {view === 'profile' ? (
+        {view === 'profile' && (
           <RobotProfile
             setView={setView}
             logoutRobot={logoutRobot}
-            width={width}
+            width={1200}
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
           />
-        ) : null}
+        )}
 
-        {view === 'recovery' ? (
+        {view === 'recovery' && (
           <Recovery
             setView={setView}
             badToken={badToken}
@@ -175,10 +161,35 @@ const RobotPage = (): JSX.Element => {
             setInputToken={setInputToken}
             getRecoverRobot={getGenerateRobot}
           />
-        ) : null}
-      </Paper>
+        )}
+      </StyledMainBox>
     );
   }
 };
+
+// Styled components
+const StyledConnectingBox = styled(Box)({
+  width: '100vw',
+  height: 'auto',
+  backgroundColor: 'transparent', 
+});
+
+const StyledTorIconBox = styled(Box)({
+  position: 'fixed',
+  top: '4.6em',
+  backgroundColor: 'transparent', 
+});
+
+const StyledMainBox = styled(Box)({
+  width: '100vw',
+  height: 'auto',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '2em',
+  backgroundColor: 'transparent',
+  border: 'none',
+  boxShadow: 'none', 
+});
 
 export default RobotPage;
