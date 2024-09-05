@@ -40,6 +40,7 @@ export interface SlideDirection {
 export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
 
 export const isNativeRoboSats = !(window.NativeRobosats === undefined);
+export const isDesktopRoboSats = !(window.RobosatsClient === undefined);
 
 const pageFromPath = window.location.pathname.split('/')[1];
 const isPagePathEmpty = pageFromPath === '';
@@ -77,15 +78,18 @@ const makeTheme = function (settings: Settings): Theme {
 const getHostUrl = (network = 'mainnet'): string => {
   let host = '';
   let protocol = '';
-  if (window.NativeRobosats === undefined) {
+  if(isDesktopRoboSats){
+    host = defaultFederation.exp[network].onion;
+    protocol = 'http:';  
+  }
+  else if (window.NativeRobosats === undefined) {
     host = getHost();
     protocol = location.protocol;
   } else {
-    host = defaultFederation.exp[network].Onion;
+    host = defaultFederation.exp[network].onion;
     protocol = 'http:';
   }
-  const hostUrl = `${protocol}//${host}`;
-
+  const hostUrl = `${host}`;
   return hostUrl;
 };
 

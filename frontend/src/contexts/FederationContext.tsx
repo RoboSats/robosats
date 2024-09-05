@@ -4,7 +4,6 @@ import React, {
   useEffect,
   useState,
   type SetStateAction,
-  useMemo,
   useContext,
   type ReactNode,
 } from 'react';
@@ -15,7 +14,7 @@ import { federationLottery } from '../utils';
 
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
-import NativeRobosats from '../services/Native';
+import { type Origin, type Origins } from '../models/Coordinator.model';
 
 // Refresh delays (ms) according to Order status
 const defaultDelay = 5000;
@@ -34,7 +33,7 @@ const statusToDelay = [
   100000, // 'In dispute'
   999999, // 'Collaboratively cancelled'
   10000, // 'Sending satoshis to buyer'
-  60000, // 'Sucessful trade'
+  60000, // 'Successful trade'
   30000, // 'Failed lightning network routing'
   300000, // 'Wait for dispute resolution'
   300000, // 'Maker lost dispute'
@@ -59,6 +58,7 @@ export interface UseFederationStoreType {
   currentOrder: Order | null;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
+  addNewCoordinator: (alias: string, url: string) => void;
 }
 
 export const initialFederationContext: UseFederationStoreType = {
@@ -70,6 +70,7 @@ export const initialFederationContext: UseFederationStoreType = {
   currentOrder: null,
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
+  addNewCoordinator: () => {},
 };
 
 export const FederationContext = createContext<UseFederationStoreType>(initialFederationContext);
@@ -81,7 +82,7 @@ export const FederationContextProvider = ({
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
-  const sortedCoordinators = useMemo(() => federationLottery(federation), []);
+  const [sortedCoordinators, setSortedCoordinators] = useState(federationLottery(federation));
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
   );
@@ -111,12 +112,14 @@ export const FederationContextProvider = ({
   }, []);
 
   useEffect(() => {
-    // On bitcoin network change we reset book, limits and federation info and fetch everything again
-    if (window.NativeRobosats === undefined || torStatus === 'ON') {
+    if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
       void federation.update();
+
+      const token = garage.getSlot()?.getRobot()?.token;
+      if (token) void federation.fetchRobot(garage, token);
     }
-  }, [settings.network, torStatus]);
+  }, [settings.network, settings.useProxy, torStatus]);
 
   const onOrderReceived = (order: Order): void => {
     let newDelay = defaultDelay;
@@ -162,6 +165,35 @@ export const FederationContextProvider = ({
     }
   };
 
+  const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
+    if (!federation.coordinators[alias]) {
+      const attributes: Record<any, any> = {
+        longAlias: alias,
+        shortAlias: alias,
+        federated: false,
+        enabled: true,
+      };
+      const origins: Origins = {
+        clearnet: undefined,
+        onion: url as Origin,
+        i2p: undefined,
+      };
+      if (settings.network === 'mainnet') {
+        attributes.mainnet = origins;
+      } else {
+        attributes.testnet = origins;
+      }
+      federation.addCoordinator(origin, settings, hostUrl, attributes);
+      const newCoordinator = federation.coordinators[alias];
+      newCoordinator.update(() => {
+        setCoordinatorUpdatedAt(new Date().toISOString());
+      });
+      garage.syncCoordinator(newCoordinator);
+      setSortedCoordinators(federationLottery(federation));
+      setFederationUpdatedAt(new Date().toISOString());
+    }
+  };
+
   useEffect(() => {
     if (currentOrderId.id && currentOrderId.shortAlias) {
       setCurrentOrder(null);
@@ -178,15 +210,6 @@ export const FederationContextProvider = ({
     if (page === 'offers') void federation.updateBook();
   }, [page]);
 
-  // use effects to fetchRobots on app start and network change
-  useEffect(() => {
-    const slot = garage.getSlot();
-    const robot = slot?.getRobot();
-
-    if (robot && garage.currentSlot && slot?.token && robot.encPrivKey && robot.pubKey) {
-      void federation.fetchRobot(garage, slot.token);
-    }
-  }, [settings.network]);
   // use effects to fetchRobots on Profile open
   useEffect(() => {
     const slot = garage.getSlot();
@@ -207,6 +230,7 @@ export const FederationContextProvider = ({
         setDelay,
         coordinatorUpdatedAt,
         federationUpdatedAt,
+        addNewCoordinator,
       }}
     >
       {children}

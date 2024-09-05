@@ -28,17 +28,16 @@ import {
   QrCode,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
+import { TorIcon } from '../Icons';
 import SwapCalls from '@mui/icons-material/SwapCalls';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { apiClient } from '../../services/api';
 
 interface SettingsFormProps {
   dense?: boolean;
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
-  const { fav, setFav, origin, hostUrl, settings, setSettings } =
-    useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -237,6 +236,30 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               </ToggleButton>
             </ToggleButtonGroup>
           </ListItem>
+
+          {window.NativeRobosats !== undefined && (
+            <ListItem>
+              <ListItemIcon>
+                <TorIcon />
+              </ListItemIcon>
+              <ToggleButtonGroup
+                exclusive={true}
+                value={settings.useProxy}
+                onChange={(_e, useProxy) => {
+                  setSettings({ ...settings, useProxy });
+                  systemClient.setItem('settings_use_proxy', String(useProxy));
+                  apiClient.useProxy = useProxy;
+                }}
+              >
+                <ToggleButton value={true} color='primary'>
+                  {t('Build-in')}
+                </ToggleButton>
+                <ToggleButton value={false} color='secondary'>
+                  {t('Disabled')}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </ListItem>
+          )}
         </List>
       </Grid>
     </Grid>

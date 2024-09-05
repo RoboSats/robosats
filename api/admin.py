@@ -21,17 +21,13 @@ admin.site.unregister(TokenProxy)
 class RobotInline(admin.StackedInline):
     model = Robot
     can_delete = False
-    fields = ("avatar_tag",)
-    readonly_fields = ["avatar_tag"]
     show_change_link = True
 
 
-# extended users with avatars
 @admin.register(User)
 class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
     inlines = [RobotInline]
     list_display = (
-        "avatar_tag",
         "id",
         "robot_link",
         "username",
@@ -43,24 +39,17 @@ class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
     change_links = ("robot",)
     ordering = ("-id",)
 
-    def avatar_tag(self, obj):
-        return obj.robot.avatar_tag()
 
-
-# extended tokens with raw id fields and avatars
+# extended tokens with raw id fields
 @admin.register(TokenProxy)
 class ETokenAdmin(AdminChangeLinksMixin, TokenAdmin):
     raw_id_fields = ["user"]
     list_display = (
-        "avatar_tag",
         "key",
         "user_link",
     )
     list_display_links = ("key",)
     change_links = ("user",)
-
-    def avatar_tag(self, obj):
-        return obj.user.robot.avatar_tag()
 
 
 class LNPaymentInline(admin.StackedInline):
@@ -221,6 +210,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     f"Dispute of order {order.id} solved successfully on favor of the maker",
                     messages.SUCCESS,
                 )
+                send_notification.delay(order_id=order.id, message="dispute_closed")
 
             else:
                 self.message_user(
@@ -259,6 +249,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     f"Dispute of order {order.id} solved successfully on favor of the taker",
                     messages.SUCCESS,
                 )
+                send_notification.delay(order_id=order.id, message="dispute_closed")
 
             else:
                 self.message_user(
@@ -510,7 +501,6 @@ class OnchainPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 @admin.register(Robot)
 class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display = (
-        "avatar_tag",
         "id",
         "user_link",
         "telegram_enabled",
@@ -523,9 +513,8 @@ class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     )
     raw_id_fields = ("user",)
     list_editable = ["earned_rewards"]
-    list_display_links = ("avatar_tag", "id")
+    list_display_links = ["id"]
     change_links = ["user"]
-    readonly_fields = ["avatar_tag"]
     search_fields = ["user__username", "id"]
     readonly_fields = ("hash_id", "public_key", "encrypted_private_key")
 

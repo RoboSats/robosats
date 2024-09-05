@@ -23,8 +23,6 @@ from .celery.conf import *  # noqa
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_URL = "/static/"
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -32,8 +30,10 @@ STATIC_URL = "/static/"
 SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = False
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.0/howto/static-files/
 STATIC_URL = "static/"
-STATIC_ROOT = "/usr/src/static/"
 
 # RoboSats version
 with open("version.json") as f:
@@ -42,9 +42,6 @@ with open("version.json") as f:
 # SECURITY WARNING: don't run with debug turned on in production!
 if config("DEVELOPMENT", default=False):
     DEBUG = True
-    STATIC_ROOT = "frontend/static/"
-
-AVATAR_ROOT = STATIC_ROOT + "assets/avatars/"
 
 ALLOWED_HOSTS = [
     config("HOST_NAME"),
@@ -228,10 +225,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-STATIC_URL = "static/"
 ASGI_APPLICATION = "robosats.routing.application"
 
 CHANNEL_LAYERS = {

@@ -9,6 +9,7 @@ import {
 } from '.';
 import defaultFederation from '../../static/federation.json';
 import { getHost } from '../utils';
+import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 
 type FederationHooks = 'onCoordinatorUpdate' | 'onFederationUpdate';
@@ -22,6 +23,7 @@ export class Federation {
           return acc;
         } else {
           acc[key] = new Coordinator(value, origin, settings, hostUrl);
+
           return acc;
         }
       },
@@ -37,11 +39,19 @@ export class Federation {
       onFederationUpdate: [],
     };
 
-    this.loading = true;
+    Object.keys(defaultFederation).forEach((key) => {
+      if (key !== 'local' || getHost() === '127.0.0.1:8000') {
+        // Do not add `Local Dev` unless it is running on localhost
+        this.addCoordinator(origin, settings, hostUrl, defaultFederation[key]);
+      }
+    });
+
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.loading = true;
 
     const host = getHost();
     const url = `${window.location.protocol}//${host}`;
+
     const tesnetHost = Object.values(this.coordinators).find((coor) => {
       return Object.values(coor.testnet).includes(url);
     });
@@ -54,6 +64,22 @@ export class Federation {
   public loading: boolean;
 
   public hooks: Record<FederationHooks, Array<() => void>>;
+
+  addCoordinator = (
+    origin: Origin,
+    settings: Settings,
+    hostUrl: string,
+    attributes: Record<any, any>,
+  ): void => {
+    const value = {
+      ...coordinatorDefaultValues,
+      ...attributes,
+    };
+    this.coordinators[value.shortAlias] = new Coordinator(value, origin, settings, hostUrl);
+    this.exchange.totalCoordinators = Object.keys(this.coordinators).length;
+    this.updateEnabledCoordinators();
+    this.triggerHook('onFederationUpdate');
+  };
 
   // Hooks
   registerHook = (hookName: FederationHooks, fn: () => void): void => {
@@ -100,7 +126,7 @@ export class Federation {
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
     for (const coor of Object.values(this.coordinators)) {
-      await coor.update(() => {
+      void coor.update(() => {
         this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
@@ -109,10 +135,11 @@ export class Federation {
 
   updateBook = async (): Promise<void> => {
     this.loading = true;
+    this.book = [];
     this.triggerHook('onCoordinatorUpdate');
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
-      await coor.updateBook(() => {
+      void coor.updateBook(() => {
         this.onCoordinatorSaved();
       });
     }

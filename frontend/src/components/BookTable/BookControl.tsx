@@ -359,7 +359,8 @@ const BookControl = ({
                     >
                       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                         <RobotAvatar
-                          shortAlias={coordinator.shortAlias}
+                          shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
+                          hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
                           style={{ width: '1.55em', height: '1.55em' }}
                           smooth={true}
                           small={true}

@@ -67,9 +67,11 @@ const RobotProfile = ({
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
-    garage.currentSlot = e.target.value;
-    setInputToken(garage.getSlot()?.token ?? '');
-    setLoading(true);
+    if (e?.target?.value) {
+      garage.setCurrentSlot(e.target.value as string);
+      setInputToken(garage.getSlot()?.token ?? '');
+      setLoading(true);
+    }
   };
 
   const slot = garage.getSlot();
@@ -154,7 +156,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {loadingCoordinators > 0 && !Boolean(robot?.activeOrderId) ? (
+        {loadingCoordinators > 0 && !robot?.activeOrderId ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />
@@ -208,9 +210,9 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {!Boolean(robot?.activeOrderId) &&
+        {!robot?.activeOrderId &&
         slot?.hashId &&
-        !Boolean(robot?.lastOrderId) &&
+        !robot?.lastOrderId &&
         loadingCoordinators === 0 ? (
           <Grid item>{t('No existing orders found')}</Grid>
         ) : null}

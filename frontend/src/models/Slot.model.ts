@@ -1,5 +1,5 @@
 import { sha256 } from 'js-sha256';
-import { Robot, type Order } from '.';
+import { type Coordinator, type Garage, Robot, type Order } from '.';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 
 class Slot {
@@ -13,12 +13,12 @@ class Slot {
 
     this.hashId = sha256(sha256(this.token));
     this.nickname = null;
-    roboidentitiesClient.generateRoboname(this.hashId).then((nickname) => {
+    void roboidentitiesClient.generateRoboname(this.hashId).then((nickname) => {
       this.nickname = nickname;
       onRobotUpdate();
     });
-    roboidentitiesClient.generateRobohash(this.hashId, 'small');
-    roboidentitiesClient.generateRobohash(this.hashId, 'large');
+    void roboidentitiesClient.generateRobohash(this.hashId, 'small');
+    void roboidentitiesClient.generateRobohash(this.hashId, 'large');
 
     this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
       acc[shortAlias] = new Robot(robotAttributes);
@@ -72,6 +72,18 @@ class Slot {
     }
 
     return this.robots[shortAlias];
+  };
+
+  syncCoordinator: (coordinator: Coordinator, garage: Garage) => void = (coordinator, garage) => {
+    const defaultRobot = this.getRobot();
+    if (defaultRobot?.token) {
+      this.robots[coordinator.shortAlias] = new Robot({
+        token: defaultRobot.token,
+        pubKey: defaultRobot.pubKey,
+        encPrivKey: defaultRobot.encPrivKey,
+      });
+      void coordinator.fetchRobot(garage, defaultRobot.token);
+    }
   };
 }
 

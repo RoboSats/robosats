@@ -1,6 +1,7 @@
 # We use custom seeded UUID generation during testing
 import uuid
 
+from decimal import Decimal
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -9,6 +10,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
+from api.tasks import send_notification
 
 if config("TESTING", cast=bool, default=False):
     import random
@@ -44,7 +46,7 @@ class Order(models.Model):
         DIS = 11, "In dispute"
         CCA = 12, "Collaboratively cancelled"
         PAY = 13, "Sending satoshis to buyer"
-        SUC = 14, "Sucessful trade"
+        SUC = 14, "Successful trade"
         FAI = 15, "Failed lightning network routing"
         WFR = 16, "Wait for dispute resolution"
         MLD = 17, "Maker lost dispute"
@@ -90,7 +92,7 @@ class Order(models.Model):
         decimal_places=2,
         default=0,
         null=True,
-        validators=[MinValueValidator(-100), MaxValueValidator(999)],
+        validators=[MinValueValidator(Decimal(-100)), MaxValueValidator(Decimal(999))],
         blank=True,
     )
     # explicit
@@ -135,8 +137,8 @@ class Order(models.Model):
         default=settings.DEFAULT_BOND_SIZE,
         null=False,
         validators=[
-            MinValueValidator(settings.MIN_BOND_SIZE),  # 2  %
-            MaxValueValidator(settings.MAX_BOND_SIZE),  # 15 %
+            MinValueValidator(Decimal(settings.MIN_BOND_SIZE)),  # 2  %
+            MaxValueValidator(Decimal(settings.MAX_BOND_SIZE)),  # 15 %
         ],
         blank=False,
     )
@@ -147,8 +149,8 @@ class Order(models.Model):
         decimal_places=6,
         null=True,
         validators=[
-            MinValueValidator(-90),
-            MaxValueValidator(90),
+            MinValueValidator(Decimal(-90)),
+            MaxValueValidator(Decimal(90)),
         ],
         blank=True,
     )
@@ -157,8 +159,8 @@ class Order(models.Model):
         decimal_places=6,
         null=True,
         validators=[
-            MinValueValidator(-180),
-            MaxValueValidator(180),
+            MinValueValidator(Decimal(-180)),
+            MaxValueValidator(Decimal(180)),
         ],
         blank=True,
     )
@@ -348,6 +350,8 @@ class Order(models.Model):
         self.log(
             f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
         )
+        if new_status == Order.Status.FAI:
+            send_notification.delay(order_id=self.id, message="lightning_failed")
 
 
 @receiver(pre_delete, sender=Order)

@@ -141,7 +141,7 @@ def get_devfund_pubkey(network: str) -> str:
     """
 
     session = get_session()
-    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubey.json"
+    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubkey.json"
 
     try:
         response = session.get(url)
@@ -188,8 +188,7 @@ def get_exchange_rates(currencies):
                             blockchain_rates.append(
                                 float(blockchain_prices[currency]["last"])
                             )
-                        except Exception as e:
-                            print(e)
+                        except Exception:
                             blockchain_rates.append(np.nan)
                 api_rates.append(blockchain_rates)
 

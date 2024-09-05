@@ -2,7 +2,7 @@ from decouple import config
 from decimal import Decimal
 from rest_framework import serializers
 
-from .models import MarketTick, Order
+from .models import MarketTick, Order, Notification
 
 RETRY_TIME = int(config("RETRY_TIME"))
 
@@ -490,11 +490,25 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         )
 
 
+class ListNotificationSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField(
+        help_text="The `status` of the order when the notification was trigered",
+    )
+
+    class Meta:
+        model = Notification
+        fields = ("title", "description", "order_id", "status", "created_at")
+
+    def get_status(self, notification) -> int:
+        return notification.order.status
+
+
 class OrderPublicSerializer(serializers.ModelSerializer):
     maker_nick = serializers.CharField(required=False)
     maker_hash_id = serializers.CharField(required=False)
     maker_status = serializers.CharField(
-        help_text='Status of the nick - "Active" or "Inactive"', required=False
+        help_text='Status of the nick - "Active", "Seen Recently" or "Inactive"',
+        required=False,
     )
     price = serializers.FloatField(
         help_text="Price in order's fiat currency", required=False

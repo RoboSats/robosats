@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.6.0
+  version: 0.6.3
   x-logo:
     url: https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
@@ -284,6 +284,30 @@ paths:
                     type: string
                     description: Reason for the failure
           description: ''
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      description: Get a list of notifications sent to the robot.
+      summary: Get robot notifications
+      parameters:
+      - in: query
+        name: created_at
+        schema:
+          type: string
+        description: Shows notifications created AFTER this date.
+      tags:
+      - notifications
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListNotification'
+          description: ''
   /api/order/:
     get:
       operationId: order_retrieve
@@ -341,7 +365,7 @@ paths:
         - `11` "In dispute"
         - `12` "Collaboratively cancelled"
         - `13` "Sending satoshis to buyer"
-        - `14` "Sucessful trade"
+        - `14` "Successful trade"
         - `15` "Failed lightning network routing"
         - `16` "Wait for dispute resolution"
         - `17` "Maker lost dispute"
@@ -1070,6 +1094,28 @@ components:
       - swap_enabled
       - taker_fee
       - version
+    ListNotification:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 240
+        description:
+          type: string
+          maxLength: 240
+        order_id:
+          type: integer
+          readOnly: true
+        status:
+          type: integer
+          readOnly: true
+          description: The `status` of the order when the notification was trigered
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - order_id
+      - status
     ListOrder:
       type: object
       properties:
@@ -1638,7 +1684,7 @@ components:
           type: string
         maker_status:
           type: string
-          description: Status of the nick - "Active" or "Inactive"
+          description: Status of the nick - "Active", "Seen Recently" or "Inactive"
         price:
           type: number
           format: double
@@ -1787,7 +1833,7 @@ components:
         * `11` - In dispute
         * `12` - Collaboratively cancelled
         * `13` - Sending satoshis to buyer
-        * `14` - Sucessful trade
+        * `14` - Successful trade
         * `15` - Failed lightning network routing
         * `16` - Wait for dispute resolution
         * `17` - Maker lost dispute

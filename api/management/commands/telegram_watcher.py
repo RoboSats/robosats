@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from api.models import Robot
-from api.notifications import Telegram
+from api.notifications import Notifications
 from api.utils import get_session
 
 
@@ -17,7 +17,7 @@ class Command(BaseCommand):
     bot_token = config("TELEGRAM_TOKEN")
     updates_url = f"https://api.telegram.org/bot{bot_token}/getUpdates"
     session = get_session()
-    telegram = Telegram()
+    notifications = Notifications()
 
     def handle(self, *args, **options):
         offset = 0
@@ -49,17 +49,17 @@ class Command(BaseCommand):
                     continue
                 parts = message.split(" ")
                 if len(parts) < 2:
-                    self.telegram.send_message(
-                        chat_id=result["message"]["from"]["id"],
-                        text='You must enable the notifications bot using the RoboSats client. Click on your "Robot robot" -> "Enable Telegram" and follow the link or scan the QR code.',
+                    self.notifications.send_telegram_message(
+                        result["message"]["from"]["id"],
+                        'You must enable the notifications bot using the RoboSats client. Click on your "Robot robot" -> "Enable Telegram" and follow the link or scan the QR code.',
                     )
                     continue
                 token = parts[-1]
                 robot = Robot.objects.filter(telegram_token=token).first()
                 if not robot:
-                    self.telegram.send_message(
-                        chat_id=result["message"]["from"]["id"],
-                        text=f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
+                    self.notifications.send_telegram_message(
+                        result["message"]["from"]["id"],
+                        f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
                     )
                     continue
 
@@ -71,7 +71,7 @@ class Command(BaseCommand):
                             robot.telegram_lang_code = result["message"]["from"][
                                 "language_code"
                             ]
-                            self.telegram.welcome(robot.user)
+                            self.notifications.welcome(robot.user)
                             robot.telegram_enabled = True
                             robot.save(
                                 update_fields=[

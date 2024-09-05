@@ -44,7 +44,7 @@ const RobotPage = (): JSX.Element => {
     const token = urlToken ?? garage.currentSlot;
     if (token !== undefined && token !== null && page === 'robot') {
       setInputToken(token);
-      if (window.NativeRobosats === undefined || torStatus === 'ON') {
+      if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
         getGenerateRobot(token);
         setView('profile');
       }
@@ -71,7 +71,7 @@ const RobotPage = (): JSX.Element => {
           encPrivKey: key.encryptedPrivateKeyArmored,
         });
         void federation.fetchRobot(garage, token);
-        garage.currentSlot = token;
+        garage.setCurrentSlot(token);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -83,7 +83,7 @@ const RobotPage = (): JSX.Element => {
     garage.deleteSlot();
   };
 
-  if (!(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
+  if (settings.useProxy && !(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
     return (
       <Paper
         elevation={12}
