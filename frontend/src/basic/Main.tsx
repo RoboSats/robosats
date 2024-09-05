@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter,HashRouter ,BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
@@ -10,7 +10,16 @@ import Notifications from '../components/Notifications';
 import { useTranslation } from 'react-i18next';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
-const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
+function getRouter() {
+  if (window.NativeRobosats === undefined && window.RobosatsClient === undefined) {
+    return BrowserRouter;
+  } else if (window.RobosatsClient === 'desktop-app') {
+    return HashRouter;
+  } else {
+    return MemoryRouter;
+  }
+}
+const Router = getRouter();
 
 const TestnetTypography = styled(Typography)({
   height: 0,
@@ -53,6 +62,7 @@ const Main: React.FC = () => {
       )}
 
       <MainBox navbarHeight={navbarHeight}>
+        
         <Routes>
           {['/robot/:token?', '/', ''].map((path, index) => {
             return (
