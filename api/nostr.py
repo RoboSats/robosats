@@ -58,9 +58,12 @@ class Nostr:
             Tag.parse(["s", self.get_status_tag(order)]),
             Tag.parse(["amt", "0"]),
             Tag.parse(
-                ["fa"] + [str(order.amount)]
-                if not order.has_range
-                else [str(order.min_amount), str(order.max_amount)]
+                ["fa"]
+                + (
+                    [str(order.amount)]
+                    if not order.has_range
+                    else [str(order.min_amount), str(order.max_amount)]
+                )
             ),
             Tag.parse(["pm"] + order.payment_method.split(" ")),
             Tag.parse(["premium", str(order.premium)]),
