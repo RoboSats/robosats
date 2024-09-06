@@ -17,8 +17,23 @@ type FederationHooks = 'onCoordinatorUpdate' | 'onFederationUpdate';
 
 export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
-    this.coordinators = {};
-    this.exchange = { ...defaultExchange };
+    this.coordinators = Object.entries(defaultFederation).reduce(
+      (acc: Record<string, Coordinator>, [key, value]: [string, any]) => {
+        if (getHost() !== '127.0.0.1:8000' && key === 'local') {
+          // Do not add `Local Dev` unless it is running on localhost
+          return acc;
+        } else {
+          acc[key] = new Coordinator(value, origin, settings, hostUrl);
+
+          return acc;
+        }
+      },
+      {},
+    );
+    this.exchange = {
+      ...defaultExchange,
+      totalCoordinators: Object.keys(this.coordinators).length,
+    };
     this.book = [];
     this.hooks = {
       onCoordinatorUpdate: [],

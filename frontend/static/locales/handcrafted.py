@@ -32,7 +32,7 @@ phrases = OrderedDict(
         ("In dispute", "In dispute"),
         ("Collaboratively cancelled", "Collaboratively cancelled"),
         ("Sending satoshis to buyer", "Sending satoshis to buyer"),
-        ("Sucessful trade", "Successful trade"),
+        ("Successful trade", "Successful trade"),
         ("Failed lightning network routing", "Failed lightning network routing"),
         ("Wait for dispute resolution", "Wait for dispute resolution"),
         ("Maker lost dispute", "Maker lost dispute"),
