@@ -39,7 +39,7 @@ const audioPath =
   window.NativeRobosats === undefined
     ? '/static/assets/sounds'
     : 'file:///android_asset/Web.bundle/assets/sounds';
-    
+
 const EncryptedTurtleChat: React.FC<Props> = ({
   order,
   userNick,
