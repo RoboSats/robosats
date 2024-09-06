@@ -76,20 +76,13 @@ const makeTheme = function (settings: Settings): Theme {
 };
 
 const getHostUrl = (network = 'mainnet'): string => {
-  let host = '';
-  let protocol = '';
-  if(isDesktopRoboSats){
-    host = defaultFederation.exp[network].onion;
-    protocol = 'http:';  
-  }
-  else if (window.NativeRobosats === undefined) {
+  let host = defaultFederation.exp[network].onion;
+  let protocol = 'http:';
+  if (window.NativeRobosats === undefined) {
     host = getHost();
     protocol = location.protocol;
-  } else {
-    host = defaultFederation.exp[network].onion;
-    protocol = 'http:';
   }
-  const hostUrl = `${host}`;
+  const hostUrl = `${protocol}//${host}`;
   return hostUrl;
 };
 

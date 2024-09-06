@@ -1,10 +1,10 @@
 import React, { useContext, useEffect } from 'react';
 import { Routes as DomRoutes, Route, useNavigate } from 'react-router-dom';
-import { Box, Slide, Typography, styled } from '@mui/material';
+import { Slide } from '@mui/material';
 import { type UseAppStoreType, AppContext } from '../contexts/AppContext';
 
 import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage } from '.';
-import { GarageContext, UseGarageStoreType } from '../contexts/GarageContext';
+import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
 const Routes: React.FC = () => {
   const navigate = useNavigate();
@@ -14,8 +14,8 @@ const Routes: React.FC = () => {
   useEffect(() => {
     window.addEventListener('navigateToPage', (event) => {
       console.log('navigateToPage', JSON.stringify(event));
-      const orderId = event?.detail?.order_id;
-      const coordinator = event?.detail?.coordinator;
+      const orderId: string = event?.detail?.order_id;
+      const coordinator: string = event?.detail?.coordinator;
       if (orderId && coordinator) {
         const slot = garage.getSlotByOrder(coordinator, orderId);
         if (slot?.token) {
