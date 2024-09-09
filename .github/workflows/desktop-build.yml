@@ -31,12 +31,12 @@ jobs:
         run: |
           cd desktopApp
           npm install
-      
+
       - name: Install zip utility
         run: |
-          apt-get update
-          apt-get install -y zip
-      
+          sudo apt-get update
+          sudo apt-get install -y zip
+
       - name: Build for macOS
         run: |
           cd desktopApp
@@ -46,26 +46,26 @@ jobs:
         run: |
           cd desktopApp
           npm run package-win
-      
+
       - name: Build for Linux
         run: |
           cd desktopApp
           npm run package-linux
-      
+
       - name: Create ZIP for macOS Build
         run: |
           cd desktopApp/release-builds/
-          zip -r /desktopApp-mac.zip ./Robosats-darwin-x64/*
+          sudo zip -r /desktopApp-mac.zip ./Robosats-darwin-x64/*
 
       - name: Create ZIP for Windows Build
         run: |
           cd desktopApp/release-builds/
-          zip -r /desktopApp-win.zip ./Robosats-win32-ia32/*
+          sudo zip -r /desktopApp-win.zip ./Robosats-win32-ia32/*
 
       - name: Create ZIP for Linux Build
         run: |
           cd desktopApp/release-builds/
-          zip -r /desktopApp-linux.zip ./Robosats-linux-x64/*
+          sudo zip -r /desktopApp-linux.zip ./Robosats-linux-x64/*
 
       - name: 'Get Commit Hash'
         id: commit
@@ -77,14 +77,14 @@ jobs:
         with:
           name: robosats-desktop-${{ inputs.semver }}-mac.zip
           path: desktopApp/release-builds/desktopApp-mac.zip
-      
+
       - name: 'Upload linux-build Release Artifact (for Release)'
         uses: actions/upload-artifact@v4
         if: inputs.semver != ''  # only if this workflow is called from a push to tag (a Release)
         with:
           name: robosats-desktop-${{ inputs.semver }}-linux.zip
           path: desktopApp/release-builds/desktopApp-linux.zip
-      
+
       - name: 'Upload win-build Release Artifact (for Release)'
         uses: actions/upload-artifact@v4
         if: inputs.semver != ''  # only if this workflow is called from a push to tag (a Release)
