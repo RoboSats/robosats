@@ -27,6 +27,12 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Set up frontend dependencies
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
       - name: Install dependencies
         run: |
           cd desktopApp
