@@ -1,6 +1,6 @@
 django==5.0.8
 django-admin-relation-links==0.2.5
-django-celery-beat==2.6.0
+django-celery-beat==2.7.0
 django-celery-results==2.5.1
 django-model-utils==4.5.0
 django-redis==5.4.0
