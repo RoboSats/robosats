@@ -55,17 +55,17 @@ jobs:
       - name: Create ZIP for macOS Build
         run: |
           cd desktopApp/release-builds/
-          zip -r /desktopApp-mac.zip ./Robosats-darwin-x64/*
+          sudo zip -r /desktopApp-mac.zip ./Robosats-darwin-x64/*
 
       - name: Create ZIP for Windows Build
         run: |
           cd desktopApp/release-builds/
-          zip -r /desktopApp-win.zip ./Robosats-win32-ia32/*
+          sudo zip -r /desktopApp-win.zip ./Robosats-win32-ia32/*
 
       - name: Create ZIP for Linux Build
         run: |
           cd desktopApp/release-builds/
-          zip -r /desktopApp-linux.zip ./Robosats-linux-x64/*
+          sudo zip -r /desktopApp-linux.zip ./Robosats-linux-x64/*
 
       - name: 'Get Commit Hash'
         id: commit
