@@ -17,12 +17,13 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       max-parallel: 2
       matrix:
         python-tag: ['3.12.3-slim-bookworm', '3.13-rc-slim-bookworm']
-        lnd-version: ['v0.17.4-beta']
-        cln-version: ['v24.05']
+        lnd-version: ['v0.18.2-beta']
+        cln-version: ['v24.08']
         ln-vendor: ['LND', 'CLN']
 
     steps:
