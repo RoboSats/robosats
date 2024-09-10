@@ -64,7 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-darwin-x64
-          name: robosats-desktop-${{ steps.commit.outputs.short }}-mac-darwin-x64.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-mac-darwin-x64
 
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
@@ -73,7 +73,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-win32-ia32
-          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32
 
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
@@ -82,4 +82,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-linux-x64
-          name: robosats-desktop-${{ steps.commit.outputs.short }}-linux-x64.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-linux-x64
