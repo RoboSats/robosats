@@ -111,7 +111,7 @@ jobs:
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -123,7 +123,7 @@ jobs:
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -135,7 +135,7 @@ jobs:
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
