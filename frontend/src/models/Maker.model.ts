@@ -1,3 +1,5 @@
+import defaultFederation from '../../static/federation.json';
+
 export interface Maker {
   advancedOptions: boolean;
   coordinator: string;
@@ -23,7 +25,10 @@ export interface Maker {
 
 export const defaultMaker: Maker = {
   advancedOptions: false,
-  coordinator: 'exp',
+  coordinator:
+    Object.keys(defaultFederation)[
+      Math.floor(Math.random() * Object.keys(defaultFederation).length)
+    ] ?? '',
   isExplicit: false,
   amount: '',
   paymentMethods: [],
@@ -40,6 +45,8 @@ export const defaultMaker: Maker = {
   maxAmount: '',
   badPremiumText: '',
   badSatoshisText: '',
+  latitude: 0,
+  longitude: 0,
 };
 
 export default Maker;

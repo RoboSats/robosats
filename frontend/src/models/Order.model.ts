@@ -214,6 +214,17 @@ class Order {
     return this;
   };
 
+  take: (federation: Federation, slot: Slot, takeAmount: string) => Promise<this> = async (
+    federation,
+    slot,
+    takeAmount,
+  ) => {
+    return this.submitAction(federation, slot, {
+      action: 'take',
+      amount: this?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount),
+    });
+  };
+
   submitAction: (federation: Federation, slot: Slot, action: SubmitActionProps) => Promise<this> =
     async (federation, slot, action) => {
       if (this.id < 1) return this;

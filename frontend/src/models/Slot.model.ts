@@ -111,6 +111,12 @@ class Slot {
     this.updateSlotFromOrder(this.activeOrder);
   };
 
+  takeOrder = async (federation: Federation, order: Order, takeAmount: string): Promise<Order> => {
+    await order.take(federation, this, takeAmount);
+    this.updateSlotFromOrder(order);
+    return order;
+  };
+
   makeOrder = async (federation: Federation, attributes: object): Promise<Order> => {
     const order = new Order(attributes);
     await order.make(federation, this);
@@ -124,6 +130,7 @@ class Slot {
     if (newOrder) {
       // FIXME: API responses with bad_request should include also order's status
       if (newOrder?.bad_request?.includes('expired')) newOrder.status = 5;
+      if (newOrder?.bad_request?.includes('collaborativelly')) newOrder.status = 12;
       if (
         newOrder.id === this.activeOrder?.id &&
         newOrder.shortAlias === this.activeOrder?.shortAlias

@@ -79,7 +79,7 @@ class Garage {
   // Slots
   getSlot: (token?: string) => Slot | null = (token) => {
     const currentToken = token ?? this.currentSlot;
-    return currentToken ? this.slots[currentToken] ?? null : null;
+    return currentToken ? (this.slots[currentToken] ?? null) : null;
   };
 
   deleteSlot: (token?: string) => void = (token) => {
@@ -100,7 +100,7 @@ class Garage {
     if (attributes) {
       if (attributes.copiedToken !== undefined) slot?.setCopiedToken(attributes.copiedToken);
       this.save();
-      this.triggerHook('onRobotUpdate');
+      this.triggerHook('onSlotUpdate');
     }
     return slot;
   };
@@ -108,7 +108,7 @@ class Garage {
   setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {
     this.currentSlot = currentSlot;
     this.save();
-    this.triggerHook('onRobotUpdate');
+    this.triggerHook('onSlotUpdate');
   };
 
   getSlotByOrder: (coordinator: string, orderID: number) => Slot | null = (
@@ -118,7 +118,7 @@ class Garage {
     return (
       Object.values(this.slots).find((slot) => {
         const robot = slot.getRobot(coordinator);
-        return slot.activeShortAlias === coordinator && robot?.activeOrderId === orderID;
+        return slot.activeOrder?.shortAlias === coordinator && robot?.activeOrderId === orderID;
       }) ?? null
     );
   };

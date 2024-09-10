@@ -319,12 +319,8 @@ const TakeButton = ({
 
     setLoadingTake(true);
 
-    currentOrder
-      .submitAction(federation, slot, {
-        action: 'take',
-        amount:
-          currentOrder?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount),
-      })
+    slot
+      .takeOrder(federation, currentOrder, takeAmount)
       .then((order) => {
         if (order?.bad_request !== undefined) {
           setBadRequest(order.bad_request);

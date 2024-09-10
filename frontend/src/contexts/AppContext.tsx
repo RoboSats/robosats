@@ -76,7 +76,11 @@ const makeTheme = function (settings: Settings): Theme {
 };
 
 const getHostUrl = (network = 'mainnet'): string => {
-  let host = defaultFederation.exp[network].onion;
+  const randomAlias =
+    Object.keys(defaultFederation)[
+      Math.floor(Math.random() * Object.keys(defaultFederation).length)
+    ];
+  let host = defaultFederation[randomAlias][network].onion;
   let protocol = 'http:';
   if (window.NativeRobosats === undefined) {
     host = getHost();

@@ -8,7 +8,7 @@ import React, {
   type ReactNode,
 } from 'react';
 
-import { type Order, Federation, Settings } from '../models';
+import { Federation, Settings } from '../models';
 
 import { federationLottery } from '../utils';
 
@@ -28,10 +28,6 @@ export interface FederationContextProviderProps {
 export interface UseFederationStoreType {
   federation: Federation;
   sortedCoordinators: string[];
-  setDelay: Dispatch<SetStateAction<number>>;
-  currentOrderId: CurrentOrderIdProps;
-  setCurrentOrderId: Dispatch<SetStateAction<CurrentOrderIdProps>>;
-  currentOrder: Order | null;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
   addNewCoordinator: (alias: string, url: string) => void;
@@ -40,10 +36,6 @@ export interface UseFederationStoreType {
 export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation('onion', new Settings(), ''),
   sortedCoordinators: [],
-  setDelay: () => {},
-  currentOrderId: { id: null, shortAlias: null },
-  setCurrentOrderId: () => {},
-  currentOrder: null,
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
   addNewCoordinator: () => {},
@@ -56,24 +48,13 @@ export const FederationContextProvider = ({
 }: FederationContextProviderProps): JSX.Element => {
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
-  const { setMaker, garage, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
+  const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
   const [sortedCoordinators, setSortedCoordinators] = useState(federationLottery(federation));
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
   );
   const [federationUpdatedAt, setFederationUpdatedAt] = useState<string>(new Date().toISOString());
-  const [currentOrderId, setCurrentOrderId] = useState<CurrentOrderIdProps>(
-    initialFederationContext.currentOrderId,
-  );
-  const [currentOrder, setCurrentOrder] = useState<Order | null>(
-    initialFederationContext.currentOrder,
-  );
-
-  const [delay, setDelay] = useState<number>(defaultDelay);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
-    setInterval(() => null, delay),
-  );
 
   useEffect(() => {
     setMaker((maker) => {
@@ -82,64 +63,14 @@ export const FederationContextProvider = ({
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
     });
-    federation.registerHook('onCoordinatorUpdate', () => {
-      setCoordinatorUpdatedAt(new Date().toISOString());
-    });
   }, []);
 
   useEffect(() => {
     if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
       void federation.update();
-
-      const token = garage.getSlot()?.getRobot()?.token;
-      if (token) void federation.fetchRobot(garage, token);
     }
   }, [settings.network, settings.useProxy, torStatus]);
-
-  const onOrderReceived = (order: Order): void => {
-    let newDelay = defaultDelay;
-    if (order?.bad_request) {
-      newDelay = 99999999;
-      setBadOrder(order.bad_request);
-      garage.updateOrder(null);
-      setCurrentOrder(null);
-    }
-    if (order?.id) {
-      newDelay =
-        order.status >= 0 && order.status <= 18
-          ? page === 'order'
-            ? statusToDelay[order.status]
-            : statusToDelay[order.status] * 5 // If user is not looking at "order" tab, refresh less often.
-          : 99999999;
-      garage.updateOrder(order);
-      setCurrentOrder(order);
-      setBadOrder(undefined);
-    }
-    clearInterval(timer);
-    console.log('New Delay:', newDelay);
-    setDelay(newDelay);
-    setTimer(setTimeout(fetchCurrentOrder, newDelay));
-  };
-
-  const fetchCurrentOrder: () => void = () => {
-    const slot = garage?.getSlot();
-    const robot = slot?.getRobot();
-    if (robot && slot?.token && currentOrderId.id && currentOrderId.shortAlias) {
-      const coordinator = federation.getCoordinator(currentOrderId.shortAlias);
-      void coordinator?.fetchOrder(currentOrderId.id, robot, slot?.token).then((order) => {
-        onOrderReceived(order as Order);
-      });
-    } else if (slot?.token && slot?.activeShortAlias && robot?.activeOrderId) {
-      const coordinator = federation.getCoordinator(slot.activeShortAlias);
-      void coordinator?.fetchOrder(robot.activeOrderId, robot, slot.token).then((order) => {
-        onOrderReceived(order as Order);
-      });
-    } else {
-      clearInterval(timer);
-      setTimer(setTimeout(fetchCurrentOrder, defaultDelay));
-    }
-  };
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.coordinators[alias]) {
@@ -164,23 +95,11 @@ export const FederationContextProvider = ({
       newCoordinator.update(() => {
         setCoordinatorUpdatedAt(new Date().toISOString());
       });
-      garage.syncCoordinator(newCoordinator);
+      garage.syncCoordinator(federation, alias);
       setSortedCoordinators(federationLottery(federation));
       setFederationUpdatedAt(new Date().toISOString());
     }
   };
-
-  useEffect(() => {
-    if (currentOrderId.id && currentOrderId.shortAlias) {
-      setCurrentOrder(null);
-      setBadOrder(undefined);
-      clearInterval(timer);
-      fetchCurrentOrder();
-    }
-    return () => {
-      clearInterval(timer);
-    };
-  }, [currentOrderId]);
 
   useEffect(() => {
     if (page === 'offers') void federation.updateBook();
@@ -191,7 +110,7 @@ export const FederationContextProvider = ({
     const slot = garage.getSlot();
 
     if (open.profile && slot?.hashId && slot?.token) {
-      void federation.fetchRobot(garage, slot?.token); // refresh/update existing robot
+      void garage.fetchRobot(federation, slot?.token); // refresh/update existing robot
     }
   }, [open.profile]);
 
@@ -200,10 +119,6 @@ export const FederationContextProvider = ({
       value={{
         federation,
         sortedCoordinators,
-        currentOrderId,
-        setCurrentOrderId,
-        currentOrder,
-        setDelay,
         coordinatorUpdatedAt,
         federationUpdatedAt,
         addNewCoordinator,
