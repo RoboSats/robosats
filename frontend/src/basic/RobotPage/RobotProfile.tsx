@@ -22,7 +22,6 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -45,8 +44,7 @@ const RobotProfile = ({
   width,
 }: RobotProfileProps): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
-  const { garage, robotUpdatedAt, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -59,7 +57,7 @@ const RobotProfile = ({
     if (slot?.hashId) {
       setLoading(false);
     }
-  }, [orderUpdatedAt, robotUpdatedAt, loading]);
+  }, [slotUpdatedAt, loading]);
 
   const handleAddRobot = (): void => {
     getGenerateRobot(genBase62Token(36));
@@ -147,7 +145,7 @@ const RobotProfile = ({
             tooltip={t('This is your trading avatar')}
             tooltipPosition='top'
           />
-          {robot?.found && Boolean(slot?.lastShortAlias) ? (
+          {robot?.found && Boolean(slot?.lastOrder?.id) ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>
@@ -156,38 +154,38 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {loadingCoordinators > 0 && !robot?.activeOrderId ? (
+        {loadingCoordinators > 0 && !slot?.activeOrder?.id ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />
           </Grid>
         ) : null}
 
-        {Boolean(robot?.activeOrderId) && Boolean(slot?.hashId) ? (
+        {slot?.activeOrder ? (
           <Grid item>
             <Button
               onClick={() => {
-                setCurrentOrderId({ id: robot?.activeOrderId, shortAlias: slot?.activeShortAlias });
                 navigate(
-                  `/order/${String(slot?.activeShortAlias)}/${String(robot?.activeOrderId)}`,
+                  `/order/${String(slot?.activeOrder?.shortAlias)}/${String(slot?.activeOrder?.id)}`,
                 );
               }}
             >
-              {t('Active order #{{orderID}}', { orderID: robot?.activeOrderId })}
+              {t('Active order #{{orderID}}', { orderID: slot?.activeOrder?.id })}
             </Button>
           </Grid>
         ) : null}
 
-        {Boolean(robot?.lastOrderId) && Boolean(slot?.hashId) ? (
+        {!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
                 onClick={() => {
-                  setCurrentOrderId({ id: robot?.lastOrderId, shortAlias: slot?.activeShortAlias });
-                  navigate(`/order/${String(slot?.lastShortAlias)}/${String(robot?.lastOrderId)}`);
+                  navigate(
+                    `/order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
+                  );
                 }}
               >
-                {t('Last order #{{orderID}}', { orderID: robot?.lastOrderId })}
+                {t('Last order #{{orderID}}', { orderID: slot?.lastOrder?.id })}
               </Button>
             </Grid>
             <Grid item>
@@ -210,10 +208,7 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {!robot?.activeOrderId &&
-        slot?.hashId &&
-        !robot?.lastOrderId &&
-        loadingCoordinators === 0 ? (
+        {!slot?.activeOrder && !slot?.lastOrder && loadingCoordinators === 0 ? (
           <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
 

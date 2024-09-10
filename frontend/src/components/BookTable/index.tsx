@@ -88,8 +88,7 @@ const BookTable = ({
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
   const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { federation, coordinatorUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -123,7 +122,7 @@ const BookTable = ({
       pageSize: federation.loading && orders.length === 0 ? 0 : defaultPageSize,
       page: paginationModel.page,
     });
-  }, [coordinatorUpdatedAt, orders, defaultPageSize]);
+  }, [federationUpdatedAt, orders, defaultPageSize]);
 
   const localeText = useMemo(() => {
     return {

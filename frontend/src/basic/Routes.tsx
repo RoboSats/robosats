@@ -13,11 +13,10 @@ const Routes: React.FC = () => {
 
   useEffect(() => {
     window.addEventListener('navigateToPage', (event) => {
-      console.log('navigateToPage', JSON.stringify(event));
       const orderId: string = event?.detail?.order_id;
       const coordinator: string = event?.detail?.coordinator;
       if (orderId && coordinator) {
-        const slot = garage.getSlotByOrder(coordinator, orderId);
+        const slot = garage.getSlotByOrder(coordinator, parseInt(orderId, 10));
         if (slot?.token) {
           garage.setCurrentSlot(slot?.token);
           navigate(`/order/${coordinator}/${orderId}`);

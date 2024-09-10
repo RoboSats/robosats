@@ -21,8 +21,8 @@ const App = (): JSX.Element => {
         <Suspense fallback='loading'>
           <I18nextProvider i18n={i18n}>
             <AppContextProvider>
-              <GarageContextProvider>
-                <FederationContextProvider>
+              <FederationContextProvider>
+                <GarageContextProvider>
                   <CssBaseline />
                   {window.NativeRobosats === undefined && window.RobosatsClient === undefined ? (
                     <HostAlert />
@@ -30,8 +30,8 @@ const App = (): JSX.Element => {
                     <TorConnectionBadge />
                   )}
                   <Main />
-                </FederationContextProvider>
-              </GarageContextProvider>
+                </GarageContextProvider>
+              </FederationContextProvider>
             </AppContextProvider>
           </I18nextProvider>
         </Suspense>

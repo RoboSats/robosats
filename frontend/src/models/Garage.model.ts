@@ -1,9 +1,9 @@
-import { type Coordinator, type Order } from '.';
+import { type Federation, Order } from '.';
 import { systemClient } from '../services/System';
 import { saveAsJson } from '../utils';
 import Slot from './Slot.model';
 
-type GarageHooks = 'onRobotUpdate' | 'onOrderUpdate';
+type GarageHooks = 'onSlotUpdate';
 
 class Garage {
   constructor() {
@@ -11,8 +11,7 @@ class Garage {
     this.currentSlot = null;
 
     this.hooks = {
-      onRobotUpdate: [],
-      onOrderUpdate: [],
+      onSlotUpdate: [],
     };
 
     this.loadSlots();
@@ -29,6 +28,7 @@ class Garage {
   };
 
   triggerHook = (hookName: GarageHooks): void => {
+    this.save();
     this.hooks[hookName]?.forEach((fn) => {
       fn();
     });
@@ -47,8 +47,7 @@ class Garage {
     this.slots = {};
     this.currentSlot = null;
     systemClient.deleteItem('garage_slots');
-    this.triggerHook('onRobotUpdate');
-    this.triggerHook('onOrderUpdate');
+    this.triggerHook('onSlotUpdate');
   };
 
   loadSlots = (): void => {
@@ -64,26 +63,23 @@ class Garage {
             Object.keys(rawSlot.robots),
             {},
             () => {
-              this.triggerHook('onRobotUpdate');
+              this.triggerHook('onSlotUpdate');
             },
           );
-          Object.keys(rawSlot.robots).forEach((shortAlias) => {
-            const rawRobot = rawSlot.robots[shortAlias];
-            this.updateRobot(rawSlot.token, shortAlias, rawRobot);
-          });
+          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.lastOrder));
+          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.activeOrder));
           this.currentSlot = rawSlot?.token;
         }
       });
       console.log('Robot Garage was loaded from local storage');
-      this.triggerHook('onRobotUpdate');
-      this.triggerHook('onOrderUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
   // Slots
   getSlot: (token?: string) => Slot | null = (token) => {
     const currentToken = token ?? this.currentSlot;
-    return currentToken ? this.slots[currentToken] ?? null : null;
+    return currentToken ? (this.slots[currentToken] ?? null) : null;
   };
 
   deleteSlot: (token?: string) => void = (token) => {
@@ -92,8 +88,7 @@ class Garage {
       Reflect.deleteProperty(this.slots, targetIndex);
       this.currentSlot = null;
       this.save();
-      this.triggerHook('onRobotUpdate');
-      this.triggerHook('onOrderUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
@@ -105,7 +100,7 @@ class Garage {
     if (attributes) {
       if (attributes.copiedToken !== undefined) slot?.setCopiedToken(attributes.copiedToken);
       this.save();
-      this.triggerHook('onRobotUpdate');
+      this.triggerHook('onSlotUpdate');
     }
     return slot;
   };
@@ -113,7 +108,7 @@ class Garage {
   setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {
     this.currentSlot = currentSlot;
     this.save();
-    this.triggerHook('onRobotUpdate');
+    this.triggerHook('onSlotUpdate');
   };
 
   getSlotByOrder: (coordinator: string, orderID: number) => Slot | null = (
@@ -123,7 +118,7 @@ class Garage {
     return (
       Object.values(this.slots).find((slot) => {
         const robot = slot.getRobot(coordinator);
-        return slot.activeShortAlias === coordinator && robot?.activeOrderId === orderID;
+        return slot.activeOrder?.shortAlias === coordinator && robot?.activeOrderId === orderID;
       }) ?? null
     );
   };
@@ -138,55 +133,29 @@ class Garage {
 
     if (this.getSlot(token) === null) {
       this.slots[token] = new Slot(token, shortAliases, attributes, () => {
-        this.triggerHook('onRobotUpdate');
+        this.triggerHook('onSlotUpdate');
       });
       this.save();
     }
   };
 
-  updateRobot: (token: string, shortAlias: string, attributes: Record<any, any>) => void = (
-    token,
-    shortAlias,
-    attributes,
-  ) => {
-    if (!token || !shortAlias) return;
-
+  fetchRobot = async (federation: Federation, token: string): Promise<void> => {
     const slot = this.getSlot(token);
 
     if (slot != null) {
-      slot.updateRobot(shortAlias, { token, ...attributes });
+      await slot.fetchRobot(federation);
       this.save();
-      this.triggerHook('onRobotUpdate');
-    }
-  };
-
-  // Orders
-  updateOrder: (order: Order | null) => void = (order) => {
-    const slot = this.getSlot();
-    if (slot != null) {
-      if (order !== null) {
-        const updatedOrder = slot.order ?? null;
-        if (updatedOrder !== null && updatedOrder.id === order.id) {
-          Object.assign(updatedOrder, order);
-          slot.order = updatedOrder;
-        } else {
-          slot.order = order;
-        }
-        if (slot.order?.is_participant) {
-          slot.activeShortAlias = order.shortAlias;
-        }
-      } else {
-        slot.order = null;
-      }
-      this.save();
-      this.triggerHook('onOrderUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
   // Coordinators
-  syncCoordinator: (coordinator: Coordinator) => void = (coordinator) => {
+  syncCoordinator: (federation: Federation, shortAlias: string) => void = (
+    federation,
+    shortAlias,
+  ) => {
     Object.values(this.slots).forEach((slot) => {
-      slot.syncCoordinator(coordinator, this);
+      slot.syncCoordinator(federation, shortAlias);
     });
     this.save();
   };

@@ -27,7 +27,7 @@ interface Props {
 
 const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
 
   const slot = garage.getSlot();
@@ -42,7 +42,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
     setLoadingCoordinators(
       Object.values(slot?.robots ?? {}).filter((robot) => robot.loading).length,
     );
-  }, [robotUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   return (
     <Dialog

@@ -1,47 +1,4 @@
 {
-  "exp": {
-    "longAlias": "Experimental",
-    "shortAlias": "exp",
-    "description": "RoboSats node for development and experimentation. This is the original RoboSats coordinator operated by the RoboSats devs since 2022.",
-    "motto": "Original Robohost. P2P FTW!",
-    "color": "#1976d2",
-    "established": "2022-03-01",
-    "contact": {
-      "email": "robosats@protonmail.com",
-      "telegram": "robosats",
-      "twitter": "robosats",
-      "reddit": "r/robosats",
-      "matrix": "#robosats:matrix.org",
-      "website": "https://learn.robosats.com",
-      "nostr": "npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82",
-      "pgp": "/static/federation/pgp/B4AB5F19113D4125DDF217739C4585B561315571.asc",
-      "fingerprint": "B4AB5F19113D4125DDF217739C4585B561315571"
-    },
-    "badges": {
-      "isFounder": true,
-      "donatesToDevFund": 20,
-      "hasGoodOpSec": true,
-      "robotsLove": true,
-      "hasLargeLimits": true
-    },
-    "policies": {
-      "Experimental": "Experimental coordinator used for development. Use at your own risk.",
-      "Dispute Policy": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-      "Non eligible countries": "USA citizens and residents are not allowed to use the Experimental coordinator. F2F transactions are explicitly blocked at creation time for US locations. If a US citizen or resident violates this rule and is found out to be using the Experimental coordinator during a dispute process, they will be denied further service and the dispute mediation will be terminated."
-    },
-    "mainnet": {
-      "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-      "clearnet": "https://unsafe.robosats.com",
-      "i2p": "http://r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p"
-    },
-    "testnet": {
-      "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-      "clearnet": "https://unsafe.testnet.robosats.com",
-      "i2p": ""
-    },
-    "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
-    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
-  },
   "temple": {
     "longAlias": "Temple of Sats",
     "shortAlias": "temple",

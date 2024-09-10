@@ -34,14 +34,14 @@ interface Props {
 
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, coordinatorUpdatedAt, federationUpdatedAt } = useContext(FederationContext);
+  const { federation, federationUpdatedAt } = useContext(FederationContext);
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
 
   useEffect(() => {
     const loadedCoordinators =
       federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators;
     setLoadingProgress((loadedCoordinators / federation.exchange.enabledCoordinators) * 100);
-  }, [open, coordinatorUpdatedAt, federationUpdatedAt]);
+  }, [open, federationUpdatedAt]);
 
   return (
     <Dialog open={open} onClose={onClose}>

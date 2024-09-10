@@ -1,7 +1,6 @@
 import {
   Coordinator,
   type Exchange,
-  type Garage,
   type Origin,
   type PublicOrder,
   type Settings,
@@ -13,7 +12,7 @@ import { getHost } from '../utils';
 import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 
-type FederationHooks = 'onCoordinatorUpdate' | 'onFederationUpdate';
+type FederationHooks = 'onFederationUpdate';
 
 export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
@@ -36,7 +35,6 @@ export class Federation {
     };
     this.book = [];
     this.hooks = {
-      onCoordinatorUpdate: [],
       onFederationUpdate: [],
     };
 
@@ -97,7 +95,6 @@ export class Federation {
     this.book = Object.values(this.coordinators).reduce<PublicOrder[]>((array, coordinator) => {
       return [...array, ...coordinator.book];
     }, []);
-    this.triggerHook('onCoordinatorUpdate');
     this.exchange.loadingCoordinators =
       this.exchange.loadingCoordinators < 1 ? 0 : this.exchange.loadingCoordinators - 1;
     this.loading = this.exchange.loadingCoordinators > 0;
@@ -140,11 +137,12 @@ export class Federation {
   updateBook = async (): Promise<void> => {
     this.loading = true;
     this.book = [];
-    this.triggerHook('onCoordinatorUpdate');
+    this.triggerHook('onFederationUpdate');
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
       void coor.updateBook(() => {
         this.onCoordinatorSaved();
+        this.triggerHook('onFederationUpdate');
       });
     }
   };
@@ -152,13 +150,6 @@ export class Federation {
   updateExchange = (): void => {
     this.exchange.info = updateExchangeInfo(this);
     this.triggerHook('onFederationUpdate');
-  };
-
-  // Fetchs
-  fetchRobot = async (garage: Garage, token: string): Promise<void> => {
-    Object.values(this.coordinators).forEach((coor) => {
-      void coor.fetchRobot(garage, token);
-    });
   };
 
   // Coordinators
@@ -169,13 +160,13 @@ export class Federation {
   disableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].disable();
     this.updateEnabledCoordinators();
-    this.triggerHook('onCoordinatorUpdate');
+    this.triggerHook('onFederationUpdate');
   };
 
   enableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].enable(() => {
       this.updateEnabledCoordinators();
-      this.triggerHook('onCoordinatorUpdate');
+      this.triggerHook('onFederationUpdate');
     });
   };
 
