@@ -38,11 +38,6 @@ jobs:
           cd desktopApp
           npm install
 
-      - name: Install zip utility
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y zip
-
       - name: Build for macOS
         run: |
           cd desktopApp
@@ -58,21 +53,6 @@ jobs:
           cd desktopApp
           npm run package-linux
 
-      - name: Create ZIP for macOS Build
-        run: |
-          cd desktopApp/release-builds/
-          sudo zip -r /desktopApp-mac.zip ./Robosats-darwin-x64/*
-
-      - name: Create ZIP for Windows Build
-        run: |
-          cd desktopApp/release-builds/
-          sudo zip -r /desktopApp-win.zip ./Robosats-win32-ia32/*
-
-      - name: Create ZIP for Linux Build
-        run: |
-          cd desktopApp/release-builds/
-          sudo zip -r /desktopApp-linux.zip ./Robosats-linux-x64/*
-
       - name: 'Get Commit Hash'
         id: commit
         uses: pr-mpt/actions-commit-hash@v3
@@ -81,8 +61,8 @@ jobs:
         uses: actions/upload-artifact@v4
         if: inputs.semver != ''  # only if this workflow is called from a push to tag (a Release)
         with:
-          name: robosats-desktop-${{ inputs.semver }}-mac.zip
-          path: desktopApp/release-builds/desktopApp-mac.zip
+          name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64.zip
+          path: desktopApp/release-builds/Robosats-darwin-x64
 
       - name: 'Upload linux-build Release Artifact (for Release)'
         uses: actions/upload-artifact@v4
@@ -98,7 +78,6 @@ jobs:
           name: robosats-desktop-${{ inputs.semver }}-win.zip
           path: desktopApp/release-builds/desktopApp-win.zip
 
-
       - name: Create Pre-release
         id: create_release
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
@@ -111,35 +90,32 @@ jobs:
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /desktopApp-mac.zip
-          asset_name: robosats-desktop-${{ steps.commit.outputs.short }}-mac.zip
-          asset_content_type: application/zip
+          path: /desktopApp-mac.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-mac.zip
 
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /desktopApp-win.zip
-          asset_name: robosats-desktop-${{ steps.commit.outputs.short }}-win.zip
-          asset_content_type: application/zip
+          path: desktopApp/release-builds/Robosats-win32-ia32
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32.zip
 
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /desktopApp-linux.zip
-          asset_name: robosats-desktop-${{ steps.commit.outputs.short }}-linux.zip
-          asset_content_type: application/zip
+          path: desktopApp/release-builds/Robosats-linux-x64
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-linux-x64.zip
