@@ -66,8 +66,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   }, [fav.currency]);
 
   useEffect(() => {
-    if (federation.book.length > 0) {
-      const enriched = federation.book.map((order) => {
+    if (Object.values(federation.book).length > 0) {
+      const enriched = Object.values(federation.book).map((order) => {
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
         // simple rule of three

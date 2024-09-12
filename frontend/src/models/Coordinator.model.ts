@@ -165,7 +165,7 @@ export class Coordinator {
   public basePath: string;
 
   // These properties are fetched from coordinator API
-  public book: PublicOrder[] = [];
+  public book: Record<string, PublicOrder> = {};
   public loadingBook: boolean = false;
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = false;
@@ -187,7 +187,7 @@ export class Coordinator {
       if (this.isUpdated()) onUpdate(this.shortAlias);
     };
 
-    this.loadBook(onDataLoad);
+    // this.loadBook(onDataLoad);
     this.loadLimits(onDataLoad);
     this.loadInfo(onDataLoad);
   };
@@ -209,30 +209,30 @@ export class Coordinator {
     if (this.url === '') return;
     if (this.loadingBook) return;
 
-    this.loadingBook = true;
-    this.book = [];
+    // this.loadingBook = true;
+    // this.book = [];
 
-    apiClient
-      .get(this.url, `${this.basePath}/api/book/`)
-      .then((data) => {
-        if (!data?.not_found) {
-          this.book = (data as PublicOrder[]).map((order) => {
-            order.coordinatorShortAlias = this.shortAlias;
-            return order;
-          });
-          void this.generateAllMakerAvatars(data);
-          onDataLoad();
-        } else {
-          this.book = [];
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingBook = false;
-      });
+    // apiClient
+    //   .get(this.url, `${this.basePath}/api/book/`)
+    //   .then((data) => {
+    //     if (!data?.not_found) {
+    //       this.book = (data as PublicOrder[]).map((order) => {
+    //         order.coordinatorShortAlias = this.shortAlias;
+    //         return order;
+    //       });
+    //       void this.generateAllMakerAvatars(data);
+    //       onDataLoad();
+    //     } else {
+    //       this.book = [];
+    //       onDataLoad();
+    //     }
+    //   })
+    //   .catch((e) => {
+    //     console.log(e);
+    //   })
+    //   .finally(() => {
+    //     this.loadingBook = false;
+    //   });
   };
 
   loadLimits = (onDataLoad: () => void = () => {}): void => {
@@ -298,7 +298,7 @@ export class Coordinator {
     this.enabled = false;
     this.info = undefined;
     this.limits = {};
-    this.book = [];
+    this.book = {};
   };
 
   isUpdated = (): boolean => {

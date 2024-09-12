@@ -2,10 +2,12 @@
   "temple": {
     "longAlias": "Temple of Sats",
     "shortAlias": "temple",
+    "identifier": "templeofsats",
     "description": "I am passionate about joining Robosats as a coordinator because I believe that peer-to-peer, non-KYC Bitcoin transactions are vital for the community's empowerment and autonomy. I aim to champion users' privacy, and provide a seamless experience for genuine Bitcoin enthusiasts.",
     "motto": "Privacy and Integrity: Temple of Sats, where Bitcoin's essence thrives.",
     "color": "#000",
     "established": "2023-12-02",
+    "nostrHexPubkey": "74001620297035daa61475c069f90b6950087fea0d0134b795fac758c34e7191",
     "contact": {
       "email": "coordinator@templeofsats.org",
       "telegram": "templeofsats",
@@ -50,10 +52,12 @@
   "lake": {
     "longAlias": "TheBigLake",
     "shortAlias": "lake",
+    "identifier": "thebiglake",
     "description": "Becoming a RoboSats coordinator represents boosting intrinsic values of decentralization and economic freedom. RoboSats solves the problem of KYC and loss of privacy that big Exchanges are forced to comply with. I believe that decentralizing the lightning nodes will enhance the robustness of the tool, allowing more users to join. I am excited to be part of this new phase of growth.",
     "motto": "TheBigLake: The Lake of Economic Freedom.",
     "color": "#000D28",
     "established": "2023-12-30",
+    "nostrHexPubkey": "f2d4855df39a7db6196666e8469a07a131cddc08dcaa744a344343ffcf54a10c",
     "contact": {
       "email": "gabbygator184@proton.me",
       "telegram": "gabbygator184",
@@ -95,10 +99,12 @@
   "veneto": {
     "longAlias": "BitcoinVeneto",
     "shortAlias": "veneto",
+    "identifier": "bitcoinveneto",
     "description": "Born as a group of computer scientists with different experiences, we discovered bitcoin at the end of 2013 and became enthusiastic and dedicated to bitcoin, blockchain and cryptocurrencies in general, in particular helping, informing and following all companies on the path to literacy in the world of digital currency. and the private individuals who have placed their trust in us in recent years.",
     "motto": "Your NON-Virtual Guides on Bitcoin, Blockchain and Crypto.",
     "color": "#000D27",
     "established": "2024-02-24",
+    "nostrHexPubkey": "c8dc40a80bbb41fe7430fca9d0451b37a2341486ab65f890955528e4732da34a",
     "contact": {
       "email": "bitcoinveneto@proton.me",
       "telegram": "BitcoinVeneto",
