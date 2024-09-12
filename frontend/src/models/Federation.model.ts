@@ -1,3 +1,4 @@
+import { SimplePool } from 'nostr-tools';
 import {
   Coordinator,
   type Exchange,
@@ -11,6 +12,7 @@ import { systemClient } from '../services/System';
 import { getHost } from '../utils';
 import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
+import eventToPublicOrder from '../utils/nostr';
 
 type FederationHooks = 'onFederationUpdate';
 
@@ -33,7 +35,7 @@ export class Federation {
       ...defaultExchange,
       totalCoordinators: Object.keys(this.coordinators).length,
     };
-    this.book = [];
+    this.book = {};
     this.hooks = {
       onFederationUpdate: [],
     };
@@ -59,10 +61,60 @@ export class Federation {
 
   public coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
-  public book: PublicOrder[];
+  public book: Record<string, PublicOrder>;
   public loading: boolean;
 
   public hooks: Record<FederationHooks, Array<() => void>>;
+
+  public relayPool: SimplePool = new SimplePool();
+
+  connectNostr = (): void => {
+    this.loading = true;
+    this.book = {};
+
+    const relays = ['ws://satstraoq35jffvkgpfoqld32nzw2siuvowanruindbfojowpwsjdgad.onion/nostr'];
+
+    this.exchange.loadingCoordinators = relays.length;
+
+    const authors = Object.values(defaultFederation)
+      .map((f) => f.nostrHexPubkey)
+      .filter((item) => item !== undefined);
+
+    this.relayPool.trustedRelayURLs = new Set<string>(relays);
+    this.relayPool.subscribeMany(
+      relays,
+      [
+        {
+          authors,
+          kinds: [38383],
+          '#n': ['mainnet'],
+        },
+      ],
+      {
+        onevent: (event) => {
+          const { dTag, publicOrder } = eventToPublicOrder(event);
+
+          if (publicOrder) {
+            this.book[dTag] = publicOrder;
+          } else {
+            delete this.book[dTag];
+          }
+        },
+        oneose: () => {
+          this.exchange.loadingCoordinators = this.exchange.loadingCoordinators - 1;
+          this.loading = this.exchange.loadingCoordinators > 0;
+          this.updateExchange();
+          this.triggerHook('onFederationUpdate');
+        },
+        onclose: () => {
+          this.exchange.loadingCoordinators = this.exchange.loadingCoordinators - 1;
+          this.loading = this.exchange.loadingCoordinators > 0;
+          this.updateExchange();
+          this.triggerHook('onFederationUpdate');
+        },
+      },
+    );
+  };
 
   addCoordinator = (
     origin: Origin,
@@ -92,9 +144,12 @@ export class Federation {
   };
 
   onCoordinatorSaved = (): void => {
-    this.book = Object.values(this.coordinators).reduce<PublicOrder[]>((array, coordinator) => {
-      return [...array, ...coordinator.book];
-    }, []);
+    // this.book = Object.values(this.coordinators).reduce<Record<string, PublicOrder>>(
+    //   (book, coordinator) => {
+    //     return { ...book, ...coordinator.book };
+    //   },
+    //   {},
+    // );
     this.exchange.loadingCoordinators =
       this.exchange.loadingCoordinators < 1 ? 0 : this.exchange.loadingCoordinators - 1;
     this.loading = this.exchange.loadingCoordinators > 0;
@@ -126,6 +181,9 @@ export class Federation {
     this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
+
+    this.connectNostr();
+
     for (const coor of Object.values(this.coordinators)) {
       void coor.update(() => {
         this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
@@ -135,16 +193,16 @@ export class Federation {
   };
 
   updateBook = async (): Promise<void> => {
-    this.loading = true;
-    this.book = [];
-    this.triggerHook('onFederationUpdate');
-    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
-    for (const coor of Object.values(this.coordinators)) {
-      void coor.updateBook(() => {
-        this.onCoordinatorSaved();
-        this.triggerHook('onFederationUpdate');
-      });
-    }
+    // this.loading = true;
+    // this.book = [];
+    // this.triggerHook('onFederationUpdate');
+    // this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    // for (const coor of Object.values(this.coordinators)) {
+    //   void coor.updateBook(() => {
+    //     this.onCoordinatorSaved();
+    //     this.triggerHook('onFederationUpdate');
+    //   });
+    // }
   };
 
   updateExchange = (): void => {
