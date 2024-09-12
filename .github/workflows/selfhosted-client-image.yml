@@ -31,7 +31,7 @@ jobs:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: web-main-js
-        path: frontend/static/frontend/
+        path: nodeapp/static/frontend/
 
     - name: 'Download main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
