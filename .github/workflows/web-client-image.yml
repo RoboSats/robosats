@@ -31,14 +31,14 @@ jobs:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: web-main-js
-        path: frontend/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Download main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
         name: web-main-js
-        path: frontend/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Download pro.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
@@ -47,14 +47,14 @@ jobs:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: web-pro-js
-        path: frontend/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Download pro.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
         name: web-pro-js
-        path: frontend/static/frontend/
+        path: web/static/frontend/
 
     - name: 'Log in to Docker Hub'
       uses: docker/login-action@v3
