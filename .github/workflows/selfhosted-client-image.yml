@@ -30,14 +30,14 @@ jobs:
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
-        name: web-basic-selfhosted-js
+        name: web-main-js
         path: nodeapp/static/frontend/
 
     - name: 'Download main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
-        name: web-basic-selfhosted-js
+        name: web-main-js
         path: nodeapp/static/frontend/
 
     - name: 'Download pro.selfhosted.js Artifact'
@@ -46,14 +46,14 @@ jobs:
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
-        name: web-pro-selfhosted-js
+        name: web-pro-js
         path: nodeapp/static/frontend/
 
     - name: 'Download pro.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
-        name: web-pro-selfhosted-js
+        name: web-pro-js
         path: nodeapp/static/frontend/
 
     - name: 'Log in to Docker Hub'
