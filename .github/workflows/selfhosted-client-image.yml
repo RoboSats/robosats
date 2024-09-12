@@ -21,21 +21,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: 'Copy Static' # Needed since Github actions does not support symlinks
+      run: cp -r frontend/static nodeapp/static
+
     - name: 'Download basic.selfhosted.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
       uses: dawidd6/action-download-artifact@v6
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
-        name: web-basic-selfhosted-js
+        name: web-main-js
         path: frontend/static/frontend/
 
     - name: 'Download main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
-        name: web-basic-selfhosted-js
-        path: frontend/static/frontend/
+        name: web-main-js
+        path: nodeapp/static/frontend/
 
     - name: 'Download pro.selfhosted.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
@@ -43,15 +46,15 @@ jobs:
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
-        name: web-pro-selfhosted-js
-        path: frontend/static/frontend/
+        name: web-pro-js
+        path: nodeapp/static/frontend/
 
     - name: 'Download pro.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
-        name: web-pro-selfhosted-js
-        path: frontend/static/frontend/
+        name: web-pro-js
+        path: nodeapp/static/frontend/
 
     - name: 'Log in to Docker Hub'
       uses: docker/login-action@v3
