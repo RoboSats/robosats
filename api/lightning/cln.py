@@ -617,10 +617,10 @@ class CLNNode:
                         ]
                     )
 
-                    order.update_status(Order.Status.FAI)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.FAI)
                     )
+                    order.update_status(Order.Status.FAI)
                     order.save(update_fields=["expires_at"])
 
                     print(
@@ -646,10 +646,10 @@ class CLNNode:
                     )
                     lnpayment.preimage = response.payment_preimage.hex()
                     lnpayment.save(update_fields=["status", "fee", "preimage"])
-                    order.update_status(Order.Status.SUC)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.SUC)
                     )
+                    order.update_status(Order.Status.SUC)
                     order.save(update_fields=["expires_at"])
 
                     order.log(
@@ -697,10 +697,10 @@ class CLNNode:
                             ]
                         )
 
-                        order.update_status(Order.Status.FAI)
                         order.expires_at = timezone.now() + timedelta(
                             seconds=order.t_to_expire(Order.Status.FAI)
                         )
+                        order.update_status(Order.Status.FAI)
                         order.save(update_fields=["expires_at"])
 
                         print(
@@ -737,10 +737,10 @@ class CLNNode:
                                     "in_flight",
                                 ]
                             )
-                            order.update_status(Order.Status.FAI)
                             order.expires_at = timezone.now() + timedelta(
                                 seconds=order.t_to_expire(Order.Status.FAI)
                             )
+                            order.update_status(Order.Status.FAI)
                             order.save(update_fields=["expires_at"])
 
                             order.log(
