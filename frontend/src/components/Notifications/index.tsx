@@ -71,15 +71,7 @@ const Notifications = ({
 }: NotificationsProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-<<<<<<< HEAD
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-=======
-  const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
-  const defaultDelay = 5000;
-  const position = windowWidth > 60 ? { top: '4em', right: '0em' } : { top: '0.5em', left: '50%' };
->>>>>>> 29f784e9 (Web notifications)
-
-  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [inFocus, setInFocus] = useState<boolean>(true);
   const [titleAnimation, setTitleAnimation] = useState<NodeJS.Timer | undefined>(undefined);
@@ -88,11 +80,8 @@ const Notifications = ({
     new Date().toISOString(),
   );
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
-    setInterval(() => null, defaultDelay),
-  );
+  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() => setInterval(() => null, 10));
 
-<<<<<<< HEAD
   // Keep last values to trigger effects on change
   const [oldOrderStatus, setOldOrderStatus] = useState<number | undefined>(undefined);
   const [oldRewards, setOldRewards] = useState<number>(0);
@@ -105,12 +94,6 @@ const Notifications = ({
     navigate(`/order/${String(garage.getSlot()?.activeOrder?.id)}`);
     setShow(false);
   };
-=======
-  // // Keep last values to trigger effects on change
-  // const [oldOrderStatus, setOldOrderStatus] = useState<number | undefined>(undefined);
-  // const [oldRewards, setOldRewards] = useState<number>(0);
-  // const [oldChatIndex, setOldChatIndex] = useState<number>(0);
->>>>>>> 29f784e9 (Web notifications)
 
   interface MessagesProps {
     bondLocked: NotificationMessage;
@@ -220,10 +203,9 @@ const Notifications = ({
     },
   };
 
-<<<<<<< HEAD
   const notify = function (message: NotificationMessage): void {
     if (message.title !== '') {
-      setMessage(message);
+      // setMessage(message);
       setShow(true);
       setTimeout(() => {
         setShow(false);
@@ -247,9 +229,6 @@ const Notifications = ({
 
     if (order === undefined || order === null) return;
 
-=======
-  const handleStatus = function (notification: RoboNotification, order: Order): void {
->>>>>>> 29f784e9 (Web notifications)
     let message = emptyNotificationMessage;
 
     // Order status descriptions:
@@ -277,37 +256,37 @@ const Notifications = ({
       setShow(false);
     };
 
-    if (notification.order_status === 5) {
-      message = Messages.expired;
-    } else if (notification.order_status === 1) {
-      message = Messages.bondLocked;
-    } else if (order.is_taker && notification.order_status === 6) {
-      message = Messages.bondLocked;
-    } else if (order.is_maker && notification.order_status === 6) {
-      message = Messages.taken;
-    } else if (order.is_seller && notification.order_status > 7) {
-      message = Messages.escrowLocked;
-    } else if ([9, 10].includes(notification.order_status)) {
-      message = Messages.chat;
-    } else if (order.is_seller && [13, 14, 15].includes(notification.order_status)) {
-      message = Messages.successful;
-    } else if (order.is_buyer && notification.order_status === 14) {
-      message = Messages.successful;
-    } else if (order.is_buyer && notification.order_status === 15) {
-      message = Messages.routingFailed;
-    } else if (notification.order_status === 11) {
-      message = Messages.dispute;
-    } else if (
-      (order.is_maker && notification.order_status === 18) ||
-      (order.is_taker && notification.order_status === 17)
-    ) {
-      message = Messages.disputeWinner;
-    } else if (
-      (order.is_maker && notification.order_status === 17) ||
-      (order.is_taker && notification.order_status === 18)
-    ) {
-      message = Messages.disputeLoser;
-    }
+    // if (notification.order_status === 5) {
+    //   message = Messages.expired;
+    // } else if (notification.order_status === 1) {
+    //   message = Messages.bondLocked;
+    // } else if (order.is_taker && notification.order_status === 6) {
+    //   message = Messages.bondLocked;
+    // } else if (order.is_maker && notification.order_status === 6) {
+    //   message = Messages.taken;
+    // } else if (order.is_seller && notification.order_status > 7) {
+    //   message = Messages.escrowLocked;
+    // } else if ([9, 10].includes(notification.order_status)) {
+    //   message = Messages.chat;
+    // } else if (order.is_seller && [13, 14, 15].includes(notification.order_status)) {
+    //   message = Messages.successful;
+    // } else if (order.is_buyer && notification.order_status === 14) {
+    //   message = Messages.successful;
+    // } else if (order.is_buyer && notification.order_status === 15) {
+    //   message = Messages.routingFailed;
+    // } else if (notification.order_status === 11) {
+    //   message = Messages.dispute;
+    // } else if (
+    //   (order.is_maker && notification.order_status === 18) ||
+    //   (order.is_taker && notification.order_status === 17)
+    // ) {
+    //   message = Messages.disputeWinner;
+    // } else if (
+    //   (order.is_maker && notification.order_status === 17) ||
+    //   (order.is_taker && notification.order_status === 18)
+    // ) {
+    //   message = Messages.disputeLoser;
+    // }
 
     notify({
       ...message,
@@ -315,7 +294,6 @@ const Notifications = ({
     });
   };
 
-<<<<<<< HEAD
   // Notify on order status change
   useEffect(() => {
     const order = garage.getSlot()?.activeOrder;
@@ -331,24 +309,6 @@ const Notifications = ({
       }
     }
   }, [slotUpdatedAt]);
-=======
-  const notify: (message: NotificationMessage) => void = (message) => {
-    if (message.title !== '') {
-      setShow(true);
-      setTimeout(() => {
-        setShow(false);
-      }, message.timeout);
-      void audio.ding.play();
-      if (!inFocus) {
-        setTitleAnimation(
-          setInterval(() => {
-            const title = document.title;
-            document.title = title === basePageTitle ? message.pageTitle : basePageTitle;
-          }, 1000),
-        );
-      }
-    }
-  };
 
   const fetchNotifications: () => void = () => {
     clearInterval(timer);
@@ -365,11 +325,10 @@ const Notifications = ({
         });
     });
   };
->>>>>>> 29f784e9 (Web notifications)
 
   useEffect(() => {
     fetchNotifications();
-  }, [orderUpdatedAt, rewards]);
+  }, [rewards]);
 
   // Set blinking page title and clear on visibility change > infocus
   useEffect(() => {
