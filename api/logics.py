@@ -8,7 +8,11 @@ from django.utils import timezone
 
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
-from api.tasks import send_devfund_donation, send_status_notification, send_notification, nostr_send_order_event
+from api.tasks import (
+    send_devfund_donation,
+    send_status_notification,
+    nostr_send_order_event,
+)
 from api.utils import get_minning_fee, validate_onchain_address, location_country
 from chat.models import Message
 
@@ -1365,7 +1369,7 @@ class Logics:
         order.update_status(Order.Status.WF2)
 
         nostr_send_order_event.delay(order_id=order.id)
-        
+
         order.log(
             f"<b>Contract formalized.</b> Maker: Robot({order.maker.robot.id},{order.maker}). Taker: Robot({order.taker.robot.id},{order.taker}). API median price {order.currency.exchange_rate} {dict(Currency.currency_choices)[order.currency.currency]}/BTC. Premium is {order.premium}%. Contract size {order.last_satoshis} Sats"
         )
