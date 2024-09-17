@@ -21,9 +21,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: 'Copy Static' # Needed since Github actions does not support symlinks
-      run: cp -r frontend/static web/static
-
     - name: 'Download main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
       uses: dawidd6/action-download-artifact@v6
