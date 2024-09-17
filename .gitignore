@@ -646,10 +646,17 @@ docs/.jekyll-cache*
 docs/_site*
 node
 
-# mobile frontend statics
-mobile/html/Web.bundle/js*
-mobile/html/Web.bundle/css*
-mobile/html/Web.bundle/assets*
+# frontend statics
+mobile/html/Web.bundle/static/*
+# mobile/html/Web.bundle/index.html
+desktopApp/static/*
+# desktopApp/index.html
+web/static/*
+# web/basic.html
+# web/pro.html
+nodeapp/static/*
+# nodeapp/basic.html
+# nodeapp/pro.html
 
 # Protocol Buffers
 api/lightning/*.proto

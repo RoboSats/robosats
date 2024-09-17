@@ -5,7 +5,6 @@ declare global {
     ReactNativeWebView?: ReactNativeWebView;
     NativeRobosats?: NativeRobosats;
     RobosatsSettings: 'web-basic' | 'web-pro' | 'selfhosted-basic' | 'selfhosted-pro';
-    RobosatsClient: 'desktop-app' | undefined;
   }
 }
 

@@ -40,7 +40,6 @@ export interface SlideDirection {
 export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
 
 export const isNativeRoboSats = !(window.NativeRobosats === undefined);
-export const isDesktopRoboSats = !(window.RobosatsClient === undefined);
 
 const pageFromPath = window.location.pathname.split('/')[1];
 const isPagePathEmpty = pageFromPath === '';
@@ -76,13 +75,14 @@ const makeTheme = function (settings: Settings): Theme {
 };
 
 const getHostUrl = (network = 'mainnet'): string => {
+  const [client, _view] = window.RobosatsSettings.split('-');
   const randomAlias =
     Object.keys(defaultFederation)[
       Math.floor(Math.random() * Object.keys(defaultFederation).length)
     ];
   let host = defaultFederation[randomAlias][network].onion;
   let protocol = 'http:';
-  if (window.NativeRobosats === undefined) {
+  if (client !== 'mobile') {
     host = getHost();
     protocol = location.protocol;
   }
@@ -93,8 +93,9 @@ const getHostUrl = (network = 'mainnet'): string => {
 const getOrigin = (network = 'mainnet'): Origin => {
   const host = getHostUrl(network);
   let origin: Origin = 'onion';
+  const [client, _view] = window.RobosatsSettings.split('-');
 
-  if (window.NativeRobosats !== undefined || host.includes('.onion')) {
+  if (client === 'mobile' || client === 'desktop' || host.includes('.onion')) {
     origin = 'onion';
   } else if (host.includes('i2p')) {
     origin = 'i2p';
@@ -106,13 +107,13 @@ const getOrigin = (network = 'mainnet'): Origin => {
 };
 
 const getSettings = (): Settings => {
-  let settings = new Settings();
-  if (window.RobosatsSettings === 'selfhosted-basic') {
-    settings = new SettingsSelfhosted();
-  } else if (window.RobosatsSettings === 'selfhosted-pro') {
-    settings = new SettingsSelfhostedPro();
-  } else if (window.RobosatsSettings === 'web-pro') {
-    settings = new SettingsPro();
+  let settings;
+
+  const [client, view] = window.RobosatsSettings.split('-');
+  if (client === 'selfhosted') {
+    settings = view === 'pro' ? new SettingsSelfhostedPro() : new SettingsSelfhosted();
+  } else {
+    settings = view === 'pro' ? new SettingsPro() : new Settings();
   }
 
   return settings;
@@ -152,6 +153,8 @@ export interface UseAppStoreType {
   fav: Favorites;
   setFav: Dispatch<SetStateAction<Favorites>>;
   worldmap?: GeoJsonObject;
+  client: 'mobile' | 'web' | 'desktop' | string;
+  view: 'basic' | 'pro' | string;
 }
 
 export const initialAppContext: UseAppStoreType = {
@@ -178,6 +181,8 @@ export const initialAppContext: UseAppStoreType = {
   fav: { type: null, currency: 0, mode: 'fiat', coordinator: 'any' },
   setFav: () => {},
   worldmap: undefined,
+  client: 'web',
+  view: 'basic',
 };
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
@@ -191,6 +196,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
   const clientVersion = initialAppContext.clientVersion;
   const hostUrl = initialAppContext.hostUrl;
   const origin = initialAppContext.origin;
+  const [client, view] = window.RobosatsSettings.split('-');
 
   const [settings, setSettings] = useState<Settings>(getSettings());
   const [theme, setTheme] = useState<Theme>(() => {
@@ -286,6 +292,8 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
         fav,
         setFav,
         worldmap,
+        client,
+        view,
       }}
     >
       <ThemeProvider theme={theme}>{children}</ThemeProvider>

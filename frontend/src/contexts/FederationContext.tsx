@@ -46,7 +46,7 @@ export const FederationContext = createContext<UseFederationStoreType>(initialFe
 export const FederationContextProvider = ({
   children,
 }: FederationContextProviderProps): JSX.Element => {
-  const { settings, page, origin, hostUrl, open, torStatus } =
+  const { settings, page, origin, hostUrl, open, torStatus, client } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
@@ -66,7 +66,7 @@ export const FederationContextProvider = ({
   }, []);
 
   useEffect(() => {
-    if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
+    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
       void federation.update();
     }

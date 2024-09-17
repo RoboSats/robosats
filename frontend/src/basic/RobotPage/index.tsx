@@ -24,7 +24,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const RobotPage = (): JSX.Element => {
-  const { torStatus, windowSize, settings, page } = useContext<UseAppStoreType>(AppContext);
+  const { torStatus, windowSize, settings, page, client } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ const RobotPage = (): JSX.Element => {
     const token = urlToken ?? garage.currentSlot;
     if (token !== undefined && token !== null && page === 'robot') {
       setInputToken(token);
-      if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
+      if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
         setView('profile');
       }
     }
@@ -82,7 +82,7 @@ const RobotPage = (): JSX.Element => {
     garage.deleteSlot();
   };
 
-  if (settings.useProxy && !(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
+  if (settings.useProxy && client === 'mobile' && !(torStatus === 'ON')) {
     return (
       <Paper
         elevation={12}

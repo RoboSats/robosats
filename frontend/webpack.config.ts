@@ -1,6 +1,8 @@
 import path from 'path';
 import { Configuration } from 'webpack';
 import CopyPlugin from 'copy-webpack-plugin';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { version } from './package.json';
 
 const config: Configuration = {
   entry: './src/index.js',
@@ -24,12 +26,82 @@ const config: Configuration = {
   },
 };
 
-const configWeb: Configuration = {
+const configNode: Configuration = {
   ...config,
   output: {
     path: path.resolve(__dirname, 'static/frontend'),
-    filename: 'main.js',
+    filename: `main.v${version}.[contenthash].js`,
+    clean: true,
+    publicPath: '/static/frontend/',
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
+      filename: path.resolve(__dirname, '../nodeapp/basic.html'),
+      robosatsSettings: 'selfhosted-basic',
+      inject: 'body',
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/pro.html'),
+      filename: path.resolve(__dirname, '../nodeapp/pro.html'),
+      robosatsSettings: 'selfhosted-pro',
+      inject: 'body',
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
+      filename: path.resolve(__dirname, '../web/basic.html'),
+      robosatsSettings: 'web-basic',
+      inject: 'body',
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/pro.html'),
+      filename: path.resolve(__dirname, '../web/pro.html'),
+      robosatsSettings: 'web-pro',
+      inject: 'body',
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../nodeapp/static'),
+        },
+      ],
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../web/static'),
+        },
+      ],
+    }),
+  ],
+};
+
+const configDesktop: Configuration = {
+  ...config,
+  output: {
+    path: path.resolve(__dirname, '../desktopApp/static/frontend'),
+    filename: `main.v${version}.[contenthash].js`,
+    clean: true,
+    publicPath: '/static/frontend/',
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
+      filename: path.resolve(__dirname, '../desktopApp/index.html'),
+      robosatsSettings: 'desktop-basic',
+      inject: 'body',
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../desktopApp/static'),
+        },
+      ],
+    }),
+  ],
 };
 
 const configMobile: Configuration = {
@@ -80,27 +152,27 @@ const configMobile: Configuration = {
     ],
   },
   plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
+      filename: path.resolve(__dirname, '../mobile/html/Web.bundle/index.html'),
+      robosatsSettings: 'mobile-basic',
+      inject: 'body',
+    }),
     new CopyPlugin({
       patterns: [
         {
           from: path.resolve(__dirname, 'static/css'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/css'),
-        },
-        {
-          from: path.resolve(__dirname, 'static/assets/sounds'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
-        },
-        {
-          from: path.resolve(__dirname, 'static/federation'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/federation'),
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/static'),
         },
       ],
     }),
   ],
   output: {
-    path: path.resolve(__dirname, '../mobile/html/Web.bundle/js'),
-    filename: 'main.js',
+    path: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
+    filename: `main.v${version}.[contenthash].js`,
+    clean: true,
+    publicPath: '/static/frontend/',
   },
 };
 
-export default [configWeb, configMobile];
+export default [configNode, configDesktop, configMobile];
