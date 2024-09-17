@@ -4,8 +4,8 @@ import SelfhostedAlert from './SelfhostedAlert';
 import UnsafeAlert from './UnsafeAlert';
 
 const HostAlert = (): JSX.Element => {
-  const { settings } = useContext<UseAppStoreType>(AppContext);
-  const component = settings.selfhostedClient ? SelfhostedAlert : UnsafeAlert;
+  const { client } = useContext<UseAppStoreType>(AppContext);
+  const component = client === 'selfhosted' || client === 'desktop' ? SelfhostedAlert : UnsafeAlert;
   return component();
 };
 

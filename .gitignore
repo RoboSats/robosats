@@ -634,6 +634,7 @@ frontend/static/assets/avatars*
 api/lightning/*_grpc.py
 api/lightning/*_pb2.py
 api/lightning/pymp*
+api/lightning/pip*
 frontend/static/locales/collected_phrases.json
 frontend/static/admin*
 frontend/static/rest_framework*
@@ -648,15 +649,15 @@ node
 
 # frontend statics
 mobile/html/Web.bundle/static/*
-# mobile/html/Web.bundle/index.html
+mobile/html/Web.bundle/index.html
 desktopApp/static/*
-# desktopApp/index.html
+desktopApp/index.html
 web/static/*
-# web/basic.html
-# web/pro.html
+web/basic.html
+web/pro.html
 nodeapp/static/*
-# nodeapp/basic.html
-# nodeapp/pro.html
+nodeapp/basic.html
+nodeapp/pro.html
 
 # Protocol Buffers
 api/lightning/*.proto

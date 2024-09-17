@@ -32,7 +32,7 @@ const configNode: Configuration = {
     path: path.resolve(__dirname, 'static/frontend'),
     filename: `main.v${version}.[contenthash].js`,
     clean: true,
-    publicPath: '/static/frontend/',
+    publicPath: './static/frontend/',
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -84,7 +84,7 @@ const configDesktop: Configuration = {
     path: path.resolve(__dirname, '../desktopApp/static/frontend'),
     filename: `main.v${version}.[contenthash].js`,
     clean: true,
-    publicPath: '/static/frontend/',
+    publicPath: './static/frontend/',
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -171,7 +171,7 @@ const configMobile: Configuration = {
     path: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
     filename: `main.v${version}.[contenthash].js`,
     clean: true,
-    publicPath: '/static/frontend/',
+    publicPath: './static/frontend/',
   },
 };
 
