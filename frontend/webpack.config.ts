@@ -1,6 +1,6 @@
 import path from 'path';
 import { Configuration } from 'webpack';
-import CopyPlugin from 'copy-webpack-plugin';
+import FileManagerPlugin from 'filemanager-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { version } from './package.json';
 
@@ -35,7 +35,7 @@ const configNode: Configuration = {
     publicPath: './static/frontend/',
   },
   plugins: [
-    // Django HTML
+    // Django
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
@@ -54,7 +54,7 @@ const configNode: Configuration = {
       inject: 'body',
       robosatsSettings: 'web-pro',
     }),
-    // Node App HTML
+    // Node App
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
@@ -73,15 +73,19 @@ const configNode: Configuration = {
       inject: 'body',
       robosatsSettings: 'selfhosted-pro',
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'static'),
-          to: path.resolve(__dirname, '../nodeapp/static'),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, 'static'),
+              destination: path.resolve(__dirname, '../nodeapp/static'),
+            },
+          ],
         },
-      ],
+      },
     }),
-    // Desktop App HTML
+    // Desktop App
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
@@ -91,15 +95,19 @@ const configNode: Configuration = {
       inject: 'body',
       robosatsSettings: 'desktop-basic',
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'static'),
-          to: path.resolve(__dirname, '../desktopApp/static'),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, 'static'),
+              destination: path.resolve(__dirname, '../desktopApp/static'),
+            },
+          ],
         },
-      ],
+      },
     }),
-    // Web App HTML
+    // Web App
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
@@ -118,13 +126,17 @@ const configNode: Configuration = {
       inject: 'body',
       robosatsSettings: 'web-pro',
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'static'),
-          to: path.resolve(__dirname, '../web/static'),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, 'static'),
+              destination: path.resolve(__dirname, '../web/static'),
+            },
+          ],
         },
-      ],
+      },
     }),
   ],
 };
@@ -186,13 +198,17 @@ const configMobile: Configuration = {
       inject: 'body',
       robosatsSettings: 'mobile-basic',
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'static/css'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/static'),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, 'static/css'),
+              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/static'),
+            },
+          ],
         },
-      ],
+      },
     }),
   ],
   output: {
