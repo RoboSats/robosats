@@ -33,7 +33,7 @@ public class MainActivity extends ReactActivity {
         SharedPreferences sharedPreferences =
                 getApplicationContext()
                         .getSharedPreferences(PREFS_NAME, ReactApplicationContext.MODE_PRIVATE);
-        String stop_notifications =sharedPreferences.getString(KEY_DATA, "false");
+        String stop_notifications = sharedPreferences.getString(KEY_DATA, "false");
         if (!Boolean.parseBoolean(stop_notifications)) {
             Intent serviceIntent = new Intent(getApplicationContext(), NotificationsService.class);
             getApplicationContext().startService(serviceIntent);
@@ -92,7 +92,7 @@ public class MainActivity extends ReactActivity {
           SharedPreferences sharedPreferences =
                   getApplicationContext()
                           .getSharedPreferences(PREFS_NAME, ReactApplicationContext.MODE_PRIVATE);
-          String stop_notifications =sharedPreferences.getString(KEY_DATA, "false");
+          String stop_notifications = sharedPreferences.getString(KEY_DATA, "false");
           if (!Boolean.parseBoolean(stop_notifications)) {
               Intent serviceIntent = new Intent(getApplicationContext(), NotificationsService.class);
               getApplicationContext().startService(serviceIntent);
