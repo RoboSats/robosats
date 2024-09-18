@@ -12,9 +12,10 @@ import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContex
 import Routes from './Routes';
 
 const getRouter = (): any => {
-  if (window.NativeRobosats === undefined && window.RobosatsClient === undefined) {
+  const [client, _view] = window.RobosatsSettings.split('-');
+  if (client === 'web') {
     return BrowserRouter;
-  } else if (window.RobosatsClient === 'desktop-app') {
+  } else if (client === 'desktop') {
     return HashRouter;
   } else {
     return MemoryRouter;

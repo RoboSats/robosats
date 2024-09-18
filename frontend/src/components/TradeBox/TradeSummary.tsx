@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
@@ -37,6 +37,7 @@ import {
 } from '../Icons';
 import { type TradeCoordinatorSummary, type TradeRobotSummary } from '../../models/Order.model';
 import { systemClient } from '../../services/System';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
   isMaker: boolean;
@@ -61,6 +62,7 @@ const TradeSummary = ({
   platformSummary,
   orderId,
 }: Props): JSX.Element => {
+  const { client } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -81,7 +83,7 @@ const TradeSummary = ({
       taker: takerSummary,
       platform: platformSummary,
     };
-    if (window.NativeRobosats === undefined) {
+    if (client !== 'mobile') {
       saveAsJson(`order${orderId}-summary.json`, summary);
     } else {
       systemClient.copyToClipboard(JSON.stringify(summary));

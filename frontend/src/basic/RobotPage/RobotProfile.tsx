@@ -43,7 +43,7 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): JSX.Element => {
-  const { windowSize } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, client } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
@@ -317,7 +317,7 @@ const RobotProfile = ({
                 </LoadingButton>
               </Grid>
 
-              {window.NativeRobosats === undefined ? (
+              {client !== 'mobile' ? (
                 <Grid item>
                   <Button
                     color='primary'

@@ -47,7 +47,9 @@ class BaseSettings {
     this.host = getHost();
 
     const useProxy = systemClient.getItem('settings_use_proxy');
-    this.useProxy = window.NativeRobosats !== undefined && useProxy !== 'false';
+
+    const [client, _view] = window.RobosatsSettings.split('-');
+    this.useProxy = client === 'mobile' && useProxy !== 'false';
 
     apiClient.useProxy = this.useProxy;
   }

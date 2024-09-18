@@ -64,7 +64,7 @@ export const GarageContext = createContext<UseGarageStoreType>(initialGarageCont
 
 export const GarageContextProvider = ({ children }: GarageContextProviderProps): JSX.Element => {
   // All garage data structured
-  const { settings, torStatus, open, page } = useContext<UseAppStoreType>(AppContext);
+  const { settings, torStatus, open, page, client } = useContext<UseAppStoreType>(AppContext);
   const pageRef = useRef(page);
   const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const [garage] = useState<Garage>(initialGarageContext.garage);
@@ -93,14 +93,14 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
   }, []);
 
   useEffect(() => {
-    if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
+    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       const token = garage.getSlot()?.token;
       if (token) void garage.fetchRobot(federation, token);
     }
   }, [settings.network, settings.useProxy, torStatus]);
 
   useEffect(() => {
-    if (window.NativeRobosats !== undefined && !systemClient.loading) {
+    if (client === 'mobile' && !systemClient.loading) {
       garage.loadSlots();
     }
   }, [systemClient.loading]);

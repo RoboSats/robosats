@@ -15,6 +15,7 @@ import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
 
 const App = (): JSX.Element => {
+  const [client, _view] = window.RobosatsSettings.split('-');
   return (
     <StrictMode>
       <ErrorBoundary>
@@ -24,11 +25,7 @@ const App = (): JSX.Element => {
               <FederationContextProvider>
                 <GarageContextProvider>
                   <CssBaseline />
-                  {window.NativeRobosats === undefined && window.RobosatsClient === undefined ? (
-                    <HostAlert />
-                  ) : (
-                    <TorConnectionBadge />
-                  )}
+                  {client !== 'mobile' ? <HostAlert /> : <TorConnectionBadge />}
                   <Main />
                 </GarageContextProvider>
               </FederationContextProvider>

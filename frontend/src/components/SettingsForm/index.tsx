@@ -37,7 +37,7 @@ interface SettingsFormProps {
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
-  const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
+  const { fav, setFav, settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -237,7 +237,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
             </ToggleButtonGroup>
           </ListItem>
 
-          {window.NativeRobosats !== undefined && (
+          {client === 'mobile' && (
             <ListItem>
               <ListItemIcon>
                 <TorIcon />
