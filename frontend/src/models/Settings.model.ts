@@ -46,11 +46,13 @@ class BaseSettings {
     this.network = networkCookie && networkCookie !== '' ? networkCookie : 'mainnet';
     this.host = getHost();
 
-    const useProxy = systemClient.getItem('settings_use_proxy');
-
     const [client, _view] = window.RobosatsSettings.split('-');
-    this.useProxy = client === 'mobile' && useProxy !== 'false';
 
+    const stopNotifications = systemClient.getItem('settings_stop_notifications');
+    this.stopNotifications = client === 'mobile' && stopNotifications === 'true';
+
+    const useProxy = systemClient.getItem('settings_use_proxy');
+    this.useProxy = client === 'mobile' && useProxy !== 'false';
     apiClient.useProxy = this.useProxy;
   }
 
@@ -65,6 +67,7 @@ class BaseSettings {
   public unsafeClient: boolean = false;
   public selfhostedClient: boolean = false;
   public useProxy: boolean;
+  public stopNotifications: boolean;
 }
 
 export default BaseSettings;

@@ -348,7 +348,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
   const { t } = useTranslation();
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const coordinator = federation.getCoordinator(shortAlias);
+  const coordinator = federation.getCoordinator(shortAlias ?? '');
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
 

@@ -1,7 +1,7 @@
 import React, { StrictMode, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, Grid } from '@mui/material';
 import HostAlert from './components/HostAlert';
 import TorConnectionBadge from './components/TorConnection';
 
@@ -13,6 +13,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AppContextProvider } from './contexts/AppContext';
 import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
+import NotificationSwitchBadge from './components/NotificationSwitch';
 
 const App = (): JSX.Element => {
   const [client, _view] = window.RobosatsSettings.split('-');
@@ -25,7 +26,14 @@ const App = (): JSX.Element => {
               <FederationContextProvider>
                 <GarageContextProvider>
                   <CssBaseline />
-                  {client !== 'mobile' ? <HostAlert /> : <TorConnectionBadge />}
+                  {client === 'mobile' ? (
+                    <>
+                      <TorConnectionBadge />
+                      <NotificationSwitchBadge />
+                    </>
+                  ) : (
+                    <HostAlert />
+                  )}
                   <Main />
                 </GarageContextProvider>
               </FederationContextProvider>

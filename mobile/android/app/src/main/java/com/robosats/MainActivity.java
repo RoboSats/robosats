@@ -2,6 +2,7 @@ package com.robosats;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
@@ -12,6 +13,7 @@ import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.ReactRootView;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -25,8 +27,17 @@ public class MainActivity extends ReactActivity {
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATIONS);
     } else {
-        Intent serviceIntent = new Intent(getApplicationContext(), NotificationsService.class);
-        getApplicationContext().startService(serviceIntent);
+        String PREFS_NAME = "System";
+        String KEY_DATA = "Notifications";
+
+        SharedPreferences sharedPreferences =
+                getApplicationContext()
+                        .getSharedPreferences(PREFS_NAME, ReactApplicationContext.MODE_PRIVATE);
+        String stop_notifications =sharedPreferences.getString(KEY_DATA, "false");
+        if (!Boolean.parseBoolean(stop_notifications)) {
+            Intent serviceIntent = new Intent(getApplicationContext(), NotificationsService.class);
+            getApplicationContext().startService(serviceIntent);
+        }
     }
 
     Intent intent = getIntent();
@@ -75,8 +86,17 @@ public class MainActivity extends ReactActivity {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-          Intent serviceIntent = new Intent(getApplicationContext(), NotificationsService.class);
-          getApplicationContext().startService(serviceIntent);
+          String PREFS_NAME = "System";
+          String KEY_DATA = "Notifications";
+
+          SharedPreferences sharedPreferences =
+                  getApplicationContext()
+                          .getSharedPreferences(PREFS_NAME, ReactApplicationContext.MODE_PRIVATE);
+          String stop_notifications =sharedPreferences.getString(KEY_DATA, "false");
+          if (!Boolean.parseBoolean(stop_notifications)) {
+              Intent serviceIntent = new Intent(getApplicationContext(), NotificationsService.class);
+              getApplicationContext().startService(serviceIntent);
+          }
       } else {
         // Permission denied, handle accordingly
         // Maybe show a message to the user explaining why the permission is necessary
