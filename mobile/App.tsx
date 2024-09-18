@@ -97,7 +97,7 @@ const App = () => {
       SystemModule.useProxy(useProxy ?? 'true');
     });
     loadCookie('settings_stop_notifications').then((stopNotifications) => {
-      SystemModule.stopNotifications(stopNotifications ?? 'true');
+      SystemModule.stopNotifications(stopNotifications ?? 'false');
     });
     loadCookie('garage_slots').then((slots) => {
       NotificationsModule.monitorOrders(slots ?? '{}');
