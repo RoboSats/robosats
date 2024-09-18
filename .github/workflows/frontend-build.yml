@@ -50,10 +50,10 @@ jobs:
         export NODE_OPTIONS="--max-old-space-size=4096"
         cd frontend
         npm run build
-    - name: 'Archive Web Static Build Results'
+    - name: 'Archive Django Static Build Results'
       uses: actions/upload-artifact@v4
       with:
-        name: web-main-static
+        name: django-main-static
         path: |
           frontend/static
           frontend/templates/frontend/*.html
@@ -71,6 +71,13 @@ jobs:
         path: |
           desktopApp/static
           desktopApp/*.html
+    - name: 'Archive Django Static Build Results'
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-main-static
+        path: |
+          web/static
+          web/*.html
     - name: 'Archive Mobile Build Results'
       uses: actions/upload-artifact@v4
       with:
