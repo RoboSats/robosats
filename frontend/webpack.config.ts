@@ -32,7 +32,7 @@ const configNode: Configuration = {
     path: path.resolve(__dirname, 'static/frontend'),
     filename: `main.v${version}.[contenthash].js`,
     clean: true,
-    publicPath: './static/frontend/',
+    publicPath: '/static/frontend/',
   },
   plugins: [
     // Django
@@ -44,6 +44,7 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, 'templates/frontend/basic.html'),
       inject: 'body',
       robosatsSettings: 'web-basic',
+      basePath: '/',
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -53,6 +54,7 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, 'templates/frontend/pro.html'),
       inject: 'body',
       robosatsSettings: 'web-pro',
+      basePath: '/',
     }),
     // Node App
     new HtmlWebpackPlugin({
@@ -63,6 +65,7 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, '../nodeapp/basic.html'),
       inject: 'body',
       robosatsSettings: 'selfhosted-basic',
+      basePath: '/',
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -72,6 +75,7 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, '../nodeapp/pro.html'),
       inject: 'body',
       robosatsSettings: 'selfhosted-pro',
+      basePath: '/',
     }),
     new FileManagerPlugin({
       events: {
@@ -94,6 +98,7 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, '../desktopApp/index.html'),
       inject: 'body',
       robosatsSettings: 'desktop-basic',
+      basePath: '/',
     }),
     new FileManagerPlugin({
       events: {
@@ -116,6 +121,7 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, '../web/basic.html'),
       inject: 'body',
       robosatsSettings: 'web-basic',
+      basePath: '/',
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -125,6 +131,7 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, '../web/pro.html'),
       inject: 'body',
       robosatsSettings: 'web-pro',
+      basePath: '/',
     }),
     new FileManagerPlugin({
       events: {
@@ -188,6 +195,12 @@ const configMobile: Configuration = {
       },
     ],
   },
+  output: {
+    path: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
+    filename: `main.v${version}.[contenthash].js`,
+    clean: true,
+    publicPath: './static/frontend/',
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -197,6 +210,7 @@ const configMobile: Configuration = {
       filename: path.resolve(__dirname, '../mobile/html/Web.bundle/index.html'),
       inject: 'body',
       robosatsSettings: 'mobile-basic',
+      basePath: './',
     }),
     new FileManagerPlugin({
       events: {
@@ -204,19 +218,21 @@ const configMobile: Configuration = {
           copy: [
             {
               source: path.resolve(__dirname, 'static/css'),
-              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/static'),
+              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/static/css'),
+            },
+            {
+              source: path.resolve(__dirname, 'static/assets/sounds'),
+              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
+            },
+            {
+              source: path.resolve(__dirname, 'static/federation'),
+              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/federation'),
             },
           ],
         },
       },
     }),
   ],
-  output: {
-    path: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
-    filename: `main.v${version}.[contenthash].js`,
-    clean: true,
-    publicPath: './static/frontend/',
-  },
 };
 
 export default [configNode, configMobile];

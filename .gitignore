@@ -642,7 +642,7 @@ frontend/static/import_export*
 frontend/static/drf_spectacular_sidecar/
 frontend/src/components/PaymentMethods/Icons/code*
 frontend/src/components/PaymentMethods/Icons/webp*
-frontend/static/frontend/**
+frontend/static/frontend
 docs/.jekyll-cache*
 docs/_site*
 node
@@ -650,13 +650,12 @@ desktopApp/release-builds
 
 # frontend statics
 frontend/templates/frontend/*.html
-mobile/html/Web.bundle/static/*
-mobile/html/Web.bundle/*.html
-desktopApp/static/*
+mobile/html/Web.bundle
+desktopApp/static
 desktopApp/*.html
-web/static/*
+web/static
 web/*.html
-nodeapp/static/*
+nodeapp/static
 nodeapp/*.html
 
 # Protocol Buffers
