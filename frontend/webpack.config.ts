@@ -35,30 +35,72 @@ const configNode: Configuration = {
     publicPath: './static/frontend/',
   },
   plugins: [
+    // Django HTML
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
-      filename: path.resolve(__dirname, '../nodeapp/basic.html'),
-      robosatsSettings: 'selfhosted-basic',
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: false,
+      },
+      filename: path.resolve(__dirname, 'templates/frontend/basic.html'),
       inject: 'body',
-    }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'templates/frontend/pro.html'),
-      filename: path.resolve(__dirname, '../nodeapp/pro.html'),
-      robosatsSettings: 'selfhosted-pro',
-      inject: 'body',
-    }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
-      filename: path.resolve(__dirname, '../web/basic.html'),
       robosatsSettings: 'web-basic',
-      inject: 'body',
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'templates/frontend/pro.html'),
-      filename: path.resolve(__dirname, '../web/pro.html'),
-      robosatsSettings: 'web-pro',
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: true,
+      },
+      filename: path.resolve(__dirname, 'templates/frontend/pro.html'),
       inject: 'body',
+      robosatsSettings: 'web-pro',
     }),
+    // Node App HTML
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: false,
+      },
+      filename: path.resolve(__dirname, '../nodeapp/basic.html'),
+      inject: 'body',
+      robosatsSettings: 'selfhosted-basic',
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: true,
+      },
+      filename: path.resolve(__dirname, '../nodeapp/pro.html'),
+      inject: 'body',
+      robosatsSettings: 'selfhosted-pro',
+    }),
+    // Desktop App HTML
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: false,
+      },
+      filename: path.resolve(__dirname, '../desktopApp/index.html'),
+      inject: 'body',
+      robosatsSettings: 'desktop-basic',
+    }),
+    // Web App HTML
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'templates/frontend/basic.html'),
+          to: path.resolve(__dirname, '../web/basic.html'),
+        },
+      ],
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'templates/frontend/pro.html'),
+          to: path.resolve(__dirname, '../web/pro.html'),
+        },
+      ],
+    }),
+    // Static files
     new CopyPlugin({
       patterns: [
         {
@@ -74,24 +116,6 @@ const configNode: Configuration = {
           to: path.resolve(__dirname, '../web/static'),
         },
       ],
-    }),
-  ],
-};
-
-const configDesktop: Configuration = {
-  ...config,
-  output: {
-    path: path.resolve(__dirname, '../desktopApp/static/frontend'),
-    filename: `main.v${version}.[contenthash].js`,
-    clean: true,
-    publicPath: './static/frontend/',
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
-      filename: path.resolve(__dirname, '../desktopApp/index.html'),
-      robosatsSettings: 'desktop-basic',
-      inject: 'body',
     }),
     new CopyPlugin({
       patterns: [
@@ -153,10 +177,13 @@ const configMobile: Configuration = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'templates/frontend/basic.html'),
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: false,
+      },
       filename: path.resolve(__dirname, '../mobile/html/Web.bundle/index.html'),
-      robosatsSettings: 'mobile-basic',
       inject: 'body',
+      robosatsSettings: 'mobile-basic',
     }),
     new CopyPlugin({
       patterns: [
@@ -175,4 +202,4 @@ const configMobile: Configuration = {
   },
 };
 
-export default [configNode, configDesktop, configMobile];
+export default [configNode, configMobile];

@@ -10,10 +10,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="A simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. No user registration required.">
+    <% if (pro) { %>
+    <title>RoboSats PRO - Simple and Private Bitcoin Exchange</title>
 
+    <link rel="stylesheet" href="./static/css_pro/fonts.css"/>
+    <link rel="stylesheet" type="text/css" href="./static/css_pro/react-grid-layout.css"/>
+    <link rel="stylesheet" type="text/css" href="./static/css_pro/react-resizable.css"/>
+    <% } else { %>
     <title>RoboSats - Simple and Private Bitcoin Exchange</title>
-    {% load static %}
+
     <link rel="stylesheet" href="./static/css/fonts.css"/>
+    <% } %>
+    {% load static %}
     <link rel="stylesheet" type="text/css" href="./static/css/loader.css"/>
     <link rel="stylesheet" type="text/css" href="./static/css/index.css"/>
     <link rel="stylesheet" type="text/css" href="./static/css/leaflet.css"/>
