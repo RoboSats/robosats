@@ -96,6 +96,9 @@ const App = () => {
     loadCookie('settings_use_proxy').then((useProxy) => {
       SystemModule.useProxy(useProxy ?? 'true');
     });
+    loadCookie('settings_stop_notifications').then((stopNotifications) => {
+      SystemModule.stopNotifications(stopNotifications ?? 'true');
+    });
     loadCookie('garage_slots').then((slots) => {
       NotificationsModule.monitorOrders(slots ?? '{}');
       injectMessageResolve(responseId);
@@ -161,6 +164,8 @@ const App = () => {
           NotificationsModule.monitorOrders(data.detail ?? '{}');
         } else if (data.key === 'settings_use_proxy') {
           SystemModule.useProxy(data.detail ?? 'true');
+        } else if (data.key === 'settings_stop_notifications') {
+          SystemModule.stopNotifications(data.detail ?? 'false');
         }
       } else if (data.type === 'deleteCookie') {
         EncryptedStorage.removeItem(data.key);
