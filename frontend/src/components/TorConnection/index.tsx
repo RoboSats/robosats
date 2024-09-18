@@ -55,8 +55,12 @@ const TorIndicator = ({
 };
 
 const TorConnectionBadge = (): JSX.Element => {
-  const { torStatus } = useContext<UseAppStoreType>(AppContext);
+  const { torStatus, settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
+
+  if (!settings.useProxy) {
+    return <></>;
+  }
 
   if (torStatus === 'OFF' || torStatus === 'STOPPING') {
     return (
