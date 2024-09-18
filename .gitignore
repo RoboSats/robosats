@@ -646,6 +646,7 @@ frontend/static/frontend/**
 docs/.jekyll-cache*
 docs/_site*
 node
+desktopApp/release-builds
 
 # frontend statics
 frontend/templates/frontend/*.html

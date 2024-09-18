@@ -73,6 +73,14 @@ const configNode: Configuration = {
       inject: 'body',
       robosatsSettings: 'selfhosted-pro',
     }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../nodeapp/static'),
+        },
+      ],
+    }),
     // Desktop App HTML
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -82,6 +90,14 @@ const configNode: Configuration = {
       filename: path.resolve(__dirname, '../desktopApp/index.html'),
       inject: 'body',
       robosatsSettings: 'desktop-basic',
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../desktopApp/static'),
+        },
+      ],
     }),
     // Web App HTML
     new HtmlWebpackPlugin({
@@ -102,28 +118,11 @@ const configNode: Configuration = {
       inject: 'body',
       robosatsSettings: 'web-pro',
     }),
-    // Static files
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'static'),
-          to: path.resolve(__dirname, '../nodeapp/static'),
-        },
-      ],
-    }),
     new CopyPlugin({
       patterns: [
         {
           from: path.resolve(__dirname, 'static'),
           to: path.resolve(__dirname, '../web/static'),
-        },
-      ],
-    }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'static'),
-          to: path.resolve(__dirname, '../desktopApp/static'),
         },
       ],
     }),
