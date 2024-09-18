@@ -11,9 +11,10 @@ class FrontendFetchTest(TestCase):
         response = self.client.get(path)
         self.assertContains(response, "<html>")
         self.assertContains(response, "RoboSats -")
+        self.assertContains(response, "static/frontend/main.v")
 
     def test_pro_frontend_url_content(self):
         path = reverse("pro")
         response = self.client.get(path)
         self.assertContains(response, "<html>")
-        self.assertContains(response, "RoboSats PRO -")
+        self.assertContains(response, "static/frontend/main.v")

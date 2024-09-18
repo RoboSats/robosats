@@ -84,21 +84,23 @@ const configNode: Configuration = {
       robosatsSettings: 'desktop-basic',
     }),
     // Web App HTML
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'templates/frontend/basic.html'),
-          to: path.resolve(__dirname, '../web/basic.html'),
-        },
-      ],
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: false,
+      },
+      filename: path.resolve(__dirname, '../web/basic.html'),
+      inject: 'body',
+      robosatsSettings: 'web-basic',
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'templates/frontend/pro.html'),
-          to: path.resolve(__dirname, '../web/pro.html'),
-        },
-      ],
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: true,
+      },
+      filename: path.resolve(__dirname, '../web/pro.html'),
+      inject: 'body',
+      robosatsSettings: 'web-pro',
     }),
     // Static files
     new CopyPlugin({

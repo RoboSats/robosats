@@ -648,16 +648,15 @@ docs/_site*
 node
 
 # frontend statics
+frontend/templates/frontend/*.html
 mobile/html/Web.bundle/static/*
-mobile/html/Web.bundle/index.html
+mobile/html/Web.bundle/*.html
 desktopApp/static/*
-desktopApp/index.html
+desktopApp/*.html
 web/static/*
-web/basic.html
-web/pro.html
+web/*.html
 nodeapp/static/*
-nodeapp/basic.html
-nodeapp/pro.html
+nodeapp/*.html
 
 # Protocol Buffers
 api/lightning/*.proto
