@@ -144,9 +144,17 @@ public class NotificationsService extends Service {
                 JSONObject slot = (JSONObject) slots.get(robotToken);
                 JSONObject robots = slot.getJSONObject("robots");
                 JSONObject coordinatorRobot;
-                String shortAlias = slot.getString("activeShortAlias");
-                coordinatorRobot = robots.getJSONObject(shortAlias);
-                fetchNotifications(coordinatorRobot, shortAlias);
+                String shortAlias = "";
+                if (slot.has("activeShortAlias")) {
+                    shortAlias = slot.getString("activeShortAlias");
+                } else if (slot.has("activeOrder") && !slot.isNull("activeOrder")) {
+                    JSONObject activeOrder = slot.getJSONObject("activeOrder");
+                    shortAlias = activeOrder.getString("shortAlias");
+                }
+                if (!shortAlias.isBlank()) {
+                    coordinatorRobot = robots.getJSONObject(shortAlias);
+                    fetchNotifications(coordinatorRobot, shortAlias);
+                }
             }
         } catch (JSONException | InterruptedException e) {
             Log.d("NotificationsService", "Error reading garage: " + e);
