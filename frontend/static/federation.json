@@ -125,12 +125,12 @@
     },
     "mainnet": {
       "onion": "http://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion",
-      "clearnet": "",
+      "clearnet": "https://unsafe.thebiglake.xyz",
       "i2p": ""
     },
     "testnet": {
       "onion": "http://ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion",
-      "clearnet": "",
+      "clearnet": "https://test.unsafe.thebiglake.xyz",
       "i2p": ""
     },
     "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
