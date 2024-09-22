@@ -98,7 +98,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     apiClient
       .get(url + basePath, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
-        tokenSHA256: garage.getSlot()?.tokenSHA256 ?? '',
+        tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
       .then((results: any) => {
         if (results != null) {
@@ -127,7 +127,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   const onMessage = (dataFromServer: ServerMessage): void => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
-    if (robot && dataFromServer != null) {
+    if (slot && robot && dataFromServer != null) {
       // If we receive an encrypted message
       if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
         void decryptMessage(
@@ -196,7 +196,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     // If input string contains '#' send unencrypted and unlogged message
     else if (value.substring(0, 1) === '#') {
       const { url, basePath } = federation
-        .getCoordinator(garage.getSlot()?.activeOrder?.shortAlias)
+        .getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '')
         .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(
