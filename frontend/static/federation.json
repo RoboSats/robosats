@@ -7,7 +7,7 @@
     "color": "#000",
     "established": "2023-12-02",
     "contact": {
-      "email": "cosmos178ftmm4edlahqzj376gwgqzd9re5x0x9h0tfsc@keplr.xyz",
+      "email": "coordinator@templeofsats.org",
       "telegram": "templeofsats",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
       "matrix": "@venividivici13:matrix.org",
@@ -36,7 +36,7 @@
     },
     "mainnet": {
       "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
-      "clearnet": "",
+      "clearnet": "https://unsafe.templeofsats.org",
       "i2p": ""
     },
     "testnet": {
