@@ -350,7 +350,8 @@ class Order(models.Model):
         self.log(
             f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
         )
-        send_status_notification.delay(order_id=self.id, status=self.status)
+        if old_status != new_status:
+            send_status_notification.delay(order_id=self.id, status=self.status)
 
 
 @receiver(pre_delete, sender=Order)
