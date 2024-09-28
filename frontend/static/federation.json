@@ -106,6 +106,7 @@
       "matrix": "@gabbygator184:matrix.org",
       "pgp": "/static/federation/pgp/EC4F94F629AA28242B54265F1ABE1CA3582A031A.asc",
       "nostr": "npub17t2g2h0nnf7mvxtxvm5ydxs85ycumhqgmj48gj35gdplln655yxq68wj6f",
+      "website": "https://thebiglake.org/",
       "fingerprint": "EC4F94F629AA28242B54265F1ABE1CA3582A031A"
     },
     "badges": {
@@ -125,12 +126,12 @@
     },
     "mainnet": {
       "onion": "http://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion",
-      "clearnet": "https://unsafe.thebiglake.xyz",
+      "clearnet": "https://unsafe.thebiglake.org",
       "i2p": ""
     },
     "testnet": {
       "onion": "http://ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion",
-      "clearnet": "https://test.unsafe.thebiglake.xyz",
+      "clearnet": "https://test.unsafe.thebiglake.org",
       "i2p": ""
     },
     "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
