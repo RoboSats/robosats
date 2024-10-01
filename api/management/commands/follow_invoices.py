@@ -8,7 +8,7 @@ from django.utils import timezone
 from api.lightning.node import LNNode
 from api.logics import Logics
 from api.models import LNPayment, OnchainPayment, Order
-from api.tasks import follow_send_payment, send_status_notification
+from api.tasks import follow_send_payment, send_notification
 
 
 def is_same_status(a: LNPayment.Status, b: LNPayment.Status) -> bool:
@@ -229,8 +229,8 @@ class Command(BaseCommand):
                 if hasattr(lnpayment, "order_made"):
                     lnpayment.order_made.log("Maker bond <b>locked</b>")
                     Logics.publish_order(lnpayment.order_made)
-                    send_status_notification.delay(
-                        order_id=lnpayment.order_made.id, status=Order.Status.PUB
+                    send_notification.delay(
+                        order_id=lnpayment.order_made.id, message="order_published"
                     )
                     return
 
