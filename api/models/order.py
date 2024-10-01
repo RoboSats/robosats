@@ -10,7 +10,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
-from api.tasks import send_status_notification
+from api.tasks import send_notification
 
 if config("TESTING", cast=bool, default=False):
     import random
@@ -350,7 +350,8 @@ class Order(models.Model):
         self.log(
             f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
         )
-        send_status_notification.delay(order_id=self.id, status=self.status)
+        if new_status == Order.Status.FAI:
+            send_notification.delay(order_id=self.id, message="lightning_failed")
 
 
 @receiver(pre_delete, sender=Order)

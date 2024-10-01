@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.models import Order
-from api.tasks import send_chat_notification
+from api.tasks import send_notification
 from chat.models import ChatRoom, Message
 from chat.serializers import ChatSerializer, InMessageSerializer, PostMessageSerializer
 
@@ -179,7 +179,9 @@ class ChatView(viewsets.ViewSet):
         )
 
         # send Telegram notification for new message (if conditions apply)
-        send_chat_notification.delay(message_id=new_message.id, order_id=order.id)
+        send_notification.delay(
+            chat_message_id=new_message.id, message="new_chat_message"
+        )
 
         # Send websocket message
         if chatroom.maker == request.user:

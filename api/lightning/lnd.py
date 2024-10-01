@@ -594,10 +594,11 @@ class LNDNode:
                     ]
                 )
 
+                order.update_status(Order.Status.FAI)
+
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.FAI)
                 )
-                order.update_status(Order.Status.FAI)
                 order.save(update_fields=["expires_at"])
 
                 str_failure_reason = cls.payment_failure_context[
@@ -624,10 +625,10 @@ class LNDNode:
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save(update_fields=["status", "fee", "preimage"])
 
+                order.update_status(Order.Status.SUC)
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.SUC)
                 )
-                order.update_status(Order.Status.SUC)
                 order.save(update_fields=["expires_at"])
 
                 order.log(
@@ -670,10 +671,10 @@ class LNDNode:
                             update_fields=["status", "last_routing_time", "in_flight"]
                         )
 
+                        order.update_status(Order.Status.FAI)
                         order.expires_at = timezone.now() + timedelta(
                             seconds=order.t_to_expire(Order.Status.FAI)
                         )
-                        order.update_status(Order.Status.FAI)
                         order.save(update_fields=["expires_at"])
 
                         order.log(
