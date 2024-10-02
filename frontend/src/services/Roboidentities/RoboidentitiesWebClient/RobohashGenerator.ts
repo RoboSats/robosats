@@ -32,7 +32,7 @@ class RoboGenerator {
 
     setTimeout(() => {
       this.waitingForLibrary = false;
-    }, 1000);
+    }, 2000);
   }
 
   public generate: (hash: string, size: 'small' | 'large') => Promise<string> = async (

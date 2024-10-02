@@ -27,10 +27,10 @@ const App = (): JSX.Element => {
                 <GarageContextProvider>
                   <CssBaseline />
                   {client === 'mobile' ? (
-                    <>
+                    <div style={{ display: 'inline-flex', position: 'fixed', top: '0.5em' }}>
                       <TorConnectionBadge />
                       <NotificationSwitchBadge />
-                    </>
+                    </div>
                   ) : (
                     <HostAlert />
                   )}
