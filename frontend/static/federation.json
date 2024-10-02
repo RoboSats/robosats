@@ -47,51 +47,6 @@
     "mainnetNodesPubkeys": ["030a425f5c69a29db30f6740d4e7df8f5612ef9955078ef4497490015464733dc8"],
     "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"]
   },
-  "satstralia": {
-    "longAlias": "Satstralia",
-    "shortAlias": "satstralia",
-    "description": "I'm happy to be part of Robosats in so many ways!",
-    "motto": "btc = ɔʇq",
-    "color": "#329239",
-    "established": "2023-12-02",
-    "contact": {
-      "email": "info@satstralia.com",
-      "telegram": "satstralia",
-      "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2Fq0pIyShcBl0EP8le0D0xy2OfSrP1mQWg%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAcwmsC9GQwQEt40UNpYp4vKPhU_UnWXsXcVl-OJ57lC4%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22vNcyZH9C3eE6MHzRNpR3xA%3D%3D%22%7D",
-      "matrix": "#satstralia:matrix.org",
-      "pgp": "/static/federation/pgp/D1894C9862A9D02D47D96C84AE30B6904210DA14.asc",
-      "nostr": "npub1z94lxjf7m5snda0qc6s3kmpy6r4nfw74h78da9j6j4y8ym08zrrs459wpr",
-      "website": "https://satstralia.com",
-      "fingerprint": "D1894C9862A9D02D47D96C84AE30B6904210DA14"
-    },
-    "badges": {
-      "isFounder": true,
-      "donatesToDevFund": 33,
-      "hasGoodOpSec": true,
-      "robotsLove": false,
-      "hasLargeLimits": true
-    },
-    "policies": {
-      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
-      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
-      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
-      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
-      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
-    },
-    "mainnet": {
-      "onion": "http://satstraoq35jffvkgpfoqld32nzw2siuvowanruindbfojowpwsjdgad.onion",
-      "clearnet": "https://unsafe.satstralia.com",
-      "i2p": ""
-    },
-    "testnet": {
-      "onion": "http://testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion",
-      "clearnet": "https://test.unsafe.satstralia.com",
-      "i2p": ""
-    },
-    "mainnetNodesPubkeys": ["029c5b14214ca7c1f5334db539dbab266088ba43a40563551efb9458756a94cd94"],
-    "testnetNodesPubkeys": ["03607900c00c5fcc3f9d32da4ad687c73d95df4faa065e5320e77b41c5d76ef381"]
-  },
   "lake": {
     "longAlias": "TheBigLake",
     "shortAlias": "lake",
