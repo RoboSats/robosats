@@ -14,7 +14,7 @@ import { federationLottery } from '../utils';
 
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
-import { type Origin, type Origins } from '../models/Coordinator.model';
+import Coordinator, { type Origin, type Origins } from '../models/Coordinator.model';
 
 export interface CurrentOrderIdProps {
   id: number | null;
@@ -68,9 +68,13 @@ export const FederationContextProvider = ({
   useEffect(() => {
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
-      void federation.update();
+      void federation.updateMeta();
     }
   }, [settings.network, settings.useProxy, torStatus]);
+
+  useEffect(() => {
+    federation.setConnection(settings.connection);
+  }, [settings.connection]);
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.coordinators[alias]) {
@@ -91,8 +95,8 @@ export const FederationContextProvider = ({
         attributes.testnet = origins;
       }
       federation.addCoordinator(origin, settings, hostUrl, attributes);
-      const newCoordinator = federation.coordinators[alias];
-      newCoordinator.update(() => {
+      const newCoordinator: Coordinator = federation.coordinators[alias];
+      newCoordinator.updateMeta(() => {
         setCoordinatorUpdatedAt(new Date().toISOString());
       });
       garage.syncCoordinator(federation, alias);

@@ -5,7 +5,7 @@ export interface PublicOrder {
   type: number;
   currency: number | null;
   amount: string;
-  base_amount?: number;
+  base_price?: number;
   has_range: boolean;
   min_amount: string | null;
   max_amount: string | null;

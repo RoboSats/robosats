@@ -93,6 +93,7 @@ const App = () => {
     loadCookie('settings_mode');
     loadCookie('settings_light_qr');
     loadCookie('settings_network');
+    loadCookie('settings_connection');
     loadCookie('settings_use_proxy').then((useProxy) => {
       SystemModule.useProxy(useProxy ?? 'true');
     });

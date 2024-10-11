@@ -63,6 +63,7 @@ export interface Exchange {
   enabledCoordinators: number;
   onlineCoordinators: number;
   loadingCoordinators: number;
+  loadingCache: number;
   totalCoordinators: number;
 }
 
@@ -80,6 +81,7 @@ export const defaultExchange: Exchange = {
   enabledCoordinators: 0,
   onlineCoordinators: 0,
   loadingCoordinators: 0,
+  loadingCache: 0,
   totalCoordinators: 0,
 };
 

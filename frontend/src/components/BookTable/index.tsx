@@ -938,8 +938,11 @@ const BookTable = ({
               setPaymentMethods,
             },
             loadingOverlay: {
-              variant: loadingPercentage === 0 ? 'indeterminate' : 'determinate',
-              value: loadingPercentage,
+              variant:
+                federation.exchange.loadingCache || loadingPercentage === 0
+                  ? 'indeterminate'
+                  : 'determinate',
+              value: federation.exchange.loadingCache ? 1 : loadingPercentage,
             },
           }}
           paginationModel={paginationModel}

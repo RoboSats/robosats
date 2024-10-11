@@ -1,5 +1,5 @@
 import { Event } from 'nostr-tools';
-import { PublicOrder } from '../models';
+import { Federation, PublicOrder } from '../models';
 import { fromUnixTime } from 'date-fns';
 import Geohash from 'latlon-geohash';
 import currencyDict from '../../static/assets/currencies.json';
@@ -92,8 +92,6 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
         break;
     }
   });
-
-  // price = limitsList[index].price * (1 + premium / 100);
 
   return { dTag: dTag[1], publicOrder };
 };

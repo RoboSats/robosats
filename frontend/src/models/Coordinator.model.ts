@@ -182,12 +182,11 @@ export class Coordinator {
     }
   };
 
-  update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
+  updateMeta = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
     const onDataLoad = (): void => {
       if (this.isUpdated()) onUpdate(this.shortAlias);
     };
 
-    // this.loadBook(onDataLoad);
     this.loadLimits(onDataLoad);
     this.loadInfo(onDataLoad);
   };
@@ -198,8 +197,8 @@ export class Coordinator {
     });
   };
 
-  generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
-    for (const order of data) {
+  generateAllMakerAvatars = async (): Promise<void> => {
+    for (const order of Object.values(this.book)) {
       void roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
     }
   };
@@ -209,30 +208,29 @@ export class Coordinator {
     if (this.url === '') return;
     if (this.loadingBook) return;
 
-    // this.loadingBook = true;
-    // this.book = [];
+    this.loadingBook = true;
+    this.book = {};
 
-    // apiClient
-    //   .get(this.url, `${this.basePath}/api/book/`)
-    //   .then((data) => {
-    //     if (!data?.not_found) {
-    //       this.book = (data as PublicOrder[]).map((order) => {
-    //         order.coordinatorShortAlias = this.shortAlias;
-    //         return order;
-    //       });
-    //       void this.generateAllMakerAvatars(data);
-    //       onDataLoad();
-    //     } else {
-    //       this.book = [];
-    //       onDataLoad();
-    //     }
-    //   })
-    //   .catch((e) => {
-    //     console.log(e);
-    //   })
-    //   .finally(() => {
-    //     this.loadingBook = false;
-    //   });
+    apiClient
+      .get(this.url, `${this.basePath}/api/book/`)
+      .then((data) => {
+        if (!data?.not_found) {
+          this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
+            order.coordinatorShortAlias = this.shortAlias;
+            return { ...book, [this.shortAlias + order.id]: order };
+          }, {});
+          void this.generateAllMakerAvatars();
+          onDataLoad();
+        } else {
+          onDataLoad();
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        this.loadingBook = false;
+      });
   };
 
   loadLimits = (onDataLoad: () => void = () => {}): void => {
@@ -289,7 +287,7 @@ export class Coordinator {
 
   enable = (onEnabled: () => void = () => {}): void => {
     this.enabled = true;
-    void this.update(() => {
+    void this.updateMeta(() => {
       onEnabled();
     });
   };
