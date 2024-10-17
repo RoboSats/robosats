@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Box, Button, Grid, List, ListItem, Paper, TextField, Typography } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -8,7 +8,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const SettingsPage = (): JSX.Element => {
-  const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, navbarHeight, page } = useContext<UseAppStoreType>(AppContext);
   const { federation, addNewCoordinator } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
@@ -36,6 +36,10 @@ const SettingsPage = (): JSX.Element => {
       }
     }
   };
+
+  useEffect(() => {
+    if (page === 'settings') void federation.loadInfo();
+  }, [page]);
 
   return (
     <Paper

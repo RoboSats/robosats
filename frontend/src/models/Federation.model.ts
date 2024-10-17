@@ -78,18 +78,18 @@ export class Federation {
   public relayPool: SimplePool = new SimplePool();
   public relaySubscriptions: SubCloser[] = [];
 
-  setConnection = (connection: 'api' | 'nostr'): void => {
-    this.connection = connection;
+  setConnection = (settings: Settings): void => {
+    this.connection = settings.connection;
 
     if (this.connection === 'nostr') {
-      this.connectNostr();
+      this.connectNostr(settings);
     } else {
       this.relayPool.close(Array.from(this.relayPool.trustedRelayURLs));
-      this.updateBook();
+      this.loadBook();
     }
   };
 
-  connectNostr = (): void => {
+  connectNostr = (settings: Settings): void => {
     this.loading = true;
     this.book = {};
 
@@ -105,7 +105,7 @@ export class Federation {
         {
           authors,
           kinds: [38383],
-          '#n': ['mainnet'],
+          '#n': [settings.network],
         },
       ],
       {
@@ -118,12 +118,6 @@ export class Federation {
           }
         },
         oneose: () => {
-          this.exchange.loadingCache = this.exchange.loadingCache - 1;
-          this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
-          this.updateExchange();
-          this.triggerHook('onFederationUpdate');
-        },
-        onclose: () => {
           this.exchange.loadingCache = this.exchange.loadingCache - 1;
           this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
           this.updateExchange();
@@ -186,8 +180,7 @@ export class Federation {
     systemClient.setCookie('federation', JSON.stringify(federationUrls));
   };
 
-  updateMeta = async (): Promise<void> => {
-    this.loading = true;
+  loadInfo = async (): Promise<void> => {
     this.exchange.info = {
       num_public_buy_orders: 0,
       num_public_sell_orders: 0,
@@ -198,19 +191,30 @@ export class Federation {
       lifetime_volume: 0,
       version: { major: 0, minor: 0, patch: 0 },
     };
+    this.updateEnabledCoordinators();
+
+    for (const coor of Object.values(this.coordinators)) {
+      void coor.loadInfo(() => {
+        this.onCoordinatorSaved();
+      });
+    }
+  };
+
+  loadLimits = async (): Promise<void> => {
+    this.loading = true;
     this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
 
     for (const coor of Object.values(this.coordinators)) {
-      void coor.updateMeta(() => {
+      void coor.loadLimits(() => {
         this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
     }
   };
 
-  updateBook = async (): Promise<void> => {
+  loadBook = async (): Promise<void> => {
     if (this.connection !== 'api') return;
 
     this.loading = true;
@@ -218,7 +222,7 @@ export class Federation {
     this.triggerHook('onFederationUpdate');
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
-      void coor.updateBook(() => {
+      void coor.loadBook(() => {
         this.onCoordinatorSaved();
         this.triggerHook('onFederationUpdate');
       });

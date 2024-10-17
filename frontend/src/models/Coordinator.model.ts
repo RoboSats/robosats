@@ -182,21 +182,6 @@ export class Coordinator {
     }
   };
 
-  updateMeta = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
-    const onDataLoad = (): void => {
-      if (this.isUpdated()) onUpdate(this.shortAlias);
-    };
-
-    this.loadLimits(onDataLoad);
-    this.loadInfo(onDataLoad);
-  };
-
-  updateBook = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
-    this.loadBook(() => {
-      onUpdate(this.shortAlias);
-    });
-  };
-
   generateAllMakerAvatars = async (): Promise<void> => {
     for (const order of Object.values(this.book)) {
       void roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
@@ -287,7 +272,7 @@ export class Coordinator {
 
   enable = (onEnabled: () => void = () => {}): void => {
     this.enabled = true;
-    void this.updateMeta(() => {
+    void this.loadLimits(() => {
       onEnabled();
     });
   };
@@ -297,10 +282,6 @@ export class Coordinator {
     this.info = undefined;
     this.limits = {};
     this.book = {};
-  };
-
-  isUpdated = (): boolean => {
-    return !((this.loadingBook === this.loadingInfo) === this.loadingLimits);
   };
 
   getBaseUrl = (): string => {

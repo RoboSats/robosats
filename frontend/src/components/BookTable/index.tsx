@@ -827,7 +827,7 @@ const BookTable = ({
             <Grid item xs={6}>
               <IconButton
                 onClick={() => {
-                  void federation.updateBook();
+                  void federation.loadBook();
                 }}
               >
                 <Refresh />
@@ -902,10 +902,6 @@ const BookTable = ({
       : orders;
   }, [showControls, orders, fav, paymentMethods]);
 
-  const loadingPercentage =
-    ((federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators) /
-      federation.exchange.enabledCoordinators) *
-    100;
   if (!fullscreen) {
     return (
       <Paper
@@ -938,11 +934,8 @@ const BookTable = ({
               setPaymentMethods,
             },
             loadingOverlay: {
-              variant:
-                federation.exchange.loadingCache || loadingPercentage === 0
-                  ? 'indeterminate'
-                  : 'determinate',
-              value: federation.exchange.loadingCache ? 1 : loadingPercentage,
+              variant: 'indeterminate',
+              value: federation.loading ? 0 : 100,
             },
           }}
           paginationModel={paginationModel}

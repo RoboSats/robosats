@@ -86,7 +86,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   flipHorizontally={false}
                   small={true}
                 />
-                {(coordinator?.info === undefined ||
+                {(coordinator?.limits === undefined ||
                   Object.keys(coordinator?.limits).length === 0) && (
                   <CircularProgress
                     size={49}

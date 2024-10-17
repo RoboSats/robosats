@@ -68,12 +68,12 @@ export const FederationContextProvider = ({
   useEffect(() => {
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
-      void federation.updateMeta();
+      void federation.loadLimits();
     }
   }, [settings.network, settings.useProxy, torStatus]);
 
   useEffect(() => {
-    federation.setConnection(settings.connection);
+    federation.setConnection(settings);
   }, [settings.connection]);
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
@@ -96,7 +96,7 @@ export const FederationContextProvider = ({
       }
       federation.addCoordinator(origin, settings, hostUrl, attributes);
       const newCoordinator: Coordinator = federation.coordinators[alias];
-      newCoordinator.updateMeta(() => {
+      newCoordinator.loadLimits(() => {
         setCoordinatorUpdatedAt(new Date().toISOString());
       });
       garage.syncCoordinator(federation, alias);
@@ -106,7 +106,7 @@ export const FederationContextProvider = ({
   };
 
   useEffect(() => {
-    if (page === 'offers') void federation.updateBook();
+    if (page === 'offers') void federation.loadBook();
   }, [page]);
 
   // use effects to fetchRobots on Profile open

@@ -502,7 +502,6 @@ const MakerForm = ({
       (!makerHasAmountRange && maker.amount <= 0) ||
       (maker.isExplicit && (maker.badSatoshisText !== '' || maker.satoshis === '')) ||
       (!maker.isExplicit && maker.badPremiumText !== '') ||
-      federation.getCoordinator(maker.coordinator)?.info === undefined ||
       federation.getCoordinator(maker.coordinator)?.limits === undefined
     );
   }, [maker, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
