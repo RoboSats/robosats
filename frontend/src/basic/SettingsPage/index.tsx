@@ -37,10 +37,6 @@ const SettingsPage = (): JSX.Element => {
     }
   };
 
-  useEffect(() => {
-    if (page === 'settings') void federation.loadInfo();
-  }, [page]);
-
   return (
     <Paper
       elevation={12}

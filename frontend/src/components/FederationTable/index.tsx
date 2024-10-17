@@ -128,9 +128,9 @@ const FederationTable = ({
                 onClickCoordinator(params.row.shortAlias);
               }}
             >
-              {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
+              {Boolean(params.row.loadingLimits) && Boolean(params.row.enabled) ? (
                 <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
-              ) : params.row.info !== undefined ? (
+              ) : params.row.limits !== undefined ? (
                 <Link color='success' />
               ) : (
                 <LinkOff color='error' />
