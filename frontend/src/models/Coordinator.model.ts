@@ -1,16 +1,7 @@
-import {
-  type Robot,
-  type LimitList,
-  type PublicOrder,
-  type Settings,
-  type Order,
-  type Garage,
-} from '.';
+import { type LimitList, type PublicOrder, type Settings } from '.';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { apiClient } from '../services/api';
-import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
-import { defaultOrder } from './Order.model';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -135,7 +126,7 @@ export class Coordinator {
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
     this.description = value.description;
-    this.federated = value.federated;
+    this.federated = value.federated ?? false;
     this.motto = value.motto;
     this.color = value.color;
     this.size_limit = value.badges.isFounder ? 21 * 100000000 : calculateSizeLimit(established);
@@ -174,13 +165,12 @@ export class Coordinator {
   public basePath: string;
 
   // These properties are fetched from coordinator API
-  public book: PublicOrder[] = [];
+  public book: Record<string, PublicOrder> = {};
   public loadingBook: boolean = false;
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = false;
   public limits: LimitList = {};
   public loadingLimits: boolean = false;
-  public loadingRobot: string | null;
 
   updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
@@ -192,24 +182,8 @@ export class Coordinator {
     }
   };
 
-  update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
-    const onDataLoad = (): void => {
-      if (this.isUpdated()) onUpdate(this.shortAlias);
-    };
-
-    this.loadBook(onDataLoad);
-    this.loadLimits(onDataLoad);
-    this.loadInfo(onDataLoad);
-  };
-
-  updateBook = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
-    this.loadBook(() => {
-      onUpdate(this.shortAlias);
-    });
-  };
-
-  generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
-    for (const order of data) {
+  generateAllMakerAvatars = async (): Promise<void> => {
+    for (const order of Object.values(this.book)) {
       void roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
     }
   };
@@ -220,20 +194,19 @@ export class Coordinator {
     if (this.loadingBook) return;
 
     this.loadingBook = true;
-    this.book = [];
+    this.book = {};
 
     apiClient
       .get(this.url, `${this.basePath}/api/book/`)
       .then((data) => {
         if (!data?.not_found) {
-          this.book = (data as PublicOrder[]).map((order) => {
+          this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
             order.coordinatorShortAlias = this.shortAlias;
-            return order;
-          });
-          void this.generateAllMakerAvatars(data);
+            return { ...book, [this.shortAlias + order.id]: order };
+          }, {});
+          void this.generateAllMakerAvatars();
           onDataLoad();
         } else {
-          this.book = [];
           onDataLoad();
         }
       })
@@ -299,7 +272,7 @@ export class Coordinator {
 
   enable = (onEnabled: () => void = () => {}): void => {
     this.enabled = true;
-    void this.update(() => {
+    void this.loadLimits(() => {
       onEnabled();
     });
   };
@@ -308,11 +281,7 @@ export class Coordinator {
     this.enabled = false;
     this.info = undefined;
     this.limits = {};
-    this.book = [];
-  };
-
-  isUpdated = (): boolean => {
-    return !((this.loadingBook === this.loadingInfo) === this.loadingLimits);
+    this.book = {};
   };
 
   getBaseUrl = (): string => {
@@ -330,132 +299,6 @@ export class Coordinator {
     } else {
       return { url: String(this[network][origin]), basePath: '' };
     }
-  };
-
-  fetchRobot = async (garage: Garage, token: string): Promise<Robot | null> => {
-    if (!this.enabled || !token || this.loadingRobot === token) return null;
-
-    const robot = garage?.getSlot(token)?.getRobot() ?? null;
-    const authHeaders = robot?.getAuthHeaders();
-
-    if (!authHeaders) return null;
-
-    const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
-
-    if (!hasEnoughEntropy) return null;
-
-    this.loadingRobot = token;
-
-    garage.updateRobot(token, this.shortAlias, { loading: true });
-
-    const newAttributes = await apiClient
-      .get(this.url, `${this.basePath}/api/robot/`, authHeaders)
-      .then((data: any) => {
-        return {
-          nickname: data.nickname,
-          activeOrderId: data.active_order_id ?? null,
-          lastOrderId: data.last_order_id ?? null,
-          earnedRewards: data.earned_rewards ?? 0,
-          stealthInvoices: data.wants_stealth,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          found: data?.found,
-          last_login: data.last_login,
-          pubKey: data.public_key,
-          encPrivKey: data.encrypted_private_key,
-        };
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => (this.loadingRobot = null));
-
-    garage.updateRobot(token, this.shortAlias, {
-      ...newAttributes,
-      tokenSHA256: authHeaders.tokenSHA256,
-      loading: false,
-      bitsEntropy,
-      shannonEntropy,
-      shortAlias: this.shortAlias,
-    });
-
-    return garage.getSlot(this.shortAlias)?.getRobot() ?? null;
-  };
-
-  fetchOrder = async (orderId: number, robot: Robot, token: string): Promise<Order | null> => {
-    if (!this.enabled) return null;
-    if (!token) return null;
-
-    const authHeaders = robot.getAuthHeaders();
-    if (!authHeaders) return null;
-
-    return await apiClient
-      .get(this.url, `${this.basePath}/api/order/?order_id=${orderId}`, authHeaders)
-      .then((data) => {
-        const order: Order = {
-          ...defaultOrder,
-          ...data,
-          shortAlias: this.shortAlias,
-        };
-        return order;
-      })
-      .catch((e) => {
-        console.log(e);
-        return null;
-      });
-  };
-
-  fetchReward = async (
-    signedInvoice: string,
-    garage: Garage,
-    index: string,
-  ): Promise<null | {
-    bad_invoice?: string;
-    successful_withdrawal?: boolean;
-  }> => {
-    if (!this.enabled) return null;
-
-    const slot = garage.getSlot(index);
-    const robot = slot?.getRobot();
-
-    if (!slot?.token || !robot?.encPrivKey) return null;
-
-    const data = await apiClient.post(
-      this.url,
-      `${this.basePath}/api/reward/`,
-      {
-        invoice: signedInvoice,
-      },
-      { tokenSHA256: robot.tokenSHA256 },
-    );
-    garage.updateRobot(slot?.token, this.shortAlias, {
-      earnedRewards: data?.successful_withdrawal === true ? 0 : robot.earnedRewards,
-    });
-
-    return data ?? {};
-  };
-
-  fetchStealth = async (wantsStealth: boolean, garage: Garage, index: string): Promise<null> => {
-    if (!this.enabled) return null;
-
-    const slot = garage.getSlot(index);
-    const robot = slot?.getRobot();
-
-    if (!(slot?.token != null) || !(robot?.encPrivKey != null)) return null;
-
-    await apiClient.post(
-      this.url,
-      `${this.basePath}/api/stealth/`,
-      { wantsStealth },
-      { tokenSHA256: robot.tokenSHA256 },
-    );
-
-    garage.updateRobot(slot?.token, this.shortAlias, {
-      stealthInvoices: wantsStealth,
-    });
-
-    return null;
   };
 }
 

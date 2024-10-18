@@ -1,17 +1,15 @@
 import React, { useContext, useState } from 'react';
-import { Button, Grid, Paper, TextField, Typography, Box } from '@mui/material';
+import { Box, Button, Grid, List, ListItem, Paper, TextField, Typography } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
 import { t } from 'i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { styled } from '@mui/system';
 
 const SettingsPage = (): JSX.Element => {
-  const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const { federation, addNewCoordinator } = useContext<UseFederationStoreType>(FederationContext);
-
-  const maxHeight = (windowSize.height * 0.65);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
   const [error, setError] = useState<string>();
@@ -28,6 +26,7 @@ const SettingsPage = (): JSX.Element => {
           fullNewUrl = `http://${newUrl}`;
         }
         addNewCoordinator(newAlias, fullNewUrl);
+        garage.syncCoordinator(federation, newAlias);
         setNewAlias('');
         setNewUrl('');
       } else {

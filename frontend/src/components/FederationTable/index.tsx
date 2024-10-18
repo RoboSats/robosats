@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Checkbox, CircularProgress, Grid, Typography } from '@mui/material';
 import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
@@ -14,44 +14,50 @@ interface FederationTableProps {
   fillContainer?: boolean;
 }
 
-const FederationTable = ({ maxWidth = 90, fillContainer = false }: FederationTableProps): JSX.Element => {
+const FederationTable = ({
+  maxWidth = 90,
+  fillContainer = false,
+}: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, sortedCoordinators, coordinatorUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
-  const { setOpen, settings } = useContext<UseAppStoreType>(AppContext);
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
+  const { setOpen } = useContext<UseAppStoreType>(AppContext);
 
-  const aliasObj = useCallback((width: number) => {
-    return {
-      field: 'longAlias',
-      headerName: t('Coordinator'),
-      width: width,
-      renderCell: (params: any) => {
-        const coordinator = federation.coordinators[params.row.shortAlias];
-        return (
-          <CoordinatorGrid
-            container
-            direction="row"
-            wrap="nowrap"
-            onClick={() => onClickCoordinator(params.row.shortAlias)}
-            alignItems="center"
-            spacing={1}
-          >
-            <Grid item>
-              <RobotAvatar
-                shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
-                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
-                style={{ width: '3.215em', height: '3.215em' }}
-                smooth={true}
-                small={true}
-              />
-            </Grid>
-            <Grid item>
-              <Typography>{params.row.longAlias}</Typography>
-            </Grid>
-          </CoordinatorGrid>
-        );
-      },
-    };
-  }, [federation.coordinators]);
+  const aliasObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'longAlias',
+        headerName: t('Coordinator'),
+        width: width,
+        renderCell: (params: any) => {
+          const coordinator = federation.coordinators[params.row.shortAlias];
+          return (
+            <CoordinatorGrid
+              container
+              direction='row'
+              wrap='nowrap'
+              onClick={() => onClickCoordinator(params.row.shortAlias)}
+              alignItems='center'
+              spacing={1}
+            >
+              <Grid item>
+                <RobotAvatar
+                  shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
+                  hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                  style={{ width: '3.215em', height: '3.215em' }}
+                  smooth={true}
+                  small={true}
+                />
+              </Grid>
+              <Grid item>
+                <Typography>{params.row.longAlias}</Typography>
+              </Grid>
+            </CoordinatorGrid>
+          );
+        },
+      };
+    },
+    [federation.coordinators],
+  );
 
   const enabledObj = useCallback(
     (width: number) => {
@@ -69,7 +75,7 @@ const FederationTable = ({ maxWidth = 90, fillContainer = false }: FederationTab
         },
       };
     },
-    [coordinatorUpdatedAt]
+    [federationUpdatedAt],
   );
 
   const upObj = useCallback(
@@ -81,19 +87,19 @@ const FederationTable = ({ maxWidth = 90, fillContainer = false }: FederationTab
         renderCell: (params: any) => {
           return (
             <UpStatusContainer onClick={() => onClickCoordinator(params.row.shortAlias)}>
-              {params.row.loadingInfo && params.row.enabled ? (
+              {Boolean(params.row.loadingLimits) && Boolean(params.row.enabled) ? (
                 <CircularProgress thickness={2} size={24} />
               ) : params.row.info !== undefined ? (
-                <Link color="success" />
+                <Link color='success' />
               ) : (
-                <LinkOff color="error" />
+                <LinkOff color='error' />
               )}
             </UpStatusContainer>
           );
         },
       };
     },
-    [coordinatorUpdatedAt]
+    [federationUpdatedAt],
   );
 
   const columnSpecs = {
@@ -149,13 +155,6 @@ const FederationTable = ({ maxWidth = 90, fillContainer = false }: FederationTab
     }
   };
 
-  const reorderedCoordinators = useMemo(() => {
-    return sortedCoordinators.reduce((coordinators, key) => {
-      coordinators[key] = federation.coordinators[key];
-      return coordinators;
-    }, {});
-  }, [settings.network, coordinatorUpdatedAt]);
-
   const onClickCoordinator = (shortAlias: string): void => {
     setOpen((open) => {
       return { ...open, coordinator: shortAlias };
@@ -165,7 +164,7 @@ const FederationTable = ({ maxWidth = 90, fillContainer = false }: FederationTab
   return (
     <TableContainer fillContainer={fillContainer} maxWidth={maxWidth}>
       <StyledDataGrid
-        rows={Object.values(reorderedCoordinators)}
+        rows={Object.values(federation.coordinators)}
         getRowId={(params: Coordinator) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}

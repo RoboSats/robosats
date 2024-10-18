@@ -1,6 +1,6 @@
-django==5.0.8
+django==5.1.1
 django-admin-relation-links==0.2.5
-django-celery-beat==2.6.0
+django-celery-beat==2.7.0
 django-celery-results==2.5.1
 django-model-utils==4.5.0
 django-redis==5.4.0
@@ -16,7 +16,7 @@ Pillow==10.1.0
 python-decouple==3.8
 requests==2.31.0
 ring==0.10.1
-gunicorn==22.0.0
+gunicorn==23.0.0
 psycopg2==2.9.9
 SQLAlchemy==2.0.16
 django-import-export==4.1.1
@@ -28,3 +28,6 @@ drf-spectacular==0.27.2
 drf-spectacular-sidecar==2024.7.1
 django-cors-headers==4.4.0
 base91==1.0.1
+nostr-sdk==0.32.2
+pygeohash==1.2.0
+asgiref == 3.8.1

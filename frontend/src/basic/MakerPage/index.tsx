@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
@@ -13,9 +13,8 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const MakerPage = (): JSX.Element => {
-  const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
-  const { federation, setDelay, setCurrentOrderId } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { fav, windowSize, navbarHeight, page } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -26,7 +25,7 @@ const MakerPage = (): JSX.Element => {
 
   const matches = useMemo(() => {
     return filterOrders({
-      orders: federation.book,
+      federation,
       baseFilter: {
         currency: fav.currency === 0 ? 1 : fav.currency,
         type: fav.type,
@@ -54,8 +53,6 @@ const MakerPage = (): JSX.Element => {
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
     if (garage.getSlot()?.hashId) {
-      setDelay(10000);
-      setCurrentOrderId({ id, shortAlias });
       navigate(`/order/${shortAlias}/${id}`);
     } else {
       setOpenNoRobot(true);
@@ -70,7 +67,7 @@ const MakerPage = (): JSX.Element => {
           setOpenNoRobot(false);
         }}
         onClickGenerateRobot={() => {
-          navigate('/robot');
+          navigate('/garage');
         }}
       />
       <Grid item>
@@ -105,10 +102,6 @@ const MakerPage = (): JSX.Element => {
           }}
         >
           <MakerForm
-            onOrderCreated={(shortAlias, id) => {
-              setCurrentOrderId({ id, shortAlias });
-              navigate(`/order/${shortAlias}/${id}`);
-            }}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => {
@@ -119,7 +112,7 @@ const MakerPage = (): JSX.Element => {
             }}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
             onClickGenerateRobot={() => {
-              navigate('/robot');
+              navigate('/garage');
             }}
           />
         </Paper>

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -68,8 +68,9 @@ import {
 } from '../Icons';
 import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
-import { type Badges } from '../../models/Coordinator.model';
+import Coordinator, { type Badges } from '../../models/Coordinator.model';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { width } from '@mui/system';
 
 interface Props {
   open: boolean;
@@ -348,18 +349,28 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
   const { t } = useTranslation();
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const coordinator = federation.getCoordinator(shortAlias);
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
+  const [coordinator, setCoordinator] = useState<Coordinator>(
+    federation.getCoordinator(shortAlias ?? ''),
+  );
 
   const listItemProps = { sx: { maxHeight: '3em', width: '100%' } };
   const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${
     coordinator?.info?.version?.minor ?? '?'
   }.${coordinator?.info?.version?.patch ?? '?'}`;
 
+  useEffect(() => {
+    setCoordinator(federation.getCoordinator(shortAlias ?? ''));
+  }, [shortAlias]);
+
+  useEffect(() => {
+    if (open) federation.getCoordinator(shortAlias ?? '')?.loadInfo();
+  }, [open]);
+
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogContent>
+      <DialogContent style={{ width: 600 }}>
         <Typography align='center' component='h5' variant='h5'>
           {String(coordinator?.longAlias)}
         </Typography>
@@ -483,7 +494,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
           </ListItemButton>
         </List>
 
-        {coordinator?.loadingInfo ? (
+        {!coordinator || coordinator?.loadingInfo ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>

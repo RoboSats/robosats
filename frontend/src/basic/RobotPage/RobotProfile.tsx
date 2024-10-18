@@ -8,17 +8,19 @@ import {
   MenuItem,
   Box,
   TextField,
-  SelectChangeEvent,
   useTheme,
   useMediaQuery,
   styled,
+  type SelectChangeEvent,
 } from '@mui/material';
-import { Bolt, Add, DeleteSweep, Logout, Download, FileCopy } from '@mui/icons-material';
+import { Key, Bolt, Add, DeleteSweep, Logout, FileCopy, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
+import { LoadingButton } from '@mui/lab';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { Slot } from '../../models';
 
 const BUTTON_COLORS = {
   primary: '#2196f3',
@@ -37,22 +39,14 @@ const COLORS = {
 
 interface RobotProfileProps {
   inputToken: string;
-  getGenerateRobot: (token: string) => void;
   setInputToken: (token: string) => void;
-  logoutRobot: () => void;
   setView: (view: string) => void;
 }
 
-const RobotProfile = ({
-  inputToken,
-  getGenerateRobot,
-  setInputToken,
-  logoutRobot,
-  setView,
-}: RobotProfileProps): JSX.Element => {
-  const { windowSize } = useContext<UseAppStoreType>(AppContext);
-  const { garage, robotUpdatedAt, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+const RobotProfile = ({ inputToken, setInputToken, setView }: RobotProfileProps): JSX.Element => {
+  const { windowSize, client, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -66,10 +60,12 @@ const RobotProfile = ({
     if (slot?.hashId) {
       setLoading(false);
     }
-  }, [orderUpdatedAt, robotUpdatedAt, loading]);
+  }, [slotUpdatedAt, loading]);
 
   const handleAddRobot = (): void => {
-    getGenerateRobot(genBase62Token(36));
+    const token = genBase62Token(36);
+    garage.createRobot(federation, token);
+    setInputToken(token);
     setLoading(true);
   };
 
@@ -84,14 +80,10 @@ const RobotProfile = ({
   const slot = garage.getSlot();
   const robot = slot?.getRobot();
 
-  const loadingCoordinators = Object.values(slot?.robots ?? {}).filter(
-    (robot) => robot.loading,
-  ).length;
-
   return (
     <ProfileContainer $isMobile={isMobile}>
       <InfoSection colors={COLORS} $isMobile={isMobile}>
-        <NicknameTypography variant={isMobile ? "h6" : "h5"} align="center" $isMobile={isMobile}>
+        <NicknameTypography variant={isMobile ? 'h6' : 'h5'} align='center' $isMobile={isMobile}>
           <BoltIcon $isMobile={isMobile} />
           {slot?.nickname}
           <BoltIcon $isMobile={isMobile} />
@@ -102,21 +94,24 @@ const RobotProfile = ({
           placeholderType='generating'
           style={{ width: isMobile ? '80px' : '120px', height: isMobile ? '80px' : '120px' }}
         />
-        <StatusTypography variant={isMobile ? "body2" : "body1"} align="center" $isMobile={isMobile}>
-          {loadingCoordinators > 0 && !robot?.activeOrderId ? t('Looking for orders!') : t('Ready to Trade')}
+        <StatusTypography
+          variant={isMobile ? 'body2' : 'body1'}
+          align='center'
+          $isMobile={isMobile}
+        >
+          {federation.loading && !slot?.activeOrder?.id
+            ? t('Looking for orders!')
+            : t('Ready to Trade')}
         </StatusTypography>
-        {loadingCoordinators > 0 && !robot?.activeOrderId && <StyledLinearProgress $isMobile={isMobile} />}
+        {federation.loading && !slot?.activeOrder?.id && (
+          <StyledLinearProgress $isMobile={isMobile} />
+        )}
         <TokenBox $isMobile={isMobile}>
-          <CustomIconButton onClick={() => {
-            logoutRobot();
-            setView('welcome');
-          }}>
-            <StyledLogoutIcon $isMobile={isMobile} />
-          </CustomIconButton>
-          <StyledTextField 
+          W{' '}
+          <StyledTextField
             fullWidth
             value={inputToken}
-            variant="standard"
+            variant='standard'
             $isMobile={isMobile}
             InputProps={{
               readOnly: true,
@@ -130,10 +125,10 @@ const RobotProfile = ({
           />
         </TokenBox>
       </InfoSection>
-      
+
       <RightSection $isMobile={isMobile}>
         <TitleSection>
-          <TitleTypography variant={isMobile ? "subtitle1" : "h6"} align="center">
+          <TitleTypography variant={isMobile ? 'subtitle1' : 'h6'} align='center'>
             {t('Robot Garage')}
           </TitleTypography>
         </TitleSection>
@@ -144,7 +139,7 @@ const RobotProfile = ({
         >
           {loading ? (
             <MenuItem key={'loading'} value={'loading'}>
-              <Typography variant={isMobile ? "body2" : "body1"}>{t('Building...')}</Typography>
+              <Typography variant={isMobile ? 'body2' : 'body1'}>{t('Building...')}</Typography>
             </MenuItem>
           ) : (
             Object.values(garage.slots).map((slot: Slot, index: number) => (
@@ -157,7 +152,7 @@ const RobotProfile = ({
                     placeholderType='loading'
                     small={true}
                   />
-                  <Typography variant={isMobile ? "body2" : "body1"}>{slot?.nickname}</Typography>
+                  <Typography variant={isMobile ? 'body2' : 'body1'}>{slot?.nickname}</Typography>
                 </MenuItemContent>
               </StyledMenuItem>
             ))
@@ -185,17 +180,16 @@ const RobotProfile = ({
             </StyledButton>
           )}
           <StyledButton
-            $buttonColor="transparent"
+            $buttonColor='transparent'
             $hoverColor={BUTTON_COLORS.deleteHover}
-            $textColor="red"
+            $textColor='red'
             $isMobile={isMobile}
             onClick={() => {
-              garage.delete();
-              logoutRobot();
-              setView('welcome');
+              garage.deleteSlot();
+              if (Object.keys(garage.slots).length < 1) setView('welcome');
             }}
           >
-            <StyledDeleteSweepIcon $isMobile={isMobile} /> {t('DELETE GARAGE')}
+            <StyledDeleteSweepIcon $isMobile={isMobile} /> {t('DELETE ROBOT')}
           </StyledButton>
         </ButtonContainer>
       </RightSection>
@@ -216,18 +210,20 @@ const ProfileContainer = styled(Box)<{ $isMobile: boolean }>(({ theme, $isMobile
   boxShadow: $isMobile ? '4px 4px 0px #000000' : '8px 8px 0px #000000',
 }));
 
-const InfoSection = styled(Box)<{ colors: typeof COLORS; $isMobile: boolean }>(({ theme, colors, $isMobile }) => ({
-  flexGrow: 1,
-  flexBasis: $isMobile ? 'auto' : 0,
-  backgroundColor: theme.palette.background.paper,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: $isMobile ? theme.spacing(2) : theme.spacing(4),
-  borderBottom: $isMobile ? '1px solid #000' : 'none',
-  borderRight: $isMobile ? 'none' : '2px solid #000',
-}));
+const InfoSection = styled(Box)<{ colors: typeof COLORS; $isMobile: boolean }>(
+  ({ theme, colors, $isMobile }) => ({
+    flexGrow: 1,
+    flexBasis: $isMobile ? 'auto' : 0,
+    backgroundColor: theme.palette.background.paper,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: $isMobile ? theme.spacing(2) : theme.spacing(4),
+    borderBottom: $isMobile ? '1px solid #000' : 'none',
+    borderRight: $isMobile ? 'none' : '2px solid #000',
+  }),
+);
 
 const NicknameTypography = styled(Typography)<{ $isMobile: boolean }>(({ $isMobile }) => ({
   display: 'flex',
@@ -266,11 +262,11 @@ const TokenBox = styled(Box)<{ $isMobile: boolean }>(({ $isMobile }) => ({
 }));
 
 const StyledTextField = styled(TextField)<{ $isMobile: boolean }>(({ $isMobile }) => ({
-  '& .MuiInputBase-root': { 
+  '& .MuiInputBase-root': {
     height: $isMobile ? '36px' : '48px',
     padding: $isMobile ? '2px 4px' : '4px 8px',
     fontSize: $isMobile ? '0.8rem' : '1rem',
-  }
+  },
 }));
 
 const RightSection = styled(Box)<{ $isMobile: boolean }>(({ $isMobile }) => ({
@@ -346,7 +342,10 @@ const StyledButton = styled('button')<{
     color: $buttonColor === 'transparent' ? '#fff' : $textColor,
   },
   '&:active': {
-    backgroundColor: $buttonColor === BUTTON_COLORS.primary ? BUTTON_COLORS.activePrimary : BUTTON_COLORS.activeSecondary,
+    backgroundColor:
+      $buttonColor === BUTTON_COLORS.primary
+        ? BUTTON_COLORS.activePrimary
+        : BUTTON_COLORS.activeSecondary,
   },
   '&:focus': {
     outline: 'none',

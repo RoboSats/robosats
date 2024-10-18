@@ -7,7 +7,7 @@ This contributing guide is based on the [Bisq contributing guide](https://github
 
 ## Communication Channels
 
-Most communication about development takes place on our [Matrix Development group](https://matrix.to/#/#robosats:matrix.org).
+Most communication about development takes place on our [SimpleX Development Group](https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2F6iIcWT_dF2zN_w5xzZEY7HI2Prbh3ldP07YTyDexPjE%3D%40smp10.simplex.im%2FKEkNLMlgM8vrrU3xjBt5emS7EsP0c4s1%23%2F%3Fv%3D1-3%26dh%3DMCowBQYDK2VuAyEABehx7Tgefl_vvOGOe2SThJCGACKRgSU2wiUdIJ5bQHw%253D%26srv%3Drb2pbttocvnbrngnwziclp2f4ckjq65kebafws6g4hy22cdaiv5dwjqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22gFi-9hvL3XgXXTgnlZPyJw%3D%3D%22%7D).
 
 Discussion about code changes happens in GitHub issues and pull requests.
 

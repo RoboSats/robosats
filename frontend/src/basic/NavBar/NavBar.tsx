@@ -17,7 +17,6 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { type Page, isPage } from '.';
 
 const NavBar = (): JSX.Element => {
@@ -27,7 +26,6 @@ const NavBar = (): JSX.Element => {
   const { page, setPage, setSlideDirection, open, setOpen } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,8 +42,8 @@ const NavBar = (): JSX.Element => {
   useEffect(() => {
     const pathPage: Page | string = location.pathname.split('/')[1];
     if (pathPage === 'index.html') {
-      navigate('/robot');
-      setPage('robot');
+      navigate('/garage');
+      setPage('garage');
     }
     if (isPage(pathPage)) {
       setPage(pathPage);
@@ -65,15 +63,12 @@ const NavBar = (): JSX.Element => {
     if (newPage !== 'none') {
       const slot = garage.getSlot();
       handleSlideDirection(page, newPage);
+      console.log(page);
       setPage(newPage);
-      const shortAlias = String(slot?.activeShortAlias);
-      const activeOrderId = slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId;
-      const lastOrderId = slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId;
-      const param =
-        newPage === 'order' ? `${shortAlias}/${String(activeOrderId ?? lastOrderId)}` : '';
-      if (newPage === 'order') {
-        setCurrentOrderId({ id: activeOrderId ?? lastOrderId, shortAlias });
-      }
+
+      const shortAlias = slot?.activeOrder?.shortAlias;
+      const orderId = slot?.activeOrder?.id;
+      const param = newPage === 'order' ? `${String(shortAlias)}/${String(orderId)}` : '';
       setTimeout(() => {
         navigate(`/${newPage}/${param}`);
       }, theme.transitions.duration.leavingScreen * 3);
@@ -88,8 +83,8 @@ const NavBar = (): JSX.Element => {
     <StyledPaper elevation={isMobile ? 0 : 3} $isMobile={isMobile}>
       <StyledBottomNavigation value={value} onChange={changePage} showLabels>
         <StyledBottomNavigationAction
-          label={t('Robot')}
-          value='robot'
+          label={t('Garage')}
+          value=''
           icon={<SmartToyOutlinedIcon />}
         />
         <StyledBottomNavigationAction
@@ -106,7 +101,7 @@ const NavBar = (): JSX.Element => {
           label={t('Orders')}
           value='order'
           icon={<AssignmentOutlinedIcon />}
-          disabled={!garage.getSlot()?.getRobot()?.activeOrderId}
+          disabled={!garage.getSlot()?.activeOrder}
         />
         <StyledBottomNavigationAction
           label={t('Settings')}

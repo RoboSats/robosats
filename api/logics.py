@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
-from api.tasks import send_devfund_donation, send_notification
+from api.tasks import send_devfund_donation, send_notification, nostr_send_order_event
 from api.utils import get_minning_fee, validate_onchain_address, location_country
 from chat.models import Message
 
@@ -704,9 +704,9 @@ class Logics:
 
         if context["invoice_amount"] < MIN_SWAP_AMOUNT:
             context["swap_allowed"] = False
-            context[
-                "swap_failure_reason"
-            ] = f"Order amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats"
+            context["swap_failure_reason"] = (
+                f"Order amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats"
+            )
             order.log(
                 f"Onchain payment option was not offered: amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats",
                 level="WARN",
@@ -714,9 +714,9 @@ class Logics:
             return True, context
         elif context["invoice_amount"] > MAX_SWAP_AMOUNT:
             context["swap_allowed"] = False
-            context[
-                "swap_failure_reason"
-            ] = f"Order amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats"
+            context["swap_failure_reason"] = (
+                f"Order amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats"
+            )
             order.log(
                 f"Onchain payment option was not offered: amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats",
                 level="WARN",
@@ -741,9 +741,9 @@ class Logics:
             )
             if not valid:
                 context["swap_allowed"] = False
-                context[
-                    "swap_failure_reason"
-                ] = "Not enough onchain liquidity available to offer a swap"
+                context["swap_failure_reason"] = (
+                    "Not enough onchain liquidity available to offer a swap"
+                )
                 order.log(
                     "Onchain payment option was not offered: onchain liquidity available to offer a swap",
                     level="WARN",
@@ -1019,6 +1019,8 @@ class Logics:
             order.log("Order expired while waiting for maker bond")
             order.log("Maker bond was cancelled")
 
+            nostr_send_order_event.delay(order_id=order.id)
+
             return True, None
 
         # 2.a) When maker cancels after bond
@@ -1039,6 +1041,8 @@ class Logics:
                 order.log("Order cancelled by maker while public or paused")
                 order.log("Maker bond was <b>unlocked</b>")
 
+                nostr_send_order_event.delay(order_id=order.id)
+
                 return True, None
 
         # 2.b) When maker cancels after bond and before taker bond is locked
@@ -1058,6 +1062,8 @@ class Logics:
                 order.log("Maker bond was <b>unlocked</b>")
                 order.log("Taker bond was <b>cancelled</b>")
 
+                nostr_send_order_event.delay(order_id=order.id)
+
                 return True, None
 
         # 3) When taker cancels before bond
@@ -1069,6 +1075,8 @@ class Logics:
             cls.kick_taker(order)
 
             order.log("Taker cancelled before locking the bond")
+
+            nostr_send_order_event.delay(order_id=order.id)
 
             return True, None
 
@@ -1099,6 +1107,8 @@ class Logics:
                 order.log("Maker bond was <b>settled</b>")
                 order.log("Taker bond was <b>unlocked</b>")
 
+                nostr_send_order_event.delay(order_id=order.id)
+
                 return True, None
 
         # 4.b) When taker cancel after bond (before escrow)
@@ -1121,6 +1131,8 @@ class Logics:
                 order.log("Taker bond was <b>settled</b>")
                 order.log("Maker bond was <b>unlocked</b>")
 
+                nostr_send_order_event.delay(order_id=order.id)
+
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
@@ -1136,6 +1148,9 @@ class Logics:
                 order.log(
                     f"Taker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
                 )
+
+                nostr_send_order_event.delay(order_id=order.id)
+
                 return True, None
 
             # if the taker had asked, and now the maker does: cancel order, return everything
@@ -1144,6 +1159,9 @@ class Logics:
                 order.log(
                     f"Maker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
                 )
+
+                nostr_send_order_event.delay(order_id=order.id)
+
                 return True, None
 
             # Otherwise just make true the asked for cancel flags
@@ -1181,6 +1199,8 @@ class Logics:
         order.update_status(Order.Status.CCA)
         send_notification.delay(order_id=order.id, message="collaborative_cancelled")
 
+        nostr_send_order_event.delay(order_id=order.id)
+
         order.log("Order was collaboratively cancelled")
         order.log("Maker bond was <b>unlocked</b>")
         order.log("Taker bond was <b>unlocked</b>")
@@ -1207,6 +1227,8 @@ class Logics:
         order.payout_tx = None
 
         order.save()  # update all fields
+
+        nostr_send_order_event.delay(order_id=order.id)
 
         order.log(f"Order({order.id},{str(order)}) is public in the order book")
         return
@@ -1255,9 +1277,9 @@ class Logics:
         bond_satoshis = int(order.last_satoshis * order.bond_size / 100)
 
         if user.robot.wants_stealth:
-            description = f"Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
-            description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
 
         # Gen hold Invoice
         try:
@@ -1350,6 +1372,9 @@ class Logics:
         except Exception:
             pass
         send_notification.delay(order_id=order.id, message="order_taken_confirmed")
+
+        nostr_send_order_event.delay(order_id=order.id)
+
         order.log(
             f"<b>Contract formalized.</b> Maker: Robot({order.maker.robot.id},{order.maker}). Taker: Robot({order.taker.robot.id},{order.taker}). API median price {order.currency.exchange_rate} {dict(Currency.currency_choices)[order.currency.currency]}/BTC. Premium is {order.premium}%. Contract size {order.last_satoshis} Sats"
         )
@@ -1377,10 +1402,10 @@ class Logics:
         bond_satoshis = int(order.last_satoshis * order.bond_size / 100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
         if user.robot.wants_stealth:
-            description = f"Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
             description = (
-                f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
+                f"{config("NODE_ALIAS")} - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
                 + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
             )
 
@@ -1476,9 +1501,9 @@ class Logics:
         order.log(f"Escrow invoice amount is calculated as {escrow_satoshis} Sats")
 
         if user.robot.wants_stealth:
-            description = f"Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
-            description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
+            description = f"{config("NODE_ALIAS")} - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
         try:
@@ -1741,11 +1766,15 @@ class Logics:
                 order.log(
                     f"Robot({user.robot.id},{user.username}) paused the public order"
                 )
+
+                nostr_send_order_event.delay(order_id=order.id)
             elif order.status == Order.Status.PAU:
                 order.update_status(Order.Status.PUB)
                 order.log(
                     f"Robot({user.robot.id},{user.username}) made public the paused order"
                 )
+
+                nostr_send_order_event.delay(order_id=order.id)
             else:
                 order.log(
                     f"Robot({user.robot.id},{user.username}) tried to pause/unpause an order that was not public or paused",

@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Typography, styled, useTheme } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { genBase62Token } from '../../utils';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { useNavigate } from 'react-router-dom';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
-  getGenerateRobot: (token: string) => void;
-  width: number;
+  setInputToken: (state: string) => void;
 }
 
 const BUTTON_COLORS = {
@@ -17,9 +20,14 @@ const BUTTON_COLORS = {
   text: '#ffffff',
 };
 
-const Welcome = ({ setView, getGenerateRobot, width }: WelcomeProps): JSX.Element => {
+const Welcome = ({ setView, setInputToken }: WelcomeProps): JSX.Element => {
+  const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const theme = useTheme();
+  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const COLORS = {
     background: theme.palette.background.paper,
@@ -70,7 +78,11 @@ const Welcome = ({ setView, getGenerateRobot, width }: WelcomeProps): JSX.Elemen
           $shadowColor={COLORS.shadow}
           $borderRadius={{ xs: '0', md: '0' }}
           endIcon={<ArrowForwardIcon />}
-          onClick={() => setView('recovery')}
+          onClick={() => {
+            setOpen((open) => {
+              return { ...open, recovery: true };
+            });
+          }}
         >
           <ButtonContent>
             <Typography variant='body2'>Recover an existing</Typography>
@@ -89,12 +101,15 @@ const Welcome = ({ setView, getGenerateRobot, width }: WelcomeProps): JSX.Elemen
           $borderRadius={{ xs: '0 0 8px 8px', md: '0 0 8px 0' }}
           sx={{ justifyContent: 'flex-start' }}
           onClick={() => {
-            setView('profile');
-            getGenerateRobot(genBase62Token(36));
+            const token = genBase62Token(36);
+            garage.createRobot(federation, token);
+            setInputToken(token);
+            navigate('/create');
+            setPage('create');
           }}
         >
           <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
-            ▶ Fast Generate Robot
+            ▶ Fast Generate Order
           </Typography>
         </StyledButton>
       </ButtonsSection>

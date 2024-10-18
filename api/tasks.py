@@ -1,3 +1,4 @@
+from asgiref.sync import async_to_sync
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -249,6 +250,20 @@ def cache_market():
     except SoftTimeLimitExceeded:
         print("SOFT LIMIT REACHED. Could not fetch current external market prices.")
         return
+
+
+@shared_task(name="", ignore_result=True, time_limit=120)
+def nostr_send_order_event(order_id=None):
+    if order_id:
+        from api.models import Order
+        from api.nostr import Nostr
+
+        order = Order.objects.get(id=order_id)
+
+        nostr = Nostr()
+        async_to_sync(nostr.send_order_event)(order)
+
+    return
 
 
 @shared_task(name="send_notification", ignore_result=True, time_limit=120)

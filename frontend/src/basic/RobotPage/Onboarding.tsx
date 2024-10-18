@@ -36,22 +36,16 @@ import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface OnboardingProps {
   setView: (view: string) => void;
   inputToken: string;
-  setInputToken: (token: string) => void;
-  badToken: boolean;
-  getGenerateRobot: (token: string) => void;
+  setInputToken: (state: string) => void;
+  baseUrl: string;
 }
 
-const Onboarding = ({
-  setView,
-  inputToken,
-  setInputToken,
-  badToken,
-  getGenerateRobot,
-}: OnboardingProps): JSX.Element => {
+const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -59,6 +53,7 @@ const Onboarding = ({
 
   const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -141,7 +136,6 @@ const Onboarding = ({
                         autoFocusTarget='copyButton'
                         inputToken={inputToken}
                         setInputToken={setInputToken}
-                        badToken={badToken}
                         onPressEnter={() => null}
                         sx={{ flexGrow: 1 }}
                       />
@@ -158,7 +152,7 @@ const Onboarding = ({
                       <StyledButton
                         onClick={() => {
                           setStep('2');
-                          getGenerateRobot(inputToken);
+                          garage.createRobot(federation, inputToken);
                         }}
                         variant='contained'
                         size='large'
@@ -405,4 +399,3 @@ function StyledStepIcon(props: StepIconProps) {
 }
 
 export default Onboarding;
-

@@ -23,7 +23,6 @@ import RobotAvatar from '../../components/RobotAvatar';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { useTranslation } from 'react-i18next';
 
-
 const TopNavBar = (): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -181,7 +180,7 @@ const StyledAppBar = styled(AppBar)<{ $isMobile: boolean; $drawerOpen: boolean }
         background: 'none',
         backgroundColor: theme.palette.background.paper,
       }),
-  })
+  }),
 );
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
@@ -249,11 +248,11 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
 const StyledLogoListItem = styled(ListItem)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
   padding: theme.spacing(2),
-  justifyContent: 'center', 
+  justifyContent: 'center',
 }));
 
 const StyledDesktopRoboSatsTextIcon = styled(RoboSatsTextIcon)(({ theme }) => ({
-  height: '1.5em', 
+  height: '1.5em',
   width: 'auto',
   cursor: 'pointer',
   marginLeft: theme.spacing(-1),
@@ -261,7 +260,7 @@ const StyledDesktopRoboSatsTextIcon = styled(RoboSatsTextIcon)(({ theme }) => ({
 }));
 
 const StyledDrawerRoboSatsTextIcon = styled(RoboSatsTextIcon)(({ theme }) => ({
-  height: '2em', 
+  height: '2em',
   width: 'auto',
   cursor: 'pointer',
   fill: 'url(#linearColors)',

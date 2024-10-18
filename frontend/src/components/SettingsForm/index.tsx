@@ -21,10 +21,8 @@ import {
   Palette,
   SettingsOverscan,
   Link,
-  AccountBalance,
   AttachMoney,
-  QrCode,
-  DarkMode,
+  SettingsInputAntenna,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
@@ -37,7 +35,7 @@ interface SettingsFormProps {
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
-  const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -49,16 +47,20 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
     { label: 'XL', value: { basic: 16, pro: 14 } },
   ];
 
-  const handleToggleChange = (e, newValue) => {
-    if (newValue !== null) {
-      setFav({ ...fav, mode: newValue, currency: newValue === 'fiat' ? 0 : 1000 });
-    }
-  };
-
-  const handleNetworkChange = (e, newValue) => {
+  const handleNetworkChange = (
+    e: React.MouseEvent<HTMLElement>,
+    newValue: 'mainnet' | 'testnet',
+  ) => {
     if (newValue !== null) {
       setSettings({ ...settings, network: newValue });
       systemClient.setItem('settings_network', newValue);
+    }
+  };
+
+  const handleConnectionChange = (e: React.MouseEvent<HTMLElement>, newValue: 'api' | 'nostr') => {
+    if (newValue !== null) {
+      setSettings({ ...settings, connection: newValue });
+      systemClient.setItem('settings_connection', newValue);
     }
   };
 
@@ -72,9 +74,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               <ListItemIcon>
                 <Translate />
               </ListItemIcon>
-              <Typography variant="subtitle1">
-                {t('Language Settings')}
-              </Typography>
+              <Typography variant='subtitle1'>{t('Language Settings')}</Typography>
             </SettingHeader>
             <StyledSelectLanguage
               language={settings.language}
@@ -91,13 +91,11 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               <ListItemIcon>
                 <Palette />
               </ListItemIcon>
-              <Typography variant="subtitle1">
-                {t('Appearance Settings')}
-              </Typography>
+              <Typography variant='subtitle1'>{t('Appearance Settings')}</Typography>
             </SettingHeader>
             <AppearanceSettingsBox>
               <FormControlLabel
-                labelPlacement="end"
+                labelPlacement='end'
                 label={t('Dark Mode')}
                 control={
                   <Switch
@@ -112,7 +110,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               />
               {settings.mode === 'dark' && (
                 <QRCodeSwitch
-                  labelPlacement="end"
+                  labelPlacement='end'
                   label={t('QR Code Color')}
                   control={
                     <Switch
@@ -135,9 +133,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               <ListItemIcon>
                 <SettingsOverscan />
               </ListItemIcon>
-              <Typography variant="subtitle1">
-                {t('Font Size')}
-              </Typography>
+              <Typography variant='subtitle1'>{t('Font Size')}</Typography>
             </SettingHeader>
             <StyledSlider
               value={settings.fontSize}
@@ -149,38 +145,36 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                 setSettings({ ...settings, fontSize });
                 systemClient.setItem(`settings_fontsize_${settings.frontend}`, fontSize.toString());
               }}
-              valueLabelDisplay="off"
+              valueLabelDisplay='off'
               track={false}
               marks={fontSizes.map(({ label, value }) => ({
-                label: <Typography variant="caption">{t(label)}</Typography>,
+                label: <Typography variant='caption'>{t(label)}</Typography>,
                 value: settings.frontend === 'basic' ? value.basic : value.pro,
               }))}
             />
           </StyledListItem>
 
-          {/* Currency Settings */}
+          {/* connection Settings */}
           <StyledListItem>
             <SettingHeader>
               <ListItemIcon>
-                <AccountBalance />
+                <SettingsInputAntenna />
               </ListItemIcon>
-              <Typography variant="subtitle1">
-                {t('Currency Settings')}
-              </Typography>
+              <Typography variant='subtitle1'>{t('Currency Settings')}</Typography>
             </SettingHeader>
             <StyledToggleButtonGroup
               exclusive={true}
-              value={fav.mode}
-              onChange={handleToggleChange}
+              value={settings.connection}
+              onChange={handleConnectionChange}
               fullWidth
             >
-              <StyledToggleButton value="fiat">
+              <StyledToggleButton value='fiat'>
                 <AttachMoney />
-                {t('Fiat')}
+                {t('API')}
               </StyledToggleButton>
-              <StyledToggleButton value="swap">
+              <StyledToggleButton value='swap'>
                 <SwapCalls />
-                {t('Swaps')}
+                {t('nostr')}
               </StyledToggleButton>
             </StyledToggleButtonGroup>
           </StyledListItem>
@@ -191,9 +185,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               <ListItemIcon>
                 <Link />
               </ListItemIcon>
-              <Typography variant="subtitle1">
-                {t('Network Settings')}
-              </Typography>
+              <Typography variant='subtitle1'>{t('Network Settings')}</Typography>
             </SettingHeader>
             <StyledToggleButtonGroup
               exclusive={true}
@@ -201,25 +193,19 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               onChange={handleNetworkChange}
               fullWidth
             >
-              <StyledToggleButton value="mainnet">
-                {t('Mainnet')}
-              </StyledToggleButton>
-              <StyledToggleButton value="testnet">
-                {t('Testnet')}
-              </StyledToggleButton>
+              <StyledToggleButton value='mainnet'>{t('Mainnet')}</StyledToggleButton>
+              <StyledToggleButton value='testnet'>{t('Testnet')}</StyledToggleButton>
             </StyledToggleButtonGroup>
           </StyledListItem>
 
           {/* Proxy Settings */}
-          {window.NativeRobosats !== undefined && (
+          {client === 'mobile' && (
             <StyledListItem>
               <SettingHeader>
                 <ListItemIcon>
                   <TorIcon />
                 </ListItemIcon>
-                <Typography variant="subtitle1">
-                  {t('Proxy Settings')}
-                </Typography>
+                <Typography variant='subtitle1'>{t('Proxy Settings')}</Typography>
               </SettingHeader>
               <StyledToggleButtonGroup
                 exclusive={true}
@@ -233,12 +219,8 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                 }}
                 fullWidth
               >
-                <StyledToggleButton value={true}>
-                  {t('Built-in')}
-                </StyledToggleButton>
-                <StyledToggleButton value={false}>
-                  {t('Disabled')}
-                </StyledToggleButton>
+                <StyledToggleButton value={true}>{t('Built-in')}</StyledToggleButton>
+                <StyledToggleButton value={false}>{t('Disabled')}</StyledToggleButton>
               </StyledToggleButtonGroup>
             </StyledListItem>
           )}

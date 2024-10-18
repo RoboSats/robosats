@@ -11,12 +11,10 @@ import BookTable from '../../components/BookTable';
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
-  const { setDelay, setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -31,8 +29,6 @@ const BookPage = (): JSX.Element => {
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
     if (garage.getSlot()?.hashId) {
-      setDelay(10000);
-      setCurrentOrderId({ id, shortAlias });
       navigate(`/order/${shortAlias}/${id}`);
     } else {
       setOpenNoRobot(true);
@@ -89,7 +85,7 @@ const BookPage = (): JSX.Element => {
           setOpenNoRobot(false);
         }}
         onClickGenerateRobot={() => {
-          navigate('/robot');
+          navigate('/garage');
         }}
       />
       {openMaker ? (
@@ -101,11 +97,8 @@ const BookPage = (): JSX.Element => {
         >
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
-              onOrderCreated={(id) => {
-                navigate(`/order/${id}`);
-              }}
               onClickGenerateRobot={() => {
-                navigate('/robot');
+                navigate('/garage');
               }}
             />
           </Box>
