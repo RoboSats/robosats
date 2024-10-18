@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Button, Typography, styled, useTheme } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { RoboSatsTextIcon } from '../../components/Icons';
-import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
 import { genBase62Token } from '../../utils';
 import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
@@ -11,11 +11,16 @@ import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
-  width: number;
   setInputToken: (state: string) => void;
 }
 
-const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element => {
+const BUTTON_COLORS = {
+  primary: '#2196f3',
+  secondary: '#9c27b0',
+  text: '#ffffff',
+};
+
+const Welcome = ({ setView, setInputToken }: WelcomeProps): JSX.Element => {
   const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -24,101 +29,77 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element =
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
+  const COLORS = {
+    background: theme.palette.background.paper,
+    textPrimary: theme.palette.text.primary,
+    shadow: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+  };
+
   return (
-    <Grid
-      container
-      direction='column'
-      alignItems='center'
-      spacing={1.8}
-      paddingTop={2.2}
-      padding={0.5}
-    >
-      <Grid item style={{ paddingTop: '2em', paddingBottom: '1.5em' }}>
+    <WelcomeContainer>
+      <LogoSection colors={COLORS}>
         <svg width={0} height={0}>
           <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
             <stop offset={0} stopColor={theme.palette.primary.main} />
             <stop offset={1} stopColor={theme.palette.secondary.main} />
           </linearGradient>
         </svg>
-        <RoboSatsTextIcon
-          sx={{
-            fill: 'url(#linearColors)',
-            height: `${Math.min(width * 0.66, 17) * 0.25}em`,
-            width: `${Math.min(width * 0.66, 17)}em`,
-          }}
-        />
-        <Typography
-          lineHeight={0.82}
-          sx={{ position: 'relative', bottom: '0.3em' }}
-          color='secondary'
-          align='center'
-          component='h6'
-          variant='h6'
-        >
-          {t('A Simple and Private LN P2P Exchange')}
+        <LogoBox>
+          <StyledRoboSatsTextIcon />
+        </LogoBox>
+        <Typography variant='subtitle1' sx={{ fontSize: '1rem', mt: 2, textAlign: 'center' }}>
+          A Simple and Private ⚡ Lightning P2P Exchange
         </Typography>
-      </Grid>
-
-      <Grid item>
-        <Box
-          sx={{
-            backgroundColor: 'background.paper',
-            border: '1px solid',
-            borderRadius: '4px',
-            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-            '&:hover': {
-              borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-            },
+      </LogoSection>
+      <ButtonsSection>
+        <StyledButton
+          fullWidth
+          variant='contained'
+          $buttonColor={BUTTON_COLORS.primary}
+          $textColor={BUTTON_COLORS.text}
+          $shadowColor={COLORS.shadow}
+          $borderRadius={{ xs: '0', md: '0 8px 0 0' }}
+          endIcon={<ArrowForwardIcon />}
+          onClick={() => setView('onboarding')}
+        >
+          <ButtonContent>
+            <Typography variant='body2'>Create a new robot and</Typography>
+            <Typography variant='body2'>learn to use RoboSats.</Typography>
+            <Typography variant='h6' sx={{ mt: 1, fontWeight: 'bold' }}>
+              Start
+            </Typography>
+          </ButtonContent>
+        </StyledButton>
+        <StyledButton
+          fullWidth
+          variant='contained'
+          $buttonColor={BUTTON_COLORS.secondary}
+          $textColor={BUTTON_COLORS.text}
+          $shadowColor={COLORS.shadow}
+          $borderRadius={{ xs: '0', md: '0' }}
+          endIcon={<ArrowForwardIcon />}
+          onClick={() => {
+            setOpen((open) => {
+              return { ...open, recovery: true };
+            });
           }}
         >
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
-            <Grid item>
-              <Typography align='center'>
-                {t('Create a new robot and learn to use RoboSats')}
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Button
-                size='large'
-                color='primary'
-                variant='contained'
-                onClick={() => {
-                  setView('onboarding');
-                }}
-              >
-                <RocketLaunch />
-                <div style={{ width: '0.5em' }} />
-                {t('Start')}
-              </Button>
-            </Grid>
-
-            <Grid item>
-              <Typography align='center'>
-                {t('Recover an existing robot using your token')}
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Button
-                size='small'
-                color='secondary'
-                variant='contained'
-                onClick={() => {
-                  setOpen((open) => {
-                    return { ...open, recovery: true };
-                  });
-                }}
-              >
-                <Key /> <div style={{ width: '0.5em' }} />
-                {t('Recovery')}
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </Grid>
-      <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
-        <Button
-          size='small'
-          color='primary'
+          <ButtonContent>
+            <Typography variant='body2'>Recover an existing</Typography>
+            <Typography variant='body2'>Robot using your token.</Typography>
+            <Typography variant='h6' sx={{ mt: 1, fontWeight: 'bold' }}>
+              Recover
+            </Typography>
+          </ButtonContent>
+        </StyledButton>
+        <StyledButton
+          fullWidth
+          variant='contained'
+          $buttonColor={COLORS.background}
+          $textColor={BUTTON_COLORS.primary}
+          $shadowColor={COLORS.shadow}
+          $borderRadius={{ xs: '0 0 8px 8px', md: '0 0 8px 0' }}
+          sx={{ justifyContent: 'flex-start' }}
           onClick={() => {
             const token = genBase62Token(36);
             garage.createRobot(federation, token);
@@ -127,12 +108,97 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element =
             setPage('create');
           }}
         >
-          <FastForward /> <div style={{ width: '0.5em' }} />
-          {t('Fast Generate Order')}
-        </Button>
-      </Grid>
-    </Grid>
+          <Typography variant='body1' sx={{ fontWeight: 'bold' }}>
+            ▶ Fast Generate Order
+          </Typography>
+        </StyledButton>
+      </ButtonsSection>
+    </WelcomeContainer>
   );
 };
+
+// Styled components
+const WelcomeContainer = styled(Box)(({ theme }) => ({
+  width: '100%',
+  maxWidth: 800,
+  margin: '0 auto',
+  display: 'flex',
+  flexDirection: 'column',
+  marginBottom: theme.spacing(8),
+  [theme.breakpoints.up('md')]: {
+    flexDirection: 'row',
+  },
+}));
+
+const LogoSection = styled(Box)<{ colors: typeof COLORS }>(({ theme, colors }) => ({
+  flexGrow: 1,
+  flexBasis: 0,
+  backgroundColor: colors.background,
+  border: `2px solid ${colors.textPrimary}`,
+  borderRight: 'none',
+  borderRadius: '8px 8px 0 0',
+  boxShadow: `8px 8px 0px 0px ${colors.shadow}`,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: theme.spacing(4),
+  [theme.breakpoints.up('md')]: {
+    borderRadius: '8px 0 0 8px',
+  },
+}));
+
+const LogoBox = styled(Box)({
+  width: '80%',
+  maxWidth: '400px',
+  height: 'auto',
+});
+
+const StyledRoboSatsTextIcon = styled(RoboSatsTextIcon)({
+  fill: 'url(#linearColors)',
+  width: '100%',
+  height: 'auto',
+});
+
+const ButtonsSection = styled(Box)(({ theme }) => ({
+  flexGrow: 1,
+  flexBasis: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  backgroundColor: 'transparent',
+}));
+
+const StyledButton = styled(Button)<{
+  $buttonColor: string;
+  $textColor: string;
+  $shadowColor: string;
+  $borderRadius: { xs: string; md: string };
+}>(({ theme, $buttonColor, $textColor, $shadowColor, $borderRadius }) => ({
+  justifyContent: 'space-between',
+  textAlign: 'left',
+  padding: theme.spacing(2),
+  height: '100%',
+  borderRadius: 0,
+  border: `2px solid ${theme.palette.mode === 'dark' ? '#ffffff' : '#000000'}`,
+  boxShadow: `8px 8px 0px 0px ${$shadowColor}`,
+  '&:not(:last-child)': {
+    borderBottom: 'none',
+  },
+  '&:hover': {
+    backgroundColor: $buttonColor,
+    boxShadow: `12px 12px 0px 0px ${$shadowColor}`,
+  },
+  backgroundColor: $buttonColor,
+  color: $textColor,
+  borderRadius: $borderRadius.xs,
+  [theme.breakpoints.up('md')]: {
+    borderRadius: $borderRadius.md,
+  },
+}));
+
+const ButtonContent = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+});
 
 export default Welcome;

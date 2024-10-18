@@ -2,44 +2,48 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  Button,
-  Grid,
-  LinearProgress,
   Typography,
-  Alert,
+  LinearProgress,
   Select,
   MenuItem,
   Box,
+  TextField,
   useTheme,
+  useMediaQuery,
+  styled,
   type SelectChangeEvent,
 } from '@mui/material';
-import { Key } from '@mui/icons-material';
-import { Bolt, Add, DeleteSweep, Download } from '@mui/icons-material';
+import { Key, Bolt, Add, DeleteSweep, Logout, FileCopy, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import TokenInput from './TokenInput';
-import { type Slot, type Robot } from '../../models';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
-import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { Slot } from '../../models';
+
+const BUTTON_COLORS = {
+  primary: '#2196f3',
+  secondary: '#9c27b0',
+  text: '#ffffff',
+  hoverPrimary: '#4dabf5',
+  hoverSecondary: '#af52bf',
+  activePrimary: '#1976d2',
+  activeSecondary: '#7b1fa2',
+  deleteHover: '#ff6666',
+};
+
+const COLORS = {
+  shadow: '#000000',
+};
 
 interface RobotProfileProps {
-  robot: Robot;
-  setRobot: (state: Robot) => void;
-  setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
-  setInputToken: (state: string) => void;
-  width: number;
-  baseUrl: string;
+  setInputToken: (token: string) => void;
+  setView: (view: string) => void;
 }
 
-const RobotProfile = ({
-  inputToken,
-  setInputToken,
-  setView,
-  width,
-}: RobotProfileProps): JSX.Element => {
+const RobotProfile = ({ inputToken, setInputToken, setView }: RobotProfileProps): JSX.Element => {
   const { windowSize, client, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -47,6 +51,7 @@ const RobotProfile = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -76,272 +81,316 @@ const RobotProfile = ({
   const robot = slot?.getRobot();
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
-      <Grid
-        item
-        container
-        direction='column'
-        alignItems='center'
-        spacing={1}
-        sx={{ width: '100%' }}
-      >
-        <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {slot?.nickname ? (
-            <Typography align='center' component='h5' variant='h5'>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {width < 19 ? null : (
-                  <Bolt
-                    sx={{
-                      color: '#fcba03',
-                      height: '1.5em',
-                      width: '1.5em',
-                    }}
-                  />
-                )}
-                <b>{slot?.nickname}</b>
-                {width < 19 ? null : (
-                  <Bolt
-                    sx={{
-                      color: '#fcba03',
-                      height: '1.5em',
-                      width: '1.5em',
-                    }}
-                  />
-                )}
-              </div>
-            </Typography>
-          ) : (
-            <>
-              <b>{t('Building your robot!')}</b>
-              <LinearProgress />
-            </>
-          )}
-        </Grid>
-
-        <Grid item sx={{ width: `13.5em` }}>
-          <RobotAvatar
-            hashId={slot?.hashId}
-            smooth={true}
-            style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
-            placeholderType='generating'
-            imageStyle={{
-              transform: '',
-              border: '2px solid #555',
-              filter: 'drop-shadow(1px 1px 1px #000000)',
-              height: `12.4em`,
-              width: `12.4em`,
+    <ProfileContainer $isMobile={isMobile}>
+      <InfoSection colors={COLORS} $isMobile={isMobile}>
+        <NicknameTypography variant={isMobile ? 'h6' : 'h5'} align='center' $isMobile={isMobile}>
+          <BoltIcon $isMobile={isMobile} />
+          {slot?.nickname}
+          <BoltIcon $isMobile={isMobile} />
+        </NicknameTypography>
+        <StyledRobotAvatar
+          hashId={slot?.hashId}
+          smooth={true}
+          placeholderType='generating'
+          style={{ width: isMobile ? '80px' : '120px', height: isMobile ? '80px' : '120px' }}
+        />
+        <StatusTypography
+          variant={isMobile ? 'body2' : 'body1'}
+          align='center'
+          $isMobile={isMobile}
+        >
+          {federation.loading && !slot?.activeOrder?.id
+            ? t('Looking for orders!')
+            : t('Ready to Trade')}
+        </StatusTypography>
+        {federation.loading && !slot?.activeOrder?.id && (
+          <StyledLinearProgress $isMobile={isMobile} />
+        )}
+        <TokenBox $isMobile={isMobile}>
+          W{' '}
+          <StyledTextField
+            fullWidth
+            value={inputToken}
+            variant='standard'
+            $isMobile={isMobile}
+            InputProps={{
+              readOnly: true,
+              disableUnderline: true,
+              endAdornment: (
+                <CustomIconButton onClick={() => navigator.clipboard.writeText(inputToken)}>
+                  <StyledFileCopyIcon $isMobile={isMobile} />
+                </CustomIconButton>
+              ),
             }}
-            tooltip={t('This is your trading avatar')}
-            tooltipPosition='top'
           />
-          {robot?.found && Boolean(slot?.lastOrder?.id) ? (
-            <Typography align='center' variant='h6'>
-              {t('Welcome back!')}
-            </Typography>
+        </TokenBox>
+      </InfoSection>
+
+      <RightSection $isMobile={isMobile}>
+        <TitleSection>
+          <TitleTypography variant={isMobile ? 'subtitle1' : 'h6'} align='center'>
+            {t('Robot Garage')}
+          </TitleTypography>
+        </TitleSection>
+        <StyledSelect
+          value={loading ? 'loading' : garage.currentSlot}
+          onChange={handleChangeSlot}
+          $isMobile={isMobile}
+        >
+          {loading ? (
+            <MenuItem key={'loading'} value={'loading'}>
+              <Typography variant={isMobile ? 'body2' : 'body1'}>{t('Building...')}</Typography>
+            </MenuItem>
           ) : (
-            <></>
+            Object.values(garage.slots).map((slot: Slot, index: number) => (
+              <StyledMenuItem key={index} value={slot.token} $isMobile={isMobile}>
+                <MenuItemContent>
+                  <StyledMenuItemAvatar
+                    hashId={slot?.hashId}
+                    smooth={true}
+                    $isMobile={isMobile}
+                    placeholderType='loading'
+                    small={true}
+                  />
+                  <Typography variant={isMobile ? 'body2' : 'body1'}>{slot?.nickname}</Typography>
+                </MenuItemContent>
+              </StyledMenuItem>
+            ))
           )}
-        </Grid>
-
-        {federation.loading && !slot?.activeOrder?.id ? (
-          <Grid>
-            <b>{t('Looking for orders!')}</b>
-            <LinearProgress />
-          </Grid>
-        ) : null}
-
-        {slot?.activeOrder ? (
-          <Grid item>
-            <Button
-              onClick={() => {
-                navigate(
-                  `/order/${String(slot?.activeOrder?.shortAlias)}/${String(slot?.activeOrder?.id)}`,
-                );
-              }}
+        </StyledSelect>
+        <ButtonContainer>
+          <StyledButton
+            $buttonColor={BUTTON_COLORS.primary}
+            $hoverColor={BUTTON_COLORS.hoverPrimary}
+            $textColor={BUTTON_COLORS.text}
+            $isMobile={isMobile}
+            onClick={handleAddRobot}
+          >
+            <StyledAddIcon $isMobile={isMobile} /> {t('ADD ROBOT')}
+          </StyledButton>
+          {window.NativeRobosats === undefined && (
+            <StyledButton
+              $buttonColor={BUTTON_COLORS.secondary}
+              $hoverColor={BUTTON_COLORS.hoverSecondary}
+              $textColor={BUTTON_COLORS.text}
+              $isMobile={isMobile}
+              onClick={() => garage.download()}
             >
-              {t('Active order #{{orderID}}', { orderID: slot?.activeOrder?.id })}
-            </Button>
-          </Grid>
-        ) : null}
-
-        {!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id) ? (
-          <Grid item container direction='column' alignItems='center'>
-            <Grid item>
-              <Button
-                onClick={() => {
-                  navigate(
-                    `/order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
-                  );
-                }}
-              >
-                {t('Last order #{{orderID}}', { orderID: slot?.lastOrder?.id })}
-              </Button>
-            </Grid>
-            <Grid item>
-              <Alert severity='warning'>
-                <Grid container direction='column' alignItems='center'>
-                  <Grid item>
-                    {t(
-                      'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
-                    )}
-                  </Grid>
-                  <Grid item sx={{ position: 'relative', right: '1em' }}>
-                    <Button color='success' size='small' onClick={handleAddRobot}>
-                      <Add />
-                      {t('Add a new Robot')}
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Alert>
-            </Grid>
-          </Grid>
-        ) : null}
-
-        {!slot?.activeOrder && !slot?.lastOrder && !federation.loading ? (
-          <Grid item>{t('No existing orders found')}</Grid>
-        ) : null}
-
-        <Grid
-          item
-          container
-          direction='row'
-          justifyContent='stretch'
-          alignItems='stretch'
-          sx={{ width: '100%' }}
-        >
-          <Grid item xs={12}>
-            <TokenInput
-              inputToken={inputToken}
-              editable={false}
-              label={t('Store your token safely')}
-              setInputToken={setInputToken}
-              onPressEnter={() => null}
-            />
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item sx={{ width: '100%' }}>
-        <Box
-          sx={{
-            backgroundColor: 'background.paper',
-            border: '1px solid',
-            borderRadius: '4px',
-            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-          }}
-        >
-          <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
-            <Grid item sx={{ width: '100%' }}>
-              <Typography variant='caption'>{t('Robot Garage')}</Typography>
-              <Select
-                fullWidth
-                required={true}
-                inputProps={{
-                  style: { textAlign: 'center' },
-                }}
-                value={loading ? 'loading' : garage.currentSlot}
-                onChange={handleChangeSlot}
-              >
-                {loading ? (
-                  <MenuItem key={'loading'} value={'loading'}>
-                    <Typography>{t('Building...')}</Typography>
-                  </MenuItem>
-                ) : (
-                  Object.values(garage.slots).map((slot: Slot, index: number) => {
-                    return (
-                      <MenuItem key={index} value={slot.token}>
-                        <Grid
-                          container
-                          direction='row'
-                          justifyContent='flex-start'
-                          alignItems='center'
-                          style={{ height: '2.8em' }}
-                          spacing={1}
-                        >
-                          <Grid item>
-                            <RobotAvatar
-                              hashId={slot?.hashId}
-                              smooth={true}
-                              style={{ width: '2.6em', height: '2.6em' }}
-                              placeholderType='loading'
-                              small={true}
-                            />
-                          </Grid>
-                          <Grid item>
-                            <Typography variant={windowSize.width < 26 ? 'caption' : undefined}>
-                              {slot?.nickname}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </MenuItem>
-                    );
-                  })
-                )}
-              </Select>
-            </Grid>
-
-            <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
-              <Grid item>
-                <LoadingButton loading={loading} color='primary' onClick={handleAddRobot}>
-                  <Add /> <div style={{ width: '0.5em' }} />
-                  {t('Add Robot')}
-                </LoadingButton>
-              </Grid>
-
-              {client !== 'mobile' ? (
-                <Grid item>
-                  <Button
-                    color='primary'
-                    onClick={() => {
-                      garage.download();
-                    }}
-                  >
-                    <Download />
-                  </Button>
-                </Grid>
-              ) : null}
-
-              <Grid item>
-                <Button
-                  color='primary'
-                  onClick={() => {
-                    garage.deleteSlot();
-                    if (Object.keys(garage.slots).length < 1) setView('welcome');
-                  }}
-                >
-                  <DeleteSweep /> <div style={{ width: '0.5em' }} />
-                  {t('Delete Robot')}
-                </Button>
-              </Grid>
-            </Grid>
-            <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
-              <Grid item>
-                <Button
-                  size='small'
-                  color='secondary'
-                  variant='contained'
-                  onClick={() => {
-                    setOpen((open) => {
-                      return { ...open, recovery: true };
-                    });
-                  }}
-                >
-                  <Key /> <div style={{ width: '0.5em' }} />
-                  {t('Recovery')}
-                </Button>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Box>
-      </Grid>
-    </Grid>
+              <StyledDownloadIcon $isMobile={isMobile} /> {t('DOWNLOAD')}
+            </StyledButton>
+          )}
+          <StyledButton
+            $buttonColor='transparent'
+            $hoverColor={BUTTON_COLORS.deleteHover}
+            $textColor='red'
+            $isMobile={isMobile}
+            onClick={() => {
+              garage.deleteSlot();
+              if (Object.keys(garage.slots).length < 1) setView('welcome');
+            }}
+          >
+            <StyledDeleteSweepIcon $isMobile={isMobile} /> {t('DELETE ROBOT')}
+          </StyledButton>
+        </ButtonContainer>
+      </RightSection>
+    </ProfileContainer>
   );
 };
+
+// Styled components
+const ProfileContainer = styled(Box)<{ $isMobile: boolean }>(({ theme, $isMobile }) => ({
+  width: '100%',
+  maxWidth: $isMobile ? '100%' : 1000,
+  margin: '0 auto',
+  display: 'flex',
+  flexDirection: $isMobile ? 'column' : 'row',
+  border: $isMobile ? '1px solid #000' : '2px solid #000',
+  borderRadius: '8px',
+  overflow: 'hidden',
+  boxShadow: $isMobile ? '4px 4px 0px #000000' : '8px 8px 0px #000000',
+}));
+
+const InfoSection = styled(Box)<{ colors: typeof COLORS; $isMobile: boolean }>(
+  ({ theme, colors, $isMobile }) => ({
+    flexGrow: 1,
+    flexBasis: $isMobile ? 'auto' : 0,
+    backgroundColor: theme.palette.background.paper,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: $isMobile ? theme.spacing(2) : theme.spacing(4),
+    borderBottom: $isMobile ? '1px solid #000' : 'none',
+    borderRight: $isMobile ? 'none' : '2px solid #000',
+  }),
+);
+
+const NicknameTypography = styled(Typography)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: $isMobile ? '8px' : '16px',
+}));
+
+const BoltIcon = styled(Bolt)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  color: '#fcba03',
+  height: $isMobile ? '0.8em' : '1em',
+  width: $isMobile ? '0.8em' : '1em',
+}));
+
+const StyledRobotAvatar = styled(RobotAvatar)({
+  '& img': {
+    border: '2px solid #555',
+    borderRadius: '50%',
+  },
+});
+
+const StatusTypography = styled(Typography)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  marginBottom: $isMobile ? '8px' : '16px',
+}));
+
+const StyledLinearProgress = styled(LinearProgress)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  width: '100%',
+  marginBottom: $isMobile ? '8px' : '16px',
+}));
+
+const TokenBox = styled(Box)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  width: '100%',
+  border: $isMobile ? '1px solid #000' : '2px solid #000',
+  borderRadius: '4px',
+}));
+
+const StyledTextField = styled(TextField)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  '& .MuiInputBase-root': {
+    height: $isMobile ? '36px' : '48px',
+    padding: $isMobile ? '2px 4px' : '4px 8px',
+    fontSize: $isMobile ? '0.8rem' : '1rem',
+  },
+}));
+
+const RightSection = styled(Box)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  flexGrow: 1,
+  flexBasis: $isMobile ? 'auto' : 0,
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+}));
+
+const TitleSection = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderBottom: `2px solid #000`,
+}));
+
+const TitleTypography = styled(Typography)({
+  fontWeight: 'bold',
+});
+
+const StyledSelect = styled(Select)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  width: '100%',
+  height: $isMobile ? '50px' : '80px',
+  borderBottom: $isMobile ? '1px solid #000' : '2px solid #000',
+  borderRadius: 0,
+  '& .MuiOutlinedInput-notchedOutline': {
+    border: 'none',
+  },
+}));
+
+const StyledMenuItem = styled(MenuItem)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  height: $isMobile ? '50px' : '80px',
+}));
+
+const MenuItemContent = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const StyledMenuItemAvatar = styled(RobotAvatar)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  width: $isMobile ? '24px' : '30px',
+  height: $isMobile ? '24px' : '30px',
+  marginRight: '8px',
+}));
+
+const ButtonContainer = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+});
+
+const StyledButton = styled('button')<{
+  $buttonColor: string;
+  $hoverColor: string;
+  $textColor: string;
+  $isMobile: boolean;
+}>(({ theme, $buttonColor, $hoverColor, $textColor, $isMobile }) => ({
+  justifyContent: 'center',
+  alignItems: 'center',
+  textAlign: 'center',
+  padding: theme.spacing(2),
+  border: 'none',
+  borderRadius: 0,
+  backgroundColor: $buttonColor,
+  color: $textColor,
+  cursor: 'pointer',
+  display: 'flex',
+  transition: 'background-color 0.3s ease, color 0.3s ease',
+  width: '100%',
+  height: $isMobile ? '40px' : '60px',
+  borderBottom: $isMobile ? '1px solid #000' : '2px solid #000',
+  '&:hover': {
+    backgroundColor: $hoverColor,
+    color: $buttonColor === 'transparent' ? '#fff' : $textColor,
+  },
+  '&:active': {
+    backgroundColor:
+      $buttonColor === BUTTON_COLORS.primary
+        ? BUTTON_COLORS.activePrimary
+        : BUTTON_COLORS.activeSecondary,
+  },
+  '&:focus': {
+    outline: 'none',
+  },
+}));
+
+const CustomIconButton = styled('button')({
+  background: 'transparent',
+  border: 'none',
+  color: '#1976d2',
+  padding: '4px',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'color 0.3s ease',
+  '&:hover': {
+    color: '#0d47a1',
+  },
+  '&:active': {
+    color: '#002171',
+  },
+});
+
+const StyledLogoutIcon = styled(Logout)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  fontSize: $isMobile ? '1rem' : '1.5rem',
+}));
+
+const StyledFileCopyIcon = styled(FileCopy)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  fontSize: $isMobile ? '1rem' : '1.5rem',
+}));
+
+const StyledAddIcon = styled(Add)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  marginRight: '8px',
+  fontSize: $isMobile ? '1rem' : '1.5rem',
+}));
+
+const StyledDownloadIcon = styled(Download)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  marginRight: '8px',
+  fontSize: $isMobile ? '1rem' : '1.5rem',
+}));
+
+const StyledDeleteSweepIcon = styled(DeleteSweep)<{ $isMobile: boolean }>(({ $isMobile }) => ({
+  marginRight: '8px',
+  fontSize: $isMobile ? '1rem' : '1.5rem',
+}));
 
 export default RobotProfile;

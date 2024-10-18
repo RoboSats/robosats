@@ -1,38 +1,34 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import {
   Grid,
-  Paper,
   Switch,
-  useTheme,
   FormControlLabel,
   List,
   ListItem,
   ListItemIcon,
-  Slider,
   Typography,
   ToggleButtonGroup,
   ToggleButton,
+  Box,
+  Slider,
 } from '@mui/material';
 import SelectLanguage from './SelectLanguage';
 import {
   Translate,
   Palette,
-  LightMode,
-  DarkMode,
   SettingsOverscan,
   Link,
   AttachMoney,
-  QrCode,
   SettingsInputAntenna,
-  Dns,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
 import SwapCalls from '@mui/icons-material/SwapCalls';
 import { apiClient } from '../../services/api';
-import Nostr from '../Icons/Nostr';
+import { styled } from '@mui/system';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -40,8 +36,9 @@ interface SettingsFormProps {
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
   const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
-  const theme = useTheme();
   const { t } = useTranslation();
+  const theme = useTheme();
+
   const fontSizes = [
     { label: 'XS', value: { basic: 12, pro: 10 } },
     { label: 'S', value: { basic: 13, pro: 11 } },
@@ -50,115 +47,74 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
     { label: 'XL', value: { basic: 16, pro: 14 } },
   ];
 
+  const handleNetworkChange = (
+    e: React.MouseEvent<HTMLElement>,
+    newValue: 'mainnet' | 'testnet',
+  ) => {
+    if (newValue !== null) {
+      setSettings({ ...settings, network: newValue });
+      systemClient.setItem('settings_network', newValue);
+    }
+  };
+
+  const handleConnectionChange = (e: React.MouseEvent<HTMLElement>, newValue: 'api' | 'nostr') => {
+    if (newValue !== null) {
+      setSettings({ ...settings, connection: newValue });
+      systemClient.setItem('settings_connection', newValue);
+    }
+  };
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
         <List dense={dense}>
-          <ListItem>
-            <ListItemIcon>
-              <Translate />
-            </ListItemIcon>
-            <SelectLanguage
+          {/* Language Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <Translate />
+              </ListItemIcon>
+              <Typography variant='subtitle1'>{t('Language Settings')}</Typography>
+            </SettingHeader>
+            <StyledSelectLanguage
               language={settings.language}
               setLanguage={(language) => {
                 setSettings({ ...settings, language });
                 systemClient.setItem('settings_language', language);
               }}
             />
-          </ListItem>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <Palette />
-            </ListItemIcon>
-            <FormControlLabel
-              labelPlacement='end'
-              label={settings.mode === 'dark' ? t('Dark') : t('Light')}
-              control={
-                <Switch
-                  checked={settings.mode === 'dark'}
-                  checkedIcon={
-                    <Paper
-                      elevation={3}
-                      sx={{
-                        width: '1.2em',
-                        height: '1.2em',
-                        borderRadius: '0.4em',
-                        backgroundColor: 'white',
-                        position: 'relative',
-                        top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                      }}
-                    >
-                      <DarkMode sx={{ width: '0.8em', height: '0.8em', color: '#666' }} />
-                    </Paper>
-                  }
-                  icon={
-                    <Paper
-                      elevation={3}
-                      sx={{
-                        width: '1.2em',
-                        height: '1.2em',
-                        borderRadius: '0.4em',
-                        backgroundColor: 'white',
-                        padding: '0.07em',
-                        position: 'relative',
-                        top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                      }}
-                    >
-                      <LightMode sx={{ width: '0.67em', height: '0.67em', color: '#666' }} />
-                    </Paper>
-                  }
-                  onChange={(e) => {
-                    const mode = e.target.checked ? 'dark' : 'light';
-                    setSettings({ ...settings, mode });
-                    systemClient.setItem('settings_mode', mode);
-                  }}
-                />
-              }
-            />
-            {settings.mode === 'dark' ? (
-              <>
-                <ListItemIcon>
-                  <QrCode />
-                </ListItemIcon>
-                <FormControlLabel
-                  sx={{ position: 'relative', right: '1.5em', width: '3em' }}
+          {/* Appearance Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <Palette />
+              </ListItemIcon>
+              <Typography variant='subtitle1'>{t('Appearance Settings')}</Typography>
+            </SettingHeader>
+            <AppearanceSettingsBox>
+              <FormControlLabel
+                labelPlacement='end'
+                label={t('Dark Mode')}
+                control={
+                  <Switch
+                    checked={settings.mode === 'dark'}
+                    onChange={(e) => {
+                      const mode = e.target.checked ? 'dark' : 'light';
+                      setSettings({ ...settings, mode });
+                      systemClient.setItem('settings_mode', mode);
+                    }}
+                  />
+                }
+              />
+              {settings.mode === 'dark' && (
+                <QRCodeSwitch
                   labelPlacement='end'
-                  label={settings.lightQRs ? t('Light') : t('Dark')}
+                  label={t('QR Code Color')}
                   control={
                     <Switch
                       checked={!settings.lightQRs}
-                      checkedIcon={
-                        <Paper
-                          elevation={3}
-                          sx={{
-                            width: '1.2em',
-                            height: '1.2em',
-                            borderRadius: '0.4em',
-                            backgroundColor: 'white',
-                            position: 'relative',
-                            top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                          }}
-                        >
-                          <DarkMode sx={{ width: '0.8em', height: '0.8em', color: '#666' }} />
-                        </Paper>
-                      }
-                      icon={
-                        <Paper
-                          elevation={3}
-                          sx={{
-                            width: '1.2em',
-                            height: '1.2em',
-                            borderRadius: '0.4em',
-                            backgroundColor: 'white',
-                            padding: '0.07em',
-                            position: 'relative',
-                            top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                          }}
-                        >
-                          <LightMode sx={{ width: '0.67em', height: '0.67em', color: '#666' }} />
-                        </Paper>
-                      }
                       onChange={(e) => {
                         const lightQRs = !e.target.checked;
                         setSettings({ ...settings, lightQRs });
@@ -167,17 +123,19 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                     />
                   }
                 />
-              </>
-            ) : (
-              <></>
-            )}
-          </ListItem>
+              )}
+            </AppearanceSettingsBox>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <SettingsOverscan />
-            </ListItemIcon>
-            <Slider
+          {/* Font Size Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <SettingsOverscan />
+              </ListItemIcon>
+              <Typography variant='subtitle1'>{t('Font Size')}</Typography>
+            </SettingHeader>
+            <StyledSlider
               value={settings.fontSize}
               min={settings.frontend === 'basic' ? 12 : 10}
               max={settings.frontend === 'basic' ? 16 : 14}
@@ -188,85 +146,163 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                 systemClient.setItem(`settings_fontsize_${settings.frontend}`, fontSize.toString());
               }}
               valueLabelDisplay='off'
+              track={false}
               marks={fontSizes.map(({ label, value }) => ({
                 label: <Typography variant='caption'>{t(label)}</Typography>,
                 value: settings.frontend === 'basic' ? value.basic : value.pro,
               }))}
-              track={false}
             />
-          </ListItem>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <SettingsInputAntenna />
-            </ListItemIcon>
-            <ToggleButtonGroup
-              sx={{ width: '100%' }}
+          {/* connection Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <SettingsInputAntenna />
+              </ListItemIcon>
+              <Typography variant='subtitle1'>{t('Currency Settings')}</Typography>
+            </SettingHeader>
+            <StyledToggleButtonGroup
               exclusive={true}
               value={settings.connection}
-              onChange={(_e, connection) => {
-                setSettings({ ...settings, connection });
-                systemClient.setItem('settings_connection', connection);
-              }}
+              onChange={handleConnectionChange}
+              fullWidth
             >
-              <ToggleButton value='api' color='primary' sx={{ flexGrow: 1 }}>
+              <StyledToggleButton value='fiat'>
+                <AttachMoney />
                 {t('API')}
-              </ToggleButton>
-              <ToggleButton value='nostr' color='secondary' sx={{ flexGrow: 1 }}>
+              </StyledToggleButton>
+              <StyledToggleButton value='swap'>
+                <SwapCalls />
                 {t('nostr')}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </ListItem>
+              </StyledToggleButton>
+            </StyledToggleButtonGroup>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <Link />
-            </ListItemIcon>
-            <ToggleButtonGroup
-              sx={{ width: '100%' }}
+          {/* Network Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <Link />
+              </ListItemIcon>
+              <Typography variant='subtitle1'>{t('Network Settings')}</Typography>
+            </SettingHeader>
+            <StyledToggleButtonGroup
               exclusive={true}
               value={settings.network}
-              onChange={(_e, network) => {
-                setSettings({ ...settings, network });
-                systemClient.setItem('settings_network', network);
-              }}
+              onChange={handleNetworkChange}
+              fullWidth
             >
-              <ToggleButton value='mainnet' color='primary' sx={{ flexGrow: 1 }}>
-                {t('Mainnet')}
-              </ToggleButton>
-              <ToggleButton value='testnet' color='secondary' sx={{ flexGrow: 1 }}>
-                {t('Testnet')}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </ListItem>
+              <StyledToggleButton value='mainnet'>{t('Mainnet')}</StyledToggleButton>
+              <StyledToggleButton value='testnet'>{t('Testnet')}</StyledToggleButton>
+            </StyledToggleButtonGroup>
+          </StyledListItem>
 
+          {/* Proxy Settings */}
           {client === 'mobile' && (
-            <ListItem>
-              <ListItemIcon>
-                <TorIcon />
-              </ListItemIcon>
-              <ToggleButtonGroup
+            <StyledListItem>
+              <SettingHeader>
+                <ListItemIcon>
+                  <TorIcon />
+                </ListItemIcon>
+                <Typography variant='subtitle1'>{t('Proxy Settings')}</Typography>
+              </SettingHeader>
+              <StyledToggleButtonGroup
                 exclusive={true}
                 value={settings.useProxy}
                 onChange={(_e, useProxy) => {
-                  setSettings({ ...settings, useProxy });
-                  systemClient.setItem('settings_use_proxy', String(useProxy));
-                  apiClient.useProxy = useProxy;
+                  if (useProxy !== null) {
+                    setSettings({ ...settings, useProxy });
+                    systemClient.setItem('settings_use_proxy', String(useProxy));
+                    apiClient.useProxy = useProxy;
+                  }
                 }}
+                fullWidth
               >
-                <ToggleButton value={true} color='primary'>
-                  {t('Build-in')}
-                </ToggleButton>
-                <ToggleButton value={false} color='secondary'>
-                  {t('Disabled')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </ListItem>
+                <StyledToggleButton value={true}>{t('Built-in')}</StyledToggleButton>
+                <StyledToggleButton value={false}>{t('Disabled')}</StyledToggleButton>
+              </StyledToggleButtonGroup>
+            </StyledListItem>
           )}
         </List>
       </Grid>
     </Grid>
   );
 };
+
+// Styled Components
+const StyledListItem = styled(ListItem)({
+  display: 'block',
+});
+
+const SettingHeader = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: '0.5em',
+});
+
+const StyledSelectLanguage = styled(SelectLanguage)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
+    border: '2px solid black',
+    boxShadow: '4px 4px 0px rgba(0, 0, 0, 1)',
+    width: '100%',
+  },
+}));
+
+const AppearanceSettingsBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+  [theme.breakpoints.up('sm')]: {
+    flexDirection: 'row',
+    gap: theme.spacing(1),
+  },
+}));
+
+const QRCodeSwitch = styled(FormControlLabel)(({ theme }) => ({
+  marginLeft: 0,
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(2),
+  },
+}));
+
+const StyledSlider = styled(Slider)(({ theme }) => ({
+  '& .MuiSlider-thumb': {
+    borderRadius: '8px',
+    border: '2px solid black',
+  },
+  '& .MuiSlider-track': {
+    borderRadius: '8px',
+    border: '2px solid black',
+  },
+  '& .MuiSlider-rail': {
+    borderRadius: '8px',
+    border: '2px solid black',
+  },
+}));
+
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)({
+  width: '100%',
+});
+
+const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
+  borderRadius: '8px',
+  border: '2px solid black',
+  boxShadow: 'none',
+  fontWeight: 'bold',
+  width: '100%',
+  '&.Mui-selected': {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
+  },
+  '&:hover': {
+    backgroundColor: 'initial',
+  },
+}));
 
 export default SettingsForm;
