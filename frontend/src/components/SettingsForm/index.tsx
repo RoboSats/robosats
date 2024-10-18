@@ -1,39 +1,36 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import {
   Grid,
-  Paper,
   Switch,
-  useTheme,
   FormControlLabel,
   List,
   ListItem,
   ListItemIcon,
-  Slider,
   Typography,
   ToggleButtonGroup,
   ToggleButton,
+  Box,
+  Slider,
 } from '@mui/material';
 import SelectLanguage from './SelectLanguage';
 import {
   Translate,
   Palette,
-  LightMode,
-  DarkMode,
   SettingsOverscan,
   Link,
   AccountBalance,
   AttachMoney,
   QrCode,
-  ControlPoint,
+  DarkMode,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
 import SwapCalls from '@mui/icons-material/SwapCalls';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 import { apiClient } from '../../services/api';
+import { styled } from '@mui/system';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -41,10 +38,9 @@ interface SettingsFormProps {
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
   const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const theme = useTheme();
   const { t } = useTranslation();
+  const theme = useTheme();
+
   const fontSizes = [
     { label: 'XS', value: { basic: 12, pro: 10 } },
     { label: 'S', value: { basic: 13, pro: 11 } },
@@ -53,115 +49,74 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
     { label: 'XL', value: { basic: 16, pro: 14 } },
   ];
 
+  const handleToggleChange = (e, newValue) => {
+    if (newValue !== null) {
+      setFav({ ...fav, mode: newValue, currency: newValue === 'fiat' ? 0 : 1000 });
+    }
+  };
+
+  const handleNetworkChange = (e, newValue) => {
+    if (newValue !== null) {
+      setSettings({ ...settings, network: newValue });
+      systemClient.setItem('settings_network', newValue);
+    }
+  };
+
   return (
-    <Grid container spacing={1}>
-      <Grid item>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
         <List dense={dense}>
-          <ListItem>
-            <ListItemIcon>
-              <Translate />
-            </ListItemIcon>
-            <SelectLanguage
+          {/* Language Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <Translate />
+              </ListItemIcon>
+              <Typography variant="subtitle1">
+                {t('Language Settings')}
+              </Typography>
+            </SettingHeader>
+            <StyledSelectLanguage
               language={settings.language}
               setLanguage={(language) => {
                 setSettings({ ...settings, language });
                 systemClient.setItem('settings_language', language);
               }}
             />
-          </ListItem>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <Palette />
-            </ListItemIcon>
-            <FormControlLabel
-              labelPlacement='end'
-              label={settings.mode === 'dark' ? t('Dark') : t('Light')}
-              control={
-                <Switch
-                  checked={settings.mode === 'dark'}
-                  checkedIcon={
-                    <Paper
-                      elevation={3}
-                      sx={{
-                        width: '1.2em',
-                        height: '1.2em',
-                        borderRadius: '0.4em',
-                        backgroundColor: 'white',
-                        position: 'relative',
-                        top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                      }}
-                    >
-                      <DarkMode sx={{ width: '0.8em', height: '0.8em', color: '#666' }} />
-                    </Paper>
-                  }
-                  icon={
-                    <Paper
-                      elevation={3}
-                      sx={{
-                        width: '1.2em',
-                        height: '1.2em',
-                        borderRadius: '0.4em',
-                        backgroundColor: 'white',
-                        padding: '0.07em',
-                        position: 'relative',
-                        top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                      }}
-                    >
-                      <LightMode sx={{ width: '0.67em', height: '0.67em', color: '#666' }} />
-                    </Paper>
-                  }
-                  onChange={(e) => {
-                    const mode = e.target.checked ? 'dark' : 'light';
-                    setSettings({ ...settings, mode });
-                    systemClient.setItem('settings_mode', mode);
-                  }}
-                />
-              }
-            />
-            {settings.mode === 'dark' ? (
-              <>
-                <ListItemIcon>
-                  <QrCode />
-                </ListItemIcon>
-                <FormControlLabel
-                  sx={{ position: 'relative', right: '1.5em', width: '3em' }}
-                  labelPlacement='end'
-                  label={settings.lightQRs ? t('Light') : t('Dark')}
+          {/* Appearance Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <Palette />
+              </ListItemIcon>
+              <Typography variant="subtitle1">
+                {t('Appearance Settings')}
+              </Typography>
+            </SettingHeader>
+            <AppearanceSettingsBox>
+              <FormControlLabel
+                labelPlacement="end"
+                label={t('Dark Mode')}
+                control={
+                  <Switch
+                    checked={settings.mode === 'dark'}
+                    onChange={(e) => {
+                      const mode = e.target.checked ? 'dark' : 'light';
+                      setSettings({ ...settings, mode });
+                      systemClient.setItem('settings_mode', mode);
+                    }}
+                  />
+                }
+              />
+              {settings.mode === 'dark' && (
+                <QRCodeSwitch
+                  labelPlacement="end"
+                  label={t('QR Code Color')}
                   control={
                     <Switch
                       checked={!settings.lightQRs}
-                      checkedIcon={
-                        <Paper
-                          elevation={3}
-                          sx={{
-                            width: '1.2em',
-                            height: '1.2em',
-                            borderRadius: '0.4em',
-                            backgroundColor: 'white',
-                            position: 'relative',
-                            top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                          }}
-                        >
-                          <DarkMode sx={{ width: '0.8em', height: '0.8em', color: '#666' }} />
-                        </Paper>
-                      }
-                      icon={
-                        <Paper
-                          elevation={3}
-                          sx={{
-                            width: '1.2em',
-                            height: '1.2em',
-                            borderRadius: '0.4em',
-                            backgroundColor: 'white',
-                            padding: '0.07em',
-                            position: 'relative',
-                            top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                          }}
-                        >
-                          <LightMode sx={{ width: '0.67em', height: '0.67em', color: '#666' }} />
-                        </Paper>
-                      }
                       onChange={(e) => {
                         const lightQRs = !e.target.checked;
                         setSettings({ ...settings, lightQRs });
@@ -170,17 +125,21 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                     />
                   }
                 />
-              </>
-            ) : (
-              <></>
-            )}
-          </ListItem>
+              )}
+            </AppearanceSettingsBox>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <SettingsOverscan />
-            </ListItemIcon>
-            <Slider
+          {/* Font Size Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <SettingsOverscan />
+              </ListItemIcon>
+              <Typography variant="subtitle1">
+                {t('Font Size')}
+              </Typography>
+            </SettingHeader>
+            <StyledSlider
               value={settings.fontSize}
               min={settings.frontend === 'basic' ? 12 : 10}
               max={settings.frontend === 'basic' ? 16 : 14}
@@ -190,85 +149,178 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                 setSettings({ ...settings, fontSize });
                 systemClient.setItem(`settings_fontsize_${settings.frontend}`, fontSize.toString());
               }}
-              valueLabelDisplay='off'
+              valueLabelDisplay="off"
+              track={false}
               marks={fontSizes.map(({ label, value }) => ({
-                label: <Typography variant='caption'>{t(label)}</Typography>,
+                label: <Typography variant="caption">{t(label)}</Typography>,
                 value: settings.frontend === 'basic' ? value.basic : value.pro,
               }))}
-              track={false}
             />
-          </ListItem>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <AccountBalance />
-            </ListItemIcon>
-            <ToggleButtonGroup
+          {/* Currency Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <AccountBalance />
+              </ListItemIcon>
+              <Typography variant="subtitle1">
+                {t('Currency Settings')}
+              </Typography>
+            </SettingHeader>
+            <StyledToggleButtonGroup
               exclusive={true}
               value={fav.mode}
-              onChange={(e, mode) => {
-                setFav({ ...fav, mode, currency: mode === 'fiat' ? 0 : 1000 });
-              }}
+              onChange={handleToggleChange}
+              fullWidth
             >
-              <ToggleButton value='fiat' color='primary'>
+              <StyledToggleButton value="fiat">
                 <AttachMoney />
                 {t('Fiat')}
-              </ToggleButton>
-              <ToggleButton value='swap' color='secondary'>
+              </StyledToggleButton>
+              <StyledToggleButton value="swap">
                 <SwapCalls />
                 {t('Swaps')}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </ListItem>
+              </StyledToggleButton>
+            </StyledToggleButtonGroup>
+          </StyledListItem>
 
-          <ListItem>
-            <ListItemIcon>
-              <Link />
-            </ListItemIcon>
-            <ToggleButtonGroup
+          {/* Network Settings */}
+          <StyledListItem>
+            <SettingHeader>
+              <ListItemIcon>
+                <Link />
+              </ListItemIcon>
+              <Typography variant="subtitle1">
+                {t('Network Settings')}
+              </Typography>
+            </SettingHeader>
+            <StyledToggleButtonGroup
               exclusive={true}
               value={settings.network}
-              onChange={(e, network) => {
-                setSettings({ ...settings, network });
-                systemClient.setItem('settings_network', network);
-              }}
+              onChange={handleNetworkChange}
+              fullWidth
             >
-              <ToggleButton value='mainnet' color='primary'>
+              <StyledToggleButton value="mainnet">
                 {t('Mainnet')}
-              </ToggleButton>
-              <ToggleButton value='testnet' color='secondary'>
+              </StyledToggleButton>
+              <StyledToggleButton value="testnet">
                 {t('Testnet')}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </ListItem>
+              </StyledToggleButton>
+            </StyledToggleButtonGroup>
+          </StyledListItem>
 
+          {/* Proxy Settings */}
           {window.NativeRobosats !== undefined && (
-            <ListItem>
-              <ListItemIcon>
-                <TorIcon />
-              </ListItemIcon>
-              <ToggleButtonGroup
+            <StyledListItem>
+              <SettingHeader>
+                <ListItemIcon>
+                  <TorIcon />
+                </ListItemIcon>
+                <Typography variant="subtitle1">
+                  {t('Proxy Settings')}
+                </Typography>
+              </SettingHeader>
+              <StyledToggleButtonGroup
                 exclusive={true}
                 value={settings.useProxy}
                 onChange={(_e, useProxy) => {
-                  setSettings({ ...settings, useProxy });
-                  systemClient.setItem('settings_use_proxy', String(useProxy));
-                  apiClient.useProxy = useProxy;
+                  if (useProxy !== null) {
+                    setSettings({ ...settings, useProxy });
+                    systemClient.setItem('settings_use_proxy', String(useProxy));
+                    apiClient.useProxy = useProxy;
+                  }
                 }}
+                fullWidth
               >
-                <ToggleButton value={true} color='primary'>
-                  {t('Build-in')}
-                </ToggleButton>
-                <ToggleButton value={false} color='secondary'>
+                <StyledToggleButton value={true}>
+                  {t('Built-in')}
+                </StyledToggleButton>
+                <StyledToggleButton value={false}>
                   {t('Disabled')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </ListItem>
+                </StyledToggleButton>
+              </StyledToggleButtonGroup>
+            </StyledListItem>
           )}
         </List>
       </Grid>
     </Grid>
   );
 };
+
+// Styled Components
+const StyledListItem = styled(ListItem)({
+  display: 'block',
+});
+
+const SettingHeader = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: '0.5em',
+});
+
+const StyledSelectLanguage = styled(SelectLanguage)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
+    border: '2px solid black',
+    boxShadow: '4px 4px 0px rgba(0, 0, 0, 1)',
+    width: '100%',
+  },
+}));
+
+const AppearanceSettingsBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+  [theme.breakpoints.up('sm')]: {
+    flexDirection: 'row',
+    gap: theme.spacing(1),
+  },
+}));
+
+const QRCodeSwitch = styled(FormControlLabel)(({ theme }) => ({
+  marginLeft: 0,
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(2),
+  },
+}));
+
+const StyledSlider = styled(Slider)(({ theme }) => ({
+  '& .MuiSlider-thumb': {
+    borderRadius: '8px',
+    border: '2px solid black',
+  },
+  '& .MuiSlider-track': {
+    borderRadius: '8px',
+    border: '2px solid black',
+  },
+  '& .MuiSlider-rail': {
+    borderRadius: '8px',
+    border: '2px solid black',
+  },
+}));
+
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)({
+  width: '100%',
+});
+
+const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
+  borderRadius: '8px',
+  border: '2px solid black',
+  boxShadow: 'none',
+  fontWeight: 'bold',
+  width: '100%',
+  '&.Mui-selected': {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
+  },
+  '&:hover': {
+    backgroundColor: 'initial',
+  },
+}));
 
 export default SettingsForm;

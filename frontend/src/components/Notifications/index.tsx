@@ -248,7 +248,7 @@ const Notifications = ({
     // 11: 'In dispute'
     // 12: 'Collaboratively cancelled'
     // 13: 'Sending satoshis to buyer'
-    // 14: 'Sucessful trade'
+    // 14: 'Successful trade'
     // 15: 'Failed lightning network routing'
     // 16: 'Wait for dispute resolution'
     // 17: 'Maker lost dispute'

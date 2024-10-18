@@ -700,7 +700,7 @@
   "In dispute": "紛争中",
   "Collaboratively cancelled": "共同でキャンセルされました",
   "Sending satoshis to buyer": "買い手にSatsを送信しています",
-  "Sucessful trade": "成功した取引",
+  "Successful trade": "成功した取引",
   "Failed lightning network routing": "ライトニングネットワークのルーティングに失敗しました",
   "Wait for dispute resolution": "紛争の解決を待ってください",
   "Maker lost dispute": "オーダーメイカーが紛争に負けました",

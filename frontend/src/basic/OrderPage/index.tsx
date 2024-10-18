@@ -40,14 +40,14 @@ const OrderPage = (): JSX.Element => {
     const shortAlias = params.shortAlias;
     const coordinator = federation.getCoordinator(shortAlias ?? '');
     if (coordinator) {
-      const { url, basePath } = coordinator?.getEndpoint(
+      const endpoint = coordinator?.getEndpoint(
         settings.network,
         origin,
         settings.selfhostedClient,
         hostUrl,
       );
 
-      setBaseUrl(`${url}${basePath}`);
+      if (endpoint) setBaseUrl(`${endpoint?.url}${endpoint?.basePath}`);
 
       const orderId = Number(params.orderId);
       if (

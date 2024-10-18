@@ -4,19 +4,17 @@ import React, {
   useEffect,
   useState,
   type SetStateAction,
-  useMemo,
   useContext,
   type ReactNode,
 } from 'react';
 
-import { type Order, Federation, Settings, Coordinator } from '../models';
+import { type Order, Federation, Settings } from '../models';
 
 import { federationLottery } from '../utils';
 
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
-import NativeRobosats from '../services/Native';
-import { Origins } from '../models/Coordinator.model';
+import { type Origin, type Origins } from '../models/Coordinator.model';
 
 // Refresh delays (ms) according to Order status
 const defaultDelay = 5000;
@@ -35,7 +33,7 @@ const statusToDelay = [
   100000, // 'In dispute'
   999999, // 'Collaboratively cancelled'
   10000, // 'Sending satoshis to buyer'
-  60000, // 'Sucessful trade'
+  60000, // 'Successful trade'
   30000, // 'Failed lightning network routing'
   300000, // 'Wait for dispute resolution'
   300000, // 'Maker lost dispute'
@@ -175,14 +173,15 @@ export const FederationContextProvider = ({
         federated: false,
         enabled: true,
       };
+      const origins: Origins = {
+        clearnet: undefined,
+        onion: url as Origin,
+        i2p: undefined,
+      };
       if (settings.network === 'mainnet') {
-        attributes.mainnet = {
-          onion: url,
-        } as Origins;
+        attributes.mainnet = origins;
       } else {
-        attributes.testnet = {
-          onion: url,
-        } as Origins;
+        attributes.testnet = origins;
       }
       federation.addCoordinator(origin, settings, hostUrl, attributes);
       const newCoordinator = federation.coordinators[alias];
