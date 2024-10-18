@@ -26,7 +26,7 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 const RobotPage = (): JSX.Element => {
   const { torStatus, windowSize, settings, page, client } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;
@@ -64,7 +64,7 @@ const RobotPage = (): JSX.Element => {
     setInputToken(token);
     genKey(token)
       .then((key) => {
-        garage.createRobot(token, sortedCoordinators, {
+        garage.createRobot(token, Object.keys(federation.coordinators), {
           token,
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,

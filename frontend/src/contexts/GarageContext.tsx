@@ -66,7 +66,7 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
   // All garage data structured
   const { settings, torStatus, open, page, client } = useContext<UseAppStoreType>(AppContext);
   const pageRef = useRef(page);
-  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [garage] = useState<Garage>(initialGarageContext.garage);
   const [maker, setMaker] = useState<Maker>(initialGarageContext.maker);
   const [slotUpdatedAt, setSlotUpdatedAt] = useState<string>(new Date().toISOString());
@@ -83,7 +83,7 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: sortedCoordinators[0] };
+      return { ...maker, coordinator: Object.keys(federation.coordinators)[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     garage.registerHook('onSlotUpdate', onSlotUpdated);
     clearInterval(timer);

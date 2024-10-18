@@ -126,7 +126,7 @@ export class Coordinator {
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
     this.description = value.description;
-    this.federated = value.federated;
+    this.federated = value.federated ?? false;
     this.motto = value.motto;
     this.color = value.color;
     this.size_limit = value.badges.isFounder ? 21 * 100000000 : calculateSizeLimit(established);

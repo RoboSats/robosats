@@ -27,7 +27,6 @@ export interface FederationContextProviderProps {
 
 export interface UseFederationStoreType {
   federation: Federation;
-  sortedCoordinators: string[];
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
   addNewCoordinator: (alias: string, url: string) => void;
@@ -35,7 +34,6 @@ export interface UseFederationStoreType {
 
 export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation('onion', new Settings(), ''),
-  sortedCoordinators: [],
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
   addNewCoordinator: () => {},
@@ -50,7 +48,6 @@ export const FederationContextProvider = ({
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
-  const [sortedCoordinators, setSortedCoordinators] = useState(federationLottery(federation));
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
   );
@@ -58,7 +55,7 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: sortedCoordinators[0] };
+      return { ...maker, coordinator: Object.keys(federation.coordinators)[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
@@ -122,7 +119,6 @@ export const FederationContextProvider = ({
     <FederationContext.Provider
       value={{
         federation,
-        sortedCoordinators,
         coordinatorUpdatedAt,
         federationUpdatedAt,
         addNewCoordinator,

@@ -1,4 +1,3 @@
-import { SimplePool, VerifiedEvent, Event } from 'nostr-tools';
 import {
   Coordinator,
   type Exchange,
@@ -9,7 +8,7 @@ import {
 } from '.';
 import defaultFederation from '../../static/federation.json';
 import { systemClient } from '../services/System';
-import { getHost } from '../utils';
+import { federationLottery, getHost } from '../utils';
 import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 import eventToPublicOrder from '../utils/nostr';
@@ -20,19 +19,25 @@ type FederationHooks = 'onFederationUpdate';
 
 export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
-    this.coordinators = Object.entries(defaultFederation).reduce(
+    const coordinators = Object.entries(defaultFederation).reduce(
       (acc: Record<string, Coordinator>, [key, value]: [string, any]) => {
         if (getHost() !== '127.0.0.1:8000' && key === 'local') {
           // Do not add `Local Dev` unless it is running on localhost
           return acc;
         } else {
           acc[key] = new Coordinator(value, origin, settings, hostUrl);
-
+          acc[key].federated = true;
           return acc;
         }
       },
       {},
     );
+
+    this.coordinators = {};
+    federationLottery().forEach((alias) => {
+      if (coordinators[alias]) this.coordinators[alias] = coordinators[alias];
+    });
+
     this.exchange = {
       ...defaultExchange,
       totalCoordinators: Object.keys(this.coordinators).length,
@@ -42,10 +47,10 @@ export class Federation {
       onFederationUpdate: [],
     };
 
-    Object.keys(defaultFederation).forEach((key) => {
+    Object.keys(this.coordinators).forEach((key) => {
       if (key !== 'local' || getHost() === '127.0.0.1:8000') {
         // Do not add `Local Dev` unless it is running on localhost
-        this.addCoordinator(origin, settings, hostUrl, defaultFederation[key]);
+        this.addCoordinator(origin, settings, hostUrl, this.coordinators[key]);
       }
     });
 

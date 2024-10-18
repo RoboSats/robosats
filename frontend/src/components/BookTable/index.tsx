@@ -895,7 +895,7 @@ const BookTable = ({
   const filteredOrders = useMemo(() => {
     return showControls
       ? filterOrders({
-          orders,
+          federation,
           baseFilter: fav,
           paymentMethods,
         })

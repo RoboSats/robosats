@@ -25,7 +25,7 @@ const MakerPage = (): JSX.Element => {
 
   const matches = useMemo(() => {
     return filterOrders({
-      orders: Object.values(federation.book),
+      federation,
       baseFilter: {
         currency: fav.currency === 0 ? 1 : fav.currency,
         type: fav.type,
