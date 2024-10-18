@@ -4,9 +4,10 @@ import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
 import { genBase62Token } from '../../utils';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { useNavigate } from 'react-router-dom';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -15,7 +16,9 @@ interface WelcomeProps {
 }
 
 const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element => {
+  const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const theme = useTheme();
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -117,14 +120,15 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element =
           size='small'
           color='primary'
           onClick={() => {
-            setView('profile');
             const token = genBase62Token(36);
             garage.createRobot(federation, token);
             setInputToken(token);
+            navigate('/create');
+            setPage('create');
           }}
         >
           <FastForward /> <div style={{ width: '0.5em' }} />
-          {t('Fast Generate Robot')}
+          {t('Fast Generate Order')}
         </Button>
       </Grid>
     </Grid>
