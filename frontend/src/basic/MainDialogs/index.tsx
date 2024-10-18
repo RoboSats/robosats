@@ -23,6 +23,7 @@ export interface OpenDialogs {
   client: boolean;
   update: boolean;
   profile: boolean;
+  recovery: boolean;
 }
 
 const MainDialogs = (): JSX.Element => {

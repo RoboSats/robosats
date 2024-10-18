@@ -1,19 +1,25 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
 import { genBase62Token } from '../../utils';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
-  getGenerateRobot: (token: string) => void;
   width: number;
+  setInputToken: (state: string) => void;
 }
 
-const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Element => {
+const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   return (
     <Grid
@@ -94,7 +100,9 @@ const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Elemen
                 color='secondary'
                 variant='contained'
                 onClick={() => {
-                  setView('recovery');
+                  setOpen((open) => {
+                    return { ...open, recovery: true };
+                  });
                 }}
               >
                 <Key /> <div style={{ width: '0.5em' }} />
@@ -110,7 +118,9 @@ const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Elemen
           color='primary'
           onClick={() => {
             setView('profile');
-            getGenerateRobot(genBase62Token(36));
+            const token = genBase62Token(36);
+            garage.createRobot(federation, token);
+            setInputToken(token);
           }}
         >
           <FastForward /> <div style={{ width: '0.5em' }} />
