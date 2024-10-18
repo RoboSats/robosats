@@ -141,7 +141,6 @@ class Garage {
             encPrivKey: key.encryptedPrivateKeyArmored,
           };
 
-          void this.fetchRobot(federation, token);
           this.setCurrentSlot(token);
           this.slots[token] = new Slot(
             token,
@@ -151,6 +150,7 @@ class Garage {
               this.triggerHook('onSlotUpdate');
             },
           );
+          void this.fetchRobot(federation, token);
           this.save();
         })
         .catch((error) => {
