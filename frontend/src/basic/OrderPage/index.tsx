@@ -69,7 +69,7 @@ const OrderPage = (): JSX.Element => {
   };
 
   const startAgain = (): void => {
-    navigate('/robot');
+    navigate('/garage');
   };
 
   const orderDetailsSpace = currentOrder ? (
@@ -78,7 +78,7 @@ const OrderPage = (): JSX.Element => {
       currentOrder={currentOrder}
       onClickCoordinator={onClickCoordinator}
       onClickGenerateRobot={() => {
-        navigate('/robot');
+        navigate('/garage');
       }}
     />
   ) : (

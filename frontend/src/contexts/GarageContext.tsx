@@ -13,6 +13,7 @@ import { defaultMaker, type Maker, Garage } from '../models';
 import { systemClient } from '../services/System';
 import { type UseAppStoreType, AppContext } from './AppContext';
 import { type UseFederationStoreType, FederationContext } from './FederationContext';
+import { genKey } from '../pgp';
 
 export interface GarageContextProviderProps {
   children: ReactNode;

@@ -44,8 +44,8 @@ export const isNativeRoboSats = !(window.NativeRobosats === undefined);
 const pageFromPath = window.location.pathname.split('/')[1];
 const isPagePathEmpty = pageFromPath === '';
 const entryPage: Page = !isNativeRoboSats
-  ? ((isPagePathEmpty ? 'robot' : pageFromPath) as Page)
-  : 'robot';
+  ? ((isPagePathEmpty ? 'garage' : pageFromPath) as Page)
+  : 'garage';
 
 export const closeAll: OpenDialogs = {
   more: false,
@@ -58,6 +58,7 @@ export const closeAll: OpenDialogs = {
   client: false,
   update: false,
   profile: false,
+  recovery: false,
 };
 
 const makeTheme = function (settings: Settings): Theme {

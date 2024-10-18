@@ -23,6 +23,7 @@ import { genBase62Token } from '../../utils';
 import { NewTabIcon } from '../../components/Icons';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -30,23 +31,16 @@ interface OnboardingProps {
   setRobot: (state: Robot) => void;
   inputToken: string;
   setInputToken: (state: string) => void;
-  getGenerateRobot: (token: string) => void;
-  badToken: string;
   baseUrl: string;
 }
 
-const Onboarding = ({
-  setView,
-  inputToken,
-  setInputToken,
-  badToken,
-  getGenerateRobot,
-}: OnboardingProps): JSX.Element => {
+const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -105,7 +99,6 @@ const Onboarding = ({
                         autoFocusTarget='copyButton'
                         inputToken={inputToken}
                         setInputToken={setInputToken}
-                        badToken={badToken}
                         onPressEnter={() => null}
                       />
                     </Grid>
@@ -123,7 +116,7 @@ const Onboarding = ({
                       <Button
                         onClick={() => {
                           setStep('2');
-                          getGenerateRobot(inputToken);
+                          garage.createRobot(federation, inputToken);
                         }}
                         variant='contained'
                         size='large'

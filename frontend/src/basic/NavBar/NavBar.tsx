@@ -54,8 +54,8 @@ const NavBar = (): JSX.Element => {
     // change tab (page) into the current route
     const pathPage: Page | string = location.pathname.split('/')[1];
     if (pathPage === 'index.html') {
-      navigate('/robot');
-      setPage('robot');
+      navigate('/garage');
+      setPage('garage');
     }
     if (isPage(pathPage)) {
       setPage(pathPage);
@@ -113,7 +113,7 @@ const NavBar = (): JSX.Element => {
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={slot?.nickname === null}
+          disabled={!slot?.nickname}
           onClick={() => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
@@ -131,9 +131,9 @@ const NavBar = (): JSX.Element => {
         />
 
         <Tab
-          label={smallBar ? undefined : t('Robot')}
+          label={smallBar ? undefined : t('Garage')}
           sx={{ ...tabSx, minWidth: '1em' }}
-          value='robot'
+          value='garage'
           icon={<SmartToy />}
           iconPosition='start'
         />
