@@ -72,8 +72,8 @@ jobs:
 
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
-        uses: actions/upload-artifact@v4
         if: inputs.semver != ''
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -82,8 +82,8 @@ jobs:
 
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
-        uses: actions/upload-artifact@v4
         if: inputs.semver != ''
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -92,8 +92,8 @@ jobs:
 
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
-        uses: actions/upload-artifact@v4
         if: inputs.semver != ''
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -102,8 +102,8 @@ jobs:
 
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
-        uses: actions/upload-artifact@v4
         if: inputs.semver == ''
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -112,8 +112,8 @@ jobs:
 
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
-        uses: actions/upload-artifact@v4
         if: inputs.semver == ''
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -122,8 +122,8 @@ jobs:
 
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
-        uses: actions/upload-artifact@v4
         if: inputs.semver == ''
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
