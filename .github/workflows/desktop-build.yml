@@ -77,7 +77,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-darwin-x64
-          name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64
+          name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64.zip
 
       - name: Upload Windows Build Artifact
         if: inputs.semver != ''
@@ -86,7 +86,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-win32-ia32
-          name: robosats-desktop-${{ inputs.semver }}-win32-ia32
+          name: robosats-desktop-${{ inputs.semver }}-win32-ia32.zip
 
       - name: Upload Linux Build Artifact
         if: inputs.semver != ''
@@ -95,7 +95,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-linux-x64
-          name: robosats-desktop-${{ inputs.semver }}-linux-x64
+          name: robosats-desktop-${{ inputs.semver }}-linux-x64.zip
 
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
@@ -105,7 +105,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-darwin-x64
-          name: robosats-desktop-${{ steps.commit.outputs.short }}-mac-darwin-x64
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-mac-darwin-x64.zip
 
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
@@ -115,7 +115,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-win32-ia32
-          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32.zip
 
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
@@ -125,4 +125,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: desktopApp/release-builds/Robosats-linux-x64
-          name: robosats-desktop-${{ steps.commit.outputs.short }}-linux-x64
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-linux-x64.zip
