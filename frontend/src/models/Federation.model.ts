@@ -14,6 +14,7 @@ import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 import eventToPublicOrder from '../utils/nostr';
 import { SubCloser } from 'nostr-tools/lib/types/pool';
+import RoboPool from '../services/RoboPool';
 
 type FederationHooks = 'onFederationUpdate';
 
@@ -60,11 +61,7 @@ export class Federation {
     if (tesnetHost) settings.network = 'testnet';
     this.connection = null;
 
-    const relays = [
-      'ws://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion/nostr',
-      // 'ws://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion/nostr'
-    ];
-    this.relayPool.trustedRelayURLs = new Set<string>(relays);
+    this.roboPool = new RoboPool(settings, origin);
   }
 
   public coordinators: Record<string, Coordinator>;
@@ -75,57 +72,42 @@ export class Federation {
 
   public hooks: Record<FederationHooks, Array<() => void>>;
 
-  public relayPool: SimplePool = new SimplePool();
-  public relaySubscriptions: SubCloser[] = [];
+  public roboPool: RoboPool;
 
   setConnection = (settings: Settings): void => {
     this.connection = settings.connection;
 
     if (this.connection === 'nostr') {
-      this.connectNostr(settings);
+      this.roboPool.connect();
+      this.loadBookNostr();
     } else {
-      this.relayPool.close(Array.from(this.relayPool.trustedRelayURLs));
+      this.roboPool.close();
       this.loadBook();
     }
   };
 
-  connectNostr = (settings: Settings): void => {
+  loadBookNostr = (): void => {
     this.loading = true;
     this.book = {};
 
-    this.exchange.loadingCache = this.relayPool.trustedRelayURLs.size;
+    this.exchange.loadingCache = this.roboPool.relays.length;
 
-    const authors = Object.values(defaultFederation)
-      .map((f) => f.nostrHexPubkey)
-      .filter((item) => item !== undefined);
-
-    const sub = this.relayPool.subscribeMany(
-      Array.from(this.relayPool.trustedRelayURLs),
-      [
-        {
-          authors,
-          kinds: [38383],
-          '#n': [settings.network],
-        },
-      ],
-      {
-        onevent: (event) => {
-          const { dTag, publicOrder } = eventToPublicOrder(event);
-          if (publicOrder) {
-            this.book[dTag] = publicOrder;
-          } else {
-            delete this.book[dTag];
-          }
-        },
-        oneose: () => {
-          this.exchange.loadingCache = this.exchange.loadingCache - 1;
-          this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
-          this.updateExchange();
-          this.triggerHook('onFederationUpdate');
-        },
+    this.roboPool.subscribeBook({
+      onevent: (event) => {
+        const { dTag, publicOrder } = eventToPublicOrder(event);
+        if (publicOrder) {
+          this.book[dTag] = publicOrder;
+        } else {
+          delete this.book[dTag];
+        }
       },
-    );
-    this.relaySubscriptions.push(sub);
+      oneose: () => {
+        this.exchange.loadingCache = this.exchange.loadingCache - 1;
+        this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
+        this.updateExchange();
+        this.triggerHook('onFederationUpdate');
+      },
+    });
   };
 
   addCoordinator = (
