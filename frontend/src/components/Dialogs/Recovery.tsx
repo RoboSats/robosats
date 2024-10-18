@@ -26,7 +26,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): JSX.Element => {
 
   const onClickRecover = () => {
     garage.createRobot(federation, recoveryToken);
-    setInputToken(recoveryToken);
+    setInputToken(recoveryToken.trim());
     setView('profile');
     setOpen((open) => {
       return { ...open, recovery: false };

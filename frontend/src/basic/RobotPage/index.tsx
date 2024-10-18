@@ -54,7 +54,7 @@ const RobotPage = (): JSX.Element => {
           maxHeight: `${maxHeight}em`,
         }}
       >
-        <RecoveryDialog setInputToken={setInputToken} setView={setView}/>
+        <RecoveryDialog setInputToken={setInputToken} setView={setView} />
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
           <Grid item>
             <Typography align='center' variant='h6'>
