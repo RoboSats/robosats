@@ -92,7 +92,7 @@ const BookTable = ({
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const orders = orderList ?? federation.book;
+  const orders = orderList ?? Object.values(federation.book);
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
@@ -425,6 +425,11 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
+        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const premium = parseFloat(params.row.premium);
+        const price =
+          (coordinator.limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
+
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -432,7 +437,7 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {`${pn(params.row.price)} ${currencyCode}/BTC`}
+            {`${pn(Math.round(price))} ${currencyCode}/BTC`}
           </div>
         );
       },
@@ -575,6 +580,15 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
+        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const amount = Boolean(params.row.has_range)
+          ? parseFloat(params.row.max_amount)
+          : parseFloat(params.row.amount);
+        const premium = parseFloat(params.row.premium);
+        const price =
+          (coordinator.limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
+        const satoshisNow = (100000000 * amount) / price;
+
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -582,9 +596,9 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {params.row.satoshis_now > 1000000
-              ? `${pn(Math.round(params.row.satoshis_now / 10000) / 100)} M`
-              : `${pn(Math.round(params.row.satoshis_now / 1000))} K`}
+            {satoshisNow > 1000000
+              ? `${pn(Math.round(satoshisNow / 10000) / 100)} M`
+              : `${pn(Math.round(satoshisNow / 1000))} K`}
           </div>
         );
       },
@@ -813,7 +827,7 @@ const BookTable = ({
             <Grid item xs={6}>
               <IconButton
                 onClick={() => {
-                  void federation.updateBook();
+                  void federation.loadBook();
                 }}
               >
                 <Refresh />
@@ -881,17 +895,13 @@ const BookTable = ({
   const filteredOrders = useMemo(() => {
     return showControls
       ? filterOrders({
-          orders,
+          federation,
           baseFilter: fav,
           paymentMethods,
         })
       : orders;
   }, [showControls, orders, fav, paymentMethods]);
 
-  const loadingPercentage =
-    ((federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators) /
-      federation.exchange.enabledCoordinators) *
-    100;
   if (!fullscreen) {
     return (
       <Paper
@@ -924,8 +934,8 @@ const BookTable = ({
               setPaymentMethods,
             },
             loadingOverlay: {
-              variant: loadingPercentage === 0 ? 'indeterminate' : 'determinate',
-              value: loadingPercentage,
+              variant: 'indeterminate',
+              value: federation.loading ? 0 : 100,
             },
           }}
           paginationModel={paginationModel}

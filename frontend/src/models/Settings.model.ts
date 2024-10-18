@@ -42,6 +42,9 @@ class BaseSettings {
           ? 'en'
           : i18n.resolvedLanguage.substring(0, 2);
 
+    const connection = systemClient.getItem('settings_connection');
+    this.connection = connection && connection !== '' ? connection : 'api';
+
     const networkCookie = systemClient.getItem('settings_network');
     this.network = networkCookie && networkCookie !== '' ? networkCookie : 'mainnet';
     this.host = getHost();
@@ -63,6 +66,7 @@ class BaseSettings {
   public language?: Language;
   public freezeViewports: boolean = false;
   public network: 'mainnet' | 'testnet' = 'mainnet';
+  public connection: 'api' | 'nostr' = 'api';
   public host?: string;
   public unsafeClient: boolean = false;
   public selfhostedClient: boolean = false;

@@ -22,6 +22,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -45,6 +46,7 @@ const RobotProfile = ({
 }: RobotProfileProps): JSX.Element => {
   const { windowSize, client } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -74,10 +76,6 @@ const RobotProfile = ({
 
   const slot = garage.getSlot();
   const robot = slot?.getRobot();
-
-  const loadingCoordinators = Object.values(slot?.robots ?? {}).filter(
-    (robot) => robot.loading,
-  ).length;
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
@@ -154,7 +152,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {loadingCoordinators > 0 && !slot?.activeOrder?.id ? (
+        {federation.loading && !slot?.activeOrder?.id ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />
@@ -208,7 +206,7 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {!slot?.activeOrder && !slot?.lastOrder && loadingCoordinators === 0 ? (
+        {!slot?.activeOrder && !slot?.lastOrder && !federation.loading ? (
           <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
 

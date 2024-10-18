@@ -1,4 +1,4 @@
-import { type PublicOrder, type Favorites } from '../models';
+import { type PublicOrder, type Favorites, Federation } from '../models';
 
 interface AmountFilter {
   amount: string;
@@ -8,9 +8,9 @@ interface AmountFilter {
 }
 
 interface FilterOrders {
-  orders: PublicOrder[];
+  federation: Federation;
   baseFilter: Favorites;
-  premium: number | null;
+  premium?: number | null;
   amountFilter?: AmountFilter | null;
   paymentMethods?: string[];
 }
@@ -60,13 +60,17 @@ const filterByPremium = function (order: PublicOrder, premium: number): boolean 
 };
 
 const filterOrders = function ({
-  orders,
+  federation,
   baseFilter,
   premium = null,
   paymentMethods = [],
   amountFilter = null,
 }: FilterOrders): PublicOrder[] {
-  const filteredOrders = orders.filter((order) => {
+  const enabledCoordinators = Object.values(federation.coordinators)
+    .filter((coord) => coord.enabled)
+    .map((coord) => coord.shortAlias);
+  const filteredOrders = Object.values(federation.book).filter((order) => {
+    const coordinatorCheck = enabledCoordinators.includes(order.coordinatorShortAlias ?? '');
     const typeChecks = order.type === baseFilter.type || baseFilter.type == null;
     const modeChecks = baseFilter.mode === 'fiat' ? !(order.currency === 1000) : true;
     const premiumChecks = premium !== null ? filterByPremium(order, premium) : true;
@@ -77,6 +81,7 @@ const filterOrders = function ({
     const hostChecks =
       baseFilter.coordinator !== 'any' ? filterByHost(order, baseFilter.coordinator) : true;
     return (
+      coordinatorCheck &&
       typeChecks &&
       modeChecks &&
       premiumChecks &&

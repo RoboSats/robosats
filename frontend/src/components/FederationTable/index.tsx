@@ -21,8 +21,7 @@ const FederationTable = ({
   fillContainer = false,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, sortedCoordinators, federationUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { setOpen, settings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
@@ -128,9 +127,9 @@ const FederationTable = ({
                 onClickCoordinator(params.row.shortAlias);
               }}
             >
-              {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
+              {Boolean(params.row.loadingLimits) && Boolean(params.row.enabled) ? (
                 <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
-              ) : params.row.info !== undefined ? (
+              ) : params.row.limits !== undefined ? (
                 <Link color='success' />
               ) : (
                 <LinkOff color='error' />
@@ -214,14 +213,6 @@ const FederationTable = ({
     }
   };
 
-  const reorderedCoordinators = useMemo(() => {
-    return sortedCoordinators.reduce((coordinators, key) => {
-      coordinators[key] = federation.coordinators[key];
-
-      return coordinators;
-    }, {});
-  }, [settings.network, federationUpdatedAt]);
-
   return (
     <Box
       sx={
@@ -235,7 +226,7 @@ const FederationTable = ({
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
-        rows={Object.values(reorderedCoordinators)}
+        rows={Object.values(federation.coordinators)}
         getRowId={(params: Coordinator) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}

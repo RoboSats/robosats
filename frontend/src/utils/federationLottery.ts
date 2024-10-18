@@ -11,14 +11,14 @@
 // donate to the development fund. This is the only way envisioned to incentivize
 // donations to the development fund.
 
-import { type Federation } from '../models';
+import defaultFederation from '../../static/federation.json';
 
-export default function federationLottery(federation: Federation): string[] {
+export default function federationLottery(): string[] {
   // Create an array to store the coordinator short aliases and their corresponding weights (chance)
   const coordinatorChance: Array<{ shortAlias: string; chance: number }> = [];
 
   // Convert the `federation` object into an array of {shortAlias, chance}
-  Object.values(federation.coordinators).forEach((coor) => {
+  Object.values(defaultFederation).forEach((coor) => {
     const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund;
     coordinatorChance.push({ shortAlias: coor.shortAlias, chance });
   });

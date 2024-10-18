@@ -14,7 +14,7 @@ import { federationLottery } from '../utils';
 
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
-import { type Origin, type Origins } from '../models/Coordinator.model';
+import Coordinator, { type Origin, type Origins } from '../models/Coordinator.model';
 
 export interface CurrentOrderIdProps {
   id: number | null;
@@ -27,7 +27,6 @@ export interface FederationContextProviderProps {
 
 export interface UseFederationStoreType {
   federation: Federation;
-  sortedCoordinators: string[];
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
   addNewCoordinator: (alias: string, url: string) => void;
@@ -35,7 +34,6 @@ export interface UseFederationStoreType {
 
 export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation('onion', new Settings(), ''),
-  sortedCoordinators: [],
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
   addNewCoordinator: () => {},
@@ -50,7 +48,6 @@ export const FederationContextProvider = ({
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
-  const [sortedCoordinators, setSortedCoordinators] = useState(federationLottery(federation));
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
   );
@@ -58,7 +55,7 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: sortedCoordinators[0] };
+      return { ...maker, coordinator: Object.keys(federation.coordinators)[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
@@ -68,9 +65,13 @@ export const FederationContextProvider = ({
   useEffect(() => {
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
-      void federation.update();
+      void federation.loadLimits();
     }
   }, [settings.network, settings.useProxy, torStatus]);
+
+  useEffect(() => {
+    federation.setConnection(settings);
+  }, [settings.connection]);
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.coordinators[alias]) {
@@ -91,8 +92,8 @@ export const FederationContextProvider = ({
         attributes.testnet = origins;
       }
       federation.addCoordinator(origin, settings, hostUrl, attributes);
-      const newCoordinator = federation.coordinators[alias];
-      newCoordinator.update(() => {
+      const newCoordinator: Coordinator = federation.coordinators[alias];
+      newCoordinator.loadLimits(() => {
         setCoordinatorUpdatedAt(new Date().toISOString());
       });
       garage.syncCoordinator(federation, alias);
@@ -102,7 +103,7 @@ export const FederationContextProvider = ({
   };
 
   useEffect(() => {
-    if (page === 'offers') void federation.updateBook();
+    if (page === 'offers') void federation.loadBook();
   }, [page]);
 
   // use effects to fetchRobots on Profile open
@@ -118,7 +119,6 @@ export const FederationContextProvider = ({
     <FederationContext.Provider
       value={{
         federation,
-        sortedCoordinators,
         coordinatorUpdatedAt,
         federationUpdatedAt,
         addNewCoordinator,
