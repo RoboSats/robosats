@@ -71,7 +71,6 @@ jobs:
         run: echo The semver is ${{ github.event.inputs.semver }}
 
       - name: Upload macOS Build Artifact
-        id: upload-release-mac-zip-asset
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         env:
@@ -81,7 +80,6 @@ jobs:
           name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64
 
       - name: Upload Windows Build Artifact
-        id: upload-release-win-zip-asset
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         env:
@@ -91,7 +89,6 @@ jobs:
           name: robosats-desktop-${{ inputs.semver }}-win32-ia32
 
       - name: Upload Linux Build Artifact
-        id: upload-release-linux-zip-asset
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         env:
