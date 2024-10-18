@@ -67,9 +67,43 @@ jobs:
         id: commit
         uses: pr-mpt/actions-commit-hash@v3
 
+      - name: Print semver
+        run: echo The semver is ${{ github.event.inputs.semver }}
+
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
         uses: actions/upload-artifact@v4
+        if: inputs.semver != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-darwin-x64
+          name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64
+
+      - name: Upload Windows Build Artifact
+        id: upload-release-win-zip-asset
+        uses: actions/upload-artifact@v4
+        if: inputs.semver != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-win32-ia32
+          name: robosats-desktop-${{ inputs.semver }}-win32-ia32
+
+      - name: Upload Linux Build Artifact
+        id: upload-release-linux-zip-asset
+        uses: actions/upload-artifact@v4
+        if: inputs.semver != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-linux-x64
+          name: robosats-desktop-${{ inputs.semver }}-linux-x64
+
+      - name: Upload macOS Build Artifact
+        id: upload-release-mac-zip-asset
+        uses: actions/upload-artifact@v4
+        if: inputs.semver == ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -79,6 +113,7 @@ jobs:
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
         uses: actions/upload-artifact@v4
+        if: inputs.semver == ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -88,6 +123,7 @@ jobs:
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
         uses: actions/upload-artifact@v4
+        if: inputs.semver == ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
