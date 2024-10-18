@@ -27,6 +27,29 @@ Smaller bundles for each CPU architecture available in the attachments.
 
 Alternatively you can also verify with the release with the SHA256 checksum.
 
+# Desktop
+
+**Download the Desktop App zip file**
+Find the zip file that suits with your operative system:
+
+- [Windows](https://github.com/RoboSats/robosats/releases/download/v0.7.1-alpha/robosats-desktop-v0.7.1-alpha-win32-ia32.zip)
+- [Mac](https://github.com/RoboSats/robosats/releases/download/v0.7.1-alpha/robosats-desktop-v0.7.1-alpha-mac-darwin-x64.zip)
+- [Linux](https://github.com/RoboSats/robosats/releases/download/v0.7.1-alpha/robosats-desktop-v0.7.1-alpha-linux-x64.zip)
+
+### Verify the app using GPG:
+
+1. Download the ascii armored signature
+    - [Windows](https://github.com/RoboSats/robosats/releases/download/v0.7.1-alpha/robosats-desktop-v0.7.1-alpha-win32-ia32.zip.asc)
+    - [Mac](https://github.com/RoboSats/robosats/releases/download/v0.7.1-alpha/robosats-desktop-v0.7.1-alpha-mac-darwin-x64.zip.asc)
+    - [Linux](https://github.com/RoboSats/robosats/releases/download/v0.7.1-alpha/robosats-desktop-v0.7.1-alpha-linux-x64.zip.asc)
+
+2. Run this command on a directory that contains the apk file and and the ascii armored signature.
+`gpg --verify robosats-v0.7.1.alpha-{{your version}}.asc`
+
+3. Verify the signer is actually Reckless-Satoshi (fingerprints match): [B4AB5F19113D4125DDF217739C4585B561315571](https://keys.openpgp.org/vks/v1/by-fingerprint/B4AB5F19113D4125DDF217739C4585B561315571)
+
+Alternatively you can also verify with the release with the SHA256 checksum.
+
 # Docker Images
 
 [Coordinator Backend Image v0.7.1-alpha (Docker Hub)](https://hub.docker.com/r/recksato/robosats/tags?page=1&name=v0.7.1-alpha)
