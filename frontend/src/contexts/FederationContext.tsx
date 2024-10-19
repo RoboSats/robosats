@@ -59,12 +59,9 @@ export const FederationContextProvider = ({
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
       void federation.loadLimits();
+      federation.setConnection(settings);
     }
-  }, [settings.network, settings.useProxy, torStatus]);
-
-  useEffect(() => {
-    federation.setConnection(settings);
-  }, [settings.connection]);
+  }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.coordinators[alias]) {
@@ -90,7 +87,6 @@ export const FederationContextProvider = ({
         setCoordinatorUpdatedAt(new Date().toISOString());
       });
       garage.syncCoordinator(federation, alias);
-      setSortedCoordinators(federationLottery(federation));
       setFederationUpdatedAt(new Date().toISOString());
     }
   };
