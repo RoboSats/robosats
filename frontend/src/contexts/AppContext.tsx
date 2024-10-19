@@ -209,9 +209,8 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
     initialAppContext.slideDirection,
   );
   const [open, setOpen] = useState<OpenDialogs>(initialAppContext.open);
-  const [windowSize, setWindowSize] = useState<WindowSize>(
-    () => getWindowSize(theme.typography.fontSize),
-    O,
+  const [windowSize, setWindowSize] = useState<WindowSize>(() =>
+    getWindowSize(theme.typography.fontSize),
   );
   const [fav, setFav] = useState<Favorites>(initialAppContext.fav);
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
