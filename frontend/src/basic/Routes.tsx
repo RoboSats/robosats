@@ -27,26 +27,23 @@ const Routes: React.FC = () => {
 
   return (
     <DomRoutes>
-      {['/garage/:token?', '/', ''].map((path, index) => {
-        return (
-          <Route
-            path={path}
-            element={
-              <Slide
-                direction={page === 'garage' ? slideDirection.in : slideDirection.out}
-                in={page === 'garage'}
-                appear={slideDirection.in !== undefined}
-              >
-                <div>
-                  <RobotPage />
-                </div>
-              </Slide>
-            }
-            key={index}
-          />
-        );
-      })}
-
+      {['/robot/:token?', '/', ''].map((path, index) => (
+        <Route
+          path={path}
+          element={
+            <Slide
+              direction={page === 'garage' ? slideDirection.in : slideDirection.out}
+              in={page === 'garage'}
+              appear={slideDirection.in !== undefined}
+            >
+              <div>
+                <RobotPage />
+              </div>
+            </Slide>
+          }
+          key={index}
+        />
+      ))}
       <Route
         path={'/offers'}
         element={
@@ -61,7 +58,6 @@ const Routes: React.FC = () => {
           </Slide>
         }
       />
-
       <Route
         path='/create'
         element={
@@ -76,7 +72,6 @@ const Routes: React.FC = () => {
           </Slide>
         }
       />
-
       <Route
         path='/order/:shortAlias/:orderId'
         element={
@@ -91,7 +86,6 @@ const Routes: React.FC = () => {
           </Slide>
         }
       />
-
       <Route
         path='/settings'
         element={

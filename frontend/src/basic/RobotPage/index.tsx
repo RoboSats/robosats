@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Paper,
   Grid,
   CircularProgress,
   Box,
@@ -9,6 +8,7 @@ import {
   Typography,
   useTheme,
   AlertTitle,
+  styled,
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
@@ -21,13 +21,11 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 import RecoveryDialog from '../../components/Dialogs/Recovery';
 
 const RobotPage = (): JSX.Element => {
-  const { torStatus, windowSize, settings, page, client } = useContext<UseAppStoreType>(AppContext);
+  const { torStatus, settings, page, client } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;
-  const width = Math.min(windowSize.width * 0.8, 28);
-  const maxHeight = windowSize.height * 0.85 - 3;
   const theme = useTheme();
 
   const [inputToken, setInputToken] = useState<string>('');
@@ -47,13 +45,7 @@ const RobotPage = (): JSX.Element => {
 
   if (settings.useProxy && client === 'mobile' && !(torStatus === 'ON')) {
     return (
-      <Paper
-        elevation={12}
-        style={{
-          width: `${width}em`,
-          maxHeight: `${maxHeight}em`,
-        }}
-      >
+      <StyledConnectingBox>
         <RecoveryDialog setInputToken={setInputToken} setView={setView} />
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
           <Grid item>
@@ -69,8 +61,8 @@ const RobotPage = (): JSX.Element => {
                   <stop offset={1} stopColor={theme.palette.secondary.main} />
                 </linearGradient>
               </svg>
-              <CircularProgress thickness={3} style={{ width: '11.2em', height: '11.2em' }} />
-              <Box sx={{ position: 'fixed', top: '4.6em' }}>
+              <CircularProgress thickness={3} sx={{ width: '11.2em', height: '11.2em' }} />
+              <StyledTorIconBox>
                 <TorIcon
                   sx={{
                     fill: 'url(#linearColors)',
@@ -80,7 +72,7 @@ const RobotPage = (): JSX.Element => {
                     left: '0.7em',
                   }}
                 />
-              </Box>
+              </StyledTorIconBox>
             </Box>
           </Grid>
           <Grid item>
@@ -92,39 +84,54 @@ const RobotPage = (): JSX.Element => {
             </Alert>
           </Grid>
         </Grid>
-      </Paper>
+      </StyledConnectingBox>
     );
   } else {
     return (
-      <Paper
-        elevation={12}
-        style={{
-          width: `${width}em`,
-          maxHeight: `${maxHeight}em`,
-          overflow: 'auto',
-          overflowX: 'clip',
-        }}
-      >
+      <StyledMainBox>
         <RecoveryDialog setInputToken={setInputToken} setView={setView} />
-        {view === 'welcome' ? (
-          <Welcome setView={setView} width={width} setInputToken={setInputToken} />
-        ) : null}
+        {view === 'welcome' && <Welcome setView={setView} width={1200} />}
 
-        {view === 'onboarding' ? (
+        {view === 'onboarding' && (
           <Onboarding setView={setView} inputToken={inputToken} setInputToken={setInputToken} />
-        ) : null}
+        )}
 
-        {view === 'profile' ? (
+        {view === 'profile' && (
           <RobotProfile
             setView={setView}
-            width={width}
+            width={1200}
             inputToken={inputToken}
             setInputToken={setInputToken}
           />
-        ) : null}
-      </Paper>
+        )}
+      </StyledMainBox>
     );
   }
 };
+
+// Styled components
+const StyledConnectingBox = styled(Box)({
+  width: '100vw',
+  height: 'auto',
+  backgroundColor: 'transparent',
+});
+
+const StyledTorIconBox = styled(Box)({
+  position: 'fixed',
+  top: '4.6em',
+  backgroundColor: 'transparent',
+});
+
+const StyledMainBox = styled(Box)({
+  width: '100vw',
+  height: 'auto',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '2em',
+  backgroundColor: 'transparent',
+  border: 'none',
+  boxShadow: 'none',
+});
 
 export default RobotPage;
