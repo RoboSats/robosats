@@ -12,7 +12,7 @@ grpcio==1.62.0
 googleapis-common-protos==1.63.0
 grpcio-tools==1.62.0
 numpy==1.26.4
-Pillow==10.1.0
+Pillow==11.0.0
 python-decouple==3.8
 requests==2.31.0
 ring==0.10.1
