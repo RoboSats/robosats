@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -34,7 +34,7 @@ interface Props {
 
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, federationUpdatedAt } = useContext(FederationContext);
+  const { federation } = useContext(FederationContext);
 
   return (
     <Dialog open={open} onClose={onClose}>

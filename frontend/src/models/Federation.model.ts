@@ -12,7 +12,6 @@ import { federationLottery, getHost } from '../utils';
 import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 import eventToPublicOrder from '../utils/nostr';
-import { SubCloser } from 'nostr-tools/lib/types/pool';
 import RoboPool from '../services/RoboPool';
 
 type FederationHooks = 'onFederationUpdate';
@@ -71,7 +70,7 @@ export class Federation {
 
   public coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
-  public book: Record<string, PublicOrder>;
+  public book: Record<string, PublicOrder | undefined>;
   public loading: boolean;
   public connection: 'api' | 'nostr' | null;
 
@@ -87,7 +86,7 @@ export class Federation {
       this.loadBookNostr();
     } else {
       this.roboPool.close();
-      this.loadBook();
+      void this.loadBook();
     }
   };
 
@@ -103,7 +102,7 @@ export class Federation {
         if (publicOrder) {
           this.book[dTag] = publicOrder;
         } else {
-          delete this.book[dTag];
+          this.book[dTag] = undefined;
         }
       },
       oneose: () => {
@@ -181,7 +180,7 @@ export class Federation {
     this.updateEnabledCoordinators();
 
     for (const coor of Object.values(this.coordinators)) {
-      void coor.loadInfo(() => {
+      coor.loadInfo(() => {
         this.onCoordinatorSaved();
       });
     }
@@ -194,7 +193,7 @@ export class Federation {
     this.updateEnabledCoordinators();
 
     for (const coor of Object.values(this.coordinators)) {
-      void coor.loadLimits(() => {
+      coor.loadLimits(() => {
         this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
@@ -209,7 +208,7 @@ export class Federation {
     this.triggerHook('onFederationUpdate');
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     for (const coor of Object.values(this.coordinators)) {
-      void coor.loadBook(() => {
+      coor.loadBook(() => {
         this.onCoordinatorSaved();
         this.triggerHook('onFederationUpdate');
       });

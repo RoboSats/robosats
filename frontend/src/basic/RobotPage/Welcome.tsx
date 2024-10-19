@@ -4,10 +4,10 @@ import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
 import { genBase62Token } from '../../utils';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
-import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { useNavigate } from 'react-router-dom';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;

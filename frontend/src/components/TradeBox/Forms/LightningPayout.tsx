@@ -33,7 +33,7 @@ import { apiClient } from '../../../services/api';
 import { systemClient } from '../../../services/System';
 
 import lnproxies from '../../../../static/lnproxies.json';
-import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 let filteredProxies: Array<Record<string, any>> = [];
 export interface LightningForm {
   invoice: string;

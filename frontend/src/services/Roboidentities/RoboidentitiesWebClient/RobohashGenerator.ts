@@ -19,11 +19,11 @@ class RoboGenerator {
 
   private readonly workers: RoboWorker[] = [];
   private readonly taskQueue: Task[] = [];
-  private numberOfWorkers: number = 8;
+  private readonly numberOfWorkers: number = 8;
   private waitingForLibrary: boolean = true;
 
-  private resolves: Record<string, ((result: string) => void)[]> = {};
-  private rejects: Record<string, ((reason?: Error) => void)[]> = {};
+  private resolves: Record<string, Array<(result: string) => void>> = {};
+  private rejects: Record<string, Array<(reason?: Error) => void>> = {};
 
   constructor() {
     for (let i = 0; i < this.numberOfWorkers; i++) {
@@ -86,7 +86,7 @@ class RoboGenerator {
     return { id, worker, busy: false };
   };
 
-  addTask = (task: any) => {
+  addTask = (task: any): void => {
     const availableWorker = this.workers.find((w) => !w.busy);
     if (availableWorker && !this.waitingForLibrary) {
       availableWorker.worker.postMessage(task);

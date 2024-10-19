@@ -1,5 +1,5 @@
-import { Event } from 'nostr-tools';
-import { Federation, PublicOrder } from '../models';
+import { type Event } from 'nostr-tools';
+import { type PublicOrder } from '../models';
 import { fromUnixTime } from 'date-fns';
 import Geohash from 'latlon-geohash';
 import currencyDict from '../../static/assets/currencies.json';
@@ -69,18 +69,20 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
         tag.shift();
         publicOrder.payment_method = tag.join(' ');
         break;
-      case 'g':
+      case 'g': {
         const { lat, lon } = Geohash.decode(tag[1]);
         publicOrder.latitude = lat;
         publicOrder.longitude = lon;
         break;
-      case 'f':
+      }
+      case 'f': {
         const currencyNumber = Object.entries(currencyDict).find(
           ([_key, value]) => value === tag[1],
         );
         publicOrder.currency = currencyNumber?.[0] ? parseInt(currencyNumber[0], 10) : null;
         break;
-      case 'source':
+      }
+      case 'source': {
         const orderUrl = tag[1].split('/');
         publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
         const coordinatorIdentifier = orderUrl[orderUrl.length - 2] ?? '';
@@ -88,6 +90,7 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
           ([key, value]) => value.identifier === coordinatorIdentifier,
         )?.[0];
         break;
+      }
       default:
         break;
     }

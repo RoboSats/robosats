@@ -202,7 +202,7 @@ export class Coordinator {
         if (!data?.not_found) {
           this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
             order.coordinatorShortAlias = this.shortAlias;
-            return { ...book, [this.shortAlias + order.id]: order };
+            return { ...book, [`${this.shortAlias}${order.id}`]: order };
           }, {});
           void this.generateAllMakerAvatars();
           onDataLoad();
@@ -272,7 +272,7 @@ export class Coordinator {
 
   enable = (onEnabled: () => void = () => {}): void => {
     this.enabled = true;
-    void this.loadLimits(() => {
+    this.loadLimits(() => {
       onEnabled();
     });
   };

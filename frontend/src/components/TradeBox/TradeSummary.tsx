@@ -37,7 +37,7 @@ import {
 } from '../Icons';
 import { type TradeCoordinatorSummary, type TradeRobotSummary } from '../../models/Order.model';
 import { systemClient } from '../../services/System';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
   isMaker: boolean;

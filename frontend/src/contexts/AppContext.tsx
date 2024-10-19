@@ -76,13 +76,13 @@ const makeTheme = function (settings: Settings): Theme {
 };
 
 const getHostUrl = (network = 'mainnet'): string => {
-  const [client, _view] = window.RobosatsSettings.split('-');
+  const [client] = window.RobosatsSettings.split('-');
   const randomAlias =
     Object.keys(defaultFederation)[
       Math.floor(Math.random() * Object.keys(defaultFederation).length)
     ];
-  let host = defaultFederation[randomAlias][network].onion;
-  let protocol = 'http:';
+  let host: string = defaultFederation[randomAlias][network].onion;
+  let protocol: string = 'http:';
   if (client !== 'mobile') {
     host = getHost();
     protocol = location.protocol;
@@ -94,7 +94,7 @@ const getHostUrl = (network = 'mainnet'): string => {
 const getOrigin = (network = 'mainnet'): Origin => {
   const host = getHostUrl(network);
   let origin: Origin = 'onion';
-  const [client, _view] = window.RobosatsSettings.split('-');
+  const [client] = window.RobosatsSettings.split('-');
 
   if (client === 'mobile' || client === 'desktop' || host.includes('.onion')) {
     origin = 'onion';

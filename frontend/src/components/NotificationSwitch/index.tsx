@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Box, CircularProgress, useTheme } from '@mui/material';
 import { NotificationsActive, NotificationsOff } from '@mui/icons-material';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
 
 const NotificationSwitchBadge = (): JSX.Element => {
@@ -14,7 +14,7 @@ const NotificationSwitchBadge = (): JSX.Element => {
     setStopNotifications(settings.stopNotifications);
   }, [settings.stopNotifications]);
 
-  const onClick = () => {
+  const onClick = (): void => {
     if (torStatus === 'ON' || !settings.useProxy) {
       setSettings({ ...settings, stopNotifications: !settings.stopNotifications });
       systemClient.setItem('settings_stop_notifications', String(!settings.stopNotifications));

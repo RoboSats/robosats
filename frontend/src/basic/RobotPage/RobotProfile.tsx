@@ -13,8 +13,7 @@ import {
   useTheme,
   type SelectChangeEvent,
 } from '@mui/material';
-import { Key } from '@mui/icons-material';
-import { Bolt, Add, DeleteSweep, Download } from '@mui/icons-material';
+import { Key, Bolt, Add, DeleteSweep, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { type Slot, type Robot } from '../../models';
@@ -22,7 +21,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
