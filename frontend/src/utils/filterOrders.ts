@@ -70,6 +70,8 @@ const filterOrders = function ({
     .filter((coord) => coord.enabled)
     .map((coord) => coord.shortAlias);
   const filteredOrders = Object.values(federation.book).filter((order) => {
+    if (!order) return false;
+
     const coordinatorCheck = enabledCoordinators.includes(order.coordinatorShortAlias ?? '');
     const typeChecks = order.type === baseFilter.type || baseFilter.type == null;
     const modeChecks = baseFilter.mode === 'fiat' ? !(order.currency === 1000) : true;

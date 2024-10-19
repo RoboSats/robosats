@@ -80,7 +80,6 @@ export class Federation {
 
   setConnection = (settings: Settings): void => {
     this.connection = settings.connection;
-
     if (this.connection === 'nostr') {
       this.roboPool.connect();
       this.loadBookNostr();

@@ -92,7 +92,7 @@ const BookTable = ({
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const orders = orderList ?? Object.values(federation.book);
+  const orders = orderList ?? Object.values(federation.book) ?? [];
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
