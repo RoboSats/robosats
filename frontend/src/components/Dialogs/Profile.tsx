@@ -33,15 +33,13 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const slot = garage.getSlot();
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadingCoordinators, setLoadingCoordinators] = useState<number>(
+  const [loadingRobots, setLoadingRobots] = useState<number>(
     Object.values(slot?.robots ?? {}).length,
   );
 
   useEffect(() => {
     setLoading(!garage.getSlot()?.hashId);
-    setLoadingCoordinators(
-      Object.values(slot?.robots ?? {}).filter((robot) => robot.loading).length,
-    );
+    setLoadingRobots(Object.values(slot?.robots ?? {}).filter((robot) => robot.loading).length);
   }, [slotUpdatedAt]);
 
   return (
@@ -85,7 +83,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
                 )}
               </Typography>
 
-              {loadingCoordinators > 0 ? (
+              {loadingRobots > 0 ? (
                 <>
                   <b>{t('Looking for your robot!')}</b>
                   <LinearProgress />

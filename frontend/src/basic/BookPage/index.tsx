@@ -86,7 +86,7 @@ const BookPage = (): JSX.Element => {
           setOpenNoRobot(false);
         }}
         onClickGenerateRobot={() => {
-          navigate('/robot');
+          navigate('/garage');
         }}
       />
       {openMaker ? (
@@ -99,7 +99,7 @@ const BookPage = (): JSX.Element => {
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
               onClickGenerateRobot={() => {
-                navigate('/robot');
+                navigate('/garage');
               }}
             />
           </Box>

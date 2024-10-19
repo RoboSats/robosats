@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Button, Grid, List, ListItem, Paper, TextField, Typography } from '@mui/material';
+import { Box, Button, Grid, List, ListItem, Paper, TextField, Typography } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
@@ -49,52 +49,60 @@ const SettingsPage = (): JSX.Element => {
       }}
     >
       <Grid container>
-        <Grid item>
+        <Grid item xs={12}>
           <SettingsForm />
         </Grid>
-        <Grid item>
+        <Grid item xs={12}>
           <FederationTable maxHeight={18} />
         </Grid>
-        <Grid item>
+        <Grid item xs={12}>
           <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
             {error}
           </Typography>
         </Grid>
-        <List>
-          <ListItem>
-            <TextField
-              id='outlined-basic'
-              label={t('Alias')}
-              variant='outlined'
-              size='small'
-              value={newAlias}
-              onChange={(e) => {
-                setNewAlias(e.target.value);
-              }}
-            />
-            <TextField
-              id='outlined-basic'
-              label={t('URL')}
-              variant='outlined'
-              size='small'
-              value={newUrl}
-              onChange={(e) => {
-                setNewUrl(e.target.value);
-              }}
-            />
-            <Button
-              sx={{ maxHeight: 38 }}
-              disabled={false}
-              onClick={addCoordinator}
-              variant='contained'
-              color='primary'
-              size='small'
-              type='submit'
-            >
-              {t('Add')}
-            </Button>
-          </ListItem>
-        </List>
+        <Grid item xs={12}>
+          <List>
+            <ListItem>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <TextField
+                  id='outlined-basic'
+                  label={t('Alias')}
+                  variant='outlined'
+                  size='small'
+                  value={newAlias}
+                  onChange={(e) => {
+                    setNewAlias(e.target.value);
+                  }}
+                />
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <TextField
+                  id='outlined-basic'
+                  label={t('URL')}
+                  variant='outlined'
+                  size='small'
+                  value={newUrl}
+                  onChange={(e) => {
+                    setNewUrl(e.target.value);
+                  }}
+                />
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button
+                  sx={{ maxHeight: 38 }}
+                  disabled={false}
+                  onClick={addCoordinator}
+                  variant='contained'
+                  color='primary'
+                  size='small'
+                  type='submit'
+                >
+                  {t('Add')}
+                </Button>
+              </Box>
+            </ListItem>
+          </List>
+        </Grid>
       </Grid>
     </Paper>
   );

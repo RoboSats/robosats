@@ -93,8 +93,12 @@ const App = () => {
     loadCookie('settings_mode');
     loadCookie('settings_light_qr');
     loadCookie('settings_network');
-    loadCookie('settings_use_proxy').then((useProxy) => {
+    loadCookie('settings_connection');
+    loadCookie('settings_use_proxy').then((useProxy: string | undefined) => {
       SystemModule.useProxy(useProxy ?? 'true');
+    });
+    loadCookie('settings_stop_notifications').then((stopNotifications: string | undefined) => {
+      SystemModule.stopNotifications(stopNotifications ?? 'false');
     });
     loadCookie('garage_slots').then((slots) => {
       NotificationsModule.monitorOrders(slots ?? '{}');
@@ -102,13 +106,11 @@ const App = () => {
     });
   };
 
-  const onCatch = (dataId: string, event: any) => {
+  const onCatch = (dataId: string, event: unknown) => {
     let json = '{}';
     let code = 500;
     if (event.message) {
-      const reponse = /Request Response Code \((?<code>\d*)\)\: (?<json>\{.*\})/.exec(
-        event.message,
-      );
+      const reponse = /Request Response Code \((?<code>\d*)\): (?<json>\{.*\})/.exec(event.message);
       json = reponse?.groups?.json ?? '{}';
       code = reponse?.groups?.code ? parseInt(reponse?.groups?.code) : 500;
     }
@@ -161,6 +163,8 @@ const App = () => {
           NotificationsModule.monitorOrders(data.detail ?? '{}');
         } else if (data.key === 'settings_use_proxy') {
           SystemModule.useProxy(data.detail ?? 'true');
+        } else if (data.key === 'settings_stop_notifications') {
+          SystemModule.stopNotifications(data.detail ?? 'false');
         }
       } else if (data.type === 'deleteCookie') {
         EncryptedStorage.removeItem(data.key);
@@ -186,7 +190,9 @@ const App = () => {
         key,
         detail: storedValue,
       });
-    } catch (error) {}
+    } catch (e) {
+      console.log('setCookie', e);
+    }
   };
 
   return (
@@ -196,7 +202,6 @@ const App = () => {
           uri,
         }}
         onMessage={onMessage}
-        // @ts-expect-error
         userAgent={`${app_name} v${app_version} Android`}
         style={{ backgroundColor: backgroundColors[colorScheme] }}
         ref={(ref) => (webViewRef.current = ref)}

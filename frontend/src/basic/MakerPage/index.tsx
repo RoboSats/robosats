@@ -25,7 +25,7 @@ const MakerPage = (): JSX.Element => {
 
   const matches = useMemo(() => {
     return filterOrders({
-      orders: federation.book,
+      federation,
       baseFilter: {
         currency: fav.currency === 0 ? 1 : fav.currency,
         type: fav.type,
@@ -67,7 +67,7 @@ const MakerPage = (): JSX.Element => {
           setOpenNoRobot(false);
         }}
         onClickGenerateRobot={() => {
-          navigate('/robot');
+          navigate('/garage');
         }}
       />
       <Grid item>
@@ -112,7 +112,7 @@ const MakerPage = (): JSX.Element => {
             }}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
             onClickGenerateRobot={() => {
-              navigate('/robot');
+              navigate('/garage');
             }}
           />
         </Paper>

@@ -29,10 +29,13 @@ class Nostr:
         await client.connect()
 
         robot_name = await self.get_robot_name(order)
+        robot_hash_id = await self.get_robot_hash_id(order)
         currency = await self.get_robot_currency(order)
 
         event = EventBuilder(
-            Kind(38383), "", self.generate_tags(order, robot_name, currency)
+            Kind(38383),
+            "",
+            self.generate_tags(order, robot_name, robot_hash_id, currency),
         ).to_event(keys)
         await client.send_event(event)
         print(f"Nostr event sent: {event.as_json()}")
@@ -42,17 +45,21 @@ class Nostr:
         return order.maker.username
 
     @sync_to_async
+    def get_robot_hash_id(self, order):
+        return order.maker.robot.hash_id
+
+    @sync_to_async
     def get_robot_currency(self, order):
         return str(order.currency)
 
-    def generate_tags(self, order, robot_name, currency):
+    def generate_tags(self, order, robot_name, robot_hash_id, currency):
         hashed_id = hashlib.md5(
             f"{config("COORDINATOR_ALIAS", cast=str)}{order.id}".encode("utf-8")
         ).hexdigest()
 
         tags = [
             Tag.parse(["d", str(uuid.UUID(hashed_id))]),
-            Tag.parse(["name", robot_name]),
+            Tag.parse(["name", robot_name, robot_hash_id]),
             Tag.parse(["k", "sell" if order.type == Order.Types.SELL else "buy"]),
             Tag.parse(["f", currency]),
             Tag.parse(["s", self.get_status_tag(order)]),
@@ -73,7 +80,13 @@ class Nostr:
                     f"http://{config("HOST_NAME")}/order/{config("COORDINATOR_ALIAS", cast=str).lower()}/{order.id}",
                 ]
             ),
-            Tag.parse(["expiration", str(int(order.expires_at.timestamp()))]),
+            Tag.parse(
+                [
+                    "expiration",
+                    str(int(order.expires_at.timestamp())),
+                    str(order.escrow_duration),
+                ]
+            ),
             Tag.parse(["y", "robosats", config("COORDINATOR_ALIAS", cast=str).lower()]),
             Tag.parse(["n", str(config("NETWORK"))]),
             Tag.parse(["layer"] + self.get_layer_tag(order)),

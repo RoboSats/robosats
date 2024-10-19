@@ -41,8 +41,6 @@ class Slot {
         bitsEntropy,
         shannonEntropy,
         tokenSHA256,
-        pubKey: robotAttributes.pubKey,
-        encPrivKey: robotAttributes.encPrivKey,
       });
       this.updateSlotFromRobot(acc[shortAlias]);
       return acc;

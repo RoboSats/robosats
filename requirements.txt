@@ -4,17 +4,17 @@ django-celery-beat==2.7.0
 django-celery-results==2.5.1
 django-model-utils==4.5.0
 django-redis==5.4.0
-djangorestframework==3.15.0
+djangorestframework==3.15.2
 channels==4.1.0
 channels-redis==4.2.0
 celery==5.4.0
-grpcio==1.62.0
+grpcio==1.67.0
 googleapis-common-protos==1.65.0
 grpcio-tools==1.62.0
 numpy==1.26.4
-Pillow==10.1.0
+Pillow==11.0.0
 python-decouple==3.8
-requests==2.31.0
+requests==2.32.0
 ring==0.10.1
 gunicorn==23.0.0
 psycopg2==2.9.9
@@ -28,6 +28,6 @@ drf-spectacular==0.27.2
 drf-spectacular-sidecar==2024.7.1
 django-cors-headers==4.4.0
 base91==1.0.1
-nostr-sdk==0.32.2
+nostr-sdk==0.35.1
 pygeohash==1.2.0
 asgiref == 3.8.1

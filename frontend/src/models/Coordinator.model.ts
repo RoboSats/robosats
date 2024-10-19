@@ -126,7 +126,7 @@ export class Coordinator {
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
     this.description = value.description;
-    this.federated = value.federated;
+    this.federated = value.federated ?? false;
     this.motto = value.motto;
     this.color = value.color;
     this.size_limit = value.badges.isFounder ? 21 * 100000000 : calculateSizeLimit(established);
@@ -165,7 +165,7 @@ export class Coordinator {
   public basePath: string;
 
   // These properties are fetched from coordinator API
-  public book: PublicOrder[] = [];
+  public book: Record<string, PublicOrder> = {};
   public loadingBook: boolean = false;
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = false;
@@ -182,24 +182,8 @@ export class Coordinator {
     }
   };
 
-  update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
-    const onDataLoad = (): void => {
-      if (this.isUpdated()) onUpdate(this.shortAlias);
-    };
-
-    this.loadBook(onDataLoad);
-    this.loadLimits(onDataLoad);
-    this.loadInfo(onDataLoad);
-  };
-
-  updateBook = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
-    this.loadBook(() => {
-      onUpdate(this.shortAlias);
-    });
-  };
-
-  generateAllMakerAvatars = async (data: [PublicOrder]): Promise<void> => {
-    for (const order of data) {
+  generateAllMakerAvatars = async (): Promise<void> => {
+    for (const order of Object.values(this.book)) {
       void roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
     }
   };
@@ -210,20 +194,19 @@ export class Coordinator {
     if (this.loadingBook) return;
 
     this.loadingBook = true;
-    this.book = [];
+    this.book = {};
 
     apiClient
       .get(this.url, `${this.basePath}/api/book/`)
       .then((data) => {
         if (!data?.not_found) {
-          this.book = (data as PublicOrder[]).map((order) => {
+          this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
             order.coordinatorShortAlias = this.shortAlias;
-            return order;
-          });
-          void this.generateAllMakerAvatars(data);
+            return { ...book, [`${this.shortAlias}${order.id}`]: order };
+          }, {});
+          void this.generateAllMakerAvatars();
           onDataLoad();
         } else {
-          this.book = [];
           onDataLoad();
         }
       })
@@ -289,7 +272,7 @@ export class Coordinator {
 
   enable = (onEnabled: () => void = () => {}): void => {
     this.enabled = true;
-    void this.update(() => {
+    this.loadLimits(() => {
       onEnabled();
     });
   };
@@ -298,11 +281,7 @@ export class Coordinator {
     this.enabled = false;
     this.info = undefined;
     this.limits = {};
-    this.book = [];
-  };
-
-  isUpdated = (): boolean => {
-    return !((this.loadingBook === this.loadingInfo) === this.loadingLimits);
+    this.book = {};
   };
 
   getBaseUrl = (): string => {

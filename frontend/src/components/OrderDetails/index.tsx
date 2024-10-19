@@ -181,7 +181,7 @@ const OrderDetails = ({
     const rate = Number(order.max_amount ?? order.amount) / btc_now;
 
     if (isBuyer) {
-      if (order.amount > 0) {
+      if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: -tradeFee,
@@ -211,7 +211,7 @@ const OrderDetails = ({
         amount: sats,
       });
     } else {
-      if (order.amount > 0) {
+      if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: tradeFee,

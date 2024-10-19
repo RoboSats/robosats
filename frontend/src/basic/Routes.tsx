@@ -27,14 +27,14 @@ const Routes: React.FC = () => {
 
   return (
     <DomRoutes>
-      {['/robot/:token?', '/', ''].map((path, index) => {
+      {['/garage/:token?', '/', ''].map((path, index) => {
         return (
           <Route
             path={path}
             element={
               <Slide
-                direction={page === 'robot' ? slideDirection.in : slideDirection.out}
-                in={page === 'robot'}
+                direction={page === 'garage' ? slideDirection.in : slideDirection.out}
+                in={page === 'garage'}
                 appear={slideDirection.in !== undefined}
               >
                 <div>

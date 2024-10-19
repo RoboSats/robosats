@@ -350,8 +350,9 @@ const BookControl = ({
                     <FlagWithProps code='ANY' />
                   </div>
                 </MenuItem>
-                {Object.values(federation.coordinators).map((coordinator) =>
-                  coordinator.enabled ? (
+                {Object.values(federation.coordinators)
+                  .filter((coord) => coord.enabled)
+                  .map((coordinator) => (
                     <MenuItem
                       key={coordinator.shortAlias}
                       value={coordinator.shortAlias}
@@ -367,10 +368,7 @@ const BookControl = ({
                         />
                       </div>
                     </MenuItem>
-                  ) : (
-                    <></>
-                  ),
-                )}
+                  ))}
               </Select>
             </Grid>
           </>

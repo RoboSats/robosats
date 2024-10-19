@@ -23,13 +23,11 @@ import {
   DarkMode,
   SettingsOverscan,
   Link,
-  AccountBalance,
-  AttachMoney,
   QrCode,
+  SettingsInputAntenna,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
-import SwapCalls from '@mui/icons-material/SwapCalls';
 import { apiClient } from '../../services/api';
 
 interface SettingsFormProps {
@@ -37,7 +35,7 @@ interface SettingsFormProps {
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
-  const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -49,8 +47,8 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
   ];
 
   return (
-    <Grid container spacing={1}>
-      <Grid item>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
         <List dense={dense}>
           <ListItem>
             <ListItemIcon>
@@ -196,22 +194,22 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
 
           <ListItem>
             <ListItemIcon>
-              <AccountBalance />
+              <SettingsInputAntenna />
             </ListItemIcon>
             <ToggleButtonGroup
+              sx={{ width: '100%' }}
               exclusive={true}
-              value={fav.mode}
-              onChange={(e, mode) => {
-                setFav({ ...fav, mode, currency: mode === 'fiat' ? 0 : 1000 });
+              value={settings.connection}
+              onChange={(_e, connection) => {
+                setSettings({ ...settings, connection });
+                systemClient.setItem('settings_connection', connection);
               }}
             >
-              <ToggleButton value='fiat' color='primary'>
-                <AttachMoney />
-                {t('Fiat')}
+              <ToggleButton value='api' color='primary' sx={{ flexGrow: 1 }}>
+                {t('API')}
               </ToggleButton>
-              <ToggleButton value='swap' color='secondary'>
-                <SwapCalls />
-                {t('Swaps')}
+              <ToggleButton value='nostr' color='secondary' sx={{ flexGrow: 1 }}>
+                {t('nostr')}
               </ToggleButton>
             </ToggleButtonGroup>
           </ListItem>
@@ -221,23 +219,24 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
               <Link />
             </ListItemIcon>
             <ToggleButtonGroup
+              sx={{ width: '100%' }}
               exclusive={true}
               value={settings.network}
-              onChange={(e, network) => {
+              onChange={(_e, network) => {
                 setSettings({ ...settings, network });
                 systemClient.setItem('settings_network', network);
               }}
             >
-              <ToggleButton value='mainnet' color='primary'>
+              <ToggleButton value='mainnet' color='primary' sx={{ flexGrow: 1 }}>
                 {t('Mainnet')}
               </ToggleButton>
-              <ToggleButton value='testnet' color='secondary'>
+              <ToggleButton value='testnet' color='secondary' sx={{ flexGrow: 1 }}>
                 {t('Testnet')}
               </ToggleButton>
             </ToggleButtonGroup>
           </ListItem>
 
-          {window.NativeRobosats !== undefined && (
+          {client === 'mobile' && (
             <ListItem>
               <ListItemIcon>
                 <TorIcon />

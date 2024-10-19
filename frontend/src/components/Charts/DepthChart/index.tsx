@@ -66,15 +66,24 @@ const DepthChart: React.FC<DepthChartProps> = ({
   }, [fav.currency]);
 
   useEffect(() => {
-    if (federation.book.length > 0) {
-      const enriched = federation.book.map((order) => {
-        // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
-        // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
-        // simple rule of three
-        if (order.coordinatorShortAlias != null) {
+    if (Object.values(federation.book).length > 0) {
+      const enriched = Object.values(federation.book).map((order) => {
+        if (order.coordinatorShortAlias != null && order.currency) {
           const limits = federation.getCoordinator(order.coordinatorShortAlias).limits;
-          const price = limits[currencyCode] ? limits[currencyCode].price : 0;
-          order.base_amount = (order.price * price) / price;
+
+          const originalPrice =
+            (limits[order.currency]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
+          const currencyPrice =
+            (limits[currencyCode]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
+
+          const originalAmount =
+            order.has_range && order.max_amount
+              ? parseFloat(order.max_amount)
+              : parseFloat(order.amount);
+          const currencyAmount = (currencyPrice * originalAmount) / originalPrice;
+
+          order.base_price = currencyPrice;
+          order.satoshis_now = (100000000 * currencyAmount) / currencyPrice;
         }
         return order;
       });
@@ -89,8 +98,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   }, [enrichedOrders, xRange]);
 
   useEffect(() => {
-    if (xType === 'base_amount') {
-      const prices: number[] = enrichedOrders.map((order) => order?.base_amount ?? 0);
+    if (xType === 'base_price') {
+      const prices: number[] = enrichedOrders.map((order) => order?.base_price ?? 0);
 
       const medianValue = ~~matchMedian(prices);
       const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] ?? 1500;
@@ -114,9 +123,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =
-      xType === 'base_amount'
+      xType === 'base_price'
         ? enrichedOrders.sort(
-            (order1, order2) => (order1?.base_amount ?? 0) - (order2?.base_amount ?? 0),
+            (order1, order2) => (order1?.base_price ?? 0) - (order2?.base_price ?? 0),
           )
         : enrichedOrders.sort((order1, order2) => order1.premium - order2.premium);
 
@@ -152,16 +161,17 @@ const DepthChart: React.FC<DepthChartProps> = ({
     let serie: Datum[] = [];
     orders.forEach((order) => {
       const lastSumOrders = sumOrders;
+
       sumOrders += (order.satoshis_now ?? 0) / 100000000;
       const datum: Datum[] = [
         {
           // Vertical Line
-          x: xType === 'base_amount' ? order.base_amount : order.premium,
+          x: xType === 'base_price' ? order.base_price : order.premium,
           y: lastSumOrders,
         },
         {
           // PublicOrder Point
-          x: xType === 'base_amount' ? order.base_amount : order.premium,
+          x: xType === 'base_price' ? order.base_price : order.premium,
           y: sumOrders,
           order,
         },
@@ -226,7 +236,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const formatAxisX = (value: number): string => {
-    if (xType === 'base_amount') {
+    if (xType === 'base_price') {
       return value.toString();
     }
     return `${value}%`;
@@ -285,7 +295,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                       {t('Premium')}
                     </div>
                   </MenuItem>
-                  <MenuItem value={'base_amount'}>
+                  <MenuItem value={'base_price'}>
                     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                       {t('Price')}
                     </div>
@@ -306,7 +316,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
                 <Grid item>
                   <Box justifyContent='center'>
-                    {xType === 'base_amount'
+                    {xType === 'base_price'
                       ? `${center} ${String(currencyDict[currencyCode])}`
                       : `${String(center.toPrecision(3))}%`}
                   </Box>
@@ -339,14 +349,14 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 axisBottom={{
                   tickSize: 5,
                   tickRotation:
-                    xType === 'base_amount' ? (width < 40 ? 45 : 0) : width < 25 ? 45 : 0,
+                    xType === 'base_price' ? (width < 40 ? 45 : 0) : width < 25 ? 45 : 0,
                   format: formatAxisX,
                 }}
                 margin={{
                   left: 4.64 * em,
                   right: 0.714 * em,
                   bottom:
-                    xType === 'base_amount'
+                    xType === 'base_price'
                       ? width < 40
                         ? 2.7 * em
                         : 1.78 * em
