@@ -72,9 +72,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
           const limits = federation.getCoordinator(order.coordinatorShortAlias).limits;
 
           const originalPrice =
-            (limits[order.currency].price ?? 0) * (1 + parseFloat(order.premium) / 100);
+            (limits[order.currency]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
           const currencyPrice =
-            (limits[currencyCode].price ?? 0) * (1 + parseFloat(order.premium) / 100);
+            (limits[currencyCode]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
 
           const originalAmount =
             order.has_range && order.max_amount
