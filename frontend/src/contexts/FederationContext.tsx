@@ -1,12 +1,4 @@
-import React, {
-  createContext,
-  type Dispatch,
-  useEffect,
-  useState,
-  type SetStateAction,
-  useContext,
-  type ReactNode,
-} from 'react';
+import React, { createContext, useEffect, useState, useContext, type ReactNode } from 'react';
 
 import { Federation, Settings } from '../models';
 
@@ -14,6 +6,7 @@ import { federationLottery } from '../utils';
 
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
+import type Coordinator from '../models/Coordinator.model';
 import { type Origin, type Origins } from '../models/Coordinator.model';
 
 export interface CurrentOrderIdProps {
@@ -27,7 +20,6 @@ export interface FederationContextProviderProps {
 
 export interface UseFederationStoreType {
   federation: Federation;
-  sortedCoordinators: string[];
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
   addNewCoordinator: (alias: string, url: string) => void;
@@ -35,7 +27,6 @@ export interface UseFederationStoreType {
 
 export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation('onion', new Settings(), ''),
-  sortedCoordinators: [],
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
   addNewCoordinator: () => {},
@@ -46,11 +37,10 @@ export const FederationContext = createContext<UseFederationStoreType>(initialFe
 export const FederationContextProvider = ({
   children,
 }: FederationContextProviderProps): JSX.Element => {
-  const { settings, page, origin, hostUrl, open, torStatus } =
+  const { settings, page, origin, hostUrl, open, torStatus, client } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
-  const [sortedCoordinators, setSortedCoordinators] = useState(federationLottery(federation));
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
   );
@@ -58,7 +48,7 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: sortedCoordinators[0] };
+      return { ...maker, coordinator: Object.keys(federation.coordinators)[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
@@ -66,11 +56,12 @@ export const FederationContextProvider = ({
   }, []);
 
   useEffect(() => {
-    if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
+    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
-      void federation.update();
+      void federation.loadLimits();
+      federation.setConnection(settings);
     }
-  }, [settings.network, settings.useProxy, torStatus]);
+  }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.coordinators[alias]) {
@@ -91,18 +82,17 @@ export const FederationContextProvider = ({
         attributes.testnet = origins;
       }
       federation.addCoordinator(origin, settings, hostUrl, attributes);
-      const newCoordinator = federation.coordinators[alias];
-      newCoordinator.update(() => {
+      const newCoordinator: Coordinator = federation.coordinators[alias];
+      newCoordinator.loadLimits(() => {
         setCoordinatorUpdatedAt(new Date().toISOString());
       });
       garage.syncCoordinator(federation, alias);
-      setSortedCoordinators(federationLottery(federation));
       setFederationUpdatedAt(new Date().toISOString());
     }
   };
 
   useEffect(() => {
-    if (page === 'offers') void federation.updateBook();
+    if (page === 'offers') void federation.loadBook();
   }, [page]);
 
   // use effects to fetchRobots on Profile open
@@ -118,7 +108,6 @@ export const FederationContextProvider = ({
     <FederationContext.Provider
       value={{
         federation,
-        sortedCoordinators,
         coordinatorUpdatedAt,
         federationUpdatedAt,
         addNewCoordinator,

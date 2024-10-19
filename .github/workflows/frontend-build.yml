@@ -50,20 +50,34 @@ jobs:
         export NODE_OPTIONS="--max-old-space-size=4096"
         cd frontend
         npm run build
-    - name: 'Archive Web Basic Build Results'
+    - name: 'Archive Django Static Build Results'
       uses: actions/upload-artifact@v4
       with:
-        name: web-main-js
+        name: django-main-static
         path: |
-          frontend/static/frontend/*main.js
-          frontend/static/frontend/*.wasm
-    - name: 'Archive Web PRO Build Results'
+          frontend/static
+          frontend/templates/frontend/*.html
+    - name: 'Archive Node App Static Build Results'
       uses: actions/upload-artifact@v4
       with:
-        name: web-pro-js
+        name: nodeapp-main-static
         path: |
-          frontend/static/frontend/*pro.js
-          frontend/static/frontend/*.wasm
+          nodeapp/static
+          nodeapp/*.html
+    - name: 'Archive Desktop App Static Build Results'
+      uses: actions/upload-artifact@v4
+      with:
+        name: desktop-main-static
+        path: |
+          desktopApp/static
+          desktopApp/*.html
+    - name: 'Archive Django Static Build Results'
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-main-static
+        path: |
+          web/static
+          web/*.html
     - name: 'Archive Mobile Build Results'
       uses: actions/upload-artifact@v4
       with:

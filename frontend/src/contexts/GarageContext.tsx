@@ -64,9 +64,9 @@ export const GarageContext = createContext<UseGarageStoreType>(initialGarageCont
 
 export const GarageContextProvider = ({ children }: GarageContextProviderProps): JSX.Element => {
   // All garage data structured
-  const { settings, torStatus, open, page } = useContext<UseAppStoreType>(AppContext);
+  const { settings, torStatus, open, page, client } = useContext<UseAppStoreType>(AppContext);
   const pageRef = useRef(page);
-  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [garage] = useState<Garage>(initialGarageContext.garage);
   const [maker, setMaker] = useState<Maker>(initialGarageContext.maker);
   const [slotUpdatedAt, setSlotUpdatedAt] = useState<string>(new Date().toISOString());
@@ -83,24 +83,26 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: sortedCoordinators[0] };
+      return { ...maker, coordinator: Object.keys(federation.coordinators)[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     garage.registerHook('onSlotUpdate', onSlotUpdated);
     clearInterval(timer);
     fetchSlotActiveOrder();
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
-    if (window.NativeRobosats === undefined || torStatus === 'ON' || !settings.useProxy) {
+    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       const token = garage.getSlot()?.token;
       if (token) void garage.fetchRobot(federation, token);
     }
   }, [settings.network, settings.useProxy, torStatus]);
 
   useEffect(() => {
-    if (window.NativeRobosats !== undefined && !systemClient.loading) {
+    if (client === 'mobile' && !systemClient.loading) {
       garage.loadSlots();
     }
   }, [systemClient.loading]);
@@ -142,7 +144,11 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
   const resetInterval = (): void => {
     clearInterval(timer);
     setDelay(defaultDelay);
-    setTimer(setTimeout(() => fetchSlotActiveOrder(), defaultDelay));
+    setTimer(
+      setTimeout(() => {
+        fetchSlotActiveOrder();
+      }, defaultDelay),
+    );
   };
 
   return (

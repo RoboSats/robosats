@@ -11,7 +11,7 @@ repos:
           - '--fix=lf'
       - id: trailing-whitespace
       - id: pretty-format-json
-        exclude: ^frontend/
+        exclude: ^frontend/|^mobile/
         args:
           - '--autofix'
           - '--no-sort-keys'

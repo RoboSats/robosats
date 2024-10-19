@@ -1,4 +1,5 @@
 import { type Federation, Order } from '.';
+import { genKey } from '../pgp';
 import { systemClient } from '../services/System';
 import { saveAsJson } from '../utils';
 import Slot from './Slot.model';
@@ -55,13 +56,17 @@ class Garage {
     const slotsDump: string = systemClient.getItem('garage_slots') ?? '';
 
     if (slotsDump !== '') {
-      const rawSlots = JSON.parse(slotsDump);
+      const rawSlots: Record<any, any> = JSON.parse(slotsDump);
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
         if (rawSlot?.token) {
+          const robotAttributes = Object.values(rawSlot.robots)[0] as Record<any, any>;
           this.slots[rawSlot.token] = new Slot(
             rawSlot.token,
             Object.keys(rawSlot.robots),
-            {},
+            {
+              pubKey: robotAttributes?.pubKey,
+              encPrivKey: robotAttributes?.encPrivKey,
+            },
             () => {
               this.triggerHook('onSlotUpdate');
             },
@@ -86,7 +91,7 @@ class Garage {
     const targetIndex = token ?? this.currentSlot;
     if (targetIndex) {
       Reflect.deleteProperty(this.slots, targetIndex);
-      this.currentSlot = null;
+      this.currentSlot = Object.keys(this.slots)[0] ?? null;
       this.save();
       this.triggerHook('onSlotUpdate');
     }
@@ -124,18 +129,33 @@ class Garage {
   };
 
   // Robots
-  createRobot: (token: string, shortAliases: string[], attributes: Record<any, any>) => void = (
-    token,
-    shortAliases,
-    attributes,
-  ) => {
-    if (!token || !shortAliases) return;
+  createRobot: (federation: Federation, token: string) => void = (federation, token) => {
+    if (!token) return;
 
     if (this.getSlot(token) === null) {
-      this.slots[token] = new Slot(token, shortAliases, attributes, () => {
-        this.triggerHook('onSlotUpdate');
-      });
-      this.save();
+      genKey(token)
+        .then((key) => {
+          const robotAttributes = {
+            token,
+            pubKey: key.publicKeyArmored,
+            encPrivKey: key.encryptedPrivateKeyArmored,
+          };
+
+          this.setCurrentSlot(token);
+          this.slots[token] = new Slot(
+            token,
+            Object.keys(federation.coordinators),
+            robotAttributes,
+            () => {
+              this.triggerHook('onSlotUpdate');
+            },
+          );
+          void this.fetchRobot(federation, token);
+          this.save();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
     }
   };
 

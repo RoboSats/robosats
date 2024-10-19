@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "ejs": "^3.1.10"
   }
 }

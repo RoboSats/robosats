@@ -219,7 +219,7 @@ class Order {
     slot,
     takeAmount,
   ) => {
-    return this.submitAction(federation, slot, {
+    return await this.submitAction(federation, slot, {
       action: 'take',
       amount: this?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount),
     });

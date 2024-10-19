@@ -30,6 +30,14 @@ jobs:
     - name: 'Checkout'
       uses: actions/checkout@v4
 
+    - name: 'Download static files Artifact'
+      uses: dawidd6/action-download-artifact@v6
+      with:
+        workflow: frontend-build.yml
+        workflow_conclusion: success
+        name: django-main-static
+        path: frontend
+
     - name: Patch Dockerfile and .env-sample
       run: |
         sed -i "1s/FROM python:.*/FROM python:${{ matrix.python-tag }}/" Dockerfile

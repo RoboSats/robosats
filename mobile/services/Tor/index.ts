@@ -6,15 +6,13 @@ class TorClient {
     path,
     headers,
   ) => {
-    return await new Promise<object>(async (resolve, reject) => {
+    return await new Promise<object>((resolve, reject) => {
       try {
-        const response = await TorModule.sendRequest(
-          'GET',
-          `${baseUrl}${path}`,
-          JSON.stringify(headers),
-          '{}',
+        TorModule.sendRequest('GET', `${baseUrl}${path}`, JSON.stringify(headers), '{}').then(
+          (response) => {
+            resolve(JSON.parse(response));
+          },
         );
-        resolve(JSON.parse(response));
       } catch (error) {
         reject(error);
       }
@@ -26,15 +24,13 @@ class TorClient {
     path,
     headers,
   ) => {
-    return await new Promise<object>(async (resolve, reject) => {
+    return await new Promise<object>((resolve, reject) => {
       try {
-        const response = await TorModule.sendRequest(
-          'DELETE',
-          `${baseUrl}${path}`,
-          JSON.stringify(headers),
-          '{}',
+        TorModule.sendRequest('DELETE', `${baseUrl}${path}`, JSON.stringify(headers), '{}').then(
+          (response) => {
+            resolve(JSON.parse(response));
+          },
         );
-        resolve(JSON.parse(response));
       } catch (error) {
         reject(error);
       }
@@ -43,16 +39,14 @@ class TorClient {
 
   public post: (baseUrl: string, path: string, body: object, headers: object) => Promise<object> =
     async (baseUrl, path, body, headers) => {
-      return await new Promise<object>(async (resolve, reject) => {
+      return await new Promise<object>((resolve, reject) => {
         try {
           const json = JSON.stringify(body);
-          const response = await TorModule.sendRequest(
-            'POST',
-            `${baseUrl}${path}`,
-            JSON.stringify(headers),
-            json,
+          TorModule.sendRequest('POST', `${baseUrl}${path}`, JSON.stringify(headers), json).then(
+            (response) => {
+              resolve(JSON.parse(response));
+            },
           );
-          resolve(JSON.parse(response));
         } catch (error) {
           reject(error);
         }
