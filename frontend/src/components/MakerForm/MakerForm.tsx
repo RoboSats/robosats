@@ -34,7 +34,7 @@ import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
-import { amountToString, computeSats, pn } from '../../utils';
+import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -52,7 +52,6 @@ interface MakerFormProps {
   onSubmit?: () => void;
   onReset?: () => void;
   submitButtonLabel?: string;
-  onClickGenerateRobot?: () => void;
 }
 
 const MakerForm = ({
@@ -62,7 +61,6 @@ const MakerForm = ({
   onSubmit = () => {},
   onReset = () => {},
   submitButtonLabel = 'Create Order',
-  onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
   const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
@@ -582,7 +580,18 @@ const MakerForm = ({
         }}
         onClickDone={handleCreateOrder}
         hasRobot={Boolean(garage.getSlot()?.hashId)}
-        onClickGenerateRobot={onClickGenerateRobot}
+        onClickGenerateRobot={() => {
+          setOpenDialogs(false);
+          const token = genBase62Token(36);
+          garage
+            .createRobot(federation, token)
+            .then(() => {
+              setOpenDialogs(true);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        }}
       />
       <F2fMapDialog
         interactive

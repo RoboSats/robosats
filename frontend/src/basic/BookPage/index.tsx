@@ -1,27 +1,20 @@
 import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
+import { Button, Grid, ButtonGroup } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import DepthChart from '../../components/Charts/DepthChart';
-
-import { NoRobotDialog } from '../../components/Dialogs';
-import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
 
 // Icons
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
-import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth' | 'map'>('list');
-  const [openMaker, setOpenMaker] = useState<boolean>(false);
-  const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
   const doubleView = windowSize.width > 115;
   const width = windowSize.width * 0.9;
@@ -29,11 +22,7 @@ const BookPage = (): JSX.Element => {
   const chartWidthEm = width - maxBookTableWidth;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    if (garage.getSlot()?.hashId) {
-      navigate(`/order/${shortAlias}/${id}`);
-    } else {
-      setOpenNoRobot(true);
-    }
+    navigate(`/order/${shortAlias}/${id}`);
   };
 
   const NavButtons = function (): JSX.Element {
@@ -42,7 +31,7 @@ const BookPage = (): JSX.Element => {
         <Button
           color='primary'
           onClick={() => {
-            setOpenMaker(true);
+            navigate('/create');
           }}
         >
           {t('Create')}
@@ -80,32 +69,6 @@ const BookPage = (): JSX.Element => {
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
-      <NoRobotDialog
-        open={openNoRobot}
-        onClose={() => {
-          setOpenNoRobot(false);
-        }}
-        onClickGenerateRobot={() => {
-          navigate('/garage');
-        }}
-      />
-      {openMaker ? (
-        <Dialog
-          open={openMaker}
-          onClose={() => {
-            setOpenMaker(false);
-          }}
-        >
-          <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
-            <MakerForm
-              onClickGenerateRobot={() => {
-                navigate('/garage');
-              }}
-            />
-          </Box>
-        </Dialog>
-      ) : null}
-
       <Grid item xs={12}>
         {doubleView ? (
           <Grid

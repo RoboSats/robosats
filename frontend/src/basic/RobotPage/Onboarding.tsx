@@ -116,7 +116,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): JS
                       <Button
                         onClick={() => {
                           setStep('2');
-                          garage.createRobot(federation, inputToken);
+                          void garage.createRobot(federation, inputToken);
                         }}
                         variant='contained'
                         size='large'

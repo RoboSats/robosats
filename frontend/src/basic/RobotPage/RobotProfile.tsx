@@ -58,7 +58,7 @@ const RobotProfile = ({
 
   const handleAddRobot = (): void => {
     const token = genBase62Token(36);
-    garage.createRobot(federation, token);
+    void garage.createRobot(federation, token);
     setInputToken(token);
     setLoading(true);
   };
