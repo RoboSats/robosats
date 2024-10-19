@@ -13,7 +13,6 @@ import { defaultMaker, type Maker, Garage } from '../models';
 import { systemClient } from '../services/System';
 import { type UseAppStoreType, AppContext } from './AppContext';
 import { type UseFederationStoreType, FederationContext } from './FederationContext';
-import { genKey } from '../pgp';
 
 export interface GarageContextProviderProps {
   children: ReactNode;
@@ -90,7 +89,9 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
     clearInterval(timer);
     fetchSlotActiveOrder();
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -143,7 +144,11 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
   const resetInterval = (): void => {
     clearInterval(timer);
     setDelay(defaultDelay);
-    setTimer(setTimeout(() => fetchSlotActiveOrder(), defaultDelay));
+    setTimer(
+      setTimeout(() => {
+        fetchSlotActiveOrder();
+      }, defaultDelay),
+    );
   };
 
   return (

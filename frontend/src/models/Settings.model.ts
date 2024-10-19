@@ -49,7 +49,7 @@ class BaseSettings {
     this.network = networkCookie && networkCookie !== '' ? networkCookie : 'mainnet';
     this.host = getHost();
 
-    const [client, _view] = window.RobosatsSettings.split('-');
+    const [client] = window.RobosatsSettings.split('-');
 
     const stopNotifications = systemClient.getItem('settings_stop_notifications');
     this.stopNotifications = client === 'mobile' && stopNotifications === 'true';

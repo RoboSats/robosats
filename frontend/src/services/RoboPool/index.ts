@@ -1,7 +1,6 @@
-import { Event } from 'nostr-tools';
-import { Settings } from '../../models';
+import { type Event } from 'nostr-tools';
+import { type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
-import { Origins } from '../../models/Coordinator.model';
 
 interface RoboPoolEvents {
   onevent: (event: Event) => void;
@@ -13,9 +12,9 @@ class RoboPool {
     this.network = settings.network ?? 'mainnet';
     this.relays = Object.values(defaultFederation)
       .map((coord) => {
-        const url = coord[this.network][settings.selfhostedClient ? 'onion' : origin];
+        const url: string = coord[this.network][settings.selfhostedClient ? 'onion' : origin];
 
-        if (!url) return;
+        if (!url) return undefined;
 
         return `ws://${url.replace(/^https?:\/\//, '')}/nostr`;
       })
@@ -26,15 +25,15 @@ class RoboPool {
   public network: string;
 
   public webSockets: WebSocket[] = [];
-  private messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
+  private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
 
-  connect = () => {
+  connect = (): void => {
     this.relays.forEach((url) => {
       if (this.webSockets.find((w: WebSocket) => w.url === url)) return;
 
       let ws: WebSocket;
 
-      const connect = () => {
+      const connect = (): void => {
         ws = new WebSocket(url);
 
         // Add event listeners for the WebSocket
@@ -43,7 +42,9 @@ class RoboPool {
         };
 
         ws.onmessage = (event) => {
-          this.messageHandlers.forEach((handler) => handler(url, event));
+          this.messageHandlers.forEach((handler) => {
+            handler(url, event);
+          });
         };
 
         ws.onerror = (error) => {
@@ -61,12 +62,14 @@ class RoboPool {
     });
   };
 
-  close = () => {
-    this.webSockets.forEach((ws) => ws.close());
+  close = (): void => {
+    this.webSockets.forEach((ws) => {
+      ws.close();
+    });
   };
 
-  sendMessage = (message: string) => {
-    const send = (index: number, message: string) => {
+  sendMessage = (message: string): void => {
+    const send = (index: number, message: string): void => {
       const ws = this.webSockets[index];
 
       if (ws.readyState === WebSocket.OPEN) {
@@ -76,10 +79,12 @@ class RoboPool {
       }
     };
 
-    this.webSockets.forEach((_ws, index) => send(index, message));
+    this.webSockets.forEach((_ws, index) => {
+      send(index, message);
+    });
   };
 
-  subscribeBook = (events: RoboPoolEvents) => {
+  subscribeBook = (events: RoboPoolEvents): void => {
     const authors = Object.values(defaultFederation)
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);

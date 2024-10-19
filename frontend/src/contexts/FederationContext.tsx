@@ -1,12 +1,4 @@
-import React, {
-  createContext,
-  type Dispatch,
-  useEffect,
-  useState,
-  type SetStateAction,
-  useContext,
-  type ReactNode,
-} from 'react';
+import React, { createContext, useEffect, useState, useContext, type ReactNode } from 'react';
 
 import { Federation, Settings } from '../models';
 
@@ -14,7 +6,8 @@ import { federationLottery } from '../utils';
 
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
-import Coordinator, { type Origin, type Origins } from '../models/Coordinator.model';
+import type Coordinator from '../models/Coordinator.model';
+import { type Origin, type Origins } from '../models/Coordinator.model';
 
 export interface CurrentOrderIdProps {
   id: number | null;

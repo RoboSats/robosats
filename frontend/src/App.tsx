@@ -1,7 +1,7 @@
 import React, { StrictMode, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
-import { CssBaseline, Grid } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import HostAlert from './components/HostAlert';
 import TorConnectionBadge from './components/TorConnection';
 
@@ -16,7 +16,7 @@ import { FederationContextProvider } from './contexts/FederationContext';
 import NotificationSwitchBadge from './components/NotificationSwitch';
 
 const App = (): JSX.Element => {
-  const [client, _view] = window.RobosatsSettings.split('-');
+  const [client] = window.RobosatsSettings.split('-');
   return (
     <StrictMode>
       <ErrorBoundary>

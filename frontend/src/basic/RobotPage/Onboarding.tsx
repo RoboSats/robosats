@@ -23,7 +23,7 @@ import { genBase62Token } from '../../utils';
 import { NewTabIcon } from '../../components/Icons';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;

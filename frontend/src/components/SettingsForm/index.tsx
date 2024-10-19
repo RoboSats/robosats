@@ -23,16 +23,12 @@ import {
   DarkMode,
   SettingsOverscan,
   Link,
-  AttachMoney,
   QrCode,
   SettingsInputAntenna,
-  Dns,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
-import SwapCalls from '@mui/icons-material/SwapCalls';
 import { apiClient } from '../../services/api';
-import Nostr from '../Icons/Nostr';
 
 interface SettingsFormProps {
   dense?: boolean;

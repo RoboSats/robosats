@@ -68,9 +68,9 @@ import {
 } from '../Icons';
 import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
-import Coordinator, { type Badges } from '../../models/Coordinator.model';
+import type Coordinator from '../../models/Coordinator.model';
+import { type Badges } from '../../models/Coordinator.model';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
-import { width } from '@mui/system';
 
 interface Props {
   open: boolean;

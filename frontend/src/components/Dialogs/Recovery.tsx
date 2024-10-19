@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, Typography, Button, Grid } from '@mui/material';
 import TokenInput from '../../basic/RobotPage/TokenInput';
 import Key from '@mui/icons-material/Key';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
-import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 interface Props {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -24,7 +24,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): JSX.Element => {
     setRecoveryToken('');
   }, [open.recovery]);
 
-  const onClickRecover = () => {
+  const onClickRecover = (): void => {
     garage.createRobot(federation, recoveryToken);
     setInputToken(recoveryToken.trim());
     setView('profile');

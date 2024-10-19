@@ -581,9 +581,10 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
-        const amount = Boolean(params.row.has_range)
-          ? parseFloat(params.row.max_amount)
-          : parseFloat(params.row.amount);
+        const amount =
+          params.row.has_range === true
+            ? parseFloat(params.row.max_amount)
+            : parseFloat(params.row.amount);
         const premium = parseFloat(params.row.premium);
         const price =
           (coordinator.limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
