@@ -449,7 +449,7 @@ class CLNNode:
             # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
             if min(routes_cost) >= max_routing_fee_sats:
                 payout["context"] = {
-                    "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget."
+                    "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget. This can be adjusted with Advanced Options enabled."
                 }
                 return payout
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -34,19 +34,12 @@ interface Props {
 
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, coordinatorUpdatedAt, federationUpdatedAt } = useContext(FederationContext);
-  const [loadingProgress, setLoadingProgress] = useState<number>(0);
-
-  useEffect(() => {
-    const loadedCoordinators =
-      federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators;
-    setLoadingProgress((loadedCoordinators / federation.exchange.enabledCoordinators) * 100);
-  }, [open, coordinatorUpdatedAt, federationUpdatedAt]);
+  const { federation } = useContext(FederationContext);
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <div style={loadingProgress < 100 ? {} : { display: 'none' }}>
-        <LinearProgress variant='determinate' value={loadingProgress} />
+      <div style={federation.loading ? {} : { display: 'none' }}>
+        <LinearProgress variant='indeterminate' />
       </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>

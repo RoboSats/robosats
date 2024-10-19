@@ -1,9 +1,10 @@
-import { Coordinator, type Order } from '.';
+import { type Federation, Order } from '.';
+import { genKey } from '../pgp';
 import { systemClient } from '../services/System';
 import { saveAsJson } from '../utils';
 import Slot from './Slot.model';
 
-type GarageHooks = 'onRobotUpdate' | 'onOrderUpdate';
+type GarageHooks = 'onSlotUpdate';
 
 class Garage {
   constructor() {
@@ -11,8 +12,7 @@ class Garage {
     this.currentSlot = null;
 
     this.hooks = {
-      onRobotUpdate: [],
-      onOrderUpdate: [],
+      onSlotUpdate: [],
     };
 
     this.loadSlots();
@@ -29,6 +29,7 @@ class Garage {
   };
 
   triggerHook = (hookName: GarageHooks): void => {
+    this.save();
     this.hooks[hookName]?.forEach((fn) => {
       fn();
     });
@@ -47,8 +48,7 @@ class Garage {
     this.slots = {};
     this.currentSlot = null;
     systemClient.deleteItem('garage_slots');
-    this.triggerHook('onRobotUpdate');
-    this.triggerHook('onOrderUpdate');
+    this.triggerHook('onSlotUpdate');
   };
 
   loadSlots = (): void => {
@@ -56,39 +56,44 @@ class Garage {
     const slotsDump: string = systemClient.getItem('garage_slots') ?? '';
 
     if (slotsDump !== '') {
-      const rawSlots = JSON.parse(slotsDump);
+      const rawSlots: Record<any, any> = JSON.parse(slotsDump);
       Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
         if (rawSlot?.token) {
-          this.slots[rawSlot.token] = new Slot(rawSlot.token, Object.keys(rawSlot.robots), {}, () =>
-            this.triggerHook('onRobotUpdate'),
+          const robotAttributes = Object.values(rawSlot.robots)[0] as Record<any, any>;
+          this.slots[rawSlot.token] = new Slot(
+            rawSlot.token,
+            Object.keys(rawSlot.robots),
+            {
+              pubKey: robotAttributes?.pubKey,
+              encPrivKey: robotAttributes?.encPrivKey,
+            },
+            () => {
+              this.triggerHook('onSlotUpdate');
+            },
           );
-          Object.keys(rawSlot.robots).forEach((shortAlias) => {
-            const rawRobot = rawSlot.robots[shortAlias];
-            this.updateRobot(rawSlot.token, shortAlias, rawRobot);
-          });
+          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.lastOrder));
+          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.activeOrder));
           this.currentSlot = rawSlot?.token;
         }
       });
       console.log('Robot Garage was loaded from local storage');
-      this.triggerHook('onRobotUpdate');
-      this.triggerHook('onOrderUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
   // Slots
   getSlot: (token?: string) => Slot | null = (token) => {
     const currentToken = token ?? this.currentSlot;
-    return currentToken ? this.slots[currentToken] ?? null : null;
+    return currentToken ? (this.slots[currentToken] ?? null) : null;
   };
 
   deleteSlot: (token?: string) => void = (token) => {
     const targetIndex = token ?? this.currentSlot;
     if (targetIndex) {
       Reflect.deleteProperty(this.slots, targetIndex);
-      this.currentSlot = null;
+      this.currentSlot = Object.keys(this.slots)[0] ?? null;
       this.save();
-      this.triggerHook('onRobotUpdate');
-      this.triggerHook('onOrderUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
@@ -99,76 +104,80 @@ class Garage {
     const slot = this.getSlot(token);
     if (attributes) {
       if (attributes.copiedToken !== undefined) slot?.setCopiedToken(attributes.copiedToken);
-      this.triggerHook('onRobotUpdate');
+      this.save();
+      this.triggerHook('onSlotUpdate');
     }
     return slot;
   };
 
   setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {
     this.currentSlot = currentSlot;
-    this.triggerHook('onRobotUpdate');
+    this.save();
+    this.triggerHook('onSlotUpdate');
+  };
+
+  getSlotByOrder: (coordinator: string, orderID: number) => Slot | null = (
+    coordinator,
+    orderID,
+  ) => {
+    return (
+      Object.values(this.slots).find((slot) => {
+        const robot = slot.getRobot(coordinator);
+        return slot.activeOrder?.shortAlias === coordinator && robot?.activeOrderId === orderID;
+      }) ?? null
+    );
   };
 
   // Robots
-  createRobot: (token: string, shortAliases: string[], attributes: Record<any, any>) => void = (
-    token,
-    shortAliases,
-    attributes,
-  ) => {
-    if (!token || !shortAliases) return;
+  createRobot: (federation: Federation, token: string) => void = (federation, token) => {
+    if (!token) return;
 
     if (this.getSlot(token) === null) {
-      this.slots[token] = new Slot(token, shortAliases, attributes, () =>
-        this.triggerHook('onRobotUpdate'),
-      );
-      this.save();
+      genKey(token)
+        .then((key) => {
+          const robotAttributes = {
+            token,
+            pubKey: key.publicKeyArmored,
+            encPrivKey: key.encryptedPrivateKeyArmored,
+          };
+
+          this.setCurrentSlot(token);
+          this.slots[token] = new Slot(
+            token,
+            Object.keys(federation.coordinators),
+            robotAttributes,
+            () => {
+              this.triggerHook('onSlotUpdate');
+            },
+          );
+          void this.fetchRobot(federation, token);
+          this.save();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
     }
   };
 
-  updateRobot: (token: string, shortAlias: string, attributes: Record<any, any>) => void = (
-    token,
-    shortAlias,
-    attributes,
-  ) => {
-    if (!token || !shortAlias) return;
-
+  fetchRobot = async (federation: Federation, token: string): Promise<void> => {
     const slot = this.getSlot(token);
 
     if (slot != null) {
-      slot.updateRobot(shortAlias, { token, ...attributes });
+      await slot.fetchRobot(federation);
       this.save();
-      this.triggerHook('onRobotUpdate');
-    }
-  };
-
-  // Orders
-  updateOrder: (order: Order | null) => void = (order) => {
-    const slot = this.getSlot();
-    if (slot != null) {
-      if (order !== null) {
-        const updatedOrder = slot.order ?? null;
-        if (updatedOrder !== null && updatedOrder.id === order.id) {
-          Object.assign(updatedOrder, order);
-          slot.order = updatedOrder;
-        } else {
-          slot.order = order;
-        }
-        if (slot.order?.is_participant) {
-          slot.activeShortAlias = order.shortAlias;
-        }
-      } else {
-        slot.order = null;
-      }
-      this.save();
-      this.triggerHook('onOrderUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
   // Coordinators
-  syncCoordinator: (coordinator: Coordinator) => void = (coordinator) => {
+  syncCoordinator: (federation: Federation, shortAlias: string) => void = (
+    federation,
+    shortAlias,
+  ) => {
     Object.values(this.slots).forEach((slot) => {
-      slot.syncCoordinator(coordinator, this);
+      slot.syncCoordinator(federation, shortAlias);
     });
+    this.save();
   };
 }
 

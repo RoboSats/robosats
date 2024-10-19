@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext } from 'react';
 import {
   Grid,
   Select,
@@ -26,7 +26,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   setCoordinator,
 }) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -86,7 +86,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   flipHorizontally={false}
                   small={true}
                 />
-                {(coordinator?.info === undefined ||
+                {(coordinator?.limits === undefined ||
                   Object.keys(coordinator?.limits).length === 0) && (
                   <CircularProgress
                     size={49}
@@ -109,18 +109,20 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {sortedCoordinators.map((shortAlias: string): JSX.Element | null => {
-                  let row: JSX.Element | null = null;
-                  const item = federation.getCoordinator(shortAlias);
-                  if (item.enabled === true) {
-                    row = (
-                      <MenuItem key={shortAlias} value={shortAlias}>
-                        <Typography>{item.longAlias}</Typography>
-                      </MenuItem>
-                    );
-                  }
-                  return row;
-                })}
+                {Object.keys(federation.coordinators).map(
+                  (shortAlias: string): JSX.Element | null => {
+                    let row: JSX.Element | null = null;
+                    const item = federation.getCoordinator(shortAlias);
+                    if (item.enabled === true) {
+                      row = (
+                        <MenuItem key={shortAlias} value={shortAlias}>
+                          <Typography>{item.longAlias}</Typography>
+                        </MenuItem>
+                      );
+                    }
+                    return row;
+                  },
+                )}
               </Select>
             </Grid>
           </Grid>

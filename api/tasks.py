@@ -1,3 +1,4 @@
+from asgiref.sync import async_to_sync
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -251,6 +252,20 @@ def cache_market():
         return
 
 
+@shared_task(name="", ignore_result=True, time_limit=120)
+def nostr_send_order_event(order_id=None):
+    if order_id:
+        from api.models import Order
+        from api.nostr import Nostr
+
+        order = Order.objects.get(id=order_id)
+
+        nostr = Nostr()
+        async_to_sync(nostr.send_order_event)(order)
+
+    return
+
+
 @shared_task(name="send_notification", ignore_result=True, time_limit=120)
 def send_notification(order_id=None, chat_message_id=None, message=None):
     if order_id:
@@ -263,48 +278,50 @@ def send_notification(order_id=None, chat_message_id=None, message=None):
         chat_message = Message.objects.get(id=chat_message_id)
         order = chat_message.order
 
-    taker_enabled = False if order.taker is None else order.taker.robot.telegram_enabled
-    if not (order.maker.robot.telegram_enabled or taker_enabled):
-        return
+    from api.notifications import Notifications
 
-    from api.notifications import Telegram
-
-    telegram = Telegram()
+    notifications = Notifications()
 
     if message == "welcome":
-        telegram.welcome(order)
+        notifications.welcome(order)
 
     elif message == "order_expired_untaken":
-        telegram.order_expired_untaken(order)
+        notifications.order_expired_untaken(order)
 
     elif message == "trade_successful":
-        telegram.trade_successful(order)
+        notifications.trade_successful(order)
 
     elif message == "public_order_cancelled":
-        telegram.public_order_cancelled(order)
+        notifications.public_order_cancelled(order)
 
     elif message == "taker_expired_b4bond":
-        telegram.taker_expired_b4bond(order)
+        notifications.taker_expired_b4bond(order)
 
     elif message == "order_published":
-        telegram.order_published(order)
+        notifications.order_published(order)
 
     elif message == "order_taken_confirmed":
-        telegram.order_taken_confirmed(order)
+        notifications.order_taken_confirmed(order)
 
     elif message == "fiat_exchange_starts":
-        telegram.fiat_exchange_starts(order)
+        notifications.fiat_exchange_starts(order)
 
     elif message == "dispute_opened":
-        telegram.dispute_opened(order)
+        notifications.dispute_opened(order)
 
     elif message == "collaborative_cancelled":
-        telegram.collaborative_cancelled(order)
+        notifications.collaborative_cancelled(order)
 
     elif message == "new_chat_message":
-        telegram.new_chat_message(order, chat_message)
+        notifications.new_chat_message(order, chat_message)
 
     elif message == "coordinator_cancelled":
-        telegram.coordinator_cancelled(order)
+        notifications.coordinator_cancelled(order)
+
+    elif message == "dispute_closed":
+        notifications.dispute_closed(order)
+
+    elif message == "lightning_failed":
+        notifications.lightning_failed(order)
 
     return

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -33,6 +33,7 @@ import { apiClient } from '../../../services/api';
 import { systemClient } from '../../../services/System';
 
 import lnproxies from '../../../../static/lnproxies.json';
+import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 let filteredProxies: Array<Record<string, any>> = [];
 export interface LightningForm {
   invoice: string;
@@ -89,6 +90,7 @@ export const LightningPayoutForm = ({
   setLightning,
   settings,
 }: LightningPayoutFormProps): JSX.Element => {
+  const { client } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -153,7 +155,7 @@ export const LightningPayoutForm = ({
     bitcoinNetwork = settings?.network ?? 'mainnet';
     if (settings.host?.includes('.i2p') === true) {
       internetNetwork = 'I2P';
-    } else if (settings.host?.includes('.onion') === true || window.NativeRobosats !== undefined) {
+    } else if (settings.host?.includes('.onion') === true || client === 'mobile') {
       internetNetwork = 'TOR';
     }
 

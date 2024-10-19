@@ -1,7 +1,11 @@
 interface Task {
   robohash: Robohash;
-  resolves: Array<(result: string) => void>;
-  rejects: Array<(reason?: Error) => void>;
+}
+
+interface RoboWorker {
+  id: number;
+  worker: Worker;
+  busy: boolean;
 }
 
 interface Robohash {
@@ -10,71 +14,25 @@ interface Robohash {
   cacheKey: string;
 }
 
-interface RoboWorker {
-  worker: Worker;
-  busy: boolean;
-}
-
 class RoboGenerator {
   private assetsCache: Record<string, string> = {};
 
   private readonly workers: RoboWorker[] = [];
-  private readonly queue: Task[] = [];
+  private readonly taskQueue: Task[] = [];
+  private readonly numberOfWorkers: number = 8;
+  private waitingForLibrary: boolean = true;
+
+  private resolves: Record<string, Array<(result: string) => void>> = {};
+  private rejects: Record<string, Array<(reason?: Error) => void>> = {};
 
   constructor() {
-    // limit to 8 workers
-    const numCores = 8;
-
-    for (let i = 0; i < numCores; i++) {
-      const worker = new Worker(new URL('./robohash.worker.ts', import.meta.url));
-      worker.onmessage = this.assignTasksToWorkers.bind(this);
-      this.workers.push({ worker, busy: false });
+    for (let i = 0; i < this.numberOfWorkers; i++) {
+      this.workers.push(this.createWorker(i));
     }
-  }
 
-  private assignTasksToWorkers(): void {
-    const availableWorker = this.workers.find((w) => !w.busy);
-
-    if (availableWorker) {
-      const task = this.queue.shift();
-      if (task) {
-        availableWorker.busy = true;
-        availableWorker.worker.postMessage(task.robohash);
-
-        // Clean up the event listener and free the worker after receiving the result
-        const cleanup = (): void => {
-          availableWorker.worker.removeEventListener('message', completionCallback);
-          availableWorker.busy = false;
-        };
-
-        // Resolve the promise when the task is completed
-        const completionCallback = (event: MessageEvent): void => {
-          if (event.data.cacheKey === task.robohash.cacheKey) {
-            const { cacheKey, imageUrl } = event.data;
-
-            // Update the cache and resolve the promise
-            this.assetsCache[cacheKey] = imageUrl;
-
-            cleanup();
-
-            task.resolves.forEach((f) => {
-              f(imageUrl);
-            });
-          }
-        };
-
-        availableWorker.worker.addEventListener('message', completionCallback);
-
-        // Reject the promise if an error occurs
-        availableWorker.worker.addEventListener('error', (error) => {
-          cleanup();
-
-          task.rejects.forEach((f) => {
-            f(new Error(error.message));
-          });
-        });
-      }
-    }
+    setTimeout(() => {
+      this.waitingForLibrary = false;
+    }, 3000);
   }
 
   public generate: (hash: string, size: 'small' | 'large') => Promise<string> = async (
@@ -86,8 +44,7 @@ class RoboGenerator {
       return this.assetsCache[cacheKey];
     } else {
       return await new Promise((resolve, reject) => {
-        let task = this.queue.find((t) => t.robohash.cacheKey === cacheKey);
-
+        let task = this.taskQueue.find((task) => task.robohash.cacheKey === cacheKey);
         if (!task) {
           task = {
             robohash: {
@@ -95,17 +52,46 @@ class RoboGenerator {
               size,
               cacheKey,
             },
-            resolves: [],
-            rejects: [],
           };
-          this.queue.push(task);
         }
 
-        task.resolves.push(resolve);
-        task.rejects.push(reject);
+        this.resolves[cacheKey] = [...(this.resolves[cacheKey] ?? []), resolve];
+        this.rejects[cacheKey] = [...(this.rejects[cacheKey] ?? []), reject];
 
-        this.assignTasksToWorkers();
+        this.addTask(task);
       });
+    }
+  };
+
+  createWorker = (id: number): RoboWorker => {
+    const worker = new Worker(new URL('./robohash.worker.ts', import.meta.url));
+
+    worker.onmessage = (event) => {
+      const { cacheKey, imageUrl } = event.data;
+      // Update the cache and resolve the promise
+      this.assetsCache[cacheKey] = imageUrl;
+      this.resolves[cacheKey].forEach((f) => {
+        f(imageUrl);
+      });
+
+      if (this.taskQueue.length > 0) {
+        const nextTask = this.taskQueue.shift();
+        this.workers[id].busy = true;
+        this.workers[id].worker.postMessage(nextTask);
+      } else {
+        this.workers[id].busy = false;
+      }
+    };
+
+    return { id, worker, busy: false };
+  };
+
+  addTask = (task: any): void => {
+    const availableWorker = this.workers.find((w) => !w.busy);
+    if (availableWorker && !this.waitingForLibrary) {
+      availableWorker.worker.postMessage(task);
+    } else {
+      this.taskQueue.push(task);
     }
   };
 }

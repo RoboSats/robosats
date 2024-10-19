@@ -112,7 +112,7 @@ class OrderViewSchema:
             - `11` "In dispute"
             - `12` "Collaboratively cancelled"
             - `13` "Sending satoshis to buyer"
-            - `14` "Sucessful trade"
+            - `14` "Successful trade"
             - `15` "Failed lightning network routing"
             - `16` "Wait for dispute resolution"
             - `17` "Maker lost dispute"
@@ -373,6 +373,21 @@ class BookViewSchema:
                 ),
                 type=int,
                 enum=[0, 1, 2],
+            ),
+        ],
+    }
+
+
+class NotificationSchema:
+    get = {
+        "summary": "Get robot notifications",
+        "description": "Get a list of notifications sent to the robot.",
+        "parameters": [
+            OpenApiParameter(
+                name="created_at",
+                location=OpenApiParameter.QUERY,
+                description=("Shows notifications created AFTER this date."),
+                type=str,
             ),
         ],
     }

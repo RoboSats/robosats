@@ -1,0 +1,4 @@
+ws://testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion/nostr
+ws://jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion/nostr
+ws://ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion/nostr
+ws://wsjyhbashc4zrrex6vijpryujggbka5plry2o62dxqoz3pxinblnj4ad.onion/nostr

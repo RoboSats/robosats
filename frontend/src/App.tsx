@@ -13,21 +13,30 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AppContextProvider } from './contexts/AppContext';
 import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
+import NotificationSwitchBadge from './components/NotificationSwitch';
 
 const App = (): JSX.Element => {
+  const [client] = window.RobosatsSettings.split('-');
   return (
     <StrictMode>
       <ErrorBoundary>
         <Suspense fallback='loading'>
           <I18nextProvider i18n={i18n}>
             <AppContextProvider>
-              <GarageContextProvider>
-                <FederationContextProvider>
+              <FederationContextProvider>
+                <GarageContextProvider>
                   <CssBaseline />
-                  {window.NativeRobosats === undefined ? <HostAlert /> : <TorConnectionBadge />}
+                  {client === 'mobile' ? (
+                    <div style={{ display: 'inline-flex', position: 'fixed', top: '0.5em' }}>
+                      <TorConnectionBadge />
+                      <NotificationSwitchBadge />
+                    </div>
+                  ) : (
+                    <HostAlert />
+                  )}
                   <Main />
-                </FederationContextProvider>
-              </GarageContextProvider>
+                </GarageContextProvider>
+              </FederationContextProvider>
             </AppContextProvider>
           </I18nextProvider>
         </Suspense>

@@ -424,7 +424,7 @@ class LNDNode:
             # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
             if min(routes_cost) >= max_routing_fee_sats:
                 payout["context"] = {
-                    "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget."
+                    "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget. This can be adjusted with Advanced Options enabled."
                 }
                 return payout
 
@@ -478,6 +478,7 @@ class LNDNode:
             payment_request=lnpayment.invoice,
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=timeout_seconds,
+            amp=True,
         )
 
         routerstub = router_pb2_grpc.RouterStub(cls.channel)
@@ -536,6 +537,7 @@ class LNDNode:
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=timeout_seconds,
             allow_self_payment=True,
+            amp=True,
         )
 
         order = lnpayment.order_paid_LN

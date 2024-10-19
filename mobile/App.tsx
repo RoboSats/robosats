@@ -7,6 +7,8 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import { name as app_name, version as app_version } from './package.json';
 import TorModule from './native/TorModule';
 import RoboIdentitiesModule from './native/RoboIdentitiesModule';
+import NotificationsModule from './native/NotificationsModule';
+import SystemModule from './native/SystemModule';
 
 const backgroundColors = {
   light: 'white',
@@ -23,6 +25,14 @@ const App = () => {
 
   useEffect(() => {
     TorModule.start();
+    DeviceEventEmitter.addListener('navigateToPage', (payload) => {
+      window.navigateToPage = payload;
+      injectMessage({
+        category: 'system',
+        type: 'navigateToPage',
+        detail: payload,
+      });
+    });
     DeviceEventEmitter.addListener('TorStatus', (payload) => {
       if (payload.torStatus === 'OFF') TorModule.restart();
       injectMessage({
@@ -54,6 +64,17 @@ const App = () => {
     );
   };
 
+  const onLoadEnd = () => {
+    if (window.navigateToPage) {
+      injectMessage({
+        category: 'system',
+        type: 'navigateToPage',
+        detail: window.navigateToPage,
+      });
+      window.navigateToPage = undefined;
+    }
+  };
+
   const init = (responseId: string) => {
     const loadCookie = async (key: string) => {
       return await EncryptedStorage.getItem(key).then((value) => {
@@ -62,6 +83,7 @@ const App = () => {
           webViewRef.current?.injectJavaScript(
             `(function() {window.NativeRobosats?.loadCookie(${json});})();`,
           );
+          return value;
         }
       });
     };
@@ -71,17 +93,24 @@ const App = () => {
     loadCookie('settings_mode');
     loadCookie('settings_light_qr');
     loadCookie('settings_network');
-    loadCookie('settings_use_proxy');
-    loadCookie('garage_slots').then(() => injectMessageResolve(responseId));
+    loadCookie('settings_connection');
+    loadCookie('settings_use_proxy').then((useProxy: string | undefined) => {
+      SystemModule.useProxy(useProxy ?? 'true');
+    });
+    loadCookie('settings_stop_notifications').then((stopNotifications: string | undefined) => {
+      SystemModule.stopNotifications(stopNotifications ?? 'false');
+    });
+    loadCookie('garage_slots').then((slots) => {
+      NotificationsModule.monitorOrders(slots ?? '{}');
+      injectMessageResolve(responseId);
+    });
   };
 
-  const onCatch = (dataId: string, event: any) => {
+  const onCatch = (dataId: string, event: unknown) => {
     let json = '{}';
     let code = 500;
     if (event.message) {
-      const reponse = /Request Response Code \((?<code>\d*)\)\: (?<json>\{.*\})/.exec(
-        event.message,
-      );
+      const reponse = /Request Response Code \((?<code>\d*)\): (?<json>\{.*\})/.exec(event.message);
       json = reponse?.groups?.json ?? '{}';
       code = reponse?.groups?.code ? parseInt(reponse?.groups?.code) : 500;
     }
@@ -128,6 +157,15 @@ const App = () => {
         Clipboard.setString(data.detail);
       } else if (data.type === 'setCookie') {
         setCookie(data.key, data.detail);
+        if (data.key === 'federation') {
+          SystemModule.setFederation(data.detail ?? '{}');
+        } else if (data.key === 'garage_slots') {
+          NotificationsModule.monitorOrders(data.detail ?? '{}');
+        } else if (data.key === 'settings_use_proxy') {
+          SystemModule.useProxy(data.detail ?? 'true');
+        } else if (data.key === 'settings_stop_notifications') {
+          SystemModule.stopNotifications(data.detail ?? 'false');
+        }
       } else if (data.type === 'deleteCookie') {
         EncryptedStorage.removeItem(data.key);
       }
@@ -152,7 +190,9 @@ const App = () => {
         key,
         detail: storedValue,
       });
-    } catch (error) {}
+    } catch (e) {
+      console.log('setCookie', e);
+    }
   };
 
   return (
@@ -162,7 +202,6 @@ const App = () => {
           uri,
         }}
         onMessage={onMessage}
-        // @ts-expect-error
         userAgent={`${app_name} v${app_version} Android`}
         style={{ backgroundColor: backgroundColors[colorScheme] }}
         ref={(ref) => (webViewRef.current = ref)}
@@ -185,6 +224,7 @@ const App = () => {
         allowsLinkPreview={false}
         renderLoading={() => <Text></Text>}
         onError={(syntheticEvent) => <Text>{syntheticEvent.type}</Text>}
+        onLoadEnd={() => setTimeout(onLoadEnd, 3000)}
       />
     </SafeAreaView>
   );
