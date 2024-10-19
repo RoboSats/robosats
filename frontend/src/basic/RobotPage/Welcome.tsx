@@ -121,7 +121,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element =
           color='primary'
           onClick={() => {
             const token = genBase62Token(36);
-            garage.createRobot(federation, token);
+            void garage.createRobot(federation, token);
             setInputToken(token);
             navigate('/create');
             setPage('create');

@@ -2,7 +2,7 @@ import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-import { filterOrders } from '../../utils';
+import { filterOrders, genBase62Token } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
@@ -22,6 +22,7 @@ const MakerPage = (): JSX.Element => {
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
+  const [clickedOrder, setClickedOrder] = useState<{ id: number; shortAlias: string }>();
 
   const matches = useMemo(() => {
     return filterOrders({
@@ -55,6 +56,7 @@ const MakerPage = (): JSX.Element => {
     if (garage.getSlot()?.hashId) {
       navigate(`/order/${shortAlias}/${id}`);
     } else {
+      setClickedOrder({ id, shortAlias });
       setOpenNoRobot(true);
     }
   };
@@ -67,7 +69,16 @@ const MakerPage = (): JSX.Element => {
           setOpenNoRobot(false);
         }}
         onClickGenerateRobot={() => {
-          navigate('/garage');
+          const token = genBase62Token(36);
+          garage
+            .createRobot(federation, token)
+            .then(() => {
+              setOpenNoRobot(true);
+              if (clickedOrder) navigate(`/order/${clickedOrder?.shortAlias}/${clickedOrder?.id}`);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
         }}
       />
       <Grid item>
@@ -111,9 +122,6 @@ const MakerPage = (): JSX.Element => {
               setShowMatches(false);
             }}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
-            onClickGenerateRobot={() => {
-              navigate('/garage');
-            }}
           />
         </Paper>
       </Grid>

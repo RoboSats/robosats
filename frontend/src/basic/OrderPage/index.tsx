@@ -8,9 +8,10 @@ import OrderDetails from '../../components/OrderDetails';
 
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { WarningDialog } from '../../components/Dialogs';
+import { NoRobotDialog, WarningDialog } from '../../components/Dialogs';
 import { Order, type Slot } from '../../models';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { genBase62Token } from '../../utils';
 
 const OrderPage = (): JSX.Element => {
   const { windowSize, setOpen, acknowledgedWarning, setAcknowledgedWarning, navbarHeight } =
@@ -27,6 +28,7 @@ const OrderPage = (): JSX.Element => {
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
   useEffect(() => {
     paramsRef.current = params;
@@ -43,12 +45,14 @@ const OrderPage = (): JSX.Element => {
       void order.fecth(federation, slot).then((updatedOrder) => {
         updateSlotFromOrder(updatedOrder, slot);
       });
+    } else {
+      setOpenNoRobot(true);
     }
 
     return () => {
       setCurrentOrder(null);
     };
-  }, [params.orderId]);
+  }, [params.orderId, openNoRobot]);
 
   const updateSlotFromOrder = (updatedOrder: Order, slot: Slot): void => {
     if (
@@ -77,9 +81,6 @@ const OrderPage = (): JSX.Element => {
       shortAlias={String(currentOrder.shortAlias)}
       currentOrder={currentOrder}
       onClickCoordinator={onClickCoordinator}
-      onClickGenerateRobot={() => {
-        navigate('/garage');
-      }}
     />
   ) : (
     <></>
@@ -99,6 +100,23 @@ const OrderPage = (): JSX.Element => {
           setAcknowledgedWarning(true);
         }}
         longAlias={federation.getCoordinator(params.shortAlias ?? '')?.longAlias}
+      />
+      <NoRobotDialog
+        open={openNoRobot}
+        onClose={() => {
+          setOpenNoRobot(false);
+        }}
+        onClickGenerateRobot={() => {
+          const token = genBase62Token(36);
+          garage
+            .createRobot(federation, token)
+            .then(() => {
+              setOpenNoRobot(false);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        }}
       />
       {!currentOrder?.maker_hash_id && <CircularProgress />}
       {currentOrder?.bad_request && currentOrder.status !== 5 ? (

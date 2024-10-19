@@ -2,8 +2,6 @@ import React, { createContext, useEffect, useState, useContext, type ReactNode }
 
 import { Federation, Settings } from '../models';
 
-import { federationLottery } from '../utils';
-
 import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
 import type Coordinator from '../models/Coordinator.model';

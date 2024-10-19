@@ -129,33 +129,35 @@ class Garage {
   };
 
   // Robots
-  createRobot: (federation: Federation, token: string) => void = (federation, token) => {
+  createRobot: (federation: Federation, token: string) => Promise<void> = async (
+    federation,
+    token,
+  ) => {
     if (!token) return;
 
     if (this.getSlot(token) === null) {
-      genKey(token)
-        .then((key) => {
-          const robotAttributes = {
-            token,
-            pubKey: key.publicKeyArmored,
-            encPrivKey: key.encryptedPrivateKeyArmored,
-          };
+      try {
+        const key = await genKey(token);
+        const robotAttributes = {
+          token,
+          pubKey: key.publicKeyArmored,
+          encPrivKey: key.encryptedPrivateKeyArmored,
+        };
 
-          this.setCurrentSlot(token);
-          this.slots[token] = new Slot(
-            token,
-            Object.keys(federation.coordinators),
-            robotAttributes,
-            () => {
-              this.triggerHook('onSlotUpdate');
-            },
-          );
-          void this.fetchRobot(federation, token);
-          this.save();
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
+        this.setCurrentSlot(token);
+        this.slots[token] = new Slot(
+          token,
+          Object.keys(federation.coordinators),
+          robotAttributes,
+          () => {
+            this.triggerHook('onSlotUpdate');
+          },
+        );
+        void this.fetchRobot(federation, token);
+        this.save();
+      } catch (error) {
+        console.error('Error:', error);
+      }
     }
   };
 
