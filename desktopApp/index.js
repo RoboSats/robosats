@@ -48,13 +48,13 @@ function createWindow() {
         },
     });
     // Load the index.html file from the app directory
-    mainWindow.loadURL("file://".concat(path.resolve(__dirname, 'index.html#/robot')), {
+    mainWindow.loadURL("file://".concat(path.resolve(__dirname, 'index.html#/garage')), {
         extraHeaders: "pragma: no-cache\n" // Prevent caching of the loaded file
     });
     // Handle failed load attempts by reloading the file
     mainWindow.webContents.on("did-fail-load", function () {
         console.log("Failed to load the page, retrying...");
-        mainWindow.loadURL("file://".concat(__dirname, "/index.html#/robot"));
+        mainWindow.loadURL("file://".concat(__dirname, "/index.html#/garage"));
     });
     // Uncomment the following line to open the DevTools
     // mainWindow.webContents.openDevTools();
