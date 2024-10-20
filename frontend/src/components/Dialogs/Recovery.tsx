@@ -75,7 +75,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): JSX.Element => {
               onClick={onClickRecover}
             >
               <Key /> <div style={{ width: '0.5em' }} />
-              {t('Recovery')}
+              {t('Recover')}
             </Button>
           </Grid>
         </Grid>

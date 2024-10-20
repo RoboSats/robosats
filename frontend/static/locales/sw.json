@@ -314,6 +314,7 @@
   "#29": "Phrases in components/Dialogs/Recovery.tsx",
   "Enter your robot token to re-build your robot and gain access to its trades.": "Ingiza alama ya roboti yako ili kuirekebisha roboti yako na kupata ufikiaji wa biashara zake.",
   "Paste token here": "Bandika alama hapa",
+  "Recover": "Recover",
   "Robot recovery": "Kurejesha roboti",
   "#30": "Phrases in components/Dialogs/StoreToken.tsx",
   "Back it up!": "Fanya nakala rudufu!",

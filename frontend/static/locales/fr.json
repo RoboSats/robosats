@@ -314,6 +314,7 @@
   "#29": "Phrases in components/Dialogs/Recovery.tsx",
   "Enter your robot token to re-build your robot and gain access to its trades.": "Saisissez votre jeton de robot pour reconstruire votre robot et accéder à ses transactions.",
   "Paste token here": "Coller le jeton ici",
+  "Recover": "Recover",
   "Robot recovery": "Récupération du robot",
   "#30": "Phrases in components/Dialogs/StoreToken.tsx",
   "Back it up!": "Sauvegardez!",
