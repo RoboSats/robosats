@@ -68,7 +68,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   useEffect(() => {
     if (Object.values(federation.book).length > 0) {
       const enriched = Object.values(federation.book).map((order) => {
-        if (order.coordinatorShortAlias != null && order.currency) {
+        if (order && order.coordinatorShortAlias != null && order.currency) {
           const limits = federation.getCoordinator(order.coordinatorShortAlias).limits;
 
           const originalPrice =
@@ -127,12 +127,12 @@ const DepthChart: React.FC<DepthChartProps> = ({
         ? enrichedOrders.sort(
             (order1, order2) => (order1?.base_price ?? 0) - (order2?.base_price ?? 0),
           )
-        : enrichedOrders.sort((order1, order2) => order1.premium - order2.premium);
+        : enrichedOrders.sort((order1, order2) => order1?.premium - order2?.premium);
 
     const sortedBuyOrders: PublicOrder[] = sortedOrders
-      .filter((order) => order.type === 0)
+      .filter((order) => order?.type === 0)
       .reverse();
-    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order.type === 1);
+    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order?.type === 1);
 
     const buySerie: Datum[] = generateSerie(sortedBuyOrders);
     const sellSerie: Datum[] = generateSerie(sortedSellOrders);
