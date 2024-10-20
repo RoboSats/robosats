@@ -56,8 +56,9 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): JSX.Element => {
               {t('Enter your robot token to re-build your robot and gain access to its trades.')}
             </Typography>
           </Grid>
-          <Grid item>
+          <Grid item style={{ width: '100%' }}>
             <TokenInput
+              fullWidth
               showCopy={false}
               inputToken={recoveryToken}
               setInputToken={setRecoveryToken}

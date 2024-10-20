@@ -305,7 +305,6 @@
   "Back": "Nyuma",
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "Unaenda kutembelea Jifunze RoboSats. Ina mafunzo na nyaraka za kukusaidia kujifunza jinsi ya kutumia RoboSats na kuelewa jinsi inavyofanya kazi.",
   "#27": "Phrases in components/Dialogs/NoRobot.tsx",
-  "Generate Robot": "Zalisha Roboti",
   "Generate a robot avatar first. Then create your own order.": "Zalisha picha ya mwakilishi wa roboti kwanza. Kisha tengeneza amri yako mwenyewe.",
   "You do not have a robot avatar": "Huna picha ya mwakilishi wa roboti",
   "#28": "Phrases in components/Dialogs/Profile.tsx",
