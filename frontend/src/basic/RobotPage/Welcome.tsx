@@ -100,8 +100,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element =
             <Grid item>
               <Button
                 size='small'
-                color='secondary'
-                variant='contained'
+                color='primary'
                 onClick={() => {
                   setOpen((open) => {
                     return { ...open, recovery: true };
