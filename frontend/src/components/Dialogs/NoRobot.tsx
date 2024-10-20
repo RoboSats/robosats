@@ -28,13 +28,11 @@ const NoRobotDialog = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t('You do not have a robot avatar')}</DialogTitle>
-
       <DialogContent>
         <DialogContentText>
           {t('Generate a robot avatar first. Then create your own order.')}
         </DialogContentText>
       </DialogContent>
-
       <DialogActions>
         <Button
           onClick={() => {

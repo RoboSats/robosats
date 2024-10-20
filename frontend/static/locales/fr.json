@@ -305,7 +305,6 @@
   "Back": "Retour",
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "Vous êtes sur le point de visiter Learn RoboSats. Il héberge des tutoriels et de la documentation pour vous aider à apprendre à utiliser RoboSats et à comprendre son fonctionnement.",
   "#27": "Phrases in components/Dialogs/NoRobot.tsx",
-  "Generate Robot": "Générer un robot",
   "Generate a robot avatar first. Then create your own order.": "Créez d'abord un avatar de robot. Créez ensuite votre propre commande.",
   "You do not have a robot avatar": "Vous n'avez pas d'avatar robot",
   "#28": "Phrases in components/Dialogs/Profile.tsx",
