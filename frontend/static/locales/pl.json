@@ -305,6 +305,7 @@
   "Back": "Z powrotem",
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.",
   "#27": "Phrases in components/Dialogs/NoRobot.tsx",
+  "Generate Robot": "Generuj robota",
   "Generate a robot avatar first. Then create your own order.": "Generate a robot avatar first. Then create your own order.",
   "You do not have a robot avatar": "You do not have a robot avatar",
   "#28": "Phrases in components/Dialogs/Profile.tsx",

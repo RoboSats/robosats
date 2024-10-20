@@ -305,6 +305,7 @@
   "Back": "Zpět",
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "Chystáš se navštívit výukovou stránku RoboSats. Stránka obsahuje tutoriály a dokumentaci, které ti pomohou pochopit jak funguje RoboSats.",
   "#27": "Phrases in components/Dialogs/NoRobot.tsx",
+  "Generate Robot": "Generovat Robota",
   "Generate a robot avatar first. Then create your own order.": "Generate a robot avatar first. Then create your own order.",
   "You do not have a robot avatar": "Nemáš robota a avatar",
   "#28": "Phrases in components/Dialogs/Profile.tsx",
