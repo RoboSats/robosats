@@ -21,7 +21,7 @@ psycopg2==2.9.9
 SQLAlchemy==2.0.16
 django-import-export==4.1.1
 requests[socks]
-shapely==2.0.5
+shapely==2.0.6
 python-gnupg==0.5.2
 daphne==4.1.2
 drf-spectacular==0.27.2
