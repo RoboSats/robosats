@@ -15,6 +15,7 @@ import {
   IconButton,
   Tooltip,
   styled,
+  Skeleton,
 } from '@mui/material';
 import {
   DataGrid,
@@ -427,8 +428,8 @@ const BookTable = ({
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
         const premium = parseFloat(params.row.premium);
-        const price =
-          (coordinator.limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
+        const limitPrice = coordinator.limits[params.row.currency.toString()]?.price;
+        const price = (limitPrice ?? 1) * (1 + premium / 100);
 
         return (
           <div
@@ -437,7 +438,11 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {`${pn(Math.round(price))} ${currencyCode}/BTC`}
+            {limitPrice ? (
+              `${pn(Math.round(price))} ${currencyCode}/BTC`
+            ) : (
+              <Skeleton variant='rectangular' width={200} height={20} style={{ marginTop: 15 }} />
+            )}
           </div>
         );
       },

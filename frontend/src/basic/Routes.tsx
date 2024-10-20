@@ -27,7 +27,7 @@ const Routes: React.FC = () => {
 
   return (
     <DomRoutes>
-      {['/garage/:token?', '/', ''].map((path, index) => {
+      {['/garage/:token?', '/garage', '/', ''].map((path, index) => {
         return (
           <Route
             path={path}
