@@ -10,11 +10,11 @@ def sign_message(message, private_key_path, passphrase_path):
     with open(passphrase_path, "r") as f:
         passphrase = f.read()
 
-    gpg.import_keys(private_key, passphrase=passphrase)
+    import_result = gpg.import_keys(private_key, passphrase=passphrase)
 
-    # keyid=import_result.fingerprints[0]
     signed_message = gpg.sign(
-        message, passphrase=passphrase, extra_args=["--digest-algo", "SHA512"]
+        message, keyid=import_result.fingerprints[0], passphrase=passphrase,
+        extra_args=["--digest-algo", "SHA512"]
     )
 
     # [print(name, getattr(signed_message, name)) for name in dir(signed_message) if not callable(getattr(signed_message, name))]

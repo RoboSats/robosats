@@ -1229,7 +1229,7 @@ class TradeTest(BaseAPITestCase):
 
         # Fetch amount of rewards for taker
         path = reverse("robot")
-        taker_headers = trade.get_robot_auth(trade.maker_index)
+        taker_headers = trade.get_robot_auth(trade.taker_index)
         response = self.client.get(path, **taker_headers)
 
         self.assertEqual(response.status_code, 200)
