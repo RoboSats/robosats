@@ -1,0 +1,15 @@
+
+<br/>
+<div align="center">
+<img src="/assets/images/wip.jpg"  width="330" />
+</div>
+<br/>
+
+Esta página está em construção. Learn.RoboSats é um esforço conjunto da comunidade RoboSats.
+
+## <i class="fa-solid fa-seedling"></i> Você pode ajudar a melhorar esta página!
+
+**Dica Pro:** Você pode diretamente [editar esta página <i class="fa-brands fa-github-alt"></i>](https://github.com/RoboSats/robosats/blob/main/docs/{{page.src}}) e abrir um [Pull Request <i class="fa-solid fa-code-pull-request"/>](https://github.com/RoboSats/robosats/pulls). Suas alterações serão exibidas aqui.
+{: .notice--primary}
+
+Se você já usou o RoboSats, você é um especialista! Se você entende como tudo funciona nos bastidores, você é um mestre! Considere contribuir com os guias e documentação da plataforma Learn.RoboSats.
