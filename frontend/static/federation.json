@@ -46,7 +46,7 @@
       "clearnet": "",
       "i2p": ""
     },
-    "mainnetNodesPubkeys": ["030a425f5c69a29db30f6740d4e7df8f5612ef9955078ef4497490015464733dc8"],
+    "mainnetNodesPubkeys": ["0226f31c5f3a8b48bbbb7aaa97a10effcfb445b5972a676955d5c095383d35a428"],
     "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"]
   },
   "lake": {
