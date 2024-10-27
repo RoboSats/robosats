@@ -17,7 +17,7 @@ python-decouple==3.8
 requests==2.32.0
 ring==0.10.1
 gunicorn==23.0.0
-psycopg2==2.9.9
+psycopg2==2.9.10
 SQLAlchemy==2.0.16
 django-import-export==4.2.0
 requests[socks]
