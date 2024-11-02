@@ -142,14 +142,14 @@
     "mainnetNodesPubkeys": ["02c5b5972b05fba2cd2c2d9269a47bc478f73fae0f248a85cb1e5af60a07c1919d"],
     "testnetNodesPubkeys": ["032b698c8143f293d138c0926594f11d119194ddedb513f63a944d14c094d0e54a"]
   },
-  "overthemoon": {
+  "moon": {
     "longAlias": "Over the moon",
-    "shortAlias": "overthemoon",
-    "identifier": "overthemoon",
+    "shortAlias": "moon",
+    "identifier": "moon",
     "description": "Forget \"to the moon\", at Over the Moon we are here to take no-KYC, p2p exchange to the next level! Our goal is to further decentralise the RoboSats federation whilst providing the maximum level of privacy and security for our users. *Trade amounts increase by 30% every 2016 blocks (~2 weeks).",
     "motto": "Bene videtur hinc",
     "color": "#eeeee4",
-    "established": "2024-11-15",
+    "established": "2024-11-01",
     "nostrHexPubkey": "7af6f7cfc3bfdf8aa65df2465aa7841096fa8ee6b2d4d14fc43d974e5db9ab96",
     "contact": {
       "email": "otmoon@proton.me",
@@ -163,7 +163,7 @@
     "badges": {
       "isFounder": false,
       "donatesToDevFund": 25,
-      "hasGoodOpSec": false,
+      "hasGoodOpSec": true,
       "robotsLove": false,
       "hasLargeLimits": false
     },
