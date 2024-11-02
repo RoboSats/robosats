@@ -193,7 +193,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: .
+          asset_path: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           asset_content_type: application/zip
 
@@ -214,13 +214,13 @@ jobs:
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
           asset_content_type: application/zip
 
-      - name: 'Download window Build Artifact'
+      - name: 'Download Windows Build Artifact'
         uses: actions/download-artifact@v4
         with:
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
           path: .
           
-      - name: 'Upload macOS Build Artifact'
+      - name: 'Upload Windows Build Artifact'
         id: upload-release-win-zip-asset
         uses: actions/upload-release-asset@v1
         env:
