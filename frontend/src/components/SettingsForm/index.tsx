@@ -198,6 +198,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
             </ListItemIcon>
             <ToggleButtonGroup
               sx={{ width: '100%' }}
+              disabled={client === 'mobile'}
               exclusive={true}
               value={settings.connection}
               onChange={(_e, connection) => {
