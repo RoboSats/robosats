@@ -124,10 +124,22 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =
       xType === 'base_price'
-        ? enrichedOrders.sort(
-            (order1, order2) => (order1?.base_price ?? 0) - (order2?.base_price ?? 0),
-          )
-        : enrichedOrders.sort((order1, order2) => order1?.premium - order2?.premium);
+        ? enrichedOrders
+            .filter(
+              (order: PublicOrder | null) => fav.currency === 0 || order?.currency == fav.currency,
+            )
+            .sort(
+              (order1: PublicOrder | null, order2: PublicOrder | null) =>
+                (order1?.base_price ?? 0) - (order2?.base_price ?? 0),
+            )
+        : enrichedOrders
+            .filter(
+              (order: PublicOrder | null) => fav.currency === 0 || order?.currency == fav.currency,
+            )
+            .sort(
+              (order1: PublicOrder | null, order2: PublicOrder | null) =>
+                order1?.premium - order2?.premium,
+            );
 
     const sortedBuyOrders: PublicOrder[] = sortedOrders
       .filter((order) => order?.type === 0)
