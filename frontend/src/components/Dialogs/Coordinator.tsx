@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isMobile } from 'react-device-detect';
 
 import {
   Dialog,
@@ -115,7 +116,13 @@ const ContactButtons = ({
             <IconButton
               onClick={() => {
                 setShowNostr(true);
-                setTimeout(() => window.open(`https://snort.social/p/${nostr}`, '_blank'), 1500);
+                setTimeout(() => {
+                  if (isMobile) {
+                    window.location.href = `nostr:${nostr}`;
+                  } else {
+                    window.open(`https://njump.me/${nostr}`, '_blank', 'noopener,noreferrer');
+                  }
+                }, 1500);
                 setTimeout(() => {
                   setShowNostr(false);
                 }, 10000);
