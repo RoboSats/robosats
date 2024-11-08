@@ -10,7 +10,9 @@ interface RoboPoolEvents {
 class RoboPool {
   constructor(settings: Settings, origin: string) {
     this.network = settings.network ?? 'mainnet';
-    this.relays = Object.values(defaultFederation)
+
+    this.relays = [];
+    const federationRelays = Object.values(defaultFederation)
       .map((coord) => {
         const url: string = coord[this.network][settings.selfhostedClient ? 'onion' : origin];
 
@@ -19,6 +21,19 @@ class RoboPool {
         return `ws://${url.replace(/^https?:\/\//, '')}/nostr`;
       })
       .filter((item) => item !== undefined);
+    if (settings.host) {
+      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/nostr`;
+      if (federationRelays.includes(hostNostr)) {
+        this.relays.push(hostNostr);
+      }
+    }
+    while (this.relays.length < 3) {
+      const randomRelay =
+        federationRelays[Math.floor(Math.random() * Object.keys(federationRelays).length)];
+      if (!this.relays.includes(randomRelay)) {
+        this.relays.push(randomRelay);
+      }
+    }
   }
 
   public relays: string[];
