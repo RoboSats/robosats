@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { isMobile } from 'react-device-detect';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,7 @@ interface Props {
 
 const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const [client] = window.RobosatsSettings.split('-');
 
   const flagProps = {
     width: 30,
@@ -81,7 +81,7 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <ListItemButton
             component='a'
             onClick={() => {
-              if (isMobile) {
+              if (client === 'mobile') {
                 window.location.href =
                   'nostr:npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82';
               } else {

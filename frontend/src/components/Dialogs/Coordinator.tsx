@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { isMobile } from 'react-device-detect';
 
 import {
   Dialog,
@@ -95,6 +94,7 @@ const ContactButtons = ({
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
   const [showNostr, setShowNostr] = useState<boolean>(false);
+  const [client] = window.RobosatsSettings.split('-');
 
   return (
     <Grid container direction='row' alignItems='center' justifyContent='center'>
@@ -117,7 +117,7 @@ const ContactButtons = ({
               onClick={() => {
                 setShowNostr(true);
                 setTimeout(() => {
-                  if (isMobile) {
+                  if (client === 'mobile') {
                     window.location.href = `nostr:${nostr}`;
                   } else {
                     window.open(`https://njump.me/${nostr}`, '_blank', 'noopener,noreferrer');
