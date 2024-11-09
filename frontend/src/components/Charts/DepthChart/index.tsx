@@ -55,14 +55,14 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
-  const [currencyCode, setCurrencyCode] = useState<number>(1);
+  const [currencyCode, setCurrencyCode] = useState<number>(0);
   const [center, setCenter] = useState<number>();
 
   const height = maxHeight < 10 ? 10 : maxHeight;
   const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
-    setCurrencyCode(fav.currency === 0 ? 1 : fav.currency);
+    setCurrencyCode(fav.currency);  // as selected in BookControl
   }, [fav.currency]);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
           const originalPrice =
             (limits[order.currency]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
           const currencyPrice =
-            (limits[currencyCode]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
+            (limits[currencyCode || 1]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
 
           const originalAmount =
             order.has_range && order.max_amount
@@ -126,7 +126,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       xType === 'base_price'
         ? enrichedOrders
             .filter(
-              (order: PublicOrder | null) => fav.currency === 0 || order?.currency == fav.currency,
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency == currencyCode,
             )
             .sort(
               (order1: PublicOrder | null, order2: PublicOrder | null) =>
@@ -134,7 +134,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
             )
         : enrichedOrders
             .filter(
-              (order: PublicOrder | null) => fav.currency === 0 || order?.currency == fav.currency,
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency == currencyCode,
             )
             .sort(
               (order1: PublicOrder | null, order2: PublicOrder | null) =>
@@ -329,7 +329,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 <Grid item>
                   <Box justifyContent='center'>
                     {xType === 'base_price'
-                      ? `${center} ${String(currencyDict[currencyCode])}`
+                      ? `${center} ${String(currencyDict[(currencyCode || 1) as keyof object])}`
                       : `${String(center.toPrecision(3))}%`}
                   </Box>
                 </Grid>
