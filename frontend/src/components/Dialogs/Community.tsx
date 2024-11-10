@@ -26,6 +26,7 @@ interface Props {
 
 const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const [client] = window.RobosatsSettings.split('-');
 
   const flagProps = {
     width: 30,
@@ -79,9 +80,18 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
 
           <ListItemButton
             component='a'
-            target='_blank'
-            href='https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82'
-            rel='noreferrer'
+            onClick={() => {
+              if (client === 'mobile') {
+                window.location.href =
+                  'nostr:npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82';
+              } else {
+                window.open(
+                  'https://njump.me/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82',
+                  '_blank',
+                  'noopener,noreferrer',
+                );
+              }
+            }}
           >
             <ListItemIcon>
               <NostrIcon color='primary' sx={{ height: 32, width: 32 }} />

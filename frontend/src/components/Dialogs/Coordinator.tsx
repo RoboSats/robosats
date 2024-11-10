@@ -94,6 +94,7 @@ const ContactButtons = ({
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
   const [showNostr, setShowNostr] = useState<boolean>(false);
+  const [client] = window.RobosatsSettings.split('-');
 
   return (
     <Grid container direction='row' alignItems='center' justifyContent='center'>
@@ -115,7 +116,13 @@ const ContactButtons = ({
             <IconButton
               onClick={() => {
                 setShowNostr(true);
-                setTimeout(() => window.open(`https://snort.social/p/${nostr}`, '_blank'), 1500);
+                setTimeout(() => {
+                  if (client === 'mobile') {
+                    window.location.href = `nostr:${nostr}`;
+                  } else {
+                    window.open(`https://njump.me/${nostr}`, '_blank', 'noopener,noreferrer');
+                  }
+                }, 1500);
                 setTimeout(() => {
                   setShowNostr(false);
                 }, 10000);
