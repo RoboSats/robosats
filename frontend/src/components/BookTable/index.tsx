@@ -919,6 +919,11 @@ const BookTable = ({
         }
       >
         <ClickThroughDataGrid
+          initialState={{
+            sorting: {
+              sortModel: [{ field: 'premium', sort: 'asc' }],
+            },
+          }
           sx={headerStyleFix}
           localeText={localeText}
           rowHeight={3.714 * theme.typography.fontSize}
@@ -957,6 +962,11 @@ const BookTable = ({
       <Dialog open={fullscreen} fullScreen={true}>
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
           <ClickThroughDataGrid
+            initialState={{
+              sorting: {
+                sortModel: [{ field: 'premium', sort: 'asc' }],
+              },
+            }
             sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
