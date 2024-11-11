@@ -176,6 +176,9 @@ export class Federation {
       lifetime_volume: 0,
       version: { major: 0, minor: 0, patch: 0 },
     };
+    this.loading = true;
+    this.exchange.onlineCoordinators = 0;
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
 
     for (const coor of Object.values(this.coordinators)) {
