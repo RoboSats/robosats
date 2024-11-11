@@ -64,8 +64,7 @@ class RoboPool {
           });
 
           connection.onClose(() => {
-            console.log(`Disconnected from ${url}. Attempting to reconnect...`);
-            setTimeout(connectRelay, 1000);
+            console.log(`Disconnected from ${url}`);
           });
 
           this.webSockets[url] = connection;
