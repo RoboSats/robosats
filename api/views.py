@@ -225,13 +225,13 @@ class OrderView(viewsets.ViewSet):
         # 2) If order has been cancelled
         if order.status == Order.Status.UCA:
             return Response(
-                {"bad_request": "This order has been cancelled by the maker"},
-                status.HTTP_400_BAD_REQUEST,
+                {"status": "This order has been cancelled by the maker"},
+                status.HTTP_204_NO_CONTENT,
             )
         if order.status == Order.Status.CCA:
             return Response(
-                {"bad_request": "This order has been cancelled collaborativelly"},
-                status.HTTP_400_BAD_REQUEST,
+                {"status": "This order has been cancelled collaborativelly"},
+                status.HTTP_204_NO_CONTENT,
             )
 
         data = ListOrderSerializer(order).data
