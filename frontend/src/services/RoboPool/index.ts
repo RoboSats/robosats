@@ -1,6 +1,7 @@
 import { type Event } from 'nostr-tools';
 import { type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
+import { websocketClient, WebsocketConnection, WebsocketState } from '../Websocket';
 
 interface RoboPoolEvents {
   onevent: (event: Event) => void;
@@ -39,63 +40,61 @@ class RoboPool {
   public relays: string[];
   public network: string;
 
-  public webSockets: WebSocket[] = [];
+  public webSockets: Record<string, WebsocketConnection | null> = {};
   private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
 
   connect = (): void => {
-    this.relays.forEach((url) => {
-      if (this.webSockets.find((w: WebSocket) => w.url === url)) return;
+    this.relays.forEach((url: string) => {
+      if (Object.keys(this.webSockets).find((wUrl) => wUrl === url)) return;
 
-      let ws: WebSocket;
+      this.webSockets[url] = null;
 
-      const connect = (): void => {
-        ws = new WebSocket(url);
-
-        // Add event listeners for the WebSocket
-        ws.onopen = () => {
+      const connectRelay = () => {
+        websocketClient.open(url).then((connection) => {
           console.log(`Connected to ${url}`);
-        };
 
-        ws.onmessage = (event) => {
-          this.messageHandlers.forEach((handler) => {
-            handler(url, event);
+          connection.onMessage((event) => {
+            this.messageHandlers.forEach((handler) => {
+              handler(url, event);
+            });
           });
-        };
 
-        ws.onerror = (error) => {
-          console.error(`WebSocket error on ${url}:`, error);
-        };
+          connection.onError((error) => {
+            console.error(`WebSocket error on ${url}:`, error);
+          });
 
-        ws.onclose = () => {
-          console.log(`Disconnected from ${url}. Attempting to reconnect...`);
-          setTimeout(connect, 1000); // Reconnect after 1 second
-        };
+          connection.onClose(() => {
+            console.log(`Disconnected from ${url}. Attempting to reconnect...`);
+            setTimeout(connectRelay, 1000);
+          });
+
+          this.webSockets[url] = connection;
+        });
       };
-
-      connect();
-      this.webSockets.push(ws);
+      connectRelay();
     });
   };
 
   close = (): void => {
-    this.webSockets.forEach((ws) => {
-      ws.close();
+    Object.values(this.webSockets).forEach((ws) => {
+      ws?.close();
     });
+    this.webSockets = {};
   };
 
   sendMessage = (message: string): void => {
-    const send = (index: number, message: string): void => {
-      const ws = this.webSockets[index];
+    const send = (url: string, message: string): void => {
+      const ws = this.webSockets[url];
 
-      if (ws.readyState === WebSocket.OPEN) {
+      if (!ws || ws.getReadyState() === WebsocketState.CONNECTING) {
+        setTimeout(send, 500, url, message);
+      } else if (ws.getReadyState() === WebsocketState.OPEN) {
         ws.send(message);
-      } else if (ws.readyState === WebSocket.CONNECTING) {
-        setTimeout(send, 500, index, message);
       }
     };
 
-    this.webSockets.forEach((_ws, index) => {
-      send(index, message);
+    Object.keys(this.webSockets).forEach((url) => {
+      send(url, message);
     });
   };
 
