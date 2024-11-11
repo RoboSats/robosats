@@ -47,13 +47,13 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
 
   return (
     <Dialog open={open} onClose={onClose}>
+      <div style={loadingInfo ? {} : { display: 'none' }}>
+        <LinearProgress variant='indeterminate' />
+      </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>
           {t('Exchange Summary')}
         </Typography>
-        <div style={loadingInfo ? {} : { display: 'none' }}>
-          <LinearProgress variant='indeterminate' />
-        </div>
 
         <List dense>
           <ListItem>
