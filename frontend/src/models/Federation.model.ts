@@ -183,6 +183,7 @@ export class Federation {
 
     for (const coor of Object.values(this.coordinators)) {
       coor.loadInfo(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
     }
@@ -205,14 +206,15 @@ export class Federation {
   loadBook = async (): Promise<void> => {
     if (this.connection !== 'api') return;
 
-    this.loading = true;
     this.book = {};
-    this.triggerHook('onFederationUpdate');
+    this.loading = true;
+    this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.triggerHook('onFederationUpdate');
     for (const coor of Object.values(this.coordinators)) {
       coor.loadBook(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
-        this.triggerHook('onFederationUpdate');
       });
     }
   };
