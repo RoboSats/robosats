@@ -28,6 +28,7 @@ export interface NativeWebViewMessageSystem {
   type:
     | 'init'
     | 'torStatus'
+    | 'WsMessage'
     | 'copyToClipboardString'
     | 'setCookie'
     | 'deleteCookie'

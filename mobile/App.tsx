@@ -41,6 +41,13 @@ const App = () => {
         detail: payload.torStatus,
       });
     });
+    DeviceEventEmitter.addListener('WsMessage', (payload) => {
+      injectMessage({
+        category: 'ws',
+        type: 'wsMessage',
+        detail: payload,
+      });
+    });
   }, []);
 
   useEffect(() => {
@@ -123,7 +130,30 @@ const App = () => {
 
   const onMessage = async (event: WebViewMessageEvent) => {
     const data = JSON.parse(event.nativeEvent.data);
-    if (data.category === 'http') {
+    if (data.category === 'ws') {
+      TorModule.getTorStatus();
+      if (data.type === 'open') {
+        torClient
+          .wsOpen(data.path)
+          .then((connection: boolean) => {
+            injectMessageResolve(data.id, { connection });
+          })
+          .catch((e) => onCatch(data.id, e))
+          .finally(TorModule.getTorStatus);
+      } else if (data.type === 'send') {
+        torClient
+          .wsSend(data.path, data.message)
+          .catch((e) => onCatch(data.id, e))
+          .finally(TorModule.getTorStatus);
+      } else if (data.type === 'close') {
+        torClient
+          .wsClose(data.path)
+          .then((connection: boolean) => {
+            injectMessageResolve(data.id, { connection });
+          })
+          .finally(TorModule.getTorStatus);
+      }
+    } else if (data.category === 'http') {
       TorModule.getTorStatus();
       if (data.type === 'get') {
         torClient

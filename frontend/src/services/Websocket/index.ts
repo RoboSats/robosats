@@ -1,3 +1,4 @@
+import WebsocketNativeClient from './WebsocketNativeClient';
 import WebsocketWebClient from './WebsocketWebClient';
 
 export const WebsocketState = {
@@ -17,7 +18,19 @@ export interface WebsocketConnection {
 }
 
 export interface WebsocketClient {
+  useProxy: boolean;
   open: (path: string) => Promise<WebsocketConnection>;
 }
 
-export const websocketClient: WebsocketClient = new WebsocketWebClient();
+function getWebsocketClient(): WebsocketClient {
+  if (window.navigator.userAgent.includes('robosats')) {
+    // If userAgent has "RoboSats", we assume the app is running inside of the
+    // react-native-web view of the RoboSats Android app.
+    return new WebsocketNativeClient();
+  } else {
+    // Otherwise, we assume the app is running in a web browser.
+    return new WebsocketWebClient();
+  }
+}
+
+export const websocketClient: WebsocketClient = getWebsocketClient();

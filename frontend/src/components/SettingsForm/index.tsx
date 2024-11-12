@@ -29,6 +29,7 @@ import {
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
 import { apiClient } from '../../services/api';
+import { websocketClient } from '../../services/Websocket';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -198,7 +199,6 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
             </ListItemIcon>
             <ToggleButtonGroup
               sx={{ width: '100%' }}
-              disabled={client === 'mobile'}
               exclusive={true}
               value={settings.connection}
               onChange={(_e, connection) => {
@@ -249,6 +249,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
                   setSettings({ ...settings, useProxy });
                   systemClient.setItem('settings_use_proxy', String(useProxy));
                   apiClient.useProxy = useProxy;
+                  websocketClient.useProxy = useProxy;
                 }}
               >
                 <ToggleButton value={true} color='primary'>
