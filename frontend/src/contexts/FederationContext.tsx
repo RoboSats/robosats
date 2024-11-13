@@ -46,7 +46,7 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: Object.keys(federation.getCoordinators())[0] };
+      return { ...maker, coordinator: federation.getCoordinatorsAlias()[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());

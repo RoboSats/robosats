@@ -40,7 +40,7 @@ import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import headerStyleFix from '../DataGrid/HeaderFix';
-import { ThirdParties } from '../../utils/nostr';
+import thirdParties from '../../../static/thirdparties.json';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -184,7 +184,7 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const thirdParty = ThirdParties[params.row.coordinatorShortAlias];
+        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
             style={{ cursor: 'pointer' }}
@@ -221,7 +221,7 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
-        const thirdParty = ThirdParties[params.row.coordinatorShortAlias];
+        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <div
             style={{ position: 'relative', cursor: 'pointer', bottom: '0.2em' }}
@@ -250,7 +250,12 @@ const BookTable = ({
 
   const onClickCoordinator = function (shortAlias: string): void {
     setOpen((open) => {
-      return { ...open, coordinator: shortAlias };
+      const thirdParty = thirdParties[shortAlias];
+      if (thirdParty) {
+        return { ...open, thirdParty: shortAlias };
+      } else {
+        return { ...open, coordinator: shortAlias };
+      }
     });
   };
 
@@ -261,7 +266,7 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
-        const thirdParty = ThirdParties[params.row.coordinatorShortAlias];
+        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
             style={{ cursor: 'pointer' }}

@@ -226,7 +226,7 @@ const FederationTable = ({
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
-        rows={Object.values(federation.getCoordinators())}
+        rows={federation.getCoordinators()}
         getRowId={(params: Coordinator) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}

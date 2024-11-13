@@ -1,5 +1,5 @@
 import { type PublicOrder, type Favorites, type Federation } from '../models';
-import { ThirdParties } from './nostr';
+import thirdParties from '../../static/thirdparties.json';
 
 interface AmountFilter {
   amount: string;
@@ -67,14 +67,14 @@ const filterOrders = function ({
   paymentMethods = [],
   amountFilter = null,
 }: FilterOrders): PublicOrder[] {
-  const thirdParties = Object.keys(ThirdParties);
-  const enabledCoordinators = Object.values(federation.getCoordinators())
+  const enabledCoordinators = federation
+    .getCoordinators()
     .filter((coord) => coord.enabled)
     .map((coord) => coord.shortAlias);
   const filteredOrders = Object.values(federation.book).filter((order) => {
     if (!order) return false;
 
-    const coordinatorCheck = [...enabledCoordinators, ...thirdParties].includes(
+    const coordinatorCheck = [...enabledCoordinators, ...Object.keys(thirdParties)].includes(
       order.coordinatorShortAlias ?? '',
     );
     const typeChecks = order.type === baseFilter.type || baseFilter.type == null;

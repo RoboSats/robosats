@@ -224,6 +224,10 @@ export class Federation {
     return Object.values(this.coordinators);
   };
 
+  getCoordinatorsAlias = (): string[] => {
+    return Object.keys(this.coordinators);
+  };
+
   getCoordinator = (shortAlias: string): Coordinator => {
     return this.coordinators[shortAlias];
   };

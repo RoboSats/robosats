@@ -11,7 +11,7 @@ import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../../contexts/FederationContext';
-import { ThirdParties } from '../../../../utils/nostr';
+import thirdParties from '../../../../../static/thirdparties.json';
 
 interface OrderTooltipProps {
   order: PublicOrder;
@@ -25,7 +25,7 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
   const coordinatorAlias = order?.coordinatorShortAlias ?? '';
   const network = settings.network;
   const coordinator = federation.getCoordinator(coordinatorAlias);
-  const thirdParty = ThirdParties[coordinatorAlias];
+  const thirdParty = thirdParties[coordinatorAlias];
   const baseUrl = coordinator?.[network]?.[origin] ?? '';
 
   return order ? (

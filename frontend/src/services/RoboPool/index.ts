@@ -2,7 +2,7 @@ import { type Event } from 'nostr-tools';
 import { type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
-import { ThirdParties } from '../../utils/nostr';
+import thirdParties from '../../../static/thirdparties.json';
 
 interface RoboPoolEvents {
   onevent: (event: Event) => void;
@@ -99,7 +99,7 @@ class RoboPool {
   };
 
   subscribeBook = (events: RoboPoolEvents): void => {
-    const authors = [...Object.values(defaultFederation), ...Object.values(ThirdParties)]
+    const authors = [...Object.values(defaultFederation), ...Object.values(thirdParties)]
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);
 

@@ -350,7 +350,8 @@ const BookControl = ({
                     <FlagWithProps code='ANY' />
                   </div>
                 </MenuItem>
-                {Object.values(federation.getCoordinators())
+                {federation
+                  .getCoordinators()
                   .filter((coord) => coord.enabled)
                   .map((coordinator) => (
                     <MenuItem

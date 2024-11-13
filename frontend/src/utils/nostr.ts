@@ -2,17 +2,9 @@ import { type Event } from 'nostr-tools';
 import { type PublicOrder } from '../models';
 import { fromUnixTime } from 'date-fns';
 import Geohash from 'latlon-geohash';
+import thirdParties from '../../static/thirdparties.json';
 import currencyDict from '../../static/assets/currencies.json';
 import defaultFederation from '../../static/federation.json';
-
-export const ThirdParties = {
-  p2plightning: {
-    longAlias: 'LNP2PBot',
-    federated: false,
-    shortAlias: 'p2plightning',
-    nostrHexPubkey: 'fcc2a0bd8f5803f6dd8b201a1ddb67a4b6e268371fe7353d41d2b6684af7a61e',
-  },
-} as const;
 
 const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOrder | null } => {
   const publicOrder: PublicOrder = {
@@ -43,7 +35,7 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
 
   const statusTag = event.tags.find((t) => t[0] === 's') ?? [];
   const dTag = event.tags.find((t) => t[0] === 'd') ?? [];
-  const coordinator = [...Object.values(defaultFederation), ...Object.values(ThirdParties)].find(
+  const coordinator = [...Object.values(defaultFederation), ...Object.values(thirdParties)].find(
     (coord) => coord.nostrHexPubkey === event.pubkey,
   );
   if (!coordinator || statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };

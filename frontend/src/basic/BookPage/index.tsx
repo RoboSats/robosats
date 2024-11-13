@@ -9,7 +9,7 @@ import BookTable from '../../components/BookTable';
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
-import { ThirdParties } from '../../utils/nostr';
+import thirdParties from '../../../static/thirdparties.json';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
 import { type PublicOrder } from '../../models';
@@ -29,7 +29,7 @@ const BookPage = (): JSX.Element => {
   const chartWidthEm = width - maxBookTableWidth;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    const thirdParty = ThirdParties[shortAlias];
+    const thirdParty = thirdParties[shortAlias];
     if (thirdParty) {
       const thirdPartyOrder = Object.values(federation.book).find(
         (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,
