@@ -109,7 +109,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {Object.keys(federation.coordinators).map(
+                {Object.keys(federation.getCoordinators()).map(
                   (shortAlias: string): JSX.Element | null => {
                     let row: JSX.Element | null = null;
                     const item = federation.getCoordinator(shortAlias);

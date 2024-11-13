@@ -1,7 +1,8 @@
 import { type Event } from 'nostr-tools';
 import { type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
-import { websocketClient, WebsocketConnection, WebsocketState } from '../Websocket';
+import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
+import { ThirdParties } from '../../utils/nostr';
 
 interface RoboPoolEvents {
   onevent: (event: Event) => void;
@@ -49,8 +50,8 @@ class RoboPool {
 
       this.webSockets[url] = null;
 
-      const connectRelay = () => {
-        websocketClient.open(url).then((connection) => {
+      const connectRelay = (): void => {
+        void websocketClient.open(url).then((connection) => {
           console.log(`Connected to ${url}`);
 
           connection.onMessage((event) => {
@@ -98,11 +99,11 @@ class RoboPool {
   };
 
   subscribeBook = (events: RoboPoolEvents): void => {
-    const authors = Object.values(defaultFederation)
+    const authors = [...Object.values(defaultFederation), ...Object.values(ThirdParties)]
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);
 
-    const request = ['REQ', 'subscribeBook', { authors, kinds: [38383], '#n': [this.network] }];
+    const request = ['REQ', 'subscribeBook', { authors, kinds: [38383], '#s': ['pending'] }];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);

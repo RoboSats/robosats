@@ -36,7 +36,7 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
     'lifetime_volume',
   ];
 
-  Object.values(federation.coordinators).forEach((coordinator, index) => {
+  Object.values(federation.getCoordinators()).forEach((coordinator, index) => {
     if (coordinator.info !== undefined) {
       premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
       volumes[index] = coordinator.info.last_day_volume;

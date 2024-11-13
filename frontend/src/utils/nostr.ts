@@ -5,6 +5,15 @@ import Geohash from 'latlon-geohash';
 import currencyDict from '../../static/assets/currencies.json';
 import defaultFederation from '../../static/federation.json';
 
+export const ThirdParties = {
+  p2plightning: {
+    longAlias: 'LNP2PBot',
+    federated: false,
+    shortAlias: 'p2plightning',
+    nostrHexPubkey: 'fcc2a0bd8f5803f6dd8b201a1ddb67a4b6e268371fe7353d41d2b6684af7a61e',
+  },
+} as const;
+
 const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOrder | null } => {
   const publicOrder: PublicOrder = {
     id: 0,
@@ -26,16 +35,20 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
     bond_size: '',
     latitude: null,
     longitude: null,
-    maker_nick: '',
-    maker_hash_id: '',
+    maker_nick: null,
+    maker_hash_id: null,
     satoshis_now: null,
     price: null,
   };
 
   const statusTag = event.tags.find((t) => t[0] === 's') ?? [];
   const dTag = event.tags.find((t) => t[0] === 'd') ?? [];
+  const coordinator = [...Object.values(defaultFederation), ...Object.values(ThirdParties)].find(
+    (coord) => coord.nostrHexPubkey === event.pubkey,
+  );
+  if (!coordinator || statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };
 
-  if (statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };
+  publicOrder.coordinatorShortAlias = coordinator?.shortAlias;
 
   event.tags.forEach((tag) => {
     switch (tag[0]) {
@@ -85,16 +98,17 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
       case 'source': {
         const orderUrl = tag[1].split('/');
         publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
-        const coordinatorIdentifier = orderUrl[orderUrl.length - 2] ?? '';
-        publicOrder.coordinatorShortAlias = Object.entries(defaultFederation).find(
-          ([key, value]) => value.identifier === coordinatorIdentifier,
-        )?.[0];
+        publicOrder.link = tag[1];
         break;
       }
       default:
         break;
     }
   });
+
+  if (!publicOrder.currency) return { dTag: dTag[1], publicOrder: null };
+  if (!publicOrder.maker_hash_id)
+    publicOrder.maker_hash_id = `${publicOrder.id}${coordinator?.shortAlias}`;
 
   return { dTag: dTag[1], publicOrder };
 };

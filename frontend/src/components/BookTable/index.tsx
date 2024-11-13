@@ -40,6 +40,7 @@ import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import headerStyleFix from '../DataGrid/HeaderFix';
+import { ThirdParties } from '../../utils/nostr';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -183,6 +184,7 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const thirdParty = ThirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
             style={{ cursor: 'pointer' }}
@@ -203,7 +205,7 @@ const BookTable = ({
               />
             </ListItemAvatar>
             <ListItemText
-              primary={params.row.maker_nick}
+              primary={params.row.maker_nick ?? thirdParty.longAlias}
               sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}
             />
           </ListItemButton>
@@ -218,9 +220,11 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const thirdParty = ThirdParties[params.row.coordinatorShortAlias];
         return (
           <div
-            style={{ position: 'relative', left: '-0.34em', cursor: 'pointer', bottom: '0.2em' }}
+            style={{ position: 'relative', cursor: 'pointer', bottom: '0.2em' }}
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
@@ -233,6 +237,10 @@ const BookTable = ({
               orderType={params.row.type}
               statusColor={statusBadgeColor(params.row.maker_status)}
               tooltip={t(params.row.maker_status)}
+              coordinatorShortAlias={
+                thirdParty?.shortAlias ??
+                (coordinator?.federated ? params.row.coordinatorShortAlias : undefined)
+              }
             />
           </div>
         );
@@ -252,7 +260,8 @@ const BookTable = ({
       headerName: t('Host'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const coordinator = federation.coordinators[params.row.coordinatorShortAlias];
+        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const thirdParty = ThirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
             style={{ cursor: 'pointer' }}
@@ -262,8 +271,11 @@ const BookTable = ({
           >
             <ListItemAvatar sx={{ position: 'relative', left: '-1.54em', bottom: '0.4em' }}>
               <RobotAvatar
-                shortAlias={coordinator.federated ? params.row.coordinatorShortAlias : undefined}
-                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                shortAlias={
+                  thirdParty?.shortAlias ??
+                  (coordinator?.federated ? params.row.coordinatorShortAlias : undefined)
+                }
+                hashId={coordinator?.federated ? undefined : coordinator?.shortAlias}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 small={true}
@@ -426,7 +438,9 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
-        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const coordinator =
+          federation.getCoordinator(params.row.coordinatorShortAlias) ??
+          federation.getCoordinators()[0];
         const premium = parseFloat(params.row.premium);
         const limitPrice = coordinator.limits[params.row.currency.toString()]?.price;
         const price = (limitPrice ?? 1) * (1 + premium / 100);
@@ -523,7 +537,7 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {hours > 0 ? `${hours}h` : `${minutes}m`}
+            {hours > 0 ? `${hours}h` : minutes ? `${minutes}m` : '-'}
           </div>
         );
       },
@@ -585,7 +599,9 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
-        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const coordinator =
+          federation.getCoordinator(params.row.coordinatorShortAlias) ??
+          federation.getCoordinators()[0];
         const amount =
           params.row.has_range === true
             ? parseFloat(params.row.max_amount)
@@ -646,7 +662,9 @@ const BookTable = ({
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
-          >{`${Number(params.row.bond_size)}%`}</div>
+          >
+            {params.row.bond_size ? `${Number(params.row.bond_size)}%` : '-'}
+          </div>
         );
       },
     };
@@ -698,16 +716,8 @@ const BookTable = ({
           object: robotObj,
         },
         small: {
-          width: 4.1,
+          width: 5.1,
           object: robotSmallObj,
-        },
-      },
-      coordinatorShortAlias: {
-        priority: 5,
-        order: 3,
-        normal: {
-          width: 4.1,
-          object: coordinatorObj,
         },
       },
       price: {
@@ -742,8 +752,27 @@ const BookTable = ({
           object: satoshisObj,
         },
       },
-      type: {
+      coordinatorShortAlias: {
         priority: 10,
+        order: 3,
+        normal: {
+          width: 4.1,
+          object: coordinatorObj,
+        },
+        small: {
+          width: 5.1,
+          object: () => {
+            return {
+              field: 'coordinatorShortAlias',
+              headerName: '',
+              width: 0,
+              renderCell: () => <></>,
+            };
+          },
+        },
+      },
+      type: {
+        priority: 11,
         order: 2,
         normal: {
           width: fav.mode === 'swap' ? 7 : 4.3,
@@ -751,7 +780,7 @@ const BookTable = ({
         },
       },
       bond_size: {
-        priority: 11,
+        priority: 12,
         order: 11,
         normal: {
           width: 4.2,
@@ -759,7 +788,7 @@ const BookTable = ({
         },
       },
       id: {
-        priority: 12,
+        priority: 13,
         order: 13,
         normal: {
           width: 4.8,

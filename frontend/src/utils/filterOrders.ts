@@ -1,4 +1,5 @@
 import { type PublicOrder, type Favorites, type Federation } from '../models';
+import { ThirdParties } from './nostr';
 
 interface AmountFilter {
   amount: string;
@@ -66,13 +67,16 @@ const filterOrders = function ({
   paymentMethods = [],
   amountFilter = null,
 }: FilterOrders): PublicOrder[] {
-  const enabledCoordinators = Object.values(federation.coordinators)
+  const thirdParties = Object.keys(ThirdParties);
+  const enabledCoordinators = Object.values(federation.getCoordinators())
     .filter((coord) => coord.enabled)
     .map((coord) => coord.shortAlias);
   const filteredOrders = Object.values(federation.book).filter((order) => {
     if (!order) return false;
 
-    const coordinatorCheck = enabledCoordinators.includes(order.coordinatorShortAlias ?? '');
+    const coordinatorCheck = [...enabledCoordinators, ...thirdParties].includes(
+      order.coordinatorShortAlias ?? '',
+    );
     const typeChecks = order.type === baseFilter.type || baseFilter.type == null;
     const modeChecks = baseFilter.mode === 'fiat' ? !(order.currency === 1000) : true;
     const premiumChecks = premium !== null ? filterByPremium(order, premium) : true;

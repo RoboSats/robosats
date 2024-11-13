@@ -83,7 +83,7 @@ export const GarageContextProvider = ({ children }: GarageContextProviderProps):
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: Object.keys(federation.coordinators)[0] };
+      return { ...maker, coordinator: Object.keys(federation.getCoordinators())[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     garage.registerHook('onSlotUpdate', onSlotUpdated);
     clearInterval(timer);

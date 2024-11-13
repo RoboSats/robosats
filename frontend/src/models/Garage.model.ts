@@ -147,7 +147,7 @@ class Garage {
         this.setCurrentSlot(token);
         this.slots[token] = new Slot(
           token,
-          Object.keys(federation.coordinators),
+          Object.keys(federation.getCoordinators()),
           robotAttributes,
           () => {
             this.triggerHook('onSlotUpdate');

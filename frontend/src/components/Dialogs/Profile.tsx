@@ -109,18 +109,20 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <b>{t('Coordinators that know your robot:')}</b>
         </Typography>
 
-        {Object.values(federation.coordinators).map((coordinator: Coordinator): JSX.Element => {
-          const coordinatorRobot = garage.getSlot()?.getRobot(coordinator.shortAlias);
-          return (
-            <div key={coordinator.shortAlias}>
-              <RobotInfo
-                coordinator={coordinator}
-                onClose={onClose}
-                disabled={coordinatorRobot?.loading}
-              />
-            </div>
-          );
-        })}
+        {Object.values(federation.getCoordinators()).map(
+          (coordinator: Coordinator): JSX.Element => {
+            const coordinatorRobot = garage.getSlot()?.getRobot(coordinator.shortAlias);
+            return (
+              <div key={coordinator.shortAlias}>
+                <RobotInfo
+                  coordinator={coordinator}
+                  onClose={onClose}
+                  disabled={coordinatorRobot?.loading}
+                />
+              </div>
+            );
+          },
+        )}
       </DialogContent>
     </Dialog>
   );
