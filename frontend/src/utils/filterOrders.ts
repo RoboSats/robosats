@@ -1,4 +1,4 @@
-import { type PublicOrder, type Favorites, type Federation } from '../models';
+import { type PublicOrder, type Favorites, type Federation, Coordinator } from '../models';
 import thirdParties from '../../static/thirdparties.json';
 
 interface AmountFilter {
@@ -28,9 +28,16 @@ const filterByPayment = function (order: PublicOrder, paymentMethods: any[]): bo
   }
 };
 
-const filterByHost = function (order: PublicOrder, shortAlias: string): boolean {
+const filterByHost = function (
+  order: PublicOrder,
+  shortAlias: string,
+  federation: Federation,
+): boolean {
   if (shortAlias === 'any') {
     return true;
+  } else if (shortAlias == 'robosats') {
+    const coordinator = federation.getCoordinator(order.coordinatorShortAlias ?? '');
+    return coordinator?.federated ?? false;
   } else {
     return order.coordinatorShortAlias === shortAlias;
   }
@@ -84,8 +91,7 @@ const filterOrders = function ({
     const paymentMethodChecks =
       paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
     const amountChecks = amountFilter !== null ? filterByAmount(order, amountFilter) : true;
-    const hostChecks =
-      baseFilter.coordinator !== 'any' ? filterByHost(order, baseFilter.coordinator) : true;
+    const hostChecks = filterByHost(order, baseFilter.coordinator, federation);
     return (
       coordinatorCheck &&
       typeChecks &&
