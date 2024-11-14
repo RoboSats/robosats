@@ -88,7 +88,7 @@ class Nostr:
                 ]
             ),
             Tag.parse(["y", "robosats", config("COORDINATOR_ALIAS", cast=str).lower()]),
-            Tag.parse(["n", str(config("NETWORK"))]),
+            Tag.parse(["network", str(config("NETWORK"))]),
             Tag.parse(["layer"] + self.get_layer_tag(order)),
             Tag.parse(["bond", str(order.bond_size)]),
             Tag.parse(["z", "order"]),
