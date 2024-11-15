@@ -195,9 +195,8 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   >
                     <Link sx={{ height: 16 }} />{' '}
                     {coordinator?.info?.swap_enabled
-                      ? (coordinator?.info?.current_swap_fee_rate ?? 0).toFixed(1)
-                      : '-'}
-                    %
+                      ? `${(coordinator?.info?.current_swap_fee_rate ?? 0).toFixed(1)}%`
+                      : t('Disabled')}
                   </Typography>
                 </Tooltip>
               </Grid>
