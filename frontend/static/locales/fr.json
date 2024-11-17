@@ -335,7 +335,7 @@
   "#33": "Phrases in components/Dialogs/VisitThirdParty.tsx",
   "Cancel": "Annuler",
   "Open external order": "Open external order",
-  "This order is not hosted or managed by Robosats. You will open an external link or app.": "This order is not hosted or managed by Robosats. You will open an external link or app.",
+  "This order is not managed by a RoboSats coordinator. Please ensure you are comfortable with the privacy and trust trade-offs. You will open an external link or app": "This order is not managed by a RoboSats coordinator. Please ensure you are comfortable with the privacy and trust trade-offs. You will open an external link or app",
   "#34": "Phrases in components/Dialogs/Warning.tsx",
   "Coordinators of p2p trades are the source of trust, provide the infrastructure, pricing and will mediate in case of dispute. Make sure you research and trust \"{{coordinator_name}}\" before locking your bond. A malicious p2p coordinator can find ways to steal from you.": "Coordinators of p2p trades are the source of trust, provide the infrastructure, pricing and will mediate in case of dispute. Make sure you research and trust \"{{coordinator_name}}\" before locking your bond. A malicious p2p coordinator can find ways to steal from you.",
   "I understand": "I understand",

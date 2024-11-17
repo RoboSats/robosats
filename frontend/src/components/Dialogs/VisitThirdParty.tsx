@@ -26,7 +26,7 @@ const VisitThirdParty = ({ open, onClose, thirdPartyOrder }: Props): JSX.Element
       <DialogContent>
         <DialogContentText>
           {t(
-            'This order is not hosted or managed by Robosats. You will open an external link or app.',
+            'This order is not managed by a RoboSats coordinator. Please ensure you are comfortable with the privacy and trust trade-offs. You will open an external link or app',
           )}
         </DialogContentText>
       </DialogContent>
