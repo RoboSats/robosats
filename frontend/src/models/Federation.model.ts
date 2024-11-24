@@ -68,7 +68,7 @@ export class Federation {
     this.roboPool = new RoboPool(settings, origin);
   }
 
-  public coordinators: Record<string, Coordinator>;
+  private coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
   public book: Record<string, PublicOrder | undefined>;
   public loading: boolean;
@@ -220,6 +220,14 @@ export class Federation {
   };
 
   // Coordinators
+  getCoordinators = (): Coordinator[] => {
+    return Object.values(this.coordinators);
+  };
+
+  getCoordinatorsAlias = (): string[] => {
+    return Object.keys(this.coordinators);
+  };
+
   getCoordinator = (shortAlias: string): Coordinator => {
     return this.coordinators[shortAlias];
   };

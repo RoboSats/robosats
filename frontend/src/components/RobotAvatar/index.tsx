@@ -7,8 +7,9 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { roboidentitiesClient } from '../../services/Roboidentities/Web';
 
 interface Props {
-  shortAlias?: string | undefined;
-  hashId?: string | undefined;
+  shortAlias?: string;
+  coordinatorShortAlias?: string;
+  hashId?: string;
   smooth?: boolean;
   small?: boolean;
   flipHorizontally?: boolean;
@@ -30,6 +31,7 @@ interface BackgroundData {
 
 const RobotAvatar: React.FC<Props> = ({
   shortAlias,
+  coordinatorShortAlias,
   hashId,
   orderType,
   statusColor,
@@ -101,6 +103,16 @@ const RobotAvatar: React.FC<Props> = ({
     </div>
   );
 
+  const coordinatorBadge = (
+    <div style={{ position: 'relative', right: '0.428em' }}>
+      <RobotAvatar
+        shortAlias={coordinatorShortAlias}
+        style={{ height: '0.9em', width: '0.9em' }}
+        small={true}
+      />
+    </div>
+  );
+
   const avatar = useMemo(() => {
     if (smooth) {
       return (
@@ -168,6 +180,18 @@ const RobotAvatar: React.FC<Props> = ({
       );
     }
 
+    if (coordinatorShortAlias !== undefined) {
+      component = (
+        <Badge
+          overlap='circular'
+          anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+          badgeContent={coordinatorBadge}
+        >
+          {component}
+        </Badge>
+      );
+    }
+
     if (tooltip !== undefined) {
       component = (
         <Tooltip placement={tooltipPosition} enterTouchDelay={0} title={tooltip}>
@@ -175,6 +199,7 @@ const RobotAvatar: React.FC<Props> = ({
         </Tooltip>
       );
     }
+
     return component;
   }, [avatar]);
 

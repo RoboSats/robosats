@@ -8,18 +8,20 @@ class WebsocketConnectionNative implements WebsocketConnection {
       const path: string = event?.detail?.path;
       const message: string = event?.detail?.message;
       if (path && message && path === this.path) {
-        this.wsMessagePromises.forEach((fn) => fn({ data: message }));
+        this.wsMessagePromises.forEach((fn) => {
+          fn({ data: message });
+        });
       }
     });
   }
 
   private readonly path: string;
 
-  private readonly wsMessagePromises: ((message: any) => void)[] = [];
-  private readonly wsClosePromises: (() => void)[] = [];
+  private readonly wsMessagePromises: Array<(message: any) => void> = [];
+  private readonly wsClosePromises: Array<() => void> = [];
 
   public send: (message: string) => void = (message: string) => {
-    window.NativeRobosats?.postMessage({
+    void window.NativeRobosats?.postMessage({
       category: 'ws',
       type: 'send',
       path: this.path,
@@ -28,15 +30,17 @@ class WebsocketConnectionNative implements WebsocketConnection {
   };
 
   public close: () => void = () => {
-    window.NativeRobosats?.postMessage({
+    void window.NativeRobosats?.postMessage({
       category: 'ws',
       type: 'close',
       path: this.path,
     }).then((response) => {
       if (response.connection) {
-        this.wsClosePromises.forEach((fn) => fn());
+        this.wsClosePromises.forEach((fn) => {
+          fn();
+        });
       } else {
-        new Error('Failed to close websocket connection.');
+        Error('Failed to close websocket connection.');
       }
     });
   };
