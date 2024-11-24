@@ -7,8 +7,6 @@ class ApiNativeClient implements ApiClient {
 
   private readonly webClient: ApiClient = new ApiWebClient();
 
-  private readonly assetsPromises = new Map<string, Promise<string | undefined>>();
-
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
       'Content-Type': 'application/json',
@@ -44,9 +42,9 @@ class ApiNativeClient implements ApiClient {
   };
 
   public put: (baseUrl: string, path: string, body: object) => Promise<object | undefined> = async (
-    baseUrl,
-    path,
-    body,
+    _baseUrl,
+    _path,
+    _body,
   ) => {
     return await new Promise<object>((resolve, _reject) => {
       resolve({});

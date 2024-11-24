@@ -43,27 +43,23 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected, turtleMode, set
         </Paper>
       </Grid>
       <Grid item>
-        {window.ReactNativeWebView === undefined ? (
-          <Grid item>
-            <Tooltip
-              enterTouchDelay={0}
-              placement='top'
-              title={t('Activate slow mode (use it when the connection is slow)')}
+        <Grid item>
+          <Tooltip
+            enterTouchDelay={0}
+            placement='top'
+            title={t('Activate slow mode (use it when the connection is slow)')}
+          >
+            <IconButton
+              size='small'
+              color={turtleMode ? 'primary' : 'inherit'}
+              onClick={() => {
+                setTurtleMode(!turtleMode);
+              }}
             >
-              <IconButton
-                size='small'
-                color={turtleMode ? 'primary' : 'inherit'}
-                onClick={() => {
-                  setTurtleMode(!turtleMode);
-                }}
-              >
-                <WifiTetheringError />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-        ) : (
-          <></>
-        )}
+              <WifiTetheringError />
+            </IconButton>
+          </Tooltip>
+        </Grid>
       </Grid>
       <Grid item>
         <Paper

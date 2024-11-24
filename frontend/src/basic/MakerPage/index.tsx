@@ -11,6 +11,8 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
+import { PublicOrder } from '../../models';
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
@@ -23,6 +25,8 @@ const MakerPage = (): JSX.Element => {
   const [showMatches, setShowMatches] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
   const [clickedOrder, setClickedOrder] = useState<{ id: number; shortAlias: string }>();
+  const [openVisitThirdParty, setOpenVisitThirdParty] = useState<boolean>(false);
+  const [thirdPartyOrder, setThirdPartyOrder] = useState<PublicOrder>();
 
   const matches = useMemo(() => {
     return filterOrders({
@@ -31,7 +35,7 @@ const MakerPage = (): JSX.Element => {
         currency: fav.currency === 0 ? 1 : fav.currency,
         type: fav.type,
         mode: fav.mode,
-        coordinator: 'any',
+        coordinator: 'robosats',
       },
       premium: Number(maker.premium) ?? null,
       paymentMethods: maker.paymentMethods,
@@ -53,16 +57,34 @@ const MakerPage = (): JSX.Element => {
   ]);
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    if (garage.getSlot()?.hashId) {
-      navigate(`/order/${shortAlias}/${id}`);
+    const thirdParty = thirdParties[shortAlias];
+    if (thirdParty) {
+      const thirdPartyOrder = Object.values(federation.book).find(
+        (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,
+      );
+      if (thirdPartyOrder) {
+        setThirdPartyOrder(thirdPartyOrder);
+        setOpenVisitThirdParty(true);
+      }
     } else {
-      setClickedOrder({ id, shortAlias });
-      setOpenNoRobot(true);
+      if (garage.getSlot()?.hashId) {
+        navigate(`/order/${shortAlias}/${id}`);
+      } else {
+        setClickedOrder({ id, shortAlias });
+        setOpenNoRobot(true);
+      }
     }
   };
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
+      <VisitThirdParty
+        open={openVisitThirdParty}
+        onClose={() => {
+          setOpenVisitThirdParty(false);
+        }}
+        thirdPartyOrder={thirdPartyOrder}
+      />
       <NoRobotDialog
         open={openNoRobot}
         onClose={() => {

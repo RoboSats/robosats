@@ -35,7 +35,7 @@ const EncryptedChat: React.FC<Props> = ({
   messages,
   status,
 }: Props): JSX.Element => {
-  const [turtleMode, setTurtleMode] = useState<boolean>(window.ReactNativeWebView !== undefined);
+  const [turtleMode, setTurtleMode] = useState<boolean>(false);
 
   return turtleMode ? (
     <EncryptedTurtleChat

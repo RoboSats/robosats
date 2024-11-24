@@ -1,5 +1,6 @@
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
+import { websocketClient } from '../services/Websocket';
 import { apiClient } from '../services/api';
 import { getHost } from '../utils';
 
@@ -57,6 +58,7 @@ class BaseSettings {
     const useProxy = systemClient.getItem('settings_use_proxy');
     this.useProxy = client === 'mobile' && useProxy !== 'false';
     apiClient.useProxy = this.useProxy;
+    websocketClient.useProxy = this.useProxy;
   }
 
   public frontend: 'basic' | 'pro' = 'basic';

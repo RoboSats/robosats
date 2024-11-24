@@ -82,8 +82,8 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
             >
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinator?.federated ? coordinator.shortAlias : undefined}
-                  hashId={coordinator?.federated ? undefined : coordinator.mainnet.onion}
+                  shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
+                  hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={false}
@@ -112,20 +112,17 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {Object.keys(federation.coordinators).map(
-                  (shortAlias: string): JSX.Element | null => {
-                    let row: JSX.Element | null = null;
-                    const item = federation.getCoordinator(shortAlias);
-                    if (item.enabled === true) {
-                      row = (
-                        <MenuItem key={shortAlias} value={shortAlias}>
-                          <Typography>{item.longAlias}</Typography>
-                        </MenuItem>
-                      );
-                    }
-                    return row;
-                  },
-                )}
+                {federation.getCoordinators().map((coordinator): JSX.Element | null => {
+                  let row: JSX.Element | null = null;
+                  if (coordinator.enabled === true) {
+                    row = (
+                      <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>
+                        <Typography>{coordinator.longAlias}</Typography>
+                      </MenuItem>
+                    );
+                  }
+                  return row;
+                })}
               </Select>
             </Grid>
           </Grid>

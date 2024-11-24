@@ -1,4 +1,5 @@
-import { type PublicOrder, type Favorites, type Federation } from '../models';
+import { type PublicOrder, type Favorites, type Federation, Coordinator } from '../models';
+import thirdParties from '../../static/thirdparties.json';
 
 interface AmountFilter {
   amount: string;
@@ -27,9 +28,16 @@ const filterByPayment = function (order: PublicOrder, paymentMethods: any[]): bo
   }
 };
 
-const filterByHost = function (order: PublicOrder, shortAlias: string): boolean {
+const filterByHost = function (
+  order: PublicOrder,
+  shortAlias: string,
+  federation: Federation,
+): boolean {
   if (shortAlias === 'any') {
     return true;
+  } else if (shortAlias == 'robosats') {
+    const coordinator = federation.getCoordinator(order.coordinatorShortAlias ?? '');
+    return coordinator?.federated ?? false;
   } else {
     return order.coordinatorShortAlias === shortAlias;
   }
@@ -66,13 +74,16 @@ const filterOrders = function ({
   paymentMethods = [],
   amountFilter = null,
 }: FilterOrders): PublicOrder[] {
-  const enabledCoordinators = Object.values(federation.coordinators)
+  const enabledCoordinators = federation
+    .getCoordinators()
     .filter((coord) => coord.enabled)
     .map((coord) => coord.shortAlias);
   const filteredOrders = Object.values(federation.book).filter((order) => {
     if (!order) return false;
 
-    const coordinatorCheck = enabledCoordinators.includes(order.coordinatorShortAlias ?? '');
+    const coordinatorCheck = [...enabledCoordinators, ...Object.keys(thirdParties)].includes(
+      order.coordinatorShortAlias ?? '',
+    );
     const typeChecks = order.type === baseFilter.type || baseFilter.type == null;
     const modeChecks = baseFilter.mode === 'fiat' ? !(order.currency === 1000) : true;
     const premiumChecks = premium !== null ? filterByPremium(order, premium) : true;
@@ -80,8 +91,7 @@ const filterOrders = function ({
     const paymentMethodChecks =
       paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
     const amountChecks = amountFilter !== null ? filterByAmount(order, amountFilter) : true;
-    const hostChecks =
-      baseFilter.coordinator !== 'any' ? filterByHost(order, baseFilter.coordinator) : true;
+    const hostChecks = filterByHost(order, baseFilter.coordinator, federation);
     return (
       coordinatorCheck &&
       typeChecks &&

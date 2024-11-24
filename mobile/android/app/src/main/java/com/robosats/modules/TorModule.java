@@ -19,6 +19,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -30,10 +32,15 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
+import okio.ByteString;
 
 
 public class TorModule extends ReactContextBaseJavaModule {
     private ReactApplicationContext context;
+    private static final Map<String, WebSocket> webSockets = new HashMap<>();
+
     public TorModule(ReactApplicationContext reactContext) {
         context = reactContext;
         TorKmp torKmpManager = new TorKmp((Application) context.getApplicationContext());
@@ -43,6 +50,81 @@ public class TorModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return "TorModule";
+    }
+
+    @ReactMethod
+    public void sendWsSend(String path, String message, final Promise promise) {
+        if (webSockets.get(path) != null) {
+            Objects.requireNonNull(webSockets.get(path)).send(message);
+            promise.resolve(true);
+        } else {
+            promise.resolve(false);
+        }
+    }
+
+    @ReactMethod
+    public void sendWsClose(String path, final Promise promise) {
+        if (webSockets.get(path) != null) {
+            Objects.requireNonNull(webSockets.get(path)).close(1000, "Closing connection");
+            promise.resolve(true);
+        } else {
+            promise.resolve(false);
+        }
+    }
+
+    @ReactMethod
+    public void sendWsOpen(String path, final Promise promise) {
+        Log.d("Tormodule", "WebSocket opening: " + path);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
+                .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
+                .proxy(TorKmpManager.INSTANCE.getTorKmpObject().getProxy())
+                .build();
+
+        // Create a request for the WebSocket connection
+        Request request = new Request.Builder()
+                .url(path) // Replace with your WebSocket URL
+                .build();
+
+        // Create a WebSocket listener
+        WebSocketListener listener = new WebSocketListener() {
+            @Override
+            public void onOpen(@NonNull WebSocket webSocket, Response response) {
+                Log.d("Tormodule", "WebSocket opened: " + response.message());
+                promise.resolve(true);
+                synchronized (webSockets) {
+                    webSockets.put(path, webSocket); // Store the WebSocket instance with its URL
+                }
+            }
+
+            @Override
+            public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
+                Log.d("Tormodule", "WebSocket Message received: " + text);
+                onWsMessage(path, text);
+            }
+
+            @Override
+            public void onMessage(@NonNull WebSocket webSocket, ByteString bytes) {
+                Log.d("Tormodule", "WebSocket Message received: " + bytes.hex());
+                onWsMessage(path, bytes.hex());
+            }
+
+            @Override
+            public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+                Log.d("Tormodule", "WebSocket closing: " + reason);
+                synchronized (webSockets) {
+                    webSockets.remove(path); // Remove the WebSocket instance by URL
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull WebSocket webSocket, Throwable t, Response response) {
+                Log.d("Tormodule", "WebSocket error: " + t.getMessage());
+                promise.resolve(false);
+            }
+        };
+
+        client.newWebSocket(request, listener);
     }
 
     @ReactMethod
@@ -159,5 +241,22 @@ public class TorModule extends ReactContextBaseJavaModule {
         context
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("TorNewIdentity", payload);
+    }
+
+    private void onWsMessage(String path, String message) {
+        WritableMap payload = Arguments.createMap();
+        payload.putString("message", message);
+        payload.putString("path", path);
+        context
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("WsMessage", payload);
+    }
+
+    private void onWsError(String path) {
+        WritableMap payload = Arguments.createMap();
+        payload.putString("path", path);
+        context
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("WsError", payload);
     }
 }
