@@ -74,7 +74,7 @@ jobs:
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
-  
+
   desktop-build:
     uses: RoboSats/robosats/.github/workflows/desktop-build.yml@main
     needs: [frontend-build, check-versions]
@@ -163,29 +163,12 @@ jobs:
           asset_name: robosats-${{ needs.check-versions.outputs.semver }}-x86_64.apk
           asset_content_type: application/apk
 
-      # Upload app-x86-release APK artifact asset
-      - name: 'Download x86 APK Artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: robosats-${{ needs.check-versions.outputs.semver }}-x86.apk
-          path: .
-      - name: 'Upload x86 APK Asset'
-        id: upload-x86-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: app-x86-release.apk
-          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-x86.apk
-          asset_content_type: application/apk
-      
       - name: 'Download macOS Build Artifact'
         uses: actions/download-artifact@v4
         with:
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           path: .
-          
+
       - name: 'Upload macOS Build Artifact'
         id: upload-release-mac-zip-asset
         uses: actions/upload-release-asset@v1
@@ -219,7 +202,7 @@ jobs:
         with:
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
           path: .
-          
+
       - name: 'Upload Windows Build Artifact'
         id: upload-release-win-zip-asset
         uses: actions/upload-release-asset@v1

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -35,10 +35,19 @@ interface Props {
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
   const { federation } = useContext(FederationContext);
+  const [loadingInfo, setLoadingInfo] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (open) federation.loadInfo();
+  }, [open]);
+
+  useEffect(() => {
+    setLoadingInfo(federation.loading);
+  }, [federation.loading]);
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <div style={federation.loading ? {} : { display: 'none' }}>
+      <div style={loadingInfo ? {} : { display: 'none' }}>
         <LinearProgress variant='indeterminate' />
       </div>
       <DialogContent>

@@ -30,9 +30,9 @@ Alternatively you can also verify with the release with the SHA256 checksum.
 **Download the Desktop App zip file**
 Find the zip file that suits with your operative system:
 
-- [Windows](https://github.com/RoboSats/robosats/releases/download/v0.7.2-alpha/robosats-desktop-v0.7.2-alpha-win32-ia32.zip)
-- [Mac](https://github.com/RoboSats/robosats/releases/download/v0.7.2-alpha/robosats-desktop-v0.7.2-alpha-mac-darwin-x64.zip)
-- [Linux](https://github.com/RoboSats/robosats/releases/download/v0.7.2-alpha/robosats-desktop-v0.7.2-alpha-linux-x64.zip)
+- [Windows](https://github.com/RoboSats/robosats/releases/download/v0.7.2-alpha/robosats-desktop-v0.7.2.alpha-win32-ia32.zip)
+- [Mac](https://github.com/RoboSats/robosats/releases/download/v0.7.2-alpha/robosats-desktop-v0.7.2.alpha-mac-darwin-x64.zip)
+- [Linux](https://github.com/RoboSats/robosats/releases/download/v0.7.2-alpha/robosats-desktop-v0.7.2.alpha-linux-x64.zip)
 
 
 ### Verify the app using GPG:

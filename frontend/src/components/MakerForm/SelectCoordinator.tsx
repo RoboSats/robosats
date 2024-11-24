@@ -8,8 +8,9 @@ import {
   Typography,
   type SelectChangeEvent,
   CircularProgress,
+  Stack,
 } from '@mui/material';
-
+import { Bolt, Link, Info } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
@@ -44,35 +45,37 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
 
   return (
     <Grid item>
-      <Tooltip
-        placement='top'
-        enterTouchDelay={500}
-        enterDelay={700}
-        enterNextDelay={2000}
-        title={t(
-          'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
-        )}
+      <Box
+        sx={{
+          backgroundColor: 'background.paper',
+          border: '1px solid',
+          borderRadius: '4px',
+          borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+          '&:hover': {
+            borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+          },
+        }}
       >
-        <Box
-          sx={{
-            backgroundColor: 'background.paper',
-            border: '1px solid',
-            borderRadius: '4px',
-            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-            '&:hover': {
-              borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-            },
-          }}
+        <Tooltip
+          placement='top'
+          enterTouchDelay={500}
+          enterDelay={700}
+          enterNextDelay={2000}
+          title={t(
+            'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
+          )}
         >
-          <Typography variant='caption' color='text.secondary'>
-            &nbsp;{t('Order Host')}
-          </Typography>
-
-          <Grid container>
+          <Grid container style={{ marginTop: 10 }}>
             <Grid
               item
               xs={3}
-              sx={{ cursor: 'pointer', position: 'relative', left: '0.3em', bottom: '0.1em' }}
+              sx={{
+                cursor: 'pointer',
+                position: 'relative',
+                left: '0.3em',
+                bottom: '0.1em',
+                marginBottom: 1,
+              }}
               onClick={() => {
                 onClickCurrentCoordinator(coordinatorAlias);
               }}
@@ -123,8 +126,81 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Select>
             </Grid>
           </Grid>
-        </Box>
-      </Tooltip>
+        </Tooltip>
+        <Grid container>
+          <Grid item>
+            <Stack direction='row' alignContent='center' spacing={2} style={{ flexGrow: 1 }}>
+              <Grid item>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Maker fee')}
+                >
+                  <Typography
+                    color='text.secondary'
+                    variant='caption'
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    &nbsp;{t('Maker')[0]} {((coordinator?.info?.maker_fee ?? 0) * 100).toFixed(3)}%
+                  </Typography>
+                </Tooltip>
+              </Grid>
+              <Grid item>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Taker fee')}
+                >
+                  <Typography
+                    color='text.secondary'
+                    variant='caption'
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    &nbsp;{t('Taker')[0]} {((coordinator?.info?.taker_fee ?? 0) * 100).toFixed(3)}%
+                  </Typography>
+                </Tooltip>
+              </Grid>
+              <Grid item>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={
+                    coordinator?.info?.swap_enabled
+                      ? t('Onchain payouts enabled')
+                      : t('Onchain payouts disabled')
+                  }
+                >
+                  <Typography
+                    color={coordinator?.info?.swap_enabled ? 'primary' : 'text.secondary'}
+                    variant='caption'
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Link sx={{ height: 16 }} />{' '}
+                    {coordinator?.info?.swap_enabled
+                      ? `${(coordinator?.info?.current_swap_fee_rate ?? 0).toFixed(1)}%`
+                      : t('Disabled')}
+                  </Typography>
+                </Tooltip>
+              </Grid>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Box>
     </Grid>
   );
 };

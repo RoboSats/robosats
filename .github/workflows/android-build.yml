@@ -132,14 +132,6 @@ jobs:
           name: robosats-${{ inputs.semver }}-x86_64.apk
           path: mobile/android/app/build/outputs/apk/release/app-x86_64-release.apk
 
-      # Create app-x86-release APK artifact asset for Release
-      - name: 'Upload x86 .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v4
-        if: inputs.semver != ''  # If this workflow is called from release.yml
-        with:
-          name: robosats-${{ inputs.semver }}-x86.apk
-          path: mobile/android/app/build/outputs/apk/release/app-x86-release.apk
-
       - name: 'Create Pre-release'
         id: create_release
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
@@ -199,17 +191,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./mobile/android/app/build/outputs/apk/release/app-x86_64-release.apk
           asset_name: robosats-${{ steps.commit.outputs.short }}-x86_64.apk
-          asset_content_type: application/apk
-
-      # Upload x86 APK to pre-release
-      - name: 'Upload x86 Pre-release APK Asset'
-        id: upload-release-x86-apk-asset
-        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mobile/android/app/build/outputs/apk/release/app-x86-release.apk
-          asset_name: robosats-${{ steps.commit.outputs.short }}-x86.apk
           asset_content_type: application/apk
