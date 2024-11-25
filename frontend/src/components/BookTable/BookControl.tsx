@@ -91,7 +91,7 @@ const BookControl = ({
       text = t('Swap In');
     } else if (value === 'swapout') {
       component = <SwapCalls color='secondary' />;
-      text = t('swap Out');
+      text = t('Swap Out');
     }
 
     return (
