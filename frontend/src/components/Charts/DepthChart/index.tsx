@@ -65,7 +65,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
   useEffect(() => {
     setCurrencyCode(fav.currency); // as selected in BookControl
     setCoordinatorFilter(fav.coordinator);
-    console.log(fav.coordinator);
   }, [fav.currency, fav.coordinator]);
 
   useEffect(() => {
