@@ -79,19 +79,31 @@ const BookControl = ({
 
   const orderTypeIcon = (value: string): React.ReactNode => {
     let component = <CheckBoxOutlineBlankIcon />;
+    let text = t('ANY');
     if (value === 'sell') {
       component = <SendReceiveIcon color='primary' />;
+      text = t('Sell');
     } else if (value === 'buy') {
       component = <SendReceiveIcon color='secondary' sx={{ transform: 'scaleX(-1)' }} />;
+      text = t('Buy');
     } else if (value === 'swapin') {
       component = <SwapCalls color='primary' />;
+      text = t('Swap In');
     } else if (value === 'swapout') {
       component = <SwapCalls color='secondary' />;
+      text = t('swap Out');
     }
 
     return (
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginRight: 1 }}>
         {component}
+        {width > medium ? (
+          <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+            {` ${text}`}
+          </Typography>
+        ) : (
+          <></>
+        )}
       </div>
     );
   };
