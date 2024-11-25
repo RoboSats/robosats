@@ -82,7 +82,7 @@ const BookControl = ({
     if (value === 'sell') {
       component = <SendReceiveIcon color='primary' />;
     } else if (value === 'buy') {
-      component = <SendReceiveIcon color='secondary' />;
+      component = <SendReceiveIcon color='secondary' sx={{ transform: 'scaleX(-1)' }} />;
     } else if (value === 'swapin') {
       component = <SwapCalls color='primary' />;
     } else if (value === 'swapout') {
@@ -154,7 +154,7 @@ const BookControl = ({
             </MenuItem>
             <MenuItem value='buy' style={{ width: '8em' }}>
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <SendReceiveIcon color='secondary' />
+                <SendReceiveIcon color='secondary' sx={{ transform: 'scaleX(-1)' }} />
                 <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
                   {' ' + t('Buy')}
                 </Typography>
