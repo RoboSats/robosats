@@ -56,14 +56,17 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
   const [currencyCode, setCurrencyCode] = useState<number>(0);
+  const [coordinatorFilter, setCoordinatorFilter] = useState<string>('all');
   const [center, setCenter] = useState<number>();
 
   const height = maxHeight < 10 ? 10 : maxHeight;
   const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
-    setCurrencyCode(fav.currency);  // as selected in BookControl
-  }, [fav.currency]);
+    setCurrencyCode(fav.currency); // as selected in BookControl
+    setCoordinatorFilter(fav.coordinator);
+    console.log(fav.coordinator);
+  }, [fav.currency, fav.coordinator]);
 
   useEffect(() => {
     if (Object.values(federation.book).length > 0) {
@@ -89,7 +92,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       });
       setEnrichedOrders(enriched);
     }
-  }, [federationUpdatedAt, currencyCode]);
+  }, [federationUpdatedAt, currencyCode, coordinatorFilter]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
@@ -119,14 +122,20 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, federationUpdatedAt, currencyCode]);
+  }, [enrichedOrders, xType, federationUpdatedAt, currencyCode, coordinatorFilter]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =
       xType === 'base_price'
         ? enrichedOrders
             .filter(
-              (order: PublicOrder | null) => currencyCode === 0 || order?.currency == currencyCode,
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency === currencyCode,
+            )
+            .filter(
+              (order: PublicOrder | null) =>
+                coordinatorFilter === 'any' ||
+                (coordinatorFilter === 'robosats' && order?.federated) ||
+                order?.coordinatorShortAlias === coordinatorFilter,
             )
             .sort(
               (order1: PublicOrder | null, order2: PublicOrder | null) =>
@@ -134,7 +143,13 @@ const DepthChart: React.FC<DepthChartProps> = ({
             )
         : enrichedOrders
             .filter(
-              (order: PublicOrder | null) => currencyCode === 0 || order?.currency == currencyCode,
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency === currencyCode,
+            )
+            .filter(
+              (order: PublicOrder | null) =>
+                coordinatorFilter === 'any' ||
+                (coordinatorFilter === 'robosats' && order?.federated) ||
+                order?.coordinatorShortAlias === coordinatorFilter,
             )
             .sort(
               (order1: PublicOrder | null, order2: PublicOrder | null) =>

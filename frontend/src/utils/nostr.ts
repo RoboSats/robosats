@@ -41,6 +41,7 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
   if (!coordinator || statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };
 
   publicOrder.coordinatorShortAlias = coordinator?.shortAlias;
+  publicOrder.federated = coordinator?.federated ?? false;
 
   event.tags.forEach((tag) => {
     switch (tag[0]) {

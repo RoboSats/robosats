@@ -38,7 +38,14 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const [loadingInfo, setLoadingInfo] = useState<boolean>(true);
 
   useEffect(() => {
-    if (open) federation.loadInfo();
+    if (open) {
+      federation
+        .loadInfo()
+        .then(() => {})
+        .catch((error) => {
+          console.error('Error loading info:', error);
+        });
+    }
   }, [open]);
 
   useEffect(() => {

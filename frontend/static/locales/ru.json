@@ -412,7 +412,6 @@
   "You send approx {{swapSats}} LN Sats (fees might vary)": "Вы отправляете примерно {{swapSats}} спутников LN (комиссия может различаться)",
   "Your order fixed exchange rate": "Фиксированный курс обмена Вашего ордера",
   "#40": "Phrases in components/MakerForm/SelectCoordinator.tsx",
-  "Order Host": "Order Host",
   "Disabled": "Disabled",
   "Maker": "Мейкер",
   "Onchain payouts enabled": "Onchain payouts enabled",

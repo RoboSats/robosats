@@ -412,7 +412,6 @@
   "You send approx {{swapSats}} LN Sats (fees might vary)": "Vous envoyez environ {{swapSats}} LN Sats (les frais peuvent varier)",
   "Your order fixed exchange rate": "Taux de change fixe de votre commande",
   "#40": "Phrases in components/MakerForm/SelectCoordinator.tsx",
-  "Order Host": "Order Host",
   "Disabled": "Disabled",
   "Maker": "Auteur",
   "Onchain payouts enabled": "Onchain payouts enabled",

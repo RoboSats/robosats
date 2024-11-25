@@ -22,7 +22,6 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import SwapCalls from '@mui/icons-material/SwapCalls';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import RobotAvatar from '../RobotAvatar';
-import RoboSats from '../Icons/RoboSats';
 import RoboSatsNoText from '../Icons/RoboSatsNoText';
 
 interface BookControlProps {

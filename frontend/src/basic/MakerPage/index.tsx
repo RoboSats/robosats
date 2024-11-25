@@ -12,7 +12,7 @@ import { NoRobotDialog } from '../../components/Dialogs';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
-import { PublicOrder } from '../../models';
+import { type PublicOrder } from '../../models';
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);

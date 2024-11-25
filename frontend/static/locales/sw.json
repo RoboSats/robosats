@@ -412,7 +412,6 @@
   "You send approx {{swapSats}} LN Sats (fees might vary)": "Unatuma takribani {{swapSats}} LN Sats (ada inaweza kutofautiana)",
   "Your order fixed exchange rate": "Kiwango chako cha kubadilisha cha amri",
   "#40": "Phrases in components/MakerForm/SelectCoordinator.tsx",
-  "Order Host": "Order Host",
   "Disabled": "Disabled",
   "Maker": "Muumba",
   "Onchain payouts enabled": "Onchain payouts enabled",

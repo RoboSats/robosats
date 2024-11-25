@@ -87,7 +87,12 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    federation.loadInfo();
+    federation
+      .loadInfo()
+      .then(() => {})
+      .catch((error) => {
+        console.error('Error loading info:', error);
+      });
   }, []);
 
   useEffect(() => {
