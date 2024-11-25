@@ -152,7 +152,7 @@ const BookControl = ({
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                 <CheckBoxOutlineBlankIcon />
                 <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
-                  {' ' + t('Any')}
+                  {' ' + t('ANY')}
                 </Typography>
               </div>
             </MenuItem>
