@@ -64,7 +64,7 @@ repos:
         language: system
         files: ^mobile/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
-        entry: bash -c 'cd frontend && npm run lint'
+        entry: bash -c 'cd mobile && npm run lint'
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.13
     hooks:
