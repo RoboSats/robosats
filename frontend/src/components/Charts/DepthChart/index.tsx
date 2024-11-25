@@ -129,13 +129,13 @@ const DepthChart: React.FC<DepthChartProps> = ({
       xType === 'base_price'
         ? enrichedOrders
             .filter(
-              (order: PublicOrder | null) => currencyCode === 0 || order?.currency == currencyCode,
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency === currencyCode,
             )
             .filter(
               (order: PublicOrder | null) =>
                 coordinatorFilter === 'any' ||
                 (coordinatorFilter === 'robosats' && order?.federated) ||
-                order?.coordinatorShortAlias == coordinatorFilter,
+                order?.coordinatorShortAlias === coordinatorFilter,
             )
             .sort(
               (order1: PublicOrder | null, order2: PublicOrder | null) =>
@@ -143,13 +143,13 @@ const DepthChart: React.FC<DepthChartProps> = ({
             )
         : enrichedOrders
             .filter(
-              (order: PublicOrder | null) => currencyCode === 0 || order?.currency == currencyCode,
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency === currencyCode,
             )
             .filter(
               (order: PublicOrder | null) =>
                 coordinatorFilter === 'any' ||
                 (coordinatorFilter === 'robosats' && order?.federated) ||
-                order?.coordinatorShortAlias == coordinatorFilter,
+                order?.coordinatorShortAlias === coordinatorFilter,
             )
             .sort(
               (order1: PublicOrder | null, order2: PublicOrder | null) =>

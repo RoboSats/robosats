@@ -10,7 +10,7 @@ import {
   CircularProgress,
   Stack,
 } from '@mui/material';
-import { Bolt, Link, Info } from '@mui/icons-material';
+import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
