@@ -412,7 +412,6 @@
   "You send approx {{swapSats}} LN Sats (fees might vary)": "你将发送大约{{swapSats}}闪电聪（费用会造成有所差异）",
   "Your order fixed exchange rate": "你的订单的固定汇率",
   "#40": "Phrases in components/MakerForm/SelectCoordinator.tsx",
-  "Order Host": "Order Host",
   "Disabled": "Disabled",
   "Maker": "挂单方",
   "Onchain payouts enabled": "Onchain payouts enabled",

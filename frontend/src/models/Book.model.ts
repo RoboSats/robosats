@@ -25,6 +25,7 @@ export interface PublicOrder {
   maker_status?: 'Active' | 'Seen recently' | 'Inactive';
   coordinatorShortAlias?: string;
   link?: string;
+  federated?: boolean;
 }
 
 export interface Book {
