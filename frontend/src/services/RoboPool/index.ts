@@ -103,7 +103,21 @@ class RoboPool {
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);
 
-    const request = ['REQ', 'subscribeBook', { authors, kinds: [38383], '#s': ['pending'] }];
+    const requestPending = [
+      'REQ',
+      'subscribeBookPending',
+      { authors, kinds: [38383], '#s': ['pending'] },
+    ];
+    const requestSuccess = [
+      'REQ',
+      'subscribeBookSucess',
+      {
+        authors,
+        kinds: [38383],
+        '#s': ['success'],
+        since: Math.floor(new Date().getTime() / 1000),
+      },
+    ];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
@@ -113,7 +127,8 @@ class RoboPool {
         events.oneose();
       }
     });
-    this.sendMessage(JSON.stringify(request));
+    this.sendMessage(JSON.stringify(requestPending));
+    this.sendMessage(JSON.stringify(requestSuccess));
   };
 }
 
