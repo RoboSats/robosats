@@ -110,7 +110,7 @@ class RoboPool {
     ];
     const requestSuccess = [
       'REQ',
-      'subscribeBookSucess',
+      'subscribeBookSuccess',
       {
         authors,
         kinds: [38383],
