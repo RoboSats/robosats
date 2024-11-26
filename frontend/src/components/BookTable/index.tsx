@@ -98,7 +98,7 @@ const BookTable = ({
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
-    page: 0,
+    page: 1,
   });
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({});
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
@@ -121,10 +121,10 @@ const BookTable = ({
 
   useEffect(() => {
     setPaginationModel({
-      pageSize: federation.loading && orders.length === 0 ? 0 : defaultPageSize,
-      page: paginationModel.page,
+      pageSize: defaultPageSize,
+      page: paginationModel.page ?? 1,
     });
-  }, [federationUpdatedAt, orders, defaultPageSize]);
+  }, [defaultPageSize]);
 
   const localeText = useMemo(() => {
     return {
