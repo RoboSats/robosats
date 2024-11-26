@@ -114,7 +114,7 @@ class RoboPool {
       {
         authors,
         kinds: [38383],
-        '#s': ['success'],
+        '#s': ['success', 'canceled', 'in-progress'],
         since: Math.floor(new Date().getTime() / 1000),
       },
     ];
