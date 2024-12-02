@@ -35,7 +35,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Breez](#breez-mobile)|[0.16](https://breez.technology/mobile/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Cash App](#cash-app-mobile)|[4.7](https://cash.app/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
-|[Electrum](#electrum-mobile--desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}||
+|[Electrum](#electrum-mobile--desktop)|[4.5.8](https://github.com/spesmilo/electrum)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.unclear}}||
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
 |[Mutiny](#mutiny-mobile--web-browser-wallet)|[1.7.1](https://www.mutinywallet.com/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsdown}}||
@@ -84,10 +84,8 @@ Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transac
 Works as expected. The `lightning-cli pay <invoice>` command does not conclude while the payment is pending, but can use `lightning-cli paystatus <invoice>` to monitor the state.
 
 ### Electrum (Mobile & Desktop)
-Overall the wallet works as expected. The interface is precise and clear.   
-What is inconvenient: 
-- all your Lightning channels have to be created to the node: ACINQ
-
+This wallet used to work fine with channels created to ACINQ. 
+Recent versions can't create this channel successfully.
 
 ### LND (CLI Interface)
 Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not user friendly and therefore not recommended to interact with RoboSats by beginners. However, everything works just fine. If you are using LNCLI regularly, then you will find no issue using it with RoboSats.
