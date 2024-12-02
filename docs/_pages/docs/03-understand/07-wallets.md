@@ -39,8 +39,8 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
 |[Mutiny](#mutiny-mobile--web-browser-wallet)|[1.7.1](https://www.mutinywallet.com/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsdown}}||
-|[Muun](#muun-mobile)|[47.3](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.bad}}|{{page.bad}}|{{page.thumbsdown}}|
-|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.soso}}|{{page.unclear}}|
+|[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsup}}|
+|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Zeus](#zeus-mobile-lnd-cln-eclair-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -104,6 +104,7 @@ What is inconvenient:
 - more than two pending hold invoices at the same time may cause a rejection of the new transaction    
 
 ### Muun (Mobile)
+Self-custodial wallet with a minimalist interface. 
 Similar to Blixt or LND, Muun plays nicely with hold invoices. You can be a seller in RoboSats using Muun and the user experience will be great. However, in order to be a buyer when using Muun, you need to submit an on-chain address for the payout as a Lightning invoice won't work. Muun is _fee siphoning attacking_ any sender to Muun wallet. There is a mandatory hop through a private channel with a fee of +1500ppm. RoboSats will strictly not route a buyer payout for a net loss. Given that RoboSats trading fees are {{site.robosats.total_fee}}% and it needs to cover the routing fees, **RoboSats will never find a suitable route to a Muun wallet user**. At the moment, RoboSats will scan your invoice for routing hints that can potentially encode a _fee siphoning attack_. If this trick is found, then the invoice will be rejected: submit an on-chain address instead for an on-the-fly swap. Refer to [Understand > On-Chain Payouts](/docs/on-chain-payouts/) for more information about on-the-fly swaps. Important to note that Muun has issues during times of high on chain fee spikes. Regardless, the workaround to receive to Muun is: either submit an on chain address or choose a higher routing budget after enabling the "Advanced Options" switch.
 
 ### OBW (Mobile)
@@ -111,9 +112,7 @@ One of the simplest and one of the best. The hodl invoice shows as "on fly", it 
 *Update 26-10-23: At this moment it has no development or support
 
 ### Phoenix (Mobile)
-DEV team stated that they do not want to support hold invoices. 
-*Update 21-10-23. Phoenix used to work as described here, but many things changed to worse with the last update of the wallet.
-Phoenix works very well as an order taker. Phoenix will also work well as an order maker as long as the order settings `public duration` + `deposit duration` are lower than 10 hours. Otherwise, you might have problems locking the maker bond. If the total duraton of bonds/escrow invoices exceeds 450 blocks, then Phoenix will not allow users to lock the bond (`Cannot add htlc (...) reason=expiry too big`).
+This wallet does not support invoice lock.
 
 ### SBW (Mobile)
 From 2.5 it doesn't support lightning anymore.
