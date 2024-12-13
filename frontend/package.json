@@ -76,7 +76,7 @@
     "leaflet": "^1.9.4",
     "light-bolt11-decoder": "^3.1.1",
     "nostr-tools": "^2.10.4",
-    "npm": "^10.9.0",
+    "npm": "^10.9.2",
     "openpgp": "^5.11.0",
     "react": "^18.2.0",
     "react-countdown": "^2.3.6",
