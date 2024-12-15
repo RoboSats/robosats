@@ -60,10 +60,9 @@ Instructions to install Alby in Tor Browser:
 2. Click on the Alby extension and follow the prompts to setup your wallet.
 
 ### Aqua (Mobile)
-Overall the wallet works as expected. Hold invoices work reliably. 
-What is inconvenient: 
-- Lightning payments are encapsulated into Liquid Bitcoin so there is a small additional fee for conversion in/out
-- Bond refund is locked for 3 days
+Overall the wallet works as expected.
+Self-custodial Lightning+Liquid wallet with low fees and the option to swap directly to Tether.
+Bond refunds are locked for 3 days
 
 ### Blink (Mobile, former Bitcoin Beach Wallet)
 Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transaction history. Payouts to the Blink wallet function as intended. Custodial wallet by Galoy which originated from the Bitcoin Beach project in El Salvador (formerly known as "Bitcoin Beach Wallet").
