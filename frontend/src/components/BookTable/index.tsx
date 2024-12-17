@@ -90,7 +90,7 @@ const BookTable = ({
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
   const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
