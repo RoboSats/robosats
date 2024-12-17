@@ -24,7 +24,7 @@ requests[socks]
 shapely==2.0.6
 python-gnupg==0.5.3
 daphne==4.1.2
-drf-spectacular==0.27.2
+drf-spectacular==0.28.0
 drf-spectacular-sidecar==2024.12.1
 django-cors-headers==4.5.0
 base91==1.0.1
