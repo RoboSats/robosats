@@ -39,7 +39,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
 |[Mutiny](#mutiny-mobile--web-browser-wallet)|[1.7.1](https://www.mutinywallet.com/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsdown}}||
-|[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsup}}|
+|[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
