@@ -28,7 +28,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 | Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
 |[Alby](#alby-browser-extension)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
-|[Aqua](#aqua-mobile)|[v0.1.55](https://aquawallet.io/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.unclear}}|{{page.good}} |{{page.thumbsup}}|
+|[Aqua](#aqua-mobile)|[v0.1.55](https://aquawallet.io/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
