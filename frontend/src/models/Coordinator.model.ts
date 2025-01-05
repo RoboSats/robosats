@@ -184,7 +184,7 @@ export class Coordinator {
 
   generateAllMakerAvatars = async (): Promise<void> => {
     for (const order of Object.values(this.book)) {
-      void roboidentitiesClient.generateRobohash(order.maker_hash_id, 'small');
+      void roboidentitiesClient.generateRobohash(order.maker_hash_id ?? '', 'small');
     }
   };
 

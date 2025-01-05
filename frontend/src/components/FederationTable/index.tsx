@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState, useContext } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Box, useTheme, Checkbox, CircularProgress, Typography, Grid } from '@mui/material';
-import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
-import { type Coordinator } from '../../models';
-import RobotAvatar from '../RobotAvatar';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Link, LinkOff } from '@mui/icons-material';
+import { Box, Checkbox, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
+import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { type Coordinator } from '../../models';
 import headerStyleFix from '../DataGrid/HeaderFix';
+import RobotAvatar from '../RobotAvatar';
 
 interface FederationTableProps {
   maxWidth?: number;
@@ -61,7 +61,7 @@ const FederationTable = ({
       headerName: t('Coordinator'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const coordinator = federation.coordinators[params.row.shortAlias];
+        const coordinator = federation.getCoordinator(params.row.shortAlias);
         return (
           <Grid
             container
@@ -226,7 +226,7 @@ const FederationTable = ({
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
-        rows={Object.values(federation.coordinators)}
+        rows={federation.getCoordinators()}
         getRowId={(params: Coordinator) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}

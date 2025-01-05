@@ -55,26 +55,28 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
-  const [currencyCode, setCurrencyCode] = useState<number>(1);
+  const [currencyCode, setCurrencyCode] = useState<number>(0);
+  const [coordinatorFilter, setCoordinatorFilter] = useState<string>('all');
   const [center, setCenter] = useState<number>();
 
   const height = maxHeight < 10 ? 10 : maxHeight;
   const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
-    setCurrencyCode(fav.currency === 0 ? 1 : fav.currency);
-  }, [fav.currency]);
+    setCurrencyCode(fav.currency); // as selected in BookControl
+    setCoordinatorFilter(fav.coordinator);
+  }, [fav.currency, fav.coordinator]);
 
   useEffect(() => {
     if (Object.values(federation.book).length > 0) {
       const enriched = Object.values(federation.book).map((order) => {
-        if (order?.coordinatorShortAlias && order?.currency) {
-          const limits = federation.getCoordinator(order.coordinatorShortAlias)?.limits;
+        if (order?.currency) {
+          const limits = federation.getCoordinators()[0]?.limits;
 
           const originalPrice =
             (limits[order.currency]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
           const currencyPrice =
-            (limits[currencyCode]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
+            (limits[currencyCode || 1]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
 
           const originalAmount =
             order.has_range && order.max_amount
@@ -89,7 +91,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       });
       setEnrichedOrders(enriched);
     }
-  }, [federationUpdatedAt, currencyCode]);
+  }, [federationUpdatedAt, currencyCode, coordinatorFilter]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
@@ -119,15 +121,39 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, federationUpdatedAt, currencyCode]);
+  }, [enrichedOrders, xType, federationUpdatedAt, currencyCode, coordinatorFilter]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =
       xType === 'base_price'
-        ? enrichedOrders.sort(
-            (order1, order2) => (order1?.base_price ?? 0) - (order2?.base_price ?? 0),
-          )
-        : enrichedOrders.sort((order1, order2) => order1?.premium - order2?.premium);
+        ? enrichedOrders
+            .filter(
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency === currencyCode,
+            )
+            .filter(
+              (order: PublicOrder | null) =>
+                coordinatorFilter === 'any' ||
+                (coordinatorFilter === 'robosats' && order?.federated) ||
+                order?.coordinatorShortAlias === coordinatorFilter,
+            )
+            .sort(
+              (order1: PublicOrder | null, order2: PublicOrder | null) =>
+                (order1?.base_price ?? 0) - (order2?.base_price ?? 0),
+            )
+        : enrichedOrders
+            .filter(
+              (order: PublicOrder | null) => currencyCode === 0 || order?.currency === currencyCode,
+            )
+            .filter(
+              (order: PublicOrder | null) =>
+                coordinatorFilter === 'any' ||
+                (coordinatorFilter === 'robosats' && order?.federated) ||
+                order?.coordinatorShortAlias === coordinatorFilter,
+            )
+            .sort(
+              (order1: PublicOrder | null, order2: PublicOrder | null) =>
+                order1?.premium - order2?.premium,
+            );
 
     const sortedBuyOrders: PublicOrder[] = sortedOrders
       .filter((order) => order?.type === 0)
@@ -317,7 +343,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 <Grid item>
                   <Box justifyContent='center'>
                     {xType === 'base_price'
-                      ? `${center} ${String(currencyDict[currencyCode])}`
+                      ? `${center} ${String(currencyDict[(currencyCode || 1) as keyof object])}`
                       : `${String(center.toPrecision(3))}%`}
                   </Box>
                 </Grid>

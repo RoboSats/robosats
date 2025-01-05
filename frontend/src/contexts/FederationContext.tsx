@@ -46,7 +46,7 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     setMaker((maker) => {
-      return { ...maker, coordinator: Object.keys(federation.coordinators)[0] };
+      return { ...maker, coordinator: federation.getCoordinatorsAlias()[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
@@ -62,7 +62,7 @@ export const FederationContextProvider = ({
   }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
-    if (!federation.coordinators[alias]) {
+    if (!federation.getCoordinator(alias)) {
       const attributes: Record<any, any> = {
         longAlias: alias,
         shortAlias: alias,
@@ -80,7 +80,7 @@ export const FederationContextProvider = ({
         attributes.testnet = origins;
       }
       federation.addCoordinator(origin, settings, hostUrl, attributes);
-      const newCoordinator: Coordinator = federation.coordinators[alias];
+      const newCoordinator: Coordinator = federation.getCoordinator(alias);
       newCoordinator.loadLimits(() => {
         setCoordinatorUpdatedAt(new Date().toISOString());
       });

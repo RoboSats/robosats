@@ -9,12 +9,19 @@ import BookTable from '../../components/BookTable';
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
+import thirdParties from '../../../static/thirdparties.json';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
+import { type PublicOrder } from '../../models';
 
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth' | 'map'>('list');
+  const [openVisitThirdParty, setOpenVisitThirdParty] = useState<boolean>(false);
+  const [thirdPartyOrder, setThirdPartyOrder] = useState<PublicOrder>();
 
   const doubleView = windowSize.width > 115;
   const width = windowSize.width * 0.9;
@@ -22,7 +29,18 @@ const BookPage = (): JSX.Element => {
   const chartWidthEm = width - maxBookTableWidth;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    navigate(`/order/${shortAlias}/${id}`);
+    const thirdParty = thirdParties[shortAlias];
+    if (thirdParty) {
+      const thirdPartyOrder = Object.values(federation.book).find(
+        (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,
+      );
+      if (thirdPartyOrder) {
+        setThirdPartyOrder(thirdPartyOrder);
+        setOpenVisitThirdParty(true);
+      }
+    } else {
+      navigate(`/order/${shortAlias}/${id}`);
+    }
   };
 
   const NavButtons = function (): JSX.Element {
@@ -69,6 +87,13 @@ const BookPage = (): JSX.Element => {
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
+      <VisitThirdParty
+        open={openVisitThirdParty}
+        onClose={() => {
+          setOpenVisitThirdParty(false);
+        }}
+        thirdPartyOrder={thirdPartyOrder}
+      />
       <Grid item xs={12}>
         {doubleView ? (
           <Grid

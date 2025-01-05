@@ -68,7 +68,7 @@ export class Federation {
     this.roboPool = new RoboPool(settings, origin);
   }
 
-  public coordinators: Record<string, Coordinator>;
+  private coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
   public book: Record<string, PublicOrder | undefined>;
   public loading: boolean;
@@ -176,10 +176,14 @@ export class Federation {
       lifetime_volume: 0,
       version: { major: 0, minor: 0, patch: 0 },
     };
+    this.loading = true;
+    this.exchange.onlineCoordinators = 0;
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
 
     for (const coor of Object.values(this.coordinators)) {
       coor.loadInfo(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
     }
@@ -202,14 +206,15 @@ export class Federation {
   loadBook = async (): Promise<void> => {
     if (this.connection !== 'api') return;
 
-    this.loading = true;
     this.book = {};
-    this.triggerHook('onFederationUpdate');
+    this.loading = true;
+    this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.triggerHook('onFederationUpdate');
     for (const coor of Object.values(this.coordinators)) {
       coor.loadBook(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
-        this.triggerHook('onFederationUpdate');
       });
     }
   };
@@ -220,6 +225,14 @@ export class Federation {
   };
 
   // Coordinators
+  getCoordinators = (): Coordinator[] => {
+    return Object.values(this.coordinators);
+  };
+
+  getCoordinatorsAlias = (): string[] => {
+    return Object.keys(this.coordinators);
+  };
+
   getCoordinator = (shortAlias: string): Coordinator => {
     return this.coordinators[shortAlias];
   };

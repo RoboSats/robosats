@@ -87,6 +87,15 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
+    federation
+      .loadInfo()
+      .then(() => {})
+      .catch((error) => {
+        console.error('Error loading info:', error);
+      });
+  }, []);
+
+  useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
   }, [federationUpdatedAt]);
 

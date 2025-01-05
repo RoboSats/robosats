@@ -45,8 +45,8 @@ class NativeRobosats {
       if (message.key !== undefined) {
         this.cookies[message.key] = String(message.detail);
       }
-    } else if (message.type === 'navigateToPage') {
-      window.dispatchEvent(new CustomEvent('navigateToPage', { detail: message?.detail }));
+    } else {
+      window.dispatchEvent(new CustomEvent(message.type, { detail: message?.detail }));
     }
   };
 

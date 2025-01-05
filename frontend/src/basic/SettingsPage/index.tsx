@@ -19,7 +19,7 @@ const SettingsPage = (): JSX.Element => {
   const onionUrlPattern = /^((http|https):\/\/)?[a-zA-Z2-7]{16,56}\.onion$/;
 
   const addCoordinator: () => void = () => {
-    if (federation.coordinators[newAlias]) {
+    if (federation.getCoordinator(newAlias)) {
       setError(t('Alias already exists'));
     } else {
       if (onionUrlPattern.test(newUrl)) {

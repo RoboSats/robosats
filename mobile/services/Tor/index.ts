@@ -52,6 +52,42 @@ class TorClient {
         }
       });
     };
+
+  public wsOpen: (path: string) => Promise<boolean> = async (path) => {
+    return await new Promise<boolean>((resolve, reject) => {
+      try {
+        TorModule.sendWsOpen(path).then((response) => {
+          resolve(response);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  public wsClose: (path: string) => Promise<boolean> = async (path) => {
+    return await new Promise<boolean>((resolve, reject) => {
+      try {
+        TorModule.sendWsClose(path).then((response) => {
+          resolve(response);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  public wsSend: (path: string, message: string) => Promise<boolean> = async (path, message) => {
+    return await new Promise<boolean>((resolve, reject) => {
+      try {
+        TorModule.sendWsSend(path, message).then((response) => {
+          resolve(response);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
 }
 
 export default TorClient;

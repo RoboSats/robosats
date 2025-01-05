@@ -185,6 +185,9 @@ class Logics:
                 seconds=order.t_to_expire(Order.Status.TAK)
             )
             order.save(update_fields=["amount", "taker", "expires_at"])
+
+            nostr_send_order_event.delay(order_id=order.id)
+
             order.log(
                 f"Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"
             )
@@ -292,6 +295,8 @@ class Logics:
         elif order.status == Order.Status.TAK:
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
+
+            nostr_send_order_event.delay(order_id=order.id)
 
             order.log("Order expired while waiting for taker bond")
             order.log("Taker bond was cancelled")

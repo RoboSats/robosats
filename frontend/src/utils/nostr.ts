@@ -2,6 +2,7 @@ import { type Event } from 'nostr-tools';
 import { type PublicOrder } from '../models';
 import { fromUnixTime } from 'date-fns';
 import Geohash from 'latlon-geohash';
+import thirdParties from '../../static/thirdparties.json';
 import currencyDict from '../../static/assets/currencies.json';
 import defaultFederation from '../../static/federation.json';
 
@@ -26,16 +27,21 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
     bond_size: '',
     latitude: null,
     longitude: null,
-    maker_nick: '',
-    maker_hash_id: '',
+    maker_nick: null,
+    maker_hash_id: null,
     satoshis_now: null,
     price: null,
   };
 
   const statusTag = event.tags.find((t) => t[0] === 's') ?? [];
   const dTag = event.tags.find((t) => t[0] === 'd') ?? [];
+  const coordinator = [...Object.values(defaultFederation), ...Object.values(thirdParties)].find(
+    (coord) => coord.nostrHexPubkey === event.pubkey,
+  );
+  if (!coordinator || statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };
 
-  if (statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };
+  publicOrder.coordinatorShortAlias = coordinator?.shortAlias;
+  publicOrder.federated = coordinator?.federated ?? false;
 
   event.tags.forEach((tag) => {
     switch (tag[0]) {
@@ -85,16 +91,17 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
       case 'source': {
         const orderUrl = tag[1].split('/');
         publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
-        const coordinatorIdentifier = orderUrl[orderUrl.length - 2] ?? '';
-        publicOrder.coordinatorShortAlias = Object.entries(defaultFederation).find(
-          ([key, value]) => value.identifier === coordinatorIdentifier,
-        )?.[0];
+        publicOrder.link = tag[1];
         break;
       }
       default:
         break;
     }
   });
+
+  if (!publicOrder.currency) return { dTag: dTag[1], publicOrder: null };
+  if (!publicOrder.maker_hash_id)
+    publicOrder.maker_hash_id = `${publicOrder.id}${coordinator?.shortAlias}`;
 
   return { dTag: dTag[1], publicOrder };
 };

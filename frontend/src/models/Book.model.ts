@@ -19,11 +19,13 @@ export interface PublicOrder {
   bond_size: string;
   maker: number | null;
   escrow_duration: number;
-  maker_nick: string;
-  maker_hash_id: string;
+  maker_nick: string | null;
+  maker_hash_id: string | null;
   price: number | null;
   maker_status?: 'Active' | 'Seen recently' | 'Inactive';
   coordinatorShortAlias?: string;
+  link?: string;
+  federated?: boolean;
 }
 
 export interface Book {

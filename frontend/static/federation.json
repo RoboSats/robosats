@@ -47,7 +47,8 @@
       "i2p": ""
     },
     "mainnetNodesPubkeys": ["0226f31c5f3a8b48bbbb7aaa97a10effcfb445b5972a676955d5c095383d35a428"],
-    "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"]
+    "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"],
+    "federated": true
   },
   "lake": {
     "longAlias": "TheBigLake",
@@ -94,7 +95,8 @@
       "i2p": ""
     },
     "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
-    "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"]
+    "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"],
+    "federated": true
   },
   "veneto": {
     "longAlias": "BitcoinVeneto",
@@ -140,7 +142,8 @@
       "i2p": ""
     },
     "mainnetNodesPubkeys": ["02c5b5972b05fba2cd2c2d9269a47bc478f73fae0f248a85cb1e5af60a07c1919d"],
-    "testnetNodesPubkeys": ["032b698c8143f293d138c0926594f11d119194ddedb513f63a944d14c094d0e54a"]
+    "testnetNodesPubkeys": ["032b698c8143f293d138c0926594f11d119194ddedb513f63a944d14c094d0e54a"],
+    "federated": true
   },
   "moon": {
     "longAlias": "Over the moon",
@@ -186,7 +189,8 @@
       "i2p": ""
     },
     "mainnetNodesPubkeys": ["023924542082a5d16bce188ec4c29a45f00dd439a3f5992034d82e3353232a0345"],
-    "testnetNodesPubkeys": ["02f0ddc838b35fe54daa13baa4abab84475c7b9f2670ff4b53c1724792843ef62a"]
+    "testnetNodesPubkeys": ["02f0ddc838b35fe54daa13baa4abab84475c7b9f2670ff4b53c1724792843ef62a"],
+    "federated": true
   },
   "local": {
     "longAlias": "Local Dev",
@@ -209,6 +213,7 @@
       "Development Policy": "Don't look around, just buidl"
     },
     "mainnetNodesPubkeys": ["..."],
-    "testnetNodesPubkeys": ["..."]
+    "testnetNodesPubkeys": ["..."],
+    "federated": true
   }
 }
