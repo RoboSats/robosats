@@ -66,7 +66,7 @@ feature_row:
 #### Reviews
 <div style="display: flex; justify-content: center; align-items: center; align-content: center;">
 	<div style="margin: 10px;"><a href="https://www.athena-alpha.com/robosats-review/" title="Athena Alpha - RoboSats Review"><img src="/assets/images/reviews/athena_alpha.webp" width="200px"></a></div>
-	<div style="margin: 10px;"><a href="https://kycnot.me/exchange/robosats" title="KYC Not Me - RoboSats Review"><img src="/assets/images/reviews/kycnotme.webp" width="200px"></a></div>
+	<div style="margin: 10px;"><a href="https://kycnot.me/service/robosats" title="KYC Not Me - RoboSats Review"><img src="/assets/images/reviews/kycnotme.webp" width="200px"></a></div>
 	<div style="margin: 10px;"><a href="https://bitcoinmagazine.com/business/robosats-private-bitcoin-exchange" title="Bitcoin Magazine - RoboSats Review"><img src="/assets/images/reviews/bitcoin_magazine.webp" width="210px"></a></div>
   <div style="margin: 10px;"><a href="https://h17n.com/exchange/robosats/" title="H17N Bitcoin - RoboSats Review"><img src="/assets/images/reviews/h17n_bitcoin.jpg" width="210px"></a></div>
 </div>
