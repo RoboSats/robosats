@@ -51,7 +51,7 @@ jobs:
           coordinator-docker-cache-
 
     - name: 'Compose Regtest Orchestration'
-      uses: isbang/compose-action@v1.5.1
+      uses: isbang/compose-action@v2.1.0
       with:
         compose-file: "./docker-tests.yml"
         down-flags: "--volumes"
