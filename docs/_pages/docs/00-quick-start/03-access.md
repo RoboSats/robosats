@@ -16,8 +16,7 @@ A safe and very private way to access RoboSats federated client is through the O
 
 >
 [<b>robodex</b>arjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion](http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion/)
- 
-You can also open the shortcut [dex.robosats.com](https://dex.robosats.com) in Tor Browser and get instantly redirected to the Onion site.
+
 
 **Private:** Your connection is encrypted end-to-end and relaid by several layers of nodes, thus making tracking harder.
 {: .notice--primary}
