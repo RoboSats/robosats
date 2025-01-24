@@ -72,13 +72,17 @@ Sellers are encouraged to share a link to this guide with their buyers when requ
 
 ### Revolut via payment links
 
-In a Revolut payment, a `@revtag` is usually exchanged in the chat and can be verified in the payment history of the app making proof of payments easy.
+  Exchange of @revtag: When making a payment through Revolut, it is essential for both the buyer and the seller to exchange their @revtag in the chat. This @revtag can be verified in the payment history of the app, making it easy to confirm payments.
 
-However, payment links, which have the format https://revolut.me/p/XXXXX, don't contain recipient address information.
+  Payment Link Format: Revolut payment links follow this format: https://revolut.me/p/XXXXX. Please note that these links do not contain recipient address information.
 
-In a dispute, there's no recipient address reference and both buyer and seller could cheat. The payment link could be redeemed by an unknown third party complicit with either buyer or seller.
+  Risks in Disputes: In the event of a dispute, the absence of recipient address references can lead to fraud. Both the buyer and the seller could act dishonestly, as the payment link could be redeemed by an unknown third party colluding with either party.
 
-Therefore, insist on receiving the `@revtag` when making a payment with Revolut to avoid these risks. The  `@revtag` can also be received as a link. This link would look like this: https://revolut.me/@revtag.
+  Requesting the @revtag: To mitigate these risks, it is crucial for both parties (buyer and seller) to request and provide their @revtag when making a payment. This ensures that each party has a clear and verifiable record of the transaction.
+
+  @revtag Link: The @revtag can also be received as a link, which will look like this: https://revolut.me/@revtag. Make sure to share and verify this link for added security.
+
+Important Note: Remember that both the buyer and the seller have the right to request the @revtag from their counterpart at any time. This is essential for ensuring transparency and security in the transaction.
 
 ### Paypal
 Paypal is one of the widely used fiat payment methods. However, as a seller Paypal is the highest risk you can take. Using Paypal as payment method is not advised.
