@@ -51,17 +51,28 @@ En caso de que el comprador tenga un código de cheque regalo de Amazon, primero
 Encuentra más detalles en [Pautas de Bisq para cheques regalo Amazon](https://bisq.wiki/Amazon_eGift_card)
 
 ### Interac e-Transfer
-
 En Canadá, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq-consumers/) es un método de pago popular y ampliamente aceptado utilizado para enviar pagos de una cuenta bancaria a otra, utilizando solo un correo electrónico registrado (o número de teléfono). Se considera que las transferencias electrónicas tienen un bajo riesgo de contracargos; sin embargo, los contracargos probablemente sigan siendo posibles en casos raros. Las transferencias electrónicas pueden ser iniciadas tanto por el remitente al enviar un pago al correo electrónico del destinatario, como por el receptor al enviar una solicitud de pago al correo electrónico del remitente.
 
 ### Wise
-
 [Wise](https://wise.com/) (anteriormente TransferWise) es un transmisor de dinero internacional regulado en 175 países y 50 monedas. Es conocido por sus tarifas relativamente bajas para transferir dinero entre países y monedas. Los contracargos siguen siendo un riesgo, pero probablemente sean poco comunes. Los usuarios pueden transferir dinero entre cuentas de Wise utilizando una dirección de correo electrónico de manera similar a cómo funcionan las e-Transferencias; o en Canadá, los usuarios pueden solicitar e-Transferencias estándar directamente desde sus cuentas de Wise.
 
 
 ## Método de pago de alto riesgo
 
 En esta sección se analiza la mejor práctica para los usuarios que intentan realizar transacciones con un método de pago con un alto riesgo de perder fondos.
+
+### Revolut 
+**Intercambio de @revtag:** Al realizar un pago a través de Revolut, es esencial que tanto el comprador como el vendedor intercambien su @revtag en el chat. Este @revtag se puede verificar en el historial de pagos de la aplicación, lo que facilita la confirmación de los pagos.
+
+**Formato del enlace de pago:** Los enlaces de pago de Revolut siguen este formato: https://revolut.me/p/XXXXX. Tenga en cuenta que estos enlaces no contienen información de dirección del destinatario.
+
+**Riesgos en disputas:** En caso de una disputa, la ausencia de referencias de dirección del destinatario puede dar lugar a fraudes. Tanto el comprador como el vendedor podrían actuar de manera deshonesta, ya que el enlace de pago podría ser canjeado por un tercero desconocido que coluda con cualquiera de las partes.
+
+**Solicitud del @revtag:** Para mitigar estos riesgos, es crucial que ambas partes (comprador y vendedor) soliciten y proporcionen su @revtag al realizar un pago. Esto asegura que cada parte tenga un registro claro y verificable de la transacción.
+
+   **Enlace del @revtag:** El @revtag también se puede recibir como un enlace, que se verá así: https://revolut.me/@revtag. Asegúrese de compartir y verificar este enlace para mayor seguridad.
+
+  **Nota importante:** Recuerde que tanto el comprador como el vendedor tienen derecho a solicitar el @revtag de su contraparte en cualquier momento. Esto es esencial para garantizar la transparencia y la seguridad en la transacción.
 
 ### Paypal
 Paypal es uno de los métodos de pago fiat más utilizados. Sin embargo, con la <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">política de protección del comprador de Paypal</a>, el comprador puede realizar una acción fraudulenta creando una solicitud de reembolso en Paypal una vez finalizado el intercambio. De esta manera quedándose con el fiat y con el bitcoin.
