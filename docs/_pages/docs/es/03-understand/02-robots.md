@@ -46,10 +46,10 @@ Se genera automáticamente un token para el usuario cada vez que se accede a la 
 
 En el fondo, la creación de tokens en la página de inicio de RoboSats es el proceso de generar y cifrar tu clave privada PGP con tu token en el lado del cliente de la app. El usuario solicita al nodo RoboSats un avatar y un apodo generados a partir del token cifrado y le devuelve la identidad del robot correspondiente. Vea el gráfico a continuación:
 
-![Generación de identidades de RoboSats](https://learn.robosats.com/assets/images/private/usergen-pipeline.png)
+![Generación de identidades de RoboSats](https://learn.robosats.org/assets/images/private/usergen-pipeline.png)
 
 ## **Comunicándose con sus pares robots**
 
 Su identidad puede estar oculta por una identidad de robot, pero eso no es excusa para ser un compañero difícil durante los intercambios. ¡Otros robots también tienen robo-sentimientos! Se conciso y respetuoso al conversar con tus pares; esto hará que la experiencia en RoboSats sea más fácil y fluida. Nunca compartas más información de la que sea absolutamente necesaria para completar el intercambio.
 
-Todas las comunicaciones en RoboSats están encriptadas con PGP. Los mensajes de chat cifrados entre pares están firmados por cada robot, lo que demuestra que nadie interceptó el chat y es útil para resolver disputas. Consulta [Buenas prácticas > Cifrado PGP](https://learn.robosats.com/docs/pgp-encryption/es/) para obtener información adicional.
+Todas las comunicaciones en RoboSats están encriptadas con PGP. Los mensajes de chat cifrados entre pares están firmados por cada robot, lo que demuestra que nadie interceptó el chat y es útil para resolver disputas. Consulta [Buenas prácticas > Cifrado PGP](https://learn.robosats.org/docs/pgp-encryption/es/) para obtener información adicional.

@@ -273,7 +273,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): JS
             <Grid item>
               <Button
                 component={Link}
-                href='https://learn.robosats.com'
+                href='https://learn.robosats.org'
                 target='_blank'
                 color='inherit'
                 variant='contained'

@@ -44,7 +44,7 @@ I2P is another safe and private way to access RoboSats. You need [I2P browser](h
 
 There is an unsafe way to view the RoboSats order book without TOR that relies on third party tor2web services. With this URL, you can access RoboSats from any browser, but using this URL is **strongly ill-advised!**
 
-> [unsafe.robosats.com](https://unsafe.robosats.com)
+> [unsafe.robosats.org](https://unsafe.robosats.org)
 
 **Unsafe:** Your privacy can be compromised if you use the unsafe clearnet URL in a regular web browser.
 {: .notice--secondary}
@@ -53,9 +53,9 @@ If you use the clearnet URL, you should assume you are being spied on. However, 
 
 ## <i class="fa-solid fa-person-dots-from-line"></i> All-in-One URL
 
-To keep it simple, the URL "robosats.com" has been created to serve as an easy-to-remember and all-in-one link for browsers. If you are using TOR or I2P browser, then you are directed to the Onion or I2P site, respectively. Otherwise, you are directed to the unsafe clearnet site.
+To keep it simple, the URL "robosats.org" has been created to serve as an easy-to-remember and all-in-one link for browsers. If you are using TOR or I2P browser, then you are directed to the Onion or I2P site, respectively. Otherwise, you are directed to the unsafe clearnet site.
 
-> [<span style="font-size:larger;">robosats.com</span>](https://robosats.com)
+> [<span style="font-size:larger;">robosats.org</span>](https://robosats.org)
 
 ## Others
 
@@ -67,7 +67,7 @@ You can practice and test all of the functionalities in RoboSats without risk of
 
 Or, unsafely access the testnet clearnet bridge via the link:
 
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com)
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org)
 
 ### Onion Mirrors
 
@@ -83,10 +83,10 @@ It is also possible to access the **mainnet** platform on the port 8001 of the t
 
 There are several tor2web services that serve as mirrors in case one of them is unavailable:
 
-> [unsafe.robosats.com](https://unsafe.robosats.com/) <br/>
-> [unsafe2.robosats.com](https://unsafe2.robosats.com/) <br/>
-> [unsafe3.robosats.com](https://unsafe3.robosats.com/) <br/>
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
-> [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
+> [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
+> [unsafe2.robosats.org](https://unsafe2.robosats.org/) <br/>
+> [unsafe3.robosats.org](https://unsafe3.robosats.org/) <br/>
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/) <br/>
+> [unsafe2.testnet.robosats.org](http://unsafe2.testnet.robosats.org/)
 
 {% include improve %}

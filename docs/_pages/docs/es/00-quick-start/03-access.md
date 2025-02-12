@@ -28,7 +28,7 @@ I2P es otra forma segura y privada de usar RoboSats. Necesitas instalar [I2P](ht
 ## <i class="fa-solid fa-window-maximize"></i> De forma insegura en Clearnet
 Hay una forma insegura de acceder a RoboSats sin TOR que se basa en servicios tor2web de terceros. Con esta URL puedes acceder a RoboSats desde cualquier navegador, pero usar esta URL es **altamente desaconsejado!**
 
-> [unsafe.robosats.com](https://unsafe.robosats.com)
+> [unsafe.robosats.org](https://unsafe.robosats.org)
 
 **Inseguro:** tu privacidad puede verse comprometida si utilizas la url insegura de clearnet en un navegador web normal.
 {: .notice--secondary}
@@ -37,9 +37,9 @@ Si usas la URL de clearnet, debeberías asumir que estás siendo espiado. Sin em
 
 ## <i class="fa-solid fa-person-dots-from-line"></i> Todo en uno
 
-Para simplificar las cosas, se ha creado la URL "robosats.com" para que sirva de enlace fácil de recordar y todo en uno para los navegadores. Si utiliza un navegador TOR o I2P, se le dirigirá al sitio Onion o I2P, respectivamente. De lo contrario, se le dirigirá al sitio no seguro de Clearnet.
+Para simplificar las cosas, se ha creado la URL "robosats.org" para que sirva de enlace fácil de recordar y todo en uno para los navegadores. Si utiliza un navegador TOR o I2P, se le dirigirá al sitio Onion o I2P, respectivamente. De lo contrario, se le dirigirá al sitio no seguro de Clearnet.
 
-> [<span style="font-size:larger;">robosats.com</span>](https://robosats.com)
+> [<span style="font-size:larger;">robosats.org</span>](https://robosats.org)
 
 
 ## Otros
@@ -52,7 +52,7 @@ Puedes practicar y probar todas las funcionalidades de RoboSats sin perder fondo
 
 O acceder de manera insegura via clearnet.
 
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com)
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org)
 
 ### Onion Mirrors
 
@@ -67,11 +67,11 @@ Tambien es posible acceder a la plataforma **mainnet** en el puerto 8001 del oni
 ### Clearnet Mirrors
 Hay varios servicios tor2web que sirven como mirrors en caso de que uno de ellos no esté disponible
 
-> [unsafe.robosats.com](https://unsafe.robosats.com/) <br/>
-> [unsafe2.robosats.com](https://unsafe2.robosats.com/) <br/>
-> [unsafe3.robosats.com](https://unsafe3.robosats.com/) <br/>
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
-> [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
+> [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
+> [unsafe2.robosats.org](https://unsafe2.robosats.org/) <br/>
+> [unsafe3.robosats.org](https://unsafe3.robosats.org/) <br/>
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/) <br/>
+> [unsafe2.testnet.robosats.org](http://unsafe2.testnet.robosats.org/)
 
 
 {% include improve_es %}

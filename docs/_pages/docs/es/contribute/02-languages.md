@@ -12,7 +12,7 @@ src: "_pages/es/contribute/02-languages.md"
 
 RoboSats es una forma de cambiar bitcoin por **cualquier moneda del mundo**. Por ello, muchos usuarios sólo encontrarán útil esta herramienta si está disponible en un idioma que entiendan. Traducir RoboSats a un nuevo idioma es una de las contribuciones más valiosas al proyecto. Pone la plataforma a disposición de nuevos públicos, aumenta el alcance de esta genial herramienta de libertad y, en consecuencia, incrementa la liquidez de la cartera de pedidos para que aún más usuarios apilen Sats en privado.
 
-No hay mucho texto en RoboSats; sin embargo, podría ser mejor dividir el trabajo con otro contribuyente. Puedes ponerte en contacto con las [comunidades RoboSats](https://learn.robosats.com/contribute/es/code/#canales-de-comunicación) y encontrar usuarios dispuestos a dividir la tarea.
+No hay mucho texto en RoboSats; sin embargo, podría ser mejor dividir el trabajo con otro contribuyente. Puedes ponerte en contacto con las [comunidades RoboSats](https://learn.robosats.org/contribute/es/code/#canales-de-comunicación) y encontrar usuarios dispuestos a dividir la tarea.
 
 ## Cómo contribuir con una nueva traducción
 

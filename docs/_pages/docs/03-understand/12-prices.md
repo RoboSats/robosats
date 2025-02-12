@@ -49,7 +49,7 @@ The platform fees (`fee_sats`) associated with your order are calculated using t
   fee_sats = trade_sats * fee_fraction
   ````
 
-where `fee_fraction` combines for a shared total platform fee of {{site.robosats.total_fee}}%; that breaks down to {{site.robosats.maker_fee}}% and {{site.robosats.taker_fee}}% for maker and taker, respectively. Refer to [Understand > Fees](https://learn.robosats.com/docs/fees/) for additional information on fees.
+where `fee_fraction` combines for a shared total platform fee of {{site.robosats.total_fee}}%; that breaks down to {{site.robosats.maker_fee}}% and {{site.robosats.taker_fee}}% for maker and taker, respectively. Refer to [Understand > Fees](https://learn.robosats.org/docs/fees/) for additional information on fees.
 
 RoboSats then collects fees in the trade escrow (`escrow_amount`) and payout invoice (`payout_amount`) process by calculating the following:
 * For seller:

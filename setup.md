@@ -36,7 +36,7 @@ You can edit the frontend code in `/frontend/src/` to make the changes you want.
 
 6. Install [Requestly](https://requestly.io/) extension in your browser, it's a lightweight proxy. We want to use it so our browser grabs our local `main.js` instead of the remote. There are many alternatives to Requestly (be aware that Requestly might not respect your privacy. Didn't research it).
 
-7. Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.com". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
+7. Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.org". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
 
 8. Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/frontend/main.js" and save the changes.
 
