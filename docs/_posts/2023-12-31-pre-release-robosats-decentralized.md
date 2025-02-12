@@ -18,7 +18,7 @@ This new version introduces a significant enhancement known as the **RoboSats Fe
 
 ## How to test the pre-release?
 The new federated client will now be permanently available in http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion
-(visit with Tor Browser) and http://dex.robosats.com (with extremely limited functionality). Once stable, it will be released as version v0.6.0 and you will be able to install it as usual on your node (e.g., [Umbrel](https://apps.umbrel.com/app/robosats), [StartOS](https://github.com/RoboSats/robosats-startos/releases), etc).
+(visit with Tor Browser) and http://dex.robosats.org (with extremely limited functionality). Once stable, it will be released as version v0.6.0 and you will be able to install it as usual on your node (e.g., [Umbrel](https://apps.umbrel.com/app/robosats), [StartOS](https://github.com/RoboSats/robosats-startos/releases), etc).
 
 ## What is RoboSats Federation?
 

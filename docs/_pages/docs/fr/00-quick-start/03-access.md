@@ -34,7 +34,7 @@ RoboSats est accessible en toute sécurité et en privé via l'application Andro
 
 Il existe un moyen peu sûr de consulter la liste des transactions de RoboSats sans TOR, qui repose sur des services tor2web tiers. Avec cette URL, vous pouvez accéder à RoboSats à partir de n'importe quel navigateur, mais l'utilisation de cette URL est **fortement déconseillée !**.
 
-> [unsafe.robosats.com](https://unsafe.robosats.com)
+> [unsafe.robosats.org](https://unsafe.robosats.org)
 
 **Dangereux** Votre vie privée peut être compromise si vous utilisez l'URL non sécurisée du Clearnet dans un navigateur web normal.
 {: .notice--secondary}
@@ -43,9 +43,9 @@ Si vous utilisez l'URL clearnet, vous devez supposer que vous êtes espionné. C
 
 ## <i class="fa-solid fa-person-dots-from-line"></i> URL Tout-en-un
 
-Pour simplifier les choses, l'URL "robosats.com" a été créée pour servir de lien facile à retenir et tout-en-un pour les navigateurs. Si vous utilisez le navigateur TOR ou I2P, vous serez dirigé vers le site Onion ou I2P, respectivement. Dans le cas contraire, vous êtes dirigé vers le site Clearnet, qui n'est pas sûr.
+Pour simplifier les choses, l'URL "robosats.org" a été créée pour servir de lien facile à retenir et tout-en-un pour les navigateurs. Si vous utilisez le navigateur TOR ou I2P, vous serez dirigé vers le site Onion ou I2P, respectivement. Dans le cas contraire, vous êtes dirigé vers le site Clearnet, qui n'est pas sûr.
 
-> [<span style="font-size:larger;">robosats.com</span>](https://robosats.com)
+> [<span style="font-size:larger;">robosats.org</span>](https://robosats.org)
 
 ## Autres
 
@@ -57,7 +57,7 @@ Vous pouvez vous entraîner et tester toutes les fonctionnalités de RoboSats sa
 
 Ou accéder de manière non sécurisée au pont testnet clearnet via le lien :
 
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com)
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org)
 
 ### Miroirs Onion
 
@@ -73,10 +73,10 @@ Il est également possible d'accéder à la plateforme **mainnet** sur le port 8
 
 Il existe plusieurs services tor2web qui servent de miroirs en cas d'indisponibilité de l'un d'entre eux :
 
-> [unsafe.robosats.com](https://unsafe.robosats.com/) <br/>
-> [unsafe2.robosats.com](https://unsafe2.robosats.com/) <br/>
-> [unsafe3.robosats.com](https://unsafe3.robosats.com/) <br/>
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
-> [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
+> [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
+> [unsafe2.robosats.org](https://unsafe2.robosats.org/) <br/>
+> [unsafe3.robosats.org](https://unsafe3.robosats.org/) <br/>
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/) <br/>
+> [unsafe2.testnet.robosats.org](http://unsafe2.testnet.robosats.org/)
 
 {% include improve_fr %}
