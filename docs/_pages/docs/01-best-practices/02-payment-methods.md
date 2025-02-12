@@ -57,6 +57,17 @@ In Canada, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq-
 ### Wise
 
 [Wise](https://wise.com/) (formerly TransferWise) is a regulated international money transmitter in 175 countries and 50 currencies. It is known for its relatively cheap fees for transferring money between countries and currencies. Chargebacks remain a risk, but are likely uncommon. Users may transfer money between Wise accounts using an email address similar to how e-Transfers work; or in Canada, users may request standard e-Transfers directly from their Wise accounts.
+Can recipients see your account details?
+If you send money with Wise, the recipient can not see your account details. In fact, this privacy flows both ways - there are also ways you can send money to someone without needing them to share their bank details with you.
+That can be easier and it means no sensitive data is shared as well.
+- If you want to send money to someone without getting their bank details there are a couple of options:
+- If your recipient has a Wise account they can sync their phone contacts with Wise so you can find them and process the payment with 
+  just this phone contact
+- If your recipient has a Wise account they can also mark an account as their primary account to receive payments, which means you can 
+  send with just an email address
+- If your recipient doesn’t have a Wise account you can still send with just their email - Wise will reach out and ask for their 
+  banking information through a secure link
+
 
 ## High-risk payment method
 
