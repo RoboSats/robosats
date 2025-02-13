@@ -45,7 +45,7 @@ const BookControl = ({
     } else if (fav.mode === 'fiat') {
       setOrderType(fav.type === 1 ? 'buy' : 'sell');
     } else {
-      setOrderType(fav.type === 1 ? 'swapout' : 'swapin');
+      setOrderType(fav.type === 1 ? 'swapin' : 'swapout');
     }
   }, [fav.mode, fav.type]);
 
@@ -67,9 +67,9 @@ const BookControl = ({
       const currency = fav.currency === 1000 ? 0 : fav.currency;
       setFav({ ...fav, mode: 'fiat', type: 1, currency });
     } else if (select.props.value === 'swapin') {
-      setFav({ ...fav, mode: 'swap', type: 0, currency: 1000 });
-    } else if (select.props.value === 'swapout') {
       setFav({ ...fav, mode: 'swap', type: 1, currency: 1000 });
+    } else if (select.props.value === 'swapout') {
+      setFav({ ...fav, mode: 'swap', type: 0, currency: 1000 });
     } else {
       const currency = fav.currency === 1000 ? 0 : fav.currency;
       setFav({ ...fav, mode: 'fiat', type: null, currency });
