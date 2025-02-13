@@ -32,6 +32,7 @@ function federationUrls(): string[] {
 export const safeUrls = federationUrls();
 
 const UnsafeAlert = (): JSX.Element => {
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const [show, setShow] = useState<boolean>(true);
@@ -47,8 +48,7 @@ const UnsafeAlert = (): JSX.Element => {
     checkClient();
   }, []);
 
-  // If alert is hidden return null
-  if (!show) {
+  if (hostUrl.endsWith('.onion') || !show) {
     return <></>;
   }
 
