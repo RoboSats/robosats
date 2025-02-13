@@ -9,7 +9,7 @@ const HostAlert = (): JSX.Element => {
     !hostUrl.includes('robosats') && (client === 'selfhosted' || client === 'desktop')
       ? SelfhostedAlert
       : UnsafeAlert;
-  return component();
+  return hostUrl.endsWith('.onion') ? <></> : component();
 };
 
 export default HostAlert;
