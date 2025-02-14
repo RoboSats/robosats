@@ -46,32 +46,12 @@ Para simplificar las cosas, se ha creado la URL "robosats.org" para que sirva de
 
 ### Testnet
 
-Puedes practicar y probar todas las funcionalidades de RoboSats sin perder fondos usando [Testnet Bitcoin](https://en.bitcoin.it/wiki/Testnet). Todo lo que necesitas es una wallet Lightning Testnet y acceder a la plataforma testnet
-
-> [<b>robotest</b>agw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion/)
-
-O acceder de manera insegura via clearnet.
-
-> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org)
-
-### Onion Mirrors
-
-Es posible acceder a la plataforma **testnet** en el puerto 8001 del onion de mainnet
-
-> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion:8001)
-
-Tambien es posible acceder a la plataforma **mainnet** en el puerto 8001 del onion testnet
-
-> [robotestagw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion:8001](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion:8001)
+Puedes practicar y probar todas las funcionalidades de RoboSats sin perder fondos usando [Testnet Bitcoin](https://en.bitcoin.it/wiki/Testnet). Todo lo que necesitas es una wallet Lightning Testnet, acceder a la plataforma y cambiar a Tesnet desde la pestaña de *Ajustes*
 
 ### Clearnet Mirrors
 Hay varios servicios tor2web que sirven como mirrors en caso de que uno de ellos no esté disponible
 
 > [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
-> [unsafe2.robosats.org](https://unsafe2.robosats.org/) <br/>
-> [unsafe3.robosats.org](https://unsafe3.robosats.org/) <br/>
-> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/) <br/>
-> [unsafe2.testnet.robosats.org](http://unsafe2.testnet.robosats.org/)
 
 
 {% include improve_es %}

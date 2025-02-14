@@ -51,32 +51,12 @@ Pour simplifier les choses, l'URL "robosats.org" a été créée pour servir de 
 
 ### Testnet
 
-Vous pouvez vous entraîner et tester toutes les fonctionnalités de RoboSats sans risque de perdre de l'argent en utilisant [bitcoin testnet](https://en.bitcoin.it/wiki/Testnet). Tout ce dont vous avez besoin, c'est d'un portefeuille Lightning testnet et d'accéder à la plateforme testnet via le lien :
-
-> [<b>robotest</b>agw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion/)
-
-Ou accéder de manière non sécurisée au pont testnet clearnet via le lien :
-
-> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org)
-
-### Miroirs Onion
-
-Il est possible d'accéder à la plateforme **testnet** sur le port 8001 du réseau Onion principal :
-
-> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion:8001)
-
-Il est également possible d'accéder à la plateforme **mainnet** sur le port 8001 du testnet Onion :
-
-> [robotestagw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion:8001](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion:8001)
+Vous pouvez vous entraîner et tester toutes les fonctionnalités de RoboSats sans risque de perdre de l'argent en utilisant [bitcoin testnet](https://en.bitcoin.it/wiki/Testnet). Tout ce dont vous avez besoin, c'est d'un portefeuille Lightning testnet et d'accéder à la plateforme.
 
 ### Miroirs Clearnet
 
 Il existe plusieurs services tor2web qui servent de miroirs en cas d'indisponibilité de l'un d'entre eux :
 
 > [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
-> [unsafe2.robosats.org](https://unsafe2.robosats.org/) <br/>
-> [unsafe3.robosats.org](https://unsafe3.robosats.org/) <br/>
-> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/) <br/>
-> [unsafe2.testnet.robosats.org](http://unsafe2.testnet.robosats.org/)
 
 {% include improve_fr %}

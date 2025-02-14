@@ -15,7 +15,7 @@ src: "_pages/docs/00-quick-start/03-access.md"
 A safe and very private way to access RoboSats federated client is through the Onion address. You need [TOR browser](/docs/tor/) and access via the link:
 
 >
-[<b>robodex</b>arjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion](http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion/)
+[<b>RoboSats</b>y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 
 **Private:** Your connection is encrypted end-to-end and relaid by several layers of nodes, thus making tracking harder.
@@ -61,32 +61,14 @@ To keep it simple, the URL "robosats.org" has been created to serve as an easy-t
 
 ### Testnet
 
-You can practice and test all of the functionalities in RoboSats without risk of losing funds by using [testnet bitcoin](https://en.bitcoin.it/wiki/Testnet). All you need is a testnet Lightning wallet and to access the testnet platform via the link:
+You can practice and test all of the functionalities in RoboSats without risk of losing funds by using [testnet bitcoin](https://en.bitcoin.it/wiki/Testnet). All you need is a testnet Lightning wallet and to access to the platform and change to Testnet on the *Settings* tab
 
-> [<b>robotest</b>agw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion/)
-
-Or, unsafely access the testnet clearnet bridge via the link:
-
-> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org)
-
-### Onion Mirrors
-
-It is possible to access the **testnet** platform on the port 8001 of the mainnet Onion:
-
-> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion:8001)
-
-It is also possible to access the **mainnet** platform on the port 8001 of the testnet Onion:
-
-> [robotestagw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion:8001](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion:8001)
 
 ### Clearnet Mirrors
 
 There are several tor2web services that serve as mirrors in case one of them is unavailable:
 
 > [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
-> [unsafe2.robosats.org](https://unsafe2.robosats.org/) <br/>
-> [unsafe3.robosats.org](https://unsafe3.robosats.org/) <br/>
-> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/) <br/>
-> [unsafe2.testnet.robosats.org](http://unsafe2.testnet.robosats.org/)
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/)
 
 {% include improve %}
