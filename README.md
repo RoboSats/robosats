@@ -13,8 +13,8 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 </div>
 
 ## Try it out!
-- **TOR URL:** [**RoboDex**arjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion](http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
-- Clearnet URL: [dex.robosats.org](https://unsafe.robosats.org) (not recommended!)
+- **TOR URL:** [**RoboSats**y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://RoboSatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
+- Clearnet URL: [unsafe.robosats.org](https://unsafe.robosats.org) (not recommended!)
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best privacy. The Clearnet URL redirects to a third party Tor2web service. Your privacy cannot be guaranteed to be respected. Use clearnet only to check around the app, never use for trading!*
 
@@ -59,7 +59,7 @@ RoboSats is a monorepo, arguably a messy one at the moment.
  - The `/nodeapp` directory contains the docker orchestration and utilities for the self-hosted application (Umbrel, StartOS, etc)
  - The `/mobile` directory contains our React Native app (a wrapper around our ReactJS app in `/frontend`)
  - The `/docs` directory has the learn.robosats.org static Jekyll site markdown docs.
- - The `/web` directory is a light wrapper around our client app `/frontend` intended to host a RoboSats dex client to be used for the public. We use this one in dex.robosats.org
+ - The `/web` directory is a light wrapper around our client app `/frontend` intended to host a RoboSats dex client to be used for the public. We use this one in unsafe.robosats.org
 
 You can run the whole stack for local development following the instructions in [setup.md](/setup.md)
 

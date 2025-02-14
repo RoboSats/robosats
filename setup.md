@@ -3,6 +3,7 @@
 
 # Frontend Development Only
 Running the full stack is not easy, since RoboSats needs of many services. However, contributing to the frontend development can be done with a minimal setup!
+
 ## With Docker
 You can develop frontend-only features using the mainnet backend of the platform by simply running the sovereign node app locally and the `npm-dev` container. The orchestration in `/nodeapp/docker-compose.yml` will run a Tor proxy and torify all requests, as well as, watch for changes to the frontend source files, build it, and place it in the right `/static/`
 
@@ -14,33 +15,6 @@ docker-compose up
 ```
 
 You can edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm-dev` container process will pack the code into the local `main.js`. Visit `http://localhost:12596` and you will see your changes on the frontend.
-
-
-## Without Docker
-
-*Set up time ~10 min. Tested in Firefox in Ubuntu.* (Does not work in Chromium)
-
-------------------------
-
-0. `git clone {robosats-project}`
-
-1. `cd robosats/frontend`
-
-2. `npm install`
-
-3. `npm run dev` (leave it running)
-
-4. On another terminal `npm install -g http-server`
-
-5. Then run `http-server "robosats/frontend/static/"`
-
-6. Install [Requestly](https://requestly.io/) extension in your browser, it's a lightweight proxy. We want to use it so our browser grabs our local `main.js` instead of the remote. There are many alternatives to Requestly (be aware that Requestly might not respect your privacy. Didn't research it).
-
-7. Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.org". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
-
-8. Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/frontend/main.js" and save the changes.
-
--------------------
 
 **You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm run dev` process will pack the code into the local `main.js`. Visit your selected {robosats-site} and you will see your new awesome frontend! :)
 

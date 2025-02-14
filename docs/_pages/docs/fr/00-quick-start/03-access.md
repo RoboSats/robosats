@@ -14,7 +14,7 @@ src: "_pages/docs/fr/00-quick-start/03-access.md"
 
 Un moyen sûr et très privé d'accéder à RoboSats est de passer par l'adresse Onion. Vous avez besoin d'un [navigateur TOR](/docs/fr/tor/) et d'un accès via le lien :
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
+> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 **Privé :** Votre connexion est chiffrée de bout-en-bout et relayée par plusieurs couches de nœuds, ce qui rend le suivi plus difficile.
 {: .notice--primary}
@@ -63,7 +63,7 @@ Ou accéder de manière non sécurisée au pont testnet clearnet via le lien :
 
 Il est possible d'accéder à la plateforme **testnet** sur le port 8001 du réseau Onion principal :
 
-> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion:8001)
+> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion:8001)
 
 Il est également possible d'accéder à la plateforme **mainnet** sur le port 8001 du testnet Onion :
 
