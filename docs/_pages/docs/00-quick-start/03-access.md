@@ -26,7 +26,7 @@ A safe and very private way to access RoboSats federated client is through the O
 
 You can access the Experimental coordinator through this Onion address. You need [TOR browser](/docs/tor/) and access via the link:
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
+> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> Privately with TOR-enabled Android App
 
@@ -73,7 +73,7 @@ Or, unsafely access the testnet clearnet bridge via the link:
 
 It is possible to access the **testnet** platform on the port 8001 of the mainnet Onion:
 
-> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion:8001)
+> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion:8001)
 
 It is also possible to access the **mainnet** platform on the port 8001 of the testnet Onion:
 
