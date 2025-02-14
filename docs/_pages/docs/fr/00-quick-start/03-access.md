@@ -14,7 +14,7 @@ src: "_pages/docs/fr/00-quick-start/03-access.md"
 
 Un moyen sûr et très privé d'accéder à RoboSats est de passer par l'adresse Onion. Vous avez besoin d'un [navigateur TOR](/docs/fr/tor/) et d'un accès via le lien :
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
+> [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 **Privé :** Votre connexion est chiffrée de bout-en-bout et relayée par plusieurs couches de nœuds, ce qui rend le suivi plus difficile.
 {: .notice--primary}

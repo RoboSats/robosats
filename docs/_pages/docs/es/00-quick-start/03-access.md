@@ -14,7 +14,7 @@ src: "_pages/docs/es/00-quick-start/03-access.md"
 
 Una forma segura y muy privada de usar RoboSats es a través de la dirección Onion. Necesitas el [navegador TOR](/docs/es/tor/).
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
+> [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 **Privado:** tu conexión será encriptada de extremo a extremo y retransmitida por varias capas de nodos, lo que dificultará el seguimiento.
 {: .notice--primary}
