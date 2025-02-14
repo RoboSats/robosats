@@ -26,7 +26,7 @@ A safe and very private way to access RoboSats federated client is through the O
 
 You can access the Experimental coordinator through this Onion address. You need [TOR browser](/docs/tor/) and access via the link:
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
+> [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> Privately with TOR-enabled Android App
 
