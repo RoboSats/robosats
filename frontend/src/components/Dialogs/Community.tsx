@@ -17,7 +17,7 @@ import SendIcon from '@mui/icons-material/Send';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import RedditIcon from '@mui/icons-material/Reddit';
 import Flags from 'country-flag-icons/react/3x2';
-import { NostrIcon, SimplexIcon, XIcon } from '../Icons';
+import { NostrIcon, SimplexIcon } from '../Icons';
 
 interface Props {
   open: boolean;
@@ -119,21 +119,6 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
               primary={t('Tell us about a new feature or a bug')}
               secondary={t('Github Issues - The Robotic Satoshis Open Source Project')}
             />
-          </ListItemButton>
-
-          <Divider />
-
-          <ListItemButton
-            component='a'
-            target='_blank'
-            href='https://x.com/robosats'
-            rel='noreferrer'
-          >
-            <ListItemIcon>
-              <XIcon color='primary' sx={{ height: 32, width: 32 }} />
-            </ListItemIcon>
-
-            <ListItemText primary={t('Follow RoboSats in X')} secondary={t('X Official Account')} />
           </ListItemButton>
 
           <Divider />

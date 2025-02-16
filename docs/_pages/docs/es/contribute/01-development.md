@@ -24,8 +24,6 @@ Esta guía de contribución se basa en la [Guía de contribución de Bisq](https
 
 - **Nostr:** [Grupo General RoboSats](https://njump.me/note1tfwvglg8xz8420pfgav0dc9mqekv02nkpck2axefklrema7lk6wszmwxdy). Pasa el rato con otros robots geniales y no dudes en hacer preguntas sobre RoboSats. Además, la cuenta [Nostr RoboSats](https://njump.me/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) proporciona actualizaciones importantes del proyecto, consejos y trucos sobre el uso de RoboSats y otros comentarios centrados en la privacidad. Las preguntas y la participación son bienvenidas. Recuerda: los problemas que requieran la ayuda del personal de RoboSats deben dirigirse al chat principal del grupo SimpleX, donde las respuestas son más rápidas y el personal puede investigar más a fondo su problema.
 
-- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Anuncia actualizaciones del proyecto, comparte consejos y trucos sobre el uso de RoboSats y debate otros temas relacionados con la privacidad. No dudes en hacer preguntas y compartir tu experiencia con RoboSats. El personaje "Robotoshi", un robot amante de la privacidad y a veces descarado, dirige el Twitter de RoboSats e intenta responder a todas las preguntas. Ten en cuenta que el chat público del grupo Simplex antes mencionado puede ser más eficaz para buscar ayuda técnica y que los usuarios que busquen ayuda en disputas serán dirigidos al chat SimpleX.
-
 ## Flujo de trabajo de los colaboradores
 
 Todos los colaboradores de RoboSats envían cambios a través de pull requests. El flujo de trabajo es el siguiente:
@@ -95,3 +93,7 @@ La configuración [.editorconfig](.editorconfig) de este repositorio asegura una
 ### Mantener limpio el historial de git
 
 Es muy importante mantener el historial git claro, ligero y fácilmente navegable. Esto significa que los contribuidores deben asegurarse de que sus pull requests incluyen sólo commits significativos (si son redundantes o fueron añadidas después de una revisión, deben ser eliminadas) y _no merge commits_.
+
+### Mirros
+- https://git.robosats.org/Robosats
+- https://codeberg.org/Robosats

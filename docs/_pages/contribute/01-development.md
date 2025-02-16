@@ -24,7 +24,6 @@ This contributing guide is based on the [Bisq contributing guide](https://github
 
 - **Nostr:** [RoboSats General 0xGroup](nostr:naddr1qpqrjv34vgckzcfjxp3kgvtzxcuxgepevycrzvesv5en2wps8pjrvd3hxuexvefs8qexxe3nvcun2v3ex3jxgdfhx56kxdm9vyck2ep48yq3wamnwvaz7tm8wfhh2urn9cc8scmgv96zucm0d5pqqqcyqqqfskq06gxuf). Hang out with other cool robots and do not hesitate to ask questions about RoboSats! Also, the [RoboSats Nostr account](https://njump.me/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions and engagement are welcome. Keep in mind: problems requiring RoboSats staff support should be directed to the main SimpleX group chat instead, where responses are quicker and staff can further investigate your problem.
 
-- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Announces project updates, shares tips and tricks of using RoboSats, and discusses other privacy-related topics. Feel free to ask questions and to share your experience using RoboSats! The psuedonymous "Robotoshi" character, a privacy-loving and sometimes sassy robot, runs the RoboSats Twitter and tries his best to answer questions! Keep in mind that the aforementioned public Simplex group chat may be more effective in seeking technical help and users seeking dispute help will be directed to the SimpleX chat.
 
 ## Contributor Workflow
 
@@ -95,3 +94,7 @@ The [.editorconfig](.editorconfig) settings in this repository ensure consistent
 ### Keep the git history clean
 
 It's very important to keep the git history clear, light and easily browsable. This means contributors must make sure their pull requests include only meaningful commits (if they are redundant or were added after a review, they should be removed) and _no merge commits_.
+
+### Mirros
+- https://git.robosats.org/Robosats
+- https://codeberg.org/Robosats
