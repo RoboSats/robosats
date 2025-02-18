@@ -1,9 +1,11 @@
 import { type ApiClient, type Auth } from '..';
 import { systemClient } from '../../System';
+import ApiWebClient from '../ApiWebClient';
 
 class ApiNativeClient implements ApiClient {
-  private assetsCache: Record<string, string> = {};
-  private readonly assetsPromises = new Map<string, Promise<string | undefined>>();
+  public useProxy = true;
+
+  private readonly webClient: ApiClient = new ApiWebClient();
 
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
@@ -40,9 +42,9 @@ class ApiNativeClient implements ApiClient {
   };
 
   public put: (baseUrl: string, path: string, body: object) => Promise<object | undefined> = async (
-    baseUrl,
-    path,
-    body,
+    _baseUrl,
+    _path,
+    _body,
   ) => {
     return await new Promise<object>((resolve, _reject) => {
       resolve({});
@@ -51,6 +53,7 @@ class ApiNativeClient implements ApiClient {
 
   public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> =
     async (baseUrl, path, auth) => {
+      if (!this.useProxy) return await this.webClient.delete(baseUrl, path, auth);
       return await window.NativeRobosats?.postMessage({
         category: 'http',
         type: 'delete',
@@ -66,6 +69,7 @@ class ApiNativeClient implements ApiClient {
     body: object,
     auth?: Auth,
   ) => Promise<object | undefined> = async (baseUrl, path, body, auth) => {
+    if (!this.useProxy) return await this.webClient.post(baseUrl, path, body, auth);
     return await window.NativeRobosats?.postMessage({
       category: 'http',
       type: 'post',
@@ -81,6 +85,7 @@ class ApiNativeClient implements ApiClient {
     path,
     auth,
   ) => {
+    if (!this.useProxy) return await this.webClient.get(baseUrl, path, auth);
     return await window.NativeRobosats?.postMessage({
       category: 'http',
       type: 'get',
@@ -88,41 +93,6 @@ class ApiNativeClient implements ApiClient {
       path,
       headers: this.getHeaders(auth),
     }).then(this.parseResponse);
-  };
-
-  public fileImageUrl: (baseUrl: string, path: string) => Promise<string | undefined> = async (
-    baseUrl,
-    path,
-  ) => {
-    if (path === '') {
-      return await Promise.resolve('');
-    }
-
-    if (this.assetsCache[path] != null) {
-      return await Promise.resolve(this.assetsCache[path]);
-    } else if (this.assetsPromises.has(path)) {
-      return await this.assetsPromises.get(path);
-    }
-
-    this.assetsPromises.set(
-      path,
-      new Promise<string>((resolve, reject) => {
-        window.NativeRobosats?.postMessage({
-          category: 'http',
-          type: 'xhr',
-          baseUrl,
-          path,
-        })
-          .then((fileB64: { b64Data: string }) => {
-            this.assetsCache[path] = `data:image/png;base64,${fileB64.b64Data}`;
-            this.assetsPromises.delete(path);
-            resolve(this.assetsCache[path]);
-          })
-          .catch(reject);
-      }),
-    );
-
-    return await this.assetsPromises.get(path);
   };
 }
 

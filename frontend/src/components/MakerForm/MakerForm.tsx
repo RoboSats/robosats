@@ -24,18 +24,17 @@ import {
   IconButton,
 } from '@mui/material';
 
-import { type LimitList, defaultMaker } from '../../models';
+import { type LimitList, defaultMaker, type Order } from '../../models';
 
 import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ConfirmationDialog, F2fMapDialog } from '../Dialogs';
-import { apiClient } from '../../services/api';
 
 import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
-import { amountToString, computeSats, pn } from '../../utils';
+import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -44,6 +43,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import SelectCoordinator from './SelectCoordinator';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { useNavigate } from 'react-router-dom';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -52,8 +52,6 @@ interface MakerFormProps {
   onSubmit?: () => void;
   onReset?: () => void;
   submitButtonLabel?: string;
-  onOrderCreated?: (shortAlias: string, id: number) => void;
-  onClickGenerateRobot?: () => void;
 }
 
 const MakerForm = ({
@@ -63,16 +61,14 @@ const MakerForm = ({
   onSubmit = () => {},
   onReset = () => {},
   submitButtonLabel = 'Create Order',
-  onOrderCreated = () => null,
-  onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
-  const { federation, coordinatorUpdatedAt, federationUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const [badRequest, setBadRequest] = useState<string | null>(null);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
@@ -91,18 +87,21 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    // Why?
-    // const slot = garage.getSlot();
-    // if (slot?.token) void federation.fetchRobot(garage, slot?.token);
-  }, [garage.currentSlot]);
+    federation
+      .loadInfo()
+      .then(() => {})
+      .catch((error) => {
+        console.error('Error loading info:', error);
+      });
+  }, []);
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
-  }, [coordinatorUpdatedAt]);
+  }, [federationUpdatedAt]);
 
   useEffect(() => {
     updateCoordinatorInfo();
-  }, [maker.coordinator, coordinatorUpdatedAt]);
+  }, [maker.coordinator, federationUpdatedAt]);
 
   const updateCoordinatorInfo = (): void => {
     if (maker.coordinator != null) {
@@ -303,21 +302,14 @@ const MakerForm = ({
   const handleCreateOrder = function (): void {
     const slot = garage.getSlot();
 
-    if (slot?.activeShortAlias) {
+    if (slot?.activeOrder?.id) {
       setBadRequest(t('You are already maker of an active order'));
       return;
     }
 
-    const { url, basePath } =
-      federation
-        .getCoordinator(maker.coordinator)
-        ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
-
-    const auth = slot?.getRobot()?.getAuthHeaders();
-
-    if (!disableRequest && maker.coordinator != null && auth !== null) {
+    if (!disableRequest && maker.coordinator && slot) {
       setSubmittingRequest(true);
-      const body = {
+      const orderAttributes = {
         type: fav.type === 0 ? 1 : 0,
         currency: fav.currency === 0 ? 1 : fav.currency,
         amount: makerHasAmountRange ? null : maker.amount,
@@ -334,15 +326,16 @@ const MakerForm = ({
         bond_size: maker.bondSize,
         latitude: maker.latitude,
         longitude: maker.longitude,
+        shortAlias: maker.coordinator,
       };
 
-      apiClient
-        .post(url, `${basePath}/api/make/`, body, auth)
-        .then((data: any) => {
-          setBadRequest(data.bad_request);
-          if (data.id !== undefined) {
-            onOrderCreated(maker.coordinator, data.id);
-            garage.updateOrder(data);
+      void slot
+        .makeOrder(federation, orderAttributes)
+        .then((order: Order) => {
+          if (order.id) {
+            navigate(`/order/${order.shortAlias}/${order.id}`);
+          } else if (order?.bad_request) {
+            setBadRequest(order?.bad_request);
           }
           setSubmittingRequest(false);
         })
@@ -516,10 +509,9 @@ const MakerForm = ({
       (!makerHasAmountRange && maker.amount <= 0) ||
       (maker.isExplicit && (maker.badSatoshisText !== '' || maker.satoshis === '')) ||
       (!maker.isExplicit && maker.badPremiumText !== '') ||
-      federation.getCoordinator(maker.coordinator)?.info === undefined ||
       federation.getCoordinator(maker.coordinator)?.limits === undefined
     );
-  }, [maker, amountLimits, coordinatorUpdatedAt, fav.type, makerHasAmountRange]);
+  }, [maker, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
 
   const clearMaker = function (): void {
     setFav({ ...fav, type: null });
@@ -597,7 +589,18 @@ const MakerForm = ({
         }}
         onClickDone={handleCreateOrder}
         hasRobot={Boolean(garage.getSlot()?.hashId)}
-        onClickGenerateRobot={onClickGenerateRobot}
+        onClickGenerateRobot={() => {
+          setOpenDialogs(false);
+          const token = genBase62Token(36);
+          garage
+            .createRobot(federation, token)
+            .then(() => {
+              setOpenDialogs(true);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        }}
       />
       <F2fMapDialog
         interactive
@@ -1028,7 +1031,7 @@ const MakerForm = ({
                       views={['hours', 'minutes']}
                       inputFormat='HH:mm'
                       mask='__:__'
-                      componentsProps={{
+                      slotProps={{
                         textField: {
                           InputProps: {
                             style: {
@@ -1061,7 +1064,7 @@ const MakerForm = ({
                       views={['hours', 'minutes']}
                       inputFormat='HH:mm'
                       mask='__:__'
-                      componentsProps={{
+                      slotProps={{
                         textField: {
                           InputProps: {
                             style: {

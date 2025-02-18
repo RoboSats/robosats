@@ -19,7 +19,10 @@ const StringAsIcons: React.FC = ({ othersText, verbose, size, text = '' }: Props
 
   const parsedText = useMemo(() => {
     const rows = [];
-    let customMethods = text;
+    let customMethods = text.replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+      '',
+    ); // Remove emojis
     // Adds icons for each PaymentMethod that matches
     methods.forEach((method, i) => {
       if (text.includes(method.name)) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
@@ -37,12 +37,14 @@ import {
 } from '../Icons';
 import { type TradeCoordinatorSummary, type TradeRobotSummary } from '../../models/Order.model';
 import { systemClient } from '../../services/System';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
   isMaker: boolean;
   makerHashId: string;
   takerHashId: string;
   currencyCode: string;
+  coordinatorLongAlias: string;
   makerSummary: TradeRobotSummary;
   takerSummary: TradeRobotSummary;
   platformSummary: TradeCoordinatorSummary;
@@ -54,11 +56,13 @@ const TradeSummary = ({
   makerHashId,
   takerHashId,
   currencyCode,
+  coordinatorLongAlias,
   makerSummary,
   takerSummary,
   platformSummary,
   orderId,
 }: Props): JSX.Element => {
+  const { client } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -72,13 +76,14 @@ const TradeSummary = ({
 
   const onClickExport = function (): void {
     const summary = {
+      coordinator: coordinatorLongAlias,
       order_id: orderId,
       currency: currencyCode,
       maker: makerSummary,
       taker: takerSummary,
       platform: platformSummary,
     };
-    if (window.NativeRobosats === undefined) {
+    if (client !== 'mobile') {
       saveAsJson(`order${orderId}-summary.json`, summary);
     } else {
       systemClient.copyToClipboard(JSON.stringify(summary));

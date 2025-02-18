@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Box, CircularProgress, Tooltip } from '@mui/material';
 import { TorIcon } from '../Icons';
 import { useTranslation } from 'react-i18next';
-import { AppContext, type AppContextProps } from '../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface TorIndicatorProps {
   color: 'inherit' | 'error' | 'warning' | 'success' | 'primary' | 'secondary' | 'info' | undefined;
@@ -55,14 +55,14 @@ const TorIndicator = ({
 };
 
 const TorConnectionBadge = (): JSX.Element => {
-  const { torStatus } = useContext<AppContextProps>(AppContext);
+  const { torStatus, settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
 
-  if (window?.NativeRobosats == null) {
+  if (!settings.useProxy) {
     return <></>;
   }
 
-  if (torStatus === 'NOTINIT') {
+  if (torStatus === 'OFF' || torStatus === 'STOPPING') {
     return (
       <TorIndicator
         color='primary'
@@ -80,7 +80,7 @@ const TorConnectionBadge = (): JSX.Element => {
         title={t('Connecting to TOR network')}
       />
     );
-  } else if (torStatus === '"Done"' || torStatus === 'DONE') {
+  } else if (torStatus === 'ON') {
     return <TorIndicator color='success' progress={false} title={t('Connected to TOR network')} />;
   } else {
     return (

@@ -45,6 +45,8 @@ class NativeRobosats {
       if (message.key !== undefined) {
         this.cookies[message.key] = String(message.detail);
       }
+    } else {
+      window.dispatchEvent(new CustomEvent(message.type, { detail: message?.detail }));
     }
   };
 

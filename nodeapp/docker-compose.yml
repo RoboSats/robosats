@@ -1,19 +1,17 @@
 version: '3.9'
 # Frontend and node client development orchestration
-name: robosats-frontend
+name: robosats-nodeapp-frontend
 services:
   frontend:
     build: ../frontend
-    container_name: npm-dev-frontend
-    restart: always
-    command: npm run dev
+    container_name: nodeapp-dev-frontend
     volumes:
       - ../frontend:/usr/src/frontend
-      - ../mobile:/usr/src/mobile
+      - ./:/usr/src/nodeapp
 
-  nodeapp:
+  nginx:
     build: .
-    container_name: nodeapp-dev-frontend
+    container_name: nodeapp-dev-nginx
     restart: always
     environment:
       TOR_PROXY_IP: 127.0.0.1
@@ -23,11 +21,10 @@ services:
       - ./:/usr/src/robosats/
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./coordinators/:/etc/nginx/conf.d/
-      - ../frontend/static:/usr/src/robosats/static
 
   tor:
     build: ../docker/tor
-    container_name: tor-dev-frontend
+    container_name: nodeapp-dev-tor
     restart: always
     environment:
       LOCAL_USER_ID: 1000

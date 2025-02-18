@@ -11,6 +11,7 @@ import {
 } from '../../components/Dialogs';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import ThirdPartyDialog from '../../components/Dialogs/ThirdParty';
 
 export interface OpenDialogs {
   more: boolean;
@@ -23,6 +24,8 @@ export interface OpenDialogs {
   client: boolean;
   update: boolean;
   profile: boolean;
+  recovery: boolean;
+  thirdParty: string;
 }
 
 const MainDialogs = (): JSX.Element => {
@@ -93,6 +96,13 @@ const MainDialogs = (): JSX.Element => {
           setOpen(closeAll);
         }}
         shortAlias={open.coordinator}
+      />
+      <ThirdPartyDialog
+        open={Boolean(open.thirdParty)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
+        shortAlias={open.thirdParty}
       />
     </>
   );

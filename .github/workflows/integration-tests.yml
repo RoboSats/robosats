@@ -17,17 +17,26 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       max-parallel: 2
       matrix:
-        python-tag: ['3.11.6-slim-bookworm', '3.12.1-slim-bookworm']
-        lnd-version: ['v0.17.3-beta']
-        cln-version: ['v23.11.2']
-        ln-vendor: ['LND'] #, 'CLN']
+        python-tag: ['3.12.3-slim-bookworm']
+        lnd-version: ['v0.18.2-beta']
+        cln-version: ['v24.08']
+        ln-vendor: ['LND', 'CLN']
 
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v4
+
+    - name: 'Download static files Artifact'
+      uses: dawidd6/action-download-artifact@v7
+      with:
+        workflow: frontend-build.yml
+        workflow_conclusion: success
+        name: django-main-static
+        path: frontend
 
     - name: Patch Dockerfile and .env-sample
       run: |
@@ -56,21 +65,20 @@ jobs:
       env:
         LND_VERSION: ${{ matrix.lnd-version }}
         CLN_VERSION: ${{ matrix.cln-version }}
-        BITCOIND_VERSION: ${{ matrix.bitcoind-version }}
         ROBOSATS_ENVS_FILE: ".env-sample"
 
     - name: Wait for coordinator (django server)
       run: |
-        while [ "$(docker inspect --format "{{.State.Health.Status}}" coordinator)" != "healthy" ]; do
+        while [ "$(docker inspect --format "{{.State.Health.Status}}" test-coordinator)" != "healthy" ]; do
           echo "Waiting for coordinator to be healthy..."
           sleep 5
         done
 
     - name: 'Run tests with coverage'
       run: |
-        docker exec coordinator coverage run manage.py test
-        docker exec coordinator coverage report
-        docker exec coordinator coverage html
+        docker exec test-coordinator coverage run manage.py test
+        docker exec test-coordinator coverage report
+        docker exec test-coordinator coverage html
       env:
         LNVENDOR: ${{ matrix.ln-vendor }}
         DEVELOPMENT: True

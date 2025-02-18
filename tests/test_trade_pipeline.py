@@ -239,6 +239,48 @@ class TradeTest(BaseAPITestCase):
         self.assertIsNone(data["taker"], "New order's taker is not null")
         self.assert_order_logs(data["id"])
 
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(
+            len(notifications_data),
+            0,
+            "User has no notification",
+        )
+
+    def test_make_order_on_blocked_country(self):
+        """
+        Test the creation of an F2F order on a geoblocked location
+        """
+        trade = Trade(
+            self.client,
+            # latitude and longitud in Aruba. One of the countries blocked in the example conf.
+            maker_form={
+                "type": 0,
+                "currency": 1,
+                "has_range": True,
+                "min_amount": 21,
+                "max_amount": 101.7,
+                "payment_method": "Advcash Cash F2F",
+                "is_explicit": False,
+                "premium": 3.34,
+                "public_duration": 69360,
+                "escrow_duration": 8700,
+                "bond_size": 3.5,
+                "latitude": -11.8014,  # Angola AGO
+                "longitude": 17.3575,
+            },
+        )  # init of Trade calls make_order() with the default maker form.
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(
+            data["bad_request"], "The coordinator does not support orders in AGO"
+        )
+
     def test_get_order_created(self):
         """
         Tests the creation of an order and the first request to see details,
@@ -309,6 +351,16 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(public_data["is_participant"])
         self.assertIsInstance(public_data["price_now"], float)
         self.assertIsInstance(data["satoshis_now"], int)
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"✅ Hey {data['maker_nick']}, your order with ID {trade.order_id} is public in the order book.",
+        )
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
@@ -474,6 +526,25 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
         self.assertFalse(data["is_fiat_sent"])
 
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"✅ Hey {data['maker_nick']}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"✅ Hey {data['taker_nick']}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat.",
+        )
+
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order(trade.maker_index)
         trade.cancel_order(trade.taker_index)
@@ -499,6 +570,27 @@ class TradeTest(BaseAPITestCase):
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
         self.assertFalse(data["is_fiat_sent"])
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"✅ Hey {maker_nick}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        taker_nick = read_file(f"tests/robots/{trade.taker_index}/nickname")
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"✅ Hey {taker_nick}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat.",
+        )
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order(trade.maker_index)
@@ -562,6 +654,25 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["escrow_locked"])
 
         self.assert_order_logs(data["id"])
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"🥳 Your order with ID {str(trade.order_id)} has finished successfully!",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"🥳 Your order with ID {str(trade.order_id)} has finished successfully!",
+        )
 
     def test_successful_LN(self):
         """
@@ -638,6 +749,17 @@ class TradeTest(BaseAPITestCase):
             data["bad_request"], "This order has been cancelled by the maker"
         )
 
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"❌ Hey {maker_nick}, you have cancelled your public order with ID {trade.order_id}.",
+        )
+
     def test_collaborative_cancel_order_in_chat(self):
         """
         Tests the collaborative cancellation of an order in the chat state
@@ -668,6 +790,27 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             trade.response.json()["bad_request"],
             "This order has been cancelled collaborativelly",
+        )
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"❌ Hey {maker_nick}, your order with ID {trade.order_id} has been collaboratively cancelled.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        taker_nick = read_file(f"tests/robots/{trade.taker_index}/nickname")
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"❌ Hey {taker_nick}, your order with ID {trade.order_id} has been collaboratively cancelled.",
         )
 
     def test_created_order_expires(self):
@@ -708,11 +851,7 @@ class TradeTest(BaseAPITestCase):
         """
         trade = Trade(self.client)
         trade.publish_order()
-
-        # Change order expiry to now
-        order = Order.objects.get(id=trade.response.json()["id"])
-        order.expires_at = datetime.now()
-        order.save()
+        trade.expire_order()
 
         # Make orders expire
         trade.clean_orders()
@@ -735,6 +874,16 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"😪 Hey {data['maker_nick']}, your order with ID {str(trade.order_id)} has expired without a taker.",
+        )
+
     def test_taken_order_expires(self):
         """
         Tests the expiration of a public order
@@ -745,9 +894,7 @@ class TradeTest(BaseAPITestCase):
         trade.lock_taker_bond()
 
         # Change order expiry to now
-        order = Order.objects.get(id=trade.response.json()["id"])
-        order.expires_at = datetime.now()
-        order.save()
+        trade.expire_order()
 
         # Make orders expire
         trade.clean_orders()
@@ -844,19 +991,41 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(response.json()["peer_connected"])
 
         # Post new message as maker
-        body = {"PGP_message": message, "order_id": trade.order_id, "offset": 0}
-        response = self.client.post(path, data=body, **maker_headers)
+        trade.send_chat_message(message, trade.maker_index)
+        self.assertResponse(trade.response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertEqual(trade.response.json()["messages"][0]["message"], message)
+        self.assertTrue(trade.response.json()["peer_connected"])
+
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
         self.assertResponse(response)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["messages"][0]["message"], message)
-        self.assertTrue(response.json()["peer_connected"])
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"💬 Hey {taker_nick}, a new chat message in-app was sent to you by {maker_nick} for order ID {trade.order_id}.",
+        )
 
         # Post new message as taker without offset, so response should not have messages.
-        body = {"PGP_message": message + " 2", "order_id": trade.order_id}
-        response = self.client.post(path, data=body, **taker_headers)
+        trade.send_chat_message(message + " 2", trade.taker_index)
+        self.assertResponse(trade.response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertEqual(trade.response.json()["messages"][0]["message"], message)
+        self.assertEqual(
+            trade.response.json()["messages"][1]["message"], message + " 2"
+        )
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
         self.assertResponse(response)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {})  # Nothing in the response
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        # Does not receive notification because user is online
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"✅ Hey {maker_nick}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat.",
+        )
 
         # Get the two chatroom messages as maker
         response = self.client.get(path + params, **maker_headers)
@@ -914,6 +1083,25 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
+
     def test_order_expires_after_only_maker_messaged(self):
         """
         Tests the expiration of an order in chat where taker never messaged
@@ -955,6 +1143,79 @@ class TradeTest(BaseAPITestCase):
         )
 
         self.assert_order_logs(data["id"])
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
+
+    # def test_dispute_closed_maker_wins(self):
+    #     trade = Trade(self.client)
+    #     trade.publish_order()
+    #     trade.take_order()
+    #     trade.lock_taker_bond()
+    #     trade.lock_escrow(trade.taker_index)
+    #     trade.submit_payout_invoice(trade.maker_index)
+
+    #     # Admin resolves dispute
+
+    #     trade.clean_orders()
+
+    #     maker_headers = trade.get_robot_auth(trade.maker_index)
+    #     response = self.client.get(reverse("notifications"), **maker_headers)
+    #     self.assertResponse(response)
+    #     notifications_data = list(response.json())
+    #     self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+    #     self.assertEqual(
+    #         notifications_data[0]["title"],
+    #         f"⚖️ Hey {data['maker_nick']}, you won the dispute on your order with ID {str(trade.order_id)}."
+    #     )
+    #     taker_headers = trade.get_robot_auth(trade.taker_index)
+    #     response = self.client.get(reverse("notifications"), **taker_headers)
+    #     self.assertResponse(response)
+    #     notifications_data = list(response.json())
+    #     self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+    #     self.assertEqual(
+    #         notifications_data[0]["title"],
+    #         f"⚖️ Hey {data['taker_nick']}, you lost the dispute on your order with ID {str(trade.order_id)}."
+    #     )
+
+    def test_lightning_payment_failed(self):
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        trade.change_order_status(Order.Status.FAI)
+
+        trade.clean_orders()
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚡❌ Hey {maker_nick}, the lightning payment on your order with ID {str(trade.order_id)} failed.",
+        )
 
     def test_withdraw_reward_after_unilateral_cancel(self):
         """
@@ -1025,6 +1286,25 @@ class TradeTest(BaseAPITestCase):
         )
 
         self.assert_order_logs(data["id"])
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
 
     def test_ticks(self):
         """

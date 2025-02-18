@@ -63,5 +63,4 @@ buck-out/
 /vendor/bundle/
 
 # frontend js
-/html/Web.bundle/js*
-/html/Web.bundle/css*
+/html/Web.bundle/static*

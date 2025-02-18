@@ -1,19 +1,28 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
 import { genBase62Token } from '../../utils';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { useNavigate } from 'react-router-dom';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
-  getGenerateRobot: (token: string) => void;
   width: number;
+  setInputToken: (state: string) => void;
 }
 
-const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Element => {
+const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element => {
+  const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const theme = useTheme();
+  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   return (
     <Grid
@@ -91,10 +100,11 @@ const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Elemen
             <Grid item>
               <Button
                 size='small'
-                color='secondary'
-                variant='contained'
+                color='primary'
                 onClick={() => {
-                  setView('recovery');
+                  setOpen((open) => {
+                    return { ...open, recovery: true };
+                  });
                 }}
               >
                 <Key /> <div style={{ width: '0.5em' }} />
@@ -109,12 +119,15 @@ const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Elemen
           size='small'
           color='primary'
           onClick={() => {
-            setView('profile');
-            getGenerateRobot(genBase62Token(36));
+            const token = genBase62Token(36);
+            void garage.createRobot(federation, token);
+            setInputToken(token);
+            navigate('/create');
+            setPage('create');
           }}
         >
           <FastForward /> <div style={{ width: '0.5em' }} />
-          {t('Fast Generate Robot')}
+          {t('Fast Generate Order')}
         </Button>
       </Grid>
     </Grid>

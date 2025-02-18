@@ -14,7 +14,7 @@ src: "_pages/docs/es/00-quick-start/03-access.md"
 
 Una forma segura y muy privada de usar RoboSats es a través de la dirección Onion. Necesitas el [navegador TOR](/docs/es/tor/).
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
+> [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 **Privado:** tu conexión será encriptada de extremo a extremo y retransmitida por varias capas de nodos, lo que dificultará el seguimiento.
 {: .notice--primary}
@@ -28,7 +28,7 @@ I2P es otra forma segura y privada de usar RoboSats. Necesitas instalar [I2P](ht
 ## <i class="fa-solid fa-window-maximize"></i> De forma insegura en Clearnet
 Hay una forma insegura de acceder a RoboSats sin TOR que se basa en servicios tor2web de terceros. Con esta URL puedes acceder a RoboSats desde cualquier navegador, pero usar esta URL es **altamente desaconsejado!**
 
-> [unsafe.robosats.com](https://unsafe.robosats.com)
+> [unsafe.robosats.org](https://unsafe.robosats.org)
 
 **Inseguro:** tu privacidad puede verse comprometida si utilizas la url insegura de clearnet en un navegador web normal.
 {: .notice--secondary}
@@ -37,41 +37,21 @@ Si usas la URL de clearnet, debeberías asumir que estás siendo espiado. Sin em
 
 ## <i class="fa-solid fa-person-dots-from-line"></i> Todo en uno
 
-Para simplificar las cosas, se ha creado la URL "robosats.com" para que sirva de enlace fácil de recordar y todo en uno para los navegadores. Si utiliza un navegador TOR o I2P, se le dirigirá al sitio Onion o I2P, respectivamente. De lo contrario, se le dirigirá al sitio no seguro de Clearnet.
+Para simplificar las cosas, se ha creado la URL "robosats.org" para que sirva de enlace fácil de recordar y todo en uno para los navegadores. Si utiliza un navegador TOR o I2P, se le dirigirá al sitio Onion o I2P, respectivamente. De lo contrario, se le dirigirá al sitio no seguro de Clearnet.
 
-> [<span style="font-size:larger;">robosats.com</span>](https://robosats.com)
+> [<span style="font-size:larger;">robosats.org</span>](https://robosats.org)
 
 
 ## Otros
 
 ### Testnet
 
-Puedes practicar y probar todas las funcionalidades de RoboSats sin perder fondos usando [Testnet Bitcoin](https://en.bitcoin.it/wiki/Testnet). Todo lo que necesitas es una wallet Lightning Testnet y acceder a la plataforma testnet
-
-> [<b>robotest</b>agw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion/)
-
-O acceder de manera insegura via clearnet.
-
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com)
-
-### Onion Mirrors
-
-Es posible acceder a la plataforma **testnet** en el puerto 8001 del onion de mainnet
-
-> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion:8001)
-
-Tambien es posible acceder a la plataforma **mainnet** en el puerto 8001 del onion testnet
-
-> [robotestagw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion:8001](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion:8001)
+Puedes practicar y probar todas las funcionalidades de RoboSats sin perder fondos usando [Testnet Bitcoin](https://en.bitcoin.it/wiki/Testnet). Todo lo que necesitas es una wallet Lightning Testnet, acceder a la plataforma y cambiar a Tesnet desde la pestaña de *Ajustes*
 
 ### Clearnet Mirrors
 Hay varios servicios tor2web que sirven como mirrors en caso de que uno de ellos no esté disponible
 
-> [unsafe.robosats.com](https://unsafe.robosats.com/) <br/>
-> [unsafe2.robosats.com](https://unsafe2.robosats.com/) <br/>
-> [unsafe3.robosats.com](https://unsafe3.robosats.com/) <br/>
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
-> [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
+> [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
 
 
 {% include improve_es %}

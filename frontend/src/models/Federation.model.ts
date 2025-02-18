@@ -1,50 +1,133 @@
 import {
   Coordinator,
   type Exchange,
-  type Garage,
   type Origin,
   type PublicOrder,
   type Settings,
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
-import { getHost } from '../utils';
+import { systemClient } from '../services/System';
+import { federationLottery, getHost } from '../utils';
+import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
+import eventToPublicOrder from '../utils/nostr';
+import RoboPool from '../services/RoboPool';
 
-type FederationHooks = 'onCoordinatorUpdate' | 'onFederationUpdate';
+type FederationHooks = 'onFederationUpdate';
 
 export class Federation {
-  constructor() {
-    this.coordinators = Object.entries(defaultFederation).reduce(
+  constructor(origin: Origin, settings: Settings, hostUrl: string) {
+    const coordinators = Object.entries(defaultFederation).reduce(
       (acc: Record<string, Coordinator>, [key, value]: [string, any]) => {
         if (getHost() !== '127.0.0.1:8000' && key === 'local') {
           // Do not add `Local Dev` unless it is running on localhost
           return acc;
         } else {
-          acc[key] = new Coordinator(value);
+          acc[key] = new Coordinator(value, origin, settings, hostUrl);
+          acc[key].federated = true;
           return acc;
         }
       },
       {},
     );
+
+    this.coordinators = {};
+    federationLottery().forEach((alias) => {
+      if (coordinators[alias]) this.coordinators[alias] = coordinators[alias];
+    });
+
     this.exchange = {
       ...defaultExchange,
       totalCoordinators: Object.keys(this.coordinators).length,
     };
-    this.book = [];
+    this.book = {};
     this.hooks = {
-      onCoordinatorUpdate: [],
       onFederationUpdate: [],
     };
+
+    Object.keys(this.coordinators).forEach((key) => {
+      if (key !== 'local' || getHost() === '127.0.0.1:8000') {
+        // Do not add `Local Dev` unless it is running on localhost
+        this.addCoordinator(origin, settings, hostUrl, this.coordinators[key]);
+      }
+    });
+
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.loading = true;
+
+    const host = getHost();
+    const url = `${window.location.protocol}//${host}`;
+
+    const tesnetHost = Object.values(this.coordinators).find((coor) => {
+      return Object.values(coor.testnet).includes(url);
+    });
+    if (tesnetHost) settings.network = 'testnet';
+    this.connection = null;
+
+    this.roboPool = new RoboPool(settings, origin);
   }
 
-  public coordinators: Record<string, Coordinator>;
+  private coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
-  public book: PublicOrder[];
+  public book: Record<string, PublicOrder | undefined>;
   public loading: boolean;
+  public connection: 'api' | 'nostr' | null;
 
   public hooks: Record<FederationHooks, Array<() => void>>;
+
+  public roboPool: RoboPool;
+
+  setConnection = (settings: Settings): void => {
+    this.connection = settings.connection;
+    if (this.connection === 'nostr') {
+      this.roboPool.connect();
+      this.loadBookNostr();
+    } else {
+      this.roboPool.close();
+      void this.loadBook();
+    }
+  };
+
+  loadBookNostr = (): void => {
+    this.loading = true;
+    this.book = {};
+
+    this.exchange.loadingCache = this.roboPool.relays.length;
+
+    this.roboPool.subscribeBook({
+      onevent: (event) => {
+        const { dTag, publicOrder } = eventToPublicOrder(event);
+        if (publicOrder) {
+          this.book[dTag] = publicOrder;
+        } else {
+          this.book[dTag] = undefined;
+        }
+      },
+      oneose: () => {
+        this.exchange.loadingCache = this.exchange.loadingCache - 1;
+        this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
+        this.updateExchange();
+        this.triggerHook('onFederationUpdate');
+      },
+    });
+  };
+
+  addCoordinator = (
+    origin: Origin,
+    settings: Settings,
+    hostUrl: string,
+    attributes: Record<any, any>,
+  ): void => {
+    const value = {
+      ...coordinatorDefaultValues,
+      ...attributes,
+    };
+    this.coordinators[value.shortAlias] = new Coordinator(value, origin, settings, hostUrl);
+    this.exchange.totalCoordinators = Object.keys(this.coordinators).length;
+    this.updateEnabledCoordinators();
+    this.triggerHook('onFederationUpdate');
+  };
 
   // Hooks
   registerHook = (hookName: FederationHooks, fn: () => void): void => {
@@ -58,53 +141,31 @@ export class Federation {
   };
 
   onCoordinatorSaved = (): void => {
-    this.book = Object.values(this.coordinators).reduce<PublicOrder[]>((array, coordinator) => {
-      return [...array, ...coordinator.book];
-    }, []);
-    this.triggerHook('onCoordinatorUpdate');
+    if (this.connection === 'api') {
+      this.book = Object.values(this.coordinators).reduce<Record<string, PublicOrder>>(
+        (book, coordinator) => {
+          return { ...book, ...coordinator.book };
+        },
+        {},
+      );
+    }
     this.exchange.loadingCoordinators =
       this.exchange.loadingCoordinators < 1 ? 0 : this.exchange.loadingCoordinators - 1;
-    this.loading = this.exchange.loadingCoordinators > 0;
+    this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
     this.updateExchange();
     this.triggerHook('onFederationUpdate');
   };
 
-  // Setup
-  start = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
-    const onCoordinatorStarted = (): void => {
-      this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
-      this.onCoordinatorSaved();
-    };
-
-    this.loading = true;
-    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
-
-    const host = getHost();
-    const url = `${window.location.protocol}//${host}`;
-    const tesnetHost = Object.values(this.coordinators).find((coor) => {
-      return Object.values(coor.testnet).includes(url);
-    });
-    if (tesnetHost) settings.network = 'testnet';
-
+  updateUrl = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
+    const federationUrls = {};
     for (const coor of Object.values(this.coordinators)) {
-      if (coor.enabled) {
-        await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
-      }
+      coor.updateUrl(origin, settings, hostUrl);
+      federationUrls[coor.shortAlias] = coor.url;
     }
-    this.updateEnabledCoordinators();
+    systemClient.setCookie('federation', JSON.stringify(federationUrls));
   };
 
-  // On Testnet/Mainnet change
-  updateUrls = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
-    this.loading = true;
-    for (const coor of Object.values(this.coordinators)) {
-      await coor.updateUrl(settings, origin, hostUrl);
-    }
-    this.loading = false;
-  };
-
-  update = async (): Promise<void> => {
-    this.loading = true;
+  loadInfo = async (): Promise<void> => {
     this.exchange.info = {
       num_public_buy_orders: 0,
       num_public_sell_orders: 0,
@@ -115,20 +176,44 @@ export class Federation {
       lifetime_volume: 0,
       version: { major: 0, minor: 0, patch: 0 },
     };
+    this.loading = true;
+    this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.updateEnabledCoordinators();
+
     for (const coor of Object.values(this.coordinators)) {
-      await coor.update(() => {
+      coor.loadInfo(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
     }
   };
 
-  updateBook = async (): Promise<void> => {
+  loadLimits = async (): Promise<void> => {
     this.loading = true;
-    this.triggerHook('onCoordinatorUpdate');
+    this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.updateEnabledCoordinators();
+
     for (const coor of Object.values(this.coordinators)) {
-      await coor.updateBook(() => {
+      coor.loadLimits(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
+        this.onCoordinatorSaved();
+      });
+    }
+  };
+
+  loadBook = async (): Promise<void> => {
+    if (this.connection !== 'api') return;
+
+    this.book = {};
+    this.loading = true;
+    this.exchange.onlineCoordinators = 0;
+    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
+    this.triggerHook('onFederationUpdate');
+    for (const coor of Object.values(this.coordinators)) {
+      coor.loadBook(() => {
+        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
     }
@@ -139,14 +224,15 @@ export class Federation {
     this.triggerHook('onFederationUpdate');
   };
 
-  // Fetchs
-  fetchRobot = async (garage: Garage, token: string): Promise<void> => {
-    Object.values(this.coordinators).forEach((coor) => {
-      void coor.fetchRobot(garage, token);
-    });
+  // Coordinators
+  getCoordinators = (): Coordinator[] => {
+    return Object.values(this.coordinators);
   };
 
-  // Coordinators
+  getCoordinatorsAlias = (): string[] => {
+    return Object.keys(this.coordinators);
+  };
+
   getCoordinator = (shortAlias: string): Coordinator => {
     return this.coordinators[shortAlias];
   };
@@ -154,13 +240,13 @@ export class Federation {
   disableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].disable();
     this.updateEnabledCoordinators();
-    this.triggerHook('onCoordinatorUpdate');
+    this.triggerHook('onFederationUpdate');
   };
 
   enableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].enable(() => {
       this.updateEnabledCoordinators();
-      this.triggerHook('onCoordinatorUpdate');
+      this.triggerHook('onFederationUpdate');
     });
   };
 

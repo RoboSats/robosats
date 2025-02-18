@@ -65,11 +65,11 @@ const AboutDialog = ({ open, onClose }: Props): JSX.Element => {
                   'At no point, AnonymousAlice01 and BafflingBob02 have to entrust the bitcoin funds to each other. In case they have a conflict, the RoboSats coordinator will help resolving the dispute.',
                 )}
                 {t('You can find a step-by-step description of the trade pipeline in ')}
-                <Link target='_blank' href='https://learn.robosats.com/docs/trade-pipeline/'>
+                <Link target='_blank' href='https://learn.robosats.org/docs/trade-pipeline/'>
                   {t('How it works')}
                 </Link>
                 .{' ' + t('You can also check the full guide in ')}
-                <Link target='_blank' href='https://learn.robosats.com/read/en'>
+                <Link target='_blank' href='https://learn.robosats.org/read/en'>
                   {t('How to use')}
                 </Link>
                 .

@@ -1,0 +1,9 @@
+robosats:
+  android:
+    identifier: com.robosats
+    name: Robosats
+    description: A simple and private bitcoin exchange
+    repository: https://github.com/RoboSats/robosats
+    license: AGPL-3.0
+    artifacts:
+      - robosats-v%v.alpha-universal.apk

@@ -14,8 +14,8 @@ import {
   LinearProgress,
   IconButton,
   Tooltip,
-  type LinearProgressProps,
   styled,
+  Skeleton,
 } from '@mui/material';
 import {
   DataGrid,
@@ -24,6 +24,7 @@ import {
   type GridPaginationModel,
   type GridColDef,
   type GridValidRowModel,
+  type GridSlotsComponent,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -38,30 +39,12 @@ import RobotAvatar from '../RobotAvatar';
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import headerStyleFix from '../DataGrid/HeaderFix';
+import thirdParties from '../../../static/thirdparties.json';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
     pointerEvents: 'none',
-  },
-  // Temporary fix for regression for hidden column labels on Mobile:
-  // https://github.com/mui/mui-x/issues/9776#issuecomment-1648306844
-  '@media (hover: none)': {
-    '&& .MuiDataGrid-menuIcon': {
-      width: 0,
-      visibility: 'hidden',
-    },
-    '&& .MuiDataGrid-sortIcon': {
-      width: 0,
-      visibility: 'hidden',
-    },
-  },
-  '&& .MuiDataGrid-columnHeader--sorted .MuiDataGrid-menuIcon': {
-    width: 'auto',
-    visibility: 'visible',
-  },
-  '&& .MuiDataGrid-columnHeader--sorted .MuiDataGrid-sortIcon': {
-    width: 'auto',
-    visibility: 'visible',
   },
 });
 
@@ -107,16 +90,15 @@ const BookTable = ({
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
   const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { federation, coordinatorUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const orders = orderList ?? federation.book;
+  const orders = orderList ?? Object.values(federation.book) ?? [];
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
-    page: 0,
+    page: 1,
   });
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({});
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
@@ -139,10 +121,10 @@ const BookTable = ({
 
   useEffect(() => {
     setPaginationModel({
-      pageSize: federation.loading && orders.length === 0 ? 0 : defaultPageSize,
-      page: paginationModel.page,
+      pageSize: defaultPageSize,
+      page: paginationModel.page ?? 1,
     });
-  }, [coordinatorUpdatedAt, orders, defaultPageSize]);
+  }, [defaultPageSize]);
 
   const localeText = useMemo(() => {
     return {
@@ -202,14 +184,15 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
-            style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
+            style={{ cursor: 'pointer' }}
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            <ListItemAvatar>
+            <ListItemAvatar sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}>
               <RobotAvatar
                 hashId={params.row.maker_hash_id}
                 style={{ width: '3.215em', height: '3.215em' }}
@@ -221,7 +204,10 @@ const BookTable = ({
                 small={true}
               />
             </ListItemAvatar>
-            <ListItemText primary={params.row.maker_nick} />
+            <ListItemText
+              primary={params.row.maker_nick ?? thirdParty.longAlias}
+              sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}
+            />
           </ListItemButton>
         );
       },
@@ -234,9 +220,11 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <div
-            style={{ position: 'relative', left: '-0.34em', cursor: 'pointer' }}
+            style={{ position: 'relative', cursor: 'pointer', bottom: '0.2em' }}
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
@@ -249,6 +237,10 @@ const BookTable = ({
               orderType={params.row.type}
               statusColor={statusBadgeColor(params.row.maker_status)}
               tooltip={t(params.row.maker_status)}
+              coordinatorShortAlias={
+                thirdParty?.shortAlias ??
+                (coordinator?.federated ? params.row.coordinatorShortAlias : undefined)
+              }
             />
           </div>
         );
@@ -258,7 +250,12 @@ const BookTable = ({
 
   const onClickCoordinator = function (shortAlias: string): void {
     setOpen((open) => {
-      return { ...open, coordinator: shortAlias };
+      const thirdParty = thirdParties[shortAlias];
+      if (thirdParty) {
+        return { ...open, thirdParty: shortAlias };
+      } else {
+        return { ...open, coordinator: shortAlias };
+      }
     });
   };
 
@@ -268,16 +265,22 @@ const BookTable = ({
       headerName: t('Host'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
+        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
-            style={{ cursor: 'pointer', position: 'relative', left: '-1.54em' }}
+            style={{ cursor: 'pointer' }}
             onClick={() => {
               onClickCoordinator(params.row.coordinatorShortAlias);
             }}
           >
-            <ListItemAvatar>
+            <ListItemAvatar sx={{ position: 'relative', left: '-1.54em', bottom: '0.4em' }}>
               <RobotAvatar
-                shortAlias={params.row.coordinatorShortAlias}
+                shortAlias={
+                  thirdParty?.shortAlias ??
+                  (coordinator?.federated ? params.row.coordinatorShortAlias : undefined)
+                }
+                hashId={coordinator?.federated ? undefined : coordinator?.shortAlias}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 small={true}
@@ -364,8 +367,9 @@ const BookTable = ({
             }}
           >
             {currencyCode}
-            <div style={{ width: '0.3em' }} />
-            <FlagWithProps code={currencyCode} />
+            <div style={{ position: 'relative', left: '0.3em', bottom: '0.7em' }}>
+              <FlagWithProps code={currencyCode} />
+            </div>
           </div>
         );
       },
@@ -386,12 +390,14 @@ const BookTable = ({
                 onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
               }}
             >
-              <PaymentStringAsIcons
-                othersText={t('Others')}
-                verbose={true}
-                size={1.7 * fontSize}
-                text={params.row.payment_method}
-              />
+              <div style={{ position: 'relative', top: '0.4em' }}>
+                <PaymentStringAsIcons
+                  othersText={t('Others')}
+                  verbose={true}
+                  size={1.7 * fontSize}
+                  text={params.row.payment_method}
+                />
+              </div>
             </div>
           );
         },
@@ -410,7 +416,8 @@ const BookTable = ({
           <div
             style={{
               position: 'relative',
-              left: '-4px',
+              left: '-0.25em',
+              top: '0.3em',
               cursor: 'pointer',
             }}
             onClick={() => {
@@ -436,6 +443,13 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
+        const coordinator =
+          federation.getCoordinator(params.row.coordinatorShortAlias) ??
+          federation.getCoordinators()[0];
+        const premium = parseFloat(params.row.premium);
+        const limitPrice = coordinator.limits[params.row.currency.toString()]?.price;
+        const price = (limitPrice ?? 1) * (1 + premium / 100);
+
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -443,7 +457,11 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {`${pn(params.row.price)} ${currencyCode}/BTC`}
+            {limitPrice ? (
+              `${pn(Math.round(price))} ${currencyCode}/BTC`
+            ) : (
+              <Skeleton variant='rectangular' width={200} height={20} style={{ marginTop: 15 }} />
+            )}
           </div>
         );
       },
@@ -524,7 +542,7 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {hours > 0 ? `${hours}h` : `${minutes}m`}
+            {hours > 0 ? `${hours}h` : minutes ? `${minutes}m` : '-'}
           </div>
         );
       },
@@ -545,7 +563,7 @@ const BookTable = ({
         const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
         return (
           <Box
-            sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}
+            sx={{ position: 'relative', display: 'inline-flex', left: '0.3em', top: '0.5em' }}
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
@@ -586,6 +604,18 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
+        const coordinator =
+          federation.getCoordinator(params.row.coordinatorShortAlias) ??
+          federation.getCoordinators()[0];
+        const amount =
+          params.row.has_range === true
+            ? parseFloat(params.row.max_amount)
+            : parseFloat(params.row.amount);
+        const premium = parseFloat(params.row.premium);
+        const price =
+          (coordinator.limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
+        const satoshisNow = (100000000 * amount) / price;
+
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -593,9 +623,9 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {params.row.satoshis_now > 1000000
-              ? `${pn(Math.round(params.row.satoshis_now / 10000) / 100)} M`
-              : `${pn(Math.round(params.row.satoshis_now / 1000))} K`}
+            {satoshisNow > 1000000
+              ? `${pn(Math.round(satoshisNow / 10000) / 100)} M`
+              : `${pn(Math.round(satoshisNow / 1000))} K`}
           </div>
         );
       },
@@ -637,7 +667,9 @@ const BookTable = ({
             onClick={() => {
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
-          >{`${Number(params.row.bond_size)}%`}</div>
+          >
+            {params.row.bond_size ? `${Number(params.row.bond_size)}%` : '-'}
+          </div>
         );
       },
     };
@@ -689,16 +721,8 @@ const BookTable = ({
           object: robotObj,
         },
         small: {
-          width: 4.1,
+          width: 5.1,
           object: robotSmallObj,
-        },
-      },
-      coordinatorShortAlias: {
-        priority: 5,
-        order: 3,
-        normal: {
-          width: 4.1,
-          object: coordinatorObj,
         },
       },
       price: {
@@ -733,8 +757,27 @@ const BookTable = ({
           object: satoshisObj,
         },
       },
-      type: {
+      coordinatorShortAlias: {
         priority: 10,
+        order: 3,
+        normal: {
+          width: 4.1,
+          object: coordinatorObj,
+        },
+        small: {
+          width: 5.1,
+          object: () => {
+            return {
+              field: 'coordinatorShortAlias',
+              headerName: '',
+              width: 0,
+              renderCell: () => <></>,
+            };
+          },
+        },
+      },
+      type: {
+        priority: 11,
         order: 2,
         normal: {
           width: fav.mode === 'swap' ? 7 : 4.3,
@@ -742,7 +785,7 @@ const BookTable = ({
         },
       },
       bond_size: {
-        priority: 11,
+        priority: 12,
         order: 11,
         normal: {
           width: 4.2,
@@ -750,7 +793,7 @@ const BookTable = ({
         },
       },
       id: {
-        priority: 12,
+        priority: 13,
         order: 13,
         normal: {
           width: 4.8,
@@ -824,7 +867,7 @@ const BookTable = ({
             <Grid item xs={6}>
               <IconButton
                 onClick={() => {
-                  void federation.updateBook();
+                  void federation.loadBook();
                 }}
               >
                 <Refresh />
@@ -839,14 +882,6 @@ const BookTable = ({
       </Grid>
     );
   };
-
-  interface GridComponentProps {
-    LoadingOverlay: (props: LinearProgressProps) => JSX.Element;
-    NoResultsOverlay?: (props: any) => JSX.Element;
-    NoRowsOverlay?: (props: any) => JSX.Element;
-    Footer?: (props: any) => JSX.Element;
-    Toolbar?: (props: any) => JSX.Element;
-  }
 
   const NoResultsOverlay = function (): JSX.Element {
     return (
@@ -880,19 +915,19 @@ const BookTable = ({
   };
 
   const gridComponents = useMemo(() => {
-    const components: GridComponentProps = {
-      LoadingOverlay: LinearProgress,
+    const components: GridSlotsComponent = {
+      loadingOverlay: LinearProgress,
     };
 
     if (showNoResults) {
-      components.NoResultsOverlay = NoResultsOverlay;
-      components.NoRowsOverlay = NoResultsOverlay;
+      components.noResultsOverlay = NoResultsOverlay;
+      components.noRowsOverlay = NoResultsOverlay;
     }
     if (showFooter) {
-      components.Footer = Footer;
+      components.footer = Footer;
     }
     if (showControls) {
-      components.Toolbar = BookControl;
+      components.toolbar = BookControl;
     }
     return components;
   }, [showNoResults, showFooter, showControls, fullscreen]);
@@ -900,7 +935,7 @@ const BookTable = ({
   const filteredOrders = useMemo(() => {
     return showControls
       ? filterOrders({
-          orders,
+          federation,
           baseFilter: fav,
           paymentMethods,
         })
@@ -918,6 +953,7 @@ const BookTable = ({
         }
       >
         <ClickThroughDataGrid
+          sx={headerStyleFix}
           localeText={localeText}
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
@@ -930,20 +966,16 @@ const BookTable = ({
             setColumnVisibilityModel(newColumnVisibilityModel);
           }}
           hideFooter={!showFooter}
-          components={gridComponents}
-          componentsProps={{
+          slots={gridComponents}
+          slotProps={{
             toolbar: {
               width,
               paymentMethod: paymentMethods,
               setPaymentMethods,
             },
             loadingOverlay: {
-              variant: 'determinate',
-              value:
-                ((federation.exchange.enabledCoordinators -
-                  federation.exchange.loadingCoordinators) /
-                  federation.exchange.enabledCoordinators) *
-                100,
+              variant: 'indeterminate',
+              value: federation.loading ? 0 : 100,
             },
           }}
           paginationModel={paginationModel}
@@ -959,6 +991,7 @@ const BookTable = ({
       <Dialog open={fullscreen} fullScreen={true}>
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
           <ClickThroughDataGrid
+            sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
             headerHeight={3.25 * theme.typography.fontSize}
@@ -966,12 +999,12 @@ const BookTable = ({
             loading={federation.loading}
             columns={columns}
             hideFooter={!showFooter}
-            components={gridComponents}
+            slots={gridComponents}
             columnVisibilityModel={columnVisibilityModel}
             onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
               setColumnVisibilityModel(newColumnVisibilityModel);
             }}
-            componentsProps={{
+            slotProps={{
               toolbar: {
                 width,
                 paymentMethod: paymentMethods,

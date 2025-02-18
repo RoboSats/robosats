@@ -41,7 +41,7 @@ interface Props {
 
 const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -54,6 +54,8 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
   const [openClaimRewards, setOpenClaimRewards] = useState<boolean>(false);
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
+
+  const robot = garage.getSlot()?.getRobot(coordinator.shortAlias);
 
   const handleWebln = async (): Promise<void> => {
     void getWebln()
@@ -72,7 +74,6 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
 
   const handleWeblnInvoiceClicked = async (e: MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     e.preventDefault();
-    const robot = garage.getSlot()?.getRobot(coordinator.shortAlias);
     if (robot != null && robot.earnedRewards > 0) {
       const webln = await getWebln();
       const invoice = webln.makeInvoice(robot.earnedRewards).then(() => {
@@ -87,15 +88,11 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
     setBadInvoice('');
     setShowRewardsSpinner(true);
 
-    const slot = garage.getSlot();
-    const robot = slot?.getRobot(coordinator.shortAlias);
-
-    if (robot != null && slot?.token != null && robot.encPrivKey != null) {
-      void signCleartextMessage(rewardInvoice, robot.encPrivKey, slot?.token).then(
+    if (robot?.token && robot.encPrivKey != null) {
+      void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot?.token).then(
         (signedInvoice) => {
           console.log('Signed message:', signedInvoice);
-          void coordinator.fetchReward(signedInvoice, garage, slot?.token).then((data) => {
-            console.log(data);
+          void robot.fetchReward(federation, signedInvoice).then((data) => {
             setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
             setWithdrawn(data.successful_withdrawal);
@@ -107,15 +104,9 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
     e.preventDefault();
   };
 
-  const setStealthInvoice = (wantsStealth: boolean): void => {
-    const slot = garage.getSlot();
-    if (slot?.token != null) {
-      void coordinator.fetchStealth(wantsStealth, garage, slot?.token);
-    }
+  const setStealthInvoice = (): void => {
+    if (robot) void robot.fetchStealth(federation, !robot?.stealthInvoices);
   };
-
-  const slot = garage.getSlot();
-  const robot = slot?.getRobot(coordinator.shortAlias);
 
   return (
     <Accordion disabled={disabled}>
@@ -124,28 +115,21 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
         {(robot?.earnedRewards ?? 0) > 0 && (
           <Typography color='success'>&nbsp;{t('Claim Sats!')} </Typography>
         )}
-        {slot?.activeShortAlias === coordinator.shortAlias && (
+        {robot?.activeOrderId ? (
           <Typography color='success'>
             &nbsp;<b>{t('Active order!')}</b>
           </Typography>
-        )}
-        {slot?.lastShortAlias === coordinator.shortAlias && (
-          <Typography color='warning'>&nbsp;{t('finished order')}</Typography>
+        ) : (
+          robot?.lastOrderId && <Typography color='warning'>&nbsp;{t('finished order')}</Typography>
         )}
       </AccordionSummary>
       <AccordionDetails>
         <List dense disablePadding={true}>
-          {slot?.activeShortAlias === coordinator.shortAlias ? (
+          {robot?.activeOrderId ? (
             <ListItemButton
               onClick={() => {
-                setCurrentOrderId({
-                  id: slot?.activeShortAlias,
-                  shortAlias: slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId,
-                });
                 navigate(
-                  `/order/${String(slot?.activeShortAlias)}/${String(
-                    slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId,
-                  )}`,
+                  `/order/${String(coordinator.shortAlias)}/${String(robot?.activeOrderId)}`,
                 );
                 onClose();
               }}
@@ -157,23 +141,15 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
               </ListItemIcon>
               <ListItemText
                 primary={t('One active order #{{orderID}}', {
-                  orderID: slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId,
+                  orderID: String(robot?.activeOrderId),
                 })}
                 secondary={t('Your current order')}
               />
             </ListItemButton>
-          ) : (robot?.lastOrderId ?? 0) > 0 && slot?.lastShortAlias === coordinator.shortAlias ? (
+          ) : robot?.lastOrderId ? (
             <ListItemButton
               onClick={() => {
-                setCurrentOrderId({
-                  id: slot?.activeShortAlias,
-                  shortAlias: slot?.getRobot(slot?.activeShortAlias ?? '')?.lastOrderId,
-                });
-                navigate(
-                  `/order/${String(slot?.lastShortAlias)}/${String(
-                    slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId,
-                  )}`,
-                );
+                navigate(`/order/${String(coordinator.shortAlias)}/${String(robot?.lastOrderId)}`);
                 onClose();
               }}
             >
@@ -182,7 +158,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
               </ListItemIcon>
               <ListItemText
                 primary={t('Your last order #{{orderID}}', {
-                  orderID: slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId,
+                  orderID: robot?.lastOrderId,
                 })}
                 secondary={t('Inactive order')}
               />
@@ -254,7 +230,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
                       <Switch
                         checked={robot?.stealthInvoices}
                         onChange={() => {
-                          setStealthInvoice(!robot?.stealthInvoices);
+                          setStealthInvoice();
                         }}
                       />
                     }

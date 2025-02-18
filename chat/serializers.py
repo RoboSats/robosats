@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from decimal import Decimal
 from chat.models import Message
 
 
@@ -36,7 +36,7 @@ class ChatSerializer(serializers.ModelSerializer):
         allow_null=True,
         default=None,
         required=False,
-        min_value=0,
+        min_value=Decimal(0),
         help_text="Offset for message index to get as response",
     )
 
@@ -66,7 +66,7 @@ class PostMessageSerializer(serializers.ModelSerializer):
 
     order_id = serializers.IntegerField(
         required=True,
-        min_value=0,
+        min_value=Decimal(0),
         help_text="Your peer's public key",
     )
 
@@ -74,7 +74,7 @@ class PostMessageSerializer(serializers.ModelSerializer):
         allow_null=True,
         default=None,
         required=False,
-        min_value=0,
+        min_value=Decimal(0),
         help_text="Offset for message index to get as response",
     )
 

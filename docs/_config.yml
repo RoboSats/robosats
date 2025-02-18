@@ -21,7 +21,7 @@ title_separator          : "-"
 subtitle                 : "A Simple and Private Lightning P2P Exchange" # site tagline that appears below site title in masthead
 name                     : "RoboSats"
 description              : "Documentation, Guides and Tutorials of the RoboSats Exchange"
-url                      : https://docs.robosats.com # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
+url                      : https://docs.robosats.org # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : RoboSats/robosats # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
@@ -96,7 +96,7 @@ baidu_site_verification  :
 
 # Social Sharing
 twitter:
-  username               : robosats
+  username               :
 facebook:
   username               :
   app_id                 :
@@ -125,9 +125,6 @@ author:
   location         : "Somewhere in the world"
   email            :
   links:
-    - label: "Twitter"
-      icon: "fab fa-fw fa-twitter-square"
-      url: "https://twitter.com/recksato"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/RoboSats"
@@ -138,9 +135,6 @@ author:
 # Site Footer
 footer:
   links:
-    - label: "Twitter"
-      icon: "fab fa-fw fa-twitter-square"
-      url: "https://twitter.com/robosats"
     - label: "Reddit"
       icon: "fa-brands fa-reddit-square"
       url: "https://reddit.com/r/robosats"

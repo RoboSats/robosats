@@ -4,8 +4,11 @@ import SelfhostedAlert from './SelfhostedAlert';
 import UnsafeAlert from './UnsafeAlert';
 
 const HostAlert = (): JSX.Element => {
-  const { settings } = useContext<UseAppStoreType>(AppContext);
-  const component = settings.selfhostedClient ? SelfhostedAlert : UnsafeAlert;
+  const { client, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const component =
+    !hostUrl.includes('robosats') && (client === 'selfhosted' || client === 'desktop')
+      ? SelfhostedAlert
+      : UnsafeAlert;
   return component();
 };
 
