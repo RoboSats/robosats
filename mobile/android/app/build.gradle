@@ -150,8 +150,8 @@ android {
         applicationId "com.robosats"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "0.7.3-alpha"
+        versionCode 8
+        versionName "0.7.4-alpha"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
         if (isNewArchitectureEnabled()) {
