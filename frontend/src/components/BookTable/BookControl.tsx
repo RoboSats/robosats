@@ -1,21 +1,11 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Typography,
-  Grid,
-  ToggleButton,
-  ToggleButtonGroup,
-  Select,
-  Divider,
-  MenuItem,
-  Box,
-  Tooltip,
-} from '@mui/material';
+import { Typography, Grid, Select, Divider, MenuItem, Box } from '@mui/material';
 import currencyDict from '../../../static/assets/currencies.json';
 import { useTheme } from '@mui/system';
 import { AutocompletePayments } from '../MakerForm';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
-import { FlagWithProps } from '../Icons';
+import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -41,15 +31,23 @@ const BookControl = ({
   const { t, i18n } = useTranslation();
   const theme = useTheme();
 
-  const [typeZeroText, typeOneText, small, medium, large] = useMemo(() => {
-    const typeZeroText = fav.mode === 'fiat' ? t('Buy') : t('Swap In');
-    const typeOneText = fav.mode === 'fiat' ? t('Sell') : t('Swap Out');
-    const small =
-      (typeZeroText.length + typeOneText.length) * 0.7 + (fav.mode === 'fiat' ? 16 : 7.5);
+  const [orderType, setOrderType] = useState<string>('any');
+  const [small, medium, large] = useMemo(() => {
+    const small = fav.mode === 'fiat' ? 16 : 7.5;
     const medium = small + 13;
     const large = medium + (t('and use').length + t('pay with').length) * 0.6 + 5;
-    return [typeZeroText, typeOneText, small, medium, large];
+    return [small, medium, large];
   }, [i18n.language, fav.mode]);
+
+  useEffect(() => {
+    if (fav.type === null) {
+      setOrderType('any');
+    } else if (fav.mode === 'fiat') {
+      setOrderType(fav.type === 1 ? 'buy' : 'sell');
+    } else {
+      setOrderType(fav.type === 1 ? 'swapin' : 'swapout');
+    }
+  }, [fav.mode, fav.type]);
 
   const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
     const currency = Number(e.target.value);
@@ -61,14 +59,53 @@ const BookControl = ({
     setFav({ ...fav, coordinator });
   };
 
-  const handleTypeChange = function (mouseEvent: React.MouseEvent, val: number): void {
-    setFav({ ...fav, type: val });
+  const handleOrderTypeChange = (mouseEvent: React.MouseEvent, select: object): void => {
+    if (select.props.value === 'sell') {
+      const currency = fav.currency === 1000 ? 0 : fav.currency;
+      setFav({ ...fav, mode: 'fiat', type: 0, currency });
+    } else if (select.props.value === 'buy') {
+      const currency = fav.currency === 1000 ? 0 : fav.currency;
+      setFav({ ...fav, mode: 'fiat', type: 1, currency });
+    } else if (select.props.value === 'swapin') {
+      setFav({ ...fav, mode: 'swap', type: 1, currency: 1000 });
+    } else if (select.props.value === 'swapout') {
+      setFav({ ...fav, mode: 'swap', type: 0, currency: 1000 });
+    } else {
+      const currency = fav.currency === 1000 ? 0 : fav.currency;
+      setFav({ ...fav, mode: 'fiat', type: null, currency });
+    }
+    setOrderType(select.props.value);
   };
 
-  const handleModeChange = function (mouseEvent: React.MouseEvent, val: number): void {
-    const mode = fav.mode === 'fiat' ? 'swap' : 'fiat';
-    const currency = fav.mode === 'fiat' ? 1000 : 0;
-    setFav({ ...fav, mode, currency });
+  const orderTypeIcon = (value: string): React.ReactNode => {
+    let component = <CheckBoxOutlineBlankIcon />;
+    let text = t('ANY');
+    if (value === 'sell') {
+      component = <SendReceiveIcon color='secondary' sx={{ transform: 'scaleX(-1)' }} />;
+      text = t('Sell');
+    } else if (value === 'buy') {
+      component = <SendReceiveIcon color='primary' />;
+      text = t('Buy');
+    } else if (value === 'swapin') {
+      component = <SwapCalls color='secondary' />;
+      text = t('Swap In');
+    } else if (value === 'swapout') {
+      component = <SwapCalls color='primary' />;
+      text = t('Swap Out');
+    }
+
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginRight: 1 }}>
+        {component}
+        {width > medium ? (
+          <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+            {` ${text}`}
+          </Typography>
+        ) : (
+          <></>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -89,63 +126,69 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        {width > small ? (
-          <Grid item>
-            <Tooltip
-              placement='bottom'
-              enterTouchDelay={200}
-              enterDelay={700}
-              enterNextDelay={2000}
-              title={t('Show Lightning swaps')}
-            >
-              <ToggleButtonGroup
-                sx={{
-                  height: '2.6em',
-                  backgroundColor: theme.palette.background.paper,
-                  border: '0.5px solid',
-                  borderColor: 'text.disabled',
-                  '&:hover': {
-                    borderColor: 'text.primary',
-                    border: '1px solid',
-                  },
-                }}
-                size='small'
-                exclusive={true}
-                value={fav.mode}
-                onChange={handleModeChange}
-              >
-                <ToggleButton value={'swap'} color={'secondary'}>
-                  <SwapCalls />
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Tooltip>
-          </Grid>
-        ) : null}
-
         <Grid item>
-          <ToggleButtonGroup
+          <Select
             sx={{
-              height: '2.6em',
-              backgroundColor: theme.palette.background.paper,
+              height: '2.3em',
               border: '0.5px solid',
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: '4px',
               borderColor: 'text.disabled',
               '&:hover': {
                 borderColor: 'text.primary',
-                border: '1px solid',
               },
             }}
             size='small'
-            exclusive={true}
-            value={fav.type}
-            onChange={handleTypeChange}
+            label={t('Select Order Type')}
+            required={true}
+            value={orderType}
+            inputProps={{
+              style: { textAlign: 'center' },
+            }}
+            renderValue={orderTypeIcon}
+            onChange={handleOrderTypeChange}
           >
-            <ToggleButton value={1} color={'primary'}>
-              {typeZeroText}
-            </ToggleButton>
-            <ToggleButton value={0} color={'secondary'}>
-              {typeOneText}
-            </ToggleButton>
-          </ToggleButtonGroup>
+            <MenuItem value='any' style={{ width: '8em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <CheckBoxOutlineBlankIcon />
+                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                  {' ' + t('ANY')}
+                </Typography>
+              </div>
+            </MenuItem>
+            <MenuItem value='sell' style={{ width: '8em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <SendReceiveIcon color='secondary' sx={{ transform: 'scaleX(-1)' }} />
+                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                  {' ' + t('Sell')}
+                </Typography>
+              </div>
+            </MenuItem>
+            <MenuItem value='buy' style={{ width: '8em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <SendReceiveIcon color='primary' />
+                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                  {' ' + t('Buy')}
+                </Typography>
+              </div>
+            </MenuItem>
+            <MenuItem value='swapin' style={{ width: '8em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <SwapCalls color='secondary' />
+                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                  {' ' + t('Swap In')}
+                </Typography>
+              </div>
+            </MenuItem>
+            <MenuItem value='swapout' style={{ width: '8em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <SwapCalls color='primary' />
+                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                  {' ' + t('Swap Out')}
+                </Typography>
+              </div>
+            </MenuItem>
+          </Select>
         </Grid>
 
         {width > large && fav.mode === 'fiat' ? (
@@ -318,68 +361,66 @@ const BookControl = ({
         ) : null}
 
         {width > large ? (
-          <>
-            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-              <Typography variant='caption' color='text.secondary'>
-                {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('hosted by')}
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Select
-                autoWidth
-                sx={{
-                  height: '2.3em',
-                  border: '0.5px solid',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: '4px',
-                  borderColor: 'text.disabled',
-                  '&:hover': {
-                    borderColor: 'text.primary',
-                  },
-                }}
-                size='small'
-                label={t('Select Host')}
-                required={true}
-                value={fav.coordinator}
-                inputProps={{
-                  style: { textAlign: 'center' },
-                }}
-                onChange={handleHostChange}
-              >
-                <MenuItem value='any'>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <FlagWithProps code='ANY' />
-                  </div>
-                </MenuItem>
-                <MenuItem value='robosats'>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <RoboSatsNoText sx={{ color: '#1976d2' }} />
-                  </div>
-                </MenuItem>
-                {federation
-                  .getCoordinators()
-                  .filter((coord) => coord.enabled)
-                  .map((coordinator) => (
-                    <MenuItem
-                      key={coordinator.shortAlias}
-                      value={coordinator.shortAlias}
-                      color='text.secondary'
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <RobotAvatar
-                          shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
-                          hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
-                          style={{ width: '1.55em', height: '1.55em' }}
-                          smooth={true}
-                          small={true}
-                        />
-                      </div>
-                    </MenuItem>
-                  ))}
-              </Select>
-            </Grid>
-          </>
+          <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+            <Typography variant='caption' color='text.secondary'>
+              {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('hosted by')}
+            </Typography>
+          </Grid>
         ) : null}
+        <Grid item>
+          <Select
+            autoWidth
+            sx={{
+              height: '2.3em',
+              border: '0.5px solid',
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: '4px',
+              borderColor: 'text.disabled',
+              '&:hover': {
+                borderColor: 'text.primary',
+              },
+            }}
+            size='small'
+            label={t('Select Host')}
+            required={true}
+            value={fav.coordinator}
+            inputProps={{
+              style: { textAlign: 'center' },
+            }}
+            onChange={handleHostChange}
+          >
+            <MenuItem value='any'>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <FlagWithProps code='ANY' />
+              </div>
+            </MenuItem>
+            <MenuItem value='robosats'>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <RoboSatsNoText sx={{ color: '#1976d2' }} />
+              </div>
+            </MenuItem>
+            {federation
+              .getCoordinators()
+              .filter((coord) => coord.enabled)
+              .map((coordinator) => (
+                <MenuItem
+                  key={coordinator.shortAlias}
+                  value={coordinator.shortAlias}
+                  color='text.secondary'
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <RobotAvatar
+                      shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
+                      hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                      style={{ width: '1.55em', height: '1.55em' }}
+                      smooth={true}
+                      small={true}
+                    />
+                  </div>
+                </MenuItem>
+              ))}
+          </Select>
+        </Grid>
       </Grid>
       <Divider />
     </Box>

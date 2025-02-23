@@ -40,7 +40,7 @@ body:
             "Rule #2": "You DO NOT talk about RoboSats Club",
           },
           "mainnet": {
-            "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+            "onion": "http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion",
             "clearnet": "https://coordinator-address.com"
             "i2p": "http:///.........b32.i2p"
           },
@@ -104,8 +104,8 @@ body:
     id: devfund
     attributes:
       label: DevFund Donations
-      description: | 
-        What percentage of trade revenue will you donate to the RoboSats Development Fund? 
+      description: |
+        What percentage of trade revenue will you donate to the RoboSats Development Fund?
       placeholder: e.g. 20%
     validations:
       required: true
@@ -113,9 +113,9 @@ body:
     id: pgp
     attributes:
       label: "PGP Public Key and Fingerprint"
-      description: | 
+      description: |
         Your permanent identity. If needed, you may have to verify your identity to robots or other coordinators by signing a message.
-      placeholder: | 
+      placeholder: |
         e.g. Pubkey repo: https://keys.openpgp.org//vks/v1/by-fingerprint/...
         Fingerprint: 1234 5678 90AB CDEF 1234 5678 90AB CDEF 1234
     validations:
@@ -170,7 +170,7 @@ body:
     attributes:
       label: Onion Mainnet Coordinator Service Address
       description: The Onion hidden service where your MAINNET RoboSats coordinator API can be found.
-      placeholder: e.g. http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
+      placeholder: e.g. http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion
     validations:
       required: true
   - type: input
@@ -242,7 +242,7 @@ body:
     attributes:
       value: |
         ## Contact Methods
-        Only one contact method is required, but multiple are preferred. Find a balance between accessibility and operational security (too many contact methods increase the surface area and might harm OpSec). 
+        Only one contact method is required, but multiple are preferred. Find a balance between accessibility and operational security (too many contact methods increase the surface area and might harm OpSec).
         Contact methods below are sorted by importance.
   - type: input
     id: email

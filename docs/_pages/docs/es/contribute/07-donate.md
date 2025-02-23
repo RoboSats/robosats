@@ -17,11 +17,7 @@ Puedes donar de las siguientes maneras:
 
  - **Envíanos un zapp en Nostr:**
  Todos los zaps de Nostr se destinarán al equipo de medios sociales.
- Aquí está la cuenta de nPub para RoboSats :
-
- ```
-npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
- ```
+ Aquí está la cuenta de nPub para RoboSats : https://njump.me/npub1gdfr0r0an32jalqryqlvpn3gsef2hu832wv6kp5p2gt2aqa2n8yqd42ffw
 
  - **Sugiere directamente a los desarrolladores que estén trabajando en las funciones que te gusten.** Consulta los [PR activos](https://github.com/RoboSats/robosats/pulls) y muestra tu apoyo a los desarrolladores a través de las sugerencias Lightning. Simplemente escribe un mensaje, por ejemplo "@nombre_del_desarrollador, me gustaría financiar el desarrollo de esta función con 6000 Sats". El desarrollador debería responder con una factura LN con un largo tiempo de expiración.
 

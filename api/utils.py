@@ -447,7 +447,7 @@ def verify_signed_message(pub_key, signed_message):
     # verify the signed message
     verified = gpg.verify(signed_message)
 
-    if verified.fingerprint == import_result.fingerprints[0]:
+    if verified.valid and verified.fingerprint == import_result.fingerprints[0]:
         header = "-----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA512\n\n"
         footer = "-----BEGIN PGP SIGNATURE-----"
         cleartext_message = signed_message.split(header)[1].split(footer)[0].strip()

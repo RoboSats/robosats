@@ -5,8 +5,9 @@ services:
   frontend:
     build: ../frontend
     container_name: nodeapp-dev-frontend
-    restart: always
-    command: npm run dev
+    volumes:
+      - ../frontend:/usr/src/frontend
+      - ./:/usr/src/nodeapp
 
   nginx:
     build: .
