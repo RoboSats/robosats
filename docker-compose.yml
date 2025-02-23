@@ -110,7 +110,9 @@ services:
     container_name: cele-worker-dev
     restart: always
     environment:
-      REDIS_URL: redis://localhost:6379
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_DB_NUMBER: 1
       SKIP_COLLECT_STATIC: "true"
     volumes:
       - .:/usr/src/robosats
@@ -127,7 +129,9 @@ services:
     container_name: cele-beat-dev
     restart: always
     environment:
-      REDIS_URL: redis://localhost:6379
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_DB_NUMBER: 1
       SKIP_COLLECT_STATIC: "true"
     command: celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
