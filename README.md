@@ -31,6 +31,8 @@ https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-
 - **[English](https://learn.robosats.org/read/en)**
 - **[Español](https://learn.robosats.org/read/es)**
 - **[Deutsch](https://learn.robosats.org/read/de)**
+- **[Français](https://learn.robosats.org/read/fr)**
+- **[Русский](https://learn.robosats.org/read/ru)**
 
 ### Video guides
 - **[English](https://learn.robosats.org/watch/en/)**
