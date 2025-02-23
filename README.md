@@ -40,6 +40,8 @@ https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-
 - **[Deutsch](https://learn.robosats.org/watch/de)**
 - **[Português](https://learn.robosats.org/watch/pt)**
 - **[Polski](https://learn.robosats.org/watch/pl)**
+- **[Français](https://learn.robosats.org/watch/fr)**
+- **[Русский](https://learn.robosats.org/watch/ru)**
 
 ## How it works
 
