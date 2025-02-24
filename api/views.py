@@ -23,6 +23,7 @@ from api.models import (
     OnchainPayment,
     Order,
     Notification,
+    TakeOrder,
 )
 from api.notifications import Notifications
 from api.oas_schemas import (
@@ -245,10 +246,22 @@ class OrderView(viewsets.ViewSet):
         # Add booleans if user is maker, taker, partipant, buyer or seller
         data["is_maker"] = order.maker == request.user
         data["is_taker"] = order.taker == request.user
-        data["is_participant"] = data["is_maker"] or data["is_taker"]
+        data["is_pretaker"] = (
+            not data["is_taker"]
+            and TakeOrder.objects.filter(
+                taker=request.user, order=order, expires_at__gt=timezone.now()
+            ).exists()
+        )
+        data["is_participant"] = (
+            data["is_maker"] or data["is_taker"] or data["is_pretaker"]
+        )
 
         # 3.a) If not a participant and order is not public, forbid.
-        if not data["is_participant"] and order.status != Order.Status.PUB:
+        if (
+            not data["is_maker"]
+            and not data["is_taker"]
+            and order.status != Order.Status.PUB
+        ):
             return Response(
                 {"bad_request": "This order is not available"},
                 status.HTTP_403_FORBIDDEN,
@@ -355,9 +368,16 @@ class OrderView(viewsets.ViewSet):
             else:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER hold invoice.
-        elif order.status == Order.Status.TAK and data["is_taker"]:
+        # 6)  If status is 'Public' and user is PRETAKER, reply with a TAKER hold invoice.
+        elif (
+            order.status == Order.Status.PUB
+            and data["is_pretaker"]
+            and not data["is_taker"]
+        ):
+            data["total_secs_exp"] = order.t_to_expire(Order.Status.TAK)
+
             valid, context = Logics.gen_taker_hold_invoice(order, request.user)
+
             if valid:
                 data = {**data, **context}
             else:
@@ -547,14 +567,20 @@ class OrderView(viewsets.ViewSet):
                     status.HTTP_400_BAD_REQUEST,
                 )
 
+        # 2) If action is cancel
+        elif action == "cancel":
+            valid, context = Logics.cancel_order(order, request.user)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
         # Any other action is only allowed if the user is a participant
-        if not (order.maker == request.user or order.taker == request.user):
+        elif not (order.maker == request.user or order.taker == request.user):
             return Response(
                 {"bad_request": "You are not a participant in this order"},
                 status.HTTP_403_FORBIDDEN,
             )
 
-        # 2) If action is 'update invoice'
+        # 3) If action is 'update invoice'
         elif action == "update_invoice":
             # DEPRECATE post v0.5.1.
             valid_signature, invoice = verify_signed_message(
@@ -573,7 +599,7 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 2.b) If action is 'update address'
+        # 3.b) If action is 'update address'
         elif action == "update_address":
             valid_signature, address = verify_signed_message(
                 request.user.robot.public_key, pgp_address
@@ -591,25 +617,19 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 3) If action is cancel
-        elif action == "cancel":
-            valid, context = Logics.cancel_order(order, request.user)
-            if not valid:
-                return Response(context, status.HTTP_400_BAD_REQUEST)
-
-        # 4) If action is confirm
+        # 5) If action is confirm
         elif action == "confirm":
             valid, context = Logics.confirm_fiat(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 4.b) If action is confirm
+        # 5.b) If action is confirm
         elif action == "undo_confirm":
             valid, context = Logics.undo_confirm_fiat_sent(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 5) If action is dispute
+        # 6) If action is dispute
         elif action == "dispute":
             valid, context = Logics.open_dispute(order, request.user)
             if not valid:
@@ -620,18 +640,18 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6) If action is rate
+        # 7) If action is rate
         elif action == "rate_user" and rating:
             """No user rating"""
             pass
 
-        # 7) If action is rate_platform
+        # 8) If action is rate_platform
         elif action == "rate_platform" and rating:
             valid, context = Logics.rate_platform(request.user, rating)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 8) If action is rate_platform
+        # 9) If action is rate_platform
         elif action == "pause":
             valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:

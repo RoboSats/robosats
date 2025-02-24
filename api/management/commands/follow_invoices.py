@@ -234,12 +234,20 @@ class Command(BaseCommand):
                     )
                     return
 
-                # It is a taker bond => close contract.
-                elif hasattr(lnpayment, "order_taken"):
-                    if lnpayment.order_taken.status == Order.Status.TAK:
-                        lnpayment.order_taken.log("Taker bond <b>locked</b>")
-                        Logics.finalize_contract(lnpayment.order_taken)
-                        return
+                # It is a taker bond
+                elif hasattr(lnpayment, "take_order"):
+                    if lnpayment.take_order.order.status == Order.Status.PUB:
+                        # It there was no other taker already locked => close contract.
+                        lnpayment.take_order.order.log("Taker bond <b>locked</b>")
+                        Logics.finalize_contract(lnpayment.take_order)
+                    else:
+                        # It there was another taker already locked => cancel bond.
+                        lnpayment.take_order.order.log(
+                            "Another taker bond is already locked, <b>Cancelling</b>"
+                        )
+                        Logics.take_order_expires(lnpayment.take_order)
+
+                    return
 
                 # It is a trade escrow => move foward order status.
                 elif hasattr(lnpayment, "order_escrow"):
@@ -272,12 +280,18 @@ class Command(BaseCommand):
                 Logics.order_expires(lnpayment.order_made)
                 return
 
-            elif hasattr(lnpayment, "order_taken"):
-                Logics.order_expires(lnpayment.order_taken)
+            elif hasattr(lnpayment, "take_order"):
+                Logics.take_order_expires(lnpayment.take_order)
+                if hasattr(lnpayment, "order_taken"):
+                    Logics.order_expires(lnpayment.order_taken)
                 return
 
             elif hasattr(lnpayment, "order_escrow"):
                 Logics.order_expires(lnpayment.order_escrow)
+                return
+
+            elif hasattr(lnpayment, "take_order"):
+                Logics.take_order_expires(lnpayment.order_escrow)
                 return
 
         # TODO If a lnpayment goes from LOCKED to INVGEN. Totally weird

@@ -338,6 +338,7 @@ paths:
         - `total_secs_exp`
         - `penalty`
         - `is_maker`
+        - `is_pretaker`
         - `is_taker`
         - `is_participant`
         - `maker_status`
@@ -1386,6 +1387,9 @@ components:
         is_maker:
           type: boolean
           description: Whether you are the maker or not
+        is_pretaker:
+          type: boolean
+          description: Whether you are a pre-taker or not
         is_taker:
           type: boolean
           description: Whether you are the taker or not
