@@ -29,9 +29,16 @@
   <body>
     <noscript>
       <div>
-        This site requires JavaScript. This message is only visible if you have it disabled. <br/><br/>
-        If you are using TOR browser set the "Security Level" to "Standard". If you keep seeing this message clear cache and storage of TOR browser app and retry.<br/><br/>
-        If the problem persists, ask for support in the RoboSats telegram group<a href="https://t.me/robosats"> (t.me/robosats)</a>
+        This site requires JavaScript to function properly. <br/><br/>
+        If you're using the Tor Browser, please follow these steps to enable JavaScript:
+        <ul>
+          <li>Click the onion icon in the top left corner of your browser.</li>
+          <li>Navigate to "Security Settings" (the "shield" icon).</li>
+          <li>Set the "Security Level" to "Standard" (not "Safer" or "Safest").</li>
+        </ul>
+        <br/>
+        If you're still encountering issues, try clearing your cache and storage by going to your Tor Browser settings, then retry loading the page.<br/><br/>
+        If you need further assistance, please ask for support in our <a href="https://t.me/robosats">RoboSats Telegram group</a> or visit our FAQ page.
       </div>
     </noscript>
     <div id="main">
@@ -62,6 +69,7 @@
             </div>
         </div>
       </div>
+    </div>
     </div>
     <script>
       window.RobosatsSettings = '<%= htmlWebpackPlugin.options.robosatsSettings %>'
