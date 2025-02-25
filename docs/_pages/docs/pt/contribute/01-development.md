@@ -24,14 +24,13 @@ _!!! Cuidado com golpistas que se passam por administradores do RoboSats. Os adm
 
 - **Matrix:** [Grupo de Desenvolvimento do RoboSats](https://matrix.to/#/#robosats:matrix.org). Grupo de chat principal de comunicação entre desenvolvedores, onde discussões abertas e técnicas sobre o desenvolvimento ocorrem. Discussões sobre mudanças de código acontecem em issues e pull requests (PRs) do GitHub.
 
-- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Anuncia atualizações do projeto, compartilha dicas e truques de uso do RoboSats e discute outros tópicos relacionados à privacidade. Sinta-se à vontade para fazer perguntas e compartilhar sua experiência usando o RoboSats! O personagem pseudônimo "Robotoshi", um robô amante da privacidade e às vezes atrevido, administra o Twitter do RoboSats e faz o possível para responder às perguntas! Lembre-se de que o grupo público do Simplex mencionado anteriormente pode ser mais eficaz para buscar ajuda técnica e usuários que buscam ajuda em disputas serão direcionados para o chat do SimpleX.
 
 ## Fluxo de Contribuição
 
 Todos os contribuidores do RoboSats enviam alterações através de pull requests. O fluxo de trabalho é o seguinte:
 
 - Faça um fork do repositório
-- Crie um branch de tópico a partir do branch main
+- Crie um branch de tópico a partir do branch `main`
 - Faça commits nas alterações
 - Agrupe commits redundantes ou desnecessários
 - Envie um pull request do seu branch de tópico de volta para o branch main do repositório principal

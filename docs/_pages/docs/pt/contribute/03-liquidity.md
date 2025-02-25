@@ -16,7 +16,7 @@ Uma maneira de contribuir para o RoboSats é abrindo um canal para o [nó coorde
 
 RoboSats não é um nó de roteamento típico da Rede Lightning. Um nó destinado ao roteamento de pagamentos deseja canais balanceados para maximizar a chance de roteamento bem-sucedido de pagamentos. O nó coordenador experimental do RoboSats deseja maximizar:
 
-1. A quantidade de HTLCs pendentes simultâneos sem falha (vínculo/garantia).
+1. A quantidade de HTLCs pendentes simultâneos sem falha (bond/escrow).
 2. A confiabilidade dos pagamentos recebidos sendo pagos aos usuários, independentemente do canal.
 
 Com isso dito, não importa se toda a liquidez de saída do nó coordenador experimental do RoboSats está concentrada em dois canais, desde que, ao pagar um comprador, os nós conectados roteiem efetivamente o pagamento. A concentração de liquidez de alguns canais é apenas um problema para nodes mal conectados.

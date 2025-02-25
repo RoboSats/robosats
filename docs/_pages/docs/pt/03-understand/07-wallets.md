@@ -63,7 +63,7 @@ Funciona bem com RoboSats. As faturas hodl (Bonds) aparecem como "Pendentes" no 
 
 
 ### Blixt (Android/iOS, backend leve LND no dispositivo)
-A maioria dos testes de desenvolvimento para RoboSats foi feita usando o Blixt. Esta é uma das carteiras Lightning mais completas disponíveis. No entanto, pode levar a mal-entendidos quando faturas hodl estão bloqueadas, pois mostra um spinner com o pagamento em trânsito. O usuário precisa verificar no site para confirmação. Blixt permite múltiplos HTLCs pendentes; isso é necessário como vendedor, pois você precisa bloquear um bond taker/maker e depois uma garantia de negociação (2 HTLCs pendentes concorrentes). Eventualmente, também pode exibir faturas pagas/carregadas que ainda estão pendentes, especialmente se o usuário fechar o Blixt à força e reabri-lo. Ocasionalmente, pode exibir faturas de fidelidade como pagas que na verdade foram devolvidas.
+A maioria dos testes de desenvolvimento para RoboSats foi feita usando o Blixt. Esta é uma das carteiras Lightning mais completas disponíveis. No entanto, pode levar a mal-entendidos quando faturas hodl estão bloqueadas, pois mostra um spinner com o pagamento em trânsito. O usuário precisa verificar no site para confirmação. Blixt permite múltiplos HTLCs pendentes; isso é necessário como vendedor, pois você precisa bloquear um bond taker/maker e depois um trade escrow (2 HTLCs pendentes concorrentes). Eventualmente, também pode exibir faturas pagas/carregadas que ainda estão pendentes, especialmente se o usuário fechar o Blixt à força e reabri-lo. Ocasionalmente, pode exibir bonds como pagos que na verdade foram devolvidos.
 
 ### Bluewallet (Mobile)
 Funciona bem. A Bluewallet encerrou seu serviço custodial. Anteriormente, o serviço custodial causava problemas onde as garantias que a RoboSats devolve são cobradas dos usuários e onde bonds cortados são cobrados duas vezes pela Bluewallet! Este era um bug conhecido por muito tempo na Bluewallet, então eles encerraram seu serviço custodial de LN (o que acabou tornando a experiência da RoboSats mais suave para os usuários).
@@ -79,16 +79,18 @@ Funciona bem com RoboSats. As faturas hodl (Bonds) aparecem como "Pendentes" no 
 Funciona conforme o esperado. O comando `lightning-cli pay <invoice>` não é concluído enquanto o pagamento está pendente, mas é possível usar `lightning-cli paystatus <invoice>` para monitorar o estado.
 
 ### Electrum (Desktop)
-Funciona conforme o esperado. Alguns pagamentos e bloqueios podem falhar dependendo do nó Lightning para o qual o canal é criado. Canais para ASINQ funcionam bem.
+Esta carteira costumava funcionar bem com canais criados para a ACINQ.
+As versões recentes não conseguem criar esse canal com sucesso.
 
 ### LND (Interface de Linha de Comando - CLI)
-Bruto; mostra exatamente o que está acontecendo e o que ele sabe "IN_FLIGHT". Não é amigável para o usuário e, portanto, não é recomendado interagir com a RoboSats para iniciantes. No entanto, tudo funciona perfeitamente. Se você estiver usando o LNCLI regularmente, então não encontrará problemas em usá-lo com a RoboSats.
+Raw; mostra exatamente o que está acontecendo e o que ele sabe "IN_FLIGHT". Não é amigável para o usuário e, portanto, não é recomendado interagir com a RoboSats para iniciantes. No entanto, tudo funciona perfeitamente. Se você estiver usando o LNCLI regularmente, então não encontrará problemas em usá-lo com a RoboSats.
 
 ### Mash Wallet App (Mobile PWA e Desktop Web-Wallet)
 No geral, a carteira [Mash](https://mash.com/consumer-experience/) funciona end2end com a Robosats tanto na venda quanto na compra por meio do Lightning. A maioria dos detalhes relevantes da fatura na carteira Mash são mostrados e claros para os usuários durante todo o processo. Quando as transações são concluídas, elas são abertas no aplicativo móvel em ambos os lados, remetente e destinatário, para destacar que as transações foram concluídas. O único problema de UX é que a lista de faturas pendentes não mostra explicitamente faturas HOLD e há uma tela "giratória" no primeiro pagamento da fatura HOLD. A equipe tem um bug aberto para corrigir este problema em breve (esta observação é de 21 de agosto de 2023).
 
 ### Muun (Mobile)
-Semelhante ao Blixt ou LND, o Muun se dá bem com faturas hodl. Você pode ser um vendedor na RoboSats usando Muun e a experiência do usuário será ótima. No entanto, para ser um comprador ao usar Muun, você precisa fornecer um endereço na blockchain para o pagamento, já que uma fatura Lightning não funcionará. O Muun está _desviando taxas, atacando_ qualquer de forma sorrateira de qualquer remetente para a carteira Muun. Há um salto obrigatório por meio de um canal privado com uma taxa de +1500ppm. A RoboSats **não encaminhará um pagamento para um comprador que resulte em uma perda líquida**. Dado que as taxas de negociação da RoboSats são {{site.robosats.total_fee}}% e elas precisam cobrir as taxas de roteamento, a RoboSats nunca encontrará uma rota adequada para um usuário da carteira Muun. No momento, a RoboSats escaneará sua fatura por dicas de roteamento que possam potencialmente codificar um ataque às _taxas, _desviando_. Se esse truque for encontrado, então a fatura será rejeitada: forneça um endereço na blockchain em vez disso para uma troca instantânea. Consulte [Entender > Pagamentos on-chain](/docs/pt/on-chain-payouts/) para mais informações sobre trocas instantâneas. Importante notar que o Muun tem problemas durante períodos de aumento nas taxas da blockchain. Independentemente disso, a solução alternativa para receber no Muun é: ou fornecer um endereço na blockchain ou escolher um orçamento de roteamento mais alto após habilitar a opção "Opções Avançadas".
+Carteira autocustodial com uma interface minimalista.
+Semelhante ao Blixt ou LND, a Muun funciona bem com faturas de hold. Você pode ser um vendedor no RoboSats usando a Muun e a experiência do usuário será ótima. No entanto, para ser um comprador ao usar a Muun, você precisa enviar um endereço on-chain para o pagamento, pois uma fatura Lightning não funcionará. A Muun está _atacando com siphoning de taxas_ qualquer remetente para a carteira Muun. Há uma passagem obrigatória por um canal privado com uma taxa de +1500ppm. O RoboSats não irá roteirizar um pagamento de comprador para uma perda líquida. Dado que as taxas de negociação do RoboSats são {{site.robosats.total_fee}}% e precisam cobrir as taxas de roteamento, **o RoboSats nunca encontrará uma rota adequada para um usuário da carteira Muun**. No momento, o RoboSats irá escanear sua fatura em busca de dicas de roteamento que podem potencialmente codificar um _ataque de siphoning de taxas_. Se esse truque for encontrado, a fatura será rejeitada: envie um endereço on-chain em vez disso para uma troca instantânea. Consulte [Entender > Pagamentos on-chain](/docs/pt/on-chain-payouts/) para mais informações sobre trocas instantâneas. Importante notar que o Muun tem problemas durante períodos de aumento nas taxas da blockchain. Independentemente disso, a solução alternativa para receber no Muun é: ou fornecer um endereço na blockchain ou escolher um orçamento de roteamento mais alto após habilitar a opção "Opções Avançadas".
 
 
 ### OBW (Mobile)
@@ -96,8 +98,6 @@ Um dos mais simples e um dos melhores. A fatura hodl é exibida como "em voo", n
 *Atualização 26-10-23: Neste momento, não há desenvolvimento ou suporte.
 
 ### Phoenix (Mobile)
-Phoenix funciona muy bien como tomador de ordenes. Phoenix también funcionará bien como creador de ordenes, siempre que la configuración de la orden `duración pública` + `duración del depósito` sea inferior a 10 horas. De lo contrario, es posible que haya problemas para bloquear la fianza de creador. Si la duración total de los invoice de las fianzas/depositos supera los 450 bloques, Phoenix no permitirá que los usuarios bloqueen la fianza (`No se puede agregar htlc (...) razón = caducidad demasiado grande`).
-
 O Phoenix funciona muito bem como tomador de ordens. O Phoenix também funcionará bem como criador de ordens, desde que a configuração do pedido `duração pública` + `duração do depósito` seja inferior a 10 horas. Caso contrário, pode haver problemas para bloquear a fiança do criador. Se a duração total das faturas das fianças/depósitos exceder 450 blocos, o Phoenix não permitirá que os usuários bloqueiem a fiança (`Não é possível adicionar HTLC (...) razão = expiração muito grande`).
 
 ### SBW (Mobile)
@@ -108,7 +108,7 @@ A partir da versão 2.5, não suporta Lightning.
 
 
 ## <i class="fa-solid fa-code-pull-request"></i> Ajude a manter esta página atualizada
-Há muitas carteiras e todas continuam melhorando à velocidade da luz. Você pode contribuir para o projeto de código aberto RoboSats testando as carteiras, editando [o conteúdo desta página](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{{page.src}}) e abrindo um [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
+Há muitas carteiras e todas continuam melhorando à velocidade da lightning. Você pode contribuir para o projeto de código aberto RoboSats testando as carteiras, editando [o conteúdo desta página](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{{page.src}}) e abrindo um [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
 
 
 ## Informações adicionais

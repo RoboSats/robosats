@@ -12,7 +12,7 @@ src: "_pages/docs/pt/03-understand/03-premium.md"
 
 O prêmio associado ao seu pedido peer-to-peer é a diferença de preço que existe acima ou abaixo da taxa atual do bitcoin-fiat encontrada em suas exchanges centralizadas típicas.
 
-Ao navegar na carteira de ordens, o preço de troca de bitcoin das ordens ao vivo é automaticamente ajustado para incluir o prêmio correspondente do pedido.
+Ao navegar na livro de ofertas, o preço de troca de bitcoin das ordens ao vivo é automaticamente ajustado para incluir o prêmio correspondente do pedido.
 
 Na parte inferior da interface da exchange está o preço prêmio do mercado nas últimas 24 horas, geralmente em torno de +5%, e é esperado em um ambiente privado ponto a ponto.
 
@@ -24,7 +24,7 @@ Crie uma ordem e insira o "Prêmio sobre Mercado (%)", que pode ser um valor per
 
 Ou, em vez da configuração padrão, os criadores de ordens podem selecionar o método de precificação explícito (_ver nota de rodapé_) escolhendo uma quantidade exata de Sats para trocar pelo valor fiduciário fornecido.
 
-Ao selecionar um prêmio, considere os métodos de pagamento e o valor que você escolheu; Estes, juntamente com o bônus desejado, competirão com outras ordens em tempo real para incentivar e atrair os robôs que recebem s. Experimente diferentes prêmios para encontrar aquele que melhor se adapta aos suas ordens específicas.
+Ao selecionar um prêmio, considere os métodos de pagamento e o valor que você escolheu; Estes, juntamente com o bônus desejado, competirão com outras ordens em tempo real para incentivar e atrair outros robôs. Experimente diferentes prêmios para encontrar aquele que melhor se adapta aos suas ordens específicas.
 
 Se você comprar bitcoin, um prêmio mais alto aumenta as chances de um vendedor aceitar a ordem; Ou, se você vender bitcoin, um prêmio mais alto diminuirá as chances de um comprador aceitar a ordem. Como criador da ordem, você verá como o prêmio da sua ordem se compara a outras ordens ativas na mesma moeda.
 
@@ -63,6 +63,6 @@ A privacidade é valiosa tanto para o comprador quanto para o vendedor e sempre 
 
 O prêmio relativo refere-se às taxas de câmbio atuais das APIs públicas, especificamente aos preços blockchain.io e yadio.io. O preço médio do bitcoin na moeda selecionada é então calculado e exibido como a taxa de mercado após o seu prêmio.
 
-O prêmio de 24 horas mostrado na interface da exchange é determinado pela mediana ponderada, e não pela média, de pedidos bem-sucedidos nas últimas 24 horas. Este método de cálculo é mais resistente a outliers e mais representativo do consenso do mercado peer-to-peer. Por outras palavras, o usuário final deve ver este valor como o prêmio que pode esperar pagar aproximadamente por uma encomenda.
+O prêmio de 24 horas mostrado na interface da exchange é determinado pela mediana ponderada, e não pela média, de pedidos bem-sucedidos nas últimas 24 horas. Este método de cálculo é mais resistente a outliers e mais representativo do consenso do mercado peer-to-peer. Por outras palavras, o usuário final deve ver este valor como o prêmio que pode esperar pagar aproximadamente por uma ordem.
 
 {% include improve_pt %}

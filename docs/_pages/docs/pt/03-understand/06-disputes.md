@@ -16,7 +16,7 @@ Suporte e mediação de disputas estão disponíveis por meio do chat público d
 
 Existem outros chats de grupo públicos disponíveis, mas questões relacionadas a disputas devem ser levadas ao chat do grupo no SimpleX.
 
-_Nota: Os funcionários do RoboSats NUNCA entrarão em contato diretamente com você em particular. Fique atento a golpistas que se passam por funcionários do RoboSats e administradores de grupos. Você sempre deve estar atento quando alguém pedir para você enviar bitcoin para receber ajuda._
+_Nota: A equipe do RoboSats NUNCA enviará mensagens diretas para você em privado. Fique atento a golpistas que se passam pela equipe do RoboSats e pelos administradores do grupo. Você deve sempre ter cautela quando alguém pede que você envie bitcoin para receber ajuda._
 
 ## **Exemplo de disputa**
 

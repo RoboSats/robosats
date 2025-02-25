@@ -37,7 +37,7 @@ feature_row:
   - image_path: /assets/images/misc/feature-fast.png
     alt: "fast"
     title: "Lightning Fast"
-    excerpt: "Trocar P2P nunca foi tão rápido! As faturas do LN Hodl servem como títulos e garantias para alta garantia e velocidade. Do início ao fim antes que o próximo bloco seja minerado!"
+    excerpt: "Trocar P2P nunca foi tão rápido! As faturas do LN Hodl servem como bonds e escrows para alta garantia e velocidade. Do início ao fim antes que o próximo bloco seja minerado!"
     url: "/docs/pt/fast/"
     btn_class: "btn--primary"
     btn_label: "Aprender mais"

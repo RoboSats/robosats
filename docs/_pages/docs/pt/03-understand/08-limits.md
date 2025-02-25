@@ -18,7 +18,7 @@ No entanto, não há limites para a quantidade de negociações que você pode f
 
 O motivo de ter um limite na quantidade de Sats que você pode enviar/receber com a RoboSats é minimizar as falhas de roteamento da Lightning. Isso torna a experiência do usuário final com a RoboSats muito mais suave para garantir que os fundos sejam pagos de forma confiável.
 
-Quanto mais Sats você tentar enviar pela LN, mais difícil será encontrar um caminho. Se não houvesse limites em um pedido, então um usuário poderia tentar receber sats que nunca encontrariam uma rota adequada.
+Quanto mais Sats você tentar enviar pela LN, mais difícil será encontrar um caminho. Se não houvesse limites em uma ordem, então um usuário poderia tentar receber sats que nunca encontrariam uma rota adequada.
 
 Para reduzir dores de cabeça e simplificar a experiência, um limite está em vigor que é sensato para as realidades da capacidade média de canal em toda a Lightning Network. Por exemplo, tentar receber 10M Sats pode nunca ser pago quando a capacidade média de canal da rede está [bem abaixo de 10M Sats](https://1ml.com/statistics).
 

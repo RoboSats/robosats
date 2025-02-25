@@ -16,9 +16,9 @@ Guias, tutoriais, demonstrações, etc. são adições inestimáveis ao site do 
 
 ## Coisas a considerar
 
-Para fornecer aos seus leitores/telespectadores as informações mais precisas sobre a plataforma, considere dar uma olhada breve na documentação do RoboSats aqui em [learn.robosats.com](https://learn.robosats.com/pt/). Lá você encontrará muitas características e aspectos do RoboSats em detalhes refinados, bem como alguns [tutoriais previamente criados](https://learn.robosats.com/watch/pt/) que podem ajudar como referência para o seu tutorial.
+Para fornecer aos seus leitores/telespectadores as informações mais precisas sobre a plataforma, considere dar uma olhada breve na documentação do RoboSats aqui em [learn.robosats.org](https://learn.robosats.org/pt/). Lá você encontrará muitas características e aspectos do RoboSats em detalhes refinados, bem como alguns [tutoriais previamente criados](https://learn.robosats.org/watch/pt/) que podem ajudar como referência para o seu tutorial.
 
-Se você tiver perguntas persistentes que não forem respondidas na documentação, não hesite em perguntar no [grupo de suporte público do SimpleX](https://learn.robosats.com/contribute/code/#communication-channels)..
+Se você tiver perguntas persistentes que não forem respondidas na documentação, não hesite em perguntar no [grupo de suporte público do SimpleX](https://learn.robosats.org/contribute/code/#communication-channels)..
 
 Se você estiver tentando fazer uma demonstração ao vivo do RoboSats para um evento de meetup ou conferência, há pares de robôs dispostos nos grupos do Telegram mencionados acima que ficariam emocionados em ajudar! Não há nada mais legal (e útil) para iniciantes do que ver o RoboSats ao vivo e em ação!
 

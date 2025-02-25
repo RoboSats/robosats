@@ -47,10 +47,8 @@ Você pode doar das seguintes maneiras:
 
 - **Zap us on Nostr:**
   Todas as zaps do Nostr serão destinadas à equipe de mídia social.
-  Aqui está o nPub para a conta RoboSats:
+  Aqui está o nPub para a conta RoboSats: [https://chachi.chat/groups.0xchat.com/925b1aa20cd1b68dd9a0130e35808d66772fe082cf3f95294dd5755c7ea1ed59](https://chachi.chat/groups.0xchat.com/925b1aa20cd1b68dd9a0130e35808d66772fe082cf3f95294dd5755c7ea1ed59)
 
-```
-npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
-```
+
 
 Você pode doar anonimamente ou nos enviar uma mensagem para que possamos reconhecer sua contribuição!

@@ -44,7 +44,7 @@ A partir desse momento, o bot está pronto para salvar suas preferências. Ele f
 
 ![image](https://user-images.githubusercontent.com/47178010/170115618-66117113-e702-4faa-b02d-a8101244f7da.png)
 
-- Quais métodos de pagamento você aceita para fazer/receber pagamento em moeda fiduciária? Basta informar ao bot quais métodos de pagamento você estaria disposto a aceitar para sua negociação. Informe-os no seguinte formato: "Revolut, SEPA, Strike, Bizum" (sem aspas). Se você for indiferente ao método de pagamento em moeda fiduciária, simplesmente envie: "Qualquer" (sem aspas).
+- Quais métodos de pagamento você aceita para fazer/receber pagamento em moeda fiduciária? Basta informar ao bot quais métodos de pagamento você estaria disposto a aceitar para sua negociação. Informe-os no seguinte formato: "Revolut, SEPA, Strike, Bizum" (sem aspas). Se você for indiferente ao método de pagamento em moeda fiduciária, simplesmente envie: "Any" (sem aspas).
 
 ![image](https://user-images.githubusercontent.com/47178010/170115693-7378b25a-93af-4ad3-ad7e-d0185364003d.png)
 

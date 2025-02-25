@@ -10,7 +10,7 @@ sidebar:
 src: "_pages/docs/pt/03-understand/02-robots.md"
 ---
 
-Assuma a identidade de um robô com um token privado correspondente. Use esta identidade anônima para começar a fazer e receber pedidos com RoboSats! Não é recomendado usar o mesmo robô duas vezes, pois isso prejudica a privacidade do usuário final.
+Assuma a identidade de um robô com um token privado correspondente. Use esta identidade anônima para começar a criar e pegar ordens com RoboSats! Não é recomendado usar o mesmo robô duas vezes, pois isso prejudica a privacidade do usuário final.
 
 Cada nova visita à página do site RoboSats apresentará ao usuário final um avatar de robô e um nome de usuário gerados de forma automática e aleatória para fornecer privacidade padrão ao usuário final.
 
@@ -30,11 +30,11 @@ A privacidade é extremamente importante para RoboSats; no entanto, suas transa�
 
 É altamente recomendável gerar um novo robô aleatório após cada negociação para aumentar sua privacidade. A reutilização de robôs tem o potencial de expor informações do usuário final, uma vez que vários pedidos podem ser vinculados a um único avatar.
 
-O token exclusivo associado a cada avatar não se destina à reutilização do robô; em vez disso, pretende funcionar como uma senha para acessar pedidos em andamento e resolver disputas ativas. Armazene este token com segurança ou arrisque nunca mais acessar aquele avatar de robô específico.
+O token único associado a cada avatar não se destina à reutilização do robô; em vez disso, pretende funcionar como uma senha para acessar ordens em andamento e resolver disputas ativas. Armazene este token com segurança ou arrisque nunca mais acessar aquele avatar de robô específico.
 
 Recuperar um robô é fácil: basta substituir o token gerado aleatoriamente pelo token de backup e selecionar "Gerar Robô" para recuperar o perfil do seu robô.
 
-Embora possamos gostar de nossa identidade de robô única durante o curto período de tempo em que um pedido é feito ou recebido, é melhor passar para um novo avatar. Pense em todos os ótimos momentos que você passará fazendo e recebendo pedidos com novas identidades de robôs!
+Embora possamos gostar de nossa identidade de robô única durante o curto período de tempo em que uma ordem é feita ou pega, é melhor passar para um novo avatar. Pense em todos os ótimos momentos que você passará fazendo e recebendo ordens com novas identidades de robôs!
 
 Conforme afirmado, a reutilização de robôs é imprudente e pode, em última análise, tornar-se um prejuízo para a privacidade do utilizador final.
 
@@ -50,6 +50,6 @@ Em background, a criação de token na página inicial do RoboSats é o processo
 
 ## **Comunicando-se com seus pares robôs**
 
-Sua identidade pode estar oculta por uma identidade de robô, mas isso não é desculpa para ser um colega difícil durante as negociações. Outros robôs também têm sentimentos robóticos! Seja sucinto e respeitoso ao conversar com colegas; isso tornará a experiência mais fácil e tranquila no RoboSats. Nunca compartilhe mais informações do que o absolutamente necessário para concluir o pedido.
+Sua identidade pode estar oculta por uma identidade de robô, mas isso não é desculpa para ser um colega difícil durante as negociações. Outros robôs também têm sentimentos robóticos! Seja sucinto e respeitoso ao conversar com colegas; isso tornará a experiência mais fácil e tranquila no RoboSats. Nunca compartilhe mais informações do que o absolutamente necessário para concluir a ordem.
 
 Todas as comunicações no RoboSats são criptografadas com PGP. Mensagens criptografadas de bate-papo ponto a ponto são assinadas por cada bot, provando que ninguém interceptou o bate-papo e é útil para resolver disputas. Consulte [Práticas recomendadas > Criptografia PGP](https://learn.robosats.com/docs/pgp-encryption/pt/) para obter informações adicionais.
