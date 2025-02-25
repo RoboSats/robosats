@@ -1,7 +1,7 @@
 ## RoboSats - Buy and sell Satoshis Privately
 [![Coordinator CI](https://github.com/RoboSats/robosats/actions/workflows/coordinator-image.yml/badge.svg?branch=main)](https://github.com/RoboSats/robosats/actions/workflows/coordinator-image.yml)
 [![Frontend Build](https://github.com/RoboSats/robosats/actions/workflows/frontend-build.yml/badge.svg?branch=main)](https://github.com/RoboSats/robosats/actions/workflows/frontend-build.yml)
-[![release](https://img.shields.io/badge/release-v0.1.0%20MVP-red)](https://github.com/RoboSats/robosats/releases)
+[![release](https://img.shields.io/github/v/release/RoboSats/robosats)](https://github.com/RoboSats/robosats/releases)
 [![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/RoboSats/robosats/blob/main/LICENSE)
 [![Telegram](https://img.shields.io/badge/chat-telegram-brightgreen)](https://t.me/robosats)
 
@@ -11,6 +11,10 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 <div align="center">
   <img width="75%" src="https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png">
 </div>
+
+## Learn
+
+Check our tutorials and many more at https://learn.robosats.org
 
 ## Try it out!
 - **TOR URL:** [**RoboSats**y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://RoboSatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
@@ -27,6 +31,8 @@ https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-
 - **[English](https://learn.robosats.org/read/en)**
 - **[Español](https://learn.robosats.org/read/es)**
 - **[Deutsch](https://learn.robosats.org/read/de)**
+- **[Français](https://learn.robosats.org/read/fr)**
+- **[Русский](https://learn.robosats.org/read/ru)**
 
 ### Video guides
 - **[English](https://learn.robosats.org/watch/en/)**
@@ -34,6 +40,8 @@ https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-
 - **[Deutsch](https://learn.robosats.org/watch/de)**
 - **[Português](https://learn.robosats.org/watch/pt)**
 - **[Polski](https://learn.robosats.org/watch/pl)**
+- **[Français](https://learn.robosats.org/watch/fr)**
+- **[Русский](https://learn.robosats.org/watch/ru)**
 
 ## How it works
 

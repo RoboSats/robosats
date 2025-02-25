@@ -323,7 +323,6 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     },
   });
 
-  const fewerOptions = groupedOptions.length > 8 ? groupedOptions.slice(0, 8) : groupedOptions;
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
 
@@ -364,7 +363,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
         <div {...getRootProps()}>
           <Fade
             appear={false}
-            in={fewerOptions.length === 0 && value.length === 0 && val.length === 0}
+            in={groupedOptions.length === 0 && value.length === 0 && val.length === 0}
           >
             <div style={{ height: 0, display: 'flex', alignItems: 'flex-start' }}>
               <Label
@@ -439,7 +438,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
           </InputWrapper>
         </div>
       </Tooltip>
-      <Grow in={fewerOptions.length > 0}>
+      <Grow in={groupedOptions.length > 0}>
         <Listbox sx={props.listBoxProps?.sx ?? undefined} {...getListboxProps()}>
           {props.listHeaderText ? (
             <div
@@ -455,7 +454,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
               </ListHeader>
             </div>
           ) : null}
-          {fewerOptions.map((option, index) => (
+          {groupedOptions.map((option, index) => (
             <li key={option.name} {...getOptionProps({ option, index })}>
               <Button
                 fullWidth={true}
@@ -493,8 +492,8 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
         </Listbox>
       </Grow>
 
-      {/* Here goes what happens if there is no fewerOptions */}
-      <Grow in={getInputProps().value.length > 0 && !props.isFilter && fewerOptions.length === 0}>
+      {/* Here goes what happens if there is no groupedOptions */}
+      <Grow in={getInputProps().value.length > 0 && !props.isFilter && groupedOptions.length === 0}>
         <Listbox {...getListboxProps()}>
           <Button
             fullWidth={true}

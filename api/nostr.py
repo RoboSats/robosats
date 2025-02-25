@@ -25,7 +25,7 @@ class Nostr:
         client = Client(signer)
 
         # Add relays and connect
-        await client.add_relays(["ws://localhost:7777"])
+        await client.add_relay("ws://localhost:7777")
         await client.connect()
 
         robot_name = await self.get_robot_name(order)
