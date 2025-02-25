@@ -14,17 +14,17 @@ Atualmente, não há restrições ao método de pagamento fiduciário. Você pod
 
 ## Recomendações gerais
 
-Esta recomendação foi criada como uma prática recomendada para negociação na plataforma RoboSats. Estas melhores práticas são altamente encorajadas a serem seguidas por ambos os pares comerciais para garantir o sucesso do comércio e evitar disputas desnecessárias.
+Esta recomendação foi criada como uma prática recomendada para negociação na plataforma RoboSats. Estas melhores práticas são altamente encorajadas a serem seguidas por ambos os pares comerciais para garantir o sucesso da negociação e evitar disputas desnecessárias.
 
 Nota: Este guia é uma modificação das regras de negociação da <a href="https://bisq.wiki/Trading_rules">Bisq</a> e ajustada de acordo com as diferenças na operação de cada plataforma.
 
 ### Para comprador e vendedor de bitcoin
 
-1. Não deixe de conferir a seção <a href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/_pages/tutorials/read/how-to-use_es.md">Como usar </a >antes de começar a trocar.<br>
+1. Não deixe de conferir a seção <a href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/_pages/tutorials/read/how-to-use_es.md">Como usar </a >antes de começar a negociar.<br>
 2. Declare o acordo claramente para evitar mal-entendidos.<br>
 3. O método de pagamento fiduciário deve poder enviar e receber instantaneamente porque a fatura retida tem prazo de validade de 24 horas.<br>
    Se o cronômetro expirar, isso poderá desencadear uma disputa e levar à perda do depósito.<br>
-4. Depois que o tomador tiver anotado o pedido, ambas as partes deverão estar prontas para passar para a próxima etapa antes que o tempo expire.<br>
+4. Depois que o tomador tiver pego a ordem, ambas as partes deverão estar prontas para passar para a próxima etapa antes que o tempo expire.<br>
 5. Lembre-se de que ninguém pode ler o bate-papo entre você e seu par.
 
 ### Para comprador de bitcoin
@@ -35,7 +35,7 @@ Nota: Este guia é uma modificação das regras de negociação da <a href="http
 
 ### Para vendedor de bitcoin
 
-1. Confirme se o valor final do decreto recebido está correto.<br>
+1. Confirme se o valor final fiat recebido está correto.<br>
 2. Clique em "Confirmar moeda fiduciária recebida" quando tiver 100% de certeza de que a moeda fiduciária foi depositada com sucesso em sua conta.<br>
 3. Se você concordar com o comprador em usar a plataforma de alto risco, precisará de precauções especiais para evitar estornos (isso será discutido mais adiante).<br>
 
@@ -58,13 +58,42 @@ No Canadá, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq
 ### Wise
 
 [Wise](https://wise.com/) (antigo TransferWise) é um transmissor de dinheiro internacional regulamentado em 175 países e 50 moedas. É conhecido pelas suas taxas relativamente baixas para transferência de dinheiro entre países e moedas. Os estornos ainda são um risco, mas provavelmente são raros. Os usuários podem transferir dinheiro entre contas Wise usando um endereço de e-mail semelhante ao funcionamento das transferências eletrônicas; ou no Canadá, os usuários podem solicitar transferências eletrônicas padrão diretamente de suas contas Wise.
+Os destinatários podem ver os detalhes da sua conta?
+Se você enviar dinheiro com o Wise, o destinatário não pode ver os detalhes da sua conta. Na verdade, essa privacidade funciona em ambas as direções - também existem maneiras de você enviar dinheiro para alguém sem precisar que eles compartilhem os detalhes da conta bancária com você.
+Isso pode ser mais fácil e significa que nenhum dado sensível é compartilhado também.
+- Se você quiser enviar dinheiro para alguém sem obter os detalhes da conta bancária deles, há algumas opções:
+- Se o seu destinatário tiver uma conta Wise, ele pode sincronizar seus contatos do telefone com o Wise, para que você possa encontrá-los e processar o pagamento apenas com esse contato do telefone.
+- Se o seu destinatário tiver uma conta Wise, ele também pode marcar uma conta como sua conta principal para receber pagamentos, o que significa que você pode enviar apenas com um endereço de e-mail.
+- Se o seu destinatário não tiver uma conta Wise, você ainda pode enviar apenas com o e-mail deles - a Wise entrará em contato e pedirá as informações bancárias através de um link seguro.
+
 
 ## Método de pagamento de alto risco
 
 Esta seção discute as práticas recomendadas para usuários que tentam fazer transações com uma forma de pagamento com alto risco de perda de fundos.
 
-### Paypal
+### Diretrizes para Pagamentos Instant SEPA
 
+O Instant SEPA é um método de pagamento amplamente adotado na Europa, oferecendo transações rápidas e eficientes. No entanto, ele apresenta um risco significativo para os vendedores, incluindo a possibilidade de estornos. Para mitigar esses riscos, é aconselhável que os vendedores solicitem as informações do comprador antes de compartilhar seus dados SEPA. Essas informações podem incluir o país do comprador, nome completo e número da conta bancária. Ao obter essas informações, os vendedores podem reduzir o risco de transações fraudulentas, como ataques em triângulo, enquanto os compradores, ao compartilhar essas informações, não diminuem sua privacidade, pois não estão expondo nenhuma informação adicional que o vendedor não teria acesso de qualquer maneira após a transferência SEPA.
+
+Para os compradores, é crucial cumprir com os pedidos de informações pessoais dos vendedores quando estão iniciando transações SEPA. A falha em fornecer essas informações pode levar o vendedor a abrir uma disputa imediata, que os vendedores têm grande probabilidade de ganhar (o vendedor também ganhará o depósito do comprador neste caso específico). Portanto, é do melhor interesse dos compradores cooperar com os pedidos de informações dos vendedores.
+
+Os vendedores são incentivados a compartilhar um link para este guia com seus compradores ao solicitar informações. Isso garante que ambas as partes estejam informadas e compreendam a importância desse passo ao usar o SEPA Instantâneo.
+
+### Revolut via links de pagamento
+
+  Troca de @revtag: Ao fazer um pagamento através do Revolut, é essencial que tanto o comprador quanto o vendedor troquem seus @revtag no chat. Esse @revtag pode ser verificado no histórico de pagamentos do aplicativo, facilitando a confirmação das transações.
+
+  Formato do Link de Pagamento: Os links de pagamento do Revolut seguem este formato: https://revolut.me/p/XXXXX. Por favor, note que esses links não contêm informações de endereço do destinatário.
+
+  Riscos em Disputas: No caso de uma disputa, a ausência de referências de endereço do destinatário pode levar a fraudes. Tanto o comprador quanto o vendedor podem agir de forma desonesta, uma vez que o link de pagamento pode ser resgatado por um terceiro desconhecido que esteja em conluio com uma das partes.
+
+  Solicitando o @revtag: Para mitigar esses riscos, é crucial que ambas as partes (comprador e vendedor) solicitem e forneçam seu @revtag ao fazer um pagamento. Isso garante que cada parte tenha um registro claro e verificável da transação.
+
+  Link do @revtag: O @revtag também pode ser recebido como um link, que terá a seguinte aparência: https://revolut.me/@revtag. Certifique-se de compartilhar e verificar este link para maior segurança.
+
+Nota Importante: Lembre-se de que tanto o comprador quanto o vendedor têm o direito de solicitar o @revtag de seu interlocutor a qualquer momento. Isso é essencial para garantir transparência e segurança na transação.
+
+### Paypal
 Paypal é um dos métodos de pagamento fiduciário mais utilizados. No entanto, com a <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">política de proteção ao comprador do PayPal</a>, o comprador pode realizar uma ação fraudulenta criando um solicitação de reembolso no Paypal após a conclusão da troca. Desta forma, permanecendo com moeda fiduciária e bitcoin.
 
 Esta fraude pode ser evitada fazendo com que o comprador envie dinheiro usando a opção “enviar dinheiro para um amigo ou familiar”. Isso tornará o comprador responsável pela taxa de transação e será menos provável que solicite um reembolso.

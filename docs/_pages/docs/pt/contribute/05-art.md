@@ -14,7 +14,7 @@ Tem talento artístico? Considere desenhar fan art e promover o RoboSats por mei
 
 ## Ideias
 
-Aqui não há limite aqui! Se você quiser fazer uma tempestade de ideias, sinta-se à vontade para enviar uma mensagem para os [grupos de suporte público do SimpleX](https://learn.robosats.com/contribute/pt/code/#canales-de-comunicación). O coordenador de arte do RoboSats é [@Red_Purdy](https://twitter.com/Red_Purdy) e pode ajudar a fornecer ideias!
+Aqui não há limite aqui! Se você quiser fazer uma tempestade de ideias, sinta-se à vontade para enviar uma mensagem para os [grupos de suporte público do SimpleX](https://learn.robosats.org/contribute/pt/code/#canales-de-comunicación). O coordenador de arte do RoboSats é [@Red_Purdy](https://twitter.com/Red_Purdy) e pode ajudar a fornecer ideias!
 
 Um exemplo de uso de arte para criar engajamento com a comunidade inclui [Telegram stickers](https://t.me/addstickers/Robosats1). Os adesivos linkados apresentam o quase mascote Robotoshi.
 

@@ -23,46 +23,46 @@ As taxas da plataforma estão resumidas na tabela abaixo para enfatizar que a po
 
 A taxa total ({{site.robosats.total_fee}}%) é dividida entre o criador e o tomador. O tomador paga uma quantia maior ({{site.robosats.taker_fee}}%) do que o criador paga ({{site.robosats.maker_fee}}%); isso é projetado para incentivar mais criadores e, subsequentemente, aumentar a liquidez disponível na exchange.
 
-Na prática, as taxas são aplicadas quando o usuário é apresentado com a submissão do escrow de negociação (vendedor) ou fatura de pagamento (comprador) após o vínculo do tomador ser bloqueado.
+Na prática, as taxas são aplicadas quando o usuário é apresentado com a submissão do escrow de negociação (vendedor) ou fatura de pagamento (comprador) após a garantia do tomador ser bloqueado.
 
-Se a precificação do pedido for _relativa_, então a quantidade de Sats sendo negociada em relação à taxa de câmbio de fiat (vamos chamar de `trade_sats`) flutua até que o vínculo do tomador seja bloqueado. Em casos de precificação _explícita_ do pedido, a quantidade de Sats sendo negociada é fixa. Consulte [Entender > Preços](/docs/pt/prices/) para obter informações adicionais sobre os métodos de precificação relativa e explícita.
+Se a precificação do pedido for _relativa_, então a quantidade de Sats sendo negociada em relação à taxa de câmbio de fiat (vamos chamar de `trade_sats`) flutua até que a garantia do tomador seja bloqueado. Em casos de precificação _explícita_ do pedido, a quantidade de Sats sendo negociada é fixa. Consulte [Entender > Preços](/docs/pt/prices/) para obter informações adicionais sobre os métodos de precificação relativa e explícita.
 
-Até que o vínculo do tomador seja bloqueado, o preço da ordem continua a se mover com o mercado ao longo do tempo. Uma vez que o vínculo do tomador seja bloqueado para um pedido com preço relativo, a quantidade de Sats sendo negociada é calculada da seguinte forma:
+Até que a garantia do tomador seja bloqueado, o preço da ordem continua a se mover com o mercado ao longo do tempo. Uma vez que a garantia do tomador seja bloqueado para um pedido com preço relativo, a quantidade de Sats sendo negociada é calculada da seguinte forma:
 
 ```
-tarifa_prima = tarifa_CEX * (1 + (prima / 100))
-trade_sats = cantidad / tarifa_prima
+tarifa_premio = tarifa_CEX * (1 + (premio / 100))
+trade_sats = quantidade / tarifa_premio
 ```
 
-A onde `trade_sats` são os Satoshis que serão negociados, `premium` é o que o criador do pedido definiu durante a criação do pedido, e CEX_rate é o preço atual de câmbio do bitcoin dado a moeda que está sendo utilizada.
+A onde `trade_sats` são os Satoshis que serão negociados, `premio` é o que o criador da ordem definiu durante a criação da ordem, e CEX_rate é o preço atual de câmbio do bitcoin dado a moeda que está sendo utilizada.
 
 As comissões da plataforma (`fee_sats`) associadas ao seu pedido são calculadas usando a variável `trade_sats`:
 
 - Para o criador:
-  ```
+  ````
   fee_fraction = 0.002 * 0.125
-               = 0.00025 ==> {{site.robosats.maker_fee}}%%.
+               = 0.00025 ==> {{site.robosats.maker_fee}}%
   fee_sats = trade_sats * fee_fraction
-  ```
+  ````
 - Para o tomador:
-  ```
+  ````
   fee_fraction = 0.002 * (1 - 0.125)
                = 0.00175 ==> {{site.robosats.taker_fee}}%
   fee_sats = trade_sats * fee_fraction
-  ```
+  ````
 
 onde `fee_fraction` se combina para uma taxa de plataforma total compartilhada de {{site.robosats.total_fee}}%. Como mencionado anteriormente, o tomador paga uma quantidade maior ({{site.robosats.taker_fee}}%) do que o criador paga ({{site.robosats.maker_fee}}%) para incentivar o crescimento da liquidez com mais criadores de ordens.
 
 RoboSats cobra as comissões no processo de depósito em garantia (`escrow_amount`) e fatura de pagamento (`payout_amount`) calculando o seguinte:
 
 - Para o vendedor:
-  ```
+  ````
   escrow_amount = trade_sats + fee_sats
-  ```
+  ````
 - Para o comprador
-  ```
+  ````
   payout_amount = trade_sats - fee_sats
-  ```
+  ````
 
 Em essência, o RoboSats adiciona ao `escrow_amount`, deduz do `payout_amount` e, dependendo se você é o tomador do pedido ou o criador do pedido, aplica os cálculos apropriados de `fee_fraction`.
 
@@ -80,11 +80,11 @@ Taxas externas da plataforma podem ser incorridas ao realizar pagamentos on-chai
 
 Ao escolher receber bitcoin on-chain, uma visão geral da taxa de mineração (`fee_mining`) e taxa de swap (`fee_swap`) é exibida. O `payout_amount` para receber on-chain é calculado da seguinte forma:
 
-```
+````
 payout_amount = trade_sats - fee_sats - fee_mining - fee_swap
-```
+````
 
-A taxa de troca é uma taxa adicional que o RoboSats cobra para fazer o pagamento on-chain e a taxa de mineração é a taxa de transação na Blockchain em sats/vbyte que pode ser personalizada para atender às suas necessidades. Consulte [Entender > Pagamentos on-chain](/docs/pt/on-chain-payouts/) para obter informações adicionais sobre pagamentos na cadeia.
+A taxa de swap é uma taxa adicional que o RoboSats cobra para fazer o pagamento on-chain e a taxa de mineração é a taxa de transação na Blockchain em sats/vbyte que pode ser personalizada para atender às suas necessidades. Consulte [Entender > Pagamentos on-chain](/docs/pt/on-chain-payouts/) para obter informações adicionais sobre pagamentos on-chain.
 
 O RoboSats aproveita a velocidade e segurança da Rede Lightning, portanto, pagamentos enviados através da Rede Lightning podem incorrer em taxas dependendo do "caminho" necessário que o pagamento deve percorrer.
 

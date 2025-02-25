@@ -40,7 +40,7 @@ As taxas de pagamento on-chain (também conhecidas como taxas de swap) mudam de 
     <img src="/assets/images/understand/14-on-chain-payouts/exchange-info-icon.png"/>
 </div>
 
-O diálogo do resumo da exchange exibe o valor atual das taxas de pagamento na cadeia:
+O diálogo do resumo da exchange exibe o valor atual das taxas de pagamento on-chain:
 
 <div align="center">
     <img src="/assets/images/understand/14-on-chain-payouts/exchange-summary.png"/>

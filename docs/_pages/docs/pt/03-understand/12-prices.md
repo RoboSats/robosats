@@ -23,44 +23,44 @@ _\*\*O método de precificação explícita foi removido como opção por razõe
 
 ## Preços na prática
 
-Se a precificação da ordem for relativa, então a quantidade de satoshis sendo negociada em relação à taxa de câmbio fiat (vamos chamar de `trade_sats`) fica "travada" assim que o tomador do pedido bloqueia seu vínculo. Até que o vínculo do tomador seja bloqueado, o preço da ordem continua a se mover com o mercado ao longo do tempo.
+Se a precificação da ordem for relativa, então a quantidade de satoshis sendo negociada em relação à taxa de câmbio fiat (vamos chamar de `trade_sats`) fica "travada" assim que o tomador da ordem bloqueia sua garantia. Até que a garantia do tomador seja bloqueado, o preço da ordem continua a se mover com o mercado ao longo do tempo.
 
-Uma vez que o vínculo do tomador é bloqueado para um pedido com preço relativo, a quantidade de satoshis sendo negociada é calculada da seguinte forma:
+Uma vez que a garantia do tomador é bloqueado para um pedido com preço relativo, a quantidade de satoshis sendo negociada é calculada da seguinte forma:
 
 ```
 tarifa_premio = tarifa_CEX * (1 + (premio / 100))
-trade_sats = importe / tarifa_premio
+trade_sats = quantidade / tarifa_premio
 ```
 
-onde `trade_sats` são os satoshis a serem negociados, `premio` é o que o criador do pedido definiu durante a criação do pedido, e `tarifa_CEX` é o preço atual de troca de bitcoins dado a moeda que você está usando.
+onde `trade_sats` são os satoshis a serem negociados, `premio` é o que o criador da ordem definiu durante a criação do pedido, e `tarifa_CEX` é o preço atual de troca de bitcoins dado a moeda que você está usando.
 
 As taxas da plataforma (`fee_sats`) associadas ao seu pedido são calculadas usando a variável `trade_sats`:
 
 - Para o criador:
-  ```
+  ````
   fee_fraction = 0.002 * 0.125
                = 0.00025 ==> {{site.robosats.maker_fee}}%%.
   fee_sats = trade_sats * fee_fraction
-  ```
+  ````
 - Para o tomador:
-  ```
+  ````
   fee_fraction = 0.002 * (1 - 0.125)
                = 0.00175 ==> {{site.robosats.taker_fee}}%
   fee_sats = trade_sats * fee_fraction
-  ```
+  ````
 
 onde `fee_fraction` se combina para uma taxa total compartilhada da plataforma de {{site.robosats.total_fee}}%; que é dividida em {{site.robosats.maker_fee}}% e {{site.robosats.taker_fee}}% para criador e tomador, respectivamente. Consulte [Entender > Taxas](https://learn.robosats.com/docs/fees/) para obter informações adicionais sobre as taxas.
 
 RoboSats cobra as taxas no processo de depósito em garantia (`escrow_amount`) e no valor de pagamento (`payout_amount`) calculando o seguinte:
 
 - Para o vendedor:
-  ```
+  ````
   escrow_amount = trade_sats + fee_sats
-  ```
+  ````
 - Para o comprador
-  ```
+  ````
   payout_amount = trade_sats - fee_sats
-  ```
+  ````
 
 Em essência, o RoboSats adiciona ao `escrow_amount`, subtrai do `payout_amount` e, dependendo se você é o tomador ou o criador do pedido, aplica os cálculos apropriados de `fee_fraction`.
 

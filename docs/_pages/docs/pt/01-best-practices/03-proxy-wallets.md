@@ -30,23 +30,22 @@ mas você ainda terá o problema de
 correlação de pagamento.
 
 Para pequenas quantias, usar uma carteira proxy de custódia é uma maneira razoável de
-melhore sua privacidade ao receber na rede lightning.
+melhorar sua privacidade ao receber na rede lightning.
 Receber em uma boa carteira de custódia revelará apenas os UTXOs do custodiante.
 Para saber informações sobre você,
 o pagador de suas faturas teria que conspirar com o custodiante da carteira.
 
 Uma alternativa sem custódia é usar um servidor lnproxy
-agrupar as faturas em seu próprio nó e receber as faturas agrupadas.
-Basta gerar uma fatura em seu nó e colá-la em uma interface web lnproxy.
-O servidor lnproxy retornará uma fatura "embrulhada" para o nó relâmpago do servidor lnproxy.
-A fatura embalada deve ter o mesmo
-descrição e hash de pagamento diferente daquele que você colou,
+para agrupar as faturas em seu próprio nodo e receber as faturas agrupadas.
+Basta gerar uma fatura em seu nodo e colá-la em uma interface web lnproxy.
+O servidor lnproxy retornará uma fatura "embrulhada" para o nodo lightning do servidor lnproxy.
+A fatura embalada deve ter a mesma
+descrição e hash de pagamento daquele que você colou,
 e um valor um pouco maior para levar em conta o roteamento.
 Você deve verificar isso usando um decodificador de notas como https://lightningdecoder.com.
 Se os hashes de pagamento corresponderem, você pode ter certeza de que o nó lnproxy
 não será capaz de roubar seus fundos.
 Em seguida, basta usar a fatura embrulhada em qualquer lugar onde você usaria a fatura original.
-fatura original.
 Para saber qualquer informação sobre você em uma fatura embrulhada,
 um invasor teria que conspirar com o servidor lnproxy que você usou.
 

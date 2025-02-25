@@ -52,7 +52,6 @@ Se o seu token for o correto, você deverá ter importado a chave privada para c
 Podemos ver como o aplicativo frontend nomeou essa chave `"RoboSats ID<hash>"`. Este é o ID do robô, o segundo hash SHA256 do nosso token secreto, e foi usado originalmente para gerar deterministicamente o apelido do robô e a imagem do avatar do robô ([saiba mais](/docs/private/#robot-avatar-generation-pipeline) ).
 
 #### Importe a chave pública do seu par
-
 Só precisamos repetir os passos acima para importar a chave pública da sua contraparte.
 
 ```
@@ -66,9 +65,7 @@ echo "<cole_sua_chave_privada_encriptada>" | gpg --import
 Estamos prontos. Importamos nossa chave privada criptografada e a chave pública de nosso parceiro GPG. Até agora, tudo ok.
 
 ### Descriptografe e verifique mensagens com GnuPG
-
 #### Descriptografar mensagem
-
 Agora vamos tentar ler uma das mensagens criptografadas que nosso parceiro nos enviou e ver se elas podem ser descriptografadas com nossa chave privada e se estão corretamente assinadas por ele.
 
 <div align="center">
@@ -131,8 +128,8 @@ PGPro é um aplicativo iOS de código aberto que permite criar e gerenciar pares
 </div>
 
 #### Outros
-
 Para uma lista de softwares compatíveis para Windows, Mac OS e outros sistemas operacionais, consulte [openpgp.org/software/](https://openpgp.org/software/). Como o conceito é o mesmo, este método pode ser replicado em qualquer outro aplicativo.
+
 
 ### Esquema de criptografia.
 

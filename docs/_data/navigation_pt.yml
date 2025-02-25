@@ -91,7 +91,7 @@ tutorial:
         url: "/watch/fr/"
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/polish.svg"/> Polski</span>'
         url: "/watch/pl/"
-  - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/readme.svg"/>Leer</span>'
+  - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/readme.svg"/>Ler</span>'
     url: "/watch/en/"
     children:
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:21px" src="/assets/vector/english.svg"/> English</span>'
