@@ -4,7 +4,7 @@ function matchPageWithSelection(language, currentUrl){
   // checks if parameter is 'en', if so, removes it from the url
   newLanguage = language === 'en' ? '' : `${language}`;
   // regex to match the current url and extract the language and the rest of the url
-  let regex = /(?:(?:(\/(?:docs|contribute|stats)\/))(?:(es|fr)\/)?(.*))|(\/(?:es|fr|pt)\/|\/)$/
+  let regex = /(?:(?:(\/(?:docs|contribute|stats)\/))(?:(es|fr|pt)\/)?(.*))|(\/(?:es|fr|pt)\/|\/)$/
   let [fullURL, first, urlLang = 'en', rest, home]  = regex.exec(currentUrl);
 
   if (home) {
