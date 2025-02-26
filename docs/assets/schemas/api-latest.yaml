@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.6.3
+  version: 0.7.4
   x-logo:
     url: https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
@@ -1125,7 +1125,6 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/StatusEnum'
-          default: 0
           minimum: 0
           maximum: 32767
         created_at:
@@ -1149,7 +1148,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1162,17 +1160,14 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1188,12 +1183,10 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1260,7 +1253,6 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1270,17 +1262,14 @@ components:
           type: integer
           maximum: 86400
           minimum: 597.6
-          default: 86399
         escrow_duration:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1320,7 +1309,6 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/StatusEnum'
-          default: 0
           minimum: 0
           maximum: 32767
         created_at:
@@ -1344,7 +1332,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1357,11 +1344,9 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           description: Premium over the CEX price set by the maker
@@ -1387,7 +1372,6 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         total_secs_exp:
           type: integer
           description: Duration of time (in seconds) to expire, according to the current
@@ -1559,12 +1543,10 @@ components:
           type: integer
           maximum: 86400
           minimum: 597.6
-          default: 86399
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         trade_fee_percent:
           type: integer
           description: The fee for the trade (fees differ for maker and taker)
@@ -1646,7 +1628,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1659,17 +1640,14 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1693,7 +1671,6 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         satoshis_now:
           type: integer
           description: The amount of sats to be traded at the present moment (not
@@ -1702,7 +1679,6 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1939,7 +1915,6 @@ components:
         fee:
           type: string
           format: decimal
-          default: '0.0000'
     TypeEnum:
       enum:
       - 0
