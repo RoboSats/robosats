@@ -9,6 +9,7 @@ import {
   Typography,
   useTheme,
   AlertTitle,
+  Button,
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
@@ -19,6 +20,7 @@ import { TorIcon } from '../../components/Icons';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import RecoveryDialog from '../../components/Dialogs/Recovery';
+import ClaimRewardDialog from '../../components/Dialogs/ClaimReward';
 
 const RobotPage = (): JSX.Element => {
   const { torStatus, windowSize, settings, page, client } = useContext<UseAppStoreType>(AppContext);
@@ -34,6 +36,7 @@ const RobotPage = (): JSX.Element => {
   const [view, setView] = useState<'welcome' | 'onboarding' | 'profile'>(
     garage.currentSlot !== null ? 'profile' : 'welcome',
   );
+  const [openClaimReward, setOpenClaimReward] = useState<boolean>(false);
 
   useEffect(() => {
     const token = urlToken ?? garage.currentSlot;
@@ -106,6 +109,25 @@ const RobotPage = (): JSX.Element => {
         }}
       >
         <RecoveryDialog setInputToken={setInputToken} setView={setView} />
+        <ClaimRewardDialog
+          open={openClaimReward}
+          onClose={() => {
+            setOpenClaimReward(false);
+          }}
+        />
+        <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+          <Grid item>
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={() => {
+                setOpenClaimReward(true);
+              }}
+            >
+              {t('Claim Reward')}
+            </Button>
+          </Grid>
+        </Grid>
         {view === 'welcome' ? (
           <Welcome setView={setView} width={width} setInputToken={setInputToken} />
         ) : null}
