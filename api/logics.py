@@ -190,13 +190,16 @@ class Logics:
                 f"You need to wait {time_out} seconds to take an order",
             }
         else:
-            TakeOrder.objects.create(
-                amount=amount,
+            take_order = TakeOrder.objects.create(
                 taker=user,
                 order=order,
                 expires_at=timezone.now()
                 + timedelta(seconds=order.t_to_expire(Order.Status.TAK)),
             )
+
+            if order.has_range:
+                take_order.amount = amount
+                take_order.save(update_fields=["amount"])
 
             order.log(
                 f"Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"
@@ -1341,8 +1344,7 @@ class Logics:
         # (This is the last update to "last_satoshis", it becomes the escrow amount next)
         order.last_satoshis = cls.satoshis_now(order)
         order.last_satoshis_time = timezone.now()
-        if take_order.amount:
-            order.amount = take_order.amount
+        order.amount = take_order.amount
 
         # With the bond confirmation the order is extended 'public_order_duration' hours
         order.expires_at = timezone.now() + timedelta(
@@ -1397,7 +1399,7 @@ class Logics:
         ).first()
 
         # Do not gen and kick out the taker if order is older than expiry time
-        if order.expires_at < timezone.now() or take_order.expires_at < timezone.now():
+        if order.expires_at < timezone.now():
             cls.order_expires(order)
             return False, {
                 "bad_request": "Order expired. You did not confirm taking the order in time."
@@ -1412,15 +1414,15 @@ class Logics:
             }
 
         # If there was no taker_bond object yet, generates one
-        take_order.last_satoshis = cls.satoshis_now(take_order.order)
+        take_order.last_satoshis = cls.satoshis_now(order)
         take_order.last_satoshis_time = timezone.now()
-        bond_satoshis = int(take_order.last_satoshis * take_order.order.bond_size / 100)
-        pos_text = "Buying" if cls.is_buyer(take_order.order, user) else "Selling"
+        bond_satoshis = int(take_order.last_satoshis * order.bond_size / 100)
+        pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
         if user.robot.wants_stealth:
-            description = f"{config("NODE_ALIAS")} - Payment reference: {take_order.order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
             description = (
-                f"{config("NODE_ALIAS")} - Taking 'Order {take_order.order.id}' {pos_text} BTC for {str(float(take_order.amount)) + Currency.currency_dict[str(take_order.order.currency.currency)]}"
+                f"{config("NODE_ALIAS")} - Taking 'Order {order.id}' {pos_text} BTC for {str(float(take_order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
                 + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
             )
 
@@ -1429,11 +1431,9 @@ class Logics:
             hold_payment = LNNode.gen_hold_invoice(
                 bond_satoshis,
                 description,
-                invoice_expiry=take_order.order.t_to_expire(Order.Status.TAK),
-                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(
-                    take_order.order, "taker_bond"
-                ),
-                order_id=take_order.order.id,
+                invoice_expiry=order.t_to_expire(Order.Status.TAK),
+                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "taker_bond"),
+                order_id=order.id,
                 lnpayment_concept=LNPayment.Concepts.TAKEBOND.label,
                 time=int(timezone.now().timestamp()),
             )
@@ -1473,7 +1473,7 @@ class Logics:
             ]
         )
 
-        take_order.order.log(
+        order.log(
             f"Taker bond invoice LNPayment({hold_payment['payment_hash']},{str(order.taker_bond)}) was created"
         )
 
