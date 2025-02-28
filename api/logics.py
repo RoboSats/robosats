@@ -1344,7 +1344,6 @@ class Logics:
         # (This is the last update to "last_satoshis", it becomes the escrow amount next)
         order.last_satoshis = cls.satoshis_now(order)
         order.last_satoshis_time = timezone.now()
-        order.amount = take_order.amount
 
         # With the bond confirmation the order is extended 'public_order_duration' hours
         order.expires_at = timezone.now() + timedelta(
@@ -1362,6 +1361,10 @@ class Logics:
                 "expires_at",
             ]
         )
+
+        if order.has_range:
+            order.amount = take_order.amount
+            order.save(update_fields=["amount"])
 
         order.taker_bond.status = LNPayment.Status.LOCKED
         order.taker_bond.save(update_fields=["status"])
