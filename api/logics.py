@@ -1375,8 +1375,7 @@ class Logics:
         order.maker.robot.save(update_fields=["total_contracts"])
         order.taker.robot.save(update_fields=["total_contracts"])
 
-        take_order.expires_at = timezone.now()
-        take_order.save(update_fields=["expires_at"])
+        take_order.delete()
 
         # Log a market tick
         try:
@@ -1477,7 +1476,7 @@ class Logics:
         )
 
         order.log(
-            f"Taker bond invoice LNPayment({hold_payment['payment_hash']},{str(order.taker_bond)}) was created"
+            f"Taker bond invoice LNPayment({hold_payment['payment_hash']},{str(take_order.taker_bond)}) was created"
         )
 
         return True, {
