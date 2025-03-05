@@ -22,7 +22,7 @@ const CancelButton = ({
   const { t } = useTranslation();
 
   const showCancelButton =
-    Boolean(order?.is_participant && [0, 1, 2].includes(order?.status)) ||
+    Boolean(order?.is_maker && [0, 1, 2].includes(order?.status)) ||
     Boolean([3, 6, 7].includes(order?.status ?? -1));
   const showCollabCancelButton = order?.status === 9 && !order?.asked_for_cancel;
   const noConfirmation =
