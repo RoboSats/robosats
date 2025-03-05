@@ -37,7 +37,9 @@ def bitcoind_rpc(method, params=None):
     :return:
     """
 
-    BITCOIND_RPCURL = config("BITCOIND_RPCURL")
+    BITCOIND_RPCHOST = str(config("BITCOIND_RPCHOST", cast=str, default="127.0.0.1"))
+    BITCOIND_RPCPORT = str(config("BITCOIND_RPCPORT", cast=str, default="18332"))
+    BITCOIND_RPCURL = "http://" + BITCOIND_RPCHOST + ":" + BITCOIND_RPCPORT
     BITCOIND_RPCUSER = config("BITCOIND_RPCUSER")
     BITCOIND_RPCPASSWORD = config("BITCOIND_RPCPASSWORD")
 
