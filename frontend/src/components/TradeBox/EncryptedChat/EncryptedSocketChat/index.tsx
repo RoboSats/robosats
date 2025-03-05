@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
-import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
@@ -21,6 +20,7 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import { type UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import TorModule from '../../../../native/TorModule';
 
 const audioPath =
   window.NativeRobosats === undefined
@@ -64,7 +64,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [serverMessages, setServerMessages] = useState<ServerMessage[]>([]);
   const [value, setValue] = useState<string>('');
-  const [connection, setConnection] = useState<WebsocketConnection>();
+  const [connection, setConnection] = useState<WebSocket | null>(null);
   const [audit, setAudit] = useState<boolean>(false);
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [lastSent, setLastSent] = useState<string>('---BLANK---');
@@ -82,7 +82,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   useEffect(() => {
     if (![9, 10].includes(status)) {
       connection?.close();
-      setConnection(undefined);
+      setConnection(null);
     }
   }, [status]);
 
@@ -90,7 +90,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     // On component unmount close reconnecting-websockets
     return () => {
       connection?.close();
-      setConnection(undefined);
+      setConnection(null);
     };
   }, []);
 
@@ -117,12 +117,11 @@ const EncryptedSocketChat: React.FC<Props> = ({
       .getCoordinator(order.shortAlias)
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
 
-    websocketClient
-      .open(
-        `${url.replace(/^https?:\/\//, 'ws://') + basePath}/ws/chat/${
-          order.id
-        }/?token_sha256_hex=${sha256(slot?.token)}`,
-      )
+    TorModule.sendWsOpen(
+      `${url.replace(/^https?:\/\//, 'ws://') + basePath}/ws/chat/${
+        order.id
+      }/?token_sha256_hex=${sha256(slot?.token)}`,
+    )
       .then((connection) => {
         setConnection(connection);
         setConnected(true);
