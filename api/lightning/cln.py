@@ -1,5 +1,6 @@
 import hashlib
 import os
+import random
 import secrets
 import struct
 import time
@@ -273,7 +274,7 @@ class CLNNode:
         request = hold_pb2.HoldInvoiceRequest(
             description=description,
             amount_msat=hold_pb2.Amount(msat=num_satoshis * 1_000),
-            label=f"Order:{order_id}-{lnpayment_concept}-{time}",
+            label=f"Order:{order_id}-{lnpayment_concept}-{time}--{random.randint(1, 100000)}",
             expiry=invoice_expiry,
             cltv=cltv_expiry_blocks,
             preimage=preimage,  # preimage is actually optional in cln, as cln would generate one by default

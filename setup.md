@@ -35,6 +35,7 @@ docker-compose up
 Then visit `127.0.0.1:4000` on your browser. Once you save changes on a file it will take around 10s for the site to update (press <Ctrl+Shift+R> to force-refresh your browser).
 
 # Full Stack Development
+
 ## The Easy Way: Docker-compose (-dev containers running on testnet)
 
 *Set up time, anywhere between ~45 min and 1 full day (depending on experience, whether you have a copy of the testnet blockchain, etc). Tested in Ubuntu.
@@ -48,7 +49,24 @@ docker-compose restart
 ```
 Copy the `.env-sample` file into `.env` and check the environmental variables are right for your development.
 
-**All set!**
+## Running tests
+
+Build and run containers with the test specific configuration:
+```
+docker compose -f docker-tests.yml --env-file ./tests/compose.env up -d
+```
+
+Run tests:
+```
+docker exec -it test-coordinator coverage run manage.py test
+```
+
+If you want to run tests with CLN:
+```
+LNVENDOR='CLN'
+```
+
+## All set!
 
 Commands you will need to startup:
 

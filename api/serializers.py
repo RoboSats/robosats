@@ -199,6 +199,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     is_maker = serializers.BooleanField(
         required=False, help_text="Whether you are the maker or not"
     )
+    is_pretaker = serializers.BooleanField(
+        required=False, help_text="Whether you are a pre-taker or not"
+    )
     is_taker = serializers.BooleanField(
         required=False, help_text="Whether you are the taker or not"
     )
@@ -429,6 +432,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "total_secs_exp",
             "penalty",
             "is_maker",
+            "is_pretaker",
             "is_taker",
             "is_participant",
             "maker_status",
