@@ -15,7 +15,6 @@ import {
 import Title from './Title';
 import {
   LockInvoicePrompt,
-  TakerFoundPrompt,
   PublicWaitPrompt,
   PausedPrompt,
   ExpiredPrompt,
@@ -309,7 +308,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
-    } else if (order.is_taker && order.status === 3) {
+    } else if (order.is_pretaker && order.status === 1) {
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
@@ -363,6 +362,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     const status = order.status;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
+    const isPretaker = order.is_pretaker;
 
     switch (status) {
       // 0: 'Waiting for maker bond'
@@ -390,6 +390,13 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             );
           };
           baseContract.bondStatus = 'locked';
+        } else if (isPretaker) {
+          baseContract.title = 'Lock {{amountSats}} Sats to TAKE order';
+          baseContract.titleVariables = { amountSats: pn(order.bond_satoshis) };
+          baseContract.prompt = () => {
+            return <LockInvoicePrompt order={order} concept={'bond'} />;
+          };
+          baseContract.bondStatus = 'hide';
         }
         break;
       // 2: 'Paused'
@@ -405,24 +412,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             );
           };
           baseContract.bondStatus = 'locked';
-        }
-        break;
-
-      // 3: 'Waiting for taker bond'
-      case 3:
-        if (isMaker) {
-          baseContract.title = 'A taker has been found!';
-          baseContract.prompt = () => {
-            return <TakerFoundPrompt />;
-          };
-          baseContract.bondStatus = 'locked';
-        } else {
-          baseContract.title = 'Lock {{amountSats}} Sats to TAKE order';
-          baseContract.titleVariables = { amountSats: pn(order.bond_satoshis) };
-          baseContract.prompt = () => {
-            return <LockInvoicePrompt order={order} concept={'bond'} />;
-          };
-          baseContract.bondStatus = 'hide';
         }
         break;
 

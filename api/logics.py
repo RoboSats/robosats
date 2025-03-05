@@ -184,11 +184,20 @@ class Logics:
     @classmethod
     def take(cls, order, user, amount=None):
         is_penalized, time_out = cls.is_penalized(user)
+        take_order = TakeOrder.objects.filter(
+            taker=user, order=order, expires_at__gt=timezone.now()
+        )
+
         if is_penalized:
             return False, {
                 "bad_request",
                 f"You need to wait {time_out} seconds to take an order",
             }
+        elif take_order.exists():
+            order.log(
+                f"Order already Pre-Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"
+            )
+            return True, None
         else:
             take_order = TakeOrder.objects.create(
                 taker=user,
@@ -202,7 +211,7 @@ class Logics:
                 take_order.save(update_fields=["amount"])
 
             order.log(
-                f"Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"
+                f"Pre-Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"
             )
             return True, None
 
