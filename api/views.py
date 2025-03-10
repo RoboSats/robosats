@@ -244,17 +244,12 @@ class OrderView(viewsets.ViewSet):
             data["penalty"] = request.user.robot.penalty_expiration
 
         # Add booleans if user is maker, taker, partipant, buyer or seller
+        is_pretaker = TakeOrder.objects.filter(
+            taker=request.user, order=order, expires_at__gt=timezone.now()
+        ).exists()
         data["is_maker"] = order.maker == request.user
-        data["is_taker"] = order.taker == request.user
-        data["is_pretaker"] = (
-            not data["is_taker"]
-            and TakeOrder.objects.filter(
-                taker=request.user, order=order, expires_at__gt=timezone.now()
-            ).exists()
-        )
-        data["is_participant"] = (
-            data["is_maker"] or data["is_taker"] or data["is_pretaker"]
-        )
+        data["is_taker"] = order.taker == request.user or is_pretaker
+        data["is_participant"] = data["is_maker"] or data["is_taker"]
 
         # 3.a) If not a participant and order is not public, forbid.
         if (
@@ -369,11 +364,8 @@ class OrderView(viewsets.ViewSet):
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 6)  If status is 'Public' and user is PRETAKER, reply with a TAKER hold invoice.
-        elif (
-            order.status == Order.Status.PUB
-            and data["is_pretaker"]
-            and not data["is_taker"]
-        ):
+        elif order.status == Order.Status.PUB and is_pretaker and not data["is_taker"]:
+            data["status"] = Order.Status.TAK
             data["total_secs_exp"] = order.t_to_expire(Order.Status.TAK)
 
             valid, context = Logics.gen_taker_hold_invoice(order, request.user)
