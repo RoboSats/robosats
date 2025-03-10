@@ -9,7 +9,7 @@ import {
   type SelectChangeEvent,
   CircularProgress,
   Stack,
-  Alert
+  Alert,
 } from '@mui/material';
 import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
