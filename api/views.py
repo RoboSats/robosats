@@ -253,8 +253,8 @@ class OrderView(viewsets.ViewSet):
 
         # 3.a) If not a participant and order is not public, forbid.
         if (
-            not data["is_maker"]
-            and not data["is_taker"]
+            order.maker != request.user
+            and order.taker != request.user
             and order.status != Order.Status.PUB
         ):
             return Response(
@@ -364,7 +364,11 @@ class OrderView(viewsets.ViewSet):
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 6)  If status is 'Public' and user is PRETAKER, reply with a TAKER hold invoice.
-        elif order.status == Order.Status.PUB and is_pretaker and not data["is_taker"]:
+        elif (
+            order.status == Order.Status.PUB
+            and is_pretaker
+            and order.taker != request.user
+        ):
             data["status"] = Order.Status.TAK
             data["total_secs_exp"] = order.t_to_expire(Order.Status.TAK)
 

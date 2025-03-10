@@ -85,7 +85,6 @@ class OrderViewSchema:
             - `total_secs_exp`
             - `penalty`
             - `is_maker`
-            - `is_pretaker`
             - `is_taker`
             - `is_participant`
             - `maker_status`
