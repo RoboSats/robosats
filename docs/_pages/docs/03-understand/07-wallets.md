@@ -32,6 +32,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
+|[Boltz.exchange](#boltzexchange-swap-service)|[1.6.2](https://Boltz.exchange)|{{page.laptop}}{{page.phone}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|
 |[Breez](#breez-mobile)|[0.16](https://breez.technology/mobile/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Cash App](#cash-app-mobile)|[4.7](https://cash.app/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -72,6 +73,9 @@ Most development testing for RoboSats has been done using Blixt. This is one of 
 
 ### Bluewallet (Mobile)
 It works well. Bluewallet has discontinued their custodial service. Previously, the custodial service would cause issues where escrows that RoboSats returns are charged to users and where slashed bonds are charged twice by Bluewallet! This was a known bug for long time in Bluewallet, so they shut down their LN custodial service (which ended up making RoboSats a smoother experience for users).
+
+### Boltz.exchange (Swap service)
+Boltx.exchange is a non-custodial Bitcoin bridge, built to swap between different Bitcoin layers. It works very well for receiving sats. Other wallets are better for doing the bond. Boltz.exchange is useful if you're having problems receiving larger amounts of sats in lightning. To use it, you give it a bitcoin receive address, and an amount of sats. It will then create a lightning invoice for you. You paste the lighting invoice into Robosats. The fee is .5%, in addition to the transaction fee.
 
 ### Breez (Mobile)
 It works well with RoboSats. Breez is a non-custodial wallet. So keep in mind channels managment and stuff like that. It's a versatile and easy-to-use interface.
