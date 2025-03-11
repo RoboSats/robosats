@@ -9,6 +9,7 @@ import {
   type SelectChangeEvent,
   CircularProgress,
   Stack,
+  Alert,
 } from '@mui/material';
 import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
@@ -45,6 +46,13 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
 
   return (
     <Grid item>
+      {coordinator?.info && !coordinator?.info?.swap_enabled && (
+        <Grid sx={{ marginBottom: 1 }}>
+          <Alert severity='warning' sx={{ marginTop: 2 }}>
+            {t('This coordinator does not support on-chain swaps.')}
+          </Alert>
+        </Grid>
+      )}
       <Box
         sx={{
           backgroundColor: 'background.paper',

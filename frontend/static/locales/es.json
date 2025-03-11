@@ -415,6 +415,7 @@
   "Onchain payouts enabled": "Onchain payouts enabled",
   "Taker": "Tomador",
   "The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!": "The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!",
+  "This coordinator does not support on-chain swaps.": "Este coordinador no soporta pagos on-chain.",
   "#41": "Phrases in components/Notifications/index.tsx",
   "Lightning routing failed": "Enrutado Lightning fallido",
   "New chat message": "Nuevo mensaje en el chat",
