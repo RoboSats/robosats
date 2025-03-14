@@ -14,7 +14,7 @@ from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
 from tests.utils.node import add_invoice, set_up_regtest_network
 from tests.utils.pgp import sign_message
-from tests.utils.trade import Trade
+from tests.utils.trade import Trade, maker_form_buy_with_range
 
 from api.admin import OrderAdmin
 
@@ -455,6 +455,28 @@ class TradeTest(BaseAPITestCase):
         trade.cancel_order()
 
         self.assert_order_logs(data["id"])
+
+    def test_make_and_take_range_order(self):
+        """
+        Tests a trade with a range from order creation to taken.
+        """
+        trade = Trade(
+            self.client,
+            # latitude and longitud in Aruba. One of the countries blocked in the example conf.
+            maker_form=maker_form_buy_with_range,
+        )
+        trade.publish_order()
+        trade.take_order()
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
+        self.assertAlmostEqual(float(data["amount"]), 80)
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order()
 
     def test_make_and_take_order_multiple_takers(self):
         """

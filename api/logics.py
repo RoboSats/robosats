@@ -234,12 +234,16 @@ class Logics:
         return (float(amount) / premium_rate) * 100 * 1000 * 1000
 
     @classmethod
-    def satoshis_now(cls, order):
+    def satoshis_now(cls, order, take_amount=None):
         """checks trade amount in sats"""
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            amount = order.amount if order.amount is not None else order.max_amount
+            if take_amount is not None:
+                amount = take_amount
+            else:
+                amount = order.amount if order.amount is not None else order.max_amount
+
             satoshis_now = cls.calc_sats(
                 amount, order.currency.exchange_rate, order.premium
             )
@@ -1348,6 +1352,10 @@ class Logics:
 
         order.taker = take_order.taker
         order.taker_bond = take_order.taker_bond
+
+        if order.has_range:
+            order.amount = take_order.amount
+
         # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND!
         # (This is the last update to "last_satoshis", it becomes the escrow amount next)
         order.last_satoshis = cls.satoshis_now(order)
@@ -1369,10 +1377,6 @@ class Logics:
                 "expires_at",
             ]
         )
-
-        if order.has_range:
-            order.amount = take_order.amount
-            order.save(update_fields=["amount"])
 
         order.taker_bond.status = LNPayment.Status.LOCKED
         order.taker_bond.save(update_fields=["status"])
@@ -1424,7 +1428,7 @@ class Logics:
             }
 
         # If there was no taker_bond object yet, generates one
-        take_order.last_satoshis = cls.satoshis_now(order)
+        take_order.last_satoshis = cls.satoshis_now(order, take_order.amount)
         take_order.last_satoshis_time = timezone.now()
         bond_satoshis = int(take_order.last_satoshis * order.bond_size / 100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"

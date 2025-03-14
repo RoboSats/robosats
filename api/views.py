@@ -244,11 +244,11 @@ class OrderView(viewsets.ViewSet):
             data["penalty"] = request.user.robot.penalty_expiration
 
         # Add booleans if user is maker, taker, partipant, buyer or seller
-        is_pretaker = TakeOrder.objects.filter(
+        take_order = TakeOrder.objects.filter(
             taker=request.user, order=order, expires_at__gt=timezone.now()
-        ).exists()
+        )
         data["is_maker"] = order.maker == request.user
-        data["is_taker"] = order.taker == request.user or is_pretaker
+        data["is_taker"] = order.taker == request.user or take_order.exists()
         data["is_participant"] = data["is_maker"] or data["is_taker"]
 
         # 3.a) If not a participant and order is not public, forbid.
@@ -279,7 +279,12 @@ class OrderView(viewsets.ViewSet):
         # 4) If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
-            data["satoshis_now"] = Logics.satoshis_now(order)
+            if take_order.exists():
+                data["satoshis_now"] = Logics.satoshis_now(
+                    order, take_order.first().amount
+                )
+            else:
+                data["satoshis_now"] = Logics.satoshis_now(order)
 
             # 4. a) If maker and Public/Paused, add premium percentile
             # num similar orders, and maker information to enable telegram notifications.
@@ -366,11 +371,12 @@ class OrderView(viewsets.ViewSet):
         # 6)  If status is 'Public' and user is PRETAKER, reply with a TAKER hold invoice.
         elif (
             order.status == Order.Status.PUB
-            and is_pretaker
+            and take_order.exists()
             and order.taker != request.user
         ):
             data["status"] = Order.Status.TAK
             data["total_secs_exp"] = order.t_to_expire(Order.Status.TAK)
+            data["amount"] = str(take_order.first().amount)
 
             valid, context = Logics.gen_taker_hold_invoice(order, request.user)
 
