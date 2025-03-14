@@ -207,7 +207,9 @@ class Logics:
 
             if order.has_range:
                 take_order.amount = amount
-                take_order.save(update_fields=["amount"])
+            else:
+                take_order.amount = order.amount
+            take_order.save(update_fields=["amount"])
 
             order.log(
                 f"Pre-Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"

@@ -434,6 +434,7 @@ class TradeTest(BaseAPITestCase):
         )
         self.assertIsHash(data["maker_hash_id"])
         self.assertEqual(data["maker_status"], "Active")
+        self.assertAlmostEqual(float(data["amount"]), 80)
         self.assertFalse(data["is_maker"])
         self.assertFalse(data["is_buyer"])
         self.assertFalse(data["is_seller"])
