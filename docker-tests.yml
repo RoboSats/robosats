@@ -150,7 +150,8 @@ services:
       USE_TOR: False
       MACAROON_PATH: 'data/chain/bitcoin/regtest/admin.macaroon'
       CLN_DIR: '/cln/regtest/'
-      BITCOIND_RPCURL: 'http://127.0.0.1:18443'
+      BITCOIND_RPCHOST: '127.0.0.1'
+      BITCOIND_RPCPORT: '18443'
       BITCOIND_RPCUSER: 'test'
       BITCOIND_RPCPASSWORD: 'test'
     env_file:
@@ -191,7 +192,8 @@ services:
   #     USE_TOR: False
   #     MACAROON_PATH: 'data/chain/bitcoin/regtest/admin.macaroon'
   #     CLN_DIR: '/cln/regtest/'
-  #     BITCOIND_RPCURL: 'http://127.0.0.1:18443'
+  #     BITCOIND_RPCHOST: '127.0.0.1'
+  #     BITCOIND_RPCPORT: '18443'
   #     BITCOIND_RPCUSER: 'test'
   #     BITCOIND_RPCPASSWORD: 'test'
   #     SKIP_COLLECT_STATIC: "true"
