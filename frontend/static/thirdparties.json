@@ -10,7 +10,9 @@
       "telegram": "https://t.me/p2plightning",
       "simplex": null,
       "nostr": "https://njump.me/nprofile1qqs0es4q4yl3t7txceldxjrwkjfk6gdm88q5m6f68qff7683s8udrmqs874xa",
-      "website": "https://lnp2pbot.com"
+      "website": "https://lnp2pbot.com",
+      "pgp": null,
+      "fingerprint": null
     }
   },
   "peach": {
@@ -24,7 +26,9 @@
       "telegram": "https://t.me/peachtopeach",
       "simplex": null,
       "nostr": "https://njump.me/nprofile1qqs2gazhwghppw36yu0muuzqykdrcndzeafml50pnqfcy9xjx5rylsss0wkz7",
-      "website": "https://peachbitcoin.com"
+      "website": "https://peachbitcoin.com",
+      "pgp": "/static/federation/pgp/48339A19645E2E53488E0E5479E1B270FACD1BD2.asc",
+      "fingerprint": "48339A19645E2E53488E0E5479E1B270FACD1BD2"
     }
   }
 }
