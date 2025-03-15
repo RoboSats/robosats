@@ -853,6 +853,9 @@ class InfoView(viewsets.ViewSet):
             1 - float(config("MAKER_FEE_SPLIT"))
         )
         context["bond_size"] = settings.DEFAULT_BOND_SIZE
+        context["market_price_apis"] = config(
+            "MARKET_PRICE_APIS", cast=str, default="none"
+        )
         context["notice_severity"] = config("NOTICE_SEVERITY", cast=str, default="none")
         context["notice_message"] = config("NOTICE_MESSAGE", cast=str, default="")
         context["min_order_size"] = config("MIN_ORDER_SIZE", cast=int, default=20000)

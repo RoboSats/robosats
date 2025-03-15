@@ -61,6 +61,7 @@ class InfoSerializer(serializers.Serializer):
             ("info", "info"),
         ]
     )
+    market_price_apis = serializers.CharField()
     notice_message = serializers.CharField()
 
 

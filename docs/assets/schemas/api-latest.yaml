@@ -1065,6 +1065,8 @@ components:
           $ref: '#/components/schemas/Version'
         notice_severity:
           $ref: '#/components/schemas/NoticeSeverityEnum'
+        market_price_apis:
+          type: string
         notice_message:
           type: string
       required:
@@ -1080,6 +1082,7 @@ components:
       - lifetime_volume
       - lnd_version
       - maker_fee
+      - market_price_apis
       - max_order_size
       - max_swap
       - min_order_size
