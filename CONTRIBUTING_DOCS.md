@@ -61,7 +61,7 @@ Use the same tool to change it quick in all files.
 ## Menus
 
 ### Header Menu
-In order to trasnlate the menus, change all the titles and urls in the `/docs/_data/navigation_{your language}.yml` file you copied earlier. Then go to `/docs/_data/convertToJson.js` and change the filename const to your filename
+In order to translate the menus, change all the titles and urls in the `/docs/_data/navigation_{your language}.yml` file you copied earlier. Then go to `/docs/_data/convertToJson.js` and change the filename const to your filename
 
 ![alt text](/docs/contributeDocsImages/image-15.png)
 
