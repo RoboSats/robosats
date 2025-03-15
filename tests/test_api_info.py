@@ -12,6 +12,7 @@ MAKER_FEE = FEE * config("FEE_SPLIT", cast=float, default=0.125)
 TAKER_FEE = FEE * (1 - config("FEE_SPLIT", cast=float, default=0.125))
 BOND_SIZE = config("BOND_SIZE", cast=float, default=3)
 NOTICE_SEVERITY = config("NOTICE_SEVERITY", cast=str, default="none")
+MARKET_PRICE_APIS = config("MARKET_PRICE_APIS", cast=str, default="none")
 NOTICE_MESSAGE = config("NOTICE_MESSAGE", cast=str, default="")
 
 
@@ -55,6 +56,7 @@ class APIInfoTest(BaseAPITestCase):
         self.assertAlmostEqual(data["maker_fee"], MAKER_FEE)
         self.assertAlmostEqual(data["taker_fee"], TAKER_FEE)
         self.assertAlmostEqual(data["bond_size"], BOND_SIZE)
+        self.assertEqual(data["market_price_apis"], MARKET_PRICE_APIS)
         self.assertEqual(data["notice_severity"], NOTICE_SEVERITY)
         self.assertEqual(data["notice_message"], NOTICE_MESSAGE)
         self.assertEqual(data["current_swap_fee_rate"], 0)
