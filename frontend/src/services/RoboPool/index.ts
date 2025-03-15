@@ -98,10 +98,12 @@ class RoboPool {
     });
   };
 
-  subscribeBook = (events: RoboPoolEvents): void => {
-    const authors = [...Object.values(defaultFederation), ...Object.values(thirdParties)]
-      .map((f) => f.nostrHexPubkey)
-      .filter((item) => item !== undefined);
+  subscribeBook = (robosatsOnly: boolean, events: RoboPoolEvents): void => {
+    let scope = Object.values(defaultFederation);
+    if (!robosatsOnly) {
+      scope = [...scope, ...Object.values(thirdParties)];
+    }
+    const authors = scope.map((f) => f.nostrHexPubkey).filter((item) => item !== undefined);
 
     const requestPending = [
       'REQ',
