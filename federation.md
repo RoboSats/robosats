@@ -1,5 +1,3 @@
-_RoboSats Federation Basis v0.6.0~3_
-
 ## Introduction
 RoboSats is a Free and Open Source project, anyone can spin up a new RoboSats backend instance. This is in fact ideal, given that the more backend instances there are, the more decentralized RoboSats becomes and the harder it is to stop. However, this decentralization creates some challenges:
 
@@ -108,6 +106,4 @@ After six months, or approximately 12,288 blocks, a coordinator reaches maturity
 
 ## Timeline
 
-In a sense the RoboSats federation is already online. New coordinators can gradually join. Eventually, the RoboSats "Experimental" coordinator that is run by the development team will be phased out. The RoboSats Federated client app can be used already in `robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion`. You can also run a pre-release of the v0.6.0 selfhosted client.
-
-Any coordinator that registers and gets his backend up and running integrated on the RoboSats client app **during 2023 will receive the Founder badge**.
+In a sense the RoboSats federation is already online. New coordinators can gradually join. Any coordinator that registers and gets his backend up and running integrated on the RoboSats client app **during 2023 will receive the Founder badge**.
