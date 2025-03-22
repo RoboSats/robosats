@@ -177,7 +177,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: .
+          asset_path: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           asset_content_type: application/zip
 
@@ -194,7 +194,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: .
+          asset_path: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
           asset_content_type: application/zip
 
@@ -211,6 +211,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: .
+          asset_path: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
           asset_content_type: application/zip
