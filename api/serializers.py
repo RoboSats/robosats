@@ -642,6 +642,13 @@ class UpdateOrderSerializer(serializers.Serializer):
     mining_fee_rate = serializers.DecimalField(
         max_digits=6, decimal_places=3, allow_null=True, required=False, default=None
     )
+    cancel_status = serializers.ChoiceField(
+        choices=Order.Status.choices,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="Status the order should have for it to be cancelled.",
+    )
 
 
 class ClaimRewardSerializer(serializers.Serializer):

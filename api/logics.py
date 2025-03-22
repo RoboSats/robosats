@@ -1024,7 +1024,17 @@ class Logics:
         return False, None
 
     @classmethod
-    def cancel_order(cls, order, user, state=None):
+    def cancel_order(cls, order, user, cancel_status=None):
+        # If cancel status is specified, do no cancel the order
+        # if it is not the correct one.
+        # This prevents the client from cancelling an order that
+        # recently changed status.
+        if cancel_status is not None:
+            if order.status != cancel_status:
+                return False, {
+                    "bad_request": f"Current order status is {order.status}, not {cancel_status}."
+                }
+
         # Do not change order status if an is in order
         # any of these status
         do_not_cancel = [
