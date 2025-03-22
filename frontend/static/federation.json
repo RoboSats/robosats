@@ -192,6 +192,53 @@
     "testnetNodesPubkeys": ["02f0ddc838b35fe54daa13baa4abab84475c7b9f2670ff4b53c1724792843ef62a"],
     "federated": true
   },
+  "satstralia": {
+    "longAlias": "Satstralia",
+    "shortAlias": "satstralia",
+    "identifier": "satstralia",
+    "description": "Forget \"to the moon\", at Over the Moon we are here to take no-KYC, p2p exchange to the next level! Our goal is to further decentralise the RoboSats federation whilst providing the maximum level of privacy and security for our users. *Trade amounts increase by 30% every 2016 blocks (~2 weeks).",
+    "motto": "Bene videtur hinc",
+    "color": "#eeeee4",
+    "established": "2024-11-01",
+    "nostrHexPubkey": "7af6f7cfc3bfdf8aa65df2465aa7841096fa8ee6b2d4d14fc43d974e5db9ab96",
+    "contact": {
+      "email": "otmoon@proton.me",
+      "telegram": "",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2FUkMFNAXLXeAAe0beCa4w6X_zp18PwxSaSjY17BKUGXQ%3D%40smp12.simplex.im%2FtrEIGy97lLpA9IeAc6axGF6J6vWK6U6r%23%2F%3Fv%3D1-3%26dh%3DMCowBQYDK2VuAyEAj8vhZDsAf8au1XSFG43DWZzzFYUnGNi9RAXMVvG2znk%253D%26srv%3Die42b5weq7zdkghocs3mgxdjeuycheeqqmksntj57rmejagmg4eor5yd.onion",
+      "pgp": "/static/federation/pgp/19D833CB2258715B4E627291942B7D51A8533742.asc",
+      "nostr": "npub10tm00n7rhl0c4fja7fr94fuyzzt04rhxkt2dzn7y8kt5uhde4wtq899xam",
+      "website": "",
+      "fingerprint": "19D833CB2258715B4E627291942B7D51A8533742"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 25,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties. Also because it is impossible to do so by design of Robosats architecture. Due to the decentralized and privacy-centric structure of RoboSats built on the Tor network, we are unable to collect or store user information, including but not limited to, the location of users. This design ensures maximum privacy and anonymity for our users.",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": " Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion",
+      "clearnet": "http://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["023924542082a5d16bce188ec4c29a45f00dd439a3f5992034d82e3353232a0345"],
+    "testnetNodesPubkeys": ["02f0ddc838b35fe54daa13baa4abab84475c7b9f2670ff4b53c1724792843ef62a"],
+    "federated": true
+  },
   "local": {
     "longAlias": "Local Dev",
     "shortAlias": "local",

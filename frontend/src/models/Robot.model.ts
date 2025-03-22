@@ -10,6 +10,7 @@ class Robot {
   public token?: string;
   public pubKey?: string;
   public encPrivKey?: string;
+  public nostrPubKey?: string;
   public stealthInvoices: boolean = true;
   public activeOrderId?: number;
   public lastOrderId?: number;
@@ -34,9 +35,11 @@ class Robot {
     const tokenSHA256 = this.tokenSHA256 ?? '';
     const encPrivKey = this.encPrivKey ?? '';
     const pubKey = this.pubKey ?? '';
+    const nostrPubKey = this.nostrPubKey ?? '';
 
     return {
       tokenSHA256,
+      nostrPubKey,
       keys: {
         pubKey: pubKey.split('\n').join('\\'),
         encPrivKey: encPrivKey.split('\n').join('\\'),

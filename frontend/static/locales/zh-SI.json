@@ -674,14 +674,19 @@
   "Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.": "你的发票已到期或已进行超过3次付款尝试。提交一张新的发票。",
   "#81": "Phrases in components/TradeBox/Prompts/SendingSats.tsx",
   "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.": "RoboSats 正在尝试支付你的闪电发票。请注意，闪电节点必须在线才能接收付款。",
+<<<<<<< HEAD
   "#82": "Phrases in components/TradeBox/Prompts/Successful.tsx",
+=======
+  "#81": "Phrases in components/TradeBox/Prompts/Successful.tsx",
+  "How was your experience with {{peer_nick}}?": "How was your experience with {{peer_nick}}?",
+  "How your host {{coordinator}} did it?": "How your host {{coordinator}} did it?",
+>>>>>>> 7a113d9a (Coordinators ratings WIP)
   "Renew": "延续",
   "RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!": "RoboSats 会随着更多的流动性和更高的用户数量而变得更好。把 RoboSats 推荐给你的比特币朋友吧！",
   "Sending coins to": "将比特币发送到",
   "Start Again": "重新开始",
   "Thank you for using Robosats!": "感谢你使用 Robosats！",
   "Thank you! RoboSats loves you too": "谢谢！RoboSats 也爱你",
-  "What do you think your order host \"{{coordinator}}\"?": "What do you think your order host \"{{coordinator}}\"?",
   "Your TXID": "你的 TXID",
   "#83": "Phrases in components/TradeBox/Prompts/TakerFound.tsx",
   "Please wait for the taker to lock a bond. If the taker does not lock a bond in time, the order will be made public again.": "请等待吃单方锁定保证金。如果吃单方没有及时锁定保证金，订单将再次公开。",

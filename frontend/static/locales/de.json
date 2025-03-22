@@ -674,14 +674,19 @@
   "Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.": "Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.",
   "#81": "Phrases in components/TradeBox/Prompts/SendingSats.tsx",
   "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.": "RoboSats versucht deine Lightning-Invoice zu bezahlen. Denk daran, dass deine Lightning-Node erreichbar sein muss, um die Zahlung zu erhalten.",
+<<<<<<< HEAD
   "#82": "Phrases in components/TradeBox/Prompts/Successful.tsx",
+=======
+  "#81": "Phrases in components/TradeBox/Prompts/Successful.tsx",
+  "How was your experience with {{peer_nick}}?": "How was your experience with {{peer_nick}}?",
+  "How your host {{coordinator}} did it?": "How your host {{coordinator}} did it?",
+>>>>>>> 7a113d9a (Coordinators ratings WIP)
   "Renew": "Renew",
   "RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!": "RoboSats wird noch besser mit mehr Nutzern und Liquidität. Erzähl einem Bitcoin-Freund von uns!",
   "Sending coins to": "Sending coins to",
   "Start Again": "Nochmal",
   "Thank you for using Robosats!": "Danke, dass du Robosats benutzt hast!",
   "Thank you! RoboSats loves you too": "Thank you! RoboSats loves you too",
-  "What do you think your order host \"{{coordinator}}\"?": "What do you think your order host \"{{coordinator}}\"?",
   "Your TXID": "Your TXID",
   "#83": "Phrases in components/TradeBox/Prompts/TakerFound.tsx",
   "Please wait for the taker to lock a bond. If the taker does not lock a bond in time, the order will be made public again.": "Bitte warte auf den Taker, um eine Kaution zu sperren. Wenn der Taker nicht rechtzeitig eine Kaution sperrt, wird die Order erneut veröffentlicht.",
