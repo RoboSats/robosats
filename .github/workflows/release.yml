@@ -170,6 +170,9 @@ jobs:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
 
+      - name: List macOS build directory
+        run: ls -la
+
       - name: 'Verify macOS Build Artifact'
         run: |
           if [ ! -f "robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip" ]; then
