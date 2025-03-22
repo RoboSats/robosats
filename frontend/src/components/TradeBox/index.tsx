@@ -294,9 +294,10 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
     submitAction({ action: 'submit_statement', statement });
   };
-  const ratePlatform = function (rating: number): void {
+  const rateUserPlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
+  const rateHostPlatform = function (rating: number): void {};
 
   const handleWebln = async (order: Order): Promise<void> => {
     const webln = await getWebln().catch(() => {
@@ -601,7 +602,8 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
+                rateHostPlatform={rateHostPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
@@ -625,7 +627,8 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           return (
             <SuccessfulPrompt
               order={order}
-              ratePlatform={ratePlatform}
+              rateUserPlatform={rateUserPlatform}
+              rateHostPlatform={rateHostPlatform}
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
@@ -664,7 +667,8 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
+                rateHostPlatform={rateHostPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
