@@ -27,7 +27,8 @@ import {
 
 interface SuccessfulPromptProps {
   order: Order;
-  ratePlatform: (rating: number) => void;
+  rateUserPlatform: (rating: number) => void;
+  rateHostPlatform: (rating: number) => void;
   onClickStartAgain: () => void;
   onClickRenew: () => void;
   loadingRenew: boolean;
@@ -35,7 +36,8 @@ interface SuccessfulPromptProps {
 
 export const SuccessfulPrompt = ({
   order,
-  ratePlatform,
+  rateUserPlatform,
+  rateHostPlatform,
   onClickStartAgain,
   onClickRenew,
   loadingRenew,
@@ -44,7 +46,10 @@ export const SuccessfulPrompt = ({
   const currencyCode: string = currencies[`${order.currency}`];
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
-  const [rating, setRating] = useState<number | undefined>(undefined);
+  const [peerRating, setPeerRating] = useState<string>();
+  const [hostRating, setHostRating] = useState<string>();
+
+  console.log(peerRating);
 
   return (
     <Grid
@@ -57,7 +62,26 @@ export const SuccessfulPrompt = ({
     >
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
-          {t('What do you think your order host "{{coordinator}}"?', {
+          {t('How was your experience with {{peer_nick}}?', {
+            peer_nick: order.is_maker ? order.taker_nick : order.maker_nick,
+          })}
+        </Typography>
+      </Grid>
+      <Grid item>
+        <Rating
+          name='size-large'
+          defaultValue={0}
+          size='large'
+          onChange={(e) => {
+            const rate = e.target.value;
+            rateUserPlatform(rate);
+            setPeerRating(rate);
+          }}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography variant='body2' align='center'>
+          {t('How your host {{coordinator}} did it?', {
             coordinator: federation.getCoordinator(order.shortAlias)?.longAlias,
           })}
         </Typography>
@@ -69,12 +93,13 @@ export const SuccessfulPrompt = ({
           size='large'
           onChange={(e) => {
             const rate = e.target.value;
-            ratePlatform(rate);
-            setRating(rate);
+            console.log(typeof rate);
+            rateHostPlatform(rate);
+            setHostRating(rate);
           }}
         />
       </Grid>
-      {rating === 5 ? (
+      {hostRating ? (
         <Grid item xs={12}>
           <div
             style={{
@@ -84,35 +109,40 @@ export const SuccessfulPrompt = ({
               justifyContent: 'center',
             }}
           >
-            <Typography variant='body2' align='center'>
-              <b>{t('Thank you! RoboSats loves you too')}</b>
-            </Typography>
-            <Favorite color='error' />
-          </div>
-          <Typography variant='body2' align='center'>
-            {t(
-              'RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!',
+            {hostRating === '5' ? (
+              <>
+                <Typography variant='body2' align='center'>
+                  <b>{t('Thank you! RoboSats loves you too')}</b>
+                </Typography>
+                <Favorite color='error' />
+              </>
+            ) : (
+              <Typography variant='body2' align='center'>
+                <b>{t('Thank you for using Robosats!')}</b>
+              </Typography>
             )}
-          </Typography>
-        </Grid>
-      ) : rating !== undefined ? (
-        <Grid>
-          <Typography variant='body2' align='center'>
-            <b>{t('Thank you for using Robosats!')}</b>
-          </Typography>
-          <Typography variant='body2' align='center'>
-            <Trans i18nKey='let_us_know_hot_to_improve'>
-              Let us know how the platform could improve (
-              <Link target='_blank' href='https://t.me/robosats'>
-                Telegram
-              </Link>
-              {' / '}
-              <Link target='_blank' href='https://github.com/RoboSats/robosats/issues'>
-                Github
-              </Link>
-              )
-            </Trans>
-          </Typography>
+          </div>
+          {hostRating === '5' ? (
+            <Typography variant='body2' align='center'>
+              {t(
+                'RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!',
+              )}
+            </Typography>
+          ) : (
+            <Typography variant='body2' align='center'>
+              <Trans i18nKey='let_us_know_hot_to_improve'>
+                Let us know how the platform could improve (
+                <Link target='_blank' href='https://t.me/robosats'>
+                  Telegram
+                </Link>
+                {' / '}
+                <Link target='_blank' href='https://github.com/RoboSats/robosats/issues'>
+                  Github
+                </Link>
+                )
+              </Trans>
+            </Typography>
+          )}
         </Grid>
       ) : (
         <></>
