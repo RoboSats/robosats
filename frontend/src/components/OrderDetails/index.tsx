@@ -72,8 +72,8 @@ const OrderDetails = ({
   }, [currentOrder]);
 
   useEffect(() => {
-    coordinator?.loadInfo();
-  }, [coordinator.shortAlias]);
+    if (!coordinator?.info) coordinator?.loadInfo();
+  }, [coordinator.shortAlias, coordinator.info]);
 
   const amountString = useMemo(() => {
     if (currentOrder === null) return;
