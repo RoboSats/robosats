@@ -273,11 +273,10 @@ class Logics:
 
     @classmethod
     def take_order_expires(cls, take_order):
-        if take_order.expires_at < timezone.now():
-            cls.cancel_bond(take_order.taker_bond)
-            return True
-        else:
-            return False
+        if take_order.expires_at > timezone.now():
+            take_order.expires_at = timezone.now()
+            take_order.save(update_fields=["expires_at"])
+        cls.cancel_bond(take_order.taker_bond)
 
     @classmethod
     def order_expires(cls, order):
@@ -322,7 +321,7 @@ class Logics:
 
             take_orders_queryset = TakeOrder.objects.filter(order=order)
             for idx, take_order in enumerate(take_orders_queryset):
-                take_order.cancel(cls)
+                cls.take_order_expires(take_order)
 
             order.save(update_fields=["expiry_reason"])
 
@@ -446,7 +445,7 @@ class Logics:
     @classmethod
     def kick_taker(cls, take_order):
         """The taker did not lock the taker_bond. Now he has to go"""
-        take_order.cancel(cls)
+        cls.take_order_expires(take_order)
         # Add a time out to the taker
         if take_order.taker:
             robot = take_order.taker.robot
@@ -1073,7 +1072,7 @@ class Logics:
                     take_orders_queryset = TakeOrder.objects.filter(order=order)
                     for idx, take_order in enumerate(take_orders_queryset):
                         order.log("Pretaker bond was <b>unlocked</b>")
-                        take_order.cancel(cls)
+                        cls.take_order_expires(take_order)
 
                     send_notification.delay(
                         order_id=order.id, message="public_order_cancelled"
