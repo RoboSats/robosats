@@ -71,6 +71,10 @@ const OrderDetails = ({
     setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
   }, [currentOrder]);
 
+  useEffect(() => {
+    if (!coordinator?.info) coordinator?.loadInfo();
+  }, [coordinator.shortAlias, coordinator.info]);
+
   const amountString = useMemo(() => {
     if (currentOrder === null) return;
 
@@ -262,7 +266,6 @@ const OrderDetails = ({
               onClickCoordinator();
             }}
           >
-            {' '}
             <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid item xs={2}>
                 <RobotAvatar
@@ -277,6 +280,15 @@ const OrderDetails = ({
               </Grid>
             </Grid>
           </ListItemButton>
+          {coordinator?.info && !coordinator?.info?.swap_enabled && (
+            <ListItem>
+              <Grid sx={{ marginBottom: 1 }}>
+                <Alert severity='warning' sx={{ marginTop: 2 }}>
+                  {t('This coordinator does not support on-chain swaps.')}
+                </Alert>
+              </Grid>
+            </ListItem>
+          )}
 
           <Divider />
 

@@ -170,9 +170,6 @@ jobs:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
 
-      - name: List macOS build directory
-        run: ls -la
-
       - name: 'Upload macOS Build Artifact'
         id: upload-release-mac-zip-asset
         uses: actions/upload-release-asset@v1
