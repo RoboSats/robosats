@@ -6,6 +6,7 @@ import { type DisputeForm, DisputeStatementForm } from '../Forms';
 interface DisputePromptProps {
   loading: boolean;
   dispute: DisputeForm;
+  shortAlias: string;
   setDispute: (state: DisputeForm) => void;
   onClickSubmit: () => void;
 }
@@ -13,6 +14,7 @@ interface DisputePromptProps {
 export const DisputePrompt = ({
   loading,
   dispute,
+  shortAlias,
   onClickSubmit,
   setDispute,
 }: DisputePromptProps): JSX.Element => {
@@ -37,6 +39,7 @@ export const DisputePrompt = ({
         <DisputeStatementForm
           loading={loading}
           onClickSubmit={onClickSubmit}
+          shortAlias={shortAlias}
           dispute={dispute}
           setDispute={setDispute}
         />

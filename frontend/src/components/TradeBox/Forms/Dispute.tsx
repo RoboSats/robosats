@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, TextField, Checkbox, Tooltip, FormControlLabel } from '@mui/material';
+import {
+  Grid,
+  TextField,
+  Checkbox,
+  Tooltip,
+  FormControlLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
 import { LoadingButton } from '@mui/lab';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
+import type { Contact } from '../../../models';
 
 export interface DisputeForm {
   statement: string;
+  contactMethod?: string;
+  contact: string;
   attachLogs: boolean;
   badStatement: string;
 }
@@ -12,12 +27,14 @@ export interface DisputeForm {
 export const defaultDispute: DisputeForm = {
   statement: '',
   attachLogs: false,
+  contact: '',
   badStatement: '',
 };
 
 interface DisputeStatementFormProps {
   loading: boolean;
   dispute: DisputeForm;
+  shortAlias: string;
   setDispute: (state: DisputeForm) => void;
   onClickSubmit: () => void;
 }
@@ -26,9 +43,14 @@ export const DisputeStatementForm = ({
   loading,
   onClickSubmit,
   dispute,
+  shortAlias,
   setDispute,
 }: DisputeStatementFormProps): JSX.Element => {
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
+
+  const contactMethods: Contact = federation.getCoordinator(shortAlias)?.contact ?? {};
+
   return (
     <Grid
       container
@@ -52,6 +74,46 @@ export const DisputeStatementForm = ({
           rows={4}
           onChange={(e) => {
             setDispute({ ...dispute, statement: e.target.value });
+          }}
+        />
+      </Grid>
+      <Grid item>
+        <Select
+          variant='standard'
+          required
+          value={dispute.contactMethod}
+          onChange={(e) => {
+            setDispute({ ...dispute, contactMethod: e.target.value });
+          }}
+        >
+          {Object.keys(contactMethods).map((contact) => {
+            if (!contactMethods[contact] || contactMethods[contact] === '') return <></>;
+
+            return (
+              <MenuItem value={contact} key={contact}>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {t(contact)}
+                </div>
+              </MenuItem>
+            );
+          })}
+          <MenuItem value={'other'} key='other'>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+              {t('Other')}
+            </div>
+          </MenuItem>
+        </Select>
+      </Grid>
+      <Grid item>
+        <TextField
+          required
+          inputProps={{
+            style: { textAlign: 'center' },
+          }}
+          multiline
+          rows={4}
+          onChange={(e) => {
+            setDispute({ ...dispute, contact: e.target.value });
           }}
         />
       </Grid>
