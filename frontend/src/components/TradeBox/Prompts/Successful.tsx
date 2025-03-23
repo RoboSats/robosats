@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 import TradeSummary from '../TradeSummary';
-import { Favorite, RocketLaunch, ContentCopy, Refresh } from '@mui/icons-material';
+import { Favorite, RocketLaunch, ContentCopy, Refresh, Info } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 
 import { type Order } from '../../../models';
@@ -24,6 +24,7 @@ import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../contexts/FederationContext';
+import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 
 interface SuccessfulPromptProps {
   order: Order;
@@ -44,12 +45,10 @@ export const SuccessfulPrompt = ({
 }: SuccessfulPromptProps): JSX.Element => {
   const { t } = useTranslation();
   const currencyCode: string = currencies[`${order.currency}`];
+  const { settings } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
-  const [peerRating, setPeerRating] = useState<string>();
   const [hostRating, setHostRating] = useState<string>();
-
-  console.log(peerRating);
 
   return (
     <Grid
@@ -62,7 +61,7 @@ export const SuccessfulPrompt = ({
     >
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
-          {t('How was your experience with {{peer_nick}}?', {
+          {t('Rate your peer {{peer_nick}}', {
             peer_nick: order.is_maker ? order.taker_nick : order.maker_nick,
           })}
         </Typography>
@@ -75,25 +74,30 @@ export const SuccessfulPrompt = ({
           onChange={(e) => {
             const rate = e.target.value;
             rateUserPlatform(rate);
-            setPeerRating(rate);
           }}
         />
       </Grid>
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
-          {t('How your host {{coordinator}} did it?', {
+          {t('Rate your host {{coordinator}}', {
             coordinator: federation.getCoordinator(order.shortAlias)?.longAlias,
-          })}
+          })}{' '}
+          <Typography variant='button' align='center'>
+            {t('BETA')}
+          </Typography>
+          <Tooltip title={t('You need to enable nostr to rate your coordinator.')}>
+            <Info sx={{ width: 15 }} />
+          </Tooltip>
         </Typography>
       </Grid>
       <Grid item>
         <Rating
+          disabled={settings.connection !== 'nostr'}
           name='size-large'
           defaultValue={0}
           size='large'
           onChange={(e) => {
             const rate = e.target.value;
-            console.log(typeof rate);
             rateHostPlatform(rate);
             setHostRating(rate);
           }}
@@ -112,7 +116,11 @@ export const SuccessfulPrompt = ({
             {hostRating === '5' ? (
               <>
                 <Typography variant='body2' align='center'>
-                  <b>{t('Thank you! RoboSats loves you too')}</b>
+                  <b>
+                    {t('Thank you! {{shortAlias}} loves you too', {
+                      shortAlias: federation.getCoordinator(order.shortAlias)?.longAlias,
+                    })}
+                  </b>
                 </Typography>
                 <Favorite color='error' />
               </>
