@@ -18,7 +18,8 @@ import type { Contact } from '../../../models';
 
 export interface DisputeForm {
   statement: string;
-  contactMethod?: string;
+  contactMethod: string;
+  badContact: string;
   contact: string;
   attachLogs: boolean;
   badStatement: string;
@@ -27,7 +28,9 @@ export interface DisputeForm {
 export const defaultDispute: DisputeForm = {
   statement: '',
   attachLogs: false,
+  contactMethod: '',
   contact: '',
+  badContact: '',
   badStatement: '',
 };
 
@@ -55,18 +58,18 @@ export const DisputeStatementForm = ({
     <Grid
       container
       sx={{ width: '18em' }}
-      direction='column'
       justifyContent='flex-start'
       alignItems='center'
       spacing={0.5}
       padding={1}
     >
-      <Grid item>
+      <Grid item xs={12}>
         <TextField
           error={dispute.badStatement !== ''}
           helperText={dispute.badStatement}
           label={t('Submit dispute statement')}
           required
+          fullWidth
           inputProps={{
             style: { textAlign: 'center' },
           }}
@@ -77,22 +80,35 @@ export const DisputeStatementForm = ({
           }}
         />
       </Grid>
-      <Grid item>
+      <Grid item xs={12}>
         <Select
           variant='standard'
           required
+          fullWidth
+          displayEmpty
+          placeholder={t('Contact method')}
           value={dispute.contactMethod}
           onChange={(e) => {
             setDispute({ ...dispute, contactMethod: e.target.value });
           }}
+          renderValue={(value?: string) => {
+            if (!value) {
+              return <span style={{ color: 'gray' }}>{t('Select a contact method')}</span>;
+            }
+            return value.charAt(0).toUpperCase() + value.slice(1);
+          }}
         >
+          <MenuItem value='' disabled>
+            {t('Select a contact method')}
+          </MenuItem>
           {Object.keys(contactMethods).map((contact) => {
             if (!contactMethods[contact] || contactMethods[contact] === '') return <></>;
+            if (['pgp', 'fingerprint', 'website'].includes(contact)) return <></>;
 
             return (
               <MenuItem value={contact} key={contact}>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                  {t(contact)}
+                  {contact.charAt(0).toUpperCase() + contact.slice(1)}
                 </div>
               </MenuItem>
             );
@@ -104,14 +120,13 @@ export const DisputeStatementForm = ({
           </MenuItem>
         </Select>
       </Grid>
-      <Grid item>
+      <Grid item xs={12}>
         <TextField
+          error={dispute.badContact !== ''}
+          helperText={dispute.badContact}
+          fullWidth
           required
-          inputProps={{
-            style: { textAlign: 'center' },
-          }}
-          multiline
-          rows={4}
+          size='small'
           onChange={(e) => {
             setDispute({ ...dispute, contact: e.target.value });
           }}

@@ -289,8 +289,13 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
 
   const submitStatement = function (): void {
     let statement = dispute.statement;
-    if (!dispute.contact || dispute.contact.trim() === '') {
-      setDispute({ ...dispute, badStatement: t('A contact method is required') });
+    if (!statement || statement.trim() === '' || statement.length < 100) {
+      setDispute({
+        ...dispute,
+        badStatement: t('The statement is too short. Make sure to be thorough.'),
+      });
+    } else if (!dispute.contact || dispute.contact.trim() === '') {
+      setDispute({ ...dispute, badContact: t('A contact method is required') });
     } else {
       const { contactMethod, contact } = dispute;
       statement = `${contactMethod ?? ''}: ${contact ?? ''} \n\n ${statement}`;
@@ -298,6 +303,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
         const payload = { statement, messages };
         statement = JSON.stringify(payload, null, 2);
       }
+
       setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
       submitAction({ action: 'submit_statement', statement });
     }
