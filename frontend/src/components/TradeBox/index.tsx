@@ -52,6 +52,7 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -117,6 +118,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Buttons and Dialogs
@@ -287,13 +289,26 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
 
   const submitStatement = function (): void {
     let statement = dispute.statement;
-    if (dispute.attachLogs) {
-      const payload = { statement, messages };
-      statement = JSON.stringify(payload, null, 2);
+    if (!statement || statement.trim() === '' || statement.length < 100) {
+      setDispute({
+        ...dispute,
+        badStatement: t('The statement is too short. Make sure to be thorough.'),
+      });
+    } else if (!dispute.contact || dispute.contact.trim() === '') {
+      setDispute({ ...dispute, badContact: t('A contact method is required') });
+    } else {
+      const { contactMethod, contact } = dispute;
+      statement = `${contactMethod ?? ''}: ${contact ?? ''} \n\n ${statement}`;
+      if (dispute.attachLogs) {
+        const payload = { statement, messages };
+        statement = JSON.stringify(payload, null, 2);
+      }
+
+      setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
+      submitAction({ action: 'submit_statement', statement });
     }
-    setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
-    submitAction({ action: 'submit_statement', statement });
   };
+
   const ratePlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
@@ -574,6 +589,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
                 dispute={dispute}
                 setDispute={setDispute}
                 onClickSubmit={submitStatement}
+                shortAlias={currentOrder.shortAlias}
               />
             );
           };
