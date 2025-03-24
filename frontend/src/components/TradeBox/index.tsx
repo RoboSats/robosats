@@ -226,7 +226,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
 
   const cancel = function (): void {
     const order = garage.getSlot()?.activeOrder;
-    const noConfirmation = Boolean(order?.is_maker && [0, 1, 2].includes(order?.status));
+    const noConfirmation = Boolean(order?.is_maker && [0, 1, 2, 3].includes(order?.status));
 
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
     submitAction({
