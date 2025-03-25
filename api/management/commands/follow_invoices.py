@@ -302,8 +302,8 @@ class Command(BaseCommand):
                 return
 
             elif hasattr(lnpayment, "order_taken"):
-                self.stderr.write("Expiting take order with cancelled escrow")
-                Logics.take_order_expires(lnpayment.order_escrow)
+                self.stderr.write("Expiting order with cancelled escrow")
+                Logics.order_expires(lnpayment.order_taken)
                 return
 
         # TODO If a lnpayment goes from LOCKED to INVGEN. Totally weird

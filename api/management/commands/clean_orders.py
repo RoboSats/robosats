@@ -49,8 +49,6 @@ class Command(BaseCommand):
                         order=order, expires_at__gt=timezone.now()
                     )
                     for idx, take_order in enumerate(take_orders_queryset):
-                        take_order.expires_at = order.expires_at
-                        take_order.save()
                         Logics.take_order_expires(take_order)
 
             # It should not happen, but if it cannot locate the hold invoice
@@ -77,10 +75,9 @@ class Command(BaseCommand):
         for idx, take_order in enumerate(take_orders_queryset):
             context = str(take_order) + " was expired"
             try:
-                if Logics.take_order_expires(
-                    take_order
-                ):  # Take order send to expire here
-                    debug["expired_take_orders"].append({idx: context})
+                Logics.take_order_expires(take_order)
+                take_order.delete()
+                debug["expired_take_orders"].append({idx: context})
 
             # It should not happen, but if it cannot locate the hold invoice
             # it probably was cancelled by another thread, make it expire anyway.
