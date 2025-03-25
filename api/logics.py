@@ -219,15 +219,21 @@ class Logics:
     def is_buyer(order, user):
         is_maker = order.maker == user
         is_taker = order.taker == user
+        is_pretaker = TakeOrder.objects.filter(
+            taker=user, order=order, expires_at__gt=timezone.now()
+        ).exists()
         return (is_maker and order.type == Order.Types.BUY) or (
-            is_taker and order.type == Order.Types.SELL
+            (is_pretaker or is_taker) and order.type == Order.Types.SELL
         )
 
     def is_seller(order, user):
         is_maker = order.maker == user
         is_taker = order.taker == user
+        is_pretaker = TakeOrder.objects.filter(
+            taker=user, order=order, expires_at__gt=timezone.now()
+        ).exists()
         return (is_maker and order.type == Order.Types.SELL) or (
-            is_taker and order.type == Order.Types.BUY
+            (is_pretaker or is_taker) and order.type == Order.Types.BUY
         )
 
     def calc_sats(amount, exchange_rate, premium):
