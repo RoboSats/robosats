@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 import { getWebln, pn } from '../../utils';
-import { finalizeEvent, type Event } from 'nostr-tools';
 import {
   ConfirmCancelDialog,
   ConfirmCollabCancelDialog,
@@ -313,31 +312,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     submitAction({ action: 'rate_platform', rating });
   };
 
-  const rateHostPlatform = function (rating: number): void {
-    const slot = garage.getSlot();
-    const coordinatorPubKey = federation.getCoordinator(currentOrder.shortAlias)?.nostrHexPubkey;
-
-    if (!slot?.nostrPubKey || !slot.nostrSecKey || !coordinatorPubKey || !currentOrder.id) return;
-
-    const eventTemplate: Event = {
-      kind: 31986,
-      created_at: Math.floor(Date.now() / 1000),
-      tags: [
-        ['d', `${coordinatorPubKey}:${currentOrder.id}`],
-        ['e', ''],
-        ['p', coordinatorPubKey],
-        ['rating', String(rating / 5)],
-      ],
-      content: '',
-      pubkey: slot.nostrPubKey,
-      id: '',
-      sig: '',
-    };
-
-    const signedEvent = finalizeEvent(eventTemplate, slot.nostrSecKey);
-    federation.roboPool.sendEvent(signedEvent);
-  };
-
   const handleWebln = async (order: Order): Promise<void> => {
     const webln = await getWebln().catch(() => {
       console.log('WebLN not available');
@@ -643,7 +617,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
               <SuccessfulPrompt
                 order={order}
                 rateUserPlatform={rateUserPlatform}
-                rateHostPlatform={rateHostPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
@@ -668,7 +641,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             <SuccessfulPrompt
               order={order}
               rateUserPlatform={rateUserPlatform}
-              rateHostPlatform={rateHostPlatform}
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
@@ -708,7 +680,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
               <SuccessfulPrompt
                 order={order}
                 rateUserPlatform={rateUserPlatform}
-                rateHostPlatform={rateHostPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {

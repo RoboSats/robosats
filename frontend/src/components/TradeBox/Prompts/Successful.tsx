@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import {
   Grid,
@@ -17,7 +17,7 @@ import currencies from '../../../../static/assets/currencies.json';
 import TradeSummary from '../TradeSummary';
 import { Favorite, RocketLaunch, ContentCopy, Refresh, Info } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-
+import { finalizeEvent, type Event } from 'nostr-tools';
 import { type Order } from '../../../models';
 import { systemClient } from '../../../services/System';
 import {
@@ -25,11 +25,11 @@ import {
   type UseFederationStoreType,
 } from '../../../contexts/FederationContext';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 
 interface SuccessfulPromptProps {
   order: Order;
   rateUserPlatform: (rating: number) => void;
-  rateHostPlatform: (rating: number) => void;
   onClickStartAgain: () => void;
   onClickRenew: () => void;
   loadingRenew: boolean;
@@ -38,7 +38,6 @@ interface SuccessfulPromptProps {
 export const SuccessfulPrompt = ({
   order,
   rateUserPlatform,
-  rateHostPlatform,
   onClickStartAgain,
   onClickRenew,
   loadingRenew,
@@ -47,8 +46,39 @@ export const SuccessfulPrompt = ({
   const currencyCode: string = currencies[`${order.currency}`];
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
-  const [hostRating, setHostRating] = useState<string>();
+  const [hostRating, setHostRating] = useState<number>();
+
+  const rateHostPlatform = function (): void {
+    if (!hostRating) return;
+
+    const slot = garage.getSlot();
+    const coordinatorPubKey = federation.getCoordinator(order.shortAlias)?.nostrHexPubkey;
+
+    if (!slot?.nostrPubKey || !slot.nostrSecKey || !coordinatorPubKey || !order.id) return;
+
+    const eventTemplate: Event = {
+      kind: 31986,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [
+        ['d', `${order.shortAlias}:${order.id}`],
+        ['p', coordinatorPubKey],
+        ['rating', String(hostRating / 5)],
+      ],
+      content: '',
+      pubkey: slot.nostrPubKey,
+      id: '',
+      sig: '',
+    };
+
+    const signedEvent = finalizeEvent(eventTemplate, slot.nostrSecKey);
+    federation.roboPool.sendEvent(signedEvent);
+  };
+
+  useEffect(() => {
+    rateHostPlatform();
+  }, [hostRating]);
 
   return (
     <Grid
@@ -98,7 +128,6 @@ export const SuccessfulPrompt = ({
           size='large'
           onChange={(e) => {
             const rate = e.target.value;
-            rateHostPlatform(rate);
             setHostRating(rate);
           }}
         />
@@ -113,7 +142,7 @@ export const SuccessfulPrompt = ({
               justifyContent: 'center',
             }}
           >
-            {hostRating === '5' ? (
+            {hostRating === 5 ? (
               <>
                 <Typography variant='body2' align='center'>
                   <b>
@@ -130,7 +159,7 @@ export const SuccessfulPrompt = ({
               </Typography>
             )}
           </div>
-          {hostRating === '5' ? (
+          {hostRating === 5 ? (
             <Typography variant='body2' align='center'>
               {t(
                 'RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!',
