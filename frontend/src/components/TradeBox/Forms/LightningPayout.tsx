@@ -60,7 +60,7 @@ export const defaultLightning: LightningForm = {
   advancedOptions: false,
   useCustomBudget: false,
   routingBudgetUnit: 'PPM',
-  routingBudgetPPM: 1000,
+  routingBudgetPPM: 2000,
   routingBudgetSats: undefined,
   badInvoice: '',
   useLnproxy: false,
