@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 import { getWebln, pn } from '../../utils';
-
 import {
   ConfirmCancelDialog,
   ConfirmCollabCancelDialog,
@@ -309,7 +308,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     }
   };
 
-  const ratePlatform = function (rating: number): void {
+  const rateUserPlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
 
@@ -617,7 +616,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
@@ -641,7 +640,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           return (
             <SuccessfulPrompt
               order={order}
-              ratePlatform={ratePlatform}
+              rateUserPlatform={rateUserPlatform}
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
@@ -680,7 +679,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {

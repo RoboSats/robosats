@@ -130,6 +130,12 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestPending));
     this.sendMessage(JSON.stringify(requestSuccess));
   };
+
+  sendEvent = (event: Event): void => {
+    const message = ['EVENT', event];
+
+    this.sendMessage(JSON.stringify(message));
+  };
 }
 
 export default RoboPool;

@@ -138,6 +138,7 @@ export class Coordinator {
     this.testnet = value.testnet;
     this.mainnetNodesPubkeys = value.mainnetNodesPubkeys;
     this.testnetNodesPubkeys = value.testnetNodesPubkeys;
+    this.nostrHexPubkey = value.nostrHexPubkey;
     this.url = '';
     this.basePath = '';
 
@@ -163,6 +164,7 @@ export class Coordinator {
   public testnetNodesPubkeys: string[] | undefined;
   public url: string;
   public basePath: string;
+  public nostrHexPubkey: string;
 
   // These properties are fetched from coordinator API
   public book: Record<string, PublicOrder> = {};
