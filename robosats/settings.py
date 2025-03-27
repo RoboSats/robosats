@@ -59,7 +59,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 SESSION_COOKIE_HTTPONLY = False
 
 # Logging settings
-if os.environ.get("LOG_TO_CONSOLE"):
+if config("LOG_TO_CONSOLE", cast=bool, default=False):
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -70,12 +70,12 @@ if os.environ.get("LOG_TO_CONSOLE"):
         },
         "root": {
             "handlers": ["console"],
-            "level": "WARNING",
+            "level": str(config("LOGGER_LEVEL", cast=str, default="WARNING")),
         },
         "loggers": {
             "api.utils": {
                 "handlers": ["console"],
-                "level": "WARNING",
+                "level": str(config("LOGGER_LEVEL", cast=str, default="WARNING")),
             },
         },
     }
@@ -231,7 +231,11 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [config("REDIS_URL")],
+            "hosts": [
+                "redis://" + str(config("REDIS_HOST", cast=str, default="localhost")) + \
+                ":" + str(config("REDIS_PORT", cast=str, default="6379")) + \
+                "/" + str(config("REDIS_DB_NUMBER", cast=str, default="1"))
+            ],
         },
     },
 }
@@ -239,7 +243,10 @@ CHANNEL_LAYERS = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": config("REDIS_URL"),
+        "LOCATION": \
+            "redis://" + str(config("REDIS_HOST", cast=str, default="localhost")) + \
+            ":" + str(config("REDIS_PORT", cast=str, default="6379")) + \
+            "/" + str(config("REDIS_DB_NUMBER", cast=str, default="1")),
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
