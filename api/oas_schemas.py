@@ -245,6 +245,10 @@ class OrderViewSchema:
                 - `17` - Maker lost dispute
                 - `18` - Taker lost dispute
 
+                The client can use `cancel_status` to cancel the order only
+                if it is in the specified status. The server will
+                return an error without cancelling the trade otherwise.
+
                 Note that there are penalties involved for cancelling a order
                 mid-trade so use this action carefully:
 

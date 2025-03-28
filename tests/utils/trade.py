@@ -114,11 +114,13 @@ class Trade:
         self.response = self.client.get(path + params, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
-    def cancel_order(self, robot_index=1):
+    def cancel_order(self, robot_index=1, cancel_status=None):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(robot_index)
         body = {"action": "cancel"}
+        if cancel_status is not None:
+            body.update({"cancel_status": cancel_status})
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
