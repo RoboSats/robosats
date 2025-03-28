@@ -91,9 +91,7 @@ export const SuccessfulPrompt = ({
     >
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
-          {t('Rate your peer {{peer_nick}}', {
-            peer_nick: order.is_maker ? order.taker_nick : order.maker_nick,
-          })}
+          {t('Rate your peer')} <b>{order.is_maker ? order.taker_nick : order.maker_nick}</b>
         </Typography>
       </Grid>
       <Grid item>
@@ -109,9 +107,7 @@ export const SuccessfulPrompt = ({
       </Grid>
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
-          {t('Rate your host {{coordinator}}', {
-            coordinator: federation.getCoordinator(order.shortAlias)?.longAlias,
-          })}{' '}
+          {t('Rate your host')} <b>{federation.getCoordinator(order.shortAlias)?.longAlias}</b>{' '}
           <Typography variant='button' align='center'>
             {t('BETA')}
           </Typography>
@@ -186,7 +182,7 @@ export const SuccessfulPrompt = ({
       )}
 
       {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
-      <Collapse in={Boolean(order.txid)}>
+      <Collapse in={Boolean(order.txid)} sx={{ marginTop: 0.5 }}>
         <Alert severity='success'>
           <AlertTitle>
             {t('Your TXID')}
@@ -221,7 +217,10 @@ export const SuccessfulPrompt = ({
         </Alert>
       </Collapse>
 
-      <Collapse in={order.tx_queued && order.address !== undefined && order.txid == null}>
+      <Collapse
+        in={order.tx_queued && order.address !== undefined && order.txid == null}
+        sx={{ marginTop: 0.5 }}
+      >
         <Alert severity='info'>
           <AlertTitle>
             <CircularProgress sx={{ maxWidth: '0.8em', maxHeight: '0.8em' }} />
@@ -255,7 +254,13 @@ export const SuccessfulPrompt = ({
         </Alert>
       </Collapse>
 
-      <Grid item container alignItems='center' justifyContent='space-evenly'>
+      <Grid
+        item
+        container
+        alignItems='center'
+        justifyContent='space-evenly'
+        sx={{ marginTop: 0.5 }}
+      >
         <Grid item>
           <Button color='primary' variant='outlined' onClick={onClickStartAgain}>
             <RocketLaunch sx={{ width: '0.8em' }} />
@@ -281,6 +286,7 @@ export const SuccessfulPrompt = ({
       {order.platform_summary != null ? (
         <Grid item>
           <TradeSummary
+            robotNick={order.ur_nick}
             isMaker={order.is_maker}
             makerHashId={order.maker_hash_id}
             takerHashId={order.taker_hash_id}
