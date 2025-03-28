@@ -124,7 +124,7 @@ export const SuccessfulPrompt = ({
           size='large'
           onChange={(e) => {
             const rate = e.target.value;
-            setHostRating(rate);
+            setHostRating(parseInt(rate));
           }}
         />
       </Grid>
