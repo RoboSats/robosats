@@ -1101,6 +1101,58 @@ class TradeTest(BaseAPITestCase):
             data["bad_request"], "This order has been cancelled by the maker"
         )
 
+    def test_cancel_order_cancel_status(self):
+        """
+        Tests the cancellation of a public order using cancel_status.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
+
+        # Cancel order if the order status is public
+        trade.cancel_order(cancel_status=Order.Status.PUB)
+
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(
+            trade.response.json()["bad_request"], "This order has been cancelled by the maker"
+        )
+
+    def test_cancel_order_different_cancel_status(self):
+        """
+        Tests the cancellation of a paused order with a different cancel_status.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.pause_order()
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PAU).label)
+
+        # Try to cancel order if it is public
+        trade.cancel_order(cancel_status=Order.Status.PUB)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(
+            trade.response.json()["bad_request"],
+            f"Current order status is {Order.Status.PAU}, not {Order.Status.PUB}."
+        )
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order()
+
     def test_collaborative_cancel_order_in_chat(self):
         """
         Tests the collaborative cancellation of an order in the chat state

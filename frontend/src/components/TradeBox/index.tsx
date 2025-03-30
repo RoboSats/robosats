@@ -151,6 +151,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     mining_fee_rate?: number;
     statement?: string;
     rating?: number;
+    cancel_status?: number;
   }
 
   const renewOrder = function (): void {
@@ -189,6 +190,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     mining_fee_rate,
     statement,
     rating,
+    cancel_status
   }: SubmitActionProps): void {
     const slot = garage.getSlot();
 
@@ -202,6 +204,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           mining_fee_rate,
           statement,
           rating,
+          cancel_status
         })
         .then((data: Order) => {
           setOpen(closeAll);
@@ -223,8 +226,14 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
   };
 
   const cancel = function (): void {
+    const order = garage.getSlot()?.activeOrder;
+    const noConfirmation = Boolean(order?.is_maker && [0, 1, 2, 3].includes(order?.status));
+
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
-    submitAction({ action: 'cancel' });
+    submitAction({
+        action: 'cancel',
+        cancel_status: noConfirmation ? order?.status : undefined
+    });
   };
 
   const openDispute = function (): void {
