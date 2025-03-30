@@ -1121,7 +1121,7 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(trade.response)
 
         self.assertEqual(
-            data["bad_request"], "This order has been cancelled by the maker"
+            trade.response.json()["bad_request"], "This order has been cancelled by the maker"
         )
 
     def test_cancel_order_different_cancel_status(self):
@@ -1146,7 +1146,7 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(trade.response)
 
         self.assertEqual(
-            data["bad_request"],
+            trade.response.json()["bad_request"],
             f"Current order status is {Order.Status.PAU}, not {Order.Status.PUB}."
         )
 
