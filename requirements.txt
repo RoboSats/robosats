@@ -19,7 +19,7 @@ ring==0.10.1
 gunicorn==23.0.0
 psycopg2==2.9.10
 SQLAlchemy==2.0.16
-django-import-export==4.2.0
+django-import-export==4.3.7
 requests[socks]
 shapely==2.0.6
 python-gnupg==0.5.3
