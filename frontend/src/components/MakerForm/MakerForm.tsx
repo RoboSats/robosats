@@ -498,8 +498,6 @@ const MakerForm = ({
   }, [fav, maker.amount, maker.premium, federationUpdatedAt]);
 
   const disableSubmit = useMemo(() => {
-    console.log(maker.paymentMethods);
-    console.log(typeof maker.paymentMethods);
     return (
       fav.type == null ||
       (!makerHasAmountRange &&
