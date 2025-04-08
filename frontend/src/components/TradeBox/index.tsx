@@ -190,7 +190,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     mining_fee_rate,
     statement,
     rating,
-    cancel_status
+    cancel_status,
   }: SubmitActionProps): void {
     const slot = garage.getSlot();
 
@@ -204,7 +204,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           mining_fee_rate,
           statement,
           rating,
-          cancel_status
+          cancel_status,
         })
         .then((data: Order) => {
           setOpen(closeAll);
@@ -231,8 +231,8 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
 
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
     submitAction({
-        action: 'cancel',
-        cancel_status: noConfirmation ? order?.status : undefined
+      action: 'cancel',
+      cancel_status: noConfirmation ? order?.status : undefined,
     });
   };
 
