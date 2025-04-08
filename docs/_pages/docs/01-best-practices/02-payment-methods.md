@@ -40,16 +40,20 @@ if the timer reaches the expiration, it could trigger a dispute and could lead t
   3. If you agree with the buyer to use a high-risk platform, you will need to take special precautions to avoid chargebacks (more information can be found in the section for each payment method).
   4. Protect yourself from triangulation scams. Below is a brief explanation of the problem along with strategies to help sellers reduce their exposure risk.
 
+### Scams
+
+#### Triangulation
+
 Triangulation fraud involves a scammer acting as an intermediary between the victim and the seller:
 
-• The scammer offers products or services on social media or other platforms.  
-• When the victim contacts the scammer, they request advance payment (before the product is received).  
-• At the same time, the scammer posts a buy offer on RoboSats for an amount equivalent to the expected payment. For example, if they claim to be selling a camera (which the victim will never receive) and price it at €1000, they will create or use a sats buy offer for that same value.  
-• The scammer provides the victim with the RoboSats seller’s payment details (for example, their IBAN), so that the person buying the camera sends the €1000 and the RoboSats seller receives it without knowing what is happening behind the scenes.  
-• After confirming receipt of the money, the seller releases the sats to the scammer.  
+• The scammer offers products or services on social media or other platforms.
+• When the victim contacts the scammer, they request advance payment (before the product is received).
+• At the same time, the scammer posts a buy offer on RoboSats for an amount equivalent to the expected payment. For example, if they claim to be selling a camera (which the victim will never receive) and price it at €1000, they will create or use a sats buy offer for that same value.
+• The scammer provides the victim with the RoboSats seller’s payment details (for example, their IBAN), so that the person buying the camera sends the €1000 and the RoboSats seller receives it without knowing what is happening behind the scenes.
+• After confirming receipt of the money, the seller releases the sats to the scammer.
 • Finally, the scammer disappears having obtained free sats without delivering the promised product or service, and the seller might later be implicated in a fraud claim because their bank details could be associated with the deception experienced by the victim.
 
-Some strategies that may be useful to you:  
+Some strategies that may be useful to you:
 - Save the chat history and records of transactions conducted on the platform, as well as any evidence that could be useful later if disputes are investigated or complaints are filed.
 
 - Ask buyers to include in the payment a subject or message that makes it harder for the scammer to deceive you. For example, “By making this payment, I acknowledge that I will not have the right to a refund later” could be effective, since no one buying a second-hand item would feel comfortable sending money under those conditions. You can use any message you want as long as it does not violate the policies of the payment handler (many do not accept transactions related to BTC).
@@ -78,11 +82,11 @@ Can recipients see your account details?
 If you send money with Wise, the recipient can not see your account details. In fact, this privacy flows both ways - there are also ways you can send money to someone without needing them to share their bank details with you.
 That can be easier and it means no sensitive data is shared as well.
 - If you want to send money to someone without getting their bank details there are a couple of options:
-- If your recipient has a Wise account they can sync their phone contacts with Wise so you can find them and process the payment with 
+- If your recipient has a Wise account they can sync their phone contacts with Wise so you can find them and process the payment with
   just this phone contact
-- If your recipient has a Wise account they can also mark an account as their primary account to receive payments, which means you can 
+- If your recipient has a Wise account they can also mark an account as their primary account to receive payments, which means you can
   send with just an email address
-- If your recipient doesn’t have a Wise account you can still send with just their email - Wise will reach out and ask for their 
+- If your recipient doesn’t have a Wise account you can still send with just their email - Wise will reach out and ask for their
   banking information through a secure link
 
 
