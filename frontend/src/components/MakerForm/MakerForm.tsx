@@ -498,6 +498,8 @@ const MakerForm = ({
   }, [fav, maker.amount, maker.premium, federationUpdatedAt]);
 
   const disableSubmit = useMemo(() => {
+    console.log(maker.paymentMethods);
+    console.log(typeof maker.paymentMethods);
     return (
       fav.type == null ||
       (!makerHasAmountRange &&
@@ -509,9 +511,11 @@ const MakerForm = ({
       (!makerHasAmountRange && maker.amount <= 0) ||
       (maker.isExplicit && (maker.badSatoshisText !== '' || maker.satoshis === '')) ||
       (!maker.isExplicit && maker.badPremiumText !== '') ||
-      federation.getCoordinator(maker.coordinator)?.limits === undefined
+      federation.getCoordinator(maker.coordinator)?.limits === undefined ||
+      typeof maker.premium !== 'number' ||
+      maker.paymentMethods.length === 0
     );
-  }, [maker, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
+  }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
 
   const clearMaker = function (): void {
     setFav({ ...fav, type: null });
@@ -686,7 +690,7 @@ const MakerForm = ({
               <Grid item>
                 <FormControl component='fieldset'>
                   <FormHelperText sx={{ textAlign: 'center' }}>
-                    {fav.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')}
+                    {`${fav.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')} *`}
                   </FormHelperText>
                   <div style={{ textAlign: 'center' }}>
                     <ButtonGroup>
@@ -875,7 +879,7 @@ const MakerForm = ({
               optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
-              label={fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
+              label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
               tooltipTitle={t(
                 fav.mode === 'swap'
                   ? t('Enter the destination of the Lightning swap')
@@ -1003,7 +1007,7 @@ const MakerForm = ({
                 fullWidth
                 error={maker.badPremiumText !== ''}
                 helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
-                label={t('Premium over Market (%)')}
+                label={`${t('Premium over Market (%)')} *`}
                 type='number'
                 value={maker.premium}
                 inputProps={{

@@ -46,6 +46,7 @@ export const ChatPrompt = ({
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
+  const [showWarning, setShowWarning] = useState<boolean>(false);
 
   const currencyCode: string = currencies[`${order.currency}`];
   const amount: string = pn(
@@ -87,6 +88,7 @@ export const ChatPrompt = ({
         setSentButton(false);
         setUndoSentButton(false);
         setReceivedButton(false);
+        setShowWarning(true);
         setText(
           t(
             'Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.',
@@ -124,7 +126,21 @@ export const ChatPrompt = ({
     >
       <Grid item>
         <Typography variant='body2' align='center'>
-          {text}
+          {text}{' '}
+          {showWarning ? (
+            <>
+              {'⚠️ '}
+              <a
+                href='https://robosats.org/docs/payment-methods/#scams'
+                target='_blank'
+                rel='noreferrer'
+              >
+                {t('Beware scams')}
+              </a>
+            </>
+          ) : (
+            ''
+          )}
         </Typography>
       </Grid>
 
