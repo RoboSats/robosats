@@ -46,16 +46,16 @@ if the timer reaches the expiration, it could trigger a dispute and could lead t
 
 Triangulation fraud involves a scammer acting as an intermediary between the victim and the seller:
 
-• The scammer offers products or services on social media or other platforms.
-• When the victim contacts the scammer, they request advance payment (before the product is received).
-• At the same time, the scammer posts a buy offer on RoboSats for an amount equivalent to the expected payment. For example, if they claim to be selling a camera (which the victim will never receive) and price it at €1000, they will create or use a sats buy offer for that same value.
-• The scammer provides the victim with the RoboSats seller’s payment details (for example, their IBAN), so that the person buying the camera sends the €1000 and the RoboSats seller receives it without knowing what is happening behind the scenes.
-• After confirming receipt of the money, the seller releases the sats to the scammer.
-• Finally, the scammer disappears having obtained free sats without delivering the promised product or service, and the seller might later be implicated in a fraud claim because their bank details could be associated with the deception experienced by the victim.
+- The scammer offers products or services on social media or other platforms.
+- When the victim contacts the scammer, they request advance payment (before the product is received).
+- At the same time, the scammer posts a buy offer on RoboSats for an amount equivalent to the expected payment. For example, if they claim to be selling a camera (which the victim will never receive) and price it at €1000, they will create or use a sats buy offer for that same value.
+- The scammer provides the victim with the RoboSats seller’s payment details (for example, their IBAN), so that the person buying the camera sends the €1000 and the RoboSats seller receives it without knowing what is happening behind the scenes.
+- After confirming receipt of the money, the seller releases the sats to the scammer.
+- Finally, the scammer disappears having obtained free sats without delivering the promised product or service, and the seller might later be implicated in a fraud claim because their bank details could be associated with the deception experienced by the victim.
 
 Some strategies that may be useful to you:
-- Save the chat history and records of transactions conducted on the platform, as well as any evidence that could be useful later if disputes are investigated or complaints are filed.
 
+- Save the chat history and records of transactions conducted on the platform, as well as any evidence that could be useful later if disputes are investigated or complaints are filed.
 - Ask buyers to include in the payment a subject or message that makes it harder for the scammer to deceive you. For example, “By making this payment, I acknowledge that I will not have the right to a refund later” could be effective, since no one buying a second-hand item would feel comfortable sending money under those conditions. You can use any message you want as long as it does not violate the policies of the payment handler (many do not accept transactions related to BTC).
 
 - Ensure that this statement is clear, explicit, and linked to the exact amount of the transaction.
