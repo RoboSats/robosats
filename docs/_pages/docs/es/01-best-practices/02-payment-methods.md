@@ -46,18 +46,18 @@ Si el temporizador llega al vencimiento, podría desencadenar una disputa y podr
 
 El fraude por triangulación consiste en que un estafador actúa como intermediario entre la víctima y el vendedor:
 
-• El estafador ofrece productos o servicios en redes sociales u otras plataformas.
-• Cuando la víctima contacta al estafador, éste le pide un pago por adelantado (antes de recibir el producto).
-• Simultáneamente, el estafador publica una oferta de compra en RoboSats por el monto equivalente al pago que espera recibir. Por ejemplo, si dice estar vendiendo una cámara de fotos (que la víctima nunca va a recibir) y le pone un precio de 1000€, creará o tomará una oferta de compra de sats por ese mismo valor.
-• El estafador le da a la víctima los datos de pago del vendedor de RoboSats (su IBAN, por ejemplo) de forma que la persona que compra la camara envía los 1000€ y el vendedor de sats los recibe sin saber nada de lo que está pasando por detrás.
-• Tras confirmar la recepción del dinero, el vendedor libera los sats hacia el estafador.
-• Finalmente, el estafador desaparece habiendo conseguido sats gratis, sin entregar el producto o servicio prometido, y el vendedor podría verse implicado en una reclamación por estafa porque sus datos bancarios podrían asociarse al engaño sufrido por la víctima.
+- El estafador ofrece productos o servicios en redes sociales u otras plataformas.
+- Cuando la víctima contacta al estafador, éste le pide un pago por adelantado (antes de recibir el producto).
+- Simultáneamente, el estafador publica una oferta de compra en RoboSats por el monto equivalente al pago que espera recibir. Por ejemplo, si dice estar vendiendo una cámara de fotos (que la víctima nunca va a recibir) y le pone un precio de 1000€, creará o tomará una oferta de compra de sats por ese mismo valor.
+- El estafador le da a la víctima los datos de pago del vendedor de RoboSats (su IBAN, por ejemplo) de forma que la persona que compra la camara envía los 1000€ y el vendedor de sats los recibe sin saber nada de lo que está pasando por detrás.
+- Tras confirmar la recepción del dinero, el vendedor libera los sats hacia el estafador.
+- Finalmente, el estafador desaparece habiendo conseguido sats gratis, sin entregar el producto o servicio prometido, y el vendedor podría verse implicado en una reclamación por estafa porque sus datos bancarios podrían asociarse al engaño sufrido por la víctima.
 
 Algunas estrategias que te pueden ser útiles:
-   - Guarda el historial de chats y operaciones realizadas en la plataforma así como cualquier evidencia que te pueda ser útil más adelante si se investigan disputas o hay denuncias.
 
-   - Solicita a los compradores que incluyan en el pago un asunto o mensaje que dificulte el engaño que intenta realizar el estafador. Por ejemplo, “Al realizar este pago, reconozco que no tendré derecho a reclamación posterior” podría ser efectivo, ya que nadie que esté comprando un articulo de segunda mano se sentirá cómodo enviando dinero en esas condiciones. puedes usar el mensaje que quieras mientras no implique una violación de las políticas de la entidad que gestiona el pago (muchas no aceptan transacciones relacionadas con BTC).
-   - Asegúrate de que esta declaración sea clara, explícita y esté vinculada al monto exacto de la transacción.
+- Guarda el historial de chats y operaciones realizadas en la plataforma así como cualquier evidencia que te pueda ser útil más adelante si se investigan disputas o hay denuncias.
+- Solicita a los compradores que incluyan en el pago un asunto o mensaje que dificulte el engaño que intenta realizar el estafador. Por ejemplo, “Al realizar este pago, reconozco que no tendré derecho a reclamación posterior” podría ser efectivo, ya que nadie que esté comprando un articulo de segunda mano se sentirá cómodo enviando dinero en esas condiciones. puedes usar el mensaje que quieras mientras no implique una violación de las políticas de la entidad que gestiona el pago (muchas no aceptan transacciones relacionadas con BTC).
+- Asegúrate de que esta declaración sea clara, explícita y esté vinculada al monto exacto de la transacción.
 
 
 ## Método de pago de riesgo medio-bajo
