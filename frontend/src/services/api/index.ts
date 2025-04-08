@@ -3,7 +3,6 @@ import ApiNativeClient from './ApiNativeClient';
 
 export interface Auth {
   tokenSHA256: string;
-  nostrPubKey: string;
   keys?: { pubKey: string; encPrivKey: string };
 }
 

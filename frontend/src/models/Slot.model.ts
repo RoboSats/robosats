@@ -7,7 +7,6 @@ import { getPublicKey } from 'nostr-tools';
 
 export interface AuthHeaders {
   tokenSHA256: string;
-  nostrPubKey: string;
   keys: {
     pubKey: string;
     encPrivKey: string;
