@@ -40,13 +40,17 @@ Si el temporizador llega al vencimiento, podría desencadenar una disputa y podr
   3. Si estás de acuerdo con el comprador en usar una plataforma de alto riesgo, necesitarás precauciones especiales para evitar la devolución de cargo (más información en el apartado de cada método de pago).<br>
   4. Protégete de las estafas de triangulación. A continuación, se presenta una explicación resumida del problema y se proponen estrategias para que los vendedores reduzcan su riesgo de exposición.
 
+### Fraudes
+
+#### Triangulación
+
 El fraude por triangulación consiste en que un estafador actúa como intermediario entre la víctima y el vendedor:
 
-• El estafador ofrece productos o servicios en redes sociales u otras plataformas.  
-• Cuando la víctima contacta al estafador, éste le pide un pago por adelantado (antes de recibir el producto).  
-• Simultáneamente, el estafador publica una oferta de compra en RoboSats por el monto equivalente al pago que espera recibir. Por ejemplo, si dice estar vendiendo una cámara de fotos (que la víctima nunca va a recibir) y le pone un precio de 1000€, creará o tomará una oferta de compra de sats por ese mismo valor.  
-• El estafador le da a la víctima los datos de pago del vendedor de RoboSats (su IBAN, por ejemplo) de forma que la persona que compra la camara envía los 1000€ y el vendedor de sats los recibe sin saber nada de lo que está pasando por detrás.  
-• Tras confirmar la recepción del dinero, el vendedor libera los sats hacia el estafador.  
+• El estafador ofrece productos o servicios en redes sociales u otras plataformas.
+• Cuando la víctima contacta al estafador, éste le pide un pago por adelantado (antes de recibir el producto).
+• Simultáneamente, el estafador publica una oferta de compra en RoboSats por el monto equivalente al pago que espera recibir. Por ejemplo, si dice estar vendiendo una cámara de fotos (que la víctima nunca va a recibir) y le pone un precio de 1000€, creará o tomará una oferta de compra de sats por ese mismo valor.
+• El estafador le da a la víctima los datos de pago del vendedor de RoboSats (su IBAN, por ejemplo) de forma que la persona que compra la camara envía los 1000€ y el vendedor de sats los recibe sin saber nada de lo que está pasando por detrás.
+• Tras confirmar la recepción del dinero, el vendedor libera los sats hacia el estafador.
 • Finalmente, el estafador desaparece habiendo conseguido sats gratis, sin entregar el producto o servicio prometido, y el vendedor podría verse implicado en una reclamación por estafa porque sus datos bancarios podrían asociarse al engaño sufrido por la víctima.
 
 Algunas estrategias que te pueden ser útiles:
@@ -78,7 +82,7 @@ En Canadá, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq
 
 En esta sección se analiza la mejor práctica para los usuarios que intentan realizar transacciones con un método de pago con un alto riesgo de perder fondos.
 
-### Revolut 
+### Revolut
 **Intercambio de @revtag:** Al realizar un pago a través de Revolut, es esencial que tanto el comprador como el vendedor intercambien su @revtag en el chat. Este @revtag se puede verificar en el historial de pagos de la aplicación, lo que facilita la confirmación de los pagos.
 
 **Formato del enlace de pago:** Los enlaces de pago de Revolut siguen este formato: https://revolut.me/p/XXXXX. Tenga en cuenta que estos enlaces no contienen información de dirección del destinatario.
