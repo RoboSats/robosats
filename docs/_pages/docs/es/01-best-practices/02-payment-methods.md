@@ -37,7 +37,7 @@ Si el temporizador llega al vencimiento, podría desencadenar una disputa y podr
 
   1. Confirma si el cantidad final de fiat recibido es correcta.<br>
   2. Haz click en "Confirmar fiat recibido" una vez que estés 100 % seguro de que el dinero fiat se haya depositado correctamente en tu cuenta.<br>
-  3. Si estás de acuerdo con el comprador en usar una plataforma de alto riesgo, necesitarás precauciones especiales para evitar la devolución de cargo (más información en el apartado de cada metodo de pago).<br>
+  3. Si estás de acuerdo con el comprador en usar una plataforma de alto riesgo, necesitarás precauciones especiales para evitar la devolución de cargo (más información en el apartado de cada método de pago).<br>
   4. Protégete de las estafas de triangulación. A continuación, se presenta una explicación resumida del problema y se proponen estrategias para que los vendedores reduzcan su riesgo de exposición.
 
 El fraude por triangulación consiste en que un estafador actúa como intermediario entre la víctima y el vendedor:
