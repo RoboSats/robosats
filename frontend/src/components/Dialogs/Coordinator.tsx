@@ -47,6 +47,7 @@ import {
   VolunteerActivism,
   Circle,
   Flag,
+  ApiOutlined,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -693,6 +694,19 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
                     <ListItemText
                       primary={`${coordinator?.info?.last_day_nonkyc_btc_premium}%`}
                       secondary={t('24h non-KYC bitcoin premium')}
+                    />
+                  </ListItem>
+
+                  <Divider />
+
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <ApiOutlined />
+                    </ListItemIcon>
+
+                    <ListItemText
+                      primary={coordinator?.info?.market_price_apis}
+                      secondary={t('Market price sources (for multiple the median is calculated)')}
                     />
                   </ListItem>
                 </List>
