@@ -58,6 +58,7 @@ export interface Info {
   openUpdateClient: boolean;
   notice_severity: 'none' | 'warning' | 'error' | 'success' | 'info';
   notice_message: string;
+  market_price_apis: string;
   loading: boolean;
 }
 
