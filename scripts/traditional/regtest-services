@@ -1,0 +1,372 @@
+#!/bin/sh
+
+_command_exist() {
+    if command -v "$1" >/dev/null 2>&1; then
+        return 0
+    else
+        echo "error: $1 command not found" >&2
+        return 1
+    fi
+}
+
+_create_dir() {
+    if [ ! -e "$1" ]; then
+        mkdir -p "$1" || return "$?"
+        if [ "$#" -ge 2 ]; then
+            if ! chmod "$2" "$1"; then
+                echo "error: setting chmod $2 of $1" >&2
+                return 1
+            fi
+        fi
+    elif [ ! -d "$1" ]; then
+        echo "error: $1 is not a directory" >&2
+        return 1
+    fi
+}
+
+_get_env_var() {
+    if ! env_var="$(dotenv -f ".env" get "$1" 2>/dev/null)"; then
+        echo "error: getting $1 from .env" >&2
+        return 1
+    fi
+    printf "%s\n" "$env_var"
+
+    return 0
+}
+
+# transform relative path into absolute and remove trailing slashes
+_get_env_var_path() {
+    env_var="$(_get_env_var "$1")" || return "$?"
+    real_path="$(realpath -m "$env_var")" || return "$?"
+    printf "%s\n" "$real_path"
+
+    return 0
+}
+
+_services_environment_set() {
+    # docker-compose.yml
+    CELERY_WORKER_COMMAND="celery -A robosats worker --loglevel=INFO --concurrency 4 --max-tasks-per-child=4 --max-memory-per-child=200000"
+    CELERY_BEAT_COMMAND="celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+
+    REGTEST_SERVICES_DIR="$(_get_env_var_path "REGTEST_SERVICES_DIR")" || return "$?"
+    REGTEST_LOGS_DIR="$(_get_env_var_path "REGTEST_LOGS_DIR")" || return "$?"
+    _create_dir "$REGTEST_SERVICES_DIR" || return "$?"
+    _create_dir "$REGTEST_LOGS_DIR" || return "$?"
+
+    POSTGRES_DIR="$REGTEST_SERVICES_DIR/postgres"
+    REDIS_DIR="$REGTEST_SERVICES_DIR/redis"
+    GNUPG_DIR="$(_get_env_var_path "GNUPG_DIR")" || return "$?"
+
+    POSTGRES_DB="$(_get_env_var "POSTGRES_DB")" || return "$?"
+    POSTGRES_USER="$(_get_env_var "POSTGRES_USER")" || return "$?"
+    POSTGRES_PASS="$(_get_env_var "POSTGRES_PASSWORD")" || return "$?"
+    POSTGRES_PORT="$(_get_env_var "POSTGRES_PORT")" || return "$?"
+
+    REDIS_PORT="$(_get_env_var "REDIS_PORT")" || return "$?"
+
+    # defaults
+
+    POSTGRES_DB="${POSTGRES_DB:-postgres}"
+    POSTGRES_USER="${POSTGRES_USER:-postgres}"
+    POSTGRES_PASS="${POSTGRES_PASS:-example}"
+    POSTGRES_PORT="${POSTGRES_PORT:-5432}"
+
+    REDIS_PORT="${REDIS_REGTEST_PORT:-6379}"
+}
+
+postgres_action() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert postgres action" >&2
+        return 1
+    fi
+    action="$1"
+    shift 1
+    case "$action" in
+        setup|database) ;;
+        *)
+            echo "error: wrong action" >&2
+            return 1
+        ;;
+    esac
+
+    if ! _command_exist postgres; then
+        return 1
+    fi
+    if ! _command_exist initdb; then
+        return 1
+    fi
+    if ! _command_exist psql; then
+        return 1
+    fi
+
+    case "$action" in
+        setup)
+            if [ -e "$POSTGRES_DIR" ]; then
+                echo "postgres directory $POSTGRES_DIR already exists"
+                return 0
+            fi
+            _create_dir "$POSTGRES_DIR" "0700" || return "$?"
+
+            if ! initdb -D "$POSTGRES_DIR"; then
+                echo "error: running initdb" >&2
+                return 1
+            fi
+
+            cat << EOF > "$POSTGRES_DIR/postgresql.conf"
+port = $POSTGRES_PORT
+unix_socket_directories = '$POSTGRES_DIR'
+EOF
+        ;;
+        database)
+            if [ ! -d "$POSTGRES_DIR" ]; then
+                printf "%s%s\n" \
+                    "error: $POSTGRES_DIR is not a directory, " \
+                    "should run postgres-setup" \
+                    >&2
+                return 1
+            fi
+        ;;
+    esac
+
+    postgres_setup_log_file="$REGTEST_LOGS_DIR/postgres-setup-log"
+    echo "starting postgres, setup log file is $postgres_setup_log_file"
+    postgres -D "$POSTGRES_DIR" >>"$postgres_setup_log_file" 2>&1 &
+    postgres_pid="$!"
+
+    _postgres_shut_down() {
+        echo "shutting down postgres"
+        if ! kill "$postgres_pid"; then
+            echo "error: shutting down postgres" >&2
+            return 1
+        fi
+    }
+
+    sleep 5
+
+    case "$action" in
+        setup)
+            echo "setting up postgres user $POSTGRES_USER"
+            psql_stdin=$(cat << EOF
+CREATE ROLE $POSTGRES_USER WITH LOGIN PASSWORD '$POSTGRES_PASS';
+ALTER ROLE $POSTGRES_USER CREATEDB;
+EOF
+            )
+        ;;
+        database)
+            psql_stdin=$(cat << EOF
+CREATE DATABASE $POSTGRES_DB OWNER $POSTGRES_USER;
+EOF
+            )
+        ;;
+    esac
+    printf "%s\n" "$psql_stdin" |
+    psql -h localhost -p "$POSTGRES_PORT" -U "$USER" -d postgres
+
+    sleep 5
+
+    case "$action" in
+        database)
+            if ! DJANGO_SUPERUSER_USERNAME="$(_get_env_var "ESCROW_USERNAME")"; then
+                _postgres_shut_down || return "$?"
+                return 1
+            fi
+            # shellcheck disable=SC2034
+            DJANGO_SUPERUSER_PASSWORD="password"
+            DJANGO_SUPERUSER_EMAIL="superuser@email.com"
+
+            if ! python3 manage.py migrate; then
+                _postgres_shut_down || return "$?"
+                return 1
+            fi
+
+            if ! python3 manage.py createsuperuser \
+                --noinput \
+                --username "$DJANGO_SUPERUSER_USERNAME" \
+                --email "$DJANGO_SUPERUSER_EMAIL"
+            then
+                _postgres_shut_down || return "$?"
+                return 1
+            fi
+        ;;
+    esac
+
+    _postgres_shut_down || return "$?"
+
+    return 0
+}
+
+cleanup_signal() {
+    printf "\n"
+    printf "%s\n" "Caught $1 signal, sending it to services..."
+
+    pkill -"$2" -f "$CELERY_BEAT_COMMAND"
+    pkill -"$2" -f "$CELERY_WORKER_COMMAND"
+    pkill -"$2" -f "python3 manage.py follow_invoices"
+    pkill -"$2" -f "python3 manage.py clean_orders"
+    pkill -"$2" -f "python3 manage.py runserver 0.0.0.0:8000"
+    pkill -"$2" -f "redis-server \*:${REDIS_PORT}"
+    pkill -"$2" -f "postgres -D $POSTGRES_DIR"
+
+    exit 0
+}
+
+cleanup_int() {
+    printf "\n"
+    printf "%s\n" "Caught INT signal, shutting down services..."
+
+    pkill -INT -f "$CELERY_BEAT_COMMAND"
+    pkill -INT -f "$CELERY_WORKER_COMMAND"
+    pkill -TERM -f "python3 manage.py follow_invoices"
+    pkill -TERM -f "python3 manage.py clean_orders"
+    pkill -TERM -f "python3 manage.py runserver 0.0.0.0:8000"
+    # pkill -INT -f "python3 manage.py follow_invoices"
+    # pkill -INT -f "python3 manage.py clean_orders"
+    # pkill -INT -f "python3 manage.py runserver 0.0.0.0:8000"
+    pkill -INT -f "redis-server \*:${REDIS_PORT}"
+    pkill -INT -f "postgres -D $POSTGRES_DIR"
+
+    exit 0
+}
+
+main_loop() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert main loop action" >&2
+        return 1
+    fi
+    case "$1" in
+        test)
+            is_test=true
+        ;;
+        server)
+            is_test=false
+        ;;
+        *)
+            echo "error: $1 is invalid" >&2
+            return 1
+        ;;
+    esac
+    shift 1
+
+    if ! _command_exist postgres; then
+        return 1
+    fi
+    if ! _command_exist redis-server; then
+        return 1
+    fi
+    if ! _command_exist celery; then
+        return 1
+    fi
+
+    if [ ! -d "$POSTGRES_DIR" ]; then
+        printf "%s%s\n" \
+            "error: $POSTGRES_DIR is not a directory, " \
+            "should run postgres-setup and postgres-database" \
+            >&2
+        return 1
+    fi
+
+    if ! pgrep -a bitcoind >/dev/null 2>&1 || {
+        ! pgrep -a lightningd >/dev/null 2>&1 &&
+        ! pgrep -a lnd >/dev/null 2>&1
+    }; then
+        printf "%s%s\n" \
+            "error: bitcoin or lightning not running, " \
+            "make sure to run this script after running regtest-nodes" \
+            >&2
+        return 1
+    fi
+
+    _create_dir "$REDIS_DIR" || return "$?"
+    _create_dir "$GNUPG_DIR" "0700" || return "$?"
+
+    trap "cleanup_signal HUP" HUP
+    trap "cleanup_signal QUIT" QUIT
+    trap "cleanup_signal TERM" TERM
+    trap "cleanup_int" INT
+
+    while true; do
+        if ! pgrep -f "postgres -D $POSTGRES_DIR" >/dev/null; then
+            echo "starting postgres"
+            postgres -D "$POSTGRES_DIR" >> "$REGTEST_LOGS_DIR/postgres" 2>&1 &
+        fi
+
+        if ! pgrep -f "redis-server \*:${REDIS_PORT}" >/dev/null; then
+            echo "starting redis"
+            printf "%s\n%s\n%s\n" \
+                "dir $REDIS_DIR" \
+                "port $REDIS_PORT" \
+                "maxclients 1024" |
+            redis-server - >> "$REGTEST_LOGS_DIR/redis" 2>&1 &
+        fi
+
+        if [ "$is_test" = false ]; then
+            if ! pgrep -f "python3 manage.py runserver 0.0.0.0:8000" >/dev/null; then
+                echo "starting runserver"
+                python3 manage.py runserver 0.0.0.0:8000 \
+                    >> "$REGTEST_LOGS_DIR/runserver" 2>&1 &
+            fi
+
+            if ! pgrep -f "python3 manage.py clean_orders" >/dev/null; then
+                echo "starting clean-orders"
+                python3 manage.py clean_orders \
+                    >> "$REGTEST_LOGS_DIR/clean-orders" 2>&1 &
+            fi
+
+            if ! pgrep -f "python3 manage.py follow_invoices" >/dev/null; then
+                echo "starting follow-invoices"
+                python3 manage.py follow_invoices \
+                    >> "$REGTEST_LOGS_DIR/follow-invoices" 2>&1 &
+            fi
+
+            if ! pgrep -f "$CELERY_WORKER_COMMAND" >/dev/null; then
+                echo "starting celery worker"
+                $CELERY_WORKER_COMMAND >> "$REGTEST_LOGS_DIR/celery-worker" 2>&1 &
+            fi
+
+            if ! pgrep -f "$CELERY_BEAT_COMMAND" >/dev/null; then
+                echo "starting celery beat"
+                $CELERY_BEAT_COMMAND >> "$REGTEST_LOGS_DIR/celery-beat" 2>&1 &
+            fi
+        fi
+
+        sleep 2
+    done
+}
+
+_services_main() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert action" >&2
+        return 1
+    fi
+    action="$1"
+    shift 1
+
+    case "$action" in
+        -h|--help)
+            cat << EOF
+regtest-services postgres-setup|postgres-database|server|test
+EOF
+            return 0
+        ;;
+    esac
+
+    _services_environment_set || return "$?"
+
+    case "$action" in
+        postgres-setup)
+            postgres_action "setup"
+        ;;
+        postgres-database)
+            postgres_action "database"
+        ;;
+        server|test)
+            main_loop "$action"
+        ;;
+        *)
+            echo "error: action $action not recognized" >&2
+            return 1
+        ;;
+    esac
+}
+
+_services_main "$@"
