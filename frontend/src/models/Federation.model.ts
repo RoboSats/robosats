@@ -78,24 +78,28 @@ export class Federation {
 
   public roboPool: RoboPool;
 
-  setConnection = (settings: Settings): void => {
+  setConnection = (settings: Settings, coordinator: string): void => {
     this.connection = settings.connection;
+    this.loading = true;
+    this.book = {};
+    this.exchange.loadingCache = this.roboPool.relays.length;
     if (this.connection === 'nostr') {
       this.roboPool.connect();
-      this.loadBookNostr();
+      this.loadBookNostr(coordinator !== 'any');
     } else {
       this.roboPool.close();
       void this.loadBook();
     }
   };
 
-  loadBookNostr = (): void => {
-    this.loading = true;
-    this.book = {};
+  refreshBookHosts: (robosatsOnly: boolean) => void = (robosatsOnly) => {
+    if (this.connection === 'nostr') {
+      this.loadBookNostr(robosatsOnly);
+    }
+  };
 
-    this.exchange.loadingCache = this.roboPool.relays.length;
-
-    this.roboPool.subscribeBook({
+  loadBookNostr = (robosatsOnly: boolean): void => {
+    this.roboPool.subscribeBook(robosatsOnly, {
       onevent: (event) => {
         const { dTag, publicOrder } = eventToPublicOrder(event);
         if (publicOrder) {

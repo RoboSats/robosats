@@ -35,7 +35,7 @@ export const FederationContext = createContext<UseFederationStoreType>(initialFe
 export const FederationContextProvider = ({
   children,
 }: FederationContextProviderProps): JSX.Element => {
-  const { settings, page, origin, hostUrl, open, torStatus, client } =
+  const { settings, page, origin, hostUrl, open, torStatus, client, fav } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
@@ -57,7 +57,7 @@ export const FederationContextProvider = ({
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       void federation.updateUrl(origin, settings, hostUrl);
       void federation.loadLimits();
-      federation.setConnection(settings);
+      federation.setConnection(settings, fav.coordinator);
     }
   }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 
