@@ -59,7 +59,7 @@
     "@mui/lab": "^5.0.0-alpha.136",
     "@mui/material": "^5.15.14",
     "@mui/system": "^6.1.5",
-    "@mui/x-date-pickers": "^7.23.1",
+    "@mui/x-date-pickers": "^8.0.0",
     "@mui/x-data-grid": "^7.23.1",
     "@nivo/core": "^0.86.0",
     "@nivo/line": "^0.86.0",
