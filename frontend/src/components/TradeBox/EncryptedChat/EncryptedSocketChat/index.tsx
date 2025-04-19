@@ -36,7 +36,6 @@ interface Props {
   makerHashId: string;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
-  baseUrl: string;
   turtleMode: boolean;
   setTurtleMode: (state: boolean) => void;
 }
@@ -50,14 +49,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
   takerHashId,
   messages,
   setMessages,
-  baseUrl,
   turtleMode,
   setTurtleMode,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
-  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
@@ -78,7 +76,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     if (!connected && Boolean(garage.getSlot()?.hashId)) {
       connectWebsocket();
     }
-  }, [connected, robotUpdatedAt]);
+  }, [connected, slotUpdatedAt]);
 
   // Make sure to not keep reconnecting once status is not Chat
   useEffect(() => {
@@ -129,10 +127,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
         setConnection(connection);
         setConnected(true);
 
-        connection.send({
-          message: robot?.pubKey,
-          nick: userNick,
-        });
+        connection.send(
+          JSON.stringify({
+            type: 'message',
+            message: robot?.pubKey,
+            nick: userNick,
+          }),
+        );
 
         connection.onMessage((message) => {
           setServerMessages((prev) => [...prev, message]);
@@ -175,10 +176,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
         dataFromServer.message !== robot.pubKey
       ) {
         setPeerPubKey(dataFromServer.message);
-        connection.send({
-          message: `-----SERVE HISTORY-----`,
-          nick: userNick,
-        });
+        connection.send(
+          JSON.stringify({
+            type: 'message',
+            message: `-----SERVE HISTORY-----`,
+            nick: userNick,
+          }),
+        );
       }
       // If we receive an encrypted message
       else if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
@@ -244,10 +248,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
     // If input string contains '#' send unencrypted and unlogged message
     else if (connection != null && value.substring(0, 1) === '#') {
-      connection.send({
-        message: value,
-        nick: userNick,
-      });
+      connection.send(
+        JSON.stringify({
+          type: 'message',
+          message: value,
+          nick: userNick,
+        }),
+      );
       setValue('');
     }
 
@@ -259,10 +266,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
         .then((encryptedMessage) => {
           if (connection != null) {
-            connection.send({
-              message: String(encryptedMessage).split('\n').join('\\'),
-              nick: userNick,
-            });
+            connection.send(
+              JSON.stringify({
+                type: 'message',
+                message: String(encryptedMessage).split('\n').join('\\'),
+                nick: userNick,
+              }),
+            );
           }
         })
         .catch((error) => {

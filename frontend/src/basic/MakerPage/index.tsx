@@ -2,7 +2,7 @@ import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-import { filterOrders } from '../../utils';
+import { filterOrders, genBase62Token } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
@@ -11,11 +11,12 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
+import { type PublicOrder } from '../../models';
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
-  const { federation, setDelay, setCurrentOrderId } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -23,15 +24,18 @@ const MakerPage = (): JSX.Element => {
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
+  const [clickedOrder, setClickedOrder] = useState<{ id: number; shortAlias: string }>();
+  const [openVisitThirdParty, setOpenVisitThirdParty] = useState<boolean>(false);
+  const [thirdPartyOrder, setThirdPartyOrder] = useState<PublicOrder>();
 
   const matches = useMemo(() => {
     return filterOrders({
-      orders: federation.book,
+      federation,
       baseFilter: {
         currency: fav.currency === 0 ? 1 : fav.currency,
         type: fav.type,
         mode: fav.mode,
-        coordinator: 'any',
+        coordinator: 'robosats',
       },
       premium: Number(maker.premium) ?? null,
       paymentMethods: maker.paymentMethods,
@@ -53,24 +57,50 @@ const MakerPage = (): JSX.Element => {
   ]);
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    if (garage.getSlot()?.hashId) {
-      setDelay(10000);
-      setCurrentOrderId({ id, shortAlias });
-      navigate(`/order/${shortAlias}/${id}`);
+    const thirdParty = thirdParties[shortAlias];
+    if (thirdParty) {
+      const thirdPartyOrder = Object.values(federation.book).find(
+        (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,
+      );
+      if (thirdPartyOrder) {
+        setThirdPartyOrder(thirdPartyOrder);
+        setOpenVisitThirdParty(true);
+      }
     } else {
-      setOpenNoRobot(true);
+      if (garage.getSlot()?.hashId) {
+        navigate(`/order/${shortAlias}/${id}`);
+      } else {
+        setClickedOrder({ id, shortAlias });
+        setOpenNoRobot(true);
+      }
     }
   };
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
+      <VisitThirdParty
+        open={openVisitThirdParty}
+        onClose={() => {
+          setOpenVisitThirdParty(false);
+        }}
+        thirdPartyOrder={thirdPartyOrder}
+      />
       <NoRobotDialog
         open={openNoRobot}
         onClose={() => {
           setOpenNoRobot(false);
         }}
         onClickGenerateRobot={() => {
-          navigate('/robot');
+          const token = genBase62Token(36);
+          garage
+            .createRobot(federation, token)
+            .then(() => {
+              setOpenNoRobot(true);
+              if (clickedOrder) navigate(`/order/${clickedOrder?.shortAlias}/${clickedOrder?.id}`);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
         }}
       />
       <Grid item>
@@ -105,10 +135,6 @@ const MakerPage = (): JSX.Element => {
           }}
         >
           <MakerForm
-            onOrderCreated={(shortAlias, id) => {
-              setCurrentOrderId({ id, shortAlias });
-              navigate(`/order/${shortAlias}/${id}`);
-            }}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => {
@@ -118,9 +144,6 @@ const MakerPage = (): JSX.Element => {
               setShowMatches(false);
             }}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
-            onClickGenerateRobot={() => {
-              navigate('/robot');
-            }}
           />
         </Paper>
       </Grid>

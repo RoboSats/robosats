@@ -1,0 +1,146 @@
+name: "Build: Desktop"
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
+  push:
+    branches: [ "main" ]
+    paths: [ "desktopApp", "frontend" ]
+  pull_request:
+    branches: [ "main" ]
+    paths: [ "desktopApp", "frontend" ]
+
+jobs:
+  build-desktop:
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+
+      - name: 'Download Basic main.js Artifact'
+        if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: frontend-build.yml
+          workflow_conclusion: success
+          name: desktop-main-static
+          path: desktopApp
+
+      - name: 'Download Basic main.js Artifact for a release'
+        if: inputs.semver != ''  # Only if fired as job in release.yml
+        uses: actions/download-artifact@v4
+        with:
+          name: desktop-main-static
+          path: desktopApp
+
+      - name: Install dependencies
+        run: |
+          cd desktopApp
+          npm install
+
+      - name: Build for macOS
+        run: |
+          cd desktopApp
+          npm run package-mac
+
+      - name: Build for Windows
+        run: |
+          cd desktopApp
+          npm run package-win
+
+      - name: Build for Linux
+        run: |
+          cd desktopApp
+          npm run package-linux
+
+      - name: 'Get Commit Hash'
+        id: commit
+        uses: pr-mpt/actions-commit-hash@v3
+
+      - name: Print semver
+        run: echo The semver is ${{ github.event.inputs.semver }}
+
+      - name: Install zip
+        run: sudo apt-get install -y zip
+
+      - name: Create macOS ZIP file
+        run: |
+          cd desktopApp/release-builds
+          zip -r Robosats-darwin-x64.zip Robosats-darwin-x64
+
+      - name: Create Windows ZIP file
+        run: |
+          cd desktopApp/release-builds
+          zip -r Robosats-win32-ia32.zip Robosats-win32-ia32
+
+      - name: Create Linux ZIP file
+        run: |
+          cd desktopApp/release-builds
+          zip -r Robosats-linux-x64.zip Robosats-linux-x64
+
+      - name: Upload macOS Build Artifact
+        if: inputs.semver != ''
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-darwin-x64.zip
+          name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64.zip
+
+      - name: Upload Windows Build Artifact
+        if: inputs.semver != ''
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-win32-ia32.zip
+          name: robosats-desktop-${{ inputs.semver }}-win32-ia32.zip
+
+      - name: Upload Linux Build Artifact
+        if: inputs.semver != ''
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-linux-x64.zip
+          name: robosats-desktop-${{ inputs.semver }}-linux-x64.zip
+
+      - name: Upload macOS Build Artifact
+        id: upload-release-mac-zip-asset
+        if: inputs.semver == ''
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-darwin-x64.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-mac-darwin-x64.zip
+
+      - name: Upload Windows Build Artifact
+        id: upload-release-win-zip-asset
+        if: inputs.semver == ''
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-win32-ia32.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32.zip
+
+      - name: Upload Linux Build Artifact
+        id: upload-release-linux-zip-asset
+        if: inputs.semver == ''
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: desktopApp/release-builds/Robosats-linux-x64.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-linux-x64.zip

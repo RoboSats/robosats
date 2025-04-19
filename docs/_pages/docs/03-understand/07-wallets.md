@@ -28,17 +28,20 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 | Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
 |[Alby](#alby-browser-extension)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
+|[Aqua](#aqua-mobile)|[v0.1.55](https://aquawallet.io/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
+|[Boltz.exchange](#boltzexchange-swap-service)|[1.6.2](https://Boltz.exchange)|{{page.laptop}}{{page.phone}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|
 |[Breez](#breez-mobile)|[0.16](https://breez.technology/mobile/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Cash App](#cash-app-mobile)|[4.7](https://cash.app/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
-|[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}||
+|[Electrum](#electrum-mobile--desktop)|[4.5.8](https://github.com/spesmilo/electrum)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.unclear}}||
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
-|[Muun](#muun-mobile)|[47.3](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.bad}}|{{page.bad}}|{{page.thumbsdown}}|
-|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.soso}}|{{page.unclear}}|
+|[Mutiny](#mutiny-mobile--web-browser-wallet)|[1.7.1](https://www.mutinywallet.com/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsdown}}||
+|[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
+|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Zeus](#zeus-mobile-lnd-cln-eclair-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -57,6 +60,11 @@ Instructions to install Alby in Tor Browser:
 1. Install the Alby extension from the [Firefox add-ons store](https://addons.mozilla.org/en-US/firefox/addon/alby/)
 2. Click on the Alby extension and follow the prompts to setup your wallet.
 
+### Aqua (Mobile)
+Overall the wallet works as expected.
+Self-custodial Lightning+Liquid wallet with low fees and the option to swap directly to Tether.
+Bond refunds are locked for 3 days
+
 ### Blink (Mobile, former Bitcoin Beach Wallet)
 Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transaction history. Payouts to the Blink wallet function as intended. Custodial wallet by Galoy which originated from the Bitcoin Beach project in El Salvador (formerly known as "Bitcoin Beach Wallet").
 
@@ -65,6 +73,9 @@ Most development testing for RoboSats has been done using Blixt. This is one of 
 
 ### Bluewallet (Mobile)
 It works well. Bluewallet has discontinued their custodial service. Previously, the custodial service would cause issues where escrows that RoboSats returns are charged to users and where slashed bonds are charged twice by Bluewallet! This was a known bug for long time in Bluewallet, so they shut down their LN custodial service (which ended up making RoboSats a smoother experience for users).
+
+### Boltz.exchange (Swap service)
+Boltx.exchange is a non-custodial Bitcoin bridge, built to swap between different Bitcoin layers. It works very well for receiving sats. Other wallets are better for doing the bond. Boltz.exchange is useful if you're having problems receiving larger amounts of sats in lightning. To use it, you give it a bitcoin receive address, and an amount of sats. It will then create a lightning invoice for you. You paste the lighting invoice into Robosats. The fee is .5%, in addition to the transaction fee.
 
 ### Breez (Mobile)
 It works well with RoboSats. Breez is a non-custodial wallet. So keep in mind channels managment and stuff like that. It's a versatile and easy-to-use interface.
@@ -75,8 +86,9 @@ Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transac
 ### Core Lightning / CLN (CLI Interface)
 Works as expected. The `lightning-cli pay <invoice>` command does not conclude while the payment is pending, but can use `lightning-cli paystatus <invoice>` to monitor the state.
 
-### Electrum (Desktop)
-Works as expected. Some payments and locks may fail depending on the Lightning node the channel is created to. Channels to ASINQ work fine.
+### Electrum (Mobile & Desktop)
+This wallet used to work fine with channels created to ACINQ. 
+Recent versions can't create this channel successfully.
 
 ### LND (CLI Interface)
 Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not user friendly and therefore not recommended to interact with RoboSats by beginners. However, everything works just fine. If you are using LNCLI regularly, then you will find no issue using it with RoboSats.
@@ -85,7 +97,15 @@ Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not
 ### Mash Wallet App (Mobile PWA & Desktop Web-Wallet)
 Overall the [Mash](https://mash.com/consumer-experience/) wallet works end2end with Robosats on both selling & buying over lightning. Majority of relevant invoice details in the mash wallet are shown and clear to users throughout the process. When the transactions are complete, they open in the mobile app on both sender/receiver sides to highlight that the transactions are completed.The one UX hick-up is that the pending invoices list doesn't explicitly show HOLD invoices and there is a "spinning" screen on first HOLD invoice payment. The team has a bug open to fix this issue shortly (this note is from Aug 21st 2023).
 
+### Mutiny (Mobile & Web Browser Wallet)
+The wallet should work as expected, but the interface, transaction states, and the structure of the funds can sometimes be very confusing in the current release version.   
+Use the default free Fedimint(Chaumian eCash) account, with the possibility to use zero fee Lightning transfers. 
+What is inconvenient: 
+- occasionally wallet restart is needed
+- more than two pending hold invoices at the same time may cause a rejection of the new transaction    
+
 ### Muun (Mobile)
+Self-custodial wallet with a minimalist interface. 
 Similar to Blixt or LND, Muun plays nicely with hold invoices. You can be a seller in RoboSats using Muun and the user experience will be great. However, in order to be a buyer when using Muun, you need to submit an on-chain address for the payout as a Lightning invoice won't work. Muun is _fee siphoning attacking_ any sender to Muun wallet. There is a mandatory hop through a private channel with a fee of +1500ppm. RoboSats will strictly not route a buyer payout for a net loss. Given that RoboSats trading fees are {{site.robosats.total_fee}}% and it needs to cover the routing fees, **RoboSats will never find a suitable route to a Muun wallet user**. At the moment, RoboSats will scan your invoice for routing hints that can potentially encode a _fee siphoning attack_. If this trick is found, then the invoice will be rejected: submit an on-chain address instead for an on-the-fly swap. Refer to [Understand > On-Chain Payouts](/docs/on-chain-payouts/) for more information about on-the-fly swaps. Important to note that Muun has issues during times of high on chain fee spikes. Regardless, the workaround to receive to Muun is: either submit an on chain address or choose a higher routing budget after enabling the "Advanced Options" switch.
 
 ### OBW (Mobile)
@@ -93,8 +113,7 @@ One of the simplest and one of the best. The hodl invoice shows as "on fly", it 
 *Update 26-10-23: At this moment it has no development or support
 
 ### Phoenix (Mobile)
-*Update 21-10-23. Phoenix used to work as described here, but many things changed to worse with the last update of the wallet.
-Phoenix works very well as an order taker. Phoenix will also work well as an order maker as long as the order settings `public duration` + `deposit duration` are lower than 10 hours. Otherwise, you might have problems locking the maker bond. If the total duraton of bonds/escrow invoices exceeds 450 blocks, then Phoenix will not allow users to lock the bond (`Cannot add htlc (...) reason=expiry too big`).
+This wallet does not support invoice lock.
 
 ### SBW (Mobile)
 From 2.5 it doesn't support lightning anymore.

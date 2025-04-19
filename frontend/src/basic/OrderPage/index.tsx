@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tab, Tabs, Paper, CircularProgress, Grid, Typography, Box } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -6,58 +6,63 @@ import { useNavigate, useParams } from 'react-router-dom';
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
-import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { WarningDialog } from '../../components/Dialogs';
+import { NoRobotDialog, WarningDialog } from '../../components/Dialogs';
+import { Order, type Slot } from '../../models';
+import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { genBase62Token } from '../../utils';
 
 const OrderPage = (): JSX.Element => {
-  const {
-    windowSize,
-    open,
-    setOpen,
-    acknowledgedWarning,
-    setAcknowledgedWarning,
-    settings,
-    navbarHeight,
-    hostUrl,
-    origin,
-  } = useContext<UseAppStoreType>(AppContext);
-  const { federation, currentOrder, currentOrderId, setCurrentOrderId } =
-    useContext<UseFederationStoreType>(FederationContext);
-  const { badOrder } = useContext<UseGarageStoreType>(GarageContext);
+  const { windowSize, setOpen, acknowledgedWarning, setAcknowledgedWarning, navbarHeight } =
+    useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
+  const paramsRef = useRef(params);
 
   const doublePageWidth: number = 50;
   const maxHeight: number = (windowSize?.height - navbarHeight) * 0.85 - 3;
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
-  const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
   useEffect(() => {
+    paramsRef.current = params;
     const shortAlias = params.shortAlias;
-    const coordinator = federation.getCoordinator(shortAlias ?? '');
-    const { url, basePath } = coordinator.getEndpoint(
-      settings.network,
-      origin,
-      settings.selfhostedClient,
-      hostUrl,
-    );
-
-    setBaseUrl(`${url}${basePath}`);
-
     const orderId = Number(params.orderId);
+    const slot = garage.getSlot();
+    if (slot?.token) {
+      let order = new Order({ id: orderId, shortAlias });
+      if (slot.activeOrder?.id === orderId && slot.activeOrder?.shortAlias === shortAlias) {
+        order = slot.activeOrder;
+      } else if (slot.lastOrder?.id === orderId && slot.lastOrder?.shortAlias === shortAlias) {
+        order = slot.lastOrder;
+      }
+      void order.fecth(federation, slot).then((updatedOrder) => {
+        updateSlotFromOrder(updatedOrder, slot);
+      });
+    } else {
+      setOpenNoRobot(true);
+    }
+
+    return () => {
+      setCurrentOrder(null);
+    };
+  }, [params.orderId, openNoRobot]);
+
+  const updateSlotFromOrder = (updatedOrder: Order, slot: Slot): void => {
     if (
-      orderId &&
-      currentOrderId.id !== orderId &&
-      currentOrderId.shortAlias !== shortAlias &&
-      shortAlias
-    )
-      setCurrentOrderId({ id: orderId, shortAlias });
-    if (!acknowledgedWarning) setOpen({ ...closeAll, warning: true });
-  }, [params, currentOrderId]);
+      Number(paramsRef.current.orderId) === updatedOrder.id &&
+      paramsRef.current.shortAlias === updatedOrder.shortAlias
+    ) {
+      setCurrentOrder(updatedOrder);
+      slot.updateSlotFromOrder(updatedOrder);
+    }
+  };
 
   const onClickCoordinator = function (): void {
     if (currentOrder?.shortAlias != null) {
@@ -68,7 +73,7 @@ const OrderPage = (): JSX.Element => {
   };
 
   const startAgain = (): void => {
-    navigate('/robot');
+    navigate('/garage');
   };
 
   const orderDetailsSpace = currentOrder ? (
@@ -76,16 +81,13 @@ const OrderPage = (): JSX.Element => {
       shortAlias={String(currentOrder.shortAlias)}
       currentOrder={currentOrder}
       onClickCoordinator={onClickCoordinator}
-      onClickGenerateRobot={() => {
-        navigate('/robot');
-      }}
     />
   ) : (
     <></>
   );
 
   const tradeBoxSpace = currentOrder ? (
-    <TradeBox baseUrl={baseUrl} onStartAgain={startAgain} />
+    <TradeBox onStartAgain={startAgain} currentOrder={currentOrder} />
   ) : (
     <></>
   );
@@ -93,20 +95,36 @@ const OrderPage = (): JSX.Element => {
   return (
     <Box>
       <WarningDialog
-        open={open.warning}
+        open={!acknowledgedWarning && currentOrder?.status === 0}
         onClose={() => {
-          setOpen(closeAll);
           setAcknowledgedWarning(true);
         }}
-        longAlias={federation.getCoordinator(params.shortAlias ?? '').longAlias}
+        longAlias={federation.getCoordinator(params.shortAlias ?? '')?.longAlias}
       />
-      {currentOrder === null && badOrder === undefined && <CircularProgress />}
-      {badOrder !== undefined ? (
+      <NoRobotDialog
+        open={openNoRobot}
+        onClose={() => {
+          setOpenNoRobot(false);
+        }}
+        onClickGenerateRobot={() => {
+          const token = genBase62Token(36);
+          garage
+            .createRobot(federation, token)
+            .then(() => {
+              setOpenNoRobot(false);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        }}
+      />
+      {!currentOrder?.maker_hash_id && <CircularProgress />}
+      {currentOrder?.bad_request && currentOrder.status !== 5 ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
-          {t(badOrder)}
+          {t(currentOrder.bad_request)}
         </Typography>
       ) : null}
-      {currentOrder !== null && badOrder === undefined ? (
+      {currentOrder?.maker_hash_id && (!currentOrder.bad_request || currentOrder.status === 5) ? (
         currentOrder.is_participant ? (
           windowSize.width > doublePageWidth ? (
             // DOUBLE PAPER VIEW

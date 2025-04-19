@@ -1,14 +1,9 @@
 version: '3.9'
 services:
   jekyll:
-    image: jekyll/jekyll:4.0
     container_name: pages
+    build: ./docs
     restart: always
-    volumes:
-      - .:/usr/src/robosats
-    command: bash -c "cd /usr/src/robosats/docs/
-            && bundle install
-            && bundle exec jekyll serve --force_polling -H 0.0.0.0 -P 4000"
     ports:
       - 4000:4000
 
@@ -225,6 +220,16 @@ services:
     network_mode: service:tor
     volumes:
       - ./node/db:/var/lib/postgresql/data
+
+  strfry:
+    build: ./docker/strfry
+    container_name: strfry-dev
+    restart: unless-stopped
+    volumes:
+      - ./docker/strfry/strfry.conf:/etc/strfry.conf:ro
+      - ./docker/strfry/onion_urls.txt:/app/onion_urls.txt:ro
+      - ./node/strfry/db:/app/strfry-db:rw
+    network_mode: service:tor
 
   # # Postgresql for CLN
   # postgres-cln:

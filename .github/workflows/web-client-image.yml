@@ -21,40 +21,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: 'Copy Static' # Needed since Github actions does not support symlinks
-      run: cp -r frontend/static web/static
-
-    - name: 'Download main.js Artifact'
+    - name: 'Download Basic main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v9
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
-        name: web-main-js
-        path: web/static/frontend/
+        name: web-main-static
+        path: web
 
-    - name: 'Download main.js Artifact for a release'
+    - name: 'Download Basic main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
-        name: web-main-js
-        path: web/static/frontend/
-
-    - name: 'Download pro.js Artifact'
-      if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v3
-      with:
-        workflow: frontend-build.yml
-        workflow_conclusion: success
-        name: web-pro-js
-        path: web/static/frontend/
-
-    - name: 'Download pro.js Artifact for a release'
-      if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v4
-      with:
-        name: web-pro-js
-        path: web/static/frontend/
+        name: web-main-static
+        path: web
 
     - name: 'Log in to Docker Hub'
       uses: docker/login-action@v3
@@ -85,7 +66,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: 'Build and push Docker image'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: ./web
         platforms: linux/amd64,linux/arm64

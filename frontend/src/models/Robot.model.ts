@@ -1,31 +1,16 @@
-import { sha256 } from 'js-sha256';
-import { hexToBase91 } from '../utils';
-
-interface AuthHeaders {
-  tokenSHA256: string;
-  keys: {
-    pubKey: string;
-    encPrivKey: string;
-  };
-}
+import { apiClient } from '../services/api';
+import type Federation from './Federation.model';
+import { type AuthHeaders } from './Slot.model';
 
 class Robot {
   constructor(attributes?: Record<any, any>) {
-    if (attributes != null) {
-      this.token = attributes?.token ?? undefined;
-      this.tokenSHA256 =
-        attributes?.tokenSHA256 ?? (this.token != null ? hexToBase91(sha256(this.token)) : '');
-      this.pubKey = attributes?.pubKey ?? undefined;
-      this.encPrivKey = attributes?.encPrivKey ?? undefined;
-    }
+    Object.assign(this, attributes);
   }
 
   public token?: string;
-  public bitsEntropy?: number;
-  public shannonEntropy?: number;
-  public tokenSHA256: string = '';
   public pubKey?: string;
   public encPrivKey?: string;
+  public nostrPubKey?: string;
   public stealthInvoices: boolean = true;
   public activeOrderId?: number;
   public lastOrderId?: number;
@@ -37,6 +22,10 @@ class Robot {
   public found: boolean = false;
   public last_login: string = '';
   public shortAlias: string = '';
+  public bitsEntropy?: number;
+  public shannonEntropy?: number;
+  public tokenSHA256: string = '';
+  public hasEnoughEntropy: boolean = false;
 
   update = (attributes: Record<string, any>): void => {
     Object.assign(this, attributes);
@@ -54,6 +43,85 @@ class Robot {
         encPrivKey: encPrivKey.split('\n').join('\\'),
       },
     };
+  };
+
+  fetch = async (federation: Federation): Promise<Robot | null> => {
+    const authHeaders = this.getAuthHeaders();
+    const coordinator = federation.getCoordinator(this.shortAlias);
+
+    if (!authHeaders || !coordinator || !this.hasEnoughEntropy) return null;
+
+    this.loading = true;
+
+    await apiClient
+      .get(coordinator.url, `${coordinator.basePath}/api/robot/`, authHeaders)
+      .then((data: any) => {
+        this.update({
+          nickname: data.nickname,
+          activeOrderId: data.active_order_id ?? null,
+          lastOrderId: data.last_order_id ?? null,
+          earnedRewards: data.earned_rewards ?? 0,
+          stealthInvoices: data.wants_stealth,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+          found: data?.found,
+          last_login: data.last_login,
+          pubKey: data.public_key,
+          encPrivKey: data.encrypted_private_key,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => (this.loading = false));
+
+    return this;
+  };
+
+  fetchReward = async (
+    federation: Federation,
+    signedInvoice: string,
+  ): Promise<null | {
+    bad_invoice?: string;
+    successful_withdrawal?: boolean;
+  }> => {
+    if (!federation) return null;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    const data = await apiClient
+      .post(
+        coordinator.url,
+        `${coordinator.basePath}/api/reward/`,
+        {
+          invoice: signedInvoice,
+        },
+        { tokenSHA256: this.tokenSHA256 },
+      )
+      .catch((e) => {
+        console.log(e);
+      });
+    this.earnedRewards = data?.successful_withdrawal === true ? 0 : this.earnedRewards;
+
+    return data ?? {};
+  };
+
+  fetchStealth = async (federation: Federation, wantsStealth: boolean): Promise<void> => {
+    if (!federation) return;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    await apiClient
+      .post(
+        coordinator.url,
+        `${coordinator.basePath}/api/stealth/`,
+        { wantsStealth },
+        { tokenSHA256: this.tokenSHA256 },
+      )
+      .catch((e) => {
+        console.log(e);
+      });
+
+    this.stealthInvoices = wantsStealth;
   };
 }
 

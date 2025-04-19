@@ -71,11 +71,19 @@ jobs:
   android-build:
     uses: RoboSats/robosats/.github/workflows/android-build.yml@main
     needs: [frontend-build, check-versions]
+    secrets: inherit
+    with:
+      semver: ${{ needs.check-versions.outputs.semver }}
+
+  desktop-build:
+    uses: RoboSats/robosats/.github/workflows/desktop-build.yml@main
+    needs: [frontend-build, check-versions]
+    secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   release:
-    needs: [check-versions, integration-tests, coordinator-image, selfhosted-client-image, web-client-image, android-build]
+    needs: [check-versions, integration-tests, coordinator-image, selfhosted-client-image, web-client-image, android-build, desktop-build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -86,6 +94,7 @@ jobs:
         with:
           body_path: release_notes.md
           generate_release_notes: true
+          draft: true
 
       # Upload app-universal-release APK artifact asset
       - name: 'Download universal APK Artifact'
@@ -155,19 +164,53 @@ jobs:
           asset_name: robosats-${{ needs.check-versions.outputs.semver }}-x86_64.apk
           asset_content_type: application/apk
 
-      # Upload app-x86-release APK artifact asset
-      - name: 'Download x86 APK Artifact'
+      - name: 'Download macOS Build Artifact'
         uses: actions/download-artifact@v4
         with:
-          name: robosats-${{ needs.check-versions.outputs.semver }}-x86.apk
           path: .
-      - name: 'Upload x86 APK Asset'
-        id: upload-x86-release-asset
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
+
+      - name: 'Upload macOS Build Artifact'
+        id: upload-release-mac-zip-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: app-x86-release.apk
-          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-x86.apk
-          asset_content_type: application/apk
+          asset_path: Robosats-darwin-x64.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
+          asset_content_type: application/zip
+
+      - name: 'Download linux Build Artifact'
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
+
+      - name: 'Upload linux Build Artifact'
+        id: upload-release-linux-zip-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: Robosats-linux-x64.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
+          asset_content_type: application/zip
+
+      - name: 'Download Windows Build Artifact'
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
+
+      - name: 'Upload Windows Build Artifact'
+        id: upload-release-win-zip-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: Robosats-win32-ia32.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
+          asset_content_type: application/zip

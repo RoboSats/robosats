@@ -1,0 +1,22 @@
+version: '3.9'
+# Frontend and node client development orchestration
+name: robosats-frontend
+services:
+  frontend:
+    build: ./
+    container_name: dev-frontend
+    volumes:
+      - ./:/usr/src/frontend
+      - ../web:/usr/src/web
+
+  nginx:
+    build: ../web
+    container_name: dev-nginx
+    restart: always
+    volumes:
+      - ./:/usr/src/frontend
+      - ../web:/usr/src/web
+      - ../web/nginx.conf:/etc/nginx/nginx.conf
+      - ../web/coordinators/:/etc/nginx/conf.d/
+    ports:
+      - 8888:80

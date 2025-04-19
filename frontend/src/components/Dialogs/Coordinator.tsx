@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -47,6 +47,7 @@ import {
   VolunteerActivism,
   Circle,
   Flag,
+  ApiOutlined,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -68,6 +69,7 @@ import {
 } from '../Icons';
 import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
+import type Coordinator from '../../models/Coordinator.model';
 import { type Badges } from '../../models/Coordinator.model';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
@@ -93,6 +95,7 @@ const ContactButtons = ({
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
   const [showNostr, setShowNostr] = useState<boolean>(false);
+  const [client] = window.RobosatsSettings.split('-');
 
   return (
     <Grid container direction='row' alignItems='center' justifyContent='center'>
@@ -114,7 +117,13 @@ const ContactButtons = ({
             <IconButton
               onClick={() => {
                 setShowNostr(true);
-                setTimeout(() => window.open(`https://snort.social/p/${nostr}`, '_blank'), 1500);
+                setTimeout(() => {
+                  if (client === 'mobile') {
+                    window.location.href = `nostr:${nostr}`;
+                  } else {
+                    window.open(`https://njump.me/${nostr}`, '_blank', 'noopener,noreferrer');
+                  }
+                }, 1500);
                 setTimeout(() => {
                   setShowNostr(false);
                 }, 10000);
@@ -127,7 +136,7 @@ const ContactButtons = ({
         </Grid>
       )}
 
-      {pgp !== undefined && (
+      {pgp && fingerprint && (
         <Grid item>
           <Tooltip
             enterTouchDelay={0}
@@ -344,22 +353,32 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
   );
 };
 
-const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props): JSX.Element => {
+const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.Element => {
   const { t } = useTranslation();
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const coordinator = federation.getCoordinator(shortAlias);
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
+  const [coordinator, setCoordinator] = useState<Coordinator>(
+    federation.getCoordinator(shortAlias ?? ''),
+  );
 
   const listItemProps = { sx: { maxHeight: '3em', width: '100%' } };
   const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${
     coordinator?.info?.version?.minor ?? '?'
   }.${coordinator?.info?.version?.patch ?? '?'}`;
 
+  useEffect(() => {
+    setCoordinator(federation.getCoordinator(shortAlias ?? ''));
+  }, [shortAlias]);
+
+  useEffect(() => {
+    if (open) federation.getCoordinator(shortAlias ?? '')?.loadInfo();
+  }, [open]);
+
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogContent>
+      <DialogContent style={{ width: 600 }}>
         <Typography align='center' component='h5' variant='h5'>
           {String(coordinator?.longAlias)}
         </Typography>
@@ -368,7 +387,8 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
             <Grid container direction='column' alignItems='center' padding={0}>
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinator?.shortAlias}
+                  shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
+                  hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}
                 />
@@ -482,7 +502,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
           </ListItemButton>
         </List>
 
-        {coordinator?.loadingInfo ? (
+        {!coordinator || coordinator?.loadingInfo ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>
@@ -674,6 +694,19 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
                     <ListItemText
                       primary={`${coordinator?.info?.last_day_nonkyc_btc_premium}%`}
                       secondary={t('24h non-KYC bitcoin premium')}
+                    />
+                  </ListItem>
+
+                  <Divider />
+
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <ApiOutlined />
+                    </ListItemIcon>
+
+                    <ListItemText
+                      primary={coordinator?.info?.market_price_apis}
+                      secondary={t('Market price sources (for multiple the median is calculated)')}
                     />
                   </ListItem>
                 </List>

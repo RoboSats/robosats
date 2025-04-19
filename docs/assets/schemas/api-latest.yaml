@@ -1,14 +1,14 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.6.0
+  version: 0.7.6
   x-logo:
     url: https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
     altText: RoboSats logo
   description: |2+
 
-    REST API Documentation for [RoboSats](https://learn.robosats.com) - A Simple and Private LN P2P Exchange
+    REST API Documentation for [RoboSats](https://learn.robosats.org) - A Simple and Private LN P2P Exchange
 
     <p style='background-color:#fff0f0;padding:16px;border-radius:6px;border:2px solid #ffd3d3'>
     <span style='color:#f31f1f;font-weight:bold'>Note:</span>
@@ -284,6 +284,30 @@ paths:
                     type: string
                     description: Reason for the failure
           description: ''
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      description: Get a list of notifications sent to the robot.
+      summary: Get robot notifications
+      parameters:
+      - in: query
+        name: created_at
+        schema:
+          type: string
+        description: Shows notifications created AFTER this date.
+      tags:
+      - notifications
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListNotification'
+          description: ''
   /api/order/:
     get:
       operationId: order_retrieve
@@ -341,7 +365,7 @@ paths:
         - `11` "In dispute"
         - `12` "Collaboratively cancelled"
         - `13` "Sending satoshis to buyer"
-        - `14` "Sucessful trade"
+        - `14` "Successful trade"
         - `15` "Failed lightning network routing"
         - `16` "Wait for dispute resolution"
         - `17` "Maker lost dispute"
@@ -443,14 +467,17 @@ paths:
         - `update_invoice`
           - This action only is valid if you are the buyer. The `invoice`
             field needs to be present in the body and the value must be a
-            valid LN invoice as cleartext PGP message signed with the robot key. Make sure to perform this action only when
+            valid LN invoice as cleartext PGP message signed (SHA512) with the robot key.
+            The amount of the invoice should be `invoice_amount` minus the routing
+            budget whose parts per million should be specified by `routing_budget_ppm`.
+            Make sure to perform this action only when
             both the bonds are locked. i.e The status of your order is
             at least `6` (Waiting for trade collateral and buyer invoice)
         - `update_address`
           - This action is only valid if you are the buyer. This action is
             used to set an on-chain payout address if you wish to have your
             payout be received on-chain. Only valid if there is an address in the body as
-            cleartext PGP message signed with the robot key. This enables on-chain swap for the
+            cleartext PGP message signed (SHA512) with the robot key. This enables on-chain swap for the
             order, so even if you earlier had submitted a LN invoice, it
             will be ignored. You get to choose the `mining_fee_rate` as
             well. Mining fee rate is specified in sats/vbyte.
@@ -470,9 +497,7 @@ paths:
             mid-trade so use this action carefully:
 
             - As a maker if you cancel an order after you have locked your
-              maker bond, you are returned your bond. This may change in
-              the future to prevent DDoSing the LN node and you won't be
-              returned the maker bond.
+              maker bond, you are returned your bond.
             - As a taker there is a time penalty involved if you `take` an
               order and cancel it without locking the taker bond.
             - For both taker or maker, if you cancel the order when both
@@ -631,7 +656,7 @@ paths:
     post:
       operationId: reward_create
       description: Withdraw user reward by submitting an invoice. The invoice must
-        be send as cleartext PGP message signed with the robot key
+        be send as cleartext PGP message signed (SHA512) with the robot key
       summary: Withdraw reward
       tags:
       - reward
@@ -721,12 +746,13 @@ paths:
         An authenticated request (has the token's sha256 hash encoded as base 91 in the Authorization header) will be
         returned the information about the state of a robot.
 
-        Make sure you generate your token using cryptographically secure methods. [Here's]() the function the Javascript
-        client uses to generate the tokens. Since the server only receives the hash of the
+        Make sure you generate your token using cryptographically secure methods.
+        Since the server only receives the hash of the
         token, it is responsibility of the client to create a strong token. Check
-        [here](https://github.com/RoboSats/robosats/blob/main/frontend/src/utils/token.js)
+        [here](https://github.com/RoboSats/robosats/blob/main/frontend/src/utils/token.ts)
         to see how the Javascript client creates a random strong token and how it validates entropy is optimal for tokens
         created by the user at will.
+        The PGP key should be an EdDSA ed25519/cert,sign+cv25519/encr key.
 
         `public_key` - PGP key associated with the user (Armored ASCII format)
         `encrypted_private_key` - Private PGP key. This is only stored on the backend for later fetching by
@@ -737,7 +763,7 @@ paths:
         A gpg key can be created by:
 
         ```shell
-        gpg --full-gen-key
+        gpg --default-new-key-algo "ed25519/cert,sign+cv25519/encr" --full-gen-key
         ```
 
         it's public key can be exported in ascii armored format with:
@@ -1039,6 +1065,8 @@ components:
           $ref: '#/components/schemas/Version'
         notice_severity:
           $ref: '#/components/schemas/NoticeSeverityEnum'
+        market_price_apis:
+          type: string
         notice_message:
           type: string
       required:
@@ -1054,6 +1082,7 @@ components:
       - lifetime_volume
       - lnd_version
       - maker_fee
+      - market_price_apis
       - max_order_size
       - max_swap
       - min_order_size
@@ -1068,6 +1097,28 @@ components:
       - swap_enabled
       - taker_fee
       - version
+    ListNotification:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 240
+        description:
+          type: string
+          maxLength: 240
+        order_id:
+          type: integer
+          readOnly: true
+        status:
+          type: integer
+          readOnly: true
+          description: The `status` of the order when the notification was trigered
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - order_id
+      - status
     ListOrder:
       type: object
       properties:
@@ -1077,7 +1128,6 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/StatusEnum'
-          default: 0
           minimum: 0
           maximum: 32767
         created_at:
@@ -1101,7 +1151,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1114,17 +1163,14 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1140,12 +1186,10 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1212,7 +1256,6 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1222,17 +1265,14 @@ components:
           type: integer
           maximum: 86400
           minimum: 597.6
-          default: 86399
         escrow_duration:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1272,7 +1312,6 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/StatusEnum'
-          default: 0
           minimum: 0
           maximum: 32767
         created_at:
@@ -1296,7 +1335,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1309,11 +1347,9 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           description: Premium over the CEX price set by the maker
@@ -1339,7 +1375,6 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         total_secs_exp:
           type: integer
           description: Duration of time (in seconds) to expire, according to the current
@@ -1511,12 +1546,10 @@ components:
           type: integer
           maximum: 86400
           minimum: 597.6
-          default: 86399
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         trade_fee_percent:
           type: integer
           description: The fee for the trade (fees differ for maker and taker)
@@ -1598,7 +1631,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1611,17 +1643,14 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1636,7 +1665,7 @@ components:
           type: string
         maker_status:
           type: string
-          description: Status of the nick - "Active" or "Inactive"
+          description: Status of the nick - "Active", "Seen Recently" or "Inactive"
         price:
           type: number
           format: double
@@ -1645,7 +1674,6 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         satoshis_now:
           type: integer
           description: The amount of sats to be traded at the present moment (not
@@ -1654,7 +1682,6 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1785,7 +1812,7 @@ components:
         * `11` - In dispute
         * `12` - Collaboratively cancelled
         * `13` - Sending satoshis to buyer
-        * `14` - Sucessful trade
+        * `14` - Successful trade
         * `15` - Failed lightning network routing
         * `16` - Wait for dispute resolution
         * `17` - Maker lost dispute
@@ -1891,7 +1918,6 @@ components:
         fee:
           type: string
           format: decimal
-          default: '0.0000'
     TypeEnum:
       enum:
       - 0
@@ -1948,6 +1974,9 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,3})?$
           nullable: true
+        cancel_status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
       required:
       - action
     Version:

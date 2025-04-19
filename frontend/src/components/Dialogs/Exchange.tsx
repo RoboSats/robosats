@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -34,19 +34,28 @@ interface Props {
 
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, coordinatorUpdatedAt, federationUpdatedAt } = useContext(FederationContext);
-  const [loadingProgress, setLoadingProgress] = useState<number>(0);
+  const { federation } = useContext(FederationContext);
+  const [loadingInfo, setLoadingInfo] = useState<boolean>(true);
 
   useEffect(() => {
-    const loadedCoordinators =
-      federation.exchange.enabledCoordinators - federation.exchange.loadingCoordinators;
-    setLoadingProgress((loadedCoordinators / federation.exchange.enabledCoordinators) * 100);
-  }, [open, coordinatorUpdatedAt, federationUpdatedAt]);
+    if (open) {
+      federation
+        .loadInfo()
+        .then(() => {})
+        .catch((error) => {
+          console.error('Error loading info:', error);
+        });
+    }
+  }, [open]);
+
+  useEffect(() => {
+    setLoadingInfo(federation.loading);
+  }, [federation.loading]);
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <div style={loadingProgress < 100 ? {} : { display: 'none' }}>
-        <LinearProgress variant='determinate' value={loadingProgress} />
+      <div style={loadingInfo ? {} : { display: 'none' }}>
+        <LinearProgress variant='indeterminate' />
       </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>

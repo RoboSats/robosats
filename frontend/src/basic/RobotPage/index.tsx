@@ -15,18 +15,14 @@ import { useParams } from 'react-router-dom';
 import Onboarding from './Onboarding';
 import Welcome from './Welcome';
 import RobotProfile from './RobotProfile';
-import Recovery from './Recovery';
 import { TorIcon } from '../../components/Icons';
-import { genKey } from '../../pgp';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { validateTokenEntropy } from '../../utils';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import RecoveryDialog from '../../components/Dialogs/Recovery';
 
 const RobotPage = (): JSX.Element => {
-  const { torStatus, windowSize, settings, page } = useContext<UseAppStoreType>(AppContext);
+  const { torStatus, windowSize, settings, page, client } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;
@@ -34,56 +30,22 @@ const RobotPage = (): JSX.Element => {
   const maxHeight = windowSize.height * 0.85 - 3;
   const theme = useTheme();
 
-  const [badToken, setBadToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
-  const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
+  const [view, setView] = useState<'welcome' | 'onboarding' | 'profile'>(
     garage.currentSlot !== null ? 'profile' : 'welcome',
   );
 
   useEffect(() => {
     const token = urlToken ?? garage.currentSlot;
-    if (token !== undefined && token !== null && page === 'robot') {
-      setInputToken(token);
-      if (window.NativeRobosats === undefined || torStatus === '"Done"') {
-        getGenerateRobot(token);
+    if (token !== undefined && token !== null && page === 'garage') {
+      setInputToken(token.replace(/\s+/g, ''));
+      if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
         setView('profile');
       }
     }
   }, [torStatus, page]);
 
-  useEffect(() => {
-    if (inputToken.length < 20) {
-      setBadToken(t('The token is too short'));
-    } else if (!validateTokenEntropy(inputToken).hasEnoughEntropy) {
-      setBadToken(t('Not enough entropy, make it more complex'));
-    } else {
-      setBadToken('');
-    }
-  }, [inputToken]);
-
-  const getGenerateRobot = (token: string): void => {
-    setInputToken(token);
-    genKey(token)
-      .then((key) => {
-        garage.createRobot(token, sortedCoordinators, {
-          token,
-          pubKey: key.publicKeyArmored,
-          encPrivKey: key.encryptedPrivateKeyArmored,
-        });
-        void federation.fetchRobot(garage, token);
-        garage.currentSlot = token;
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  };
-
-  const logoutRobot = (): void => {
-    setInputToken('');
-    garage.deleteSlot();
-  };
-
-  if (!(window.NativeRobosats === undefined) && !(torStatus === 'DONE' || torStatus === '"Done"')) {
+  if (settings.useProxy && client === 'mobile' && !(torStatus === 'ON')) {
     return (
       <Paper
         elevation={12}
@@ -92,6 +54,7 @@ const RobotPage = (): JSX.Element => {
           maxHeight: `${maxHeight}em`,
         }}
       >
+        <RecoveryDialog setInputToken={setInputToken} setView={setView} />
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
           <Grid item>
             <Typography align='center' variant='h6'>
@@ -142,38 +105,21 @@ const RobotPage = (): JSX.Element => {
           overflowX: 'clip',
         }}
       >
+        <RecoveryDialog setInputToken={setInputToken} setView={setView} />
         {view === 'welcome' ? (
-          <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={width} />
+          <Welcome setView={setView} width={width} setInputToken={setInputToken} />
         ) : null}
 
         {view === 'onboarding' ? (
-          <Onboarding
-            setView={setView}
-            badToken={badToken}
-            inputToken={inputToken}
-            setInputToken={setInputToken}
-            getGenerateRobot={getGenerateRobot}
-          />
+          <Onboarding setView={setView} inputToken={inputToken} setInputToken={setInputToken} />
         ) : null}
 
         {view === 'profile' ? (
           <RobotProfile
             setView={setView}
-            logoutRobot={logoutRobot}
             width={width}
             inputToken={inputToken}
             setInputToken={setInputToken}
-            getGenerateRobot={getGenerateRobot}
-          />
-        ) : null}
-
-        {view === 'recovery' ? (
-          <Recovery
-            setView={setView}
-            badToken={badToken}
-            inputToken={inputToken}
-            setInputToken={setInputToken}
-            getRecoverRobot={getGenerateRobot}
           />
         ) : null}
       </Paper>

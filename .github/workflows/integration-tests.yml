@@ -17,17 +17,26 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       max-parallel: 2
       matrix:
-        python-tag: ['3.12.3-slim-bookworm', '3.13-rc-slim-bookworm']
-        lnd-version: ['v0.17.4-beta']
-        cln-version: ['v23.11.2','v24.02']
-        ln-vendor: ['LND'] #, 'CLN']
+        python-tag: ['3.12.3-slim-bookworm']
+        lnd-version: ['v0.18.2-beta']
+        cln-version: ['v24.08']
+        ln-vendor: ['LND', 'CLN']
 
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v4
+
+    - name: 'Download static files Artifact'
+      uses: dawidd6/action-download-artifact@v9
+      with:
+        workflow: frontend-build.yml
+        workflow_conclusion: success
+        name: django-main-static
+        path: frontend
 
     - name: Patch Dockerfile and .env-sample
       run: |
@@ -42,7 +51,7 @@ jobs:
           coordinator-docker-cache-
 
     - name: 'Compose Regtest Orchestration'
-      uses: isbang/compose-action@v1.5.1
+      uses: isbang/compose-action@v2.2.0
       with:
         compose-file: "./docker-tests.yml"
         down-flags: "--volumes"
@@ -56,21 +65,20 @@ jobs:
       env:
         LND_VERSION: ${{ matrix.lnd-version }}
         CLN_VERSION: ${{ matrix.cln-version }}
-        BITCOIND_VERSION: ${{ matrix.bitcoind-version }}
         ROBOSATS_ENVS_FILE: ".env-sample"
 
     - name: Wait for coordinator (django server)
       run: |
-        while [ "$(docker inspect --format "{{.State.Health.Status}}" coordinator)" != "healthy" ]; do
+        while [ "$(docker inspect --format "{{.State.Health.Status}}" test-coordinator)" != "healthy" ]; do
           echo "Waiting for coordinator to be healthy..."
           sleep 5
         done
 
     - name: 'Run tests with coverage'
       run: |
-        docker exec coordinator coverage run manage.py test
-        docker exec coordinator coverage report
-        docker exec coordinator coverage html
+        docker exec test-coordinator coverage run manage.py test
+        docker exec test-coordinator coverage report
+        docker exec test-coordinator coverage html
       env:
         LNVENDOR: ${{ matrix.ln-vendor }}
         DEVELOPMENT: True

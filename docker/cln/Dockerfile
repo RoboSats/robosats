@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim as builder
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG LIGHTNINGD_VERSION=v23.08
+ARG LIGHTNINGD_VERSION=v24.08
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
         autoconf \
@@ -18,13 +18,13 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN rustup toolchain install stable --component rustfmt --allow-downgrade
 
 WORKDIR /opt/lightningd
-RUN git clone --recursive --branch cln-grpc-hold https://github.com/daywalker90/lightning.git /tmp/cln-grpc-hold
-RUN cd /tmp/cln-grpc-hold \
+RUN git clone https://github.com/daywalker90/holdinvoice.git /tmp/holdinvoice
+RUN cd /tmp/holdinvoice \
     && cargo build --release
 
-FROM elementsproject/lightningd:v23.08 as final
+FROM elementsproject/lightningd:v24.08 as final
 
-COPY --from=builder /tmp/cln-grpc-hold/target/release/cln-grpc-hold /tmp/cln-grpc-hold
+COPY --from=builder /tmp/holdinvoice/target/release/holdinvoice /tmp/holdinvoice
 COPY config /tmp/config
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh

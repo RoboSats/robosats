@@ -7,21 +7,23 @@
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
-    "standard-with-typescript",
+    "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
   "overrides": [],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
     "ecmaFeatures": {
       "jsx": true
     },
     "sourceType": "module",
-    "project": "./tsconfig.json"
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "./"
   },
   "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier"],
   "rules": {
-    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/rules-of-hooks": "off",
     "react-hooks/exhaustive-deps": "warn",
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off"
@@ -33,5 +35,6 @@
     "react": {
       "version": "detect"
     }
-  }
+  },
+  "ignorePatterns": ["html/*", "android/app/build/*"]
 }

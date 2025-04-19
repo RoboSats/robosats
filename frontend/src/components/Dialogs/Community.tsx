@@ -17,7 +17,7 @@ import SendIcon from '@mui/icons-material/Send';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import RedditIcon from '@mui/icons-material/Reddit';
 import Flags from 'country-flag-icons/react/3x2';
-import { NostrIcon, SimplexIcon, XIcon } from '../Icons';
+import { NostrIcon, SimplexIcon } from '../Icons';
 
 interface Props {
   open: boolean;
@@ -26,6 +26,7 @@ interface Props {
 
 const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const [client] = window.RobosatsSettings.split('-');
 
   const flagProps = {
     width: 30,
@@ -79,9 +80,18 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
 
           <ListItemButton
             component='a'
-            target='_blank'
-            href='https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82'
-            rel='noreferrer'
+            onClick={() => {
+              if (client === 'mobile') {
+                window.location.href =
+                  'nostr:npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82';
+              } else {
+                window.open(
+                  'https://njump.me/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82',
+                  '_blank',
+                  'noopener,noreferrer',
+                );
+              }
+            }}
           >
             <ListItemIcon>
               <NostrIcon color='primary' sx={{ height: 32, width: 32 }} />
@@ -109,21 +119,6 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
               primary={t('Tell us about a new feature or a bug')}
               secondary={t('Github Issues - The Robotic Satoshis Open Source Project')}
             />
-          </ListItemButton>
-
-          <Divider />
-
-          <ListItemButton
-            component='a'
-            target='_blank'
-            href='https://x.com/robosats'
-            rel='noreferrer'
-          >
-            <ListItemIcon>
-              <XIcon color='primary' sx={{ height: 32, width: 32 }} />
-            </ListItemIcon>
-
-            <ListItemText primary={t('Follow RoboSats in X')} secondary={t('X Official Account')} />
           </ListItemButton>
 
           <Divider />

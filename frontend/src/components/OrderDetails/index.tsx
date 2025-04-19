@@ -71,6 +71,10 @@ const OrderDetails = ({
     setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
   }, [currentOrder]);
 
+  useEffect(() => {
+    if (!coordinator?.info) coordinator?.loadInfo();
+  }, [coordinator.shortAlias, coordinator.info]);
+
   const amountString = useMemo(() => {
     if (currentOrder === null) return;
 
@@ -174,14 +178,14 @@ const OrderDetails = ({
 
     const isBuyer = (order.type === 0 && order.is_maker) || (order.type === 1 && !order.is_maker);
     const tradeFee = order.is_maker
-      ? coordinator.info?.maker_fee ?? 0
-      : coordinator.info?.taker_fee ?? 0;
+      ? (coordinator.info?.maker_fee ?? 0)
+      : (coordinator.info?.taker_fee ?? 0);
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
-    const rate = order.amount > 0 ? order.amount / btc_now : Number(order.max_amount) / btc_now;
+    const rate = Number(order.max_amount ?? order.amount) / btc_now;
 
     if (isBuyer) {
-      if (order.amount > 0) {
+      if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: -tradeFee,
@@ -207,11 +211,11 @@ const OrderDetails = ({
         amount: amountString,
         method: order.payment_method,
       });
-      receive = t('You receive via Lightning {{amount}} Sats (Approx)', {
+      receive = t('You receive {{amount}} Sats (Approx)', {
         amount: sats,
       });
     } else {
-      if (order.amount > 0) {
+      if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: tradeFee,
@@ -262,16 +266,29 @@ const OrderDetails = ({
               onClickCoordinator();
             }}
           >
-            {' '}
             <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid item xs={2}>
-                <RobotAvatar shortAlias={coordinator.shortAlias} small={true} smooth={true} />
+                <RobotAvatar
+                  shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
+                  hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                  small={true}
+                  smooth={true}
+                />
               </Grid>
               <Grid item xs={4}>
                 <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
               </Grid>
             </Grid>
           </ListItemButton>
+          {coordinator?.info && !coordinator?.info?.swap_enabled && (
+            <ListItem>
+              <Grid sx={{ marginBottom: 1 }}>
+                <Alert severity='warning' sx={{ marginTop: 2 }}>
+                  {t('This coordinator does not support on-chain swaps.')}
+                </Alert>
+              </Grid>
+            </ListItem>
+          )}
 
           <Divider />
 

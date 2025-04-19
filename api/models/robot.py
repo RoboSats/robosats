@@ -1,12 +1,8 @@
-from pathlib import Path
-
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.html import mark_safe
 
 
 class Robot(models.Model):
@@ -88,25 +84,5 @@ class Robot(models.Model):
     def save_user_robot(sender, instance, **kwargs):
         instance.robot.save()
 
-    @receiver(pre_delete, sender=User)
-    def del_avatar_from_disk(sender, instance, **kwargs):
-        try:
-            avatar_file = Path(
-                settings.AVATAR_ROOT + instance.robot.avatar.url.split("/")[-1]
-            )
-            avatar_file.unlink()
-        except Exception:
-            pass
-
     def __str__(self):
         return self.user.username
-
-    # to display avatars in admin panel
-    def get_avatar(self):
-        if not self.avatar:
-            return settings.STATIC_ROOT + "unknown_avatar.png"
-        return self.avatar.url
-
-    # method to create a fake table field in read only mode
-    def avatar_tag(self):
-        return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())

@@ -4,6 +4,7 @@
  *
  * @format
  */
+/* global module */
 
 module.exports = {
   transformer: {

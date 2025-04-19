@@ -11,10 +11,9 @@ import {
   MenuItem,
   Box,
   useTheme,
-  Tooltip,
   type SelectChangeEvent,
 } from '@mui/material';
-import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
+import { Key, Bolt, Add, DeleteSweep, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { type Slot, type Robot } from '../../models';
@@ -22,15 +21,13 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
   setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
-  getGenerateRobot: (token: string, slot?: number) => void;
   inputToken: string;
-  logoutRobot: () => void;
   setInputToken: (state: string) => void;
   width: number;
   baseUrl: string;
@@ -38,15 +35,13 @@ interface RobotProfileProps {
 
 const RobotProfile = ({
   inputToken,
-  getGenerateRobot,
   setInputToken,
-  logoutRobot,
   setView,
   width,
 }: RobotProfileProps): JSX.Element => {
-  const { windowSize } = useContext<UseAppStoreType>(AppContext);
-  const { garage, robotUpdatedAt, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+  const { windowSize, client, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -59,25 +54,25 @@ const RobotProfile = ({
     if (slot?.hashId) {
       setLoading(false);
     }
-  }, [orderUpdatedAt, robotUpdatedAt, loading]);
+  }, [slotUpdatedAt, loading]);
 
   const handleAddRobot = (): void => {
-    getGenerateRobot(genBase62Token(36));
+    const token = genBase62Token(36);
+    void garage.createRobot(federation, token);
+    setInputToken(token);
     setLoading(true);
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
-    garage.currentSlot = e.target.value;
-    setInputToken(garage.getSlot()?.token ?? '');
-    setLoading(true);
+    if (e?.target?.value) {
+      garage.setCurrentSlot(e.target.value as string);
+      setInputToken(garage.getSlot()?.token ?? '');
+      setLoading(true);
+    }
   };
 
   const slot = garage.getSlot();
   const robot = slot?.getRobot();
-
-  const loadingCoordinators = Object.values(slot?.robots ?? {}).filter(
-    (robot) => robot.loading,
-  ).length;
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
@@ -90,7 +85,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {slot?.hashId ? (
+          {slot?.nickname ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -145,7 +140,7 @@ const RobotProfile = ({
             tooltip={t('This is your trading avatar')}
             tooltipPosition='top'
           />
-          {robot?.found && Boolean(slot?.lastShortAlias) ? (
+          {robot?.found && Boolean(slot?.lastOrder?.id) ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>
@@ -154,38 +149,38 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {loadingCoordinators > 0 && !Boolean(robot?.activeOrderId) ? (
+        {federation.loading && !slot?.activeOrder?.id ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />
           </Grid>
         ) : null}
 
-        {Boolean(robot?.activeOrderId) && Boolean(slot?.hashId) ? (
+        {slot?.activeOrder ? (
           <Grid item>
             <Button
               onClick={() => {
-                setCurrentOrderId({ id: robot?.activeOrderId, shortAlias: slot?.activeShortAlias });
                 navigate(
-                  `/order/${String(slot?.activeShortAlias)}/${String(robot?.activeOrderId)}`,
+                  `/order/${String(slot?.activeOrder?.shortAlias)}/${String(slot?.activeOrder?.id)}`,
                 );
               }}
             >
-              {t('Active order #{{orderID}}', { orderID: robot?.activeOrderId })}
+              {t('Active order #{{orderID}}', { orderID: slot?.activeOrder?.id })}
             </Button>
           </Grid>
         ) : null}
 
-        {Boolean(robot?.lastOrderId) && Boolean(slot?.hashId) ? (
+        {!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
                 onClick={() => {
-                  setCurrentOrderId({ id: robot?.lastOrderId, shortAlias: slot?.activeShortAlias });
-                  navigate(`/order/${String(slot?.lastShortAlias)}/${String(robot?.lastOrderId)}`);
+                  navigate(
+                    `/order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
+                  );
                 }}
               >
-                {t('Last order #{{orderID}}', { orderID: robot?.lastOrderId })}
+                {t('Last order #{{orderID}}', { orderID: slot?.lastOrder?.id })}
               </Button>
             </Grid>
             <Grid item>
@@ -208,10 +203,7 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {!Boolean(robot?.activeOrderId) &&
-        slot?.hashId &&
-        !Boolean(robot?.lastOrderId) &&
-        loadingCoordinators === 0 ? (
+        {!slot?.activeOrder && !slot?.lastOrder && !federation.loading ? (
           <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
 
@@ -223,26 +215,7 @@ const RobotProfile = ({
           alignItems='stretch'
           sx={{ width: '100%' }}
         >
-          <Grid
-            item
-            xs={2}
-            sx={{ display: 'flex', justifyContent: 'stretch', alignItems: 'stretch' }}
-          >
-            <Tooltip enterTouchDelay={0} enterDelay={300} enterNextDelay={1000} title={t('Logout')}>
-              <Button
-                sx={{ minWidth: '2em', width: '100%' }}
-                color='primary'
-                variant='outlined'
-                onClick={() => {
-                  logoutRobot();
-                  setView('welcome');
-                }}
-              >
-                <Logout />
-              </Button>
-            </Tooltip>
-          </Grid>
-          <Grid item xs={10}>
+          <Grid item xs={12}>
             <TokenInput
               inputToken={inputToken}
               editable={false}
@@ -320,7 +293,7 @@ const RobotProfile = ({
                 </LoadingButton>
               </Grid>
 
-              {window.NativeRobosats === undefined ? (
+              {client !== 'mobile' ? (
                 <Grid item>
                   <Button
                     color='primary'
@@ -337,13 +310,28 @@ const RobotProfile = ({
                 <Button
                   color='primary'
                   onClick={() => {
-                    garage.delete();
-                    logoutRobot();
-                    setView('welcome');
+                    garage.deleteSlot();
+                    if (Object.keys(garage.slots).length < 1) setView('welcome');
                   }}
                 >
                   <DeleteSweep /> <div style={{ width: '0.5em' }} />
-                  {t('Delete Garage')}
+                  {t('Delete Robot')}
+                </Button>
+              </Grid>
+            </Grid>
+            <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
+              <Grid item>
+                <Button
+                  size='small'
+                  color='primary'
+                  onClick={() => {
+                    setOpen((open) => {
+                      return { ...open, recovery: true };
+                    });
+                  }}
+                >
+                  <Key /> <div style={{ width: '0.5em' }} />
+                  {t('Recovery')}
                 </Button>
               </Grid>
             </Grid>

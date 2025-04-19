@@ -1,5 +1,3 @@
-_RoboSats Federation Basis v0.6.0~3_
-
 ## Introduction
 RoboSats is a Free and Open Source project, anyone can spin up a new RoboSats backend instance. This is in fact ideal, given that the more backend instances there are, the more decentralized RoboSats becomes and the harder it is to stop. However, this decentralization creates some challenges:
 
@@ -56,7 +54,7 @@ Simply open a new issue in GitHub and select the form "Coordinator Registration"
 Coordinator registrations are **always OPEN** . All fields can be updated or completed later through pull requests. Don't worry about getting everything perfect initially. It's okay if your data policy, privacy policy, node ids, and endpoints aren't fully defined or are subject to change.
 
 ### How to run a RoboSats Coordinator?
-The easiest way to run a RoboSats coordinator is by using our Docker image releases (see Github Release). That's it, there are no more guides at the moment so it requires a fair bit of technical knowledge as of now. The details of how to wire everything will vary depending on your existing infrastructure. You will find help on our [Matrix Development group](https://matrix.to/#/#robosats:matrix.org).
+The easiest way to run a RoboSats coordinator is by using our Docker image releases (see Github Release). That's it, there are no more guides at the moment so it requires a fair bit of technical knowledge as of now. The details of how to wire everything will vary depending on your existing infrastructure. You will find help on our [SimpleX Development Group](https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2F6iIcWT_dF2zN_w5xzZEY7HI2Prbh3ldP07YTyDexPjE%3D%40smp10.simplex.im%2FKEkNLMlgM8vrrU3xjBt5emS7EsP0c4s1%23%2F%3Fv%3D1-3%26dh%3DMCowBQYDK2VuAyEABehx7Tgefl_vvOGOe2SThJCGACKRgSU2wiUdIJ5bQHw%253D%26srv%3Drb2pbttocvnbrngnwziclp2f4ckjq65kebafws6g4hy22cdaiv5dwjqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22gFi-9hvL3XgXXTgnlZPyJw%3D%3D%22%7D).
 
 We are working to release three flavors of pre-configured orchestrations with decent defaults: 1) a well-tested docker-compose orchestration and 2) a [StartOS](https://github.com/Start9Labs/start-os) RoboSats Coordinator App, and lastly 3) an elegant, but little tested, Kubernetes orchestration. The infrastructure-as-code will be open source as well. You can find the repository holding the docker-compose and kubernetes orchestrations here [RoboSats-Deploy](https://github.com/RoboSats/robosats-deploy). The Kubernetes orchestration as wel as the StartOS app are still work in progress.
 
@@ -108,6 +106,4 @@ After six months, or approximately 12,288 blocks, a coordinator reaches maturity
 
 ## Timeline
 
-In a sense the RoboSats federation is already online. New coordinators can gradually join. Eventually, the RoboSats "Experimental" coordinator that is run by the development team will be phased out. The RoboSats Federated client app can be used already in `robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion`. You can also run a pre-release of the v0.6.0 selfhosted client.
-
-Any coordinator that registers and gets his backend up and running integrated on the RoboSats client app **during 2023 will receive the Founder badge**.
+In a sense the RoboSats federation is already online. New coordinators can gradually join. Any coordinator that registers and gets his backend up and running integrated on the RoboSats client app **during 2023 will receive the Founder badge**.

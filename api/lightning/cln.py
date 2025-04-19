@@ -1,5 +1,6 @@
 import hashlib
 import os
+import random
 import secrets
 import struct
 import time
@@ -90,9 +91,9 @@ class CLNNode:
     @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
-        request = hold_pb2.DecodeBolt11Request(bolt11=invoice)
-        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.DecodeBolt11(request)
+        nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
+        request = node_pb2.DecodeRequest(string=invoice)
+        response = nodestub.Decode(request)
         return response
 
     @classmethod
@@ -236,7 +237,7 @@ class CLNNode:
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
         response = holdstub.HoldInvoiceCancel(request)
 
-        return response.state == hold_pb2.HoldInvoiceCancelResponse.Holdstate.CANCELED
+        return response.state == hold_pb2.Holdstate.CANCELED
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
@@ -247,7 +248,7 @@ class CLNNode:
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
         response = holdstub.HoldInvoiceSettle(request)
 
-        return response.state == hold_pb2.HoldInvoiceSettleResponse.Holdstate.SETTLED
+        return response.state == hold_pb2.Holdstate.SETTLED
 
     @classmethod
     def gen_hold_invoice(
@@ -272,8 +273,8 @@ class CLNNode:
 
         request = hold_pb2.HoldInvoiceRequest(
             description=description,
-            amount_msat=primitives__pb2.Amount(msat=num_satoshis * 1_000),
-            label=f"Order:{order_id}-{lnpayment_concept}-{time}",
+            amount_msat=hold_pb2.Amount(msat=num_satoshis * 1_000),
+            label=f"Order:{order_id}-{lnpayment_concept}-{time}--{random.randint(1, 100000)}",
             expiry=invoice_expiry,
             cltv=cltv_expiry_blocks,
             preimage=preimage,  # preimage is actually optional in cln, as cln would generate one by default
@@ -286,7 +287,7 @@ class CLNNode:
         hold_payment["preimage"] = preimage.hex()
         hold_payment["payment_hash"] = response.payment_hash.hex()
         hold_payment["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp)
+            datetime.fromtimestamp(payreq_decoded.created_at)
         )
         hold_payment["expires_at"] = timezone.make_aware(
             datetime.fromtimestamp(response.expires_at)
@@ -309,13 +310,13 @@ class CLNNode:
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.OPEN:
+        if response.state == hold_pb2.Holdstate.OPEN:
             pass
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.SETTLED:
+        if response.state == hold_pb2.Holdstate.SETTLED:
             pass
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.CANCELED:
+        if response.state == hold_pb2.Holdstate.CANCELED:
             pass
-        if response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.ACCEPTED:
+        if response.state == hold_pb2.Holdstate.ACCEPTED:
             lnpayment.expiry_height = response.htlc_expiry
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
@@ -359,7 +360,7 @@ class CLNNode:
         except Exception as e:
             # If it fails at finding the invoice: it has been expired for more than an hour (and could be paid or just expired).
             # In RoboSats DB we make a distinction between cancelled and returned
-            #  (cln-grpc-hodl has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
+            #  (holdinvoice plugin has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
             if "empty result for listdatastore_state" in str(e):
                 print(str(e))
                 request2 = node_pb2.ListinvoicesRequest(
@@ -418,7 +419,7 @@ class CLNNode:
 
         # Some wallet providers (e.g. Muun) force routing through a private channel with high fees >1500ppm
         # These payments will fail. So it is best to let the user know in advance this invoice is not valid.
-        route_hints = payreq_decoded.route_hints.hints
+        route_hints = payreq_decoded.routes.hints
 
         # Max amount RoboSats will pay for routing
         if routing_budget_ppm == 0:
@@ -438,8 +439,10 @@ class CLNNode:
                 route_cost = 0
                 # ...add up the cost of every hinted hop...
                 for hop_hint in hinted_route.hops:
-                    route_cost += hop_hint.feebase.msat / 1_000
-                    route_cost += hop_hint.feeprop * num_satoshis / 1_000_000
+                    route_cost += hop_hint.fee_base_msat.msat / 1_000
+                    route_cost += (
+                        hop_hint.fee_proportional_millionths * num_satoshis / 1_000_000
+                    )
 
                 # ...and store the cost of the route to the array
                 routes_cost.append(route_cost)
@@ -447,7 +450,7 @@ class CLNNode:
             # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
             if min(routes_cost) >= max_routing_fee_sats:
                 payout["context"] = {
-                    "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget."
+                    "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget. This can be adjusted with Advanced Options enabled."
                 }
                 return payout
 
@@ -466,7 +469,7 @@ class CLNNode:
             return payout
 
         payout["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp)
+            datetime.fromtimestamp(payreq_decoded.created_at)
         )
         payout["expires_at"] = payout["created_at"] + timedelta(
             seconds=payreq_decoded.expiry
@@ -869,4 +872,4 @@ class CLNNode:
             else:
                 raise e
 
-        return response.state == hold_pb2.HoldInvoiceLookupResponse.Holdstate.SETTLED
+        return response.state == hold_pb2.Holdstate.SETTLED

@@ -18,13 +18,12 @@ This contributing guide is based on the [Bisq contributing guide](https://github
 
 *!!! Beware of scammers impersonating RoboSats admins. Admins will NEVER privately message/call you.*
 
-- **Simplex:** [RoboSats Main Group](https://simplex.chat/contact#/?v=1-2&smp=smp%3A%2F%2F0YuTwO05YJWS8rkjn9eLJDjQhFKvIYd8d4xG8X1blIU%3D%40smp8.simplex.im%2FyEX_vdhWew_FkovCQC3mRYRWZB1j_cBq%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAnrf9Jw3Ajdp4EQw71kqA64VgsIIzw8YNn68WjF09jFY%253D%26srv%3Dbeccx4yfxxbvyhqypaavemqurytl6hozr47wfc7uuecacjqdvwpw2xid.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22hWnMVPnJl-KT3-virDk0JA%3D%3D%22%7D). Got questions or a problem? Find community-driven support in the public SimpleX group chat. If you're wanting to hang out with other cool robots and learn more about RoboSats, then those discussions happen in SimpleX, Nostr, and Matrix group chats.
+- **Simplex:**
+  - [RoboSats Main Group](https://simplex.chat/contact#/?v=1-2&smp=smp%3A%2F%2F0YuTwO05YJWS8rkjn9eLJDjQhFKvIYd8d4xG8X1blIU%3D%40smp8.simplex.im%2FyEX_vdhWew_FkovCQC3mRYRWZB1j_cBq%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAnrf9Jw3Ajdp4EQw71kqA64VgsIIzw8YNn68WjF09jFY%253D%26srv%3Dbeccx4yfxxbvyhqypaavemqurytl6hozr47wfc7uuecacjqdvwpw2xid.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22hWnMVPnJl-KT3-virDk0JA%3D%3D%22%7D). Got questions or a problem? Find community-driven support in the public SimpleX group chat. If you're wanting to hang out with other cool robots and learn more about RoboSats, then those discussions happen in SimpleX, Nostr, and Matrix group chats.
+  - [RoboSats Development Group](https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2F6iIcWT_dF2zN_w5xzZEY7HI2Prbh3ldP07YTyDexPjE%3D%40smp10.simplex.im%2FKEkNLMlgM8vrrU3xjBt5emS7EsP0c4s1%23%2F%3Fv%3D1-3%26dh%3DMCowBQYDK2VuAyEABehx7Tgefl_vvOGOe2SThJCGACKRgSU2wiUdIJ5bQHw%253D%26srv%3Drb2pbttocvnbrngnwziclp2f4ckjq65kebafws6g4hy22cdaiv5dwjqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22gFi-9hvL3XgXXTgnlZPyJw%3D%3D%22%7D). Main developer communication group chat where open and technical discussions about development takes place. Discussion about code changes happens in GitHub issues and pull requests (PRs).
 
-- **Nostr:** [RoboSats General Group](https://snort.social/e/note1tfwvglg8xz8420pfgav0dc9mqekv02nkpck2axefklrema7lk6wszmwxdy). Hang out with other cool robots and do not hesitate to ask questions about RoboSats! Also, the [RoboSats Nostr account](https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions and engagement are welcome. Keep in mind: problems requiring RoboSats staff support should be directed to the main SimpleX group chat instead, where responses are quicker and staff can further investigate your problem.
+- **Nostr:** [RoboSats General Group](https://chachi.chat/groups.0xchat.com/925b1aa20cd1b68dd9a0130e35808d66772fe082cf3f95294dd5755c7ea1ed59). Hang out with other cool robots and do not hesitate to ask questions about RoboSats! Also, the [RoboSats Nostr account](https://njump.me/npub1gdfr0r0an32jalqryqlvpn3gsef2hu832wv6kp5p2gt2aqa2n8yqd42ffw) provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions and engagement are welcome. Keep in mind: problems requiring RoboSats staff support should be directed to the main SimpleX group chat instead, where responses are quicker and staff can further investigate your problem.
 
-- **Matrix:** [RoboSats Development Group](https://matrix.to/#/#robosats:matrix.org). Main developer communication group chat where open and technical discussions about development takes place. Discussion about code changes happens in GitHub issues and pull requests (PRs).
-
-- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Announces project updates, shares tips and tricks of using RoboSats, and discusses other privacy-related topics. Feel free to ask questions and to share your experience using RoboSats! The psuedonymous "Robotoshi" character, a privacy-loving and sometimes sassy robot, runs the RoboSats Twitter and tries his best to answer questions! Keep in mind that the aforementioned public Simplex group chat may be more effective in seeking technical help and users seeking dispute help will be directed to the SimpleX chat.
 
 ## Contributor Workflow
 
@@ -95,3 +94,7 @@ The [.editorconfig](.editorconfig) settings in this repository ensure consistent
 ### Keep the git history clean
 
 It's very important to keep the git history clear, light and easily browsable. This means contributors must make sure their pull requests include only meaningful commits (if they are redundant or were added after a review, they should be removed) and _no merge commits_.
+
+### Mirros
+- https://git.robosats.org/Robosats
+- https://codeberg.org/Robosats

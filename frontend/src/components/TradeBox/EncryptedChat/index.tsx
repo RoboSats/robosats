@@ -7,7 +7,6 @@ interface Props {
   order: Order;
   status: number;
   chatOffset: number;
-  baseUrl: string;
   messages: EncryptedChatMessage[];
   setMessages: (state: EncryptedChatMessage[]) => void;
 }
@@ -32,12 +31,11 @@ export interface ServerMessage {
 const EncryptedChat: React.FC<Props> = ({
   order,
   chatOffset,
-  baseUrl,
   setMessages,
   messages,
   status,
 }: Props): JSX.Element => {
-  const [turtleMode, setTurtleMode] = useState<boolean>(window.ReactNativeWebView !== undefined);
+  const [turtleMode, setTurtleMode] = useState<boolean>(false);
 
   return turtleMode ? (
     <EncryptedTurtleChat
@@ -49,7 +47,6 @@ const EncryptedChat: React.FC<Props> = ({
       makerHashId={order.maker_hash_id}
       userNick={order.ur_nick}
       chatOffset={chatOffset}
-      baseUrl={baseUrl}
       turtleMode={turtleMode}
       setTurtleMode={setTurtleMode}
     />
@@ -63,7 +60,6 @@ const EncryptedChat: React.FC<Props> = ({
       takerHashId={order.taker_hash_id}
       makerHashId={order.maker_hash_id}
       userNick={order.ur_nick}
-      baseUrl={baseUrl}
       turtleMode={turtleMode}
       setTurtleMode={setTurtleMode}
     />

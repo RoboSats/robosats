@@ -141,7 +141,7 @@ def get_devfund_pubkey(network: str) -> str:
     """
 
     session = get_session()
-    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubey.json"
+    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubkey.json"
 
     try:
         response = session.get(url)
@@ -188,8 +188,7 @@ def get_exchange_rates(currencies):
                             blockchain_rates.append(
                                 float(blockchain_prices[currency]["last"])
                             )
-                        except Exception as e:
-                            print(e)
+                        except Exception:
                             blockchain_rates.append(np.nan)
                 api_rates.append(blockchain_rates)
 
@@ -448,7 +447,7 @@ def verify_signed_message(pub_key, signed_message):
     # verify the signed message
     verified = gpg.verify(signed_message)
 
-    if verified.fingerprint == import_result.fingerprints[0]:
+    if verified.valid and verified.fingerprint == import_result.fingerprints[0]:
         header = "-----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA512\n\n"
         footer = "-----BEGIN PGP SIGNATURE-----"
         cleartext_message = signed_message.split(header)[1].split(footer)[0].strip()
@@ -477,6 +476,33 @@ def is_valid_token(token: str) -> bool:
 
     charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"'
     return all(c in charset for c in token)
+
+
+def location_country(lon: float, lat: float) -> str:
+    """
+    Returns the country code of a lon/lat location
+    """
+
+    from shapely.geometry import shape, Point
+    from shapely.prepared import prep
+
+    # Load the GeoJSON data from a local file
+    with open("frontend/static/assets/geo/countries-coastline-10km.geo.json") as f:
+        countries_geojeson = json.load(f)
+
+    # Prepare the countries for reverse geocoding
+    countries = {}
+    for feature in countries_geojeson["features"]:
+        geom = feature["geometry"]
+        country_code = feature["properties"]["A3"]
+        countries[country_code] = prep(shape(geom))
+
+    point = Point(lon, lat)
+    for country_code, geom in countries.items():
+        if geom.contains(point):
+            return country_code
+
+    return "unknown"
 
 
 def objects_to_hyperlinks(logs: str) -> str:

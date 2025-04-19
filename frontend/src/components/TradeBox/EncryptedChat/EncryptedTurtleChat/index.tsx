@@ -30,7 +30,6 @@ interface Props {
   chatOffset: number;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
-  baseUrl: string;
   turtleMode: boolean;
   setTurtleMode: (state: boolean) => void;
 }
@@ -49,7 +48,6 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   chatOffset,
   messages,
   setMessages,
-  baseUrl,
   setTurtleMode,
   turtleMode,
 }: Props): JSX.Element => {
@@ -91,7 +89,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   }, [chatOffset]);
 
   const loadMessages: () => void = () => {
-    const shortAlias = garage.getSlot()?.activeShortAlias;
+    const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
 
     if (!shortAlias) return;
 
@@ -129,7 +127,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   const onMessage = (dataFromServer: ServerMessage): void => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
-    if (robot && dataFromServer != null) {
+    if (slot && robot && dataFromServer != null) {
       // If we receive an encrypted message
       if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
         void decryptMessage(
@@ -198,7 +196,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     // If input string contains '#' send unencrypted and unlogged message
     else if (value.substring(0, 1) === '#') {
       const { url, basePath } = federation
-        .getCoordinator(garage.getSlot()?.activeShortAlias ?? '')
+        .getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '')
         .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(
@@ -209,7 +207,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             order_id: order.id,
             offset: lastIndex,
           },
-          { tokenSHA256: robot?.tokenSHA256 ?? '' },
+          { tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '' },
         )
         .then((response) => {
           if (response != null) {
@@ -231,7 +229,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       encryptMessage(value, robot?.pubKey, peerPubKey ?? '', robot?.encPrivKey, slot?.token)
         .then((encryptedMessage) => {
           const { url, basePath } = federation
-            .getCoordinator(garage.getSlot()?.activeShortAlias ?? '')
+            .getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '')
             .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
           apiClient
             .post(
@@ -242,7 +240,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                 order_id: order.id,
                 offset: lastIndex,
               },
-              { tokenSHA256: robot?.tokenSHA256 },
+              { tokenSHA256: slot?.getRobot()?.tokenSHA256 },
             )
             .then((response) => {
               if (response != null) {

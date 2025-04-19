@@ -16,14 +16,6 @@ export interface AggregatedInfo {
   version: Version;
 }
 
-type toAdd =
-  | 'num_public_buy_orders'
-  | 'num_public_sell_orders'
-  | 'book_liquidity'
-  | 'active_robots_today'
-  | 'last_day_volume'
-  | 'lifetime_volume';
-
 export const weightedMean = (arrValues: number[], arrWeights: number[]): number => {
   if (arrValues.length === 0) {
     return 0;

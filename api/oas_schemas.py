@@ -112,7 +112,7 @@ class OrderViewSchema:
             - `11` "In dispute"
             - `12` "Collaboratively cancelled"
             - `13` "Sending satoshis to buyer"
-            - `14` "Sucessful trade"
+            - `14` "Successful trade"
             - `15` "Failed lightning network routing"
             - `16` "Wait for dispute resolution"
             - `17` "Maker lost dispute"
@@ -219,14 +219,17 @@ class OrderViewSchema:
             - `update_invoice`
               - This action only is valid if you are the buyer. The `invoice`
                 field needs to be present in the body and the value must be a
-                valid LN invoice as cleartext PGP message signed with the robot key. Make sure to perform this action only when
+                valid LN invoice as cleartext PGP message signed (SHA512) with the robot key.
+                The amount of the invoice should be `invoice_amount` minus the routing
+                budget whose parts per million should be specified by `routing_budget_ppm`.
+                Make sure to perform this action only when
                 both the bonds are locked. i.e The status of your order is
                 at least `6` (Waiting for trade collateral and buyer invoice)
             - `update_address`
               - This action is only valid if you are the buyer. This action is
                 used to set an on-chain payout address if you wish to have your
                 payout be received on-chain. Only valid if there is an address in the body as
-                cleartext PGP message signed with the robot key. This enables on-chain swap for the
+                cleartext PGP message signed (SHA512) with the robot key. This enables on-chain swap for the
                 order, so even if you earlier had submitted a LN invoice, it
                 will be ignored. You get to choose the `mining_fee_rate` as
                 well. Mining fee rate is specified in sats/vbyte.
@@ -242,13 +245,15 @@ class OrderViewSchema:
                 - `17` - Maker lost dispute
                 - `18` - Taker lost dispute
 
+                The client can use `cancel_status` to cancel the order only
+                if it is in the specified status. The server will
+                return an error without cancelling the trade otherwise.
+
                 Note that there are penalties involved for cancelling a order
                 mid-trade so use this action carefully:
 
                 - As a maker if you cancel an order after you have locked your
-                  maker bond, you are returned your bond. This may change in
-                  the future to prevent DDoSing the LN node and you won't be
-                  returned the maker bond.
+                  maker bond, you are returned your bond.
                 - As a taker there is a time penalty involved if you `take` an
                   order and cancel it without locking the taker bond.
                 - For both taker or maker, if you cancel the order when both
@@ -377,6 +382,21 @@ class BookViewSchema:
     }
 
 
+class NotificationSchema:
+    get = {
+        "summary": "Get robot notifications",
+        "description": "Get a list of notifications sent to the robot.",
+        "parameters": [
+            OpenApiParameter(
+                name="created_at",
+                location=OpenApiParameter.QUERY,
+                description=("Shows notifications created AFTER this date."),
+                type=str,
+            ),
+        ],
+    }
+
+
 class RobotViewSchema:
     get = {
         "summary": "Get robot info",
@@ -387,12 +407,13 @@ class RobotViewSchema:
             An authenticated request (has the token's sha256 hash encoded as base 91 in the Authorization header) will be
             returned the information about the state of a robot.
 
-            Make sure you generate your token using cryptographically secure methods. [Here's]() the function the Javascript
-            client uses to generate the tokens. Since the server only receives the hash of the
+            Make sure you generate your token using cryptographically secure methods.
+            Since the server only receives the hash of the
             token, it is responsibility of the client to create a strong token. Check
-            [here](https://github.com/RoboSats/robosats/blob/main/frontend/src/utils/token.js)
+            [here](https://github.com/RoboSats/robosats/blob/main/frontend/src/utils/token.ts)
             to see how the Javascript client creates a random strong token and how it validates entropy is optimal for tokens
             created by the user at will.
+            The PGP key should be an EdDSA ed25519/cert,sign+cv25519/encr key.
 
             `public_key` - PGP key associated with the user (Armored ASCII format)
             `encrypted_private_key` - Private PGP key. This is only stored on the backend for later fetching by
@@ -403,7 +424,7 @@ class RobotViewSchema:
             A gpg key can be created by:
 
             ```shell
-            gpg --full-gen-key
+            gpg --default-new-key-algo "ed25519/cert,sign+cv25519/encr" --full-gen-key
             ```
 
             it's public key can be exported in ascii armored format with:
@@ -531,7 +552,7 @@ class InfoViewSchema:
 class RewardViewSchema:
     post = {
         "summary": "Withdraw reward",
-        "description": "Withdraw user reward by submitting an invoice. The invoice must be send as cleartext PGP message signed with the robot key",
+        "description": "Withdraw user reward by submitting an invoice. The invoice must be send as cleartext PGP message signed (SHA512) with the robot key",
         "responses": {
             200: {
                 "type": "object",

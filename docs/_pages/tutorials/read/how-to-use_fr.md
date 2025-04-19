@@ -1,14 +1,14 @@
 ---
 layout: single
-title: Mode d'emploi
-permalink: /read/en/
+title: "Mode d'emploi"
+permalink: /read/fr/
 toc: true
 toc_sticky: true
-excerpt: "Guide : Comment utiliser RoboSats. Un guide complet de l'échange P2P RoboSats"
 sidebar:
-  title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>Mode d'emploi'
+  title: "<img id='side-icon-verybig' src='/assets/vector/chalkboard-user.svg'/>Mode d'emploi"
   nav: tutorial
 ---
+
 
 ## Mode d'emploi (v0.5.0)
 

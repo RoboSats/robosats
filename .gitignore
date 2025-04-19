@@ -1,9 +1,6 @@
 *.py[cod]
 __pycache__
 
-# C extensions
-*.so
-
 # Packages
 *.egg
 *.egg-info
@@ -637,6 +634,7 @@ frontend/static/assets/avatars*
 api/lightning/*_grpc.py
 api/lightning/*_pb2.py
 api/lightning/pymp*
+api/lightning/pip*
 frontend/static/locales/collected_phrases.json
 frontend/static/admin*
 frontend/static/rest_framework*
@@ -644,12 +642,22 @@ frontend/static/import_export*
 frontend/static/drf_spectacular_sidecar/
 frontend/src/components/PaymentMethods/Icons/code*
 frontend/src/components/PaymentMethods/Icons/webp*
-frontend/static/frontend/**
+frontend/static/frontend
 docs/.jekyll-cache*
 docs/_site*
 node
+desktopApp/release-builds
 
-# mobile frontend statics
-mobile/html/Web.bundle/js*
-mobile/html/Web.bundle/css*
-mobile/html/Web.bundle/assets*
+# frontend statics
+frontend/templates/frontend/*.html
+mobile/html/Web.bundle
+frontend/*.html
+desktopApp/static
+desktopApp/*.html
+web/static
+web/*.html
+nodeapp/static
+nodeapp/*.html
+
+# Protocol Buffers
+api/lightning/*.proto

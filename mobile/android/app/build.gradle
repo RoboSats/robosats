@@ -124,7 +124,7 @@ def enableHermes = project.ext.react.get("enableHermes", false);
  */
 def reactNativeArchitectures() {
     def value = project.getProperties().get("reactNativeArchitectures")
-    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+    return value ? value.split(",") : ["armeabi-v7a", "x86_64", "arm64-v8a"]
 }
 
 android {
@@ -144,15 +144,14 @@ android {
         pickFirst 'lib/armeabi-v7a/libruntimeexecutor.so'
         pickFirst 'lib/arm64-v8a/libruntimeexecutor.so'
         pickFirst 'lib/x86_64/libruntimeexecutor.so'
-        pickFirst 'lib/x86/libruntimeexecutor.so'
     }
 
     defaultConfig {
         applicationId "com.robosats"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.6.0-alpha"
+        versionCode 10
+        versionName "0.7.6-alpha"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
         if (isNewArchitectureEnabled()) {
@@ -238,6 +237,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file("../../../keystore.jks")
+            keyAlias System.getenv("KEY_ALIAS")
+            storePassword System.getenv("KEY_STORE_PASS")
+            keyPassword System.getenv("KEY_PASS")
+        }
     }
     buildTypes {
         debug {
@@ -246,7 +251,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -258,7 +263,7 @@ android {
             // For each separate APK per architecture, set a unique version code as described here:
             // https://developer.android.com/studio/build/configure-apk-splits.html
             // Example: versionCode 1 will generate 1001 for armeabi-v7a, 1002 for x86, etc.
-            def versionCodes = ["armeabi-v7a": 1, "x86": 2, "arm64-v8a": 3, "x86_64": 4]
+            def versionCodes = ["armeabi-v7a": 1, "arm64-v8a": 3, "x86_64": 4]
             def abi = output.getFilter(OutputFile.ABI)
             if (abi != null) {  // null for the universal-debug, universal-release variants
                 output.versionCodeOverride =
@@ -271,6 +276,14 @@ android {
     packagingOptions {
         // Make sure libjsc.so does not packed in APK
         exclude "**/libjsc.so"
+        jniLibs.useLegacyPackaging = true
+    }
+
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
     }
 }
 
@@ -282,7 +295,9 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
-    implementation files("../../node_modules/react-native-tor/android/libs/sifir_android.aar")
+    implementation "io.matthewnelson.kotlin-components:kmp-tor:4.8.6-0-1.4.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
 
     if (enableHermes) {
         //noinspection GradleDynamicVersion
@@ -326,3 +341,5 @@ def isNewArchitectureEnabled() {
     // - Set an environment variable `ORG_GRADLE_PROJECT_newArchEnabled=true`
     return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
 }
+
+apply plugin: 'kotlin-android'

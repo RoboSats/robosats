@@ -11,7 +11,7 @@ repos:
           - '--fix=lf'
       - id: trailing-whitespace
       - id: pretty-format-json
-        exclude: ^frontend/
+        exclude: ^frontend/|^mobile/
         args:
           - '--autofix'
           - '--no-sort-keys'
@@ -38,6 +38,15 @@ repos:
         files: ^frontend/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
         entry: bash -c 'cd frontend && npm run format'
+      - id: lintern-frontend
+        name: lintern-frontend
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        files: ^frontend/
+        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
+        entry: bash -c 'cd frontend && npm run lint'
       - id: prettier-mobile
         name: prettier-mobile
         stages:
@@ -47,6 +56,15 @@ repos:
         files: ^mobile/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
         entry: bash -c 'cd mobile && npm run format'
+      - id: lintern-mobile
+        name: lintern-mobile
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        files: ^mobile/
+        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
+        entry: bash -c 'cd mobile && npm run lint'
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.13
     hooks:

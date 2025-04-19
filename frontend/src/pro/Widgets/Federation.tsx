@@ -14,20 +14,11 @@ interface FederationWidgetProps {
   onTouchEnd?: () => void;
 }
 
-const FederationWidget = React.forwardRef(function Component(
-  {
-    layout,
-    gridCellSize,
-    style,
-    className,
-    onMouseDown,
-    onMouseUp,
-    onTouchEnd,
-  }: FederationWidgetProps,
-  ref,
-) {
-  const { federation, coordinatorUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+const FederationWidget = React.forwardRef(function Component({
+  layout,
+  gridCellSize,
+}: FederationWidgetProps) {
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
 
   return React.useMemo(() => {
     return (
@@ -38,7 +29,7 @@ const FederationWidget = React.forwardRef(function Component(
         />
       </Paper>
     );
-  }, [federation, coordinatorUpdatedAt]);
+  }, [federation, federationUpdatedAt]);
 });
 
 export default FederationWidget;

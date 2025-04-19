@@ -19,15 +19,14 @@ import {
 import Countdown from 'react-countdown';
 
 import currencies from '../../../static/assets/currencies.json';
-import { apiClient } from '../../services/api';
 
 import { type Order, type Info } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { useNavigate } from 'react-router-dom';
 
 interface TakeButtonProps {
   currentOrder: Order;
@@ -48,9 +47,9 @@ const TakeButton = ({
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation, setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+  const navigate = useNavigate();
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -79,7 +78,7 @@ const TakeButton = ({
 
   useEffect(() => {
     setSatoshis(satoshisNow() ?? '');
-  }, [orderUpdatedAt, takeAmount, info]);
+  }, [slotUpdatedAt, takeAmount, info]);
 
   const currencyCode: string =
     currentOrder?.currency === 1000 ? 'Sats' : currencies[`${Number(currentOrder?.currency)}`];
@@ -165,7 +164,7 @@ const TakeButton = ({
     } else {
       return null;
     }
-  }, [orderUpdatedAt, takeAmount]);
+  }, [slotUpdatedAt, takeAmount]);
 
   const onTakeOrderClicked = function (): void {
     if (currentOrder?.maker_status === 'Inactive') {
@@ -184,7 +183,7 @@ const TakeButton = ({
       takeAmount === '' ||
       takeAmount == null
     );
-  }, [takeAmount, orderUpdatedAt]);
+  }, [takeAmount, slotUpdatedAt]);
 
   const takeOrderButton = function (): JSX.Element {
     if (currentOrder?.has_range) {
@@ -314,31 +313,20 @@ const TakeButton = ({
   };
 
   const takeOrder = function (): void {
-    const robot = garage.getSlot()?.getRobot() ?? null;
+    const slot = garage.getSlot();
 
-    if (currentOrder === null || robot === null) return;
+    if (currentOrder === null || slot === null) return;
 
     setLoadingTake(true);
-    const { url, basePath } = federation
-      .getCoordinator(currentOrder.shortAlias)
-      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
-    setCurrentOrderId({ id: null, shortAlias: null });
-    apiClient
-      .post(
-        url + basePath,
-        `/api/order/?order_id=${String(currentOrder?.id)}`,
-        {
-          action: 'take',
-          amount: currentOrder?.currency === 1000 ? takeAmount / 100000000 : takeAmount,
-        },
-        { tokenSHA256: robot?.tokenSHA256 },
-      )
-      .then((data) => {
-        if (data?.bad_request !== undefined) {
-          setBadRequest(data.bad_request);
+
+    slot
+      .takeOrder(federation, currentOrder, takeAmount)
+      .then((order) => {
+        if (order?.bad_request !== undefined) {
+          setBadRequest(order.bad_request);
         } else {
-          setCurrentOrderId({ id: currentOrder?.id, shortAlias: currentOrder?.shortAlias });
           setBadRequest('');
+          navigate(`/order/${order.shortAlias}/${order.id}`);
         }
       })
       .catch(() => {

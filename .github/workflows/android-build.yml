@@ -6,6 +6,15 @@ on:
       semver:
         required: true
         type: string
+    secrets:
+      KEYSTORE:
+        required: true
+      KEY_ALIAS:
+        required: true
+      KEY_PASS:
+        required: true
+      KEY_STORE_PASS:
+        required: true
   push:
     branches: [ "main" ]
     paths: [ "mobile", "frontend" ]
@@ -23,7 +32,7 @@ jobs:
 
       - name: 'Download Android Web.bundle Artifact (built frontend)'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v9
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
@@ -54,10 +63,37 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
 
+      - name: Decode Keystore
+        id: decode_keystore
+        uses: timheuer/base64-to-file@v1.2
+        with:
+          fileName: 'keystore.jks'
+          fileDir: './'
+          encodedString: ${{ secrets.KEYSTORE }}
+
       - name: 'Build Android Release'
         run: |
           cd mobile/android
           ./gradlew assembleRelease
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+          KEY_STORE_PASS: ${{ secrets.KEY_STORE_PASS }}
+
+
+      - name: 'Check for non-FOSS libraries'
+        run: |
+          wget https://github.com/iBotPeaches/Apktool/releases/download/v2.7.0/apktool_2.7.0.jar
+          wget https://github.com/iBotPeaches/Apktool/raw/master/scripts/linux/apktool
+          # clone the repo
+          git clone https://gitlab.com/IzzyOnDroid/repo.git
+          # create a directory for Apktool and move the apktool* files there
+          mkdir -p repo/lib/radar/tool
+          mv apktool* repo/lib/radar/tool
+          # create an alias for ease of use
+          chmod u+x repo/lib/radar/tool/apktool
+          mv repo/lib/radar/tool/apktool_2.7.0.jar repo/lib/radar/tool/apktool.jar
+          repo/bin/scanapk.php mobile/android/app/build/outputs/apk/release/app-universal-release.apk
 
       - name: 'Get Commit Hash'
         id: commit
@@ -96,18 +132,10 @@ jobs:
           name: robosats-${{ inputs.semver }}-x86_64.apk
           path: mobile/android/app/build/outputs/apk/release/app-x86_64-release.apk
 
-      # Create app-x86-release APK artifact asset for Release
-      - name: 'Upload x86 .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v4
-        if: inputs.semver != ''  # If this workflow is called from release.yml
-        with:
-          name: robosats-${{ inputs.semver }}-x86.apk
-          path: mobile/android/app/build/outputs/apk/release/app-x86-release.apk
-
       - name: 'Create Pre-release'
         id: create_release
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: ncipollo/release-action@v1.13.0
+        uses: ncipollo/release-action@v1.16.0
         with:
           tag: android-${{ steps.commit.outputs.short }}
           name: robosats-android-${{ steps.commit.outputs.short }}
@@ -163,17 +191,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./mobile/android/app/build/outputs/apk/release/app-x86_64-release.apk
           asset_name: robosats-${{ steps.commit.outputs.short }}-x86_64.apk
-          asset_content_type: application/apk
-
-      # Upload x86 APK to pre-release
-      - name: 'Upload x86 Pre-release APK Asset'
-        id: upload-release-x86-apk-asset
-        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mobile/android/app/build/outputs/apk/release/app-x86-release.apk
-          asset_name: robosats-${{ steps.commit.outputs.short }}-x86.apk
           asset_content_type: application/apk

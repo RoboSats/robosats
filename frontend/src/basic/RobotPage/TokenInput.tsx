@@ -4,6 +4,7 @@ import { IconButton, LinearProgress, TextField, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { validateTokenEntropy } from '../../utils';
 
 interface TokenInputProps {
   editable?: boolean;
@@ -12,7 +13,7 @@ interface TokenInputProps {
   inputToken: string;
   autoFocusTarget?: 'textfield' | 'copyButton' | 'none';
   onPressEnter: () => void;
-  badToken?: string;
+  setValidToken?: (valid: boolean) => void;
   setInputToken: (state: string) => void;
   showCopy?: boolean;
   label?: string;
@@ -26,17 +27,32 @@ const TokenInput = ({
   onPressEnter,
   autoFocusTarget = 'textfield',
   inputToken,
-  badToken = '',
   loading = false,
   setInputToken,
+  setValidToken = () => {},
 }: TokenInputProps): JSX.Element => {
   const { t } = useTranslation();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [showCopied, setShowCopied] = useState<boolean>(false);
+  const [badToken, setBadToken] = useState<string>('');
+
+  useEffect(() => {}, [inputToken]);
 
   useEffect(() => {
     setShowCopied(false);
+    if (inputToken.length < 20) {
+      setBadToken(t('The token is too short'));
+    } else if (!validateTokenEntropy(inputToken).hasEnoughEntropy) {
+      setBadToken(t('Not enough entropy, make it more complex'));
+    } else {
+      setBadToken('');
+    }
   }, [inputToken]);
+
+  useEffect(() => {
+    setShowCopied(false);
+    setValidToken(badToken === '');
+  }, [badToken]);
 
   useEffect(() => {
     setShowCopied(false);
@@ -59,7 +75,7 @@ const TokenInput = ({
         helperText={badToken}
         size='medium'
         onChange={(e) => {
-          setInputToken(e.target.value);
+          setInputToken(e.target.value.replace(/\s+/g, ''));
         }}
         onKeyPress={(e) => {
           if (e.key === 'Enter') {

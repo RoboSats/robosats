@@ -17,35 +17,19 @@ jobs:
 
     - name: 'Download Basic main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v9
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
-        name: web-main-js
-        path: frontend/static/frontend/
+        name: django-main-static
+        path: frontend
 
     - name: 'Download Basic main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
       uses: actions/download-artifact@v4
       with:
-        name: web-main-js
-        path: frontend/static/frontend/
-
-    - name: 'Download pro.js Artifact'
-      if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v3
-      with:
-        workflow: frontend-build.yml
-        workflow_conclusion: success
-        name: web-pro-js
-        path: frontend/static/frontend/
-
-    - name: 'Download pro.js Artifact for a release'
-      if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v4
-      with:
-        name: web-pro-js
-        path: frontend/static/frontend/
+        name: django-main-static
+        path: frontend
 
     - name: 'Log in to Docker Hub'
       uses: docker/login-action@v3
@@ -75,7 +59,7 @@ jobs:
         echo ${{ steps.commit.outputs.long }}>"commit_sha"
 
     - name: 'Build and push Docker image'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         push: true

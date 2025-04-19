@@ -52,7 +52,7 @@ const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): JSX.Element
 
         <Typography>
           {t(
-            'The RoboSats coordinator is on version {{coordinatorVersion}}, but your client app is {{clientVersion}}. This version mismatch might lead to a bad user experience.',
+            'The RoboSats coordinator is on version {{coordinatorString}}, but your client app is {{clientString}}. This version mismatch might lead to a bad user experience.',
             { coordinatorString, clientString },
           )}
         </Typography>
@@ -69,8 +69,8 @@ const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): JSX.Element
             </ListItemIcon>
 
             <ListItemText
-              secondary={t('Download RoboSats {{coordinatorVersion}} APK from Github releases', {
-                coordinatorVersion,
+              secondary={t('Download RoboSats {{coordinatorString}} APK from Github releases', {
+                coordinatorString,
               })}
               primary={t('On Android RoboSats app ')}
             />

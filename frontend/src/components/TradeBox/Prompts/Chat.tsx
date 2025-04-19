@@ -20,7 +20,6 @@ interface ChatPromptProps {
   loadingReceived: boolean;
   onClickDispute: () => void;
   loadingDispute: boolean;
-  baseUrl: string;
   messages: EncryptedChatMessage[];
   setMessages: (state: EncryptedChatMessage[]) => void;
 }
@@ -35,12 +34,11 @@ export const ChatPrompt = ({
   loadingReceived,
   onClickDispute,
   loadingDispute,
-  baseUrl,
   messages,
   setMessages,
 }: ChatPromptProps): JSX.Element => {
   const { t } = useTranslation();
-  const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -48,6 +46,7 @@ export const ChatPrompt = ({
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
+  const [showWarning, setShowWarning] = useState<boolean>(false);
 
   const currencyCode: string = currencies[`${order.currency}`];
   const amount: string = pn(
@@ -89,6 +88,7 @@ export const ChatPrompt = ({
         setSentButton(false);
         setUndoSentButton(false);
         setReceivedButton(false);
+        setShowWarning(true);
         setText(
           t(
             'Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.',
@@ -113,7 +113,7 @@ export const ChatPrompt = ({
         setText(t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it."));
       }
     }
-  }, [orderUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   return (
     <Grid
@@ -126,7 +126,21 @@ export const ChatPrompt = ({
     >
       <Grid item>
         <Typography variant='body2' align='center'>
-          {text}
+          {text}{' '}
+          {showWarning ? (
+            <>
+              {'⚠️ '}
+              <a
+                href='https://robosats.org/docs/payment-methods/#scams'
+                target='_blank'
+                rel='noreferrer'
+              >
+                {t('Beware scams')}
+              </a>
+            </>
+          ) : (
+            ''
+          )}
         </Typography>
       </Grid>
 
@@ -135,7 +149,6 @@ export const ChatPrompt = ({
           status={order.status}
           chatOffset={order.chat_last_index}
           order={order}
-          baseUrl={baseUrl}
           messages={messages}
           setMessages={setMessages}
         />

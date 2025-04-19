@@ -8,7 +8,7 @@ info:
     altText: RoboSats logo
   description: |2+
 
-    REST API Documentation for [RoboSats](https://learn.robosats.com) - A Simple and Private LN P2P Exchange
+    REST API Documentation for [RoboSats](https://learn.robosats.org) - A Simple and Private LN P2P Exchange
 
     <p style='background-color:#fff0f0;padding:16px;border-radius:6px;border:2px solid #ffd3d3'>
     <span style='color:#f31f1f;font-weight:bold'>Note:</span>
@@ -1712,7 +1712,7 @@ components:
           type: string
         maker_status:
           type: string
-          description: Status of the nick - "Active" or "Inactive"
+          description: Status of the nick - "Active", "Seen Recently" or "Inactive"
         price:
           type: number
           format: double

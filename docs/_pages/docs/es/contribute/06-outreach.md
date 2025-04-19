@@ -18,7 +18,7 @@ Lo mejor que podemos hacer es razonar con los usuarios por qué deben valorar su
 
 Las redes sociales son una gran oportunidad para la publicidad boca a boca de RoboSats. Si has tenido una buena experiencia con RoboSats o tienes algo interesante que decir sobre el proyecto, ¡hazlo saber! Grítalo desde el cielo de los robots.
 
-Por ejemplo, puedes publicarlo en Nostr y etiquetar la cuenta de Nostr de RoboSats (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqk3m82) para que pueda compartirse con los demás. O, si estás en Twitter, crea un tweet y etiqueta la cuenta [RoboSats Twitter](https://twitter.com/RoboSats).
+Por ejemplo, puedes publicarlo en Nostr y etiquetar la [cuenta de Nostr de RoboSats](https://njump.me/npub1gdfr0r0an32jalqryqlvpn3gsef2hu832wv6kp5p2gt2aqa2n8yqd42ffw) para que pueda compartirse con los demás.
 
 ¡Cualquier ayuda será muy apreciada en este sector! Más liquidez en el libro de órdenes atrae a más usuarios y, por lo tanto, ¡más usuarios pueden aprovechar las ventajas de comprar y vender bitcoin de forma privada!
 

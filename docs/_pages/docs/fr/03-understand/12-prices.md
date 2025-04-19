@@ -49,7 +49,7 @@ Les frais de plateforme (`fee_sats`) associés à votre ordre sont calculés en 
   fee_sats = trade_sats * fee_fraction
   ````
 
-où `fee_fraction` se combine pour un total partagé de frais de plateforme de {{site.robosats.total_fee}}% ; cela se décompose en {{site.robosats.maker_fee}}% et {{site.robosats.taker_fee}}% pour le maker et le taker, respectivement. Référez-vous à [Comprendre > Frais] (https://learn.robosats.com/docs/fr/fees/) pour plus d'informations sur les frais.
+où `fee_fraction` se combine pour un total partagé de frais de plateforme de {{site.robosats.total_fee}}% ; cela se décompose en {{site.robosats.maker_fee}}% et {{site.robosats.taker_fee}}% pour le maker et le taker, respectivement. Référez-vous à [Comprendre > Frais] (https://learn.robosats.org/docs/fr/fees/) pour plus d'informations sur les frais.
 
 RoboSats collecte ensuite les frais dans le processus de dépôt de garantie (`escrow_amount`) et la facture de paiement (`payout_amount`) en calculant ce qui suit :
 * Pour le vendeur:

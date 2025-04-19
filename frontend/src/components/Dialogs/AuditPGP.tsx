@@ -93,7 +93,7 @@ const AuditPGPDialog = ({
             <Button
               component={Link}
               target='_blank'
-              href='https://learn.robosats.com/docs/pgp-encryption'
+              href='https://learn.robosats.org/docs/pgp-encryption'
             >
               {t('Learn how to verify')} <NewTabIcon sx={{ width: 16, height: 16 }} />
             </Button>

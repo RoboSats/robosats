@@ -11,6 +11,7 @@ import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../../contexts/FederationContext';
+import thirdParties from '../../../../../static/thirdparties.json';
 
 interface OrderTooltipProps {
   order: PublicOrder;
@@ -21,24 +22,28 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
 
-  const coordinatorAlias = order?.coordinatorShortAlias;
+  const coordinatorAlias = order?.coordinatorShortAlias ?? '';
   const network = settings.network;
   const coordinator = federation.getCoordinator(coordinatorAlias);
+  const thirdParty = thirdParties[coordinatorAlias];
   const baseUrl = coordinator?.[network]?.[origin] ?? '';
 
-  return order?.id != null && baseUrl !== '' ? (
+  return order ? (
     <Paper elevation={12} style={{ padding: 10, width: 250 }}>
       <Grid container justifyContent='space-between'>
         <Grid item xs={3}>
           <Grid container justifyContent='center' alignItems='center'>
             <RobotAvatar
-              nickname={order.maker_nick}
               orderType={order.type}
               statusColor={statusBadgeColor(order.maker_status)}
               tooltip={t(order.maker_status)}
               baseUrl={baseUrl}
               small={true}
               hashId={order.maker_hash_id}
+              coordinatorShortAlias={
+                thirdParty?.shortAlias ??
+                (coordinator?.federated ? coordinator?.shortAlias : undefined)
+              }
             />
           </Grid>
         </Grid>

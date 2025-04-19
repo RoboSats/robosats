@@ -3,27 +3,29 @@ export interface PublicOrder {
   created_at: Date;
   expires_at: Date;
   type: number;
-  currency: number;
+  currency: number | null;
   amount: string;
-  base_amount?: number;
+  base_price?: number;
   has_range: boolean;
-  min_amount: number;
-  max_amount: number;
+  min_amount: string | null;
+  max_amount: string | null;
   payment_method: string;
   is_explicit: false;
-  premium: number;
-  satoshis: number;
-  satoshis_now: number;
-  latitude: number;
-  longitude: number;
-  bond_size: number;
-  maker: number;
+  premium: string;
+  satoshis: number | null;
+  satoshis_now: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  bond_size: string;
+  maker: number | null;
   escrow_duration: number;
-  maker_nick: string;
-  maker_hash_id: string;
-  price: number;
-  maker_status: 'Active' | 'Seen recently' | 'Inactive';
+  maker_nick: string | null;
+  maker_hash_id: string | null;
+  price: number | null;
+  maker_status?: 'Active' | 'Seen recently' | 'Inactive';
   coordinatorShortAlias?: string;
+  link?: string;
+  federated?: boolean;
 }
 
 export interface Book {

@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
-
-import { apiClient } from '../../services/api';
 import { getWebln, pn } from '../../utils';
-
 import {
   ConfirmCancelDialog,
   ConfirmCollabCancelDialog,
@@ -54,6 +51,7 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -102,7 +100,7 @@ const closeAll: OpenDialogProps = {
 };
 
 interface TradeBoxProps {
-  baseUrl: string;
+  currentOrder: Order;
   onStartAgain: () => void;
 }
 
@@ -115,10 +113,11 @@ interface Contract {
   titleIcon: () => JSX.Element;
 }
 
-const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
-  const { garage, orderUpdatedAt, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
-  const { settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
-  const { federation, setCurrentOrderId } = useContext<UseFederationStoreType>(FederationContext);
+const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element => {
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { settings } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Buttons and Dialogs
@@ -152,46 +151,34 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
     mining_fee_rate?: number;
     statement?: string;
     rating?: number;
+    cancel_status?: number;
   }
 
   const renewOrder = function (): void {
-    const currentOrder = garage.getSlot()?.order;
-    if (currentOrder) {
-      const body = {
-        type: currentOrder.type,
-        currency: currentOrder.currency,
-        amount: currentOrder.has_range ? null : currentOrder.amount,
-        has_range: currentOrder.has_range,
-        min_amount: currentOrder.min_amount,
-        max_amount: currentOrder.max_amount,
-        payment_method: currentOrder.payment_method,
-        is_explicit: currentOrder.is_explicit,
-        premium: currentOrder.is_explicit ? null : currentOrder.premium,
-        satoshis: currentOrder.is_explicit ? currentOrder.satoshis : null,
-        public_duration: currentOrder.public_duration,
-        escrow_duration: currentOrder.escrow_duration,
-        bond_size: currentOrder.bond_size,
-        latitude: currentOrder.latitude,
-        longitude: currentOrder.longitude,
+    const slot = garage.getSlot();
+    const newOrder = currentOrder;
+    if (newOrder && slot) {
+      const orderAttributes = {
+        type: newOrder.type,
+        currency: newOrder.currency,
+        amount: newOrder.has_range ? null : newOrder.amount,
+        has_range: newOrder.has_range,
+        min_amount: newOrder.min_amount,
+        max_amount: newOrder.max_amount,
+        payment_method: newOrder.payment_method,
+        is_explicit: newOrder.is_explicit,
+        premium: newOrder.is_explicit ? null : newOrder.premium,
+        satoshis: newOrder.is_explicit ? newOrder.satoshis : null,
+        public_duration: newOrder.public_duration,
+        escrow_duration: newOrder.escrow_duration,
+        bond_size: newOrder.bond_size,
+        latitude: newOrder.latitude,
+        longitude: newOrder.longitude,
+        shortAlias: newOrder.shortAlias,
       };
-      const { url, basePath } = federation
-        .getCoordinator(currentOrder.shortAlias)
-        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
-      apiClient
-        .post(url + basePath, '/api/make/', body, {
-          tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256,
-        })
-        .then((data: any) => {
-          if (data.bad_request !== undefined) {
-            setBadOrder(data.bad_request);
-          } else if (data.id !== undefined) {
-            navigate(`/order/${String(currentOrder?.shortAlias)}/${String(data.id)}`);
-            setCurrentOrderId({ id: data.id, shortAlias: currentOrder?.shortAlias });
-          }
-        })
-        .catch(() => {
-          setBadOrder('Request error');
-        });
+      void slot.makeOrder(federation, orderAttributes).then((order: Order) => {
+        if (order?.id) navigate(`/order/${String(order?.shortAlias)}/${String(order.id)}`);
+      });
     }
   };
 
@@ -203,15 +190,13 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
     mining_fee_rate,
     statement,
     rating,
+    cancel_status,
   }: SubmitActionProps): void {
-    const robot = garage.getSlot()?.getRobot();
-    const currentOrder = garage.getSlot()?.order;
+    const slot = garage.getSlot();
 
-    void apiClient
-      .post(
-        baseUrl,
-        `/api/order/?order_id=${Number(currentOrder?.id)}`,
-        {
+    if (slot && currentOrder) {
+      currentOrder
+        .submitAction(federation, slot, {
           action,
           invoice,
           routing_budget_ppm,
@@ -219,34 +204,36 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           mining_fee_rate,
           statement,
           rating,
-        },
-        { tokenSHA256: robot?.tokenSHA256 },
-      )
-      .then((data: Order) => {
-        setOpen(closeAll);
-        setLoadingButtons({ ...noLoadingButtons });
-        if (data.bad_request !== undefined) {
-          setBadOrder(data.bad_request);
-        } else if (data.bad_address !== undefined) {
-          setOnchain({ ...onchain, badAddress: data.bad_address });
-        } else if (data.bad_invoice !== undefined) {
-          setLightning({ ...lightning, badInvoice: data.bad_invoice });
-        } else if (data.bad_statement !== undefined) {
-          setDispute({ ...dispute, badStatement: data.bad_statement });
-        } else {
-          garage.updateOrder(data);
-          setBadOrder(undefined);
-        }
-      })
-      .catch(() => {
-        setOpen(closeAll);
-        setLoadingButtons({ ...noLoadingButtons });
-      });
+          cancel_status,
+        })
+        .then((data: Order) => {
+          setOpen(closeAll);
+          setLoadingButtons({ ...noLoadingButtons });
+          if (data.bad_address !== undefined) {
+            setOnchain({ ...onchain, badAddress: data.bad_address });
+          } else if (data.bad_invoice !== undefined) {
+            setLightning({ ...lightning, badInvoice: data.bad_invoice });
+          } else if (data.bad_statement !== undefined) {
+            setDispute({ ...dispute, badStatement: data.bad_statement });
+          }
+          slot.updateSlotFromOrder(data);
+        })
+        .catch(() => {
+          setOpen(closeAll);
+          setLoadingButtons({ ...noLoadingButtons });
+        });
+    }
   };
 
   const cancel = function (): void {
+    const order = garage.getSlot()?.activeOrder;
+    const noConfirmation = Boolean(order?.is_maker && [0, 1, 2, 3].includes(order?.status));
+
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
-    submitAction({ action: 'cancel' });
+    submitAction({
+      action: 'cancel',
+      cancel_status: noConfirmation ? order?.status : undefined,
+    });
   };
 
   const openDispute = function (): void {
@@ -310,14 +297,27 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
   const submitStatement = function (): void {
     let statement = dispute.statement;
-    if (dispute.attachLogs) {
-      const payload = { statement, messages };
-      statement = JSON.stringify(payload, null, 2);
+    if (!statement || statement.trim() === '' || statement.length < 100) {
+      setDispute({
+        ...dispute,
+        badStatement: t('The statement is too short. Make sure to be thorough.'),
+      });
+    } else if (!dispute.contact || dispute.contact.trim() === '') {
+      setDispute({ ...dispute, badContact: t('A contact method is required') });
+    } else {
+      const { contactMethod, contact } = dispute;
+      statement = `${contactMethod ?? ''}: ${contact ?? ''} \n\n ${statement}`;
+      if (dispute.attachLogs) {
+        const payload = { statement, messages };
+        statement = JSON.stringify(payload, null, 2);
+      }
+
+      setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
+      submitAction({ action: 'submit_statement', statement });
     }
-    setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
-    submitAction({ action: 'submit_statement', statement });
   };
-  const ratePlatform = function (rating: number): void {
+
+  const rateUserPlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
 
@@ -363,15 +363,14 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
-    const currentOrder = garage.getSlot()?.order;
     if (currentOrder && currentOrder?.status !== lastOrderStatus) {
       setLastOrderStatus(currentOrder.status);
       void handleWebln(currentOrder);
     }
-  }, [orderUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   const statusToContract = function (): Contract {
-    const order = garage.getSlot()?.order;
+    const order = currentOrder;
 
     const baseContract: Contract = {
       title: 'Unknown Order Status',
@@ -382,7 +381,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       titleIcon: () => <></>,
     };
 
-    if (!order) return baseContract;
+    if (!currentOrder) return baseContract;
 
     const status = order.status;
     const isBuyer = order.is_buyer;
@@ -573,7 +572,6 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
                 setOpen({ ...open, confirmDispute: true });
               }}
               loadingDispute={loadingButtons.openDispute}
-              baseUrl={baseUrl}
               messages={messages}
               setMessages={setMessages}
             />
@@ -599,6 +597,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
                 dispute={dispute}
                 setDispute={setDispute}
                 onClickSubmit={submitStatement}
+                shortAlias={currentOrder.shortAlias}
               />
             );
           };
@@ -626,7 +625,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
@@ -639,7 +638,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
         }
         break;
 
-      // 14: 'Sucessful trade'
+      // 14: 'Successful trade'
       case 14:
         baseContract.title = 'Trade finished!';
         baseContract.titleColor = 'success';
@@ -650,7 +649,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           return (
             <SuccessfulPrompt
               order={order}
-              ratePlatform={ratePlatform}
+              rateUserPlatform={rateUserPlatform}
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
@@ -689,7 +688,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
@@ -746,7 +745,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           setOpen(closeAll);
         }}
         waitingWebln={waitingWebln}
-        isBuyer={garage.getSlot()?.order?.is_buyer ?? false}
+        isBuyer={currentOrder.is_buyer ?? false}
       />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
@@ -769,11 +768,11 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
         }}
         onCollabCancelClick={cancel}
         loading={loadingButtons.cancel}
-        peerAskedCancel={garage.getSlot()?.order?.pending_cancel ?? false}
+        peerAskedCancel={currentOrder?.pending_cancel ?? false}
       />
       <ConfirmFiatSentDialog
         open={open.confirmFiatSent}
-        order={garage.getSlot()?.order ?? null}
+        order={currentOrder ?? null}
         loadingButton={loadingButtons.fiatSent}
         onClose={() => {
           setOpen(closeAll);
@@ -790,14 +789,14 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
-        order={garage.getSlot()?.order ?? null}
+        order={currentOrder ?? null}
         loadingButton={loadingButtons.fiatReceived}
         onClose={() => {
           setOpen(closeAll);
         }}
         onConfirmClick={confirmFiatReceived}
       />
-      <CollabCancelAlert order={garage.getSlot()?.order ?? null} />
+      <CollabCancelAlert order={currentOrder ?? null} />
       <Grid
         container
         padding={1}
@@ -808,7 +807,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       >
         <Grid item>
           <Title
-            order={garage.getSlot()?.order ?? null}
+            order={currentOrder ?? null}
             text={contract?.title}
             color={contract?.titleColor}
             icon={contract?.titleIcon}
@@ -822,10 +821,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
         {contract?.bondStatus !== 'hide' ? (
           <Grid item sx={{ width: '100%' }}>
             <Divider />
-            <BondStatus
-              status={contract?.bondStatus}
-              isMaker={garage.getSlot()?.order?.is_maker ?? false}
-            />
+            <BondStatus status={contract?.bondStatus} isMaker={currentOrder?.is_maker ?? false} />
           </Grid>
         ) : (
           <></>
@@ -833,7 +829,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
         <Grid item>
           <CancelButton
-            order={garage.getSlot()?.order ?? null}
+            order={currentOrder ?? null}
             onClickCancel={cancel}
             openCancelDialog={() => {
               setOpen({ ...closeAll, confirmCancel: true });

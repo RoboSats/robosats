@@ -3,12 +3,13 @@ import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
-import { robohash } from './RobohashGenerator';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { roboidentitiesClient } from '../../services/Roboidentities/Web';
 
 interface Props {
-  shortAlias?: string | undefined;
-  hashId?: string | undefined;
+  shortAlias?: string;
+  coordinatorShortAlias?: string;
+  hashId?: string;
   smooth?: boolean;
   small?: boolean;
   flipHorizontally?: boolean;
@@ -30,6 +31,7 @@ interface BackgroundData {
 
 const RobotAvatar: React.FC<Props> = ({
   shortAlias,
+  coordinatorShortAlias,
   hashId,
   orderType,
   statusColor,
@@ -46,7 +48,7 @@ const RobotAvatar: React.FC<Props> = ({
 }) => {
   const [avatarSrc, setAvatarSrc] = useState<string>('');
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
-  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
   const backgroundFadeTime = 3000;
 
   const [backgroundData] = useState<BackgroundData>(placeholder.loading);
@@ -54,10 +56,9 @@ const RobotAvatar: React.FC<Props> = ({
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    // TODO: HANDLE ANDROID AVATARS TOO (when window.NativeRobosats !== undefined)
     if (hashId !== undefined) {
-      robohash
-        .generate(hashId, small ? 'small' : 'large')
+      roboidentitiesClient
+        .generateRobohash(hashId, small ? 'small' : 'large')
         .then((avatar) => {
           setAvatarSrc(avatar);
         })
@@ -71,16 +72,14 @@ const RobotAvatar: React.FC<Props> = ({
   }, [hashId]);
 
   useEffect(() => {
-    if (shortAlias !== undefined) {
-      if (window.NativeRobosats === undefined) {
+    if (shortAlias && shortAlias !== '') {
+      if (client !== 'mobile') {
         setAvatarSrc(
           `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`,
         );
       } else {
         setAvatarSrc(
-          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}${
-            small ? ' .small' : ''
-          }.webp`,
+          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}.webp`,
         );
       }
       setTimeout(() => {
@@ -101,6 +100,16 @@ const RobotAvatar: React.FC<Props> = ({
       ) : (
         <SendReceiveIcon sx={{ height: '0.8em', width: '0.8em' }} color='primary' />
       )}
+    </div>
+  );
+
+  const coordinatorBadge = (
+    <div style={{ position: 'relative', right: '0.428em' }}>
+      <RobotAvatar
+        shortAlias={coordinatorShortAlias}
+        style={{ height: '0.9em', width: '0.9em' }}
+        small={true}
+      />
     </div>
   );
 
@@ -171,6 +180,18 @@ const RobotAvatar: React.FC<Props> = ({
       );
     }
 
+    if (coordinatorShortAlias !== undefined) {
+      component = (
+        <Badge
+          overlap='circular'
+          anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+          badgeContent={coordinatorBadge}
+        >
+          {component}
+        </Badge>
+      );
+    }
+
     if (tooltip !== undefined) {
       component = (
         <Tooltip placement={tooltipPosition} enterTouchDelay={0} title={tooltip}>
@@ -178,6 +199,7 @@ const RobotAvatar: React.FC<Props> = ({
         </Tooltip>
       );
     }
+
     return component;
   }, [avatar]);
 

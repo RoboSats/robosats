@@ -297,7 +297,7 @@ def pay_invoice(node_name, invoice):
     node = get_node(node_name)
     data = {"payment_request": invoice}
     try:
-        response = requests.post(
+        requests.post(
             f'http://localhost:{node["port"]}/v1/channels/transactions',
             json=data,
             headers=node["headers"],
@@ -305,7 +305,6 @@ def pay_invoice(node_name, invoice):
             # 0.4s is enough for LND to CLN hodl ACCEPT
             timeout=0.2 if LNVENDOR == "LND" else 1,
         )
-        print(response.json())
     except ReadTimeout:
         # Request to pay hodl invoice has timed out: that's good!
         return

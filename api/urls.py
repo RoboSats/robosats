@@ -15,6 +15,7 @@ from .views import (
     RobotView,
     StealthView,
     TickView,
+    NotificationsView,
 )
 
 urlpatterns = [
@@ -36,4 +37,5 @@ urlpatterns = [
     path("ticks/", TickView.as_view(), name="ticks"),
     path("stealth/", StealthView.as_view(), name="stealth"),
     path("chat/", ChatView.as_view({"get": "get", "post": "post"}), name="chat"),
+    path("notifications/", NotificationsView.as_view(), name="notifications"),
 ]

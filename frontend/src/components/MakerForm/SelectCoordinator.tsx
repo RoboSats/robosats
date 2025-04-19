@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext } from 'react';
 import {
   Grid,
   Select,
@@ -8,8 +8,10 @@ import {
   Typography,
   type SelectChangeEvent,
   CircularProgress,
+  Stack,
+  Alert,
 } from '@mui/material';
-
+import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
@@ -26,8 +28,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   setCoordinator,
 }) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { federation, sortedCoordinators, coordinatorUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -41,55 +42,62 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
     setCoordinator(e.target.value);
   };
 
-  const coordinator = useMemo(
-    () => federation.getCoordinator(coordinatorAlias),
-    [coordinatorUpdatedAt],
-  );
+  const coordinator = federation.getCoordinator(coordinatorAlias);
 
   return (
     <Grid item>
-      <Tooltip
-        placement='top'
-        enterTouchDelay={500}
-        enterDelay={700}
-        enterNextDelay={2000}
-        title={t(
-          'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
-        )}
+      {coordinator?.info && !coordinator?.info?.swap_enabled && (
+        <Grid sx={{ marginBottom: 1 }}>
+          <Alert severity='warning' sx={{ marginTop: 2 }}>
+            {t('This coordinator does not support on-chain swaps.')}
+          </Alert>
+        </Grid>
+      )}
+      <Box
+        sx={{
+          backgroundColor: 'background.paper',
+          border: '1px solid',
+          borderRadius: '4px',
+          borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+          '&:hover': {
+            borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+          },
+        }}
       >
-        <Box
-          sx={{
-            backgroundColor: 'background.paper',
-            border: '1px solid',
-            borderRadius: '4px',
-            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-            '&:hover': {
-              borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-            },
-          }}
+        <Tooltip
+          placement='top'
+          enterTouchDelay={500}
+          enterDelay={700}
+          enterNextDelay={2000}
+          title={t(
+            'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
+          )}
         >
-          <Typography variant='caption' color='text.secondary'>
-            &nbsp;{t('Order Host')}
-          </Typography>
-
-          <Grid container>
+          <Grid container style={{ marginTop: 10 }}>
             <Grid
               item
               xs={3}
-              sx={{ cursor: 'pointer', position: 'relative', left: '0.3em', bottom: '0.1em' }}
+              sx={{
+                cursor: 'pointer',
+                position: 'relative',
+                left: '0.3em',
+                bottom: '0.1em',
+                marginBottom: 1,
+              }}
               onClick={() => {
                 onClickCurrentCoordinator(coordinatorAlias);
               }}
             >
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinatorAlias}
+                  shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
+                  hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={false}
                   small={true}
                 />
-                {(coordinator?.info === undefined ||
+                {(coordinator?.limits === undefined ||
                   Object.keys(coordinator?.limits).length === 0) && (
                   <CircularProgress
                     size={49}
@@ -112,13 +120,12 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {sortedCoordinators.map((shortAlias: string): JSX.Element | null => {
+                {federation.getCoordinators().map((coordinator): JSX.Element | null => {
                   let row: JSX.Element | null = null;
-                  const item = federation.getCoordinator(shortAlias);
-                  if (item.enabled === true) {
+                  if (coordinator.enabled === true) {
                     row = (
-                      <MenuItem key={shortAlias} value={shortAlias}>
-                        <Typography>{item.longAlias}</Typography>
+                      <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>
+                        <Typography>{coordinator.longAlias}</Typography>
                       </MenuItem>
                     );
                   }
@@ -127,8 +134,81 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Select>
             </Grid>
           </Grid>
-        </Box>
-      </Tooltip>
+        </Tooltip>
+        <Grid container>
+          <Grid item>
+            <Stack direction='row' alignContent='center' spacing={2} style={{ flexGrow: 1 }}>
+              <Grid item>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Maker fee')}
+                >
+                  <Typography
+                    color='text.secondary'
+                    variant='caption'
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    &nbsp;{t('Maker')[0]} {((coordinator?.info?.maker_fee ?? 0) * 100).toFixed(3)}%
+                  </Typography>
+                </Tooltip>
+              </Grid>
+              <Grid item>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Taker fee')}
+                >
+                  <Typography
+                    color='text.secondary'
+                    variant='caption'
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    &nbsp;{t('Taker')[0]} {((coordinator?.info?.taker_fee ?? 0) * 100).toFixed(3)}%
+                  </Typography>
+                </Tooltip>
+              </Grid>
+              <Grid item>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={
+                    coordinator?.info?.swap_enabled
+                      ? t('Onchain payouts enabled')
+                      : t('Onchain payouts disabled')
+                  }
+                >
+                  <Typography
+                    color={coordinator?.info?.swap_enabled ? 'primary' : 'text.secondary'}
+                    variant='caption'
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Link sx={{ height: 16 }} />{' '}
+                    {coordinator?.info?.swap_enabled
+                      ? `${(coordinator?.info?.current_swap_fee_rate ?? 0).toFixed(1)}%`
+                      : t('Disabled')}
+                  </Typography>
+                </Tooltip>
+              </Grid>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Box>
     </Grid>
   );
 };

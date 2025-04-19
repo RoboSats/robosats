@@ -1,5 +1,6 @@
 import uuid
 
+from decimal import Decimal
 from decouple import config
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -27,21 +28,24 @@ class MarketTick(models.Model):
         decimal_places=2,
         default=None,
         null=True,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(Decimal(0))],
     )
     volume = models.DecimalField(
         max_digits=8,
         decimal_places=8,
         default=None,
         null=True,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(Decimal(0))],
     )
     premium = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         default=None,
         null=True,
-        validators=[MinValueValidator(-100), MaxValueValidator(999)],
+        validators=[
+            MinValueValidator(Decimal(-100)),
+            MaxValueValidator(Decimal(999))
+        ],
         blank=True,
     )
     currency = models.ForeignKey("api.Currency", null=True, on_delete=models.SET_NULL)
@@ -52,7 +56,10 @@ class MarketTick(models.Model):
         max_digits=4,
         decimal_places=4,
         default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        validators=[
+            MinValueValidator(Decimal(0)),
+            MaxValueValidator(Decimal(1))
+        ],
     )
 
     def log_a_tick(order):

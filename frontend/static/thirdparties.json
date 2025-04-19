@@ -1,0 +1,16 @@
+{
+  "p2plightning": {
+    "longAlias": "LNP2PBot",
+    "federated": false,
+    "shortAlias": "p2plightning",
+    "nostrHexPubkey": "fcc2a0bd8f5803f6dd8b201a1ddb67a4b6e268371fe7353d41d2b6684af7a61e",
+    "description": "Telegram bot that allows people to trade using lightning network with other people on telegram.",
+    "contact": {
+      "email": null,
+      "telegram": "https://t.me/p2plightning",
+      "simplex": null,
+      "nostr": null,
+      "website": "https://lnp2pbot.com"
+    }
+  }
+}

@@ -47,7 +47,7 @@ Las comisiones de la plataforma (`fee_sats`) asociadas a tu orden se calculan us
   fee_sats = trade_sats * fee_fraction
   ````
 
-donde `fracción_de_tarifa` se combina para una tarifa total compartida de la plataforma de {{site.robosats.total_fee}}%; que se desglosa en {{site.robosats.maker_fee}}% y {{site.robosats.taker_fee}}% para maker y taker, respectivamente. Consulte [Entender > Tarifas](https://learn.robosats.com/docs/fees/) para obtener información adicional sobre las tarifas.
+donde `fracción_de_tarifa` se combina para una tarifa total compartida de la plataforma de {{site.robosats.total_fee}}%; que se desglosa en {{site.robosats.maker_fee}}% y {{site.robosats.taker_fee}}% para maker y taker, respectivamente. Consulte [Entender > Tarifas](https://learn.robosats.org/docs/fees/) para obtener información adicional sobre las tarifas.
 
 RoboSats cobra las tarifas en el proceso de depósito en garantía (`escrow_amount`) y la factura de pago (`payout_amount`) calculando lo siguiente:
 * Para el vendedor:

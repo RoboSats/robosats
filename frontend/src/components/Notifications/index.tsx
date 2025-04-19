@@ -69,7 +69,7 @@ const Notifications = ({
 }: NotificationsProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [message, setMessage] = useState<NotificationMessage>(emptyNotificationMessage);
   const [inFocus, setInFocus] = useState<boolean>(true);
@@ -85,7 +85,7 @@ const Notifications = ({
   const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
   const moveToOrderPage = function (): void {
-    navigate(`/order/${String(garage.getSlot()?.order?.id)}`);
+    navigate(`/order/${String(garage.getSlot()?.activeOrder?.id)}`);
     setShow(false);
   };
 
@@ -106,7 +106,9 @@ const Notifications = ({
 
   const Messages: MessagesProps = {
     bondLocked: {
-      title: t(`${garage.getSlot()?.order?.is_maker === true ? 'Maker' : 'Taker'} bond locked`),
+      title: t(
+        `${garage.getSlot()?.activeOrder?.is_maker === true ? 'Maker' : 'Taker'} bond locked`,
+      ),
       severity: 'info',
       onClick: moveToOrderPage,
       sound: audio.ding,
@@ -228,7 +230,7 @@ const Notifications = ({
   };
 
   const handleStatusChange = function (oldStatus: number | undefined, status: number): void {
-    const order = garage.getSlot()?.order;
+    const order = garage.getSlot()?.activeOrder;
 
     if (order === undefined || order === null) return;
 
@@ -248,7 +250,7 @@ const Notifications = ({
     // 11: 'In dispute'
     // 12: 'Collaboratively cancelled'
     // 13: 'Sending satoshis to buyer'
-    // 14: 'Sucessful trade'
+    // 14: 'Successful trade'
     // 15: 'Failed lightning network routing'
     // 16: 'Wait for dispute resolution'
     // 17: 'Maker lost dispute'
@@ -293,7 +295,7 @@ const Notifications = ({
 
   // Notify on order status change
   useEffect(() => {
-    const order = garage.getSlot()?.order;
+    const order = garage.getSlot()?.activeOrder;
     if (order !== undefined && order !== null) {
       if (order.status !== oldOrderStatus) {
         handleStatusChange(oldOrderStatus, order.status);
@@ -305,7 +307,7 @@ const Notifications = ({
         setOldChatIndex(order.chat_last_index);
       }
     }
-  }, [orderUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   // Notify on rewards change
   useEffect(() => {

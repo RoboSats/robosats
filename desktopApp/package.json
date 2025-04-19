@@ -1,0 +1,48 @@
+{
+  "name": "desktop-app",
+  "version": "0.7.6",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "compile": "./node_modules/.bin/tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package-linux": "npx @electron/packager . Robosats  --platform=linux --arch=x64 --icon=./assets/icon/Robosats.svg --overwrite  --out=release-builds",
+    "package-win": "npx @electron/packager . Robosats  --platform=win32 --arch=ia32 --icon=./assets/icon/Robosats.ico --overwrite   --out=release-builds",
+    "package-mac": "npx @electron/packager . Robosats  --platform=darwin --arch=x64 --icon=./assets/icon/Robosats.icns --overwrite    --out=release-builds"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@electron/packager": "^18.3.2",
+    "electron": "^30.0.3",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1"
+  },
+  "build": {
+    "appId": "com.electron.robosats",
+    "productName": "RobosatsApp",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "NSIS"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  }
+}

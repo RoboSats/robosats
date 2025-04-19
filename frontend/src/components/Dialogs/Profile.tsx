@@ -27,22 +27,20 @@ interface Props {
 
 const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
 
   const slot = garage.getSlot();
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadingCoordinators, setLoadingCoordinators] = useState<number>(
+  const [loadingRobots, setLoadingRobots] = useState<number>(
     Object.values(slot?.robots ?? {}).length,
   );
 
   useEffect(() => {
     setLoading(!garage.getSlot()?.hashId);
-    setLoadingCoordinators(
-      Object.values(slot?.robots ?? {}).filter((robot) => robot.loading).length,
-    );
-  }, [robotUpdatedAt]);
+    setLoadingRobots(Object.values(slot?.robots ?? {}).filter((robot) => robot.loading).length);
+  }, [slotUpdatedAt]);
 
   return (
     <Dialog
@@ -64,7 +62,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <ListItem className='profileNickname'>
             <ListItemText>
               <Typography component='h6' variant='h6'>
-                {garage.getSlot()?.nickname !== undefined && (
+                {!garage.getSlot()?.nickname && (
                   <div style={{ position: 'relative', left: '-7px' }}>
                     <div
                       style={{
@@ -85,7 +83,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
                 )}
               </Typography>
 
-              {loadingCoordinators > 0 ? (
+              {loadingRobots > 0 ? (
                 <>
                   <b>{t('Looking for your robot!')}</b>
                   <LinearProgress />
@@ -111,7 +109,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <b>{t('Coordinators that know your robot:')}</b>
         </Typography>
 
-        {Object.values(federation.coordinators).map((coordinator: Coordinator): JSX.Element => {
+        {federation.getCoordinators().map((coordinator: Coordinator): JSX.Element => {
           const coordinatorRobot = garage.getSlot()?.getRobot(coordinator.shortAlias);
           return (
             <div key={coordinator.shortAlias}>

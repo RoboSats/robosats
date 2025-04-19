@@ -101,7 +101,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
             <QRCode
               bgColor={'rgba(255, 255, 255, 0)'}
               fgColor={settings.lightQRs ? '#000000' : theme.palette.text.primary}
-              value={invoice ?? 'Undefined: BOLT11 invoice not received'}
+              value={invoice?.toUpperCase() ?? 'Undefined: BOLT11 invoice not received'}
               size={theme.typography.fontSize * 21.8}
               onClick={handleClickQR}
             />
