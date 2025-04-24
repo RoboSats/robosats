@@ -1046,9 +1046,6 @@ class ReviewView(APIView):
 
     @extend_schema(**ReviewViewSchema.post)
     def post(self, request):
-        if config("NOSTR_NSEC", cast=str, default="") == "":
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
         serializer = self.serializer_class(data=request.data)
 
         if not serializer.is_valid():
