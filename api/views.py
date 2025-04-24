@@ -1075,7 +1075,7 @@ class ReviewView(APIView):
                     {"bad_request": "Invalid hex pubkey"},
                     status.HTTP_400_BAD_REQUEST,
                 )
-        if request.user.robot.nostr_pubkey is not pubkey:
+        if request.user.robot.nostr_pubkey != pubkey:
             return Response(
                 {"bad_request": "Wrong hex pubkey"},
                 status.HTTP_400_BAD_REQUEST,
