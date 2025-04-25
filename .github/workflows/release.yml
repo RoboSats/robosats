@@ -94,6 +94,7 @@ jobs:
         with:
           body_path: release_notes.md
           generate_release_notes: true
+          draft: true
 
       # Upload app-universal-release APK artifact asset
       - name: 'Download universal APK Artifact'
@@ -166,8 +167,8 @@ jobs:
       - name: 'Download macOS Build Artifact'
         uses: actions/download-artifact@v4
         with:
-          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
 
       - name: 'Upload macOS Build Artifact'
         id: upload-release-mac-zip-asset
@@ -176,15 +177,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
+          asset_path: Robosats-darwin-x64.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           asset_content_type: application/zip
 
       - name: 'Download linux Build Artifact'
         uses: actions/download-artifact@v4
         with:
-          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
           path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
 
       - name: 'Upload linux Build Artifact'
         id: upload-release-linux-zip-asset
@@ -193,15 +194,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
+          asset_path: Robosats-linux-x64.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
           asset_content_type: application/zip
 
       - name: 'Download Windows Build Artifact'
         uses: actions/download-artifact@v4
         with:
-          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
           path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
 
       - name: 'Upload Windows Build Artifact'
         id: upload-release-win-zip-asset
@@ -210,6 +211,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
+          asset_path: Robosats-win32-ia32.zip
           asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
           asset_content_type: application/zip

@@ -58,6 +58,7 @@ export interface Info {
   openUpdateClient: boolean;
   notice_severity: 'none' | 'warning' | 'error' | 'success' | 'info';
   notice_message: string;
+  market_price_apis: string;
   loading: boolean;
 }
 
@@ -138,6 +139,7 @@ export class Coordinator {
     this.testnet = value.testnet;
     this.mainnetNodesPubkeys = value.mainnetNodesPubkeys;
     this.testnetNodesPubkeys = value.testnetNodesPubkeys;
+    this.nostrHexPubkey = value.nostrHexPubkey;
     this.url = '';
     this.basePath = '';
 
@@ -163,6 +165,7 @@ export class Coordinator {
   public testnetNodesPubkeys: string[] | undefined;
   public url: string;
   public basePath: string;
+  public nostrHexPubkey: string;
 
   // These properties are fetched from coordinator API
   public book: Record<string, PublicOrder> = {};

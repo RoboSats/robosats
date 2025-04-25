@@ -36,7 +36,7 @@ const LearnDialog = ({ open, onClose }: Props): JSX.Element => {
           onClick={onClose}
           autoFocus
           component={Link}
-          href='https://learn.robosats.com'
+          href='https://learn.robosats.org'
           target='_blank'
         >
           {t("Let's go!")}

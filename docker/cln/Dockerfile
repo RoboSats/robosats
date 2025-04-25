@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim as builder
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG LIGHTNINGD_VERSION=v24.05
+ARG LIGHTNINGD_VERSION=v24.08
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
         autoconf \
@@ -22,7 +22,7 @@ RUN git clone https://github.com/daywalker90/holdinvoice.git /tmp/holdinvoice
 RUN cd /tmp/holdinvoice \
     && cargo build --release
 
-FROM elementsproject/lightningd:v24.05 as final
+FROM elementsproject/lightningd:v24.08 as final
 
 COPY --from=builder /tmp/holdinvoice/target/release/holdinvoice /tmp/holdinvoice
 COPY config /tmp/config

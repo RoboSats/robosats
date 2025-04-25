@@ -1,4 +1,5 @@
 import { type Event } from 'nostr-tools';
+import { schnorr } from '@noble/curves/secp256k1';
 import { type PublicOrder } from '../models';
 import { fromUnixTime } from 'date-fns';
 import Geohash from 'latlon-geohash';
@@ -104,6 +105,18 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
     publicOrder.maker_hash_id = `${publicOrder.id}${coordinator?.shortAlias}`;
 
   return { dTag: dTag[1], publicOrder };
+};
+
+export const verifyCoordinatorToken: (event: Event) => boolean = (event) => {
+  const d = event.tags.find((t) => t[0] === 'd')?.[1];
+  const orderId = d?.split(':')?.[1];
+  const signature = event.tags.find((t) => t[0] === 'sig')?.[1];
+  const hash = `${event.pubkey}${orderId ?? ''}`;
+  const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
+  if (signature && coordinatorPubKey) {
+    return schnorr.verify(signature, hash, coordinatorPubKey);
+  }
+  return false;
 };
 
 export default eventToPublicOrder;

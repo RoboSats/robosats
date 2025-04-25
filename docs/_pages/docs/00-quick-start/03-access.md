@@ -15,9 +15,8 @@ src: "_pages/docs/00-quick-start/03-access.md"
 A safe and very private way to access RoboSats federated client is through the Onion address. You need [TOR browser](/docs/tor/) and access via the link:
 
 >
-[<b>robodex</b>arjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion](http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion/)
- 
-You can also open the shortcut [dex.robosats.com](https://dex.robosats.com) in Tor Browser and get instantly redirected to the Onion site.
+[<b>RoboSats</b>y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
+
 
 **Private:** Your connection is encrypted end-to-end and relaid by several layers of nodes, thus making tracking harder.
 {: .notice--primary}
@@ -27,7 +26,7 @@ You can also open the shortcut [dex.robosats.com](https://dex.robosats.com) in T
 
 You can access the Experimental coordinator through this Onion address. You need [TOR browser](/docs/tor/) and access via the link:
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
+> [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> Privately with TOR-enabled Android App
 
@@ -45,7 +44,7 @@ I2P is another safe and private way to access RoboSats. You need [I2P browser](h
 
 There is an unsafe way to view the RoboSats order book without TOR that relies on third party tor2web services. With this URL, you can access RoboSats from any browser, but using this URL is **strongly ill-advised!**
 
-> [unsafe.robosats.com](https://unsafe.robosats.com)
+> [unsafe.robosats.org](https://unsafe.robosats.org)
 
 **Unsafe:** Your privacy can be compromised if you use the unsafe clearnet URL in a regular web browser.
 {: .notice--secondary}
@@ -54,40 +53,22 @@ If you use the clearnet URL, you should assume you are being spied on. However, 
 
 ## <i class="fa-solid fa-person-dots-from-line"></i> All-in-One URL
 
-To keep it simple, the URL "robosats.com" has been created to serve as an easy-to-remember and all-in-one link for browsers. If you are using TOR or I2P browser, then you are directed to the Onion or I2P site, respectively. Otherwise, you are directed to the unsafe clearnet site.
+To keep it simple, the URL "robosats.org" has been created to serve as an easy-to-remember and all-in-one link for browsers. If you are using TOR or I2P browser, then you are directed to the Onion or I2P site, respectively. Otherwise, you are directed to the unsafe clearnet site.
 
-> [<span style="font-size:larger;">robosats.com</span>](https://robosats.com)
+> [<span style="font-size:larger;">robosats.org</span>](https://robosats.org)
 
 ## Others
 
 ### Testnet
 
-You can practice and test all of the functionalities in RoboSats without risk of losing funds by using [testnet bitcoin](https://en.bitcoin.it/wiki/Testnet). All you need is a testnet Lightning wallet and to access the testnet platform via the link:
+You can practice and test all of the functionalities in RoboSats without risk of losing funds by using [testnet bitcoin](https://en.bitcoin.it/wiki/Testnet). All you need is a testnet Lightning wallet and to access to the platform and change to Testnet on the *Settings* tab
 
-> [<b>robotest</b>agw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion/)
-
-Or, unsafely access the testnet clearnet bridge via the link:
-
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com)
-
-### Onion Mirrors
-
-It is possible to access the **testnet** platform on the port 8001 of the mainnet Onion:
-
-> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion:8001)
-
-It is also possible to access the **mainnet** platform on the port 8001 of the testnet Onion:
-
-> [robotestagw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion:8001](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion:8001)
 
 ### Clearnet Mirrors
 
 There are several tor2web services that serve as mirrors in case one of them is unavailable:
 
-> [unsafe.robosats.com](https://unsafe.robosats.com/) <br/>
-> [unsafe2.robosats.com](https://unsafe2.robosats.com/) <br/>
-> [unsafe3.robosats.com](https://unsafe3.robosats.com/) <br/>
-> [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
-> [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
+> [unsafe.robosats.org](https://unsafe.robosats.org/) <br/>
+> [unsafe.testnet.robosats.org](http://unsafe.testnet.robosats.org/)
 
 {% include improve %}

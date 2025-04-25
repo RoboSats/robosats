@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from api.management.commands.clean_orders import Command as CleanOrders
 from api.management.commands.follow_invoices import Command as FollowInvoices
-from api.models import Order
+from api.models import Order, TakeOrder
 from api.tasks import follow_send_payment, send_notification
 from tests.utils.node import (
     add_invoice,
@@ -50,12 +50,14 @@ class Trade:
         take_amount=80,
         maker_index=1,
         taker_index=2,
+        third_index=3,
     ):
         self.client = client
         self.maker_form = maker_form
         self.take_amount = take_amount
         self.maker_index = maker_index
         self.taker_index = taker_index
+        self.third_index = third_index
 
         self.make_order(self.maker_form, maker_index)
 
@@ -111,12 +113,24 @@ class Trade:
         headers = self.get_robot_auth(robot_index, first_encounter)
         self.response = self.client.get(path + params, **headers)
 
+    def get_review(self, robot_index=1):
+        """
+        Generates coordinator's review signature
+        """
+        path = reverse("review")
+        headers = self.get_robot_auth(robot_index)
+        nostr_pubkey = read_file(f"tests/robots/{robot_index}/nostr_pubkey")
+        body = {"pubkey": nostr_pubkey}
+        self.response = self.client.post(path, body, **headers)
+
     @patch("api.tasks.send_notification.delay", send_notification)
-    def cancel_order(self, robot_index=1):
+    def cancel_order(self, robot_index=1, cancel_status=None):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(robot_index)
         body = {"action": "cancel"}
+        if cancel_status is not None:
+            body.update({"cancel_status": cancel_status})
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
@@ -179,6 +193,14 @@ class Trade:
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
+    def take_order_third(self):
+        path = reverse("order")
+        params = f"?order_id={self.order_id}"
+        headers = self.get_robot_auth(self.third_index, first_encounter=True)
+        body = {"action": "take", "amount": self.take_amount}
+        self.response = self.client.post(path + params, body, **headers)
+
+    @patch("api.tasks.send_notification.delay", send_notification)
     def lock_taker_bond(self):
         # Takers's first order fetch. Should trigger maker bond hold invoice generation.
         self.get_order(self.taker_index)
@@ -207,6 +229,11 @@ class Trade:
 
         # Get order
         self.get_order()
+
+    @patch("api.tasks.send_notification.delay", send_notification)
+    def pay_invoice(self, invoice):
+        # Lock the invoice from the robot's node
+        pay_invoice("robot", invoice)
 
     @patch("api.tasks.send_notification.delay", send_notification)
     def submit_payout_address(self, robot_index=1):
@@ -271,6 +298,11 @@ class Trade:
         order = Order.objects.get(id=self.order_id)
         order.expires_at = datetime.now()
         order.save()
+
+        take_order_queryset = TakeOrder.objects.filter(order=order)
+        for idx, take_order in enumerate(take_order_queryset):
+            take_order.expires_at = datetime.now()
+            take_order.save()
 
     @patch("api.tasks.send_notification.delay", send_notification)
     def change_order_status(self, status):

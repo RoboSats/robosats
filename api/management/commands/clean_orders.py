@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from api.logics import Logics
-from api.models import Order
+from api.models import Order, TakeOrder
 
 
 class Command(BaseCommand):
@@ -44,6 +44,13 @@ class Command(BaseCommand):
                 if Logics.order_expires(order):  # Order send to expire here
                     debug["expired_orders"].append({idx: context})
 
+                    # expire all related take orders
+                    take_orders_queryset = TakeOrder.objects.filter(
+                        order=order, expires_at__gt=timezone.now()
+                    )
+                    for idx, take_order in enumerate(take_orders_queryset):
+                        Logics.take_order_expires(take_order)
+
             # It should not happen, but if it cannot locate the hold invoice
             # it probably was cancelled by another thread, make it expire anyway.
             except Exception as e:
@@ -56,6 +63,33 @@ class Command(BaseCommand):
                     debug["expired_orders"].append({idx: context})
 
         if debug["num_expired_orders"] > 0:
+            self.stdout.write(str(timezone.now()))
+            self.stdout.write(str(debug))
+
+        take_orders_queryset = TakeOrder.objects.filter(expires_at__lt=timezone.now())
+        debug["num_expired_take_orders"] = len(take_orders_queryset)
+        debug["expired_take_orders"] = []
+        debug["failed_take_order_expiry"] = []
+        debug["reason_take_failure"] = []
+
+        for idx, take_order in enumerate(take_orders_queryset):
+            context = str(take_order) + " was expired"
+            try:
+                Logics.take_order_expires(take_order)
+                take_order.delete()
+                debug["expired_take_orders"].append({idx: context})
+
+            # It should not happen, but if it cannot locate the hold invoice
+            # it probably was cancelled by another thread, make it expire anyway.
+            except Exception as e:
+                debug["failed_take_order_expiry"].append({idx: context})
+                debug["reason_take_failure"].append({idx: str(e)})
+
+                if "unable to locate invoice" in str(e):
+                    self.stdout.write(str(e))
+                    debug["expired_take_orders"].append({idx: context})
+
+        if debug["num_expired_take_orders"] > 0:
             self.stdout.write(str(timezone.now()))
             self.stdout.write(str(debug))
 

@@ -42,6 +42,9 @@ class Robot(models.Model):
     telegram_lang_code = models.CharField(max_length=10, null=True, blank=True)
     telegram_welcomed = models.BooleanField(default=False, null=False)
 
+    # nostr
+    nostr_pubkey = models.CharField(max_length=64, null=True, blank=True)
+
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards

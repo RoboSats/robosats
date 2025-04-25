@@ -116,7 +116,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "RoboSats REST API",
     "DESCRIPTION": textwrap.dedent(
         """
-        REST API Documentation for [RoboSats](https://learn.robosats.com) - A Simple and Private LN P2P Exchange
+        REST API Documentation for [RoboSats](https://learn.robosats.org) - A Simple and Private LN P2P Exchange
 
         <p style='background-color:#fff0f0;padding:16px;border-radius:6px;border:2px solid #ffd3d3'>
         <span style='color:#f31f1f;font-weight:bold'>Note:</span>
@@ -143,6 +143,9 @@ SPECTACULAR_SETTINGS = {
         }
     },
     "REDOC_DIST": "SIDECAR",
+    "ENUM_NAME_OVERRIDES": {
+        "StatusEnum": "api.models.order.Order.Status",
+    }
 }
 
 

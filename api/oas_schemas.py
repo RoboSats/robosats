@@ -9,6 +9,7 @@ from api.serializers import (
     ListOrderSerializer,
     OrderDetailSerializer,
     StealthSerializer,
+    ReviewSerializer,
 )
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
@@ -244,6 +245,10 @@ class OrderViewSchema:
                 - `15` - Failed lightning network routing
                 - `17` - Maker lost dispute
                 - `18` - Taker lost dispute
+
+                The client can use `cancel_status` to cancel the order only
+                if it is in the specified status. The server will
+                return an error without cancelling the trade otherwise.
 
                 Note that there are penalties involved for cancelling a order
                 mid-trade so use this action carefully:
@@ -771,6 +776,25 @@ class StealthViewSchema:
         "description": "Update stealth invoice option for the user",
         "responses": {
             200: StealthSerializer,
+            400: {
+                "type": "object",
+                "properties": {
+                    "bad_request": {
+                        "type": "string",
+                        "description": "Reason for the failure",
+                    },
+                },
+            },
+        },
+    }
+
+
+class ReviewViewSchema:
+    post = {
+        "summary": "Generates a review token",
+        "description": "Generates the token necesary for reviews of robot's latest order",
+        "responses": {
+            200: ReviewSerializer,
             400: {
                 "type": "object",
                 "properties": {

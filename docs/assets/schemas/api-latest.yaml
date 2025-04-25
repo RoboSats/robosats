@@ -1,14 +1,14 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.6.3
+  version: 0.7.6
   x-logo:
     url: https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
     altText: RoboSats logo
   description: |2+
 
-    REST API Documentation for [RoboSats](https://learn.robosats.com) - A Simple and Private LN P2P Exchange
+    REST API Documentation for [RoboSats](https://learn.robosats.org) - A Simple and Private LN P2P Exchange
 
     <p style='background-color:#fff0f0;padding:16px;border-radius:6px;border:2px solid #ffd3d3'>
     <span style='color:#f31f1f;font-weight:bold'>Note:</span>
@@ -493,6 +493,10 @@ paths:
             - `17` - Maker lost dispute
             - `18` - Taker lost dispute
 
+            The client can use `cancel_status` to cancel the order only
+            if it is in the specified status. The server will
+            return an error without cancelling the trade otherwise.
+
             Note that there are penalties involved for cancelling a order
             mid-trade so use this action carefully:
 
@@ -651,6 +655,44 @@ paths:
                       premium: 3.5
                       timestamp: '2022-09-13T14:32:40.591774Z'
                   summary: Truncated example. Real response contains all the currencies
+          description: ''
+  /api/review/:
+    post:
+      operationId: review_create
+      description: Generates the token necesary for reviews of robot's latest order
+      summary: Generates a review token
+      tags:
+      - review
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bad_request:
+                    type: string
+                    description: Reason for the failure
           description: ''
   /api/reward/:
     post:
@@ -1065,6 +1107,8 @@ components:
           $ref: '#/components/schemas/Version'
         notice_severity:
           $ref: '#/components/schemas/NoticeSeverityEnum'
+        market_price_apis:
+          type: string
         notice_message:
           type: string
       required:
@@ -1080,6 +1124,7 @@ components:
       - lifetime_volume
       - lnd_version
       - maker_fee
+      - market_price_apis
       - max_order_size
       - max_swap
       - min_order_size
@@ -1125,7 +1170,6 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/StatusEnum'
-          default: 0
           minimum: 0
           maximum: 32767
         created_at:
@@ -1149,7 +1193,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1162,17 +1205,14 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1188,12 +1228,10 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1260,7 +1298,6 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1270,17 +1307,14 @@ components:
           type: integer
           maximum: 86400
           minimum: 597.6
-          default: 86399
         escrow_duration:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1320,7 +1354,6 @@ components:
         status:
           allOf:
           - $ref: '#/components/schemas/StatusEnum'
-          default: 0
           minimum: 0
           maximum: 32767
         created_at:
@@ -1344,7 +1377,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1357,11 +1389,9 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           description: Premium over the CEX price set by the maker
@@ -1387,7 +1417,6 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         total_secs_exp:
           type: integer
           description: Duration of time (in seconds) to expire, according to the current
@@ -1559,12 +1588,10 @@ components:
           type: integer
           maximum: 86400
           minimum: 597.6
-          default: 86399
         bond_size:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         trade_fee_percent:
           type: integer
           description: The fee for the trade (fees differ for maker and taker)
@@ -1646,7 +1673,6 @@ components:
           nullable: true
         has_range:
           type: boolean
-          default: false
         min_amount:
           type: string
           format: decimal
@@ -1659,17 +1685,14 @@ components:
           nullable: true
         payment_method:
           type: string
-          default: not specified
           maxLength: 70
         is_explicit:
           type: boolean
-          default: false
         premium:
           type: string
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           nullable: true
-          default: '0.00'
         satoshis:
           type: integer
           maximum: 5000000
@@ -1693,7 +1716,6 @@ components:
           type: integer
           maximum: 28800
           minimum: 1800
-          default: 10799
         satoshis_now:
           type: integer
           description: The amount of sats to be traded at the present moment (not
@@ -1702,7 +1724,6 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
-          default: '3.00'
         latitude:
           type: string
           format: decimal
@@ -1796,6 +1817,14 @@ components:
         * `3` - 3
         * `4` - 4
         * `5` - 5
+    Review:
+      type: object
+      properties:
+        pubkey:
+          type: string
+          description: Robot's nostr hex pubkey
+      required:
+      - pubkey
     StatusEnum:
       enum:
       - 0
@@ -1939,7 +1968,6 @@ components:
         fee:
           type: string
           format: decimal
-          default: '0.0000'
     TypeEnum:
       enum:
       - 0
@@ -1996,6 +2024,34 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,3})?$
           nullable: true
+        cancel_status:
+          nullable: true
+          description: |-
+            Status the order should have for it to be cancelled.
+
+            * `0` - Waiting for maker bond
+            * `1` - Public
+            * `2` - Paused
+            * `3` - Waiting for taker bond
+            * `4` - Cancelled
+            * `5` - Expired
+            * `6` - Waiting for trade collateral and buyer invoice
+            * `7` - Waiting only for seller trade collateral
+            * `8` - Waiting only for buyer invoice
+            * `9` - Sending fiat - In chatroom
+            * `10` - Fiat sent - In chatroom
+            * `11` - In dispute
+            * `12` - Collaboratively cancelled
+            * `13` - Sending satoshis to buyer
+            * `14` - Successful trade
+            * `15` - Failed lightning network routing
+            * `16` - Wait for dispute resolution
+            * `17` - Maker lost dispute
+            * `18` - Taker lost dispute
+          oneOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
       required:
       - action
     Version:

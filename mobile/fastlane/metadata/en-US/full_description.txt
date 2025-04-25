@@ -7,6 +7,6 @@
 <li>Lightning fast: the average sovereign trade finishes in ~ 8 minutes. Faster than a single block confirmation!</li>
 <li>Fully collateralized escrow: your peer is always committed and cannot run away with the funds.</li>
 <li>Strong incentives system: attempts of cheating are penalized with the slashing of the Sats in the fidelity bond.</li>
-<li>Guides and video tutorials available at https://learn.robosats.com/watch/en</li>
+<li>Guides and video tutorials available at https://learn.robosats.org/watch/en</li>
 </ul>
 <p>You can join other cool Robots and get community support at <a href="https://t.me/robosats">our Telegram group</a>.</p>

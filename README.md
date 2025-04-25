@@ -1,7 +1,7 @@
 ## RoboSats - Buy and sell Satoshis Privately
 [![Coordinator CI](https://github.com/RoboSats/robosats/actions/workflows/coordinator-image.yml/badge.svg?branch=main)](https://github.com/RoboSats/robosats/actions/workflows/coordinator-image.yml)
 [![Frontend Build](https://github.com/RoboSats/robosats/actions/workflows/frontend-build.yml/badge.svg?branch=main)](https://github.com/RoboSats/robosats/actions/workflows/frontend-build.yml)
-[![release](https://img.shields.io/badge/release-v0.1.0%20MVP-red)](https://github.com/RoboSats/robosats/releases)
+[![release](https://img.shields.io/github/v/release/RoboSats/robosats)](https://github.com/RoboSats/robosats/releases)
 [![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/RoboSats/robosats/blob/main/LICENSE)
 [![Telegram](https://img.shields.io/badge/chat-telegram-brightgreen)](https://t.me/robosats)
 
@@ -12,9 +12,13 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
   <img width="75%" src="https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png">
 </div>
 
+## Learn
+
+Check our tutorials and many more at https://learn.robosats.org
+
 ## Try it out!
-- **TOR URL:** [**RoboDex**arjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion](http://robodexarjwtfryec556cjdz3dfa7u47saek6lkftnkgshvgg2kcumqd.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
-- Clearnet URL: [dex.robosats.com](https://unsafe.robosats.com) (not recommended!)
+- **TOR URL:** [**RoboSats**y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://RoboSatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
+- Clearnet URL: [unsafe.robosats.org](https://unsafe.robosats.org) (not recommended!)
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best privacy. The Clearnet URL redirects to a third party Tor2web service. Your privacy cannot be guaranteed to be respected. Use clearnet only to check around the app, never use for trading!*
 
@@ -24,16 +28,20 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-b93f-250f80bc5bca.mp4
 
 ### Written guides
-- **[English](https://learn.robosats.com/read/en)**
-- **[Español](https://learn.robosats.com/read/es)**
-- **[Deutsch](https://learn.robosats.com/read/de)**
+- **[English](https://learn.robosats.org/read/en)**
+- **[Español](https://learn.robosats.org/read/es)**
+- **[Deutsch](https://learn.robosats.org/read/de)**
+- **[Français](https://learn.robosats.org/read/fr)**
+- **[Русский](https://learn.robosats.org/read/ru)**
 
 ### Video guides
-- **[English](https://learn.robosats.com/watch/en/)**
-- **[Español](https://learn.robosats.com/watch/es/)**
-- **[Deutsch](https://learn.robosats.com/watch/de)**
-- **[Português](https://learn.robosats.com/watch/pt)**
-- **[Polski](https://learn.robosats.com/watch/pl)**
+- **[English](https://learn.robosats.org/watch/en/)**
+- **[Español](https://learn.robosats.org/watch/es/)**
+- **[Deutsch](https://learn.robosats.org/watch/de)**
+- **[Português](https://learn.robosats.org/watch/pt)**
+- **[Polski](https://learn.robosats.org/watch/pl)**
+- **[Français](https://learn.robosats.org/watch/fr)**
+- **[Русский](https://learn.robosats.org/watch/ru)**
 
 ## How it works
 
@@ -51,15 +59,15 @@ Alice wants to buy satoshis privately:
 11. The bonds would be charged (lost) in case of unilateral cancellation or cheating (lost dispute).
 
 ## Contribute to the Robotic Satoshis Open Source Project
-Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to find how you can make RoboSats great.
+Check out our [Contribution Guide](https://learn.robosats.org/contribute/) to find how you can make RoboSats great.
 
 RoboSats is a monorepo, arguably a messy one at the moment.
  - The top level is a Django application (the coordinator backend) with apps `/api`, `/control`, and `/chat`. Django settings are in `/robosats` and `/tests` has integration tests for the RoboSats backend.
  - The `/frontend` directory contains the ReactJS client.
  - The `/nodeapp` directory contains the docker orchestration and utilities for the self-hosted application (Umbrel, StartOS, etc)
  - The `/mobile` directory contains our React Native app (a wrapper around our ReactJS app in `/frontend`)
- - The `/docs` directory has the learn.robosats.com static Jekyll site markdown docs.
- - The `/web` directory is a light wrapper around our client app `/frontend` intended to host a RoboSats dex client to be used for the public. We use this one in dex.robosats.com
+ - The `/docs` directory has the learn.robosats.org static Jekyll site markdown docs.
+ - The `/web` directory is a light wrapper around our client app `/frontend` intended to host a RoboSats dex client to be used for the public. We use this one in unsafe.robosats.org
 
 You can run the whole stack for local development following the instructions in [setup.md](/setup.md)
 

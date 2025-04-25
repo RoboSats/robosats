@@ -15,7 +15,7 @@ Got artistic talent? Consider drawing fan art and promoting RoboSats through swe
 
 ## Ideas
 
-There really is no limit here! If you want to brainstorm, feel free to message the [public SimpleX support groups](https://learn.robosats.com/contribute/code/#communication-channels). The coordinator for RoboSats art is [@Red_Purdy](https://twitter.com/Red_Purdy) and can help provide ideas!
+There really is no limit here! If you want to brainstorm, feel free to message the [public SimpleX support groups](https://learn.robosats.org/contribute/code/#communication-channels). The coordinator for RoboSats art is [@Red_Purdy](https://twitter.com/Red_Purdy) and can help provide ideas!
 
 One example of using art to create community engagement includes [Telegram stickers](https://t.me/addstickers/Robosats1). The linked stickers features the quasi mascot Robotoshi.
 

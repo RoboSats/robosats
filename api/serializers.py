@@ -61,6 +61,7 @@ class InfoSerializer(serializers.Serializer):
             ("info", "info"),
         ]
     )
+    market_price_apis = serializers.CharField()
     notice_message = serializers.CharField()
 
 
@@ -641,6 +642,13 @@ class UpdateOrderSerializer(serializers.Serializer):
     mining_fee_rate = serializers.DecimalField(
         max_digits=6, decimal_places=3, allow_null=True, required=False, default=None
     )
+    cancel_status = serializers.ChoiceField(
+        choices=Order.Status.choices,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="Status the order should have for it to be cancelled.",
+    )
 
 
 class ClaimRewardSerializer(serializers.Serializer):
@@ -669,6 +677,15 @@ class TickSerializer(serializers.ModelSerializer):
             "fee",
         )
         depth = 0
+
+
+class ReviewSerializer(serializers.Serializer):
+    pubkey = serializers.CharField(
+        help_text="Robot's nostr hex pubkey",
+        allow_null=False,
+        allow_blank=False,
+        required=True,
+    )
 
 
 class StealthSerializer(serializers.Serializer):

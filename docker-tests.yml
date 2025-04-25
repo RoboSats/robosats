@@ -82,7 +82,7 @@ services:
     network_mode: service:bitcoind
 
   coordinator-CLN:
-    image: elementsproject/lightningd:${CLN_VERSION:-v24.05}
+    image: elementsproject/lightningd:${CLN_VERSION:-v24.08}
     restart: always
     container_name: test-coordinator-CLN
     environment:

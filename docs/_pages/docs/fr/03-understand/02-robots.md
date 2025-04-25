@@ -46,7 +46,7 @@ Un jeton est automatiquement généré pour vous à chaque fois que vous accéde
 
 Sous le capot, la création d'un jeton dans la page d'accueil de RoboSats est le processus de génération et de cryptage de votre clé privée PGP avec votre jeton du côté client de l'application. L'utilisateur demande au nœud RoboSats un avatar et un surnom générés à partir de votre jeton chiffré et vous renvoie l'identité du robot correspondant. Voir le graphique ci-dessous :
 
-![RoboSats Identity Generation Pipeline](https://learn.robosats.com/assets/images/private/usergen-pipeline.png)
+![RoboSats Identity Generation Pipeline](https://learn.robosats.org/assets/images/private/usergen-pipeline.png)
 
 ## **Communiquer avec vos robots partenaires**
 

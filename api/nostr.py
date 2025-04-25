@@ -2,8 +2,9 @@ import pygeohash
 import hashlib
 import uuid
 
+from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag
+from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag, PublicKey
 from api.models import Order
 from decouple import config
 
@@ -25,7 +26,7 @@ class Nostr:
         client = Client(signer)
 
         # Add relays and connect
-        await client.add_relays(["ws://localhost:7777"])
+        await client.add_relay("ws://localhost:7777")
         await client.connect()
 
         robot_name = await self.get_robot_name(order)
@@ -112,3 +113,24 @@ class Nostr:
             return ["onchain", "lightning"]
         else:
             return ["lightning"]
+            return False
+
+    def is_valid_public_key(public_key_hex):
+        try:
+            PublicKey.from_hex(public_key_hex)
+            return True
+        except Exception:
+            return False
+
+    def sign_message(text: str) -> str:
+        try:
+            keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+            secret_key_hex = keys.secret_key().to_hex()
+            private_key = PrivateKey(bytes.fromhex(secret_key_hex))
+            signature = private_key.schnorr_sign(
+                text.encode("utf-8"), bip340tag=None, raw=True
+            )
+
+            return signature.hex()
+        except Exception:
+            return ""
