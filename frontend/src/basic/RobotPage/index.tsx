@@ -38,7 +38,7 @@ const RobotPage = (): JSX.Element => {
   useEffect(() => {
     const token = urlToken ?? garage.currentSlot;
     if (token !== undefined && token !== null && page === 'garage') {
-      setInputToken(token);
+      setInputToken(token.replace(/\s+/g, ''));
       if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
         setView('profile');
       }

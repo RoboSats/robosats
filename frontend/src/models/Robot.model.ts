@@ -35,11 +35,9 @@ class Robot {
     const tokenSHA256 = this.tokenSHA256 ?? '';
     const encPrivKey = this.encPrivKey ?? '';
     const pubKey = this.pubKey ?? '';
-    const nostrPubKey = this.nostrPubKey ?? '';
 
     return {
       tokenSHA256,
-      nostrPubKey,
       keys: {
         pubKey: pubKey.split('\n').join('\\'),
         encPrivKey: encPrivKey.split('\n').join('\\'),
@@ -124,6 +122,31 @@ class Robot {
       });
 
     this.stealthInvoices = wantsStealth;
+  };
+
+  loadReviewToken = (
+    federation: Federation,
+    onDataLoad: (token: string) => void = () => {},
+  ): void => {
+    if (!federation) return;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    const body = {
+      pubkey: this.nostrPubKey,
+    };
+
+    apiClient
+      .post(coordinator.url, `${coordinator.basePath}/api/review/`, body, {
+        tokenSHA256: this.tokenSHA256,
+      })
+      .then((data) => {
+        if (data) {
+          onDataLoad(data.token);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 }
 

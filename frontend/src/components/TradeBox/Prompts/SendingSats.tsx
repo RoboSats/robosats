@@ -22,6 +22,14 @@ export const SendingSatsPrompt = (): JSX.Element => {
         </Typography>
       </Grid>
       <Grid item>
+        <Typography variant='body2'>
+          <b>{t('Taking too long?')}</b>{' '}
+          {t(
+            'Lightning payments are usually instantaneous, but sometimes a node in the route may be down, which can cause your payout to take up to 24 hours to arrive in your wallet.',
+          )}
+        </Typography>
+      </Grid>
+      <Grid item>
         <CircularProgress />
       </Grid>
     </Grid>

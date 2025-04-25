@@ -17,7 +17,6 @@ class ApiNativeClient implements ApiClient {
         ...headers,
         ...{
           Authorization: `Token ${auth.tokenSHA256}`,
-          Nostr: auth.nostrPubKey,
         },
       };
     } else if (auth?.keys != null) {
@@ -25,7 +24,6 @@ class ApiNativeClient implements ApiClient {
         ...headers,
         ...{
           Authorization: `Token ${auth.tokenSHA256} | Public ${auth.keys.pubKey} | Private ${auth.keys.encPrivKey}`,
-          Nostr: auth.nostrPubKey,
         },
       };
     }

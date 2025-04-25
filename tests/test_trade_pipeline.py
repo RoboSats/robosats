@@ -437,7 +437,7 @@ class TradeTest(BaseAPITestCase):
         self.assertAlmostEqual(float(data["amount"]), 80)
         self.assertFalse(data["is_maker"])
         self.assertFalse(data["is_buyer"])
-        self.assertFalse(data["is_seller"])
+        self.assertTrue(data["is_seller"])
         self.assertTrue(data["is_taker"])
         self.assertTrue(data["is_participant"])
         self.assertTrue(data["maker_locked"])
@@ -506,7 +506,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["maker_status"], "Active")
         self.assertFalse(data["is_maker"])
         self.assertFalse(data["is_buyer"])
-        self.assertFalse(data["is_seller"])
+        self.assertTrue(data["is_seller"])
         self.assertTrue(data["is_taker"])
         self.assertTrue(data["is_participant"])
         self.assertTrue(data["maker_locked"])
@@ -544,7 +544,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["maker_status"], "Active")
         self.assertFalse(data["is_maker"])
         self.assertFalse(data["is_buyer"])
-        self.assertFalse(data["is_seller"])
+        self.assertTrue(data["is_seller"])
         self.assertTrue(data["is_taker"])
         self.assertTrue(data["is_participant"])
         self.assertTrue(data["maker_locked"])
@@ -965,6 +965,46 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
+    def test_review_order(self):
+        """
+        Tests a trade review token generation after the trade ends
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+
+        trade.get_review()
+        self.assertEqual(trade.response.status_code, 400)
+
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+
+        trade.get_review(trade.maker_index)
+        self.assertEqual(trade.response.status_code, 400)
+        trade.get_review(trade.taker_index)
+        self.assertEqual(trade.response.status_code, 400)
+
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_address(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+        trade.confirm_fiat(trade.taker_index)
+
+        trade.process_payouts(mine_a_block=True)
+
+        trade.get_review(trade.maker_index)
+        self.assertEqual(trade.response.status_code, 200)
+        nostr_pubkey = read_file(f"tests/robots/{trade.maker_index}/nostr_pubkey")
+        data = trade.response.json()
+        self.assertEqual(data["pubkey"], nostr_pubkey)
+        self.assertIsInstance(data["token"], str)
+
+        trade.get_review(trade.taker_index)
+        self.assertEqual(trade.response.status_code, 200)
+        nostr_pubkey = read_file(f"tests/robots/{trade.taker_index}/nostr_pubkey")
+        data = trade.response.json()
+        self.assertEqual(data["pubkey"], nostr_pubkey)
+        self.assertIsInstance(data["token"], str)
+
     def test_cancel_public_order(self):
         """
         Tests the cancellation of a public order
@@ -992,6 +1032,9 @@ class TradeTest(BaseAPITestCase):
             notifications_data[0]["title"],
             f"❌ Hey {maker_nick}, you have cancelled your public order with ID {trade.order_id}.",
         )
+
+        trade.get_review()
+        self.assertEqual(trade.response.status_code, 400)
 
     def test_cancel_public_order_by_taker(self):
         """
@@ -1121,7 +1164,8 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(trade.response)
 
         self.assertEqual(
-            trade.response.json()["bad_request"], "This order has been cancelled by the maker"
+            trade.response.json()["bad_request"],
+            "This order has been cancelled by the maker",
         )
 
     def test_cancel_order_different_cancel_status(self):
@@ -1147,7 +1191,7 @@ class TradeTest(BaseAPITestCase):
 
         self.assertEqual(
             trade.response.json()["bad_request"],
-            f"Current order status is {Order.Status.PAU}, not {Order.Status.PUB}."
+            f"Current order status is {Order.Status.PAU}, not {Order.Status.PUB}.",
         )
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
@@ -1277,6 +1321,9 @@ class TradeTest(BaseAPITestCase):
             notifications_data[0]["title"],
             f"😪 Hey {data['maker_nick']}, your order with ID {str(trade.order_id)} has expired without a taker.",
         )
+
+        trade.get_review(trade.maker_index)
+        self.assertEqual(trade.response.status_code, 400)
 
     def test_taken_order_expires(self):
         """
@@ -1707,6 +1754,11 @@ class TradeTest(BaseAPITestCase):
             notifications_data[0]["title"],
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
+
+        trade.get_review(trade.maker_index)
+        self.assertEqual(trade.response.status_code, 400)
+        trade.get_review(trade.taker_index)
+        self.assertEqual(trade.response.status_code, 400)
 
     def test_ticks(self):
         """
