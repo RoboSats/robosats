@@ -9,6 +9,7 @@ from api.serializers import (
     ListOrderSerializer,
     OrderDetailSerializer,
     StealthSerializer,
+    ReviewSerializer,
 )
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
@@ -775,6 +776,25 @@ class StealthViewSchema:
         "description": "Update stealth invoice option for the user",
         "responses": {
             200: StealthSerializer,
+            400: {
+                "type": "object",
+                "properties": {
+                    "bad_request": {
+                        "type": "string",
+                        "description": "Reason for the failure",
+                    },
+                },
+            },
+        },
+    }
+
+
+class ReviewViewSchema:
+    post = {
+        "summary": "Generates a review token",
+        "description": "Generates the token necesary for reviews of robot's latest order",
+        "responses": {
+            200: ReviewSerializer,
             400: {
                 "type": "object",
                 "properties": {

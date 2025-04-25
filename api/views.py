@@ -37,6 +37,7 @@ from api.oas_schemas import (
     RewardViewSchema,
     RobotViewSchema,
     StealthViewSchema,
+    ReviewViewSchema,
     TickViewSchema,
     NotificationSchema,
 )
@@ -49,6 +50,7 @@ from api.serializers import (
     PriceSerializer,
     StealthSerializer,
     TickSerializer,
+    ReviewSerializer,
     UpdateOrderSerializer,
     ListNotificationSerializer,
 )
@@ -60,6 +62,7 @@ from api.utils import (
     get_robosats_commit,
     verify_signed_message,
 )
+from api.nostr import Nostr
 from chat.models import Message
 from control.models import AccountingDay, BalanceLog
 
@@ -1033,3 +1036,51 @@ class StealthView(APIView):
         request.user.robot.save(update_fields=["wants_stealth"])
 
         return Response({"wantsStealth": stealth})
+
+
+class ReviewView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = ReviewSerializer
+
+    @extend_schema(**ReviewViewSchema.post)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        pubkey = serializer.data.get("pubkey")
+        last_order = Order.objects.filter(
+            Q(maker=request.user) | Q(taker=request.user)
+        ).last()
+
+        if not last_order or last_order.status not in [
+            Order.Status.SUC,
+            Order.Status.MLD,
+            Order.Status.TLD,
+        ]:
+            return Response(
+                {"bad_request": "Robot has no finished order"},
+                status.HTTP_400_BAD_REQUEST,
+            )
+        if not request.user.robot.nostr_pubkey:
+            verified = Nostr.is_valid_public_key(pubkey)
+            if verified:
+                request.user.robot.nostr_pubkey = pubkey
+                request.user.robot.save(update_fields=["nostr_pubkey"])
+            else:
+                return Response(
+                    {"bad_request": "Invalid hex pubkey"},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+        if request.user.robot.nostr_pubkey != pubkey:
+            return Response(
+                {"bad_request": "Wrong hex pubkey"},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        token = Nostr.sign_message(f"{pubkey}{last_order.id}")
+
+        return Response({"pubkey": pubkey, "token": token}, status.HTTP_200_OK)

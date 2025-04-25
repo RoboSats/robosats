@@ -679,5 +679,14 @@ class TickSerializer(serializers.ModelSerializer):
         depth = 0
 
 
+class ReviewSerializer(serializers.Serializer):
+    pubkey = serializers.CharField(
+        help_text="Robot's nostr hex pubkey",
+        allow_null=False,
+        allow_blank=False,
+        required=True,
+    )
+
+
 class StealthSerializer(serializers.Serializer):
     wantsStealth = serializers.BooleanField()

@@ -22,6 +22,7 @@ import {
   AccordionSummary,
   AlertTitle,
   ListItemButton,
+  Rating,
 } from '@mui/material';
 
 import {
@@ -72,6 +73,7 @@ import { systemClient } from '../../services/System';
 import type Coordinator from '../../models/Coordinator.model';
 import { type Badges } from '../../models/Coordinator.model';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { verifyCoordinatorToken } from '../../utils/nostr';
 
 interface Props {
   open: boolean;
@@ -358,6 +360,8 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
+  const [, setRating] = useState<number[]>([0, 0]);
+  const [averageRating, setAvergeRating] = useState<number>(0);
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
   const [coordinator, setCoordinator] = useState<Coordinator>(
     federation.getCoordinator(shortAlias ?? ''),
@@ -370,10 +374,39 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias ?? ''));
+    setRating([0, 0]);
+    setAvergeRating(0);
   }, [shortAlias]);
 
   useEffect(() => {
-    if (open) federation.getCoordinator(shortAlias ?? '')?.loadInfo();
+    if (open) {
+      const coordinator = federation.getCoordinator(shortAlias ?? '');
+      if (settings.connection === 'nostr') {
+        federation.roboPool.subscribeRatings(
+          {
+            onevent: (event) => {
+              const verfied = verifyCoordinatorToken(event);
+              const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
+              if (verfied && coordinatorPubKey === coordinator.nostrHexPubkey) {
+                const eventRating = event.tags.find((t) => t[0] === 'rating')?.[1];
+                if (eventRating) {
+                  setRating((prev) => {
+                    const sum = prev[0];
+                    const count = prev[1] + 1;
+                    prev = [sum + parseFloat(eventRating), count];
+                    setAvergeRating(sum / count);
+                    return prev;
+                  });
+                }
+              }
+            },
+            oneose: () => {},
+          },
+          [coordinator.nostrHexPubkey],
+        );
+      }
+      coordinator?.loadInfo();
+    }
   }, [open]);
 
   return (
@@ -397,6 +430,21 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
                 <Typography align='center' variant='body2'>
                   <i>{String(coordinator?.motto)}</i>
                 </Typography>
+              </Grid>
+              <Grid container direction='column' alignItems='center' padding={0}>
+                <Grid item>
+                  <Rating
+                    readOnly
+                    precision={0.5}
+                    name='size-large'
+                    value={averageRating * 5}
+                    defaultValue={0}
+                    disabled={settings.connection !== 'nostr'}
+                  />
+                  <Typography variant='caption' color='text.secondary'>
+                    {`(${parseFloat((averageRating * 10).toFixed(1))})`}
+                  </Typography>
+                </Grid>
               </Grid>
               <Grid item>
                 <ContactButtons {...coordinator?.contact} />

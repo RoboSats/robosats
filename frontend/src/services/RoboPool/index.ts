@@ -131,6 +131,30 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestSuccess));
   };
 
+  subscribeRatings = (events: RoboPoolEvents, coordinators?: string[]): void => {
+    const pubkeys =
+      coordinators ??
+      [...Object.values(defaultFederation), ...Object.values(thirdParties)]
+        .map((f) => f.nostrHexPubkey)
+        .filter((item) => item !== undefined);
+
+    const requestRatings = [
+      'REQ',
+      'subscribeRatings',
+      { kinds: [31986], '#p': pubkeys, since: 1745509494 },
+    ];
+
+    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+      const jsonMessage = JSON.parse(messageEvent.data);
+      if (jsonMessage[0] === 'EVENT') {
+        events.onevent(jsonMessage[2]);
+      } else if (jsonMessage[0] === 'EOSE') {
+        events.oneose();
+      }
+    });
+    this.sendMessage(JSON.stringify(requestRatings));
+  };
+
   sendEvent = (event: Event): void => {
     const message = ['EVENT', event];
 

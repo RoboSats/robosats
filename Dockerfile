@@ -11,7 +11,9 @@ RUN apt-get update -qq && \
         libpq-dev \
         curl \
         build-essential \
-        gnupg2
+        gnupg2 \
+        pkg-config \
+        libsecp256k1-dev
 
 RUN python -m pip install --upgrade pip
 
