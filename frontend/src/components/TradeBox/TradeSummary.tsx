@@ -40,6 +40,7 @@ import { systemClient } from '../../services/System';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
+  robotNick: string;
   isMaker: boolean;
   makerHashId: string;
   takerHashId: string;
@@ -52,6 +53,7 @@ interface Props {
 }
 
 const TradeSummary = ({
+  robotNick,
   isMaker,
   makerHashId,
   takerHashId,
@@ -79,6 +81,8 @@ const TradeSummary = ({
       coordinator: coordinatorLongAlias,
       order_id: orderId,
       currency: currencyCode,
+      robot: robotNick,
+      role: isMaker ? 'maker' : 'taker',
       maker: makerSummary,
       taker: takerSummary,
       platform: platformSummary,

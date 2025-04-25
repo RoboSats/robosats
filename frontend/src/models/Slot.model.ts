@@ -1,7 +1,9 @@
 import { sha256 } from 'js-sha256';
+import { sha256 as sha256Hash } from '@noble/hashes/sha256';
 import { Robot, Order, type Federation } from '.';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { hexToBase91, validateTokenEntropy } from '../utils';
+import { getPublicKey } from 'nostr-tools';
 
 export interface AuthHeaders {
   tokenSHA256: string;
@@ -33,6 +35,11 @@ class Slot {
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
     const tokenSHA256 = hexToBase91(sha256(token));
 
+    const nostrHash = sha256Hash(this.token);
+    this.nostrSecKey = new Uint8Array(nostrHash);
+    const nostrPubKey = getPublicKey(this.nostrSecKey);
+    this.nostrPubKey = nostrPubKey;
+
     this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
       acc[shortAlias] = new Robot({
         ...robotAttributes,
@@ -41,6 +48,7 @@ class Slot {
         bitsEntropy,
         shannonEntropy,
         tokenSHA256,
+        nostrPubKey,
       });
       this.updateSlotFromRobot(acc[shortAlias]);
       return acc;
@@ -57,6 +65,8 @@ class Slot {
   activeOrder: Order | null = null;
   lastOrder: Order | null = null;
   copiedToken: boolean;
+  nostrSecKey?: Uint8Array;
+  nostrPubKey?: string;
 
   onSlotUpdate: () => void;
 

@@ -167,8 +167,8 @@ jobs:
       - name: 'Download macOS Build Artifact'
         uses: actions/download-artifact@v4
         with:
-          path: desktopApp/release-builds/Robosats-darwin-x64
-          name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64.zip
+          path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
 
       - name: 'Upload macOS Build Artifact'
         id: upload-release-mac-zip-asset
@@ -177,15 +177,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: desktopApp/release-builds/Robosats-darwin-x64
-          asset_name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64.zip
+          asset_path: Robosats-darwin-x64.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
           asset_content_type: application/zip
 
       - name: 'Download linux Build Artifact'
         uses: actions/download-artifact@v4
         with:
-          path: desktopApp/release-builds/Robosats-linux-x64
-          name: robosats-desktop-${{ inputs.semver }}-linux-x64.zip
+          path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
 
       - name: 'Upload linux Build Artifact'
         id: upload-release-linux-zip-asset
@@ -194,15 +194,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: desktopApp/release-builds/Robosats-linux-x64
-          asset_name: robosats-desktop-${{ inputs.semver }}-linux-x64.zip
+          asset_path: Robosats-linux-x64.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
           asset_content_type: application/zip
 
       - name: 'Download Windows Build Artifact'
         uses: actions/download-artifact@v4
         with:
-          path: desktopApp/release-builds/Robosats-win32-ia32
-          name: robosats-desktop-${{ inputs.semver }}-win32-ia32.zip
+          path: .
+          name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
 
       - name: 'Upload Windows Build Artifact'
         id: upload-release-win-zip-asset
@@ -211,6 +211,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: desktopApp/release-builds/Robosats-win32-ia32
-          asset_name: robosats-desktop-${{ inputs.semver }}-win32-ia32.zip
+          asset_path: Robosats-win32-ia32.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
           asset_content_type: application/zip

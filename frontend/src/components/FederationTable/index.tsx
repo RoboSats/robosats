@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Link, LinkOff } from '@mui/icons-material';
-import { Box, Checkbox, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Checkbox, CircularProgress, Grid, Rating, Typography, useTheme } from '@mui/material';
 import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -8,6 +8,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { type Coordinator } from '../../models';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import RobotAvatar from '../RobotAvatar';
+import { verifyCoordinatorToken } from '../../utils/nostr';
 
 interface FederationTableProps {
   maxWidth?: number;
@@ -22,9 +23,16 @@ const FederationTable = ({
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
-  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { setOpen, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
+  const [ratings, setRatings] = useState<Record<string, number[]>>(
+    federation.getCoordinators().reduce((acc, coord) => {
+      if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = [0, 0];
+      return acc;
+    }, {}),
+  );
+  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
@@ -35,14 +43,40 @@ const FederationTable = ({
     1,
   );
   const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
+  const mobile = windowSize.width < 44;
 
-  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
+  useEffect(() => {
+    loadRatings();
+  }, []);
 
   useEffect(() => {
     if (useDefaultPageSize) {
       setPageSize(defaultPageSize);
     }
   }, [federationUpdatedAt]);
+
+  const loadRatings: () => void = () => {
+    if (settings.connection !== 'nostr') return;
+
+    federation.roboPool.subscribeRatings({
+      onevent: (event) => {
+        const verfied = verifyCoordinatorToken(event);
+        const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
+        if (verfied && coordinatorPubKey) {
+          const rating = event.tags.find((t) => t[0] === 'rating')?.[1];
+          if (rating) {
+            setRatings((prev) => {
+              const sum = prev[coordinatorPubKey][0];
+              const count = prev[coordinatorPubKey][1];
+              prev[coordinatorPubKey] = [sum + parseFloat(rating), count + 1];
+              return prev;
+            });
+          }
+        }
+      },
+      oneose: () => {},
+    });
+  };
 
   const localeText = {
     MuiTablePagination: { labelRowsPerPage: t('Coordinators per page:') },
@@ -55,11 +89,11 @@ const FederationTable = ({
     });
   };
 
-  const aliasObj = useCallback((width: number) => {
+  const aliasObj = useCallback((_width: number) => {
     return {
       field: 'longAlias',
-      headerName: t('Coordinator'),
-      width: width * fontSize,
+      headerName: mobile ? '' : t('Rating'),
+      width: mobile ? 60 : 190,
       renderCell: (params: any) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
         return (
@@ -83,14 +117,66 @@ const FederationTable = ({
                 small={true}
               />
             </Grid>
-            <Grid item>
-              <Typography>{params.row.longAlias}</Typography>
-            </Grid>
+            {!mobile ? (
+              <Grid item>
+                <Typography>{params.row.longAlias}</Typography>
+              </Grid>
+            ) : (
+              <></>
+            )}
           </Grid>
         );
       },
     };
   }, []);
+
+  const ratingObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'rating',
+        headerName: t('Rating'),
+        width: mobile ? 60 : 170,
+        renderCell: (params: any) => {
+          const coordinator = federation.getCoordinator(params.row.shortAlias);
+          const coordinatorRating = ratings[coordinator.nostrHexPubkey];
+
+          if (!coordinatorRating) return <></>;
+
+          const average =
+            coordinatorRating && coordinatorRating[1] > 0
+              ? coordinatorRating[0] / coordinatorRating[1]
+              : 0;
+          return (
+            <>
+              {mobile ? (
+                <Grid container direction='column' alignItems='center' style={{ paddingTop: 10 }}>
+                  <Typography>{`${parseFloat((average * 10).toFixed(1))}`}</Typography>
+                </Grid>
+              ) : (
+                <>
+                  <Rating
+                    readOnly
+                    precision={0.5}
+                    name='size-large'
+                    value={average * 5}
+                    defaultValue={0}
+                    disabled={settings.connection !== 'nostr'}
+                    onClick={() => {
+                      onClickCoordinator(params.row.shortAlias);
+                    }}
+                  />
+                  <Typography variant='caption' color='text.secondary'>
+                    {`(${parseFloat((average * 10).toFixed(1))})`}
+                  </Typography>
+                </>
+              )}
+            </>
+          );
+        },
+      };
+    },
+    [federationUpdatedAt],
+  );
 
   const enabledObj = useCallback(
     (width: number) => {
@@ -151,9 +237,17 @@ const FederationTable = ({
         object: aliasObj,
       },
     },
+    rating: {
+      priority: 2,
+      order: 2,
+      normal: {
+        width: 12.1,
+        object: ratingObj,
+      },
+    },
     up: {
       priority: 3,
-      order: 2,
+      order: 3,
       normal: {
         width: 3.5,
         object: upObj,
@@ -161,7 +255,7 @@ const FederationTable = ({
     },
     enabled: {
       priority: 1,
-      order: 3,
+      order: 4,
       normal: {
         width: 5,
         object: enabledObj,

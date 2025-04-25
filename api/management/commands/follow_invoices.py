@@ -227,6 +227,7 @@ class Command(BaseCommand):
             try:
                 # It is a maker bond => Publish order.
                 if hasattr(lnpayment, "order_made"):
+                    self.stderr.write("Updating order with new Locked bond from maker")
                     lnpayment.order_made.log("Maker bond <b>locked</b>")
                     Logics.publish_order(lnpayment.order_made)
                     send_notification.delay(
@@ -234,15 +235,30 @@ class Command(BaseCommand):
                     )
                     return
 
-                # It is a taker bond => close contract.
-                elif hasattr(lnpayment, "order_taken"):
-                    if lnpayment.order_taken.status == Order.Status.TAK:
-                        lnpayment.order_taken.log("Taker bond <b>locked</b>")
-                        Logics.finalize_contract(lnpayment.order_taken)
-                        return
+                # It is a taker bond
+                elif hasattr(lnpayment, "take_order"):
+                    if lnpayment.take_order.order.status == Order.Status.PUB:
+                        # It there was no other taker already locked => close contract.
+                        self.stderr.write(
+                            "Updating order with new Locked bond from taker"
+                        )
+                        lnpayment.take_order.order.log("Taker bond <b>locked</b>")
+                        Logics.finalize_contract(lnpayment.take_order)
+                    else:
+                        # It there was another taker already locked => cancel bond.
+                        self.stderr.write(
+                            "Expiring take_order because order was already taken"
+                        )
+                        lnpayment.take_order.order.log(
+                            "Another taker bond is already locked, <b>Cancelling</b>"
+                        )
+                        Logics.take_order_expires(lnpayment.take_order)
+
+                    return
 
                 # It is a trade escrow => move foward order status.
                 elif hasattr(lnpayment, "order_escrow"):
+                    self.stderr.write("Updating order with new Locked escrow")
                     lnpayment.order_escrow.log("Trade escrow <b>locked</b>")
                     Logics.trade_escrow_received(lnpayment.order_escrow)
                     return
@@ -269,15 +285,25 @@ class Command(BaseCommand):
         # Testing needed for end of time trades!
         elif lnpayment.status == LNPayment.Status.CANCEL:
             if hasattr(lnpayment, "order_made"):
+                self.stderr.write("Expiting order with cancelled payent from maker")
                 Logics.order_expires(lnpayment.order_made)
                 return
 
-            elif hasattr(lnpayment, "order_taken"):
-                Logics.order_expires(lnpayment.order_taken)
+            elif hasattr(lnpayment, "take_order"):
+                self.stderr.write(
+                    "Expiting order and take orders with cancelled payent from taker"
+                )
+                Logics.take_order_expires(lnpayment.take_order)
                 return
 
             elif hasattr(lnpayment, "order_escrow"):
+                self.stderr.write("Expiting order with cancelled escrow")
                 Logics.order_expires(lnpayment.order_escrow)
+                return
+
+            elif hasattr(lnpayment, "order_taken"):
+                self.stderr.write("Expiting order with cancelled escrow")
+                Logics.order_expires(lnpayment.order_taken)
                 return
 
         # TODO If a lnpayment goes from LOCKED to INVGEN. Totally weird

@@ -60,7 +60,7 @@ feature_row:
 
 #### Sponsors
 <div style="display: flex; justify-content: center; align-items: center; align-content: center;">
-  <div style="margin: 10px;"><a href="https://www.hrf.org" title="Human Right Foundation"><img src="/assets/images/sponsors/hrf.png" width="300px"/></a></div>
+  <div style="margin: 10px;"><a href="https://www.hrf.org" title="Human Rights Foundation"><img src="/assets/images/sponsors/hrf.png" width="300px"/></a></div>
 </div>
 
 #### Reviews

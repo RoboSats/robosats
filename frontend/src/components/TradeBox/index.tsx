@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 import { getWebln, pn } from '../../utils';
-
 import {
   ConfirmCancelDialog,
   ConfirmCollabCancelDialog,
@@ -52,6 +51,7 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -117,6 +117,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Buttons and Dialogs
@@ -150,6 +151,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     mining_fee_rate?: number;
     statement?: string;
     rating?: number;
+    cancel_status?: number;
   }
 
   const renewOrder = function (): void {
@@ -188,6 +190,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     mining_fee_rate,
     statement,
     rating,
+    cancel_status,
   }: SubmitActionProps): void {
     const slot = garage.getSlot();
 
@@ -201,6 +204,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           mining_fee_rate,
           statement,
           rating,
+          cancel_status,
         })
         .then((data: Order) => {
           setOpen(closeAll);
@@ -222,8 +226,14 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
   };
 
   const cancel = function (): void {
+    const order = garage.getSlot()?.activeOrder;
+    const noConfirmation = Boolean(order?.is_maker && [0, 1, 2, 3].includes(order?.status));
+
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
-    submitAction({ action: 'cancel' });
+    submitAction({
+      action: 'cancel',
+      cancel_status: noConfirmation ? order?.status : undefined,
+    });
   };
 
   const openDispute = function (): void {
@@ -287,14 +297,27 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
 
   const submitStatement = function (): void {
     let statement = dispute.statement;
-    if (dispute.attachLogs) {
-      const payload = { statement, messages };
-      statement = JSON.stringify(payload, null, 2);
+    if (!statement || statement.trim() === '' || statement.length < 100) {
+      setDispute({
+        ...dispute,
+        badStatement: t('The statement is too short. Make sure to be thorough.'),
+      });
+    } else if (!dispute.contact || dispute.contact.trim() === '') {
+      setDispute({ ...dispute, badContact: t('A contact method is required') });
+    } else {
+      const { contactMethod, contact } = dispute;
+      statement = `${contactMethod ?? ''}: ${contact ?? ''} \n\n ${statement}`;
+      if (dispute.attachLogs) {
+        const payload = { statement, messages };
+        statement = JSON.stringify(payload, null, 2);
+      }
+
+      setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
+      submitAction({ action: 'submit_statement', statement });
     }
-    setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
-    submitAction({ action: 'submit_statement', statement });
   };
-  const ratePlatform = function (rating: number): void {
+
+  const rateUserPlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
 
@@ -574,6 +597,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
                 dispute={dispute}
                 setDispute={setDispute}
                 onClickSubmit={submitStatement}
+                shortAlias={currentOrder.shortAlias}
               />
             );
           };
@@ -601,7 +625,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
@@ -625,7 +649,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           return (
             <SuccessfulPrompt
               order={order}
-              ratePlatform={ratePlatform}
+              rateUserPlatform={rateUserPlatform}
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
@@ -664,7 +688,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {

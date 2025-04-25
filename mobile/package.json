@@ -1,6 +1,6 @@
 {
   "name": "robosats",
-  "version": "0.7.4",
+  "version": "0.7.6",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -27,11 +27,11 @@
     "@types/react-native": "^0.71.3",
     "@types/react-test-renderer": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
-    "@typescript-eslint/parser": "^8.18.0",
+    "@typescript-eslint/parser": "^8.26.0",
     "babel-jest": "^29.7.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.0",
+    "eslint-import-resolver-typescript": "^3.8.3",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-prettier": "^5.2.1",

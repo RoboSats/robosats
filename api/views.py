@@ -23,6 +23,7 @@ from api.models import (
     OnchainPayment,
     Order,
     Notification,
+    TakeOrder,
 )
 from api.notifications import Notifications
 from api.oas_schemas import (
@@ -36,6 +37,7 @@ from api.oas_schemas import (
     RewardViewSchema,
     RobotViewSchema,
     StealthViewSchema,
+    ReviewViewSchema,
     TickViewSchema,
     NotificationSchema,
 )
@@ -48,6 +50,7 @@ from api.serializers import (
     PriceSerializer,
     StealthSerializer,
     TickSerializer,
+    ReviewSerializer,
     UpdateOrderSerializer,
     ListNotificationSerializer,
 )
@@ -59,6 +62,7 @@ from api.utils import (
     get_robosats_commit,
     verify_signed_message,
 )
+from api.nostr import Nostr
 from chat.models import Message
 from control.models import AccountingDay, BalanceLog
 
@@ -243,12 +247,19 @@ class OrderView(viewsets.ViewSet):
             data["penalty"] = request.user.robot.penalty_expiration
 
         # Add booleans if user is maker, taker, partipant, buyer or seller
+        take_order = TakeOrder.objects.filter(
+            taker=request.user, order=order, expires_at__gt=timezone.now()
+        )
         data["is_maker"] = order.maker == request.user
-        data["is_taker"] = order.taker == request.user
+        data["is_taker"] = order.taker == request.user or take_order.exists()
         data["is_participant"] = data["is_maker"] or data["is_taker"]
 
         # 3.a) If not a participant and order is not public, forbid.
-        if not data["is_participant"] and order.status != Order.Status.PUB:
+        if (
+            order.maker != request.user
+            and order.taker != request.user
+            and order.status != Order.Status.PUB
+        ):
             return Response(
                 {"bad_request": "This order is not available"},
                 status.HTTP_403_FORBIDDEN,
@@ -271,7 +282,12 @@ class OrderView(viewsets.ViewSet):
         # 4) If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
-            data["satoshis_now"] = Logics.satoshis_now(order)
+            if take_order.exists():
+                data["satoshis_now"] = Logics.satoshis_now(
+                    order, take_order.first().amount
+                )
+            else:
+                data["satoshis_now"] = Logics.satoshis_now(order)
 
             # 4. a) If maker and Public/Paused, add premium percentile
             # num similar orders, and maker information to enable telegram notifications.
@@ -355,9 +371,18 @@ class OrderView(viewsets.ViewSet):
             else:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER hold invoice.
-        elif order.status == Order.Status.TAK and data["is_taker"]:
+        # 6)  If status is 'Public' and user is PRETAKER, reply with a TAKER hold invoice.
+        elif (
+            order.status == Order.Status.PUB
+            and take_order.exists()
+            and order.taker != request.user
+        ):
+            data["status"] = Order.Status.TAK
+            data["total_secs_exp"] = order.t_to_expire(Order.Status.TAK)
+            data["amount"] = str(take_order.first().amount)
+
             valid, context = Logics.gen_taker_hold_invoice(order, request.user)
+
             if valid:
                 data = {**data, **context}
             else:
@@ -518,6 +543,7 @@ class OrderView(viewsets.ViewSet):
         mining_fee_rate = serializer.data.get("mining_fee_rate")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
+        cancel_status = serializer.data.get("cancel_status")
 
         # 1) If action is take, it is a taker request!
         if action == "take":
@@ -547,14 +573,20 @@ class OrderView(viewsets.ViewSet):
                     status.HTTP_400_BAD_REQUEST,
                 )
 
+        # 2) If action is cancel
+        elif action == "cancel":
+            valid, context = Logics.cancel_order(order, request.user, cancel_status)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
         # Any other action is only allowed if the user is a participant
-        if not (order.maker == request.user or order.taker == request.user):
+        elif not (order.maker == request.user or order.taker == request.user):
             return Response(
                 {"bad_request": "You are not a participant in this order"},
                 status.HTTP_403_FORBIDDEN,
             )
 
-        # 2) If action is 'update invoice'
+        # 3) If action is 'update invoice'
         elif action == "update_invoice":
             # DEPRECATE post v0.5.1.
             valid_signature, invoice = verify_signed_message(
@@ -573,7 +605,7 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 2.b) If action is 'update address'
+        # 3.b) If action is 'update address'
         elif action == "update_address":
             valid_signature, address = verify_signed_message(
                 request.user.robot.public_key, pgp_address
@@ -591,25 +623,19 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 3) If action is cancel
-        elif action == "cancel":
-            valid, context = Logics.cancel_order(order, request.user)
-            if not valid:
-                return Response(context, status.HTTP_400_BAD_REQUEST)
-
-        # 4) If action is confirm
+        # 5) If action is confirm
         elif action == "confirm":
             valid, context = Logics.confirm_fiat(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 4.b) If action is confirm
+        # 5.b) If action is confirm
         elif action == "undo_confirm":
             valid, context = Logics.undo_confirm_fiat_sent(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 5) If action is dispute
+        # 6) If action is dispute
         elif action == "dispute":
             valid, context = Logics.open_dispute(order, request.user)
             if not valid:
@@ -620,18 +646,18 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6) If action is rate
+        # 7) If action is rate
         elif action == "rate_user" and rating:
             """No user rating"""
             pass
 
-        # 7) If action is rate_platform
+        # 8) If action is rate_platform
         elif action == "rate_platform" and rating:
             valid, context = Logics.rate_platform(request.user, rating)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 8) If action is rate_platform
+        # 9) If action is rate_platform
         elif action == "pause":
             valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:
@@ -831,6 +857,9 @@ class InfoView(viewsets.ViewSet):
             1 - float(config("MAKER_FEE_SPLIT"))
         )
         context["bond_size"] = settings.DEFAULT_BOND_SIZE
+        context["market_price_apis"] = config(
+            "MARKET_PRICE_APIS", cast=str, default="none"
+        )
         context["notice_severity"] = config("NOTICE_SEVERITY", cast=str, default="none")
         context["notice_message"] = config("NOTICE_MESSAGE", cast=str, default="")
         context["min_order_size"] = config("MIN_ORDER_SIZE", cast=int, default=20000)
@@ -1007,3 +1036,51 @@ class StealthView(APIView):
         request.user.robot.save(update_fields=["wants_stealth"])
 
         return Response({"wantsStealth": stealth})
+
+
+class ReviewView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = ReviewSerializer
+
+    @extend_schema(**ReviewViewSchema.post)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        pubkey = serializer.data.get("pubkey")
+        last_order = Order.objects.filter(
+            Q(maker=request.user) | Q(taker=request.user)
+        ).last()
+
+        if not last_order or last_order.status not in [
+            Order.Status.SUC,
+            Order.Status.MLD,
+            Order.Status.TLD,
+        ]:
+            return Response(
+                {"bad_request": "Robot has no finished order"},
+                status.HTTP_400_BAD_REQUEST,
+            )
+        if not request.user.robot.nostr_pubkey:
+            verified = Nostr.is_valid_public_key(pubkey)
+            if verified:
+                request.user.robot.nostr_pubkey = pubkey
+                request.user.robot.save(update_fields=["nostr_pubkey"])
+            else:
+                return Response(
+                    {"bad_request": "Invalid hex pubkey"},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+        if request.user.robot.nostr_pubkey != pubkey:
+            return Response(
+                {"bad_request": "Wrong hex pubkey"},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        token = Nostr.sign_message(f"{pubkey}{last_order.id}")
+
+        return Response({"pubkey": pubkey, "token": token}, status.HTTP_200_OK)

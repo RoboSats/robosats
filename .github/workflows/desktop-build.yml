@@ -29,7 +29,7 @@ jobs:
 
       - name: 'Download Basic main.js Artifact'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@v7
+        uses: dawidd6/action-download-artifact@v9
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
@@ -70,13 +70,31 @@ jobs:
       - name: Print semver
         run: echo The semver is ${{ github.event.inputs.semver }}
 
+      - name: Install zip
+        run: sudo apt-get install -y zip
+
+      - name: Create macOS ZIP file
+        run: |
+          cd desktopApp/release-builds
+          zip -r Robosats-darwin-x64.zip Robosats-darwin-x64
+
+      - name: Create Windows ZIP file
+        run: |
+          cd desktopApp/release-builds
+          zip -r Robosats-win32-ia32.zip Robosats-win32-ia32
+
+      - name: Create Linux ZIP file
+        run: |
+          cd desktopApp/release-builds
+          zip -r Robosats-linux-x64.zip Robosats-linux-x64
+
       - name: Upload macOS Build Artifact
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-darwin-x64
+          path: desktopApp/release-builds/Robosats-darwin-x64.zip
           name: robosats-desktop-${{ inputs.semver }}-mac-darwin-x64.zip
 
       - name: Upload Windows Build Artifact
@@ -85,7 +103,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-win32-ia32
+          path: desktopApp/release-builds/Robosats-win32-ia32.zip
           name: robosats-desktop-${{ inputs.semver }}-win32-ia32.zip
 
       - name: Upload Linux Build Artifact
@@ -94,7 +112,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-linux-x64
+          path: desktopApp/release-builds/Robosats-linux-x64.zip
           name: robosats-desktop-${{ inputs.semver }}-linux-x64.zip
 
       - name: Upload macOS Build Artifact
@@ -104,7 +122,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-darwin-x64
+          path: desktopApp/release-builds/Robosats-darwin-x64.zip
           name: robosats-desktop-${{ steps.commit.outputs.short }}-mac-darwin-x64.zip
 
       - name: Upload Windows Build Artifact
@@ -114,7 +132,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-win32-ia32
+          path: desktopApp/release-builds/Robosats-win32-ia32.zip
           name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32.zip
 
       - name: Upload Linux Build Artifact
@@ -124,5 +142,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-linux-x64
+          path: desktopApp/release-builds/Robosats-linux-x64.zip
           name: robosats-desktop-${{ steps.commit.outputs.short }}-linux-x64.zip
