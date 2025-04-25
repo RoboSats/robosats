@@ -50,6 +50,7 @@ export const SuccessfulPrompt = ({
 
   const [coordinatorToken, setCoordinatorToken] = useState<string>();
   const [hostRating, setHostRating] = useState<number>();
+  const [tokenError, setTokenError] = useState<boolean>(false);
 
   const rateHostPlatform = function (): void {
     if (!hostRating) return;
@@ -57,13 +58,12 @@ export const SuccessfulPrompt = ({
     const slot = garage.getSlot();
     const coordinatorPubKey = federation.getCoordinator(order.shortAlias)?.nostrHexPubkey;
 
-    if (
-      !coordinatorToken ||
-      !slot?.nostrPubKey ||
-      !slot.nostrSecKey ||
-      !coordinatorPubKey ||
-      !order.id
-    ) {
+    if (!coordinatorToken) {
+      setTokenError(true);
+      return;
+    }
+
+    if (!slot?.nostrPubKey || !slot.nostrSecKey || !coordinatorPubKey || !order.id) {
       setHostRating(0);
       return;
     }
@@ -131,6 +131,13 @@ export const SuccessfulPrompt = ({
           </Tooltip>
         </Typography>
       </Grid>
+      {tokenError && (
+        <Grid sx={{ marginBottom: 1 }}>
+          <Alert severity='error' sx={{ marginTop: 2 }}>
+            {t("Error obatining coordinator' s token.")}
+          </Alert>
+        </Grid>
+      )}
       <Grid item>
         <Rating
           disabled={settings.connection !== 'nostr'}
