@@ -992,8 +992,6 @@ class TradeTest(BaseAPITestCase):
         trade.process_payouts(mine_a_block=True)
 
         trade.get_review(trade.maker_index)
-        data = trade.response.json()
-        print(data)
         self.assertEqual(trade.response.status_code, 200)
         nostr_pubkey = read_file(f"tests/robots/{trade.maker_index}/nostr_pubkey")
         data = trade.response.json()
