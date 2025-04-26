@@ -123,6 +123,31 @@ class Robot {
 
     this.stealthInvoices = wantsStealth;
   };
+
+  loadReviewToken = (
+    federation: Federation,
+    onDataLoad: (token: string) => void = () => {},
+  ): void => {
+    if (!federation) return;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    const body = {
+      pubkey: this.nostrPubKey,
+    };
+
+    apiClient
+      .post(coordinator.url, `${coordinator.basePath}/api/review/`, body, {
+        tokenSHA256: this.tokenSHA256,
+      })
+      .then((data) => {
+        if (data) {
+          onDataLoad(data.token);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
 }
 
 export default Robot;

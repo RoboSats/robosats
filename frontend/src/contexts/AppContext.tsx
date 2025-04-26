@@ -120,7 +120,6 @@ const getSettings = (): Settings => {
   } else {
     settings = view === 'pro' ? new SettingsPro() : new Settings();
   }
-
   return settings;
 };
 

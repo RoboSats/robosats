@@ -48,7 +48,9 @@ export const SuccessfulPrompt = ({
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
+  const [coordinatorToken, setCoordinatorToken] = useState<string>();
   const [hostRating, setHostRating] = useState<number>();
+  const [tokenError, setTokenError] = useState<boolean>(false);
 
   const rateHostPlatform = function (): void {
     if (!hostRating) return;
@@ -56,12 +58,21 @@ export const SuccessfulPrompt = ({
     const slot = garage.getSlot();
     const coordinatorPubKey = federation.getCoordinator(order.shortAlias)?.nostrHexPubkey;
 
-    if (!slot?.nostrPubKey || !slot.nostrSecKey || !coordinatorPubKey || !order.id) return;
+    if (!coordinatorToken) {
+      setTokenError(true);
+      return;
+    }
+
+    if (!slot?.nostrPubKey || !slot.nostrSecKey || !coordinatorPubKey || !order.id) {
+      setHostRating(0);
+      return;
+    }
 
     const eventTemplate: Event = {
       kind: 31986,
       created_at: Math.floor(Date.now() / 1000),
       tags: [
+        ['sig', coordinatorToken],
         ['d', `${order.shortAlias}:${order.id}`],
         ['p', coordinatorPubKey],
         ['rating', String(hostRating / 5)],
@@ -75,6 +86,13 @@ export const SuccessfulPrompt = ({
     const signedEvent = finalizeEvent(eventTemplate, slot.nostrSecKey);
     federation.roboPool.sendEvent(signedEvent);
   };
+
+  useEffect(() => {
+    const slot = garage.getSlot();
+    if (slot?.nostrPubKey) {
+      slot.getRobot(order.shortAlias)?.loadReviewToken(federation, setCoordinatorToken);
+    }
+  }, []);
 
   useEffect(() => {
     rateHostPlatform();
@@ -91,7 +109,7 @@ export const SuccessfulPrompt = ({
     >
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
-          {t('Rate your peer')} <b>{order.is_maker ? order.taker_nick : order.maker_nick}</b>
+          {t('Rate your trade experience')}
         </Typography>
       </Grid>
       <Grid item>
@@ -108,14 +126,18 @@ export const SuccessfulPrompt = ({
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
           {t('Rate your host')} <b>{federation.getCoordinator(order.shortAlias)?.longAlias}</b>{' '}
-          <Typography variant='button' align='center'>
-            {t('BETA')}
-          </Typography>
           <Tooltip title={t('You need to enable nostr to rate your coordinator.')}>
             <Info sx={{ width: 15 }} />
           </Tooltip>
         </Typography>
       </Grid>
+      {tokenError && (
+        <Grid sx={{ marginBottom: 1 }}>
+          <Alert severity='error' sx={{ marginTop: 2 }}>
+            {t("Error obatining coordinator' s token.")}
+          </Alert>
+        </Grid>
+      )}
       <Grid item>
         <Rating
           disabled={settings.connection !== 'nostr'}
