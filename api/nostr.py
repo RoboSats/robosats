@@ -4,7 +4,7 @@ import uuid
 
 from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag, PublicKey
+from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag
 from api.models import Order
 from decouple import config
 
@@ -113,13 +113,6 @@ class Nostr:
             return ["onchain", "lightning"]
         else:
             return ["lightning"]
-            return False
-
-    def is_valid_public_key(public_key_hex):
-        try:
-            PublicKey.from_hex(public_key_hex)
-            return True
-        except Exception:
             return False
 
     def sign_message(text: str) -> str:
