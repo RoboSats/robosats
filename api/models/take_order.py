@@ -2,7 +2,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings
-from django.utils import timezone
 
 
 class TakeOrder(models.Model):
@@ -40,12 +39,6 @@ class TakeOrder(models.Model):
     )
     # timestamp of last_satoshis
     last_satoshis_time = models.DateTimeField(null=True, default=None, blank=True)
-
-    def cancel(self, cls):
-        if self.expires_at > timezone.now():
-            self.expires_at = timezone.now()
-            self.save(update_fields=["expires_at"])
-        cls.cancel_bond(self.taker_bond)
 
     def __str__(self):
         return f"Order {self.order.id} taken by Robot({self.taker.robot.id},{self.taker.username}) for {self.amount} fiat units"

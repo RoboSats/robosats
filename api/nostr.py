@@ -2,6 +2,7 @@ import pygeohash
 import hashlib
 import uuid
 
+from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
 from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag
 from api.models import Order
@@ -112,3 +113,17 @@ class Nostr:
             return ["onchain", "lightning"]
         else:
             return ["lightning"]
+            return False
+
+    def sign_message(text: str) -> str:
+        try:
+            keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+            secret_key_hex = keys.secret_key().to_hex()
+            private_key = PrivateKey(bytes.fromhex(secret_key_hex))
+            signature = private_key.schnorr_sign(
+                text.encode("utf-8"), bip340tag=None, raw=True
+            )
+
+            return signature.hex()
+        except Exception:
+            return ""

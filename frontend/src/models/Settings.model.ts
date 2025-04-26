@@ -44,10 +44,10 @@ class BaseSettings {
           : i18n.resolvedLanguage.substring(0, 2);
 
     const connection = systemClient.getItem('settings_connection');
-    this.connection = connection && connection !== '' ? connection : 'api';
+    this.connection = connection && connection !== '' ? connection : this.connection;
 
     const networkCookie = systemClient.getItem('settings_network');
-    this.network = networkCookie && networkCookie !== '' ? networkCookie : 'mainnet';
+    this.network = networkCookie && networkCookie !== '' ? networkCookie : this.network;
     this.host = getHost();
 
     const [client] = window.RobosatsSettings.split('-');
@@ -68,7 +68,7 @@ class BaseSettings {
   public language?: Language;
   public freezeViewports: boolean = false;
   public network: 'mainnet' | 'testnet' = 'mainnet';
-  public connection: 'api' | 'nostr' = 'api';
+  public connection: 'api' | 'nostr' = 'nostr';
   public host?: string;
   public unsafeClient: boolean = false;
   public selfhostedClient: boolean = false;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 import { getWebln, pn } from '../../utils';
-
 import {
   ConfirmCancelDialog,
   ConfirmCollabCancelDialog,
@@ -152,6 +151,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     mining_fee_rate?: number;
     statement?: string;
     rating?: number;
+    cancel_status?: number;
   }
 
   const renewOrder = function (): void {
@@ -190,6 +190,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     mining_fee_rate,
     statement,
     rating,
+    cancel_status,
   }: SubmitActionProps): void {
     const slot = garage.getSlot();
 
@@ -203,6 +204,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           mining_fee_rate,
           statement,
           rating,
+          cancel_status,
         })
         .then((data: Order) => {
           setOpen(closeAll);
@@ -224,8 +226,14 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
   };
 
   const cancel = function (): void {
+    const order = garage.getSlot()?.activeOrder;
+    const noConfirmation = Boolean(order?.is_maker && [0, 1, 2, 3].includes(order?.status));
+
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
-    submitAction({ action: 'cancel' });
+    submitAction({
+      action: 'cancel',
+      cancel_status: noConfirmation ? order?.status : undefined,
+    });
   };
 
   const openDispute = function (): void {
@@ -309,7 +317,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     }
   };
 
-  const ratePlatform = function (rating: number): void {
+  const rateUserPlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
 
@@ -617,7 +625,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
@@ -641,7 +649,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
           return (
             <SuccessfulPrompt
               order={order}
-              ratePlatform={ratePlatform}
+              rateUserPlatform={rateUserPlatform}
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
@@ -680,7 +688,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
             return (
               <SuccessfulPrompt
                 order={order}
-                ratePlatform={ratePlatform}
+                rateUserPlatform={rateUserPlatform}
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {

@@ -75,7 +75,7 @@ const TokenInput = ({
         helperText={badToken}
         size='medium'
         onChange={(e) => {
-          setInputToken(e.target.value);
+          setInputToken(e.target.value.replace(/\s+/g, ''));
         }}
         onKeyPress={(e) => {
           if (e.key === 'Enter') {

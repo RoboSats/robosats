@@ -219,15 +219,21 @@ class Logics:
     def is_buyer(order, user):
         is_maker = order.maker == user
         is_taker = order.taker == user
+        is_pretaker = TakeOrder.objects.filter(
+            taker=user, order=order, expires_at__gt=timezone.now()
+        ).exists()
         return (is_maker and order.type == Order.Types.BUY) or (
-            is_taker and order.type == Order.Types.SELL
+            (is_pretaker or is_taker) and order.type == Order.Types.SELL
         )
 
     def is_seller(order, user):
         is_maker = order.maker == user
         is_taker = order.taker == user
+        is_pretaker = TakeOrder.objects.filter(
+            taker=user, order=order, expires_at__gt=timezone.now()
+        ).exists()
         return (is_maker and order.type == Order.Types.SELL) or (
-            is_taker and order.type == Order.Types.BUY
+            (is_pretaker or is_taker) and order.type == Order.Types.BUY
         )
 
     def calc_sats(amount, exchange_rate, premium):
@@ -273,11 +279,10 @@ class Logics:
 
     @classmethod
     def take_order_expires(cls, take_order):
-        if take_order.expires_at < timezone.now():
-            cls.cancel_bond(take_order.taker_bond)
-            return True
-        else:
-            return False
+        if take_order.expires_at > timezone.now():
+            take_order.expires_at = timezone.now()
+            take_order.save(update_fields=["expires_at"])
+        cls.cancel_bond(take_order.taker_bond)
 
     @classmethod
     def order_expires(cls, order):
@@ -322,7 +327,7 @@ class Logics:
 
             take_orders_queryset = TakeOrder.objects.filter(order=order)
             for idx, take_order in enumerate(take_orders_queryset):
-                take_order.cancel(cls)
+                cls.take_order_expires(take_order)
 
             order.save(update_fields=["expiry_reason"])
 
@@ -446,7 +451,7 @@ class Logics:
     @classmethod
     def kick_taker(cls, take_order):
         """The taker did not lock the taker_bond. Now he has to go"""
-        take_order.cancel(cls)
+        cls.take_order_expires(take_order)
         # Add a time out to the taker
         if take_order.taker:
             robot = take_order.taker.robot
@@ -1024,7 +1029,17 @@ class Logics:
         return False, None
 
     @classmethod
-    def cancel_order(cls, order, user, state=None):
+    def cancel_order(cls, order, user, cancel_status=None):
+        # If cancel status is specified, do no cancel the order
+        # if it is not the correct one.
+        # This prevents the client from cancelling an order that
+        # recently changed status.
+        if cancel_status is not None:
+            if order.status != cancel_status:
+                return False, {
+                    "bad_request": f"Current order status is {order.status}, not {cancel_status}."
+                }
+
         # Do not change order status if an is in order
         # any of these status
         do_not_cancel = [
@@ -1073,7 +1088,7 @@ class Logics:
                     take_orders_queryset = TakeOrder.objects.filter(order=order)
                     for idx, take_order in enumerate(take_orders_queryset):
                         order.log("Pretaker bond was <b>unlocked</b>")
-                        take_order.cancel(cls)
+                        cls.take_order_expires(take_order)
 
                     send_notification.delay(
                         order_id=order.id, message="public_order_cancelled"

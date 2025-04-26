@@ -113,12 +113,24 @@ class Trade:
         headers = self.get_robot_auth(robot_index, first_encounter)
         self.response = self.client.get(path + params, **headers)
 
+    def get_review(self, robot_index=1):
+        """
+        Generates coordinator's review signature
+        """
+        path = reverse("review")
+        headers = self.get_robot_auth(robot_index)
+        nostr_pubkey = read_file(f"tests/robots/{robot_index}/nostr_pubkey")
+        body = {"pubkey": nostr_pubkey}
+        self.response = self.client.post(path, body, **headers)
+
     @patch("api.tasks.send_notification.delay", send_notification)
-    def cancel_order(self, robot_index=1):
+    def cancel_order(self, robot_index=1, cancel_status=None):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(robot_index)
         body = {"action": "cancel"}
+        if cancel_status is not None:
+            body.update({"cancel_status": cancel_status})
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)

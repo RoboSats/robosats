@@ -95,8 +95,12 @@ const getOrigin = (network = 'mainnet'): Origin => {
   const host = getHostUrl(network);
   let origin: Origin = 'onion';
   const [client] = window.RobosatsSettings.split('-');
-
-  if (client === 'mobile' || client === 'desktop' || host.includes('.onion')) {
+  if (
+    client === 'mobile' ||
+    client === 'desktop' ||
+    host.includes('.onion') ||
+    host.includes(':8888')
+  ) {
     origin = 'onion';
   } else if (host.includes('i2p')) {
     origin = 'i2p';
@@ -116,7 +120,7 @@ const getSettings = (): Settings => {
   } else {
     settings = view === 'pro' ? new SettingsPro() : new Settings();
   }
-
+  console.log(settings.connection);
   return settings;
 };
 
