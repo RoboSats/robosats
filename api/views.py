@@ -1066,15 +1066,9 @@ class ReviewView(APIView):
                 status.HTTP_400_BAD_REQUEST,
             )
         if not request.user.robot.nostr_pubkey:
-            verified = Nostr.is_valid_public_key(pubkey)
-            if verified:
-                request.user.robot.nostr_pubkey = pubkey
-                request.user.robot.save(update_fields=["nostr_pubkey"])
-            else:
-                return Response(
-                    {"bad_request": "Invalid hex pubkey"},
-                    status.HTTP_400_BAD_REQUEST,
-                )
+            request.user.robot.nostr_pubkey = pubkey
+            request.user.robot.save(update_fields=["nostr_pubkey"])
+
         if request.user.robot.nostr_pubkey != pubkey:
             return Response(
                 {"bad_request": "Wrong hex pubkey"},
