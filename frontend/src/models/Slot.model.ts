@@ -5,14 +5,6 @@ import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { hexToBase91, validateTokenEntropy } from '../utils';
 import { getPublicKey } from 'nostr-tools';
 
-export interface AuthHeaders {
-  tokenSHA256: string;
-  keys: {
-    pubKey: string;
-    encPrivKey: string;
-  };
-}
-
 class Slot {
   constructor(
     token: string,

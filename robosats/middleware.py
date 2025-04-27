@@ -42,9 +42,15 @@ class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
         split_auth = auth_header.split(" | ")
 
         if len(split_auth) == 3:
+            # Deprecated in favor of len 4
             request.META["HTTP_AUTHORIZATION"] = split_auth[0]
             request.META["PUBLIC_KEY"] = split_auth[1]
             request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
+        elif len(split_auth) == 4:
+            request.META["HTTP_AUTHORIZATION"] = split_auth[0]
+            request.META["PUBLIC_KEY"] = split_auth[1]
+            request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
+            request.META["NOSTR_PUBKEY"] = split_auth[3]
 
 
 class RobotTokenSHA256AuthenticationMiddleWare:
@@ -108,11 +114,13 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # Authorization header or in the Cookies.
             public_key = ""
             encrypted_private_key = ""
+            nostr_pubkey = ""
 
             public_key = request.META.get("PUBLIC_KEY", "").replace("Public ", "")
             encrypted_private_key = request.META.get(
                 "ENCRYPTED_PRIVATE_KEY", ""
             ).replace("Private ", "")
+            nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace("Nostr ", "")
 
             # Some legacy (pre-federation) clients will still send keys as cookies
             if public_key == "" or encrypted_private_key == "":
@@ -157,6 +165,10 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 user.robot.public_key = public_key
             if not user.robot.encrypted_private_key:
                 user.robot.encrypted_private_key = encrypted_private_key
+
+            # Add nostr key to the new user
+            if not user.robot.nostr_pubkey:
+                user.robot.nostr_pubkey = nostr_pubkey
 
             update_last_login(None, user)
             user.save()

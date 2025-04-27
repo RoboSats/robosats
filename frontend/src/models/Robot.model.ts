@@ -1,6 +1,5 @@
-import { apiClient } from '../services/api';
+import { apiClient, type Auth } from '../services/api';
 import type Federation from './Federation.model';
-import { type AuthHeaders } from './Slot.model';
 
 class Robot {
   constructor(attributes?: Record<any, any>) {
@@ -31,13 +30,15 @@ class Robot {
     Object.assign(this, attributes);
   };
 
-  getAuthHeaders = (): AuthHeaders | null => {
+  getAuthHeaders = (): Auth | null => {
     const tokenSHA256 = this.tokenSHA256 ?? '';
     const encPrivKey = this.encPrivKey ?? '';
     const pubKey = this.pubKey ?? '';
+    const nostrPubkey = this.nostrPubKey ?? '';
 
     return {
       tokenSHA256,
+      nostrPubkey,
       keys: {
         pubKey: pubKey.split('\n').join('\\'),
         encPrivKey: encPrivKey.split('\n').join('\\'),

@@ -693,6 +693,7 @@ class RobotView(APIView):
         context["encrypted_private_key"] = user.robot.encrypted_private_key
         context["earned_rewards"] = user.robot.earned_rewards
         context["wants_stealth"] = user.robot.wants_stealth
+        context["nostr_pubkey"] = user.robot.nostr_pubkey
         context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
