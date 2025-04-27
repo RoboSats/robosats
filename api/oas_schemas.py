@@ -462,6 +462,10 @@ class RobotViewSchema:
                         "type": "string",
                         "description": "Armored ASCII PGP public key block",
                     },
+                    "nostr_pubkey": {
+                        "type": "string",
+                        "description": "Nostr public key in hex format",
+                    },
                     "wants_stealth": {
                         "type": "boolean",
                         "default": False,
