@@ -19,11 +19,11 @@ class ApiNativeClient implements ApiClient {
           Authorization: `Token ${auth.tokenSHA256}`,
         },
       };
-    } else if (auth?.keys != null) {
+    } else if (auth?.keys != null && auth.nostrPubkey != null) {
       headers = {
         ...headers,
         ...{
-          Authorization: `Token ${auth.tokenSHA256} | Public ${auth.keys.pubKey} | Private ${auth.keys.encPrivKey}`,
+          Authorization: `Token ${auth.tokenSHA256} | Public ${auth.keys.pubKey} | Private ${auth.keys.encPrivKey} | Nostr ${auth.nostrPubkey}`,
         },
       };
     }

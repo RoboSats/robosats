@@ -70,11 +70,12 @@ class Trade:
         b91_token = read_file(f"tests/robots/{robot_index}/b91_token")
         pub_key = read_file(f"tests/robots/{robot_index}/pub_key")
         enc_priv_key = read_file(f"tests/robots/{robot_index}/enc_priv_key")
+        nostr_pubkey = read_file(f"tests/robots/{robot_index}/nostr_pubkey")
 
         # First time a robot authenticated, it is registered by the backend, so pub_key and enc_priv_key is needed
         if first_encounter:
             headers = {
-                "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key}"
+                "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {nostr_pubkey}"
             }
         else:
             headers = {"HTTP_AUTHORIZATION": f"Token {b91_token}"}
