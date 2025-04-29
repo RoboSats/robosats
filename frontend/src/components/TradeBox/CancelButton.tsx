@@ -30,6 +30,9 @@ const CancelButton = ({
   const noConfirmation =
     Boolean(order?.is_maker && [0, 1, 2].includes(order?.status)) ||
     Boolean(order?.is_taker && order?.status === 3);
+  const noBond =
+    Boolean(order?.is_maker && order?.status === 0) ||
+    Boolean(order?.is_taker && order?.status === 3);
 
   return (
     <Box>
@@ -48,7 +51,7 @@ const CancelButton = ({
               variant='outlined'
               color='secondary'
               onClick={
-                noConfirmation
+                noBond
                   ? () => {
                       setOpenCancelWarning(true);
                     }
