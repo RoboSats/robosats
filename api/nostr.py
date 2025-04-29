@@ -109,7 +109,9 @@ class Nostr:
             return "success"
 
     def get_layer_tag(self, order):
-        if order.type == Order.Types.SELL:
+        if order.type == Order.Types.SELL and not config(
+            "DISABLE_ONCHAIN", cast=bool, default=True
+        ):
             return ["onchain", "lightning"]
         else:
             return ["lightning"]
