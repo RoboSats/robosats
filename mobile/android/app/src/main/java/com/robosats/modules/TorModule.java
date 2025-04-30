@@ -99,13 +99,11 @@ public class TorModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
-                Log.d("Tormodule", "WebSocket Message received: " + text);
                 onWsMessage(path, text);
             }
 
             @Override
             public void onMessage(@NonNull WebSocket webSocket, ByteString bytes) {
-                Log.d("Tormodule", "WebSocket Message received: " + bytes.hex());
                 onWsMessage(path, bytes.hex());
             }
 

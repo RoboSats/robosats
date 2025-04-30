@@ -27,6 +27,7 @@ const CancelButton = ({
     Boolean(order?.is_maker && [0, 1, 2].includes(order?.status)) ||
     Boolean([3, 6, 7].includes(order?.status ?? -1));
   const showCollabCancelButton = order?.status === 9 && !order?.asked_for_cancel;
+  const unTaken = Boolean(order?.is_maker && [1, 2].includes(order?.status));
   const noConfirmation =
     Boolean(order?.is_maker && [0, 1, 2].includes(order?.status)) ||
     Boolean(order?.is_taker && order?.status === 3);
@@ -55,7 +56,9 @@ const CancelButton = ({
                   ? () => {
                       setOpenCancelWarning(true);
                     }
-                  : openCancelDialog
+                  : unTaken
+                    ? onClickCancel
+                    : openCancelDialog
               }
             >
               {t('Cancel')}

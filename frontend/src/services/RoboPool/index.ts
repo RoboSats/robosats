@@ -16,7 +16,7 @@ class RoboPool {
     this.relays = [];
     const federationRelays = Object.values(defaultFederation)
       .map((coord) => {
-        const url: string = coord[this.network][settings.selfhostedClient ? 'onion' : origin];
+        const url: string = coord[this.network]?.[settings.selfhostedClient ? 'onion' : origin];
 
         if (!url) return undefined;
 

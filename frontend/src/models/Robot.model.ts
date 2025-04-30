@@ -57,6 +57,11 @@ class Robot {
     await apiClient
       .get(coordinator.url, `${coordinator.basePath}/api/robot/`, authHeaders)
       .then((data: any) => {
+        if (data?.bad_request) {
+          console.error(data?.bad_request);
+          return;
+        }
+
         this.update({
           nickname: data.nickname,
           activeOrderId: data.active_order_id ?? null,

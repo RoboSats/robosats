@@ -114,7 +114,11 @@ export const verifyCoordinatorToken: (event: Event) => boolean = (event) => {
   const hash = `${event.pubkey}${orderId ?? ''}`;
   const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
   if (signature && coordinatorPubKey) {
-    return schnorr.verify(signature, hash, coordinatorPubKey);
+    try {
+      return schnorr.verify(signature, hash, coordinatorPubKey);
+    } catch (e) {
+      return false;
+    }
   }
   return false;
 };

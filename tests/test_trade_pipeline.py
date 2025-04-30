@@ -362,7 +362,7 @@ class TradeTest(BaseAPITestCase):
         )
 
         # Test what we can see with newly created robot 2 (only for public status)
-        trade.get_order(robot_index=2, first_encounter=True)
+        trade.get_order(robot_index=2)
         public_data = trade.response.json()
 
         self.assertFalse(public_data["is_participant"])
