@@ -61,7 +61,7 @@ class Trade:
 
         self.make_order(self.maker_form, maker_index)
 
-    def get_robot_auth(self, robot_index, first_encounter=False):
+    def get_robot_auth(self, robot_index):
         """
         Create an AUTH header that embeds token, pub_key, and enc_priv_key into a single string
         as requested by the robosats token middleware.
@@ -73,12 +73,9 @@ class Trade:
         nostr_pubkey = read_file(f"tests/robots/{robot_index}/nostr_pubkey")
 
         # First time a robot authenticated, it is registered by the backend, so pub_key and enc_priv_key is needed
-        if first_encounter:
-            headers = {
-                "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {nostr_pubkey}"
-            }
-        else:
-            headers = {"HTTP_AUTHORIZATION": f"Token {b91_token}"}
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {nostr_pubkey}"
+        }
 
         return headers
 
@@ -87,7 +84,7 @@ class Trade:
         Creates the robots in /tests/robots/{robot_index}
         """
         path = reverse("robot")
-        headers = self.get_robot_auth(robot_index, True)
+        headers = self.get_robot_auth(robot_index)
 
         return self.client.get(path, **headers)
 
@@ -97,7 +94,7 @@ class Trade:
         """
         path = reverse("make")
         # Get valid robot auth headers
-        headers = self.get_robot_auth(robot_index, True)
+        headers = self.get_robot_auth(robot_index)
 
         response = self.client.post(path, maker_form, **headers)
 
@@ -105,13 +102,13 @@ class Trade:
         if response.status_code == 201:
             self.order_id = response.json()["id"]
 
-    def get_order(self, robot_index=1, first_encounter=False):
+    def get_order(self, robot_index=1):
         """
         Fetch the latest state of the order
         """
         path = reverse("order")
         params = f"?order_id={self.order_id}"
-        headers = self.get_robot_auth(robot_index, first_encounter)
+        headers = self.get_robot_auth(robot_index)
         self.response = self.client.get(path + params, **headers)
 
     def get_review(self, robot_index=1):
@@ -189,7 +186,7 @@ class Trade:
     def take_order(self):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
-        headers = self.get_robot_auth(self.taker_index, first_encounter=True)
+        headers = self.get_robot_auth(self.taker_index)
         body = {"action": "take", "amount": self.take_amount}
         self.response = self.client.post(path + params, body, **headers)
 
@@ -197,7 +194,7 @@ class Trade:
     def take_order_third(self):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
-        headers = self.get_robot_auth(self.third_index, first_encounter=True)
+        headers = self.get_robot_auth(self.third_index)
         body = {"action": "take", "amount": self.take_amount}
         self.response = self.client.post(path + params, body, **headers)
 

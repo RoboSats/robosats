@@ -202,10 +202,10 @@ class Order {
     if (slot) {
       const coordinator = federation.getCoordinator(this.shortAlias);
       const { basePath, url } = coordinator;
+      const authHeaders = slot.getRobot()?.getAuthHeaders();
+      if (!authHeaders) return this;
       const data = await apiClient
-        .post(url + basePath, '/api/make/', body, {
-          tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '',
-        })
+        .post(url + basePath, '/api/make/', body, authHeaders)
         .catch((e) => {
           console.log(e);
         });

@@ -141,6 +141,7 @@ public class NotificationsService extends Service {
 
             while (it.hasNext()) {
                 String robotToken = it.next();
+                Log.d("NotificationsService", "Checking Slot");
                 JSONObject slot = (JSONObject) slots.get(robotToken);
                 JSONObject robots = slot.getJSONObject("robots");
                 JSONObject coordinatorRobot;
@@ -187,9 +188,25 @@ public class NotificationsService extends Service {
 
         OkHttpClient client = builder.build();
         Request.Builder requestBuilder = new Request.Builder().url(url);
-
+        String header = String.format("Token %s", token);
+        try {
+            String pubKey = robot.getString("pubKey");
+            String parsedPubKey = String.join("\\", pubKey.split("\n"));
+            String encPrivKey = robot.getString("encPrivKey");
+            String parsedEncPrivKey = String.join("\\", encPrivKey.split("\n"));
+            header += String.format(" | Public %s | Private %s", parsedPubKey, parsedEncPrivKey);
+        } catch (JSONException e) {
+            Log.e("NotificationsService", "Error obtaining PGP keys");
+            return;
+        }
+        try {
+            String nostrPubKey = robot.getString("nostrPubKey");
+            header += String.format(" | Nostr %s", nostrPubKey);
+        } catch (JSONException e) {
+            Log.d("NotificationsService", "Nostr key not found");
+        }
         requestBuilder
-                .addHeader("Authorization", "Token " + token);
+                .addHeader("Authorization", header);
 
         requestBuilder.get();
         Request request = requestBuilder.build();

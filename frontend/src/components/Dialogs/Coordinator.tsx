@@ -525,29 +525,31 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
             />
           </ListItem>
 
-          <ListItemButton
-            target='_blank'
-            href={coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin]}
-            rel='noreferrer'
-          >
-            <ListItemIcon>
-              <Web />
-            </ListItemIcon>
-            <ListItemText
-              secondary={t('Coordinator hosted web app')}
-              primaryTypographyProps={{
-                style: {
-                  maxWidth: '20em',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                },
-              }}
+          {coordinator?.[settings.network] && (
+            <ListItemButton
+              target='_blank'
+              href={coordinator[settings.network][settings.selfhostedClient ? 'onion' : origin]}
+              rel='noreferrer'
             >
-              {`${String(
-                coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin],
-              )}`}
-            </ListItemText>
-          </ListItemButton>
+              <ListItemIcon>
+                <Web />
+              </ListItemIcon>
+              <ListItemText
+                secondary={t('Coordinator hosted web app')}
+                primaryTypographyProps={{
+                  style: {
+                    maxWidth: '20em',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                  },
+                }}
+              >
+                {`${String(
+                  coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin],
+                )}`}
+              </ListItemText>
+            </ListItemButton>
+          )}
         </List>
 
         {!coordinator || coordinator?.loadingInfo ? (

@@ -180,7 +180,7 @@ export class Coordinator {
       this.url = hostUrl;
       this.basePath = `/${settings.network}/${this.shortAlias}`;
     } else {
-      this.url = String(this[settings.network][origin]);
+      this.url = String(this[settings.network]?.[origin]);
       this.basePath = '';
     }
   };
