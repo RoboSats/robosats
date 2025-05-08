@@ -122,7 +122,9 @@ class RoboPool {
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
       if (jsonMessage[0] === 'EVENT') {
-        events.onevent(jsonMessage[2]);
+        const event: Event = jsonMessage[2];
+        const network = event.tags.find((e) => e[0] === 'network');
+        if (network?.[1] === this.network) events.onevent(jsonMessage[2]);
       } else if (jsonMessage[0] === 'EOSE') {
         events.oneose();
       }
