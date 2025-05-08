@@ -30,5 +30,21 @@
       "pgp": "/static/federation/pgp/48339A19645E2E53488E0E5479E1B270FACD1BD2.asc",
       "fingerprint": "48339A19645E2E53488E0E5479E1B270FACD1BD2"
     }
+  },
+  "mostro": {
+    "longAlias": "Mostro",
+    "federated": false,
+    "shortAlias": "mostro",
+    "nostrHexPubkey": "82fa8cb978b43c79b2156585bac2c011176a21d2aead6d9f7c575c005be88390",
+    "description": "Peer-to-peer Lightning Network platform over nostr .",
+    "contact": {
+      "email": null,
+      "telegram": "https://t.me/mostrop2p",
+      "simplex": null,
+      "nostr": "https://njump.me/npub1m0str0d7z2ww8rdh20t2n9lx520xjwhaq24p68umqp06wwrwtsnqen40un",
+      "website": "https://mostro.network",
+      "pgp": null,
+      "fingerprint": null
+    }
   }
 }

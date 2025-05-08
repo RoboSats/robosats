@@ -136,11 +136,9 @@ class RoboPool {
   };
 
   subscribeRatings = (events: RoboPoolEvents, coordinators?: string[]): void => {
-    const pubkeys =
-      coordinators ??
-      [...Object.values(defaultFederation), ...Object.values(thirdParties)]
-        .map((f) => f.nostrHexPubkey)
-        .filter((item) => item !== undefined);
+    const pubkeys = Object.values(defaultFederation)
+      .map((f) => f.nostrHexPubkey)
+      .filter((item) => item !== undefined);
 
     const requestRatings = [
       'REQ',
