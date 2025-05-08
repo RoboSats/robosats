@@ -141,7 +141,7 @@ class RoboPool {
     const requestRatings = [
       'REQ',
       'subscribeRatings',
-      { kinds: [31986], '#p': pubkeys, since: 1745509494 },
+      { kinds: [31986], '#p': pubkeys, since: 1746316800 },
     ];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {

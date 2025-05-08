@@ -360,7 +360,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
-  const [, setRating] = useState<number[]>([0, 0]);
+  const [rating, setRating] = useState<number[]>([0, 0]);
   const [averageRating, setAvergeRating] = useState<number>(0);
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
   const [coordinator, setCoordinator] = useState<Coordinator>(
@@ -442,7 +442,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
                     disabled={settings.connection !== 'nostr'}
                   />
                   <Typography variant='caption' color='text.secondary'>
-                    {`(${parseFloat((averageRating * 10).toFixed(1))})`}
+                    {`(${rating[1]})`}
                   </Typography>
                 </Grid>
               </Grid>
