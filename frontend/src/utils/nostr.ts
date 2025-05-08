@@ -110,17 +110,30 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
 export const verifyCoordinatorToken: (event: Event) => boolean = (event) => {
   const d = event.tags.find((t) => t[0] === 'd')?.[1];
   const orderId = d?.split(':')?.[1];
-  const signature = event.tags.find((t) => t[0] === 'sig')?.[1];
-  const hash = `${event.pubkey}${orderId ?? ''}`;
-  const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
-  if (signature && coordinatorPubKey) {
+  const signatureHex = event.tags.find((t) => t[0] === 'sig')?.[1];
+  const coordinatorPubKeyHex = event.tags.find((t) => t[0] === 'p')?.[1];
+  const message = `${event.pubkey}${orderId ?? ''}`;
+
+  if (signatureHex && coordinatorPubKeyHex) {
     try {
+      const signature = Uint8Array.from(hexToBytes(signatureHex));
+      const coordinatorPubKey = Uint8Array.from(hexToBytes(coordinatorPubKeyHex));
+      const hash = new TextEncoder().encode(message);
       return schnorr.verify(signature, hash, coordinatorPubKey);
     } catch (e) {
       return false;
     }
   }
   return false;
+};
+
+const hexToBytes: (hex: string) => Uint8Array = (hex) => {
+  if (hex.length % 2 !== 0) throw new Error('Hex must have an even lenght');
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return bytes;
 };
 
 export default eventToPublicOrder;

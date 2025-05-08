@@ -135,7 +135,7 @@ const FederationTable = ({
       return {
         field: 'rating',
         headerName: t('Rating'),
-        width: mobile ? 60 : 170,
+        width: mobile ? 60 : 180,
         renderCell: (params: any) => {
           const coordinator = federation.getCoordinator(params.row.shortAlias);
           const coordinatorRating = ratings[coordinator.nostrHexPubkey];
@@ -166,7 +166,7 @@ const FederationTable = ({
                     }}
                   />
                   <Typography variant='caption' color='text.secondary'>
-                    {`(${parseFloat((average * 10).toFixed(1))})`}
+                    {`(${coordinatorRating[1]})`}
                   </Typography>
                 </>
               )}
