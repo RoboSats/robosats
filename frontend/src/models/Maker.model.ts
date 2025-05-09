@@ -8,7 +8,7 @@ export interface Maker {
   paymentMethods: string[];
   paymentMethodsText: string;
   badPaymentMethod: boolean;
-  premium: number | string;
+  premium: number | null;
   satoshis: string;
   publicExpiryTime: Date;
   publicDuration: number;
@@ -34,7 +34,7 @@ export const defaultMaker: Maker = {
   paymentMethods: [],
   paymentMethodsText: 'not specified',
   badPaymentMethod: false,
-  premium: '',
+  premium: null,
   satoshis: '',
   publicExpiryTime: new Date(0, 0, 0, 23, 59),
   publicDuration: 86340,

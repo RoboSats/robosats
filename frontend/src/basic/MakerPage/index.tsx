@@ -37,7 +37,7 @@ const MakerPage = (): React.JSX.Element => {
         mode: fav.mode,
         coordinator: 'robosats',
       },
-      premium: Number(maker.premium ?? null),
+      premium: maker.premium ?? null,
       paymentMethods: maker.paymentMethods,
       amountFilter: {
         amount: maker.amount,
