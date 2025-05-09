@@ -247,7 +247,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
 
             {!openClaimRewards ? (
               <ListItemText secondary={t('Your compensations')}>
-                <Grid container>
+                <Grid container justifyContent='space-between'>
                   <Grid item xs={9}>
                     <Typography>{`${String(robot?.earnedRewards)} Sats`}</Typography>
                   </Grid>

@@ -215,15 +215,14 @@ const RobotProfile = ({
           alignItems='stretch'
           sx={{ width: '100%' }}
         >
-          <Grid item xs={12}>
-            <TokenInput
-              inputToken={inputToken}
-              editable={false}
-              label={t('Store your token safely')}
-              setInputToken={setInputToken}
-              onPressEnter={() => null}
-            />
-          </Grid>
+          <TokenInput
+            fullWidth
+            inputToken={inputToken}
+            editable={false}
+            label={t('Store your token safely')}
+            setInputToken={setInputToken}
+            onPressEnter={() => null}
+          />
         </Grid>
       </Grid>
       <Grid item sx={{ width: '100%' }}>
