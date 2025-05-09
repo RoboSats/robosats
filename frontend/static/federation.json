@@ -192,6 +192,53 @@
     "testnetNodesPubkeys": ["02f0ddc838b35fe54daa13baa4abab84475c7b9f2670ff4b53c1724792843ef62a"],
     "federated": true
   },
+  "bazaar": {
+    "longAlias": "LibreBazaar",
+    "shortAlias": "bazaar",
+    "identifier": "bazaar",
+    "description": "Unorthodox undockerized coordinator. Happy to help the decentralization of Robosats.",
+    "motto": "Freedom and Integrity",
+    "color": "#200000",
+    "established": "2025-05-20",
+    "nostrHexPubkey": "...",
+    "contact": {
+      "email": "mail@librebazaar.com",
+      "telegram": "jerryfletcher21",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2FPtsqghzQKU83kYTlQ1VKg996dW4Cw4x_bvpKmiv8uns%3D%40smp18.simplex.im%2FV6N4pmHtaKhNbY8ab2Opmk9qJsGEaIYd%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEA7Uv1vk2CDBDL0Jcrfn0oe5xxK-QvZmyB0f731ftJbQ0%253D%26q%3Dc%26srv%3Dlyqpnwbs2zqfr45jqkncwpywpbtq7jrhxnib5qddtr6npjyezuwd3nqd.onion",
+      "pgp": "/static/federation/pgp/C6894FC235E06C4FC2FE77916FA7713E574EDEC3.asc",
+      "nostr": null,
+      "website": null,
+      "fingerprint": "C6894FC235E06C4FC2FE77916FA7713E574EDEC3"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "robotsLove": false,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and XMPP are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be first addressed through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["03ab3468f06d3aac93992ef7ae79bce083e18617dc760f09ef687d7bca89667a15"],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
   "local": {
     "longAlias": "Local Dev",
     "shortAlias": "local",
