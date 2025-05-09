@@ -32,6 +32,7 @@ interface Props {
   setMessages: (messages: EncryptedChatMessage[]) => void;
   turtleMode: boolean;
   setTurtleMode: (state: boolean) => void;
+  onSendMessage: (content: string) => void;
 }
 
 const audioPath =
@@ -50,6 +51,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   setMessages,
   setTurtleMode,
   turtleMode,
+  onSendMessage,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -198,6 +200,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       const { url, basePath } = federation
         .getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '')
         .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+      onSendMessage(value);
       apiClient
         .post(
           url + basePath,
@@ -226,6 +229,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     else if (value !== '' && Boolean(robot?.pubKey)) {
       setWaitingEcho(true);
       setLastSent(value);
+      onSendMessage(value);
       encryptMessage(value, robot?.pubKey, peerPubKey ?? '', robot?.encPrivKey, slot?.token)
         .then((encryptedMessage) => {
           const { url, basePath } = federation

@@ -75,6 +75,7 @@ class Robot {
           last_login: data.last_login,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
+          nostrPubKey: data.nostr_pubkey,
         });
       })
       .catch((e) => {

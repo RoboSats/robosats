@@ -1,5 +1,5 @@
 import { type Event } from 'nostr-tools';
-import { type Settings } from '../../models';
+import { type Coordinator, type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
@@ -10,19 +10,12 @@ interface RoboPoolEvents {
 }
 
 class RoboPool {
-  constructor(settings: Settings, origin: string) {
+  constructor(settings: Settings, coordinators: Coordinator[]) {
     this.network = settings.network ?? 'mainnet';
 
     this.relays = [];
-    const federationRelays = Object.values(defaultFederation)
-      .map((coord) => {
-        const url: string = coord[this.network]?.[settings.selfhostedClient ? 'onion' : origin];
+    const federationRelays = coordinators.map((coord) => coord.getRelayUrl());
 
-        if (!url) return undefined;
-
-        return `ws://${url.replace(/^https?:\/\//, '')}/nostr`;
-      })
-      .filter((item) => item !== undefined);
     if (settings.host) {
       const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/nostr`;
       if (federationRelays.includes(hostNostr)) {
@@ -44,8 +37,8 @@ class RoboPool {
   public webSockets: Record<string, WebsocketConnection | null> = {};
   private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
 
-  connect = (): void => {
-    this.relays.forEach((url: string) => {
+  connect = (relays: string[] = this.relays): void => {
+    relays.forEach((url: string) => {
       if (Object.keys(this.webSockets).find((wUrl) => wUrl === url)) return;
 
       this.webSockets[url] = null;
@@ -135,7 +128,7 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestSuccess));
   };
 
-  subscribeRatings = (events: RoboPoolEvents, coordinators?: string[]): void => {
+  subscribeRatings = (events: RoboPoolEvents): void => {
     const pubkeys = Object.values(defaultFederation)
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);
@@ -145,6 +138,20 @@ class RoboPool {
       'subscribeRatings',
       { kinds: [31986], '#p': pubkeys, since: 1746316800 },
     ];
+
+    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+      const jsonMessage = JSON.parse(messageEvent.data);
+      if (jsonMessage[0] === 'EVENT') {
+        events.onevent(jsonMessage[2]);
+      } else if (jsonMessage[0] === 'EOSE') {
+        events.oneose();
+      }
+    });
+    this.sendMessage(JSON.stringify(requestRatings));
+  };
+
+  subscribeChat = (hexPubKeys: string[], since: number, events: RoboPoolEvents): void => {
+    const requestRatings = ['REQ', 'subscribeChat', { kinds: [1059], '#p': hexPubKeys, since }];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
