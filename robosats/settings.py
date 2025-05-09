@@ -234,7 +234,11 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [config("REDIS_URL")],
+            "hosts": [
+                "redis://" + str(config("REDIS_HOST", cast=str, default="localhost")) + \
+                ":" + str(config("REDIS_PORT", cast=str, default="6379")) + \
+                "/" + str(config("REDIS_DB_NUMBER", cast=str, default="1"))
+            ],
         },
     },
 }
@@ -242,7 +246,10 @@ CHANNEL_LAYERS = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": config("REDIS_URL"),
+        "LOCATION": \
+            "redis://" + str(config("REDIS_HOST", cast=str, default="localhost")) + \
+            ":" + str(config("REDIS_PORT", cast=str, default="6379")) + \
+            "/" + str(config("REDIS_DB_NUMBER", cast=str, default="1")),
         "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
