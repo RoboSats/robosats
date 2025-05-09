@@ -1,7 +1,7 @@
 django==5.1.4
 django-admin-relation-links==0.2.5
 django-celery-beat==2.7.0
-django-celery-results==2.5.1
+django-celery-results==2.6.0
 django-model-utils==5.0.0
 django-redis==5.4.0
 djangorestframework==3.15.2
