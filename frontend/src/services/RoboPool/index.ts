@@ -128,7 +128,7 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestSuccess));
   };
 
-  subscribeRatings = (events: RoboPoolEvents, coordinators?: string[]): void => {
+  subscribeRatings = (events: RoboPoolEvents): void => {
     const pubkeys = Object.values(defaultFederation)
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);
@@ -138,6 +138,20 @@ class RoboPool {
       'subscribeRatings',
       { kinds: [31986], '#p': pubkeys, since: 1746316800 },
     ];
+
+    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+      const jsonMessage = JSON.parse(messageEvent.data);
+      if (jsonMessage[0] === 'EVENT') {
+        events.onevent(jsonMessage[2]);
+      } else if (jsonMessage[0] === 'EOSE') {
+        events.oneose();
+      }
+    });
+    this.sendMessage(JSON.stringify(requestRatings));
+  };
+
+  subscribeChat = (hexPubKeys: string[], since: number, events: RoboPoolEvents): void => {
+    const requestRatings = ['REQ', 'subscribeChat', { kinds: [1059], '#p': hexPubKeys, since }];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);

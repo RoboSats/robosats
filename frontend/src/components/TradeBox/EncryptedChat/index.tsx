@@ -46,11 +46,32 @@ const EncryptedChat: React.FC<Props> = ({
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   useEffect(() => {
+    // const slot = garage.getSlot();
     const coordinator = federation.getCoordinator(order.shortAlias);
     federation.roboPool.connect([coordinator.getRelayUrl()]);
+
+    // const since = new Date(order.created_at);
+    // since.setDate(since.getDate() - 2);
+
+    // federation.roboPool.subscribeChat(
+    //   [order.maker_nostr_pubkey, order.taker_nostr_pubkey],
+    //   Math.floor((since.getTime() / 1000)),
+    //   {
+    //     oneose: () => {},
+    //     onevent(event) {
+    //       if (slot?.nostrSecKey) {
+    //         console.log(nip17.unwrapEvent(event, slot.nostrSecKey))
+    //       }
+    //     },
+    //   }
+    // )
   }, []);
 
   const onSendMessage = (content: string): void => {
+    sendToNostr(content);
+  };
+
+  const sendToNostr = (content: string): void => {
     const slot = garage.getSlot();
     const coordinator = federation.getCoordinator(order.shortAlias);
 
