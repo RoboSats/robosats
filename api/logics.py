@@ -675,6 +675,20 @@ class Logics:
         # Create onchain_payment
         onchain_payment = OnchainPayment.objects.create(receiver=user)
 
+        if \
+            config("TIMING_EXTRA_IN_TESTS", cast=bool, default=False) and \
+            config("TESTING", cast=bool, default=False) and \
+            config("LNVENDOR", cast=str, default="LND") == "CLN":
+            import time
+            retries = 0
+            while onchain_payment.balance.onchain_confirmed == 0:
+                retries += 1
+                if retries > 30:
+                    break
+                print("TIMING_EXTRA_IN_TESTS: onchain_payment.balance.onchain_confirmed is not 0, sleeping 2s")
+                time.sleep(2)
+                onchain_payment = OnchainPayment.objects.create(receiver=user)
+
         # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
         # Accounts for already committed outgoing TX for previous users.
         confirmed = onchain_payment.balance.onchain_confirmed
