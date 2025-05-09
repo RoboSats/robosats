@@ -9,8 +9,42 @@
       "email": null,
       "telegram": "https://t.me/p2plightning",
       "simplex": null,
-      "nostr": null,
-      "website": "https://lnp2pbot.com"
+      "nostr": "https://njump.me/nprofile1qqs0es4q4yl3t7txceldxjrwkjfk6gdm88q5m6f68qff7683s8udrmqs874xa",
+      "website": "https://lnp2pbot.com",
+      "pgp": null,
+      "fingerprint": null
+    }
+  },
+  "peach": {
+    "longAlias": "Peach",
+    "federated": false,
+    "shortAlias": "peach",
+    "nostrHexPubkey": "a47457722e10ba3a271fbe7040259a3c4da2cf53bfd1e198138214d235064fc2",
+    "description": "The easiest way to buy & sell Bitcoin peer-to-peer.",
+    "contact": {
+      "email": "hello@peachbitcoin.com",
+      "telegram": "https://t.me/peachtopeach",
+      "simplex": null,
+      "nostr": "https://njump.me/nprofile1qqs2gazhwghppw36yu0muuzqykdrcndzeafml50pnqfcy9xjx5rylsss0wkz7",
+      "website": "https://peachbitcoin.com",
+      "pgp": "/static/federation/pgp/48339A19645E2E53488E0E5479E1B270FACD1BD2.asc",
+      "fingerprint": "48339A19645E2E53488E0E5479E1B270FACD1BD2"
+    }
+  },
+  "mostro": {
+    "longAlias": "Mostro",
+    "federated": false,
+    "shortAlias": "mostro",
+    "nostrHexPubkey": "82fa8cb978b43c79b2156585bac2c011176a21d2aead6d9f7c575c005be88390",
+    "description": "Peer-to-peer Lightning Network platform over nostr .",
+    "contact": {
+      "email": null,
+      "telegram": "https://t.me/mostrop2p",
+      "simplex": null,
+      "nostr": "https://njump.me/npub1m0str0d7z2ww8rdh20t2n9lx520xjwhaq24p68umqp06wwrwtsnqen40un",
+      "website": "https://mostro.network",
+      "pgp": null,
+      "fingerprint": null
     }
   }
 }

@@ -56,6 +56,9 @@ const BookControl = ({
 
   const handleHostChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
     const coordinator = String(e.target.value);
+    if (coordinator === 'any') {
+      federation.refreshBookHosts(coordinator !== 'any');
+    }
     setFav({ ...fav, coordinator });
   };
 
