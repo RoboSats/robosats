@@ -4,7 +4,7 @@ import SettingsForm from '../../components/SettingsForm';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import Coordinators from './Coordinators';
 
-const SettingsPage = (): JSX.Element => {
+const SettingsPage = (): React.JSX.Element => {
   const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   return (

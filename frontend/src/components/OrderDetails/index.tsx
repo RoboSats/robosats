@@ -55,7 +55,7 @@ const OrderDetails = ({
   currentOrder,
   onClickCoordinator = () => null,
   onClickGenerateRobot = () => null,
-}: OrderDetailsProps): JSX.Element => {
+}: OrderDetailsProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -106,7 +106,7 @@ const OrderDetails = ({
     minutes,
     seconds,
     completed,
-  }: CountdownRenderProps): JSX.Element {
+  }: CountdownRenderProps): React.JSX.Element {
     if (completed) {
       // Render a completed state
       return <span> {t('The order has expired')}</span>;
@@ -132,7 +132,7 @@ const OrderDetails = ({
     }
   };
 
-  const timerRenderer = function (seconds: number): JSX.Element {
+  const timerRenderer = function (seconds: number): React.JSX.Element {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - hours * 3600) / 60);
     return (
@@ -151,7 +151,7 @@ const OrderDetails = ({
     minutes: number;
     seconds: number;
     completed: boolean;
-  }): JSX.Element => {
+  }): React.JSX.Element => {
     if (completed) {
       // Render a completed state
       return <span> {t('Penalty lifted, good to go!')}</span>;

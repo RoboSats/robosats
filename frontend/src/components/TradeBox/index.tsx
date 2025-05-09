@@ -108,12 +108,12 @@ interface Contract {
   title: string;
   titleVariables: object;
   titleColor: string;
-  prompt: () => JSX.Element;
+  prompt: () => React.JSX.Element;
   bondStatus: 'hide' | 'locked' | 'unlocked' | 'settled';
-  titleIcon: () => JSX.Element;
+  titleIcon: () => React.JSX.Element;
 }
 
-const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element => {
+const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -345,7 +345,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
       setOpen({ ...open, webln: true });
       webln
         .makeInvoice(() => lightning.amount)
-        .then((invoice: any) => {
+        .then((invoice: object) => {
           if (invoice !== undefined) {
             updateInvoice(invoice.paymentRequest);
             setWaitingWebln(false);

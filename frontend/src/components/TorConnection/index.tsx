@@ -16,7 +16,7 @@ const TorIndicator = ({
   tooltipOpen = undefined,
   title,
   progress,
-}: TorIndicatorProps): JSX.Element => {
+}: TorIndicatorProps): React.JSX.Element => {
   return (
     <Tooltip
       open={tooltipOpen}
@@ -54,7 +54,7 @@ const TorIndicator = ({
   );
 };
 
-const TorConnectionBadge = (): JSX.Element => {
+const TorConnectionBadge = (): React.JSX.Element => {
   const { torStatus, settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
 

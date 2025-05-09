@@ -191,7 +191,7 @@ export const initialAppContext: UseAppStoreType = {
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
 
-export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.Element => {
+export const AppContextProvider = ({ children }: AppContextProviderProps): React.JSX.Element => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 

@@ -33,7 +33,7 @@ interface AmountRangeProps {
   maxAmount: string;
   type: number;
   currency: number;
-  handleRangeAmountChange: (e: any, activeThumb: any) => void;
+  handleRangeAmountChange: (event: Event, value: number | number[], activeThumb: number) => void;
   handleMaxAmountChange: (
     e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;

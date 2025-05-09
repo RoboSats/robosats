@@ -25,7 +25,7 @@ interface Props {
   onClose: () => void;
 }
 
-const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
+const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -109,7 +109,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <b>{t('Coordinators that know your robot:')}</b>
         </Typography>
 
-        {federation.getCoordinators().map((coordinator: Coordinator): JSX.Element => {
+        {federation.getCoordinators().map((coordinator: Coordinator): React.JSX.Element => {
           const coordinatorRobot = garage.getSlot()?.getRobot(coordinator.shortAlias);
           return (
             <div key={coordinator.shortAlias}>

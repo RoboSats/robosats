@@ -14,7 +14,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
 import { type PublicOrder } from '../../models';
 
-const BookPage = (): JSX.Element => {
+const BookPage = (): React.JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
@@ -43,7 +43,7 @@ const BookPage = (): JSX.Element => {
     }
   };
 
-  const NavButtons = function (): JSX.Element {
+  const NavButtons = function (): React.JSX.Element {
     return (
       <ButtonGroup variant='contained' color='inherit'>
         <Button

@@ -23,7 +23,7 @@ class WebsocketConnectionWeb implements WebsocketConnection {
     this.rws.close();
   };
 
-  public onMessage: (event: (message: any) => void) => void = (event) => {
+  public onMessage: (event: (message: object) => void) => void = (event) => {
     this.rws.addEventListener('message', event);
   };
 
@@ -31,7 +31,7 @@ class WebsocketConnectionWeb implements WebsocketConnection {
     this.rws.addEventListener('close', event);
   };
 
-  public onError: (event: (error: any) => void) => void = (event) => {
+  public onError: (event: (error: object) => void) => void = (event) => {
     this.rws.addEventListener('error', event);
   };
 
@@ -48,7 +48,7 @@ class WebsocketWebClient implements WebsocketClient {
         connection.rws.addEventListener('open', () => {
           resolve(connection);
         });
-      } catch (error) {
+      } catch {
         reject(new Error('Failed to establish a websocket connection.'));
       }
     });

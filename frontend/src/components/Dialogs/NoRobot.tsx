@@ -21,7 +21,7 @@ const NoRobotDialog = ({
   open,
   onClose,
   onClickGenerateRobot = () => null,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 

@@ -15,18 +15,10 @@ interface BookWidgetProps {
   onTouchEnd?: () => void;
 }
 
-const BookWidget = React.forwardRef(function Component(
-  {
-    layout,
-    gridCellSize = 2,
-    style,
-    className,
-    onMouseDown,
-    onMouseUp,
-    onTouchEnd,
-  }: BookWidgetProps,
-  ref,
-) {
+const BookWidget = React.forwardRef(function Component({
+  layout,
+  gridCellSize = 2,
+}: BookWidgetProps) {
   const { windowSize, fav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 

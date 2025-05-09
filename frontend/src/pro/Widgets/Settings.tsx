@@ -3,18 +3,7 @@ import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 
-interface SettingsWidgetProps {
-  style?: React.StyleHTMLAttributes<HTMLElement>;
-  className?: string;
-  onMouseDown?: () => void;
-  onMouseUp?: () => void;
-  onTouchEnd?: () => void;
-}
-
-const SettingsWidget = React.forwardRef(function Component(
-  { style, className, onMouseDown, onMouseUp, onTouchEnd }: SettingsWidgetProps,
-  ref,
-) {
+const SettingsWidget = React.forwardRef(function Component() {
   const { settings } = useContext<UseAppStoreType>(AppContext);
   return React.useMemo(() => {
     return (

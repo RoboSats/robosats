@@ -177,7 +177,7 @@ class Order {
   bad_invoice?: string = '';
   bad_statement?: string = '';
 
-  update = (attributes: Record<string, any>): Order => {
+  update = (attributes: object): Order => {
     Object.assign(this, attributes);
     return this;
   };

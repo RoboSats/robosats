@@ -93,7 +93,7 @@ export async function decryptMessage(
     await signatures[0].verified; // throws on invalid signature
     console.log('Signature is valid');
     return { decryptedMessage: String(decrypted), validSignature: true };
-  } catch (e) {
+  } catch {
     return { decryptedMessage: String(decrypted), validSignature: false };
   }
 }

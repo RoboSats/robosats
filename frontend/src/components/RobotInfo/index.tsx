@@ -84,7 +84,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
     }
   };
 
-  const handleSubmitInvoiceClicked = (e: any, rewardInvoice: string): void => {
+  const handleSubmitInvoiceClicked = (e: Event, rewardInvoice: string): void => {
     setBadInvoice('');
     setShowRewardsSpinner(true);
 

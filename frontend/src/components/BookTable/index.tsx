@@ -88,7 +88,7 @@ const BookTable = ({
   showFooter = true,
   showNoResults = true,
   onOrderClicked = () => null,
-}: BookTableProps): JSX.Element => {
+}: BookTableProps): React.JSX.Element => {
   const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -183,7 +183,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
@@ -219,7 +219,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
@@ -264,7 +264,7 @@ const BookTable = ({
       field: 'coordinatorShortAlias',
       headerName: t('Host'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
@@ -298,7 +298,7 @@ const BookTable = ({
         field: 'type',
         headerName: t('Is'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           return (
             <div
               style={{ cursor: 'pointer' }}
@@ -324,7 +324,7 @@ const BookTable = ({
         headerName: t('Amount'),
         type: 'number',
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
           const minAmount =
             fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
@@ -352,7 +352,7 @@ const BookTable = ({
       field: 'currency',
       headerName: t('Currency'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         return (
           <div
@@ -382,7 +382,7 @@ const BookTable = ({
         field: 'payment_method',
         headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           return (
             <div
               style={{ cursor: 'pointer' }}
@@ -411,7 +411,7 @@ const BookTable = ({
       field: 'payment_method',
       headerName: t('Pay'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{
@@ -441,7 +441,7 @@ const BookTable = ({
       headerName: t('Price'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         const coordinator =
           federation.getCoordinator(params.row.coordinatorShortAlias) ??
@@ -480,7 +480,7 @@ const BookTable = ({
         headerName: t('Premium'),
         type: 'number',
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           const currencyCode = String(currencyDict[params.row.currency.toString()]);
           let fontColor = `rgb(0,0,0)`;
           let premiumPoint = 0;
@@ -532,7 +532,7 @@ const BookTable = ({
       headerName: t('Timer'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
         return (
@@ -555,7 +555,7 @@ const BookTable = ({
       headerName: t('Expiry'),
       type: 'string',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const expiresAt: Date = new Date(params.row.expires_at);
         const timeToExpiry: number = Math.abs(expiresAt - new Date());
         const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
@@ -603,7 +603,7 @@ const BookTable = ({
       headerName: t('Sats now'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const coordinator =
           federation.getCoordinator(params.row.coordinatorShortAlias) ??
           federation.getCoordinators()[0];
@@ -637,7 +637,7 @@ const BookTable = ({
       field: 'id',
       headerName: 'Order ID',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -660,7 +660,7 @@ const BookTable = ({
       headerName: t('Bond'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -850,7 +850,7 @@ const BookTable = ({
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
-  const Footer = function (): JSX.Element {
+  const Footer = function (): React.JSX.Element {
     return (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
@@ -883,7 +883,7 @@ const BookTable = ({
     );
   };
 
-  const NoResultsOverlay = function (): JSX.Element {
+  const NoResultsOverlay = function (): React.JSX.Element {
     return (
       <Grid
         container

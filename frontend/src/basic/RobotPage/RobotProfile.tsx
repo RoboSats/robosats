@@ -38,7 +38,7 @@ const RobotProfile = ({
   setInputToken,
   setView,
   width,
-}: RobotProfileProps): JSX.Element => {
+}: RobotProfileProps): React.JSX.Element => {
   const { windowSize, client, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);

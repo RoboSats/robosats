@@ -24,7 +24,7 @@ const BookControl = ({
   width,
   paymentMethod,
   setPaymentMethods,
-}: BookControlProps): JSX.Element => {
+}: BookControlProps): React.JSX.Element => {
   const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 

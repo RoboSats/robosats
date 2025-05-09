@@ -24,7 +24,7 @@ interface Props {
   onClose: () => void;
 }
 
-const ClientDialog = ({ open = false, onClose }: Props): JSX.Element => {
+const ClientDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { clientVersion } = useContext<AppContextProps>(AppContext);
 

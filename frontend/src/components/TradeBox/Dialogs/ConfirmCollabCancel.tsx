@@ -24,7 +24,7 @@ export const ConfirmCollabCancelDialog = ({
   onClose,
   onCollabCancelClick,
   peerAskedCancel,
-}: ConfirmCollabCancelDialogProps): JSX.Element => {
+}: ConfirmCollabCancelDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

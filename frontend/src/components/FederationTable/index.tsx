@@ -20,7 +20,7 @@ const FederationTable = ({
   maxWidth = 90,
   maxHeight = 50,
   fillContainer = false,
-}: FederationTableProps): JSX.Element => {
+}: FederationTableProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { setOpen, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
@@ -89,12 +89,12 @@ const FederationTable = ({
     });
   };
 
-  const aliasObj = useCallback((_width: number) => {
+  const aliasObj = useCallback(() => {
     return {
       field: 'longAlias',
       headerName: mobile ? '' : t('Rating'),
       width: mobile ? 60 : 190,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: Coordinator }) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
         return (
           <Grid
@@ -130,53 +130,50 @@ const FederationTable = ({
     };
   }, []);
 
-  const ratingObj = useCallback(
-    (width: number) => {
-      return {
-        field: 'rating',
-        headerName: t('Rating'),
-        width: mobile ? 60 : 180,
-        renderCell: (params: any) => {
-          const coordinator = federation.getCoordinator(params.row.shortAlias);
-          const coordinatorRating = ratings[coordinator.nostrHexPubkey];
+  const ratingObj = useCallback(() => {
+    return {
+      field: 'rating',
+      headerName: t('Rating'),
+      width: mobile ? 60 : 180,
+      renderCell: (params: { row: Coordinator }) => {
+        const coordinator = federation.getCoordinator(params.row.shortAlias);
+        const coordinatorRating = ratings[coordinator.nostrHexPubkey];
 
-          if (!coordinatorRating) return <></>;
+        if (!coordinatorRating) return <></>;
 
-          const average =
-            coordinatorRating && coordinatorRating[1] > 0
-              ? coordinatorRating[0] / coordinatorRating[1]
-              : 0;
-          return (
-            <>
-              {mobile ? (
-                <Grid container direction='column' alignItems='center' style={{ paddingTop: 10 }}>
-                  <Typography>{`${parseFloat((average * 10).toFixed(1))}`}</Typography>
-                </Grid>
-              ) : (
-                <>
-                  <Rating
-                    readOnly
-                    precision={0.5}
-                    name='size-large'
-                    value={average * 5}
-                    defaultValue={0}
-                    disabled={settings.connection !== 'nostr'}
-                    onClick={() => {
-                      onClickCoordinator(params.row.shortAlias);
-                    }}
-                  />
-                  <Typography variant='caption' color='text.secondary'>
-                    {`(${coordinatorRating[1]})`}
-                  </Typography>
-                </>
-              )}
-            </>
-          );
-        },
-      };
-    },
-    [federationUpdatedAt],
-  );
+        const average =
+          coordinatorRating && coordinatorRating[1] > 0
+            ? coordinatorRating[0] / coordinatorRating[1]
+            : 0;
+        return (
+          <>
+            {mobile ? (
+              <Grid container direction='column' alignItems='center' style={{ paddingTop: 10 }}>
+                <Typography>{`${parseFloat((average * 10).toFixed(1))}`}</Typography>
+              </Grid>
+            ) : (
+              <>
+                <Rating
+                  readOnly
+                  precision={0.5}
+                  name='size-large'
+                  value={average * 5}
+                  defaultValue={0}
+                  disabled={settings.connection !== 'nostr'}
+                  onClick={() => {
+                    onClickCoordinator(params.row.shortAlias);
+                  }}
+                />
+                <Typography variant='caption' color='text.secondary'>
+                  {`(${coordinatorRating[1]})`}
+                </Typography>
+              </>
+            )}
+          </>
+        );
+      },
+    };
+  }, [federationUpdatedAt]);
 
   const enabledObj = useCallback(
     (width: number) => {
@@ -184,7 +181,7 @@ const FederationTable = ({
         field: 'enabled',
         headerName: t('Enabled'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: Coordinator }) => {
           return (
             <Checkbox
               checked={params.row.enabled}
@@ -205,7 +202,7 @@ const FederationTable = ({
         field: 'up',
         headerName: t('Up'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: Coordinator }) => {
           return (
             <div
               style={{ cursor: 'pointer' }}

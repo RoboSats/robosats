@@ -15,7 +15,7 @@ export const ExpiredPrompt = ({
   loadingRenew,
   order,
   onClickRenew,
-}: ExpiredPromptProps): JSX.Element => {
+}: ExpiredPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

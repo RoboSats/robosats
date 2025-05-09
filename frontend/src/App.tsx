@@ -15,7 +15,7 @@ import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
 import NotificationSwitchBadge from './components/NotificationSwitch';
 
-const App = (): JSX.Element => {
+const App = (): React.JSX.Element => {
   const [client] = window.RobosatsSettings.split('-');
   return (
     <StrictMode>

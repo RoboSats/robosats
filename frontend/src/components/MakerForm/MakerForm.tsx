@@ -61,7 +61,7 @@ const MakerForm = ({
   onSubmit = () => {},
   onReset = () => {},
   submitButtonLabel = 'Create Order',
-}: MakerFormProps): JSX.Element => {
+}: MakerFormProps): React.JSX.Element => {
   const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -421,7 +421,11 @@ const MakerForm = ({
     });
   };
 
-  const handleRangeAmountChange = function (e: any, newValue, activeThumb: number): void {
+  const handleRangeAmountChange = (
+    e: Event,
+    newValue: number | number[],
+    activeThumb: number,
+  ): void => {
     let minAmount = e.target.value[0];
     let maxAmount = e.target.value[1];
 
@@ -541,7 +545,7 @@ const MakerForm = ({
     }
   };
 
-  const SummaryText = (): JSX.Element => {
+  const SummaryText = (): React.JSX.Element => {
     return (
       <Typography
         component='h2'
@@ -1197,9 +1201,7 @@ const MakerForm = ({
                   loading={submittingRequest}
                   color='primary'
                   variant='contained'
-                  onClick={() => {
-                    disableRequest ? onSubmit() : setOpenDialogs(true);
-                  }}
+                  onClick={() => (disableRequest ? onSubmit() : setOpenDialogs(true))}
                 >
                   {t(submitButtonLabel)}
                 </LoadingButton>

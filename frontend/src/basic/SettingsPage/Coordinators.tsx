@@ -5,7 +5,7 @@ import { t } from 'i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
-const Coordinators = (): JSX.Element => {
+const Coordinators = (): React.JSX.Element => {
   const { federation, addNewCoordinator } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [newAlias, setNewAlias] = useState<string>('');

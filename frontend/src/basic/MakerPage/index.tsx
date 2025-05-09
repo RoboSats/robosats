@@ -14,7 +14,7 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
 import { type PublicOrder } from '../../models';
 
-const MakerPage = (): JSX.Element => {
+const MakerPage = (): React.JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
@@ -37,7 +37,7 @@ const MakerPage = (): JSX.Element => {
         mode: fav.mode,
         coordinator: 'robosats',
       },
-      premium: Number(maker.premium) ?? null,
+      premium: Number(maker.premium ?? null),
       paymentMethods: maker.paymentMethods,
       amountFilter: {
         amount: maker.amount,

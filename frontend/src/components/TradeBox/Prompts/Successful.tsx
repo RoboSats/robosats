@@ -41,7 +41,7 @@ export const SuccessfulPrompt = ({
   onClickStartAgain,
   onClickRenew,
   loadingRenew,
-}: SuccessfulPromptProps): JSX.Element => {
+}: SuccessfulPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   const currencyCode: string = currencies[`${order.currency}`];
   const { settings } = useContext<UseAppStoreType>(AppContext);

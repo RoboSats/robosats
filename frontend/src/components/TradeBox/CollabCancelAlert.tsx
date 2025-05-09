@@ -7,7 +7,7 @@ interface CollabCancelAlertProps {
   order: Order | null;
 }
 
-const CollabCancelAlert = ({ order }: CollabCancelAlertProps): JSX.Element => {
+const CollabCancelAlert = ({ order }: CollabCancelAlertProps): React.JSX.Element => {
   const { t } = useTranslation();
   let text = '';
   if (order?.pending_cancel === true && order?.status === 9) {
