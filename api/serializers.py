@@ -267,11 +267,17 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     maker_hash_id = serializers.CharField(
         required=False, help_text="The maker's robot hash"
     )
+    maker_nostr_pubkey = serializers.CharField(
+        required=False, help_text="The maker's robot nostr hex pubkey"
+    )
     taker_nick = serializers.CharField(
         required=False, help_text="The taker's robot hash"
     )
     taker_hash_id = serializers.CharField(
         required=False, help_text="The taker's robot hash"
+    )
+    taker_nostr_pubkey = serializers.CharField(
+        required=False, help_text="The taker's robot nostr hex pubkey"
     )
     status_message = serializers.CharField(
         required=False,
@@ -444,8 +450,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "is_seller",
             "maker_nick",
             "maker_hash_id",
+            "maker_nostr_pubkey",
             "taker_nick",
             "taker_hash_id",
+            "taker_nostr_pubkey",
             "status_message",
             "is_fiat_sent",
             "is_disputed",

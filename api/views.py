@@ -267,6 +267,7 @@ class OrderView(viewsets.ViewSet):
 
         data["maker_nick"] = str(order.maker)
         data["maker_hash_id"] = str(order.maker.robot.hash_id)
+        data["maker_nostr_pubkey"] = str(order.maker.robot.nostr_pubkey)
 
         # Add activity status of participants based on last_seen
         data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
@@ -308,6 +309,7 @@ class OrderView(viewsets.ViewSet):
         data["taker_nick"] = str(order.taker)
         if order.taker:
             data["taker_hash_id"] = str(order.taker.robot.hash_id)
+            data["taker_nostr_pubkey"] = str(order.taker.robot.nostr_pubkey)
         data["status_message"] = Order.Status(order.status).label
         data["is_fiat_sent"] = order.is_fiat_sent
         data["latitude"] = order.latitude

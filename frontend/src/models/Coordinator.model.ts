@@ -303,6 +303,10 @@ export class Coordinator {
       return { url: String(this[network][origin]), basePath: '' };
     }
   };
+
+  getRelayUrl = (): string => {
+    return `ws://${this.url.replace(/^https?:\/\//, '')}/nostr`;
+  };
 }
 
 export default Coordinator;

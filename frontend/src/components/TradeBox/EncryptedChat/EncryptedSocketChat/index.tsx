@@ -38,6 +38,7 @@ interface Props {
   setMessages: (messages: EncryptedChatMessage[]) => void;
   turtleMode: boolean;
   setTurtleMode: (state: boolean) => void;
+  onSendMessage: (content: string) => void;
 }
 
 const EncryptedSocketChat: React.FC<Props> = ({
@@ -51,6 +52,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   setMessages,
   turtleMode,
   setTurtleMode,
+  onSendMessage,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -248,6 +250,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
     // If input string contains '#' send unencrypted and unlogged message
     else if (connection != null && value.substring(0, 1) === '#') {
+      onSendMessage(value);
       connection.send(
         JSON.stringify({
           type: 'message',
@@ -263,6 +266,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
+      onSendMessage(value);
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
         .then((encryptedMessage) => {
           if (connection != null) {

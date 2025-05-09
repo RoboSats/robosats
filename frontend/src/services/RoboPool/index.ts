@@ -1,5 +1,5 @@
 import { type Event } from 'nostr-tools';
-import { type Settings } from '../../models';
+import { type Coordinator, type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
@@ -10,19 +10,12 @@ interface RoboPoolEvents {
 }
 
 class RoboPool {
-  constructor(settings: Settings, origin: string) {
+  constructor(settings: Settings, coordinators: Coordinator[]) {
     this.network = settings.network ?? 'mainnet';
 
     this.relays = [];
-    const federationRelays = Object.values(defaultFederation)
-      .map((coord) => {
-        const url: string = coord[this.network]?.[settings.selfhostedClient ? 'onion' : origin];
+    const federationRelays = coordinators.map((coord) => coord.getRelayUrl());
 
-        if (!url) return undefined;
-
-        return `ws://${url.replace(/^https?:\/\//, '')}/nostr`;
-      })
-      .filter((item) => item !== undefined);
     if (settings.host) {
       const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/nostr`;
       if (federationRelays.includes(hostNostr)) {
@@ -44,8 +37,8 @@ class RoboPool {
   public webSockets: Record<string, WebsocketConnection | null> = {};
   private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
 
-  connect = (): void => {
-    this.relays.forEach((url: string) => {
+  connect = (relays: string[] = this.relays): void => {
+    relays.forEach((url: string) => {
       if (Object.keys(this.webSockets).find((wUrl) => wUrl === url)) return;
 
       this.webSockets[url] = null;

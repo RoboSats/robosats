@@ -65,7 +65,7 @@ export class Federation {
     if (tesnetHost) settings.network = 'testnet';
     this.connection = null;
 
-    this.roboPool = new RoboPool(settings, origin);
+    this.roboPool = new RoboPool(settings, Object.values(this.coordinators));
   }
 
   private coordinators: Record<string, Coordinator>;

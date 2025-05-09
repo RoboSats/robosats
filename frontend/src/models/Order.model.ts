@@ -93,8 +93,10 @@ class Order {
   is_seller: boolean = false;
   maker_nick: string = '';
   maker_hash_id: string = '';
+  maker_nostr_pubkey: string = '';
   taker_nick: string = '';
   taker_hash_id: string = '';
+  taker_nostr_pubkey: string = '';
   status_message: string = '';
   is_fiat_sent: boolean = false;
   is_disputed: boolean = false;
