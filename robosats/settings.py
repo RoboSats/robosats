@@ -40,7 +40,7 @@ with open("version.json") as f:
     VERSION = json.load(f)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if config("DEVELOPMENT", default=False):
+if config("DEVELOPMENT", cast=bool, default=False):
     DEBUG = True
 
 ALLOWED_HOSTS = [
