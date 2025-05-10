@@ -23,7 +23,7 @@ protocols["websocket"] = AuthMiddlewareStack(
     )
 )
 
-if config("DEVELOPMENT", default=False):
+if config("DEVELOPMENT", cast=bool, default=False):
     protocols["http"] = django_asgi_app
 
 application = ProtocolTypeRouter(protocols)
