@@ -144,7 +144,7 @@ export interface UseAppStoreType {
   navbarHeight: number;
   open: OpenDialogs;
   setOpen: Dispatch<SetStateAction<OpenDialogs>>;
-  windowSize?: WindowSize;
+  windowSize: WindowSize;
   acknowledgedWarning: boolean;
   setAcknowledgedWarning: Dispatch<SetStateAction<boolean>>;
   clientVersion: {
@@ -212,8 +212,8 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
     initialAppContext.slideDirection,
   );
   const [open, setOpen] = useState<OpenDialogs>(initialAppContext.open);
-  const [windowSize, setWindowSize] = useState<WindowSize>(() =>
-    getWindowSize(theme.typography.fontSize),
+  const [windowSize, setWindowSize] = useState<WindowSize>(
+    () => getWindowSize(theme.typography.fontSize) ?? { width: 0, height: 0 },
   );
   const [fav, setFav] = useState<Favorites>(initialAppContext.fav);
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(

@@ -295,20 +295,18 @@ const DepthChart: React.FC<DepthChartProps> = ({
             <CircularProgress />
           </div>
         ) : (
-          <Grid container style={{ paddingTop: '1em' }}>
+          <Grid container>
             <Grid
               container
               direction='row'
-              justifyContent='space-around'
-              alignItems='flex-start'
-              style={{ position: 'absolute' }}
+              justifyContent='space-between'
+              alignItems='center'
+              style={{ width: '100%' }}
             >
-              <Grid
-                container
-                justifyContent='flex-start'
-                alignItems='flex-start'
-                style={{ paddingLeft: '1em' }}
-              >
+              <Grid container style={{ paddingLeft: '1em', paddingTop: 3 }}>
+                <b>{t('Chart')}</b>
+              </Grid>
+              <Grid container style={{ paddingLeft: '1em' }}>
                 <Select
                   variant='standard'
                   value={xType}
@@ -328,8 +326,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   </MenuItem>
                 </Select>
               </Grid>
-            </Grid>
-            <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid container justifyContent='center' alignItems='center'>
                 <Grid item>
                   <IconButton
@@ -359,7 +355,10 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid container style={{ height: `${height * 0.8}em`, padding: '1em' }}>
+            <Grid
+              container
+              style={{ height: `${height * 0.825}em`, width: '100%', padding: '1em' }}
+            >
               <ResponsiveLine
                 data={series}
                 enableArea={true}

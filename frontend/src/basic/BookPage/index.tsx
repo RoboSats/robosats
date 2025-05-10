@@ -46,14 +46,6 @@ const BookPage = (): React.JSX.Element => {
   const NavButtons = function (): React.JSX.Element {
     return (
       <ButtonGroup variant='contained' color='inherit'>
-        <Button
-          color='primary'
-          onClick={() => {
-            navigate('/create');
-          }}
-        >
-          {t('Create')}
-        </Button>
         {doubleView ? (
           <></>
         ) : (
@@ -102,30 +94,30 @@ const BookPage = (): React.JSX.Element => {
             justifyContent='center'
             spacing={1}
             direction='row'
-            style={{ width: `${windowSize.width}em` }}
+            style={{ width: `${windowSize.width}em`, height: `${windowSize.height * 0.875}em` }}
           >
-            <Grid item>
+            <Grid>
               <BookTable
                 maxWidth={maxBookTableWidth} // EM units
-                maxHeight={windowSize.height * 0.825 - 5} // EM units
+                maxHeight={windowSize.height * 0.8} // EM units
                 fullWidth={windowSize.width} // EM units
                 fullHeight={windowSize.height} // EM units
                 defaultFullscreen={false}
                 onOrderClicked={onOrderClicked}
               />
             </Grid>
-            <Grid item justifyContent='space-between'>
-              <Grid item>
+            <Grid>
+              <Grid item style={{ marginBottom: 10 }}>
                 <DepthChart
                   maxWidth={chartWidthEm} // EM units
-                  maxHeight={(windowSize.height * 0.825 - 5) / 2} // EM units
+                  maxHeight={(windowSize.height * 0.82) / 2} // EM units
                   onOrderClicked={onOrderClicked}
                 />
               </Grid>
               <Grid item>
                 <MapChart
                   maxWidth={chartWidthEm} // EM units
-                  maxHeight={(windowSize.height * 0.825 - 5) / 2} // EM units
+                  maxHeight={(windowSize.height * 0.82) / 2} // EM units
                   onOrderClicked={onOrderClicked}
                 />
               </Grid>
@@ -134,13 +126,13 @@ const BookPage = (): React.JSX.Element => {
         ) : view === 'depth' ? (
           <DepthChart
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.825 - 5} // EM units
+            maxHeight={windowSize.height * 0.835} // EM units
             onOrderClicked={onOrderClicked}
           />
         ) : view === 'map' ? (
           <MapChart
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.825 - 5} // EM units
+            maxHeight={windowSize.height * 0.82} // EM units
             onOrderClicked={onOrderClicked}
           />
         ) : (
