@@ -12,7 +12,7 @@ interface Props {
   setInputToken: (inputToken: string) => void;
 }
 
-const RecoveryDialog = ({ setInputToken, setView }: Props): JSX.Element => {
+const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { open, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);

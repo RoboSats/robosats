@@ -9,7 +9,7 @@ interface ToolBarProps {
   height?: string;
 }
 
-const ToolBar = ({ height = '3em' }: ToolBarProps): JSX.Element => {
+const ToolBar = ({ height = '3em' }: ToolBarProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { settings, setSettings } = useContext<AppContextProps>(AppContext);
 

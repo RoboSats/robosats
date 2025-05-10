@@ -38,7 +38,7 @@ const RobotProfile = ({
   setInputToken,
   setView,
   width,
-}: RobotProfileProps): JSX.Element => {
+}: RobotProfileProps): React.JSX.Element => {
   const { windowSize, client, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -215,15 +215,14 @@ const RobotProfile = ({
           alignItems='stretch'
           sx={{ width: '100%' }}
         >
-          <Grid item xs={12}>
-            <TokenInput
-              inputToken={inputToken}
-              editable={false}
-              label={t('Store your token safely')}
-              setInputToken={setInputToken}
-              onPressEnter={() => null}
-            />
-          </Grid>
+          <TokenInput
+            fullWidth
+            inputToken={inputToken}
+            editable={false}
+            label={t('Store your token safely')}
+            setInputToken={setInputToken}
+            onPressEnter={() => null}
+          />
         </Grid>
       </Grid>
       <Grid item sx={{ width: '100%' }}>

@@ -66,7 +66,7 @@ const Notifications = ({
   page,
   windowWidth,
   openProfile,
-}: NotificationsProps): JSX.Element => {
+}: NotificationsProps): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);

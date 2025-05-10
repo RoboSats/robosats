@@ -53,7 +53,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   turtleMode,
   setTurtleMode,
   onSendMessage,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
@@ -164,7 +164,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     };
   };
 
-  const onMessage: (message: any) => void = (message) => {
+  const onMessage: (message: object) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
     const slot = garage.getSlot();
     const robot = slot?.getRobot();

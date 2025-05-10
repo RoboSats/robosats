@@ -8,7 +8,7 @@ interface Props {
   onClose: () => void;
 }
 
-const LandingDialog = ({ open, onClose }: Props): JSX.Element => {
+const LandingDialog = ({ open, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 

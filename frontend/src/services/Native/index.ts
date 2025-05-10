@@ -50,9 +50,7 @@ class NativeRobosats {
     }
   };
 
-  public postMessage: (message: NativeWebViewMessage) => Promise<Record<string, any>> = async (
-    message,
-  ) => {
+  public postMessage: (message: NativeWebViewMessage) => Promise<object> = async (message) => {
     this.messageCounter += 1;
     message.id = this.messageCounter;
     const json = JSON.stringify(message);

@@ -23,7 +23,12 @@ interface Props {
   onClickDone: () => void;
 }
 
-const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): JSX.Element => {
+const StoreTokenDialog = ({
+  open,
+  onClose,
+  onClickBack,
+  onClickDone,
+}: Props): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
 

@@ -39,7 +39,7 @@ const Map = ({
   onOrderClicked = () => null,
   center = [0, 0],
   interactive = false,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const theme = useTheme();
   const { worldmap } = useContext<UseAppStoreType>(AppContext);
 
@@ -48,7 +48,7 @@ const Map = ({
     position: [number, number],
     orderType: number,
     order?: PublicOrder,
-  ): JSX.Element => {
+  ): React.JSX.Element => {
     const fillColor = orderType === 1 ? theme.palette.primary.main : theme.palette.secondary.main;
     const outlineColor = 'black';
     const eyesColor = 'white';
@@ -66,8 +66,8 @@ const Map = ({
           })
         }
         eventHandlers={{
-          click: (_event: LeafletMouseEvent) => {
-            order?.id != null && onOrderClicked(order.id, order.coordinatorShortAlias);
+          click: () => {
+            if (order?.id != null) onOrderClicked(order.id, order.coordinatorShortAlias);
           },
         }}
       >
@@ -80,7 +80,7 @@ const Map = ({
     );
   };
 
-  const LocationMarker = (): JSX.Element => {
+  const LocationMarker = (): React.JSX.Element => {
     useMapEvents({
       click(event: LeafletMouseEvent) {
         if (interactive) {
@@ -92,7 +92,7 @@ const Map = ({
     return position != null ? RobotMarker('marker', position, orderType ?? 0) : <></>;
   };
 
-  const getOrderMarkers = (): JSX.Element => {
+  const getOrderMarkers = (): React.JSX.Element => {
     if (orders.length < 1) return <></>;
     return (
       <MarkerClusterGroup showCoverageOnHover={true} disableClusteringAtZoom={14}>

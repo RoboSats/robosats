@@ -40,7 +40,7 @@ const EncryptedChat: React.FC<Props> = ({
   setMessages,
   messages,
   status,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const [turtleMode, setTurtleMode] = useState<boolean>(false);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);

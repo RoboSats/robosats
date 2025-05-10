@@ -15,7 +15,7 @@ interface WelcomeProps {
   setInputToken: (state: string) => void;
 }
 
-const Welcome = ({ setView, width, setInputToken }: WelcomeProps): JSX.Element => {
+const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Element => {
   const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();

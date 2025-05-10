@@ -20,7 +20,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import RecoveryDialog from '../../components/Dialogs/Recovery';
 
-const RobotPage = (): JSX.Element => {
+const RobotPage = (): React.JSX.Element => {
   const { torStatus, windowSize, settings, page, client } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();

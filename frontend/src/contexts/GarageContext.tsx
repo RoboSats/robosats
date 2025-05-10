@@ -62,7 +62,9 @@ const statusToDelay = [
 
 export const GarageContext = createContext<UseGarageStoreType>(initialGarageContext);
 
-export const GarageContextProvider = ({ children }: GarageContextProviderProps): JSX.Element => {
+export const GarageContextProvider = ({
+  children,
+}: GarageContextProviderProps): React.JSX.Element => {
   // All garage data structured
   const { settings, torStatus, open, page, client } = useContext<UseAppStoreType>(AppContext);
   const pageRef = useRef(page);

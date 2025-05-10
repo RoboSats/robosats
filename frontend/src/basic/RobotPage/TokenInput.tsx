@@ -30,7 +30,7 @@ const TokenInput = ({
   loading = false,
   setInputToken,
   setValidToken = () => {},
-}: TokenInputProps): JSX.Element => {
+}: TokenInputProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [showCopied, setShowCopied] = useState<boolean>(false);

@@ -35,7 +35,7 @@ interface SettingsFormProps {
   dense?: boolean;
 }
 
-const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
+const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element => {
   const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();

@@ -4,7 +4,7 @@ import { NotificationsActive, NotificationsOff } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
 
-const NotificationSwitchBadge = (): JSX.Element => {
+const NotificationSwitchBadge = (): React.JSX.Element => {
   const { setSettings, settings, torStatus } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
 

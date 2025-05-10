@@ -19,7 +19,7 @@ const CancelButton = ({
   openCancelDialog,
   openCollabCancelDialog,
   loading = false,
-}: CancelButtonProps): JSX.Element => {
+}: CancelButtonProps): React.JSX.Element => {
   const { t } = useTranslation();
   const [openCancelWarning, setOpenCancelWarning] = useState<boolean>(false);
 

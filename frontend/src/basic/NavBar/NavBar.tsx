@@ -18,7 +18,7 @@ import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
-const NavBar = (): JSX.Element => {
+const NavBar = (): React.JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
   const { page, setPage, settings, setSlideDirection, open, setOpen, windowSize, navbarHeight } =
@@ -70,7 +70,7 @@ const NavBar = (): JSX.Element => {
     );
   };
 
-  const changePage = function (mouseEvent: any, newPage: Page): void {
+  const changePage = function (_mouseEvent: React.SyntheticEven, newPage: Page): void {
     if (newPage !== 'none') {
       const slot = garage.getSlot();
       handleSlideDirection(page, newPage);

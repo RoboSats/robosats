@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button } from '@mui/material';
 
-const SelfhostedAlert = (): JSX.Element => {
+const SelfhostedAlert = (): React.JSX.Element => {
   const { t } = useTranslation();
   const [show, setShow] = useState<boolean>(true);
 

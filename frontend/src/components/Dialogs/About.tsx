@@ -20,7 +20,7 @@ interface Props {
   onClose: () => void;
 }
 
-const AboutDialog = ({ open, onClose }: Props): JSX.Element => {
+const AboutDialog = ({ open, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

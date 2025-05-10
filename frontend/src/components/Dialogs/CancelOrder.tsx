@@ -15,7 +15,7 @@ interface Props {
   onAccept: () => void;
 }
 
-const CancelOrderDialog = ({ open, onClose, onAccept }: Props): JSX.Element => {
+const CancelOrderDialog = ({ open, onClose, onAccept }: Props): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

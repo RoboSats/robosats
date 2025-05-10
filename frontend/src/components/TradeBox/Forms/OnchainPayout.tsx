@@ -31,7 +31,7 @@ export const OnchainPayoutForm = ({
   onClickSubmit,
   onchain,
   setOnchain,
-}: OnchainPayoutFormProps): JSX.Element => {
+}: OnchainPayoutFormProps): React.JSX.Element => {
   const { t } = useTranslation();
 
   const minMiningFee = 2;

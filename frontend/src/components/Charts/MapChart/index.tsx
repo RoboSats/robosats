@@ -22,15 +22,13 @@ import {
 interface MapChartProps {
   maxWidth: number;
   maxHeight: number;
-  fillContainer?: boolean;
   elevation?: number;
-  onOrderClicked?: (id: number) => void;
+  onOrderClicked?: (id: number, shortAlias: string) => void;
 }
 
 const MapChart: React.FC<MapChartProps> = ({
   maxWidth,
   maxHeight,
-  fillContainer = false,
   elevation = 6,
   onOrderClicked = () => {},
 }) => {
@@ -46,11 +44,13 @@ const MapChart: React.FC<MapChartProps> = ({
   return (
     <Paper
       elevation={elevation}
-      style={
-        fillContainer
-          ? { width: '100%', maxHeight: '100%', height: '100%' }
-          : { width: `${width}em`, maxHeight: `${height}em` }
-      }
+      style={{
+        width: `${width}em`,
+        height: `${height}em`,
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       <Dialog
         open={openWarningDialog}
@@ -90,7 +90,7 @@ const MapChart: React.FC<MapChartProps> = ({
               display: 'flex',
               justifyContent: 'center',
               paddingTop: `${(height - 3) / 2 - 1}em`,
-              height: `${height}em`,
+              height: `${height - 4}em`,
             }}
           >
             <CircularProgress />
@@ -101,11 +101,12 @@ const MapChart: React.FC<MapChartProps> = ({
               item
               style={{
                 height: '3.1em',
-                justifyContent: 'flex-end',
+                justifyContent: 'space-between',
                 display: 'flex',
                 paddingTop: '0.8em',
               }}
             >
+              <b style={{ paddingLeft: '1em' }}>{t('Map')}</b>
               <Tooltip enterTouchDelay={0} placement='top' title={t('Show tiles')}>
                 <div
                   style={{
@@ -129,7 +130,7 @@ const MapChart: React.FC<MapChartProps> = ({
                 </div>
               </Tooltip>
             </Grid>
-            <div style={{ height: `${height - 3.1}em` }}>
+            <div style={{ height: `${height - 3.2}em` }}>
               <Map
                 useTiles={useTiles}
                 orders={Object.values(federation.book)}

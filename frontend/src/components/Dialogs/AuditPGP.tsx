@@ -23,7 +23,7 @@ import ContentCopy from '@mui/icons-material/ContentCopy';
 import ForumIcon from '@mui/icons-material/Forum';
 import { ExportIcon, NewTabIcon } from '../Icons';
 
-function CredentialTextfield(props): JSX.Element {
+function CredentialTextfield(props): React.JSX.Element {
   return (
     <Grid item align='center' xs={12}>
       <Tooltip placement='top' enterTouchDelay={200} enterDelay={200} title={props.tooltipTitle}>
@@ -75,7 +75,7 @@ const AuditPGPDialog = ({
   peerPubKey,
   passphrase,
   onClickBack,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

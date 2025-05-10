@@ -9,7 +9,7 @@ class Slot {
   constructor(
     token: string,
     shortAliases: string[],
-    robotAttributes: Record<any, any>,
+    robotAttributes: object,
     onSlotUpdate: () => void,
   ) {
     this.onSlotUpdate = onSlotUpdate;

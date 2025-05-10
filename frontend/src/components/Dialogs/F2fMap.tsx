@@ -34,7 +34,7 @@ const F2fMapDialog = ({
   interactive = false,
   zoom,
   message = '',
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const [position, setPosition] = useState<[number, number]>();
   const [useTiles, setUseTiles] = useState<boolean>(false);

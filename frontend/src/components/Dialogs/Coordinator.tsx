@@ -93,7 +93,7 @@ const ContactButtons = ({
   simplex,
   website,
   reddit,
-}: Contact): JSX.Element => {
+}: Contact): React.JSX.Element => {
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
   const [showNostr, setShowNostr] = useState<boolean>(false);
@@ -260,7 +260,7 @@ interface BadgesProps {
   size_limit: number | undefined;
 }
 
-const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
+const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
   const { t } = useTranslation();
   const sxProps = {
     width: '3em',
@@ -355,7 +355,7 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
   );
 };
 
-const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.Element => {
+const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);

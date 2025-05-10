@@ -19,7 +19,7 @@ interface FailureReasonProps {
   failureReason: string;
 }
 
-const FailureReason = ({ failureReason }: FailureReasonProps): JSX.Element => {
+const FailureReason = ({ failureReason }: FailureReasonProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -49,14 +49,14 @@ export const RoutingFailedPrompt = ({
   lightning,
   setLightning,
   settings,
-}: RoutingFailedPromptProps): JSX.Element => {
+}: RoutingFailedPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
 
   const countdownRenderer = function ({
     minutes,
     seconds,
     completed,
-  }: CountdownRenderProps): JSX.Element {
+  }: CountdownRenderProps): React.JSX.Element {
     if (completed) {
       return (
         <Grid container direction='column' alignItems='center' justifyContent='center' spacing={1}>

@@ -15,7 +15,7 @@ const ConfirmationDialog = ({
   hasRobot,
   onClickDone,
   onClickGenerateRobot = () => null,
-}: ConfirmationDialogProps): JSX.Element => {
+}: ConfirmationDialogProps): React.JSX.Element => {
   return hasRobot ? (
     <StoreTokenDialog
       open={open}

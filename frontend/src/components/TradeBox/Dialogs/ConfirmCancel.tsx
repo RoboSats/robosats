@@ -19,7 +19,7 @@ export const ConfirmCancelDialog = ({
   open,
   onClose,
   onCancelClick,
-}: ConfirmCancelDialogProps): JSX.Element => {
+}: ConfirmCancelDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

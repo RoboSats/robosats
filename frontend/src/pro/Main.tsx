@@ -23,7 +23,7 @@ import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
 // :''}
 
 const StyledRGL = styled(GridLayout)(
-  ({ theme, gridCellSize, height, width, freeze }) => `
+  ({ height, width }) => `
   height: ${Number(height)}em;
   width: ${Number(width)}px;
   max-height: ${Number(height)}em;
@@ -41,7 +41,7 @@ const defaultLayout: Layout = [
   { i: 'Other', w: 23, h: 5, x: 11, y: 26, minW: 2, maxW: 50, minH: 4, maxH: 25 },
 ];
 
-const Main = (): JSX.Element => {
+const Main = (): React.JSX.Element => {
   const { settings, windowSize } = useContext<UseAppStoreType>(AppContext);
 
   const theme = useTheme();

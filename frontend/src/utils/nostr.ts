@@ -84,7 +84,7 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
       }
       case 'f': {
         const currencyNumber = Object.entries(currencyDict).find(
-          ([_key, value]) => value === tag[1],
+          ([key, value]) => key && value === tag[1],
         );
         publicOrder.currency = currencyNumber?.[0] ? parseInt(currencyNumber[0], 10) : null;
         break;
@@ -120,7 +120,7 @@ export const verifyCoordinatorToken: (event: Event) => boolean = (event) => {
       const coordinatorPubKey = Uint8Array.from(hexToBytes(coordinatorPubKeyHex));
       const hash = new TextEncoder().encode(message);
       return schnorr.verify(signature, hash, coordinatorPubKey);
-    } catch (e) {
+    } catch {
       return false;
     }
   }

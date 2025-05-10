@@ -3,7 +3,7 @@
  * @param {filename} data -- object to save
  */
 
-const saveAsJson = (filename: string, dataObjToWrite: any): void => {
+const saveAsJson = (filename: string, dataObjToWrite: object): void => {
   const blob = new Blob([JSON.stringify(dataObjToWrite, null, 2)], { type: 'text/json' });
   const link = document.createElement('a');
 

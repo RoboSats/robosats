@@ -32,7 +32,7 @@ interface Props {
   onClose: () => void;
 }
 
-const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
+const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation } = useContext(FederationContext);
   const [loadingInfo, setLoadingInfo] = useState<boolean>(true);

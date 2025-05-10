@@ -26,7 +26,7 @@ interface Props {
   onClose: () => void;
 }
 
-const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): JSX.Element => {
+const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const [open, setOpen] = useState<boolean>(() => checkVer(coordinatorVersion));
   const coordinatorString = `v${coordinatorVersion.major}-${coordinatorVersion.minor}-${coordinatorVersion.patch}`;

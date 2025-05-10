@@ -28,7 +28,7 @@ export interface OpenDialogs {
   thirdParty: string;
 }
 
-const MainDialogs = (): JSX.Element => {
+const MainDialogs = (): React.JSX.Element => {
   const { open, setOpen, settings, clientVersion } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 

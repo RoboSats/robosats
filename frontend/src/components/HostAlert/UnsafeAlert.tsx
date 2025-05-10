@@ -31,7 +31,7 @@ function federationUrls(): string[] {
 
 export const safeUrls = federationUrls();
 
-const UnsafeAlert = (): JSX.Element => {
+const UnsafeAlert = (): React.JSX.Element => {
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();

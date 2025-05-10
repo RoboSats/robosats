@@ -122,7 +122,7 @@ function calculateSizeLimit(inputDate: Date): number {
 }
 
 export class Coordinator {
-  constructor(value: any, origin: Origin, settings: Settings, hostUrl: string) {
+  constructor(value: object, origin: Origin, settings: Settings, hostUrl: string) {
     const established = new Date(value.established);
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;

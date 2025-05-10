@@ -27,7 +27,7 @@ export const ConfirmFiatSentDialog = ({
   onClose,
   order,
   onConfirmClick,
-}: ConfirmFiatSentDialogProps): JSX.Element => {
+}: ConfirmFiatSentDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
   const currencyCode = currencies[order?.currency.toString()];
   const amount = pn(

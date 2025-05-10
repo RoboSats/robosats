@@ -14,7 +14,10 @@ interface LockInvoicePromptProps {
   concept: 'bond' | 'escrow';
 }
 
-export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): JSX.Element => {
+export const LockInvoicePrompt = ({
+  order,
+  concept,
+}: LockInvoicePromptProps): React.JSX.Element => {
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
@@ -42,7 +45,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
     return dict;
   };
 
-  const ExpirationWarning = function (): JSX.Element {
+  const ExpirationWarning = function (): React.JSX.Element {
     return (
       <Typography variant='body2'>
         {t(

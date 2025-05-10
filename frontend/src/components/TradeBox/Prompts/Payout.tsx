@@ -38,7 +38,7 @@ export const PayoutPrompt = ({
   onchain,
   setOnchain,
   settings,
-}: PayoutPrompProps): JSX.Element => {
+}: PayoutPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
   const currencyCode: string = currencies[`${order.currency}`];
 

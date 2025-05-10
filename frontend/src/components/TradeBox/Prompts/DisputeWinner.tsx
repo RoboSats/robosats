@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { List, ListItem, Divider, Typography } from '@mui/material';
 
-export const DisputeWinnerPrompt = (): JSX.Element => {
+export const DisputeWinnerPrompt = (): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

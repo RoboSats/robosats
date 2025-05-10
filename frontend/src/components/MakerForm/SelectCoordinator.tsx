@@ -120,8 +120,8 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {federation.getCoordinators().map((coordinator): JSX.Element | null => {
-                  let row: JSX.Element | null = null;
+                {federation.getCoordinators().map((coordinator): React.JSX.Element | null => {
+                  let row: React.JSX.Element | null = null;
                   if (coordinator.enabled === true) {
                     row = (
                       <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>

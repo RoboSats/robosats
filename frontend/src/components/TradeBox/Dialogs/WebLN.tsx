@@ -25,7 +25,7 @@ export const WebLNDialog = ({
   onClose,
   waitingWebln,
   isBuyer,
-}: WebLNDialogProps): JSX.Element => {
+}: WebLNDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 

@@ -9,7 +9,7 @@ declare global {
 }
 
 export interface ReactNativeWebView {
-  postMessage: (message: string) => Promise<Record<string, any>>;
+  postMessage: (message: string) => Promise<Record<string, object>>;
 }
 
 export interface NativeWebViewMessageHttp {
@@ -53,5 +53,5 @@ export declare type NativeWebViewMessage =
 
 export interface NativeRobosatsPromise {
   resolve: (value: object | PromiseLike<object>) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: string) => void;
 }

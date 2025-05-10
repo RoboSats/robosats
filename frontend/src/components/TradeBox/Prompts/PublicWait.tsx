@@ -27,7 +27,7 @@ export const PublicWaitPrompt = ({
   order,
   pauseLoading,
   onClickPauseOrder,
-}: PublicWaitPrompProps): JSX.Element => {
+}: PublicWaitPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
   const currencyCode = currencies[order.currency.toString()];
 

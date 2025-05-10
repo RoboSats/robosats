@@ -24,7 +24,7 @@ interface Props {
   onClose: () => void;
 }
 
-const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
+const CommunityDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const [client] = window.RobosatsSettings.split('-');
 

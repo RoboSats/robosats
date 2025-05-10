@@ -13,7 +13,7 @@ import { Order, type Slot } from '../../models';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { genBase62Token } from '../../utils';
 
-const OrderPage = (): JSX.Element => {
+const OrderPage = (): React.JSX.Element => {
   const { windowSize, setOpen, acknowledgedWarning, setAcknowledgedWarning, navbarHeight } =
     useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);

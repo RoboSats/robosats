@@ -8,7 +8,7 @@ interface BondStatusProps {
   isMaker: boolean;
 }
 
-const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
+const BondStatus = ({ status, isMaker }: BondStatusProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 

@@ -2,7 +2,7 @@ import { apiClient, type Auth } from '../services/api';
 import type Federation from './Federation.model';
 
 class Robot {
-  constructor(attributes?: Record<any, any>) {
+  constructor(attributes?: object) {
     Object.assign(this, attributes);
   }
 
@@ -26,7 +26,7 @@ class Robot {
   public tokenSHA256: string = '';
   public hasEnoughEntropy: boolean = false;
 
-  update = (attributes: Record<string, any>): void => {
+  update = (attributes: object): void => {
     Object.assign(this, attributes);
   };
 
@@ -56,7 +56,7 @@ class Robot {
 
     await apiClient
       .get(coordinator.url, `${coordinator.basePath}/api/robot/`, authHeaders)
-      .then((data: any) => {
+      .then((data: object) => {
         if (data?.bad_request) {
           console.error(data?.bad_request);
           return;

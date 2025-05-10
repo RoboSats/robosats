@@ -34,7 +34,7 @@ import { systemClient } from '../../../services/System';
 
 import lnproxies from '../../../../static/lnproxies.json';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
-let filteredProxies: Array<Record<string, any>> = [];
+let filteredProxies: Array<Record<string, object>> = [];
 export interface LightningForm {
   invoice: string;
   amount: number;
@@ -89,7 +89,7 @@ export const LightningPayoutForm = ({
   lightning,
   setLightning,
   settings,
-}: LightningPayoutFormProps): JSX.Element => {
+}: LightningPayoutFormProps): React.JSX.Element => {
   const { client } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();

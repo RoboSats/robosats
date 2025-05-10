@@ -13,7 +13,7 @@ interface PausedPrompProps {
 export const PausedPrompt = ({
   pauseLoading,
   onClickResumeOrder,
-}: PausedPrompProps): JSX.Element => {
+}: PausedPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

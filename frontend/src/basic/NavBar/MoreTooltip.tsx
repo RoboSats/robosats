@@ -19,10 +19,10 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 interface MoreTooltipProps {
-  children: JSX.Element;
+  children: React.JSX.Element;
 }
 
-const MoreTooltip = ({ children }: MoreTooltipProps): JSX.Element => {
+const MoreTooltip = ({ children }: MoreTooltipProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { open, setOpen } = useContext<UseAppStoreType>(AppContext);
 

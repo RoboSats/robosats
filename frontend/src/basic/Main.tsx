@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { MemoryRouter, HashRouter, BrowserRouter } from 'react-router-dom';
+import { MemoryRouter, HashRouter, BrowserRouter, BrowserRouterProps } from 'react-router-dom';
 import { Box, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
@@ -11,7 +11,11 @@ import { useTranslation } from 'react-i18next';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 import Routes from './Routes';
 
-const getRouter = (): any => {
+const getRouter = (): (({
+  basename,
+  children,
+  window,
+}: BrowserRouterProps) => React.JSX.Element) => {
   const [client] = window.RobosatsSettings.split('-');
   if (client === 'web') {
     return BrowserRouter;

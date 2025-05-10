@@ -11,7 +11,6 @@ import {
   ListItemAvatar,
   useTheme,
   CircularProgress,
-  LinearProgress,
   IconButton,
   Tooltip,
   styled,
@@ -68,7 +67,6 @@ interface BookTableProps {
   fullHeight?: number;
   elevation?: number;
   defaultFullscreen?: boolean;
-  fillContainer?: boolean;
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
@@ -83,12 +81,11 @@ const BookTable = ({
   fullHeight = 70,
   defaultFullscreen = false,
   elevation = 6,
-  fillContainer = false,
   showControls = true,
   showFooter = true,
   showNoResults = true,
   onOrderClicked = () => null,
-}: BookTableProps): JSX.Element => {
+}: BookTableProps): React.JSX.Element => {
   const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -98,37 +95,35 @@ const BookTable = ({
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
-    page: 1,
+    page: 0,
   });
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({});
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [page, setPage] = useState<number>(0);
 
   // all sizes in 'em'
   const [fontSize, defaultPageSize, height] = useMemo(() => {
     const fontSize = theme.typography.fontSize;
-    const verticalHeightFrame = 3.25 + (showControls ? 3.7 : 0.35) + (showFooter ? 2.35 : 0);
-    const verticalHeightRow = 3.25;
+    const verticalHeightHeader = 55 / fontSize;
+    const verticalHeightRow = 55 / fontSize;
+    const height = fullscreen ? fullHeight : maxHeight;
     const defaultPageSize = Math.max(
-      Math.floor(
-        ((fullscreen ? fullHeight * 0.9 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
-      ),
+      Math.floor((height - verticalHeightHeader) / verticalHeightRow),
       1,
     );
-    const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
     return [fontSize, defaultPageSize, height];
   }, [theme.typography.fontSize, maxHeight, fullscreen, fullHeight, showControls, showFooter]);
 
   useEffect(() => {
     setPaginationModel({
       pageSize: defaultPageSize,
-      page: paginationModel.page ?? 1,
+      page: 0,
     });
   }, [defaultPageSize]);
 
   const localeText = useMemo(() => {
     return {
-      MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
       noResultsOverlayLabel: t('No results found.'),
       errorOverlayDefaultLabel: t('An error occurred.'),
       toolbarColumns: t('Columns'),
@@ -183,7 +178,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
           <ListItemButton
@@ -219,7 +214,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
@@ -264,7 +259,7 @@ const BookTable = ({
       field: 'coordinatorShortAlias',
       headerName: t('Host'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
@@ -298,7 +293,7 @@ const BookTable = ({
         field: 'type',
         headerName: t('Is'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           return (
             <div
               style={{ cursor: 'pointer' }}
@@ -324,7 +319,7 @@ const BookTable = ({
         headerName: t('Amount'),
         type: 'number',
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
           const minAmount =
             fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
@@ -352,7 +347,7 @@ const BookTable = ({
       field: 'currency',
       headerName: t('Currency'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         return (
           <div
@@ -382,7 +377,7 @@ const BookTable = ({
         field: 'payment_method',
         headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           return (
             <div
               style={{ cursor: 'pointer' }}
@@ -393,7 +388,7 @@ const BookTable = ({
               <div style={{ position: 'relative', top: '0.4em' }}>
                 <PaymentStringAsIcons
                   othersText={t('Others')}
-                  verbose={true}
+                  verbose={false}
                   size={1.7 * fontSize}
                   text={params.row.payment_method}
                 />
@@ -411,7 +406,7 @@ const BookTable = ({
       field: 'payment_method',
       headerName: t('Pay'),
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{
@@ -427,6 +422,7 @@ const BookTable = ({
             <PaymentStringAsIcons
               othersText={t('Others')}
               size={1.3 * fontSize}
+              verbose={false}
               text={params.row.payment_method}
             />
           </div>
@@ -441,7 +437,7 @@ const BookTable = ({
       headerName: t('Price'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         const coordinator =
           federation.getCoordinator(params.row.coordinatorShortAlias) ??
@@ -480,7 +476,7 @@ const BookTable = ({
         headerName: t('Premium'),
         type: 'number',
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: PublicOrder }) => {
           const currencyCode = String(currencyDict[params.row.currency.toString()]);
           let fontColor = `rgb(0,0,0)`;
           let premiumPoint = 0;
@@ -532,7 +528,7 @@ const BookTable = ({
       headerName: t('Timer'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
         return (
@@ -555,7 +551,7 @@ const BookTable = ({
       headerName: t('Expiry'),
       type: 'string',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const expiresAt: Date = new Date(params.row.expires_at);
         const timeToExpiry: number = Math.abs(expiresAt - new Date());
         const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
@@ -603,7 +599,7 @@ const BookTable = ({
       headerName: t('Sats now'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         const coordinator =
           federation.getCoordinator(params.row.coordinatorShortAlias) ??
           federation.getCoordinators()[0];
@@ -637,7 +633,7 @@ const BookTable = ({
       field: 'id',
       headerName: 'Order ID',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -660,7 +656,7 @@ const BookTable = ({
       headerName: t('Bond'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -843,14 +839,14 @@ const BookTable = ({
     });
 
     setColumnVisibilityModel(columnVisibilityModel);
-    return { columns, width: width * 0.875 + 0.15 };
+    return { columns, width: maxWidth };
   };
 
   const { columns, width } = useMemo(() => {
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
-  const Footer = function (): JSX.Element {
+  const Footer = function (): React.JSX.Element {
     return (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
@@ -883,7 +879,7 @@ const BookTable = ({
     );
   };
 
-  const NoResultsOverlay = function (): JSX.Element {
+  const NoResultsOverlay = function (): React.JSX.Element {
     return (
       <Grid
         container
@@ -915,9 +911,7 @@ const BookTable = ({
   };
 
   const gridComponents = useMemo(() => {
-    const components: GridSlotsComponent = {
-      loadingOverlay: LinearProgress,
-    };
+    const components: GridSlotsComponent = {};
 
     if (showNoResults) {
       components.noResultsOverlay = NoResultsOverlay;
@@ -926,11 +920,8 @@ const BookTable = ({
     if (showFooter) {
       components.footer = Footer;
     }
-    if (showControls) {
-      components.toolbar = BookControl;
-    }
     return components;
-  }, [showNoResults, showFooter, showControls, fullscreen]);
+  }, [showNoResults, showFooter, fullscreen]);
 
   const filteredOrders = useMemo(() => {
     return showControls
@@ -946,17 +937,25 @@ const BookTable = ({
     return (
       <Paper
         elevation={elevation}
-        style={
-          fillContainer
-            ? { width: '100%', height: '100%' }
-            : { width: `${width}em`, height: `${height}em`, overflow: 'auto' }
-        }
+        style={{
+          width: `${width}em`,
+          height: `${height}em`,
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
+        {showControls && (
+          <BookControl
+            width={width}
+            paymentMethod={paymentMethods}
+            setPaymentMethods={setPaymentMethods}
+          />
+        )}
         <ClickThroughDataGrid
+          autoHeight
           sx={headerStyleFix}
           localeText={localeText}
-          rowHeight={3.714 * theme.typography.fontSize}
-          headerHeight={3.25 * theme.typography.fontSize}
           rows={filteredOrders}
           getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
           loading={federation.loading}
@@ -965,19 +964,10 @@ const BookTable = ({
           onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
             setColumnVisibilityModel(newColumnVisibilityModel);
           }}
+          page={page}
+          onPageChange={setPage}
           hideFooter={!showFooter}
           slots={gridComponents}
-          slotProps={{
-            toolbar: {
-              width,
-              paymentMethod: paymentMethods,
-              setPaymentMethods,
-            },
-            loadingOverlay: {
-              variant: 'indeterminate',
-              value: federation.loading ? 0 : 100,
-            },
-          }}
           paginationModel={paginationModel}
           pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
           onPaginationModelChange={(newPaginationModel) => {
@@ -989,8 +979,24 @@ const BookTable = ({
   } else {
     return (
       <Dialog open={fullscreen} fullScreen={true}>
-        <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+        <Paper
+          style={{
+            width: '100%',
+            height: '100%',
+            overflow: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {showControls && (
+            <BookControl
+              width={width}
+              paymentMethod={paymentMethods}
+              setPaymentMethods={setPaymentMethods}
+            />
+          )}
           <ClickThroughDataGrid
+            autoHeight
             sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
@@ -1004,13 +1010,8 @@ const BookTable = ({
             onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
               setColumnVisibilityModel(newColumnVisibilityModel);
             }}
-            slotProps={{
-              toolbar: {
-                width,
-                paymentMethod: paymentMethods,
-                setPaymentMethods,
-              },
-            }}
+            page={page}
+            onPageChange={setPage}
             paginationModel={paginationModel}
             pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
             onPaginationModelChange={(newPaginationModel) => {

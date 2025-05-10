@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useAutocomplete from '@mui/base/useAutocomplete';
+import { useAutocomplete } from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
 import {
   Button,
@@ -19,6 +19,7 @@ import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { MUIStyledCommonProps } from '@mui/system';
 
 const Root = styled('div')(
   ({ theme }) => `
@@ -41,7 +42,7 @@ const Label = styled('label')(
   pointer-events: none;
   position: relative;
   left: 1em;
-  top: ${String(sx.top) ?? '0.72em'};
+  top: ${String(sx?.top ?? '0.72em')};
   maxHeight: 0em;
   height: 0em;
   white-space: no-wrap;
@@ -268,9 +269,9 @@ interface AutocompletePaymentsProps {
   optionsType: 'fiat' | 'swap';
   onAutocompleteChange: (value: string) => void;
   tooltipTitle: string;
-  labelProps: any;
-  tagProps: any;
-  listBoxProps: any;
+  labelProps: MUIStyledCommonProps;
+  tagProps: MUIStyledCommonProps;
+  listBoxProps: MUIStyledCommonProps;
   error: string;
   label: string;
   sx: SxProps<Theme>;
@@ -326,7 +327,9 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
 
-  function handleAddNew(inputProps: any): void {
+  function handleAddNew(
+    inputProps: React.InputHTMLAttributes<HTMLInputElement> & { ref: React.Ref<HTMLInputElement> },
+  ): void {
     fiatMethods.push({ name: inputProps.value, icon: 'custom' });
     const a = value.push({ name: inputProps.value, icon: 'custom' });
     setVal(() => '');

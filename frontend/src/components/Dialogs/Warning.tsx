@@ -15,7 +15,7 @@ interface Props {
   longAlias: string;
 }
 
-const WarningDialog = ({ open, onClose, longAlias }: Props): JSX.Element => {
+const WarningDialog = ({ open, onClose, longAlias }: Props): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

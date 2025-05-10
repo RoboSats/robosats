@@ -9,10 +9,14 @@ interface Props {
   height?: string | number;
 }
 
-const FlagWithProps = ({ code, width = '1.428em', height = '1.428em' }: Props): JSX.Element => {
+const FlagWithProps = ({
+  code,
+  width = '1.428em',
+  height = '1.428em',
+}: Props): React.JSX.Element => {
   const defaultProps = { width, height };
 
-  let flag: JSX.Element | null = null;
+  let flag: React.JSX.Element | null = null;
 
   if (code === 'AED') flag = <Flags.AE {...defaultProps} />;
   if (code === 'AUD') flag = <Flags.AU {...defaultProps} />;

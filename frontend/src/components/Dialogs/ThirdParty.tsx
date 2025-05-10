@@ -38,7 +38,7 @@ const ContactButtons = ({
   simplex,
   website,
   reddit,
-}: Contact): JSX.Element => {
+}: Contact): React.JSX.Element => {
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
   const [showNostr, setShowNostr] = useState<boolean>(false);
@@ -186,7 +186,7 @@ const ContactButtons = ({
   );
 };
 
-const ThirdPartyDialog = ({ open = false, onClose, shortAlias }: Props): JSX.Element => {
+const ThirdPartyDialog = ({ open = false, onClose, shortAlias }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [thirdParty, setThirdParty] = useState<Coordinator>(thirdParties[shortAlias]);

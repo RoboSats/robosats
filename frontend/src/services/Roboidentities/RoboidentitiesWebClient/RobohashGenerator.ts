@@ -86,7 +86,7 @@ class RoboGenerator {
     return { id, worker, busy: false };
   };
 
-  addTask = (task: any): void => {
+  addTask = (task: Task): void => {
     const availableWorker = this.workers.find((w) => !w.busy);
     if (availableWorker && !this.waitingForLibrary) {
       availableWorker.worker.postMessage(task);
