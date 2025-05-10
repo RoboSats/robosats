@@ -79,7 +79,6 @@ const FederationTable = ({
   };
 
   const localeText = {
-    MuiTablePagination: { labelRowsPerPage: t('Coordinators per page:') },
     noResultsOverlayLabel: t('No coordinators found.'),
   };
 

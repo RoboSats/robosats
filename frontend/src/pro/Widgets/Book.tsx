@@ -27,7 +27,6 @@ const BookWidget = React.forwardRef(function Component({
       <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
         <BookTable
           elevation={0}
-          fillContainer={true}
           maxWidth={layout.w * gridCellSize} // EM units
           maxHeight={layout.h * gridCellSize} // EM units
           fullWidth={windowSize.width} // EM units

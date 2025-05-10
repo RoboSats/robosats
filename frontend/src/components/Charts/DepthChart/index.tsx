@@ -34,7 +34,6 @@ import {
 interface DepthChartProps {
   maxWidth: number;
   maxHeight: number;
-  fillContainer?: boolean;
   elevation?: number;
   onOrderClicked?: (id: number, shortAlias: string) => void;
 }
@@ -42,7 +41,6 @@ interface DepthChartProps {
 const DepthChart: React.FC<DepthChartProps> = ({
   maxWidth,
   maxHeight,
-  fillContainer = false,
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
@@ -276,26 +274,27 @@ const DepthChart: React.FC<DepthChartProps> = ({
   return (
     <Paper
       elevation={elevation}
-      style={
-        fillContainer
-          ? { width: '100%', maxHeight: '100%', height: '100%' }
-          : { width: `${width}em`, maxHeight: `${height}em` }
-      }
+      style={{
+        width: `${width}em`,
+        height: `${height}em`,
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      <Paper variant='outlined' style={{ width: '100%', height: '100%' }}>
+      <Paper variant='outlined' style={{ width: '100%', height: `100%` }}>
         {center === undefined || enrichedOrders.length < 1 ? (
           <div
             style={{
               display: 'flex',
               justifyContent: 'center',
-              paddingTop: `${(height - 3) / 2 - 1}em`,
-              height: `${height}em`,
+              paddingTop: `${height / 2}em`,
             }}
           >
             <CircularProgress />
           </div>
         ) : (
-          <Grid container>
+          <Grid container alignItems='center' direction='column'>
             <Grid
               container
               direction='row'

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Typography, Grid, Select, Divider, MenuItem, Box } from '@mui/material';
+import { Typography, Grid, Select, MenuItem, Box } from '@mui/material';
 import currencyDict from '../../../static/assets/currencies.json';
 import { useTheme } from '@mui/system';
 import { AutocompletePayments } from '../MakerForm';
@@ -118,8 +118,8 @@ const BookControl = ({
         alignItems='flex-start'
         direction='row'
         justifyContent='center'
-        spacing={0.5}
-        sx={{ height: '3.4em', padding: '0.2em' }}
+        spacing={0.8}
+        sx={{ height: '3.4em', padding: '0.2em', alignContent: 'center' }}
       >
         {width > large ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
@@ -132,7 +132,7 @@ const BookControl = ({
         <Grid item>
           <Select
             sx={{
-              height: '2.3em',
+              height: '2.6em',
               border: '0.5px solid',
               backgroundColor: theme.palette.background.paper,
               borderRadius: '4px',
@@ -207,7 +207,7 @@ const BookControl = ({
             <Select
               autoWidth
               sx={{
-                height: '2.3em',
+                height: '2.6em',
                 border: '0.5px solid',
                 backgroundColor: theme.palette.background.paper,
                 borderRadius: '4px',
@@ -288,7 +288,7 @@ const BookControl = ({
           <Grid item>
             <Select
               sx={{
-                height: '2.3em',
+                height: '2.6em',
                 border: '0.5px solid',
                 backgroundColor: theme.palette.background.paper,
                 borderRadius: '4px',
@@ -374,7 +374,7 @@ const BookControl = ({
           <Select
             autoWidth
             sx={{
-              height: '2.3em',
+              height: '2.6em',
               border: '0.5px solid',
               backgroundColor: theme.palette.background.paper,
               borderRadius: '4px',
@@ -425,7 +425,6 @@ const BookControl = ({
           </Select>
         </Grid>
       </Grid>
-      <Divider />
     </Box>
   );
 };

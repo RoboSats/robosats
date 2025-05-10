@@ -29,7 +29,6 @@ const DepthChartWidget = React.forwardRef(function Component({
           elevation={0}
           maxWidth={layout.w * gridCellSize} // EM units
           maxHeight={layout.h * gridCellSize} // EM units
-          fillContainer={true}
         />
       </Paper>
     );
