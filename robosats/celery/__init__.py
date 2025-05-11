@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 from datetime import timedelta
 
+from decouple import config
 from celery import Celery
 from celery.schedules import crontab
 
