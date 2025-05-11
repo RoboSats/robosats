@@ -191,12 +191,6 @@ const RobotProfile = ({
                       'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
                     )}
                   </Grid>
-                  <Grid item sx={{ position: 'relative', right: '1em' }}>
-                    <Button color='success' size='small' onClick={handleAddRobot}>
-                      <Add />
-                      {t('Add a new Robot')}
-                    </Button>
-                  </Grid>
                 </Grid>
               </Alert>
             </Grid>

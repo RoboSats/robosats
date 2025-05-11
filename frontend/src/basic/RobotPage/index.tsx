@@ -70,7 +70,7 @@ const RobotPage = (): React.JSX.Element => {
                 </linearGradient>
               </svg>
               <CircularProgress thickness={3} style={{ width: '11.2em', height: '11.2em' }} />
-              <Box sx={{ position: 'fixed', top: '4.6em' }}>
+              <Box sx={{ position: 'fixed', top: '6.2em' }}>
                 <TorIcon
                   sx={{
                     fill: 'url(#linearColors)',

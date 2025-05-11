@@ -26,8 +26,8 @@ const BookPage = (): React.JSX.Element => {
 
   const doubleView = windowSize.width > 100;
   const width = windowSize.width * 0.85;
-  const maxBookTableWidth = width * 0.7;
-  const chartWidthEm = width * 0.25;
+  const maxBookTableWidth = width * 0.65;
+  const chartWidthEm = width * 0.3;
   const fontSize = theme.typography.fontSize;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
@@ -134,19 +134,19 @@ const BookPage = (): React.JSX.Element => {
         ) : view === 'depth' ? (
           <DepthChart
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.75} // EM units
+            maxHeight={windowSize.height * 0.72} // EM units
             onOrderClicked={onOrderClicked}
           />
         ) : view === 'map' ? (
           <MapChart
             maxWidth={windowSize.width * 0.8} // M units
-            maxHeight={windowSize.height * 0.75} // EM units
+            maxHeight={windowSize.height * 0.72} // EM units
             onOrderClicked={onOrderClicked}
           />
         ) : (
           <BookTable
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.75} // EM units
+            maxHeight={windowSize.height * 0.72} // EM units
             fullWidth={windowSize.width} // EM units
             fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}

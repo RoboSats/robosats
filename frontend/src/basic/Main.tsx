@@ -4,7 +4,6 @@ import { Box, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 import { NavBar, MainDialogs } from './';
-import RobotAvatar from '../components/RobotAvatar';
 import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
@@ -44,13 +43,12 @@ const MainBox = styled(Box)<MainBoxProps>((props) => ({
 
 const Main: React.FC = () => {
   const { t } = useTranslation();
-  const { settings, page, setOpen, windowSize, navbarHeight } =
+  const { settings, page, setOpen, windowSize, navbarHeight, client } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   return (
     <Router>
-      <RobotAvatar style={{ display: 'none' }} hashId={garage.getSlot()?.hashId} />
       <Notifications
         page={page}
         openProfile={() => {
@@ -67,7 +65,7 @@ const Main: React.FC = () => {
         <></>
       )}
 
-      <MainBox navbarHeight={navbarHeight}>
+      <MainBox navbarHeight={navbarHeight} style={{ paddingTop: client === 'mobile' ? '25px' : 0 }}>
         <Routes />
       </MainBox>
       <NavBar />

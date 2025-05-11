@@ -282,7 +282,14 @@ const DepthChart: React.FC<DepthChartProps> = ({
         flexDirection: 'column',
       }}
     >
-      <Paper variant='outlined' style={{ width: '100%', height: `100%` }}>
+      <Paper
+        variant='outlined'
+        style={{
+          width: '100%',
+          height: `100%`,
+          justifyContent: 'center',
+        }}
+      >
         {center === undefined || enrichedOrders.length < 1 ? (
           <div
             style={{

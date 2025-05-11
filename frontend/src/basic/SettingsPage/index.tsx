@@ -18,10 +18,10 @@ const SettingsPage = (): React.JSX.Element => {
         overflowX: 'clip',
       }}
     >
-      <Grid container>
-        <Grid item xs={12}>
-          <SettingsForm />
-        </Grid>
+      <Grid item xs={{ width: '100%' }}>
+        <SettingsForm />
+      </Grid>
+      <Grid item xs={{ width: '100%' }}>
         <Coordinators />
       </Grid>
     </Paper>

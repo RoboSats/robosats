@@ -86,7 +86,7 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): React.JSX.Element => {
-  const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { fav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
@@ -238,50 +238,6 @@ const BookTable = ({
               }
             />
           </div>
-        );
-      },
-    };
-  }, []);
-
-  const onClickCoordinator = function (shortAlias: string): void {
-    setOpen((open) => {
-      const thirdParty = thirdParties[shortAlias];
-      if (thirdParty) {
-        return { ...open, thirdParty: shortAlias };
-      } else {
-        return { ...open, coordinator: shortAlias };
-      }
-    });
-  };
-
-  const coordinatorObj = useCallback((width: number) => {
-    return {
-      field: 'coordinatorShortAlias',
-      headerName: t('Host'),
-      width: width * fontSize,
-      renderCell: (params: { row: PublicOrder }) => {
-        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
-        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
-        return (
-          <ListItemButton
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onClickCoordinator(params.row.coordinatorShortAlias);
-            }}
-          >
-            <ListItemAvatar sx={{ position: 'relative', left: '-1.54em', bottom: '0.4em' }}>
-              <RobotAvatar
-                shortAlias={
-                  thirdParty?.shortAlias ??
-                  (coordinator?.federated ? params.row.coordinatorShortAlias : undefined)
-                }
-                hashId={coordinator?.federated ? undefined : coordinator?.shortAlias}
-                style={{ width: '3.215em', height: '3.215em' }}
-                smooth={true}
-                small={true}
-              />
-            </ListItemAvatar>
-          </ListItemButton>
         );
       },
     };
@@ -628,28 +584,6 @@ const BookTable = ({
     };
   }, []);
 
-  const idObj = useCallback((width: number) => {
-    return {
-      field: 'id',
-      headerName: 'Order ID',
-      width: width * fontSize,
-      renderCell: (params: { row: PublicOrder }) => {
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            <Typography variant='caption' color='text.secondary'>
-              {`#${String(params.row.id)}`}
-            </Typography>
-          </div>
-        );
-      },
-    };
-  }, []);
-
   const bondObj = useCallback((width: number) => {
     return {
       field: 'bond_size',
@@ -683,7 +617,7 @@ const BookTable = ({
       },
       currency: {
         priority: 2,
-        order: 6,
+        order: 4,
         normal: {
           width: fav.mode === 'swap' ? 0 : 5.9,
           object: currencyObj,
@@ -717,7 +651,7 @@ const BookTable = ({
           object: robotObj,
         },
         small: {
-          width: 5.1,
+          width: 5,
           object: robotSmallObj,
         },
       },
@@ -753,25 +687,6 @@ const BookTable = ({
           object: satoshisObj,
         },
       },
-      coordinatorShortAlias: {
-        priority: 10,
-        order: 3,
-        normal: {
-          width: 4.1,
-          object: coordinatorObj,
-        },
-        small: {
-          width: 5.1,
-          object: () => {
-            return {
-              field: 'coordinatorShortAlias',
-              headerName: '',
-              width: 0,
-              renderCell: () => <></>,
-            };
-          },
-        },
-      },
       type: {
         priority: 11,
         order: 2,
@@ -786,14 +701,6 @@ const BookTable = ({
         normal: {
           width: 4.2,
           object: bondObj,
-        },
-      },
-      id: {
-        priority: 13,
-        order: 13,
-        normal: {
-          width: 4.8,
-          object: idObj,
         },
       },
     };

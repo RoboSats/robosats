@@ -73,7 +73,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
             'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
           )}
         >
-          <Grid container style={{ marginTop: 10 }}>
+          <Grid container style={{ marginTop: 10, width: '100%' }}>
             <Grid
               item
               sx={{
@@ -108,7 +108,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Grid>
             </Grid>
 
-            <Grid item>
+            <Grid item xs={{ width: '100%' }}>
               <Select
                 variant='standard'
                 fullWidth
@@ -116,7 +116,6 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 inputProps={{
                   style: {
                     textAlign: 'center',
-                    width: '70%',
                   },
                 }}
                 value={coordinatorAlias}
