@@ -104,7 +104,7 @@ const FederationTable = ({
               position: 'relative',
               left: '-0.3em',
               width: '50em',
-              marginTop: '-5px',
+              marginTop: '2px',
             }}
             wrap='nowrap'
             onClick={() => {
