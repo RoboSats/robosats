@@ -351,7 +351,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%' }}>
+          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
             <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={9}>
               <TextField
                 label={t('Type a message')}

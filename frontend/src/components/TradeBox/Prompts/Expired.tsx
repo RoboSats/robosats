@@ -19,14 +19,17 @@ export const ExpiredPrompt = ({
   const { t } = useTranslation();
 
   return (
-    <Grid container spacing={1}>
-      <Grid item xs={12}>
+    <Grid container direction='row'>
+      <Grid item style={{ width: '100%' }}>
         <Typography variant='body2' align='center'>
           {t(order.expiry_message)}
         </Typography>
       </Grid>
       {order.is_maker ? (
-        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+        <Grid
+          item
+          style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '8px' }}
+        >
           <LoadingButton
             loading={loadingRenew}
             variant='outlined'

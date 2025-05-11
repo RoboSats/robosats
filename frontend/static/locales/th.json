@@ -450,7 +450,7 @@
   "#44": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "วิธีชำระเงินเฟียตที่รองรับ",
   "Amount of Satoshis": "ปริมาณ Satoshis",
-  "Deposit timer": "ผู้ขายต้องวางเหรียญที่จะขายภายใน",
+  "Deposit": "ผู้ขายต้องวางเหรียญที่จะขายภายใน",
   "Expires in": "หมดอายุใน",
   "F2F location": "F2F location",
   "Order Details": "รายละเอียดรายการ",

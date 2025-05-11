@@ -450,7 +450,7 @@
   "#44": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "Способ(ы) оплаты",
   "Amount of Satoshis": "Количество Сатоши",
-  "Deposit timer": "Таймер депозита",
+  "Deposit": "депозита",
   "Expires in": "Истекает через",
   "F2F location": "F2F локация",
   "Order Details": "Детали ордера",

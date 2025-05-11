@@ -827,7 +827,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
           <></>
         )}
 
-        <Grid item>
+        <Grid item style={{ paddingTop: '8px' }}>
           <CancelButton
             order={currentOrder ?? null}
             onClickCancel={cancel}
