@@ -6,9 +6,6 @@ import {
   Dialog,
   Typography,
   Paper,
-  ListItemButton,
-  ListItemText,
-  ListItemAvatar,
   useTheme,
   CircularProgress,
   IconButton,
@@ -18,7 +15,6 @@ import {
 } from '@mui/material';
 import {
   DataGrid,
-  type GridColumnVisibilityModel,
   GridPagination,
   type GridPaginationModel,
   type GridColDef,
@@ -97,7 +93,6 @@ const BookTable = ({
     pageSize: 0,
     page: 0,
   });
-  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({});
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [page, setPage] = useState<number>(0);
@@ -170,42 +165,6 @@ const BookTable = ({
       columnHeaderSortIconLabel: t('Sort'),
       booleanCellTrueLabel: t('yes'),
       booleanCellFalseLabel: t('no'),
-    };
-  }, []);
-
-  const robotObj = useCallback((width: number) => {
-    return {
-      field: 'maker_nick',
-      headerName: t('Robot'),
-      width: width * fontSize,
-      renderCell: (params: { row: PublicOrder }) => {
-        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
-        return (
-          <ListItemButton
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            <ListItemAvatar sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}>
-              <RobotAvatar
-                hashId={params.row.maker_hash_id}
-                style={{ width: '3.215em', height: '3.215em' }}
-                smooth={true}
-                flipHorizontally={true}
-                orderType={params.row.type}
-                statusColor={statusBadgeColor(params.row.maker_status)}
-                tooltip={t(params.row.maker_status)}
-                small={true}
-              />
-            </ListItemAvatar>
-            <ListItemText
-              primary={params.row.maker_nick ?? thirdParty.longAlias}
-              sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}
-            />
-          </ListItemButton>
-        );
-      },
     };
   }, []);
 
@@ -611,7 +570,7 @@ const BookTable = ({
         priority: 1,
         order: 5,
         normal: {
-          width: fav.mode === 'swap' ? 9.5 : 6.5,
+          width: fav.mode === 'swap' ? 9.5 : 7,
           object: amountObj,
         },
       },
@@ -628,6 +587,10 @@ const BookTable = ({
         order: 12,
         normal: {
           width: 6,
+          object: premiumObj,
+        },
+        small: {
+          width: 4,
           object: premiumObj,
         },
       },
@@ -647,10 +610,6 @@ const BookTable = ({
         priority: 5,
         order: 1,
         normal: {
-          width: 17.14,
-          object: robotObj,
-        },
-        small: {
           width: 5,
           object: robotSmallObj,
         },
@@ -712,8 +671,7 @@ const BookTable = ({
   } {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
-    const columnVisibilityModel: GridColumnVisibilityModel = {};
-    let width: number = 0;
+    let width: number = -4;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
       // do not use col currency on swaps
@@ -729,23 +687,18 @@ const BookTable = ({
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
         selectedColumns.push([colObject(colWidth), value.order]);
-        columnVisibilityModel[key] = true;
-      } else {
-        selectedColumns.push([colObject(colWidth), value.order]);
-        columnVisibilityModel[key] = false;
       }
     }
 
     // sort columns by column.order value
-    selectedColumns.sort(function (first, second) {
-      return first[1] - second[1];
-    });
+    const columns = selectedColumns
+      .sort(function (first, second) {
+        return first[1] - second[1];
+      })
+      .map(function (item) {
+        return item[0];
+      });
 
-    const columns: Array<GridColDef<GridValidRowModel>> = selectedColumns.map(function (item) {
-      return item[0];
-    });
-
-    setColumnVisibilityModel(columnVisibilityModel);
     return { columns, width: maxWidth };
   };
 
@@ -860,17 +813,12 @@ const BookTable = ({
           />
         )}
         <ClickThroughDataGrid
-          autoHeight
           sx={headerStyleFix}
           localeText={localeText}
           rows={filteredOrders}
           getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
           loading={federation.loading}
           columns={columns}
-          columnVisibilityModel={columnVisibilityModel}
-          onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
-            setColumnVisibilityModel(newColumnVisibilityModel);
-          }}
           page={page}
           onPageChange={setPage}
           hideFooter={!showFooter}
@@ -903,7 +851,6 @@ const BookTable = ({
             />
           )}
           <ClickThroughDataGrid
-            autoHeight
             sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
@@ -913,10 +860,6 @@ const BookTable = ({
             columns={columns}
             hideFooter={!showFooter}
             slots={gridComponents}
-            columnVisibilityModel={columnVisibilityModel}
-            onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
-              setColumnVisibilityModel(newColumnVisibilityModel);
-            }}
             page={page}
             onPageChange={setPage}
             paginationModel={paginationModel}
