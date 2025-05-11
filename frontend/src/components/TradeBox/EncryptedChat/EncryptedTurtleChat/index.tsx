@@ -52,7 +52,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   setTurtleMode,
   turtleMode,
   onSendMessage,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
@@ -102,7 +102,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       .get(url + basePath, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
-      .then((results: any) => {
+      .then((results: object) => {
         if (results != null) {
           setPeerConnected(results.peer_connected);
           setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
@@ -332,7 +332,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%' }}>
+          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
             <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={9}>
               <TextField
                 label={t('Type a message')}

@@ -22,7 +22,7 @@ export const ConfirmUndoFiatSentDialog = ({
   loadingButton,
   onClose,
   onConfirmClick,
-}: ConfirmUndoFiatSentDialogProps): JSX.Element => {
+}: ConfirmUndoFiatSentDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
   const [time, setTime] = useState<number>(60);
 

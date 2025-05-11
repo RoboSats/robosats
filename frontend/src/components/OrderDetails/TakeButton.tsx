@@ -44,7 +44,7 @@ const TakeButton = ({
   currentOrder,
   info,
   onClickGenerateRobot = () => null,
-}: TakeButtonProps): JSX.Element => {
+}: TakeButtonProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -83,7 +83,7 @@ const TakeButton = ({
   const currencyCode: string =
     currentOrder?.currency === 1000 ? 'Sats' : currencies[`${Number(currentOrder?.currency)}`];
 
-  const InactiveMakerDialog = function (): JSX.Element {
+  const InactiveMakerDialog = function (): React.JSX.Element {
     return (
       <Dialog
         open={open.inactiveMaker}
@@ -128,7 +128,7 @@ const TakeButton = ({
   const countdownTakeOrderRenderer = function ({
     seconds,
     completed,
-  }: countdownTakeOrderRendererProps): JSX.Element {
+  }: countdownTakeOrderRendererProps): React.JSX.Element {
     if (isNaN(seconds) || completed) {
       return takeOrderButton();
     } else {
@@ -185,7 +185,7 @@ const TakeButton = ({
     );
   }, [takeAmount, slotUpdatedAt]);
 
-  const takeOrderButton = function (): JSX.Element {
+  const takeOrderButton = function (): React.JSX.Element {
     if (currentOrder?.has_range) {
       return (
         <Box
@@ -208,7 +208,7 @@ const TakeButton = ({
               alignItems='flex-start'
               justifyContent='space-evenly'
             >
-              <Grid item sx={{ width: '12em' }}>
+              <Grid item>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}

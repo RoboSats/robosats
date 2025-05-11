@@ -43,7 +43,7 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
       active_robots_today = Math.max(active_robots_today, coordinator.info.active_robots_today);
 
-      aggregations.forEach((key: any) => {
+      aggregations.forEach((key: string) => {
         info[key] = Number(info[key]) + Number(coordinator.info[key]);
       });
     }

@@ -1,5 +1,6 @@
 import { type PublicOrder, type Favorites, type Federation } from '../models';
 import thirdParties from '../../static/thirdparties.json';
+import { PaymentMethod } from '../components/PaymentMethods/MethodList';
 
 interface AmountFilter {
   amount: string;
@@ -16,7 +17,7 @@ interface FilterOrders {
   paymentMethods?: string[];
 }
 
-const filterByPayment = function (order: PublicOrder, paymentMethods: any[]): boolean {
+const filterByPayment = function (order: PublicOrder, paymentMethods: PaymentMethod[]): boolean {
   if (paymentMethods.length === 0) {
     return true;
   } else {

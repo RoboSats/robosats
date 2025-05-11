@@ -17,7 +17,7 @@ interface Props {
   thirdPartyOrder?: PublicOrder;
 }
 
-const VisitThirdParty = ({ open, onClose, thirdPartyOrder }: Props): JSX.Element => {
+const VisitThirdParty = ({ open, onClose, thirdPartyOrder }: Props): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

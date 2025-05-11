@@ -17,7 +17,7 @@ class WebsocketConnectionNative implements WebsocketConnection {
 
   private readonly path: string;
 
-  private readonly wsMessagePromises: Array<(message: any) => void> = [];
+  private readonly wsMessagePromises: Array<(message: object) => void> = [];
   private readonly wsClosePromises: Array<() => void> = [];
 
   public send: (message: string) => void = (message: string) => {
@@ -45,7 +45,7 @@ class WebsocketConnectionNative implements WebsocketConnection {
     });
   };
 
-  public onMessage: (event: (message: any) => void) => void = (event) => {
+  public onMessage: (event: (message: object) => void) => void = (event) => {
     this.wsMessagePromises.push(event);
   };
 
@@ -53,7 +53,7 @@ class WebsocketConnectionNative implements WebsocketConnection {
     this.wsClosePromises.push(event);
   };
 
-  public onError: (event: (error: any) => void) => void = (_event) => {
+  public onError: (event: (error: object) => void) => void = (_event) => {
     // Not implemented
   };
 

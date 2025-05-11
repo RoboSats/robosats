@@ -34,7 +34,7 @@ export const FederationContext = createContext<UseFederationStoreType>(initialFe
 
 export const FederationContextProvider = ({
   children,
-}: FederationContextProviderProps): JSX.Element => {
+}: FederationContextProviderProps): React.JSX.Element => {
   const { settings, page, origin, hostUrl, open, torStatus, client, fav } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -63,7 +63,7 @@ export const FederationContextProvider = ({
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.getCoordinator(alias)) {
-      const attributes: Record<any, any> = {
+      const attributes: object = {
         longAlias: alias,
         shortAlias: alias,
         federated: false,

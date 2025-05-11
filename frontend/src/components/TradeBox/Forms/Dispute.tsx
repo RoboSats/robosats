@@ -48,7 +48,7 @@ export const DisputeStatementForm = ({
   dispute,
   shortAlias,
   setDispute,
-}: DisputeStatementFormProps): JSX.Element => {
+}: DisputeStatementFormProps): React.JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
 

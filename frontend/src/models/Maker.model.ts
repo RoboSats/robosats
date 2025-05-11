@@ -4,19 +4,19 @@ export interface Maker {
   advancedOptions: boolean;
   coordinator: string;
   isExplicit: boolean;
-  amount: string;
+  amount: number | null;
   paymentMethods: string[];
   paymentMethodsText: string;
   badPaymentMethod: boolean;
-  premium: number | string;
+  premium: number | null;
   satoshis: string;
   publicExpiryTime: Date;
   publicDuration: number;
   escrowExpiryTime: Date;
   escrowDuration: number;
   bondSize: number;
-  minAmount: string;
-  maxAmount: string;
+  minAmount: number | null;
+  maxAmount: number | null;
   badSatoshisText: string;
   badPremiumText: string;
   latitude: number;
@@ -30,19 +30,19 @@ export const defaultMaker: Maker = {
       Math.floor(Math.random() * Object.keys(defaultFederation).length)
     ] ?? '',
   isExplicit: false,
-  amount: '',
+  amount: null,
   paymentMethods: [],
   paymentMethodsText: 'not specified',
   badPaymentMethod: false,
-  premium: '',
+  premium: null,
   satoshis: '',
   publicExpiryTime: new Date(0, 0, 0, 23, 59),
   publicDuration: 86340,
   escrowExpiryTime: new Date(0, 0, 0, 3, 0),
   escrowDuration: 10800,
   bondSize: 3,
-  minAmount: '',
-  maxAmount: '',
+  minAmount: null,
+  maxAmount: null,
   badPremiumText: '',
   badSatoshisText: '',
   latitude: 0,

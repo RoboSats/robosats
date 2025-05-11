@@ -144,7 +144,7 @@ export interface UseAppStoreType {
   navbarHeight: number;
   open: OpenDialogs;
   setOpen: Dispatch<SetStateAction<OpenDialogs>>;
-  windowSize?: WindowSize;
+  windowSize: WindowSize;
   acknowledgedWarning: boolean;
   setAcknowledgedWarning: Dispatch<SetStateAction<boolean>>;
   clientVersion: {
@@ -191,7 +191,7 @@ export const initialAppContext: UseAppStoreType = {
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
 
-export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.Element => {
+export const AppContextProvider = ({ children }: AppContextProviderProps): React.JSX.Element => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 
@@ -212,8 +212,8 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
     initialAppContext.slideDirection,
   );
   const [open, setOpen] = useState<OpenDialogs>(initialAppContext.open);
-  const [windowSize, setWindowSize] = useState<WindowSize>(() =>
-    getWindowSize(theme.typography.fontSize),
+  const [windowSize, setWindowSize] = useState<WindowSize>(
+    () => getWindowSize(theme.typography.fontSize) ?? { width: 0, height: 0 },
   );
   const [fav, setFav] = useState<Favorites>(initialAppContext.fav);
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(

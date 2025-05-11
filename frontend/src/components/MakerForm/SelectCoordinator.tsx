@@ -73,16 +73,16 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
             'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
           )}
         >
-          <Grid container style={{ marginTop: 10 }}>
+          <Grid container style={{ marginTop: 10, width: '100%' }}>
             <Grid
               item
-              xs={3}
               sx={{
                 cursor: 'pointer',
                 position: 'relative',
                 left: '0.3em',
                 bottom: '0.1em',
                 marginBottom: 1,
+                width: '30%',
               }}
               onClick={() => {
                 onClickCurrentCoordinator(coordinatorAlias);
@@ -108,20 +108,22 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Grid>
             </Grid>
 
-            <Grid item xs={9}>
+            <Grid item xs={{ width: '100%' }}>
               <Select
                 variant='standard'
                 fullWidth
                 required={true}
                 inputProps={{
-                  style: { textAlign: 'center' },
+                  style: {
+                    textAlign: 'center',
+                  },
                 }}
                 value={coordinatorAlias}
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {federation.getCoordinators().map((coordinator): JSX.Element | null => {
-                  let row: JSX.Element | null = null;
+                {federation.getCoordinators().map((coordinator): React.JSX.Element | null => {
+                  let row: React.JSX.Element | null = null;
                   if (coordinator.enabled === true) {
                     row = (
                       <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>

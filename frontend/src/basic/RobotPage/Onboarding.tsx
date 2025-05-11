@@ -34,7 +34,7 @@ interface OnboardingProps {
   baseUrl: string;
 }
 
-const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): JSX.Element => {
+const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 

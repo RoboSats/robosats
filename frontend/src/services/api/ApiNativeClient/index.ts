@@ -31,7 +31,7 @@ class ApiNativeClient implements ApiClient {
     return headers;
   };
 
-  private readonly parseResponse = (response: Record<string, any>): object => {
+  private readonly parseResponse = (response: Record<string, object>): object => {
     if (response.headers['set-cookie'] != null) {
       response.headers['set-cookie'].forEach((cookie: string) => {
         const keySplit: string[] = cookie.split('=');

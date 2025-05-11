@@ -36,7 +36,7 @@ export const ChatPrompt = ({
   loadingDispute,
   messages,
   setMessages,
-}: ChatPromptProps): JSX.Element => {
+}: ChatPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -59,7 +59,7 @@ export const ChatPrompt = ({
   }: {
     hours: number;
     minutes: number;
-  }): JSX.Element {
+  }): React.JSX.Element {
     return (
       <span>{`${t('To open a dispute you need to wait')} ${hours}h ${zeroPad(minutes)}m `}</span>
     );

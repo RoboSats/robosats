@@ -2,10 +2,11 @@ import React, { useContext } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import DepthChart from '../../components/Charts/DepthChart';
+import { type Layout } from 'react-grid-layout';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface DepthChartWidgetProps {
-  layout: any;
+  layout: Layout;
   gridCellSize: number;
   style?: React.StyleHTMLAttributes<HTMLElement>;
   className?: string;
@@ -14,18 +15,10 @@ interface DepthChartWidgetProps {
   onTouchEnd?: () => void;
 }
 
-const DepthChartWidget = React.forwardRef(function Component(
-  {
-    layout,
-    gridCellSize,
-    style,
-    className,
-    onMouseDown,
-    onMouseUp,
-    onTouchEnd,
-  }: DepthChartWidgetProps,
-  ref,
-) {
+const DepthChartWidget = React.forwardRef(function Component({
+  layout,
+  gridCellSize,
+}: DepthChartWidgetProps) {
   const { fav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -36,7 +29,6 @@ const DepthChartWidget = React.forwardRef(function Component(
           elevation={0}
           maxWidth={layout.w * gridCellSize} // EM units
           maxHeight={layout.h * gridCellSize} // EM units
-          fillContainer={true}
         />
       </Paper>
     );

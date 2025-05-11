@@ -22,7 +22,7 @@ interface Props {
   tgToken: string;
 }
 
-const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): JSX.Element => {
+const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): React.JSX.Element => {
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();

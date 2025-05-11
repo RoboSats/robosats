@@ -53,7 +53,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   turtleMode,
   setTurtleMode,
   onSendMessage,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
@@ -164,7 +164,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     };
   };
 
-  const onMessage: (message: any) => void = (message) => {
+  const onMessage: (message: object) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
@@ -351,7 +351,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%' }}>
+          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
             <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={9}>
               <TextField
                 label={t('Type a message')}

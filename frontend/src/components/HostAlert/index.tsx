@@ -3,7 +3,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import SelfhostedAlert from './SelfhostedAlert';
 import UnsafeAlert from './UnsafeAlert';
 
-const HostAlert = (): JSX.Element => {
+const HostAlert = (): React.JSX.Element => {
   const { client, hostUrl } = useContext<UseAppStoreType>(AppContext);
   const component =
     !hostUrl.includes('robosats') && (client === 'selfhosted' || client === 'desktop')
