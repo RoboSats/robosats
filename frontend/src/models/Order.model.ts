@@ -61,7 +61,7 @@ class Order {
   expires_at: Date = new Date();
   type: number = 0;
   currency: number = 0;
-  amount: number = 0;
+  amount: number | null = null;
   has_range: boolean = false;
   min_amount: number = 0;
   max_amount: number = 0;

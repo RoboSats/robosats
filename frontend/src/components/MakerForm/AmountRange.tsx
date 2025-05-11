@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   SliderThumb,
@@ -15,6 +15,7 @@ import { FlagWithProps } from '../Icons';
 import RangeSlider from './RangeSlider';
 import currencyDict from '../../../static/assets/currencies.json';
 import { pn } from '../../utils';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const RangeThumbComponent: React.FC<React.PropsWithChildren> = (props) => {
   const { children, ...other } = props;
@@ -29,39 +30,93 @@ const RangeThumbComponent: React.FC<React.PropsWithChildren> = (props) => {
 };
 
 interface AmountRangeProps {
-  minAmount: string;
-  maxAmount: string;
-  type: number;
+  amountSafeThresholds: number[];
   currency: number;
-  handleRangeAmountChange: (event: Event, value: number | number[], activeThumb: number) => void;
-  handleMaxAmountChange: (
-    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
-  ) => void;
-  handleMinAmountChange: (
-    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
-  ) => void;
+  setHasRangeError: (hasRangeError: boolean) => void;
   handleCurrencyChange: (newCurrency: number) => void;
-  maxAmountError: boolean;
-  minAmountError: boolean;
   currencyCode: string;
   amountLimits: number[];
 }
 
 const AmountRange: React.FC<AmountRangeProps> = ({
-  minAmount,
-  handleRangeAmountChange,
+  amountSafeThresholds,
   currency,
   currencyCode,
   handleCurrencyChange,
+  setHasRangeError,
   amountLimits,
-  maxAmount,
-  minAmountError,
-  maxAmountError,
-  handleMinAmountChange,
-  handleMaxAmountChange,
 }) => {
+  const { setMaker, maker } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
   const { t } = useTranslation();
+  const maxRangeAmountMultiple = 14.8;
+  const minRangeAmountMultiple = 1.6;
+
+  const minAmountError = useMemo(() => {
+    return (
+      maker.maxAmount !== null &&
+      maker.minAmount !== null &&
+      (maker.minAmount < amountLimits[0] * 0.99 ||
+        maker.maxAmount < maker.minAmount ||
+        maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
+        maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount)
+    );
+  }, [maker.minAmount, maker.maxAmount, amountLimits]);
+
+  const maxAmountError = useMemo(() => {
+    return (
+      maker.maxAmount !== null &&
+      maker.minAmount !== null &&
+      (maker.maxAmount > amountLimits[1] * 1.01 ||
+        maker.maxAmount < maker.minAmount ||
+        maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
+        maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount)
+    );
+  }, [maker.minAmount, maker.maxAmount, amountLimits]);
+
+  const handleRangeAmountChange = (
+    e: Event,
+    newValue: number | number[],
+    activeThumb: number,
+  ): void => {
+    if (typeof newValue === 'number' || newValue.length < 2) return;
+
+    let minAmount = newValue[0];
+    let maxAmount = newValue[1];
+
+    minAmount = Math.min(
+      (amountLimits[1] * amountSafeThresholds[1]) / minRangeAmountMultiple,
+      minAmount,
+    );
+    maxAmount = Math.max(
+      minRangeAmountMultiple * amountLimits[0] * amountSafeThresholds[0],
+      maxAmount,
+    );
+
+    if (minAmount > maxAmount / minRangeAmountMultiple) {
+      if (activeThumb === 0) {
+        maxAmount = minRangeAmountMultiple * minAmount;
+      } else {
+        minAmount = maxAmount / minRangeAmountMultiple;
+      }
+    } else if (minAmount < maxAmount / maxRangeAmountMultiple) {
+      if (activeThumb === 0) {
+        maxAmount = maxRangeAmountMultiple * minAmount;
+      } else {
+        minAmount = maxAmount / maxRangeAmountMultiple;
+      }
+    }
+
+    setMaker({
+      ...maker,
+      minAmount: parseFloat(minAmount.toPrecision(minAmount < 100 ? 2 : 3)),
+      maxAmount: parseFloat(maxAmount.toPrecision(maxAmount < 100 ? 2 : 3)),
+    });
+  };
+
+  useEffect(() => {
+    setHasRangeError(!minAmountError || !maxAmountError);
+  }, [minAmountError, maxAmountError]);
 
   return (
     <Grid item xs={12}>
@@ -93,11 +148,19 @@ const AmountRange: React.FC<AmountRangeProps> = ({
               variant='standard'
               type='number'
               size='small'
-              value={minAmount}
-              onChange={handleMinAmountChange}
+              value={maker.minAmount?.toString()}
+              onChange={(e) => {
+                setMaker((maker) => {
+                  const value = Number(e.target.value);
+                  return {
+                    ...maker,
+                    minAmount: parseFloat(value.toPrecision(value < 100 ? 2 : 3)),
+                  };
+                });
+              }}
               error={minAmountError}
               sx={{
-                width: `${minAmount.toString().length * 0.56}em`,
+                width: `${(maker.minAmount?.toString().length ?? 0) * 0.56}em`,
                 minWidth: '0.56em',
                 maxWidth: '2.8em',
               }}
@@ -116,11 +179,19 @@ const AmountRange: React.FC<AmountRangeProps> = ({
               variant='standard'
               size='small'
               type='number'
-              value={maxAmount}
-              onChange={handleMaxAmountChange}
+              value={maker.maxAmount?.toString()}
+              onChange={(e) => {
+                setMaker((maker) => {
+                  const value = Number(e.target.value);
+                  return {
+                    ...maker,
+                    maxAmount: parseFloat(value.toPrecision(value < 100 ? 2 : 3)),
+                  };
+                });
+              }}
               error={maxAmountError}
               sx={{
-                width: `${maxAmount.toString().length * 0.56}em`,
+                width: `${(maker.maxAmount?.toString().length ?? 0) * 0.56}em`,
                 minWidth: '0.56em',
                 maxWidth: '3.36em',
               }}
@@ -159,7 +230,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
           >
             <RangeSlider
               disableSwap={true}
-              value={[Number(minAmount), Number(maxAmount)]}
+              value={[maker.minAmount ?? amountLimits[0], maker.maxAmount ?? amountLimits[1]]}
               step={(amountLimits[1] - amountLimits[0]) / 5000}
               valueLabelDisplay='auto'
               components={{ Thumb: RangeThumbComponent }}

@@ -76,13 +76,13 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
           <Grid container style={{ marginTop: 10 }}>
             <Grid
               item
-              xs={3}
               sx={{
                 cursor: 'pointer',
                 position: 'relative',
                 left: '0.3em',
                 bottom: '0.1em',
                 marginBottom: 1,
+                width: '30%',
               }}
               onClick={() => {
                 onClickCurrentCoordinator(coordinatorAlias);
@@ -108,13 +108,16 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Grid>
             </Grid>
 
-            <Grid item xs={9}>
+            <Grid item>
               <Select
                 variant='standard'
                 fullWidth
                 required={true}
                 inputProps={{
-                  style: { textAlign: 'center' },
+                  style: {
+                    textAlign: 'center',
+                    width: '70%',
+                  },
                 }}
                 value={coordinatorAlias}
                 onChange={handleCoordinatorChange}
