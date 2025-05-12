@@ -200,13 +200,13 @@
     "motto": "Freedom and Integrity",
     "color": "#200000",
     "established": "2025-05-20",
-    "nostrHexPubkey": "...",
+    "nostrHexPubkey": "95521a33ba34f5924464f425e81b896b1aa9069796a778368ed053e3612c509b",
     "contact": {
       "email": "mail@librebazaar.com",
       "telegram": "jerryfletcher21",
       "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2FPtsqghzQKU83kYTlQ1VKg996dW4Cw4x_bvpKmiv8uns%3D%40smp18.simplex.im%2FV6N4pmHtaKhNbY8ab2Opmk9qJsGEaIYd%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEA7Uv1vk2CDBDL0Jcrfn0oe5xxK-QvZmyB0f731ftJbQ0%253D%26q%3Dc%26srv%3Dlyqpnwbs2zqfr45jqkncwpywpbtq7jrhxnib5qddtr6npjyezuwd3nqd.onion",
       "pgp": "/static/federation/pgp/C6894FC235E06C4FC2FE77916FA7713E574EDEC3.asc",
-      "nostr": null,
+      "nostr": "npub1j4fp5va6xn6ey3ry7sj7sxufdvd2jp5hj6nhsd5w6pf7xcfv2zdspj5e5g",
       "website": null,
       "fingerprint": "C6894FC235E06C4FC2FE77916FA7713E574EDEC3"
     },
