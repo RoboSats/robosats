@@ -65,8 +65,8 @@ mainnet_bazaar_port=107
 testnet_bazaar_onion=librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion
 testnet_bazaar_port=1007
 # socat cmd
-mainnet_bazaar_socat="socat tcp4-LISTEN:${mainnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_bazaar_port}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_bazaar_socat="socat tcp4-LISTEN:${testnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_bazaar_port}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_bazaar_socat="socat tcp4-LISTEN:${mainnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_bazaar_socat="socat tcp4-LISTEN:${testnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 
 # RUN!
