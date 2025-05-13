@@ -305,7 +305,7 @@ export class Coordinator {
   };
 
   getRelayUrl = (): string => {
-    return `ws://${this.url.replace(/^https?:\/\//, '')}/nostr`;
+    return `ws://${this.url.replace(/^https?:\/\//, '')}/relay`;
   };
 }
 

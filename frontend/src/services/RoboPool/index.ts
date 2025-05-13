@@ -17,7 +17,7 @@ class RoboPool {
     const federationRelays = coordinators.map((coord) => coord.getRelayUrl());
 
     if (settings.host) {
-      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/nostr`;
+      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/relay`;
       if (federationRelays.includes(hostNostr)) {
         this.relays.push(hostNostr);
       }
