@@ -304,8 +304,12 @@ export class Coordinator {
     }
   };
 
-  getRelayUrl = (): string => {
-    return `ws://${this.url.replace(/^https?:\/\//, '')}/nostr`;
+  getRelayUrl = (network: 'mainnet' | 'testnet', hostUrl: string, selfHosted: boolean): string => {
+    if (selfHosted && this.shortAlias !== 'local') {
+      return `ws://${hostUrl.replace(/^https?:\/\//, '')}/${network}/${this.shortAlias}/relay`;
+    } else {
+      return `ws://${this.url.replace(/^https?:\/\//, '')}/relay`;
+    }
   };
 }
 

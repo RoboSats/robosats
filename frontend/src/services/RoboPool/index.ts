@@ -10,18 +10,21 @@ interface RoboPoolEvents {
 }
 
 class RoboPool {
-  constructor(settings: Settings, coordinators: Coordinator[]) {
+  constructor(settings: Settings, hostUrl: string, coordinators: Coordinator[]) {
     this.network = settings.network ?? 'mainnet';
 
     this.relays = [];
-    const federationRelays = coordinators.map((coord) => coord.getRelayUrl());
+    const federationRelays = coordinators.map((coord) =>
+      coord.getRelayUrl(settings.network, hostUrl, settings.selfhostedClient),
+    );
 
     if (settings.host) {
-      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/nostr`;
+      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/relay`;
       if (federationRelays.includes(hostNostr)) {
         this.relays.push(hostNostr);
       }
     }
+
     while (this.relays.length < 3) {
       const randomRelay =
         federationRelays[Math.floor(Math.random() * Object.keys(federationRelays).length)];

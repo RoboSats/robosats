@@ -65,7 +65,7 @@ export class Federation {
     if (tesnetHost) settings.network = 'testnet';
     this.connection = null;
 
-    this.roboPool = new RoboPool(settings, Object.values(this.coordinators));
+    this.roboPool = new RoboPool(settings, hostUrl, Object.values(this.coordinators));
   }
 
   private coordinators: Record<string, Coordinator>;
@@ -163,8 +163,13 @@ export class Federation {
   updateUrl = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
     const federationUrls = {};
     for (const coor of Object.values(this.coordinators)) {
-      coor.updateUrl(origin, settings, hostUrl);
-      federationUrls[coor.shortAlias] = coor.url;
+      const { url, basePath } = coor.getEndpoint(
+        settings.network,
+        origin,
+        settings.selfhostedClient,
+        hostUrl,
+      );
+      federationUrls[coor.shortAlias] = url + basePath;
     }
     systemClient.setCookie('federation', JSON.stringify(federationUrls));
   };
