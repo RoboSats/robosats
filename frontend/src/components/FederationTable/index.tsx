@@ -99,7 +99,13 @@ const FederationTable = ({
           <Grid
             container
             direction='row'
-            sx={{ cursor: 'pointer', position: 'relative', left: '-0.3em', width: '50em' }}
+            sx={{
+              cursor: 'pointer',
+              position: 'relative',
+              left: '-0.3em',
+              width: '50em',
+              marginTop: '2px',
+            }}
             wrap='nowrap'
             onClick={() => {
               onClickCoordinator(params.row.shortAlias);
