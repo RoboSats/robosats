@@ -8,6 +8,7 @@ import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../contexts/FederationContext';
+import { AppContext, UseAppStoreType } from '../../../contexts/AppContext';
 
 interface Props {
   order: Order;
@@ -42,13 +43,16 @@ const EncryptedChat: React.FC<Props> = ({
   status,
 }: Props): React.JSX.Element => {
   const [turtleMode, setTurtleMode] = useState<boolean>(false);
+  const { hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   useEffect(() => {
     // const slot = garage.getSlot();
     const coordinator = federation.getCoordinator(order.shortAlias);
-    federation.roboPool.connect([coordinator.getRelayUrl()]);
+    federation.roboPool.connect([
+      coordinator.getRelayUrl(settings.network, hostUrl, settings.selfhostedClient),
+    ]);
 
     // const since = new Date(order.created_at);
     // since.setDate(since.getDate() - 2);
@@ -79,7 +83,7 @@ const EncryptedChat: React.FC<Props> = ({
 
     const recipient = {
       publicKey: order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
-      relayUrl: coordinator.getRelayUrl(),
+      relayUrl: coordinator.getRelayUrl(settings.network, hostUrl, settings.selfhostedClient),
     };
 
     const wrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, recipient, content);
