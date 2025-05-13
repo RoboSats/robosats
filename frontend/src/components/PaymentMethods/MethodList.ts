@@ -88,6 +88,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Tinkoff QR', icon: 'tinkoffqr' },
   { name: 'SBP', icon: 'sbp' },
   { name: 'Qiwi', icon: 'qiwi' },
+  { name: 'Nomad', icon: 'nomad' },
 ];
 
 export const swapMethods: PaymentMethod[] = [
