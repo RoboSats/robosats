@@ -39,7 +39,7 @@ class Command(BaseCommand):
                     f.write(f"Error getting updates: {e}\n{traceback.format_exc()}\n")
                 continue
 
-            if not response["result"]:
+            if not "result" in response or not response["result"]:
                 continue
             for result in response["result"]:
                 if not result.get("message") or not result.get("message").get("text"):
