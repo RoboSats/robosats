@@ -70,12 +70,33 @@ if os.environ.get("LOG_TO_CONSOLE"):
         },
         "root": {
             "handlers": ["console"],
-            "level": "WARNING",
+            "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
         },
         "loggers": {
             "api.utils": {
                 "handlers": ["console"],
-                "level": "WARNING",
+                "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
+            },
+        },
+    }
+elif config("LOG_FILE", False):
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "file": {
+                "class": "logging.FileHandler",
+                "filename": config("LOG_FILE", cast=str),
+            },
+        },
+        "root": {
+            "handlers": ["file"],
+            "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
+        },
+        "loggers": {
+            "api.utils": {
+                "handlers": ["file"],
+                "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
             },
         },
     }
