@@ -35,7 +35,7 @@ class TestUtils(TestCase):
     @patch("api.utils.config")
     @patch("api.utils.requests.post")
     def test_bitcoind_rpc(self, mock_post, mock_config):
-        mock_config.side_effect = ["url", "user", "password"]
+        mock_config.side_effect = ["host", "port", "user", "password"]
         mock_post.return_value.json.return_value = {"result": "response"}
         response = bitcoind_rpc("method", ["params"])
         self.assertEqual(response, "response")

@@ -30,8 +30,12 @@ with open(os.path.join(CLN_DIR, "server.pem"), "rb") as f:
     server_cert = f.read()
 
 
-CLN_GRPC_HOST = config("CLN_GRPC_HOST", cast=str, default="localhost:9999")
-CLN_GRPC_HOLD_HOST = config("CLN_GRPC_HOLD_HOST", cast=str, default="localhost:9998")
+CLN_GRPC_HOST = \
+    str(config("CLN_GRPC_HOST", cast=str, default="localhost")) + \
+    ":" + str(config("CLN_GRPC_PORT", cast=str, default="9999"))
+CLN_GRPC_HOLD_HOST = \
+    str(config("CLN_GRPC_HOLD_HOST", cast=str, default="localhost")) + \
+    ":" + str(config("CLN_GRPC_HOLD_PORT", cast=str, default="9998"))
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 

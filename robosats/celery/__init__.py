@@ -3,11 +3,15 @@ from __future__ import absolute_import, unicode_literals
 import os
 from datetime import timedelta
 
+from decouple import config
 from celery import Celery
 from celery.schedules import crontab
 
 # You can use rabbitmq instead here.
-BASE_REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+BASE_REDIS_URL = \
+    "redis://" + str(config("REDIS_HOST", cast=str, default="localhost")) + \
+    ":" + str(config("REDIS_PORT", cast=str, default="6379")) + \
+    "/" + str(config("REDIS_DB_NUMBER", cast=str, default="1"))
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "robosats.settings")
