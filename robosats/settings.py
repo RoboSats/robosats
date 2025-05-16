@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import json
-import os
 import textwrap
 from pathlib import Path
 
