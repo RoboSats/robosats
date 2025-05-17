@@ -27,7 +27,8 @@ class Nostr:
 
         # Add relays and connect
         await client.add_relay("ws://localhost:7777")
-        await client.add_relay("ws://localhost:7778")
+        strfry_port = config("STRFRY_PORT", cast=str, default="7778")
+        await client.add_relay(f"ws://localhost:{strfry_port}")
         await client.connect()
 
         robot_name = await self.get_robot_name(order)
