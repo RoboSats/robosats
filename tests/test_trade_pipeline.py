@@ -124,7 +124,7 @@ class TradeTest(BaseAPITestCase):
             f"Robot created nickname is not {nickname}",
         )
         self.assertEqual(
-            data["public_key"], pub_key, "Returned public Kky does not match"
+            data["public_key"], pub_key, "Returned public key does not match"
         )
         self.assertEqual(
             data["encrypted_private_key"],
