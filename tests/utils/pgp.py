@@ -1,8 +1,9 @@
+from decouple import config
 import gnupg
 
 
 def sign_message(message, private_key_path, passphrase_path):
-    gpg = gnupg.GPG()
+    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
 
     with open(private_key_path, "r") as f:
         private_key = f.read()

@@ -1,0 +1,281 @@
+#!/usr/bin/env bash
+
+# adapted from
+# https://github.com/bitcoin/bitcoin/blob/master/contrib/completions/bash/bitcoin-cli.bash
+_bitcoin_cli() {
+    local cur prev words=() cword
+    local bitcoin_cli
+
+    # save and use original argument to invoke bitcoin-cli for -help, help and RPC
+    # as bitcoin-cli might not be in $PATH
+    bitcoin_cli="$1"
+
+    if ! command -v "$bitcoin_cli" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    COMPREPLY=()
+    _get_comp_words_by_ref -n = cur prev words cword
+
+    if ((cword > 5)); then
+        case ${words[cword-5]} in
+            sendtoaddress)
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "true false" -- "$cur" ) )
+                return 0
+            ;;
+        esac
+    fi
+
+    if ((cword > 4)); then
+        case ${words[cword-4]} in
+            importaddress|listtransactions|setban)
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "true false" -- "$cur" ) )
+                return 0
+            ;;
+            signrawtransactionwithkey|signrawtransactionwithwallet)
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "ALL NONE SINGLE ALL|ANYONECANPAY NONE|ANYONECANPAY SINGLE|ANYONECANPAY" -- "$cur" ) )
+                return 0
+            ;;
+        esac
+    fi
+
+    if ((cword > 3)); then
+        case ${words[cword-3]} in
+            addmultisigaddress)
+                return 0
+            ;;
+            getbalance|gettxout|importaddress|importpubkey|importprivkey|listreceivedbyaddress|listsinceblock)
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "true false" -- "$cur" ) )
+                return 0
+            ;;
+        esac
+    fi
+
+    if ((cword > 2)); then
+        case ${words[cword-2]} in
+            addnode)
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "add remove onetry" -- "$cur" ) )
+                return 0
+            ;;
+            setban)
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "add remove" -- "$cur" ) )
+                return 0
+            ;;
+            fundrawtransaction|getblock|getblockheader|getmempoolancestors|getmempooldescendants|getrawtransaction|gettransaction|listreceivedbyaddress|sendrawtransaction)
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "true false" -- "$cur" ) )
+                return 0
+            ;;
+        esac
+    fi
+
+    case "$prev" in
+        backupwallet|dumpwallet|importwallet)
+            _filedir
+            return 0
+        ;;
+        getaddednodeinfo|getrawmempool|lockunspent)
+            # shellcheck disable=SC2207
+            COMPREPLY=( $( compgen -W "true false" -- "$cur" ) )
+            return 0
+        ;;
+        getbalance|getnewaddress|listtransactions|sendmany)
+            return 0
+        ;;
+    esac
+
+    # determine already specified args necessary for RPC
+    local rpcargs=()
+    local i
+    for i in ${COMP_LINE}; do
+        case "$i" in
+            -conf=*|-datadir=*|-rpc*|-chain=*|-testnet|-signet|-regtest)
+                rpcargs=( "${rpcargs[@]}" "$i" )
+            ;;
+        esac
+    done
+
+    case "$cur" in
+        -conf=*)
+            cur="${cur#*=}"
+            _filedir
+            return 0
+        ;;
+        -datadir=*)
+            cur="${cur#*=}"
+            _filedir -d
+            return 0
+        ;;
+        -rpcwallet=*)
+            cur="${cur#*=}"
+            wallets="$($bitcoin_cli "${rpcargs[@]}" listwallets | jq -r '.[]')"
+            # shellcheck disable=SC2207
+            COMPREPLY=( $( compgen -W "$wallets" -- "$cur" ) )
+            return 0
+        ;;
+        -*=*) # prevent nonsense completions
+            return 0
+        ;;
+        *)
+            local helpopts commands completions
+
+            # only parse -help if senseful
+            if [[ -z "$cur" || "$cur" =~ ^- ]]; then
+                helpopts=$($bitcoin_cli -help 2>&1 | awk '$1 ~ /^-/ { sub(/=.*/, "="); print $1 }' )
+            fi
+
+            # only parse help if senseful
+            if [[ -z "$cur" || "$cur" =~ ^[a-z] ]]; then
+                commands=$($bitcoin_cli "${rpcargs[@]}" help 2>/dev/null | awk '$1 ~ /^[a-z]/ { print $1; }')
+            fi
+
+            completions="$helpopts $commands generatetoaddress"
+
+            # shellcheck disable=SC2207
+            COMPREPLY=( $( compgen -W "$completions" -- "$cur" ) )
+
+            # Prevent space if an argument is desired
+            local word
+            for word in "${COMPREPLY[@]}"; do
+                case "$word" in
+                *=)
+                    compopt -o nospace
+                    break
+                ;;
+                esac
+            done
+            return 0
+        ;;
+    esac
+} &&
+complete -F _bitcoin_cli btc_reg
+
+# adapted from
+# https://github.com/ElementsProject/lightning/blob/master/contrib/lightning-cli.bash-completion
+_lightning_cli() {
+    local command_name="$1"
+    # local current_word="$2"
+    local previous_word="$3"
+
+    local lightning_cli
+
+    # lightning_cli might not be in $PATH
+    lightning_cli="$command_name"
+
+    if ! command -v "$lightning_cli" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [ "${COMP_CWORD}" -eq 1 ]; then
+        complete_opt=true
+    else
+        case "$previous_word" in
+            --help|-h) complete_opt=false ;;
+            help|-*) complete_opt=true ;;
+            *) complete_opt=false ;;
+        esac
+    fi
+
+    if [ "$complete_opt" = true ]; then
+        # shellcheck disable=SC2034
+        local cur prev words=() cword
+
+        COMPREPLY=()
+        _get_comp_words_by_ref -n = cur prev words cword
+
+        case "$cur" in
+            -*=*) # prevent nonsense completions
+                return 0
+            ;;
+            *)
+                local helpopts globalcmds
+
+                # get the global options, starting with --
+                if [[ -z "$cur" || "$cur" =~ ^- ]]; then
+                    globalcmds="$(
+                        $lightning_cli --help 2>&1 |
+                        tr '|' '\n' |
+                        sed -n -e 's/ .*//' -e 's/\(-[-a-z0-9A-Z]*\).*/\1/p'
+                    )"
+                fi
+
+                # get the regular commands
+                if [[ -z "$cur" || "$cur" =~ ^[a-z] ]]; then
+                    helpopts="$(
+                        $lightning_cli help 2>/dev/null |
+                        sed -n 's/^\([a-z][a-z_-]*\).*/\1/p' |
+                        sed '$ d'
+                    )"
+                fi
+
+                # shellcheck disable=SC2207
+                COMPREPLY=( $( compgen -W "$helpopts $globalcmds" -X "*," -- "$cur" ) )
+            ;;
+        esac
+    else
+        _minimal
+    fi
+} &&
+complete -F _lightning_cli cln_coord &&
+complete -F _lightning_cli cln_user
+
+# adapted from
+# https://github.com/lightningnetwork/lnd/blob/master/contrib/lncli.bash-completion
+_lncli() {
+    local cur prev words=() cword
+    local lncli
+
+    # lncli might not be in $PATH
+    lncli="$1"
+
+    if ! command -v "$lncli" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    COMPREPLY=()
+    _get_comp_words_by_ref -n = cur prev words cword
+
+    case "$prev" in
+        # example of further completion
+        newaddress)
+            # shellcheck disable=SC2207
+            COMPREPLY=( $( compgen -W "p2wkh np2wkh" -- "$cur" ) )
+            return 0
+        ;;
+    esac
+
+    case "$cur" in
+        -*=*) # prevent nonsense completions
+            return 0
+        ;;
+    esac
+
+    if [ "$cword" -eq 1 ] || {
+        [ "$cword" -eq 2 ] && [ "$prev" = "help" ]
+    }; then
+        local helpopts globalcmds completions
+
+        # get the global options, starting with --
+        if [[ -z "$cur" || "$cur" =~ ^- ]]; then
+            globalcmds=$($lncli help 2>&1 | awk '$1 ~ /^-/ { sub(/,/, ""); print $1}')
+        fi
+
+        # get the regular commands
+        if [[ -z "$cur" || "$cur" =~ ^[a-z] ]]; then
+            helpopts=$($lncli help 2>/dev/null | awk '$1 ~ /^[a-z]/ { print $1; }' )
+        fi
+
+        completions="$helpopts $globalcmds help"
+
+        # shellcheck disable=SC2207
+        COMPREPLY=( $( compgen -W "$completions" -X "*," -- "$cur" ) )
+    fi
+} &&
+complete -F _lncli lnd_coord &&
+complete -F _lncli lnd_user
