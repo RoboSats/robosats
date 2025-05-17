@@ -261,8 +261,8 @@ class TradeTest(BaseAPITestCase):
                 "type": 0,
                 "currency": 1,
                 "has_range": True,
-                "min_amount": 21,
-                "max_amount": 101.7,
+                "min_amount": 84,
+                "max_amount": 201.7,
                 "payment_method": "Advcash Cash F2F",
                 "is_explicit": False,
                 "premium": 3.34,
@@ -434,7 +434,7 @@ class TradeTest(BaseAPITestCase):
         )
         self.assertIsHash(data["maker_hash_id"])
         self.assertEqual(data["maker_status"], "Active")
-        self.assertAlmostEqual(float(data["amount"]), 80)
+        self.assertAlmostEqual(float(data["amount"]), 100)
         self.assertFalse(data["is_maker"])
         self.assertFalse(data["is_buyer"])
         self.assertTrue(data["is_seller"])
@@ -474,7 +474,7 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
-        self.assertAlmostEqual(float(data["amount"]), 80)
+        self.assertAlmostEqual(float(data["amount"]), 100)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
