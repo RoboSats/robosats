@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.logics import Logics
+from api.tasks import cache_market
 from api.models import (
     Currency,
     LNPayment,
@@ -149,6 +150,9 @@ class MakerView(CreateAPIView):
                 {"bad_request": "You must specify an order amount"},
                 status.HTTP_400_BAD_REQUEST,
             )
+
+        if len(Currency.objects.all()) == 0:
+            cache_market()
 
         # Creates a new order
         order = Order(
