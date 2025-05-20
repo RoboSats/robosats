@@ -19,7 +19,7 @@ class RoboPool {
     );
 
     if (settings.host) {
-      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/relay`;
+      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/relay/`;
       if (federationRelays.includes(hostNostr)) {
         this.relays.push(hostNostr);
       }
