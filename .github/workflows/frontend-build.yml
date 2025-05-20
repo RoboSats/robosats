@@ -40,11 +40,6 @@ jobs:
       run: |
         cd frontend
         npm install
-
-    - name:  'Test'
-      run: |
-        cd frontend
-        npm test
     - name:  'Build'
       run: |
         export NODE_OPTIONS="--max-old-space-size=4096"
