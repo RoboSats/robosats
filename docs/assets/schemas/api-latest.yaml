@@ -1496,12 +1496,18 @@ components:
         maker_hash_id:
           type: string
           description: The maker's robot hash
+        maker_nostr_pubkey:
+          type: string
+          description: The maker's robot nostr hex pubkey
         taker_nick:
           type: string
           description: The taker's robot hash
         taker_hash_id:
           type: string
           description: The taker's robot hash
+        taker_nostr_pubkey:
+          type: string
+          description: The taker's robot nostr hex pubkey
         status_message:
           type: string
           description: The current status of the order corresponding to the `status`
