@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.7.7
+  version: 0.7.8
   x-logo:
     url: https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
