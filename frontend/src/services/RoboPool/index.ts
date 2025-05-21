@@ -20,7 +20,7 @@ class RoboPool {
 
     if (settings.host) {
       const protocol = hostUrl.includes('https') ? 'wss' : 'ws';
-      const hostNostr = `${protocol}://${settings.host.replace(/^https?:\/\//, '')}/relay/`;
+      const hostNostr = `${protocol}://${settings.host.replace(/^https?:\/\//, '')}/nostr/`;
       if (federationRelays.includes(hostNostr)) {
         this.relays.push(hostNostr);
       }
