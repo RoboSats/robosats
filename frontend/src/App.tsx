@@ -61,7 +61,7 @@ const App = (): React.JSX.Element => {
     };
   };
 
-  if (typeof window !== 'undefined' && !window.crypto.subtle) {
+  if (typeof window !== 'undefined' && !window?.crypto?.subtle) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).crypto = {
       getRandomValues: (arr: Uint8Array): Uint8Array => {

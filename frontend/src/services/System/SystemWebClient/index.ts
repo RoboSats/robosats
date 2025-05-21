@@ -46,7 +46,7 @@ class SystemWebClient implements SystemClient {
   };
 
   public setCookie: (key: string, value: string) => void = (key, value) => {
-    document.cookie = `${key}=${value};path=/;SameSite=None;Secure`;
+    document.cookie = `${key}=${value};path=/;SameSite=None;`;
   };
 
   public deleteCookie: (key: string) => void = (key) => {
