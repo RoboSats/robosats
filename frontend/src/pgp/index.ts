@@ -19,14 +19,16 @@ export interface generatedKeyPair {
 }
 
 export async function genKey(highEntropyToken: string): Promise<generatedKeyPair> {
-  const d = new Date();
+  const date = new Date();
+  date.setDate(date.getDate() - 1); // One day of offset. Helps reducing errors due to client's system time being in the future.
+
   const keyPair = await generateKey({
     type: 'ecc', // Type of the key, defaults to ECC
-    curve: 'curve25519', // ECC curve name, defaults to curve25519
+    curve: 'curve25519Legacy', // ECC curve name, defaults to curve25519
     userIDs: [{ name: 'RoboSats ID ' + sha256(sha256(highEntropyToken)) }], // Ideally it would be the avatar nickname, but the nickname is generated only after submission. The second SHA256 can be converted into the Nickname using nick_generator package.
     passphrase: highEntropyToken,
     format: 'armored',
-    date: d.setDate(d.getDate() - 1), // One day of offset. Helps reducing errors due to client's system time being in the future.
+    date,
   });
 
   return {

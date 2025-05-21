@@ -15,7 +15,7 @@ const getWebCrypto = () => {
             } else if (data instanceof ArrayBuffer) {
               message = new TextDecoder().decode(new Uint8Array(data));
             } else {
-              message = data;
+              message = data; // Assume it's a string
             }
 
             const hash = CryptoJS.SHA256(message).toString();
@@ -26,6 +26,54 @@ const getWebCrypto = () => {
 
             const hashArray = new Uint8Array(match.map((byte) => parseInt(byte, 16)));
             resolve(hashArray);
+          } else {
+            reject(new Error('Algorithm not supported'));
+          }
+        });
+      },
+
+      encrypt: (algorithm, key, data) => {
+        return new Promise((resolve, reject) => {
+          if (algorithm === 'AES-CBC') {
+            const iv = CryptoJS.lib.WordArray.random(128 / 8); // Generate a random IV
+            const encrypted = CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(data), key, {
+              iv: iv,
+              mode: CryptoJS.mode.CBC,
+              padding: CryptoJS.pad.Pkcs7,
+            });
+
+            resolve({
+              ciphertext: encrypted.toString(),
+              iv: iv.toString(),
+            });
+          } else {
+            reject(new Error('Algorithm not supported'));
+          }
+        });
+      },
+
+      decrypt: (algorithm, key, data) => {
+        return new Promise((resolve, reject) => {
+          if (algorithm === 'AES-CBC') {
+            const { ciphertext, iv } = data;
+            const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
+              iv: CryptoJS.enc.Hex.parse(iv),
+              mode: CryptoJS.mode.CBC,
+              padding: CryptoJS.pad.Pkcs7,
+            });
+
+            resolve(decrypted.toString(CryptoJS.enc.Utf8));
+          } else {
+            reject(new Error('Algorithm not supported'));
+          }
+        });
+      },
+
+      generateKey: (algorithm, extractable, keyUsages) => {
+        return new Promise((resolve, reject) => {
+          if (algorithm.name === 'AES-CBC') {
+            const key = CryptoJS.lib.WordArray.random(256 / 8); // Generate a random AES key
+            resolve(key);
           } else {
             reject(new Error('Algorithm not supported'));
           }
