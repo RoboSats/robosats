@@ -36,7 +36,7 @@ const getWebCrypto = () => {
 };
 
 // Override the global crypto object
-if (typeof window !== 'undefined' && !window.crypto.getWebCrypto) {
+if (typeof window !== 'undefined' && !window.crypto.subtle) {
   window.crypto = {
     getRandomValues: (arr) => {
       for (let i = 0; i < arr.length; i++) {
