@@ -132,15 +132,15 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestSuccess));
   };
 
-  subscribeRatings = (events: RoboPoolEvents): void => {
-    const pubkeys = Object.values(defaultFederation)
+  subscribeRatings = (events: RoboPoolEvents, pubkeys?: string[], id?: string): void => {
+    const defaultPubkeys = Object.values(defaultFederation)
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);
 
     const requestRatings = [
       'REQ',
-      'subscribeRatings',
-      { kinds: [31986], '#p': pubkeys, since: 1746316800 },
+      `subscribeRatings${id}`,
+      { kinds: [31986], '#p': pubkeys ?? defaultPubkeys, since: 1746316800 },
     ];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {

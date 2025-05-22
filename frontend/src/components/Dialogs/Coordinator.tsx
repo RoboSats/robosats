@@ -360,7 +360,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
-  const [rating, setRating] = useState<number[]>([0, 0]);
+  const [rating, setRating] = useState<Record<string, number>>({});
   const [averageRating, setAvergeRating] = useState<number>(0);
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
   const [coordinator, setCoordinator] = useState<Coordinator>(
@@ -374,7 +374,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias ?? ''));
-    setRating([0, 0]);
+    setRating({});
     setAvergeRating(0);
   }, [shortAlias]);
 
@@ -391,10 +391,12 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                 const eventRating = event.tags.find((t) => t[0] === 'rating')?.[1];
                 if (eventRating) {
                   setRating((prev) => {
-                    const sum = prev[0];
-                    const count = prev[1] + 1;
-                    prev = [sum + parseFloat(eventRating), count];
-                    setAvergeRating(sum / count);
+                    prev[event.pubkey] = parseFloat(eventRating);
+                    const totalRatings = Object.values(prev);
+                    const sum: number = Object.values(prev).reduce((accumulator, currentValue) => {
+                      return accumulator + currentValue;
+                    }, 0);
+                    setAvergeRating(sum / totalRatings.length);
                     return prev;
                   });
                 }
@@ -403,6 +405,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
             oneose: () => {},
           },
           [coordinator.nostrHexPubkey],
+          coordinator.shortAlias,
         );
       }
       coordinator?.loadInfo();
@@ -442,7 +445,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                     disabled={settings.connection !== 'nostr'}
                   />
                   <Typography variant='caption' color='text.secondary'>
-                    {`(${rating[1]})`}
+                    {`(${Object.keys(rating).length ?? 0})`}
                   </Typography>
                 </Grid>
               </Grid>
