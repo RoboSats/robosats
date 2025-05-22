@@ -14,7 +14,7 @@ grpcio-tools==1.67.0
 numpy==1.26.4
 Pillow==11.0.0
 python-decouple==3.8
-requests==2.32.0
+requests==2.32.3
 ring==0.10.1
 gunicorn==23.0.0
 psycopg2==2.9.10

@@ -262,6 +262,32 @@ $ ra_reg escrow-pay RobotName
 ...
 ```
 
+Production:
+```
+# edit .env setting LNVENDOR to either "CLN" or "LND"
+DEVELOPMENT = False
+TESTING = False
+USE_TOR = True
+LOG_TO_CONSOLE = False
+LOGGER_LEVEL = "WARNING"
+HOST_NAME = "coordinator_onion_address.onion"
+HOST_NAME2 = "*"
+ONION_LOCATION = "coordinator_onion_address.onion"
+
+$ . venv/bin/activate
+
+$ scripts/traditional/traditional-services postgres-setup
+
+$ scripts/traditional/traditional-services postgres-database-production
+
+$ scripts/traditional/traditional-services strfry-setup
+$ scripts/traditional/traditional-services nginx-setup
+
+# change commit_sha
+
+$ scripts/traditional/traditional-services production
+```
+
 Update:
 ```
 $ . venv/bin/activate
@@ -269,9 +295,19 @@ $ . venv/bin/activate
 $ pip install -r requirements_dev.txt
 $ pip install -r requirements.txt
 
+$ scripts/generate_grpc.sh
+
+# for testing:
 # start just postgres and redis in an other window
 $ scripts/traditional/traditional-services test
-
 # in the main window
+$ . scripts/traditional/regtest-nodes test
+
+# for production:
+# backup traditional folder
+# update commit_sha
+$ scripts/traditional/traditional-services production
+
+# then for both testing and production, in the main window
 $ python3 manage.py migrate
 ```

@@ -1,0 +1,49 @@
+#!/bin/sh
+
+_get_env_var() {
+    if ! env_var="$(dotenv -f ".env" get "$1" 2>/dev/null)"; then
+        echo "error: getting $1 from .env" >&2
+        return 1
+    fi
+    printf "%s\n" "$env_var"
+
+    return 0
+}
+
+# transform relative path into absolute and remove trailing slashes
+_get_env_var_path() {
+    env_var="$(_get_env_var "$1")" || return "$?"
+    real_path="$(realpath -m "$env_var")" || return "$?"
+    printf "%s\n" "$real_path"
+
+    return 0
+}
+
+TRADITIONAL_SERVICES_DIR="$(_get_env_var_path "TRADITIONAL_SERVICES_DIR")" || return "$?"
+
+STRFRY_DIR="$TRADITIONAL_SERVICES_DIR/strfry"
+
+STRFRY_GIT_DIR="$(_get_env_var_path "STRFRY_GIT_DIR")" || return "$?"
+
+strfry_bin="$STRFRY_GIT_DIR/strfry"
+
+onion_url_list=$(cat << EOF
+ws://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion/relay
+ws://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion/relay
+ws://mmhaqzuirth5rx7gl24d4773lknltjhik57k7ahec5iefktezv4b3uid.onion/relay
+ws://otmoonrndnrddqdlhu6b36heunmbyw3cgvadqo2oqeau3656wfv7fwad.onion/relay
+ws://librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion/relay
+EOF
+)
+
+while true; do
+    for onion_url in $onion_url_list; do
+        torsocks timeout 15s "$strfry_bin" \
+            --config "$STRFRY_DIR/strfry.conf" \
+            sync "$onion_url" \
+            --filter '{"kinds":[38383, 31986, 1059]}' \
+            --dir both
+    done
+
+    sleep 120
+done
