@@ -16,17 +16,24 @@ def get_node(name="robot"):
     We have two regtest LND nodes: "coordinator" (the robosats backend) and "robot" (the robosats user)
     """
     if name == "robot":
-        macaroon = codecs.encode(
-            open("/lndrobot/data/chain/bitcoin/regtest/admin.macaroon", "rb").read(),
-            "hex",
+        admin_macaroon_file = config(
+            "LND_TEST_USER_MACAROON_PATH", cast=str,
+            default="/lndrobot/data/chain/bitcoin/regtest/admin.macaroon"
         )
-        port = 8080
+        macaroon = codecs.encode(
+            open(admin_macaroon_file, "rb").read(), "hex",
+        )
+        port = config("LND_TEST_USER_REST_PORT", cast=int, default=8080)
 
     elif name == "coordinator":
-        macaroon = codecs.encode(
-            open("/lnd/data/chain/bitcoin/regtest/admin.macaroon", "rb").read(), "hex"
+        admin_macaroon_file = config(
+            "LND_TEST_COORD_MACAROON_PATH", cast=str,
+            default="/lnd/data/chain/bitcoin/regtest/admin.macaroon"
         )
-        port = 8081
+        macaroon = codecs.encode(
+            open(admin_macaroon_file, "rb").read(), "hex"
+        )
+        port = config("LND_TEST_COORD_REST_PORT", cast=int, default=8081)
 
     return {"port": port, "headers": {"Grpc-Metadata-macaroon": macaroon}}
 
@@ -158,10 +165,10 @@ def set_up_regtest_network():
     # Coordinator is either LND or CLN. Robot user is always LND.
     if LNVENDOR == "LND":
         coordinator_node_id = get_lnd_node_id("coordinator")
-        coordinator_port = 9735
+        coordinator_port = config("LND_TEST_COORD_LISTEN_PORT", cast=int, default=9735)
     elif LNVENDOR == "CLN":
         coordinator_node_id = get_cln_node_id()
-        coordinator_port = 9737
+        coordinator_port = config("CLN_TEST_COORD_LISTEN_PORT", cast=int, default=9737)
 
     print("Coordinator Node ID: ", coordinator_node_id)
 
@@ -258,8 +265,12 @@ def generate_blocks(address, num_blocks):
         "method": "generatetoaddress",
         "params": [num_blocks, address],
     }
+    # set in docker-tests.yml
+    rpc_url = config("BITCOIND_RPCURL", cast=str, default="http://localhost:18443")
+    rpc_user = config("BITCOIND_RPCUSER", cast=str, default="test")
+    rpc_pass = config("BITCOIND_RPCPASSWORD", cast=str, default="test")
     response = requests.post(
-        "http://localhost:18443", json=data, auth=HTTPBasicAuth("test", "test")
+        rpc_url, json=data, auth=HTTPBasicAuth(rpc_user, rpc_pass)
     )
     return response.json()
 
