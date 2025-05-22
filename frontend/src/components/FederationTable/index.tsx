@@ -26,9 +26,10 @@ const FederationTable = ({
   const { setOpen, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
-  const [ratings, setRatings] = useState<Record<string, number[]>>(
+  const [loading, setLoading] = useState<boolean>(true);
+  const [ratings, setRatings] = useState<Record<string, Record<string, number>>>(
     federation.getCoordinators().reduce((acc, coord) => {
-      if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = [0, 0];
+      if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
       return acc;
     }, {}),
   );
@@ -57,7 +58,7 @@ const FederationTable = ({
 
   const loadRatings: () => void = () => {
     if (settings.connection !== 'nostr') return;
-
+    setLoading(true);
     federation.roboPool.subscribeRatings({
       onevent: (event) => {
         const verfied = verifyCoordinatorToken(event);
@@ -66,15 +67,13 @@ const FederationTable = ({
           const rating = event.tags.find((t) => t[0] === 'rating')?.[1];
           if (rating) {
             setRatings((prev) => {
-              const sum = prev[coordinatorPubKey][0];
-              const count = prev[coordinatorPubKey][1];
-              prev[coordinatorPubKey] = [sum + parseFloat(rating), count + 1];
+              prev[coordinatorPubKey][event.pubkey] = parseFloat(rating);
               return prev;
             });
           }
         }
       },
-      oneose: () => {},
+      oneose: () => setLoading(false),
     });
   };
 
@@ -146,10 +145,13 @@ const FederationTable = ({
 
         if (!coordinatorRating) return <></>;
 
-        const average =
-          coordinatorRating && coordinatorRating[1] > 0
-            ? coordinatorRating[0] / coordinatorRating[1]
-            : 0;
+        const totalRatings = Object.values(coordinatorRating);
+        const total = totalRatings.length;
+        const sum: number = Object.values(totalRatings).reduce((accumulator, currentValue) => {
+          return accumulator + currentValue;
+        }, 0);
+        const average = total < 1 ? 0 : sum / total;
+
         return (
           <>
             {mobile ? (
@@ -170,7 +172,7 @@ const FederationTable = ({
                   }}
                 />
                 <Typography variant='caption' color='text.secondary'>
-                  {`(${coordinatorRating[1]})`}
+                  {`(${total})`}
                 </Typography>
               </>
             )}
@@ -318,6 +320,7 @@ const FederationTable = ({
       }
     >
       <DataGrid
+        loading={loading}
         sx={headerStyleFix}
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
