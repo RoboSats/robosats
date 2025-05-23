@@ -20,14 +20,9 @@ export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
     const coordinators = Object.entries(defaultFederation).reduce(
       (acc: Record<string, Coordinator>, [key, value]: [string, object]) => {
-        if (getHost() !== '127.0.0.1:8000' && key === 'local') {
-          // Do not add `Local Dev` unless it is running on localhost
-          return acc;
-        } else {
-          acc[key] = new Coordinator(value, origin, settings, hostUrl);
-          acc[key].federated = true;
-          return acc;
-        }
+        acc[key] = new Coordinator(value, origin, settings, hostUrl);
+        acc[key].federated = true;
+        return acc;
       },
       {},
     );
