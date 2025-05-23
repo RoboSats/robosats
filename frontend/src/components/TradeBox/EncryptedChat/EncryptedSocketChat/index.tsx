@@ -114,10 +114,11 @@ const EncryptedSocketChat: React.FC<Props> = ({
     if (!slot?.token) return;
 
     const url = federation.getCoordinator(order.shortAlias).url;
+    const protocol = url.includes('https') ? 'wss://' : 'ws://';
 
     websocketClient
       .open(
-        `${url.replace(/^https?:\/\//, 'ws://')}/ws/chat/${
+        `${url.replace(/^https?:\/\//, protocol)}/ws/chat/${
           order.id
         }/?token_sha256_hex=${sha256(slot?.token)}`,
       )

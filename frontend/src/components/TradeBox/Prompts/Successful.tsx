@@ -59,12 +59,13 @@ export const SuccessfulPrompt = ({
     const coordinatorPubKey = federation.getCoordinator(order.shortAlias)?.nostrHexPubkey;
 
     if (!coordinatorToken) {
+      console.error('Missing coordinator token');
       setTokenError(true);
       return;
     }
 
     if (!slot?.nostrPubKey || !slot.nostrSecKey || !coordinatorPubKey || !order.id) {
-      setHostRating(0);
+      console.error('Rating not valid');
       return;
     }
 

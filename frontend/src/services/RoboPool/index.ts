@@ -137,7 +137,7 @@ class RoboPool {
 
     const requestRatings = [
       'REQ',
-      `subscribeRatings${id}`,
+      `subscribeRatings${id ?? ''}`,
       { kinds: [31986], '#p': pubkeys ?? defaultPubkeys, since: 1746316800 },
     ];
 
