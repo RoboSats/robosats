@@ -238,29 +238,5 @@
     "mainnetNodesPubkeys": ["03ab3468f06d3aac93992ef7ae79bce083e18617dc760f09ef687d7bca89667a15"],
     "testnetNodesPubkeys": [],
     "federated": true
-  },
-  "local": {
-    "longAlias": "Local Dev",
-    "shortAlias": "local",
-    "description": "This coordinator will only be available if you run a RoboSats coordinator on your own machine.",
-    "motto": "Buidl",
-    "color": "#000000",
-    "testnet": {
-      "onion": "",
-      "clearnet": "http://localhost:8000"
-    },
-    "badges": {
-      "donatesToDevFund": 0
-    },
-    "mainnet": {
-      "onion": "",
-      "clearnet": ""
-    },
-    "policies": {
-      "Development Policy": "Don't look around, just buidl"
-    },
-    "mainnetNodesPubkeys": ["..."],
-    "testnetNodesPubkeys": ["..."],
-    "federated": true
   }
 }
