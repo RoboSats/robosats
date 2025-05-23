@@ -117,8 +117,6 @@ export class Federation {
     this.roboPool.subscribeBook(robosatsOnly, {
       onevent: (event) => {
         const { dTag, publicOrder, network } = eventToPublicOrder(event);
-        console.log(network);
-        console.log(this.network);
         if (publicOrder && network == this.network) {
           this.book[dTag] = publicOrder;
         } else {
