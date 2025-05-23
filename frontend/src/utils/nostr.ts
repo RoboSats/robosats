@@ -7,7 +7,9 @@ import thirdParties from '../../static/thirdparties.json';
 import currencyDict from '../../static/assets/currencies.json';
 import defaultFederation from '../../static/federation.json';
 
-const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOrder | null } => {
+const eventToPublicOrder = (
+  event: Event,
+): { dTag: string; publicOrder: PublicOrder | null; network: string } => {
   const publicOrder: PublicOrder = {
     id: 0,
     coordinatorShortAlias: '',
@@ -36,10 +38,12 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
 
   const statusTag = event.tags.find((t) => t[0] === 's') ?? [];
   const dTag = event.tags.find((t) => t[0] === 'd') ?? [];
+  const network = event.tags.find((t) => t[0] === 'network') ?? [];
   const coordinator = [...Object.values(defaultFederation), ...Object.values(thirdParties)].find(
     (coord) => coord.nostrHexPubkey === event.pubkey,
   );
-  if (!coordinator || statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };
+  if (!coordinator || statusTag[1] !== 'pending')
+    return { dTag: dTag[1], publicOrder: null, network: network[1] };
 
   publicOrder.coordinatorShortAlias = coordinator?.shortAlias;
   publicOrder.federated = coordinator?.federated ?? false;
@@ -104,7 +108,7 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
   if (!publicOrder.maker_hash_id)
     publicOrder.maker_hash_id = `${publicOrder.id}${coordinator?.shortAlias}`;
 
-  return { dTag: dTag[1], publicOrder };
+  return { dTag: dTag[1], publicOrder, network: network[1] };
 };
 
 export const verifyCoordinatorToken: (event: Event) => boolean = (event) => {

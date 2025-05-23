@@ -164,7 +164,7 @@ export interface UseAppStoreType {
 export const initialAppContext: UseAppStoreType = {
   theme: undefined,
   torStatus: 'STARTING',
-  settings: new Settings(),
+  settings: getSettings(),
   setSettings: () => {},
   page: entryPage,
   setPage: () => {},
@@ -202,7 +202,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   const origin = initialAppContext.origin;
   const [client, view] = window.RobosatsSettings.split('-');
 
-  const [settings, setSettings] = useState<Settings>(getSettings());
+  const [settings, setSettings] = useState<Settings>(initialAppContext.settings);
   const [theme, setTheme] = useState<Theme>(() => {
     return makeTheme(settings);
   });

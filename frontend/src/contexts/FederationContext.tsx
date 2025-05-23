@@ -23,8 +23,10 @@ export interface UseFederationStoreType {
   addNewCoordinator: (alias: string, url: string) => void;
 }
 
+const initialFederation = new Federation('onion', new Settings(), '');
+
 export const initialFederationContext: UseFederationStoreType = {
-  federation: new Federation('onion', new Settings(), ''),
+  federation: initialFederation,
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
   addNewCoordinator: () => {},
@@ -38,7 +40,7 @@ export const FederationContextProvider = ({
   const { settings, page, origin, hostUrl, open, torStatus, client, fav } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
-  const [federation] = useState(new Federation(origin, settings, hostUrl));
+  const [federation] = useState(initialFederationContext.federation);
   const [coordinatorUpdatedAt, setCoordinatorUpdatedAt] = useState<string>(
     new Date().toISOString(),
   );
@@ -55,9 +57,7 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
-      void federation.updateUrl(origin, settings, hostUrl);
-      void federation.loadLimits();
-      federation.setConnection(settings, fav.coordinator);
+      federation.setConnection(origin, settings, hostUrl, fav.coordinator);
     }
   }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 

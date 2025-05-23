@@ -10,21 +10,24 @@ interface RoboPoolEvents {
 }
 
 class RoboPool {
-  constructor(settings: Settings, hostUrl: string, coordinators: Coordinator[]) {
+  constructor(settings: Settings) {
     this.network = settings.network ?? 'mainnet';
 
     this.relays = [];
-    const federationRelays = coordinators.map((coord) =>
-      coord.getRelayUrl(settings.network, hostUrl, settings.selfhostedClient),
-    );
+  }
 
-    if (settings.host) {
-      const protocol = hostUrl.includes('https') ? 'wss' : 'ws';
-      const hostNostr = `${protocol}://${settings.host.replace(/^https?:\/\//, '')}/relay/`;
-      if (federationRelays.includes(hostNostr)) {
-        this.relays.push(hostNostr);
-      }
-    }
+  public relays: string[];
+  public network: string;
+
+  public webSockets: Record<string, WebsocketConnection | null> = {};
+  private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
+
+  updateRelays = (hostUrl: string, coordinators: Coordinator[]) => {
+    this.close();
+    this.relays = [];
+    const federationRelays = coordinators.map((coord) => coord.getRelayUrl(hostUrl));
+    const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
+    if (hostRelay) this.relays.push(hostRelay);
 
     while (this.relays.length < 3) {
       const randomRelay =
@@ -33,13 +36,8 @@ class RoboPool {
         this.relays.push(randomRelay);
       }
     }
-  }
-
-  public relays: string[];
-  public network: string;
-
-  public webSockets: Record<string, WebsocketConnection | null> = {};
-  private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
+    this.connect();
+  };
 
   connect = (relays: string[] = this.relays): void => {
     relays.forEach((url: string) => {

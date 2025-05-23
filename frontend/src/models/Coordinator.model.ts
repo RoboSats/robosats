@@ -141,7 +141,6 @@ export class Coordinator {
     this.testnetNodesPubkeys = value.testnetNodesPubkeys;
     this.nostrHexPubkey = value.nostrHexPubkey;
     this.url = '';
-    this.basePath = '';
 
     this.updateUrl(origin, settings, hostUrl);
   }
@@ -164,7 +163,6 @@ export class Coordinator {
   public mainnetNodesPubkeys: string[] | undefined;
   public testnetNodesPubkeys: string[] | undefined;
   public url: string;
-  public basePath: string;
   public nostrHexPubkey: string;
 
   // These properties are fetched from coordinator API
@@ -177,11 +175,9 @@ export class Coordinator {
 
   updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
-      this.url = hostUrl;
-      this.basePath = `/${settings.network}/${this.shortAlias}`;
+      this.url = `${hostUrl}/${settings.network}/${this.shortAlias}`;
     } else {
       this.url = String(this[settings.network]?.[origin]);
-      this.basePath = '';
     }
   };
 
@@ -200,7 +196,7 @@ export class Coordinator {
     this.book = {};
 
     apiClient
-      .get(this.url, `${this.basePath}/api/book/`)
+      .get(this.url, `/api/book/`)
       .then((data) => {
         if (!data?.not_found) {
           this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
@@ -229,7 +225,7 @@ export class Coordinator {
     this.loadingLimits = true;
 
     apiClient
-      .get(this.url, `${this.basePath}/api/limits/`)
+      .get(this.url, `/api/limits/`)
       .then((data) => {
         if (data !== null) {
           const newLimits = data as LimitList;
@@ -258,7 +254,7 @@ export class Coordinator {
     this.loadingInfo = true;
 
     apiClient
-      .get(this.url, `${this.basePath}/api/info/`)
+      .get(this.url, `/api/info/`)
       .then((data) => {
         if (data !== null) {
           this.info = data as Info;
@@ -287,30 +283,9 @@ export class Coordinator {
     this.book = {};
   };
 
-  getBaseUrl = (): string => {
-    return this.url + this.basePath;
-  };
-
-  getEndpoint = (
-    network: 'mainnet' | 'testnet',
-    origin: Origin,
-    selfHosted: boolean,
-    hostUrl: string,
-  ): { url: string; basePath: string } => {
-    if (selfHosted && this.shortAlias !== 'local') {
-      return { url: hostUrl, basePath: `/${network}/${this.shortAlias}` };
-    } else {
-      return { url: String(this[network][origin]), basePath: '' };
-    }
-  };
-
-  getRelayUrl = (network: 'mainnet' | 'testnet', hostUrl: string, selfHosted: boolean): string => {
-    const protocol = hostUrl.includes('https') ? 'wss' : 'ws';
-    if (selfHosted && this.shortAlias !== 'local') {
-      return `${protocol}://${hostUrl.replace(/^https?:\/\//, '')}/${network}/${this.shortAlias}/relay/`;
-    } else {
-      return `${protocol}://${this.url.replace(/^https?:\/\//, '')}/relay/`;
-    }
+  getRelayUrl = (hostUrl: string): string => {
+    const protocol = hostUrl.includes('https') ? 'wss://' : 'ws://';
+    return this.url.replace(/^https?:\/\//, protocol) + '/relay/';
   };
 }
 
