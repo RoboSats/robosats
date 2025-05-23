@@ -55,7 +55,7 @@ class Robot {
     this.loading = true;
 
     await apiClient
-      .get(coordinator.url, `${coordinator.basePath}/api/robot/`, authHeaders)
+      .get(coordinator.url, '/api/robot/', authHeaders)
       .then((data: object) => {
         if (data?.bad_request) {
           console.error(data?.bad_request);
@@ -99,7 +99,7 @@ class Robot {
     const data = await apiClient
       .post(
         coordinator.url,
-        `${coordinator.basePath}/api/reward/`,
+        '/api/reward/',
         {
           invoice: signedInvoice,
         },
@@ -118,12 +118,7 @@ class Robot {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     await apiClient
-      .post(
-        coordinator.url,
-        `${coordinator.basePath}/api/stealth/`,
-        { wantsStealth },
-        { tokenSHA256: this.tokenSHA256 },
-      )
+      .post(coordinator.url, '/api/stealth/', { wantsStealth }, { tokenSHA256: this.tokenSHA256 })
       .catch((e) => {
         console.log(e);
       });
@@ -143,7 +138,7 @@ class Robot {
     };
 
     apiClient
-      .post(coordinator.url, `${coordinator.basePath}/api/review/`, body, {
+      .post(coordinator.url, '/api/review/', body, {
         tokenSHA256: this.tokenSHA256,
       })
       .then((data) => {

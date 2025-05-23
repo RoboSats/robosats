@@ -20,7 +20,6 @@ import {
   type UseFederationStoreType,
   FederationContext,
 } from '../../../../contexts/FederationContext';
-import { type UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 
 const audioPath =
   window.NativeRobosats === undefined
@@ -56,7 +55,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -115,13 +113,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
     if (!slot?.token) return;
 
-    const { url, basePath } = federation
-      .getCoordinator(order.shortAlias)
-      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+    const url = federation.getCoordinator(order.shortAlias).url;
+    const protocol = url.includes('https') ? 'wss://' : 'ws://';
 
     websocketClient
       .open(
-        `${url.replace(/^https?:\/\//, 'ws://') + basePath}/ws/chat/${
+        `${url.replace(/^https?:\/\//, protocol)}/ws/chat/${
           order.id
         }/?token_sha256_hex=${sha256(slot?.token)}`,
       )

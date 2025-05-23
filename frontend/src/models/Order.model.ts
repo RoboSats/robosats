@@ -203,11 +203,10 @@ class Order {
 
     if (slot) {
       const coordinator = federation.getCoordinator(this.shortAlias);
-      const { basePath, url } = coordinator;
       const authHeaders = slot.getRobot()?.getAuthHeaders();
       if (!authHeaders) return this;
       const data = await apiClient
-        .post(url + basePath, '/api/make/', body, authHeaders)
+        .post(coordinator.url, '/api/make/', body, authHeaders)
         .catch((e) => {
           console.log(e);
         });
@@ -234,9 +233,8 @@ class Order {
 
       if (slot) {
         const coordinator = federation.getCoordinator(this.shortAlias);
-        const { basePath, url } = coordinator;
         const data = await apiClient
-          .post(url + basePath, `/api/order/?order_id=${Number(this.id)}`, action, {
+          .post(coordinator.url, `/api/order/?order_id=${Number(this.id)}`, action, {
             tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '',
           })
           .catch((e) => {
@@ -254,9 +252,8 @@ class Order {
     const coordinator = federation.getCoordinator(this.shortAlias);
     const authHeaders = slot.getRobot()?.getAuthHeaders();
     if (!authHeaders) return this;
-    const { basePath, url } = coordinator;
     const data = await apiClient
-      .get(url + basePath, `/api/order/?order_id=${this.id}`, authHeaders)
+      .get(coordinator.url, `/api/order/?order_id=${this.id}`, authHeaders)
       .catch((e) => {
         console.log(e);
       });

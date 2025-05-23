@@ -49,14 +49,8 @@ const EncryptedChat: React.FC<Props> = ({
 
   useEffect(() => {
     // const slot = garage.getSlot();
-    const coordinator = federation.getCoordinator(order.shortAlias);
-    federation.roboPool.connect([
-      coordinator.getRelayUrl(settings.network, hostUrl, settings.selfhostedClient),
-    ]);
-
     // const since = new Date(order.created_at);
     // since.setDate(since.getDate() - 2);
-
     // federation.roboPool.subscribeChat(
     //   [order.maker_nostr_pubkey, order.taker_nostr_pubkey],
     //   Math.floor((since.getTime() / 1000)),

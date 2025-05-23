@@ -57,7 +57,11 @@ const FederationTable = ({
   }, [federationUpdatedAt]);
 
   const loadRatings: () => void = () => {
-    if (settings.connection !== 'nostr') return;
+    if (settings.connection !== 'nostr') {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     federation.roboPool.subscribeRatings({
       onevent: (event) => {

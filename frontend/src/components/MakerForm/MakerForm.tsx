@@ -58,7 +58,7 @@ const MakerForm = ({
   onReset = () => {},
   submitButtonLabel = 'Create Order',
 }: MakerFormProps): React.JSX.Element => {
-  const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
+  const { fav, setFav, settings } = useContext<UseAppStoreType>(AppContext);
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -68,7 +68,7 @@ const MakerForm = ({
 
   const [badRequest, setBadRequest] = useState<string | null>(null);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
-  const [currentPrice, setCurrentPrice] = useState<number | string>('...');
+  const [currentPrice, setCurrentPrice] = useState<number>();
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
 
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
@@ -410,6 +410,8 @@ const MakerForm = ({
       }
     }
   };
+
+  const currencyFormatter = new Intl.NumberFormat(settings.language);
 
   const SummaryText = (): React.JSX.Element => {
     return (
@@ -1031,7 +1033,7 @@ const MakerForm = ({
             title={t("Your order's current exchange rate. Rate will move with the market.")}
           >
             <Typography align='center' variant='caption' color='text.secondary'>
-              {`${t('Order current rate:')} ${currentPrice ?? '-'} ${currencyCode}/BTC`}
+              {`${t('Order current rate:')} ${currentPrice ? currencyFormatter.format(currentPrice) : '-'} ${currencyCode}/BTC`}
             </Typography>
           </Tooltip>
         </Collapse>
