@@ -67,7 +67,7 @@
     "@mui/system": "^7.1.0",
     "@mui/x-data-grid": "^8.3.1",
     "@mui/x-date-pickers": "^8.3.0",
-    "@nivo/core": "^0.96.0",
+    "@nivo/core": "^0.98.0",
     "@nivo/line": "^0.96.0",
     "base-ex": "^0.8.1",
     "country-flag-icons": "^1.5.19",
