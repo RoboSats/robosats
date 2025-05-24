@@ -370,67 +370,6 @@ const MakerForm = ({
   }, [fav, maker.amount, maker.premium, federationUpdatedAt]);
 
   const disableSubmit = useMemo(() => {
-    const condition1 = fav.type == null;
-    console.log('Condition 1 (fav.type == null):', condition1);
-
-    const condition2 =
-      !makerHasAmountRange &&
-      maker.amount &&
-      (maker.amount < amountLimits[0] || maker.amount > amountLimits[1]);
-    console.log(
-      'Condition 2 (!makerHasAmountRange && maker.amount && (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])):',
-      condition2,
-    );
-
-    const condition3 = maker.badPaymentMethod;
-    console.log('Condition 3 (maker.badPaymentMethod):', condition3);
-
-    const condition4 =
-      maker.amount == null && (!makerHasAmountRange || (Object.keys(limits)?.length ?? 0) < 1);
-    console.log(
-      'Condition 4 (maker.amount == null && (!makerHasAmountRange || (Object.keys(limits)?.length ?? 0) < 1)):',
-      condition4,
-    );
-
-    const condition5 = makerHasAmountRange && hasRangeError;
-    console.log('Condition 5 (makerHasAmountRange && hasRangeError):', condition5);
-
-    const condition6 = !makerHasAmountRange && maker.amount && maker.amount <= 0;
-    console.log(
-      'Condition 6 (!makerHasAmountRange && maker.amount && maker.amount <= 0):',
-      condition6,
-    );
-
-    const condition7 = maker.badPremiumText !== '';
-    console.log("Condition 7 (maker.badPremiumText !== ''):", condition7);
-
-    const condition8 = federation.getCoordinator(maker.coordinator)?.limits === undefined;
-    console.log(
-      'Condition 8 (federation.getCoordinator(maker.coordinator)?.limits === undefined):',
-      condition8,
-    );
-
-    const condition9 = typeof maker.premium !== 'number';
-    console.log("Condition 9 (typeof maker.premium !== 'number'):", condition9);
-
-    const condition10 = maker.paymentMethods.length === 0;
-    console.log('Condition 10 (maker.paymentMethods.length === 0):', condition10);
-
-    // Combine all conditions to check if any of them are true
-    const anyConditionTrue =
-      condition1 ||
-      condition2 ||
-      condition3 ||
-      condition4 ||
-      condition5 ||
-      condition6 ||
-      condition7 ||
-      condition8 ||
-      condition9 ||
-      condition10;
-
-    console.log('Any condition true:', anyConditionTrue);
-
     return (
       fav.type == null ||
       (!makerHasAmountRange &&
