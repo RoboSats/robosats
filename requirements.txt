@@ -25,7 +25,7 @@ shapely==2.0.6
 python-gnupg==0.5.3
 daphne==4.1.2
 drf-spectacular==0.28.0
-drf-spectacular-sidecar==2024.12.1
+drf-spectacular-sidecar==2025.5.1
 django-cors-headers==4.7.0
 base91==1.0.1
 nostr-sdk==0.35.1
