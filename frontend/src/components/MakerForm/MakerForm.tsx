@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  InputAdornment,
   ButtonGroup,
   Slider,
   Switch,
@@ -34,7 +33,7 @@ import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 
-import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit, Map } from '@mui/icons-material';
+import { SelfImprovement, Lock, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { fiatMethods } from '../PaymentMethods';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -76,6 +75,8 @@ const MakerForm = ({
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
   const [amountRangeEnabled, setAmountRangeEnabled] = useState<boolean>(true);
   const [hasRangeError, setHasRangeError] = useState<boolean>(false);
+  const [openPublicDuration, setOpenPublicDuration] = useState<boolean>(false);
+  const [openEscrowTimer, setOpenEscrowTimer] = useState<boolean>(false);
   const [limits, setLimits] = useState<LimitList>({});
 
   const amountSafeThresholds = [1.03, 0.98];
@@ -823,12 +824,12 @@ const MakerForm = ({
             <Grid item sx={{ width: '100%' }}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker
+                  open={openPublicDuration}
+                  onClose={() => setOpenPublicDuration(false)}
                   ampm={false}
-                  localeText={{ timePickerToolbarTitle: t('Public order length') }}
+                  localeText={{ toolbarTitle: t('Public order length') }}
                   openTo='hours'
                   views={['hours', 'minutes']}
-                  inputFormat='HH:mm'
-                  mask='__:__'
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -838,11 +839,7 @@ const MakerForm = ({
                           borderRadius: '4px',
                           marginBottom: 8,
                         },
-                        endAdornment: (
-                          <InputAdornment position='end'>
-                            <HourglassTop />
-                          </InputAdornment>
-                        ),
+                        onClick: () => setOpenPublicDuration(true),
                       },
                     },
                   }}
@@ -859,7 +856,9 @@ const MakerForm = ({
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker
                   ampm={false}
-                  localeText={{ timePickerToolbarTitle: t('Escrow/invoice step length') }}
+                  open={openEscrowTimer}
+                  onClose={() => setOpenEscrowTimer(false)}
+                  localeText={{ toolbarTitle: t('Escrow/invoice step length') }}
                   openTo='hours'
                   views={['hours', 'minutes']}
                   inputFormat='HH:mm'
@@ -873,11 +872,7 @@ const MakerForm = ({
                           borderRadius: '4px',
                           marginBottom: 8,
                         },
-                        endAdornment: (
-                          <InputAdornment position='end'>
-                            <HourglassTop />
-                          </InputAdornment>
-                        ),
+                        onClick: () => setOpenEscrowTimer(true),
                       },
                     },
                   }}

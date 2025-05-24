@@ -115,7 +115,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
   };
 
   useEffect(() => {
-    setHasRangeError(!minAmountError || !maxAmountError);
+    setHasRangeError(minAmountError || maxAmountError);
   }, [minAmountError, maxAmountError]);
 
   return (
