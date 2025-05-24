@@ -26,12 +26,11 @@ class RoboGenerator {
   private rejects: Record<string, Array<(reason?: Error) => void>> = {};
 
   constructor() {
-    for (let i = 0; i < this.numberOfWorkers; i++) {
-      this.workers.push(this.createWorker(i));
-    }
-
     setTimeout(() => {
       this.waitingForLibrary = false;
+      for (let i = 0; i < this.numberOfWorkers; i++) {
+        this.workers.push(this.createWorker(i));
+      }
     }, 3000);
   }
 
