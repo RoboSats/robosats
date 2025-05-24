@@ -168,11 +168,11 @@ const BookTable = ({
     };
   }, []);
 
-  const robotSmallObj = useCallback((width: number) => {
+  const robotSmallObj = useCallback(() => {
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
-      width: width * fontSize,
+      flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
@@ -202,66 +202,58 @@ const BookTable = ({
     };
   }, []);
 
-  const typeObj = useCallback(
-    (width: number) => {
-      return {
-        field: 'type',
-        headerName: t('Is'),
-        width: width * fontSize,
-        renderCell: (params: { row: PublicOrder }) => {
-          return (
-            <div
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-              }}
-            >
-              {params.row.type === 1
-                ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
-                : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
-            </div>
-          );
-        },
-      };
-    },
-    [fav.mode],
-  );
+  const typeObj = useCallback(() => {
+    return {
+      field: 'type',
+      headerName: t('Is'),
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            {params.row.type === 1
+              ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
+              : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
+          </div>
+        );
+      },
+    };
+  }, [fav.mode]);
 
-  const amountObj = useCallback(
-    (width: number) => {
-      return {
-        field: 'amount',
-        headerName: t('Amount'),
-        type: 'number',
-        width: width * fontSize,
-        renderCell: (params: { row: PublicOrder }) => {
-          const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
-          const minAmount =
-            fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
-          const maxAmount =
-            fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
-          return (
-            <div
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-              }}
-            >
-              {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
-                (fav.mode === 'swap' ? 'M Sats' : '')}
-            </div>
-          );
-        },
-      };
-    },
-    [fav.mode],
-  );
+  const amountObj = useCallback(() => {
+    return {
+      field: 'amount',
+      headerName: t('Amount'),
+      type: 'number',
+      flex: 1.5,
+      renderCell: (params: { row: PublicOrder }) => {
+        const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
+        const minAmount = fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
+        const maxAmount = fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
+              (fav.mode === 'swap' ? 'M Sats' : '')}
+          </div>
+        );
+      },
+    };
+  }, [fav.mode]);
 
-  const currencyObj = useCallback((width: number) => {
+  const currencyObj = useCallback(() => {
     return {
       field: 'currency',
       headerName: t('Currency'),
-      width: width * fontSize,
+      flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         return (
@@ -286,41 +278,38 @@ const BookTable = ({
     };
   }, []);
 
-  const paymentObj = useCallback(
-    (width: number) => {
-      return {
-        field: 'payment_method',
-        headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
-        width: width * fontSize,
-        renderCell: (params: { row: PublicOrder }) => {
-          return (
-            <div
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-              }}
-            >
-              <div style={{ position: 'relative', top: '0.4em' }}>
-                <PaymentStringAsIcons
-                  othersText={t('Others')}
-                  verbose={false}
-                  size={1.7 * fontSize}
-                  text={params.row.payment_method}
-                />
-              </div>
+  const paymentObj = useCallback(() => {
+    return {
+      field: 'payment_method',
+      headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
+      flex: 2,
+      renderCell: (params: { row: PublicOrder }) => {
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            <div style={{ position: 'relative', top: '0.4em' }}>
+              <PaymentStringAsIcons
+                othersText={t('Others')}
+                verbose={false}
+                size={1.7 * fontSize}
+                text={params.row.payment_method}
+              />
             </div>
-          );
-        },
-      };
-    },
-    [fav.mode],
-  );
+          </div>
+        );
+      },
+    };
+  }, [fav.mode]);
 
-  const paymentSmallObj = useCallback((width: number) => {
+  const paymentSmallObj = useCallback(() => {
     return {
       field: 'payment_method',
       headerName: t('Pay'),
-      width: width * fontSize,
+      flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
@@ -346,12 +335,12 @@ const BookTable = ({
     };
   }, []);
 
-  const priceObj = useCallback((width: number) => {
+  const priceObj = useCallback(() => {
     return {
       field: 'price',
       headerName: t('Price'),
       type: 'number',
-      width: width * fontSize,
+      flex: 2,
       renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         const coordinator =
@@ -379,70 +368,67 @@ const BookTable = ({
     };
   }, []);
 
-  const premiumObj = useCallback(
-    (width: number) => {
-      // coloring premium texts based on 4 params:
-      // Hardcoded: a sell order at 0% is an outstanding premium
-      // Hardcoded: a buy order at 10% is an outstanding premium
-      const sellStandardPremium = 10;
-      const buyOutstandingPremium = 10;
-      return {
-        field: 'premium',
-        headerName: t('Premium'),
-        type: 'number',
-        width: width * fontSize,
-        renderCell: (params: { row: PublicOrder }) => {
-          const currencyCode = String(currencyDict[params.row.currency.toString()]);
-          let fontColor = `rgb(0,0,0)`;
-          let premiumPoint = 0;
-          if (params.row.type === 0) {
-            premiumPoint = params.row.premium / buyOutstandingPremium;
-            premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-            fontColor = premiumColor(
-              theme.palette.text.primary,
-              theme.palette.secondary.dark,
-              premiumPoint,
-            );
-          } else {
-            premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
-            premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-            fontColor = premiumColor(
-              theme.palette.text.primary,
-              theme.palette.primary.dark,
-              premiumPoint,
-            );
-          }
-          const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
-          return (
-            <Tooltip
-              placement='left'
-              enterTouchDelay={0}
-              title={`${pn(params.row.price)} ${currencyCode}/BTC`}
-            >
-              <div
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-                }}
-              >
-                <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
-                  {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
-                </Typography>
-              </div>
-            </Tooltip>
+  const premiumObj = useCallback(() => {
+    // coloring premium texts based on 4 params:
+    // Hardcoded: a sell order at 0% is an outstanding premium
+    // Hardcoded: a buy order at 10% is an outstanding premium
+    const sellStandardPremium = 10;
+    const buyOutstandingPremium = 10;
+    return {
+      field: 'premium',
+      headerName: t('Premium'),
+      type: 'number',
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
+        const currencyCode = String(currencyDict[params.row.currency.toString()]);
+        let fontColor = `rgb(0,0,0)`;
+        let premiumPoint = 0;
+        if (params.row.type === 0) {
+          premiumPoint = params.row.premium / buyOutstandingPremium;
+          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+          fontColor = premiumColor(
+            theme.palette.text.primary,
+            theme.palette.secondary.dark,
+            premiumPoint,
           );
-        },
-      };
-    },
-    [theme],
-  );
+        } else {
+          premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
+          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+          fontColor = premiumColor(
+            theme.palette.text.primary,
+            theme.palette.primary.dark,
+            premiumPoint,
+          );
+        }
+        const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
+        return (
+          <Tooltip
+            placement='left'
+            enterTouchDelay={0}
+            title={`${pn(params.row.price)} ${currencyCode}/BTC`}
+          >
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              }}
+            >
+              <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
+                {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
+              </Typography>
+            </div>
+          </Tooltip>
+        );
+      },
+    };
+  }, [theme]);
 
-  const timerObj = useCallback((width: number) => {
+  const timerObj = useCallback(() => {
     return {
       field: 'escrow_duration',
       headerName: t('Timer'),
       type: 'number',
-      width: width * fontSize,
+      flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
@@ -460,12 +446,12 @@ const BookTable = ({
     };
   }, []);
 
-  const expiryObj = useCallback((width: number) => {
+  const expiryObj = useCallback(() => {
     return {
       field: 'expires_at',
       headerName: t('Expiry'),
       type: 'string',
-      width: width * fontSize,
+      flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
         const expiresAt: Date = new Date(params.row.expires_at);
         const timeToExpiry: number = Math.abs(expiresAt - new Date());
@@ -508,12 +494,12 @@ const BookTable = ({
     };
   }, []);
 
-  const satoshisObj = useCallback((width: number) => {
+  const satoshisObj = useCallback(() => {
     return {
       field: 'satoshis_now',
       headerName: t('Sats now'),
       type: 'number',
-      width: width * fontSize,
+      flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
         const coordinator =
           federation.getCoordinator(params.row.coordinatorShortAlias) ??
