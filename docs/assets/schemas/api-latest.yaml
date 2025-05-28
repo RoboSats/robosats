@@ -162,7 +162,7 @@ paths:
           - 24h volume
           - all time volume
         - Node info
-          - lnd version
+          - node version
           - node id
           - node alias
           - network
@@ -419,7 +419,7 @@ paths:
                   summary: When maker bond expires (as maker)
                 WhenRobosatsNodeIsDown:
                   value:
-                    bad_request: The Lightning Network Daemon (LND) is down. Write
+                    bad_request: The lightning node is down. Write
                       in the Telegram group to make sure the staff is aware.
                   summary: When Robosats node is down
           description: ''
