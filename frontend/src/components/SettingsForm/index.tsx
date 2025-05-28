@@ -248,6 +248,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                 </ListItemIcon>
                 <ToggleButtonGroup
                   exclusive={true}
+                  sx={{ width: '100%' }}
                   value={settings.useProxy}
                   onChange={(_e, useProxy) => {
                     setSettings({ ...settings, useProxy });

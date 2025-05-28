@@ -4,7 +4,7 @@ import { useTheme, LinearProgress } from '@mui/material';
 import { DivIcon, type LeafletMouseEvent } from 'leaflet';
 import { type PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
-import MarkerClusterGroup from '@christopherpickering/react-leaflet-markercluster';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface MapPinProps {

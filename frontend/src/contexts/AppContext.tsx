@@ -251,7 +251,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   }, []);
 
   useEffect(() => {
-    if (page === 'offers' && !worldmap) {
+    if (['offers', 'create'].includes(page) && !worldmap) {
       getWorldmapGeojson(apiClient, hostUrl)
         .then((data) => {
           setWorldmap(data);
