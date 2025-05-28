@@ -1327,7 +1327,7 @@ class Logics:
             print(str(e))
             if "failed to connect to all addresses" in str(e):
                 return False, {
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 }
             elif "wallet locked" in str(e):
                 return False, {
@@ -1472,7 +1472,7 @@ class Logics:
         except Exception as e:
             if "status = StatusCode.UNAVAILABLE" in str(e):
                 return False, {
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 }
 
         take_order.taker_bond = LNPayment.objects.create(
@@ -1572,7 +1572,7 @@ class Logics:
         except Exception as e:
             if "status = StatusCode.UNAVAILABLE" in str(e):
                 return False, {
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 }
 
         order.trade_escrow = LNPayment.objects.create(
