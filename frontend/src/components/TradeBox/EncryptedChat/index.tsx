@@ -43,7 +43,7 @@ const EncryptedChat: React.FC<Props> = ({
   status,
 }: Props): React.JSX.Element => {
   const [turtleMode, setTurtleMode] = useState<boolean>(false);
-  const { hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
+  const { settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -77,12 +77,14 @@ const EncryptedChat: React.FC<Props> = ({
 
     const recipient = {
       publicKey: order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
-      relayUrl: coordinator.getRelayUrl(settings.network, hostUrl, settings.selfhostedClient),
+      relayUrl: coordinator.getRelayUrl(settings.network),
     };
 
     const wrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, recipient, content);
 
-    wrappedEvent.tags.push(['expiration', (wrappedEvent.created_at + 2419200).toString()]);
+    const oneMonth = 2419200;
+
+    wrappedEvent.tags.push(['expiration', (wrappedEvent.created_at + oneMonth).toString()]);
 
     federation.roboPool.sendEvent(wrappedEvent);
   };
