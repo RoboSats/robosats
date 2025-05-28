@@ -1,0 +1,1438 @@
+#!/bin/sh
+
+_command_exist() {
+    if command -v "$1" >/dev/null 2>&1; then
+        return 0
+    else
+        echo "error: $1 command not found" >&2
+        return 1
+    fi
+}
+
+_function_exist() {
+    if command -V "$1" 2>/dev/null | grep -qwi function >/dev/null 2>&1; then
+        return 0
+    else
+        echo "error: function $1 not set" >&2
+        return 1
+    fi
+}
+
+_create_dir() {
+    if [ ! -e "$1" ]; then
+        mkdir -p "$1" || return "$?"
+    elif [ ! -d "$1" ]; then
+        echo "error: $1 is not a directory" >&2
+        return 1
+    fi
+}
+
+# if $2 is provided use it as default
+# otherwise return error when not found
+_get_env_var() {
+    if ! env_var="$(dotenv -f ".env" get "$1" 2>/dev/null)"; then
+        if [ "$#" -ge 2 ]; then
+            env_var="$2"
+        else
+            echo "error: getting $1 from .env" >&2
+            return 1
+        fi
+    fi
+    printf "%s\n" "$env_var"
+
+    return 0
+}
+
+# transform relative path into absolute and remove trailing slashes
+_get_env_var_path() {
+    env_var="$(_get_env_var "$@")" || return "$?"
+    real_path="$(realpath -m "$env_var")" || return "$?"
+    printf "%s\n" "$real_path"
+
+    return 0
+}
+
+# extract the port from an env variable
+_get_env_var_port() {
+    env_var="$(_get_env_var "$@")" || return "$?"
+    printf "%s\n" "$env_var" |
+    rev |
+    cut -d ":" -f 1 |
+    rev
+
+    return 0
+}
+
+_nodes_environment_set() {
+    if [ ! -f "scripts/traditional/regtest-nodes" ]; then
+        echo "error: source this script from the project root" >&2
+        return 1
+    fi
+    if [ ! -f ".env" ]; then
+        echo "error: .env is not present" >&2
+        return 1
+    fi
+    if ! _command_exist dotenv; then
+        return 1
+    fi
+
+    TESTING="$(_get_env_var TESTING false)" || return "$?"
+    case "$(printf "%s\n" "$TESTING" | tr '[:upper:]' '[:lower:]')" in
+        true|yes|on|1)
+            TESTING=true
+        ;;
+        *)
+            TESTING=false
+        ;;
+    esac
+
+    RUNSERVER_PORT="$(_get_env_var "RUNSERVER_PORT")" || return "$?"
+
+    cln_set=false
+    lnd_set=false
+
+    LNVENDOR_COORD="$(_get_env_var LNVENDOR)" || return "$?"
+    LNVENDOR_COORD="$(printf "%s\n" "$LNVENDOR_COORD" | tr '[:upper:]' '[:lower:]')"
+    case "$LNVENDOR_COORD" in
+        cln) cln_set=true ;;
+        lnd) lnd_set=true ;;
+        *)
+            echo "error: LNVENDOR can be cln or lnd" >&2
+            return 1
+        ;;
+    esac
+    LNVENDOR_USER="$(_get_env_var LNVENDOR_USER)" || return "$?"
+    LNVENDOR_USER="$(printf "%s\n" "$LNVENDOR_USER" | tr '[:upper:]' '[:lower:]')"
+    case "$LNVENDOR_USER" in
+        cln) cln_set=true ;;
+        lnd) lnd_set=true ;;
+        *)
+            echo "error: LNVENDOR_USER can be cln or lnd" >&2
+            return 1
+        ;;
+    esac
+    if [ "$TESTING" = true ] && [ "$LNVENDOR_USER" != "lnd" ]; then
+        echo "error: LNVENDOR_USER should be lnd when running tests" >&2
+        return 1
+    fi
+
+    BITCOIND_BIN="$(_get_env_var_path "BITCOIND_BIN")" || return "$?"
+    BITCOIN_CLI_BIN="$(_get_env_var_path "BITCOIN_CLI_BIN")" || return "$?"
+    if [ "$cln_set" = true ]; then
+        LIGHTNINGD_BIN="$(_get_env_var_path "LIGHTNINGD_BIN")" || return "$?"
+        LIGHTNING_CLI_BIN="$(_get_env_var_path "LIGHTNING_CLI_BIN")" || return "$?"
+        HOLDINVOICE_PLUGIN_BIN="$(_get_env_var_path "HOLDINVOICE_PLUGIN_BIN")" || return "$?"
+    fi
+    if [ "$lnd_set" = true ]; then
+        LND_BIN="$(_get_env_var_path "LND_BIN")" || return "$?"
+        LNCLI_BIN="$(_get_env_var_path "LNCLI_BIN")" || return "$?"
+    fi
+    REGTEST_NODES_DIR="$(_get_env_var_path "TRADITIONAL_NODES_DIR")" || return "$?"
+    REGTEST_LOGS_DIR="$(_get_env_var_path "TRADITIONAL_LOGS_DIR")" || return "$?"
+
+    ROBOAUTO_GIT_DIR="$(_get_env_var_path "ROBOAUTO_GIT_DIR" false)" || return "$?"
+
+    BITCOIN_REGTEST_RPC_PORT="$(_get_env_var_port "BITCOIND_RPCURL")" || return "$?"
+    BITCOIN_REGTEST_RPC_USER="$(_get_env_var "BITCOIND_RPCUSER")" || return "$?"
+    BITCOIN_REGTEST_RPC_PASS="$(_get_env_var "BITCOIND_RPCPASSWORD")" || return "$?"
+    BITCOIN_REGTEST_ZMQ_BLOCK_PORT="$(_get_env_var "BITCOIN_TEST_ZMQ_BLOCK_PORT")" || return "$?"
+    BITCOIN_REGTEST_ZMQ_TX_PORT="$(_get_env_var "BITCOIN_TEST_ZMQ_TX_PORT")" || return "$?"
+
+    if [ "$cln_set" = true ]; then
+        CLN_COORD_GRPC_PORT="$(_get_env_var_port "CLN_GRPC_HOST")" || return "$?"
+        CLN_COORD_HOLD_PORT="$(_get_env_var_port "CLN_GRPC_HOLD_HOST")" || return "$?"
+        CLN_COORD_LISTEN_PORT="$(_get_env_var "CLN_TEST_COORD_LISTEN_PORT")" || return "$?"
+
+        CLN_USER_GRPC_PORT="$(_get_env_var "CLN_TEST_USER_GRPC_PORT")" || return "$?"
+        CLN_USER_LISTEN_PORT="$(_get_env_var "CLN_TEST_USER_LISTEN_PORT")" || return "$?"
+    fi
+    if [ "$lnd_set" = true ]; then
+        LND_COORD_RPC_PORT="$(_get_env_var_port "LND_GRPC_HOST")" || return "$?"
+        LND_COORD_LISTEN_PORT="$(_get_env_var "LND_TEST_COORD_LISTEN_PORT")" || return "$?"
+        LND_COORD_REST_PORT="$(_get_env_var "LND_TEST_COORD_REST_PORT")" || return "$?"
+
+        LND_USER_RPC_PORT="$(_get_env_var "LND_TEST_USER_GRPC_PORT")" || return "$?"
+        LND_USER_LISTEN_PORT="$(_get_env_var "LND_TEST_USER_LISTEN_PORT")" || return "$?"
+        LND_USER_REST_PORT="$(_get_env_var "LND_TEST_USER_REST_PORT")" || return "$?"
+    fi
+
+    if [ -z "$BITCOIND_BIN" ]; then
+        BITCOIND_BIN="bitcoind"
+    fi
+    if ! _command_exist "$BITCOIND_BIN"; then
+        return 1
+    fi
+    if [ -z "$BITCOIN_CLI_BIN" ]; then
+        BITCOIN_CLI_BIN="bitcoin-cli"
+    fi
+    if ! _command_exist "$BITCOIN_CLI_BIN"; then
+        return 1
+    fi
+
+    if [ "$cln_set" = true ]; then
+        if [ -z "$LIGHTNINGD_BIN" ]; then
+            LIGHTNINGD_BIN="lightningd"
+        fi
+        if ! _command_exist "$LIGHTNINGD_BIN"; then
+            return 1
+        fi
+        if [ -z "$LIGHTNING_CLI_BIN" ]; then
+            LIGHTNING_CLI_BIN="lightning-cli"
+        fi
+        if ! _command_exist "$LIGHTNING_CLI_BIN"; then
+            return 1
+        fi
+        if [ -z "$HOLDINVOICE_PLUGIN_BIN" ]; then
+            echo "error: $HOLDINVOICE_PLUGIN_BIN not set" >&2
+            return 1
+        fi
+        if [ ! -f "$HOLDINVOICE_PLUGIN_BIN" ]; then
+            echo "error: $HOLDINVOICE_PLUGIN_BIN plugin not found" >&2
+            return 1
+        fi
+    fi
+
+    if [ "$lnd_set" = true ]; then
+        if [ -z "$LND_BIN" ]; then
+            LND_BIN="lnd"
+        fi
+        if ! _command_exist "$LND_BIN"; then
+            return 1
+        fi
+        if [ -z "$LNCLI_BIN" ]; then
+            LNCLI_BIN="lncli"
+        fi
+        if ! _command_exist "$LNCLI_BIN"; then
+            return 1
+        fi
+    fi
+
+    if [ -z "$REGTEST_NODES_DIR" ]; then
+        echo "error: REGTEST_NODES_DIR not set" >&2
+        return 1
+    fi
+    _create_dir "$REGTEST_NODES_DIR" || return "$?"
+
+    if [ -z "$REGTEST_LOGS_DIR" ]; then
+        echo "error: REGTEST_LOGS_DIR not set" >&2
+        return 1
+    fi
+    _create_dir "$REGTEST_LOGS_DIR" || return "$?"
+
+    BITCOIN_DIR="$REGTEST_NODES_DIR/bitcoin"
+    ROBOAUTO_DIR="$REGTEST_NODES_DIR/roboauto"
+
+    if [ "$cln_set" = true ]; then
+        CLN_COORD_DIR="$REGTEST_NODES_DIR/cln-coord"
+        CLN_USER_DIR="$REGTEST_NODES_DIR/cln-user"
+
+        cln_coor_dir_env="$(_get_env_var_path "CLN_DIR")" || return "$?"
+        if [ "$cln_coor_dir_env" != "$CLN_COORD_DIR/regtest" ]; then
+            echo "error: CLN_DIR not consistent with REGTEST_NODES_DIR" >&2
+            return 1
+        fi
+    fi
+
+    if [ "$lnd_set" = true ]; then
+        LND_COORD_DIR="$REGTEST_NODES_DIR/lnd-coord"
+        LND_USER_DIR="$REGTEST_NODES_DIR/lnd-user"
+
+        lnd_coord_dir_env="$(_get_env_var_path "LND_DIR")" || return "$?"
+        if [ "$lnd_coord_dir_env" != "$LND_COORD_DIR" ]; then
+            echo "error: LND_DIR not consistent with REGTEST_NODES_DIR" >&2
+            return 1
+        fi
+
+        correct_macaroon_path="data/chain/bitcoin/regtest/admin.macaroon"
+        macaroon_path="$(
+            _get_env_var "MACAROON_PATH"
+        )" || return "$?"
+        if [ "$macaroon_path" != "$correct_macaroon_path" ]; then
+            echo "error: MACAROON_PATH should be $correct_macaroon_path" >&2
+            return 1
+        fi
+
+        lnd_test_coord_macaroon_path="$(
+            _get_env_var_path "LND_TEST_COORD_MACAROON_PATH"
+        )" || return "$?"
+        if [ \
+            "$lnd_test_coord_macaroon_path" != \
+            "$LND_COORD_DIR/$correct_macaroon_path" \
+        ]; then
+            echo "error: LND_TEST_COORD_MACAROON_PATH not consistent with REGTEST_NODES_DIR" >&2
+            return 1
+        fi
+
+        lnd_test_user_macaroon_path="$(
+            _get_env_var_path "LND_TEST_USER_MACAROON_PATH"
+        )" || return "$?"
+        if [ \
+            "$lnd_test_user_macaroon_path" != \
+            "$LND_USER_DIR/$correct_macaroon_path" \
+        ]; then
+            echo "error: LND_TEST_USER_MACAROON_PATH not consistent with REGTEST_NODES_DIR" >&2
+            return 1
+        fi
+    fi
+}
+
+_pgrep_bitcoin_regtest() {
+    pgrep -f "$BITCOIND_BIN -datadir=$BITCOIN_DIR -regtest -daemon" >/dev/null
+}
+
+_bitcoin_regtest_check_started() {
+    if ! _pgrep_bitcoin_regtest; then
+        echo "error: bitcoin regtest not started" >&2
+        return 1
+    fi
+    if ! _function_exist btc_reg; then
+        return 1
+    fi
+    return 0
+}
+
+bitcoin_regtest_mine() {
+    _bitcoin_regtest_check_started || return "$?"
+
+    if [ "$#" -lt 2 ]; then
+        return 1
+    fi
+    if [ "$2" = "new" ]; then
+        if ! new_address="$(btc_reg getnewaddress)"; then
+            echo "error: could not create new address" >&2
+            return 1
+        fi
+    else
+        new_address="$2"
+    fi
+    if ! new_block_hash="$(
+        btc_reg -named generatetoaddress nblocks="$1" address="$new_address" |
+        jq -r '.[-1]'
+    )"; then
+        echo "error: could not generate to $new_address" >&2
+        return 1
+    fi
+    while [ "$(btc_reg getbestblockhash)" != "$new_block_hash" ]; do
+        echo "waiting for $1 blocks to be mined..."
+        sleep 1
+    done
+    unset new_block_hash
+    echo "mined $1 blocks to $new_address"
+    unset new_address
+}
+
+bitcoin_regtest_start() {
+    _create_dir "$BITCOIN_DIR" || return "$?"
+
+    echo "writing bitcoin regtest config"
+    cat << EOF > "$BITCOIN_DIR/bitcoin.conf"
+txindex=1
+rest=1
+server=1
+logips=1
+listenonion=0
+zmqpubrawblock=tcp://127.0.0.1:$BITCOIN_REGTEST_ZMQ_BLOCK_PORT
+zmqpubrawtx=tcp://127.0.0.1:$BITCOIN_REGTEST_ZMQ_TX_PORT
+[regtest]
+rpcport=$BITCOIN_REGTEST_RPC_PORT
+rpcuser=$BITCOIN_REGTEST_RPC_USER
+rpcpassword=$BITCOIN_REGTEST_RPC_PASS
+EOF
+
+    if ! _pgrep_bitcoin_regtest; then
+        echo "starting bitcoin regtest"
+        if ! "$BITCOIND_BIN" -datadir="$BITCOIN_DIR" -regtest -daemon >/dev/null; then
+            echo "error: starting bitcoind regtest daemon" >&2
+            return 1
+        fi
+    else
+        echo "bitcoin regtest already started"
+    fi
+
+    btc_reg() {
+        "$BITCOIN_CLI_BIN" \
+            -datadir="$BITCOIN_DIR" \
+            -regtest \
+            -rpcuser="$BITCOIN_REGTEST_RPC_USER" \
+            -rpcpassword="$BITCOIN_REGTEST_RPC_PASS" \
+            "$@"
+    }
+
+    # wait for bitcoin to start
+    while ! btc_reg ping >/dev/null 2>&1; do
+        echo "waiting for bitcoind regtes to start..."
+        sleep 1
+    done
+
+    # check if default wallet exists
+    if
+        ! btc_reg listwalletdir |
+        jq -r '.wallets[] | .name' |
+        grep "^default$" >/dev/null 2>&1
+    then
+        if ! btc_reg -named createwallet \
+            wallet_name=default \
+            disable_private_keys=false \
+            blank=false \
+            avoid_reuse=false \
+            descriptors=true \
+            load_on_startup=true \
+            external_signer=false >/dev/null
+        then
+            echo "error: could not create default wallet" >&2
+            return 1
+        fi
+        echo "default bitcoind wallet successfully created"
+    fi
+
+    # check if default wallet is loaded
+    if
+        ! btc_reg listwallets |
+        jq -r '.[]' |
+        grep "^default$" >/dev/null 2>&1
+    then
+        if ! btc_reg loadwallet default; then
+            echo "error: could not load default wallet" >&2
+            return 1
+        fi
+        echo "default bitcoind wallet successfully loaded"
+    fi
+
+    bitcoin_regtest_mine 1 "new" || return "$?"
+    while [ "$(btc_reg getblockchaininfo | jq -r '.initialblockdownload')" != false ]; do
+        echo "waiting for bitcoind regtes to download blocks..."
+        sleep 1
+    done
+
+    echo "bitcoin regtest started, data directory is $BITCOIN_DIR"
+    echo "btc_reg function set"
+}
+
+_bitcoin_regtest_stop() {
+    if ! _pgrep_bitcoin_regtest; then
+        echo "bitcoin regtest already stopped"
+    else
+        if
+            ! "$BITCOIN_CLI_BIN" \
+                -datadir="$BITCOIN_DIR" \
+                -regtest \
+                stop >/dev/null
+        then
+            echo "error: bitcoin regtest not stopped" >&2
+        fi
+
+        while _pgrep_bitcoin_regtest; do
+            echo "waiting for bitcoin regtest to stop..."
+            sleep 1
+        done
+        echo "bitcoin regtest stopped"
+    fi
+}
+
+bitcoin_regtest_stop_and_remove() {
+    _bitcoin_regtest_stop || return "$?"
+
+    if [ ! -e "$BITCOIN_DIR" ]; then
+        echo "bitcoin directory not present"
+    else
+        if ! rm -rf "$BITCOIN_DIR"; then
+            echo "error: removing bitcoin directory $BITCOIN_DIR"
+            return 1
+        fi
+        echo "removed bitcoin directory $BITCOIN_DIR"
+    fi
+}
+
+_pgrep_cln_coord() {
+    pgrep -f \
+    "$LIGHTNINGD_BIN --lightning-dir=$CLN_COORD_DIR --regtest --daemon" \
+    >/dev/null
+}
+
+cln_coord_start() {
+    _bitcoin_regtest_check_started || return "$?"
+
+    _create_dir "$CLN_COORD_DIR" || return "$?"
+
+    echo "writing cln coordinator config"
+    cat << EOF > "$CLN_COORD_DIR/config"
+bitcoin-cli=$BITCOIN_CLI_BIN
+bitcoin-datadir=$BITCOIN_DIR
+bitcoin-rpcuser=$BITCOIN_REGTEST_RPC_USER
+bitcoin-rpcpassword=$BITCOIN_REGTEST_RPC_PASS
+bitcoin-rpcport=$BITCOIN_REGTEST_RPC_PORT
+alias=cln-coordinator
+rgb=100000
+fee-base=0
+fee-per-satoshi=0
+min-capacity-sat=990000
+ignore-fee-limits=true
+funding-confirms=1
+max-concurrent-htlcs=64
+max-dust-htlc-exposure-msat=1000000000
+cltv-delta=144
+cltv-final=144
+bitcoin-retry-timeout=120
+database-upgrade=true
+log-file=lightning.log
+addr=localhost:$CLN_COORD_LISTEN_PORT
+grpc-port=$CLN_COORD_GRPC_PORT
+important-plugin=$HOLDINVOICE_PLUGIN_BIN
+grpc-hold-port=$CLN_COORD_HOLD_PORT
+disable-plugin=clnrest
+disable-plugin=wss-proxy
+EOF
+
+    if ! _pgrep_cln_coord; then
+        echo "starting cln coordinator"
+        if
+            ! "$LIGHTNINGD_BIN" \
+                --lightning-dir="$CLN_COORD_DIR" \
+                --regtest \
+                --daemon \
+                >/dev/null
+        then
+            echo "error: starting cln coordinator daemon" >&2
+            return 1
+        fi
+    else
+        echo "cln coordinator already started"
+    fi
+
+    cln_coord() {
+        "$LIGHTNING_CLI_BIN" \
+            --lightning-dir="$CLN_COORD_DIR" \
+            --regtest \
+            "$@"
+    }
+
+    while [ \
+        "$(cln_coord getinfo | jq -r '.blockheight')" -ne \
+        "$(btc_reg getblockcount)" \
+    ]; do
+        echo "waiting for cln coordinator to sync with the chain..."
+        sleep 1
+    done
+
+    echo "cln coordinator started, data directory is $CLN_COORD_DIR"
+    echo "cln_coord function set"
+}
+
+_cln_coord_stop() {
+    if ! _pgrep_cln_coord; then
+        echo "cln coordinator already stopped"
+    else
+        if
+            ! "$LIGHTNING_CLI_BIN" \
+                --lightning-dir="$CLN_COORD_DIR" \
+                --regtest \
+                stop >/dev/null
+        then
+            echo "error: cln coordinator not stopped" >&2
+        fi
+
+        while _pgrep_cln_coord; do
+            echo "waiting for cln coordinator to stop..."
+            sleep 1
+        done
+        echo "cln coordinator stopped"
+    fi
+}
+
+cln_coord_stop_and_remove() {
+    _cln_coord_stop || return "$?"
+
+    if [ ! -e "$CLN_COORD_DIR" ]; then
+        echo "cln coordinator directory not present"
+    else
+        if ! rm -rf "$CLN_COORD_DIR"; then
+            echo "error: removing cln coordinator directory $CLN_COORD_DIR"
+            return 1
+        fi
+        echo "removed cln coordinator directory $CLN_COORD_DIR"
+    fi
+}
+
+_pgrep_cln_user() {
+    pgrep -f \
+    "$LIGHTNINGD_BIN --lightning-dir=$CLN_USER_DIR --regtest --daemon" \
+    >/dev/null
+}
+
+cln_user_start() {
+    _bitcoin_regtest_check_started || return "$?"
+
+    _create_dir "$CLN_USER_DIR" || return "$?"
+
+    echo "writing cln user config"
+    cat << EOF > "$CLN_USER_DIR/config"
+bitcoin-cli=$BITCOIN_CLI_BIN
+bitcoin-datadir=$BITCOIN_DIR
+bitcoin-rpcuser=$BITCOIN_REGTEST_RPC_USER
+bitcoin-rpcpassword=$BITCOIN_REGTEST_RPC_PASS
+bitcoin-rpcport=$BITCOIN_REGTEST_RPC_PORT
+alias=cln-user
+rgb=200000
+fee-base=0
+fee-per-satoshi=0
+min-capacity-sat=990000
+ignore-fee-limits=true
+funding-confirms=1
+max-concurrent-htlcs=64
+max-dust-htlc-exposure-msat=1000000000
+cltv-delta=144
+cltv-final=144
+bitcoin-retry-timeout=120
+database-upgrade=true
+log-file=lightning.log
+addr=localhost:$CLN_USER_LISTEN_PORT
+grpc-port=$CLN_USER_GRPC_PORT
+disable-plugin=clnrest
+disable-plugin=wss-proxy
+EOF
+
+    if ! _pgrep_cln_user; then
+        echo "starting cln user"
+        if
+            ! "$LIGHTNINGD_BIN" \
+                --lightning-dir="$CLN_USER_DIR" \
+                --regtest \
+                --daemon \
+                >/dev/null
+        then
+            echo "error: starting cln user daemon" >&2
+            return 1
+        fi
+    else
+        echo "cln user already started"
+    fi
+
+    cln_user() {
+        "$LIGHTNING_CLI_BIN" \
+            --lightning-dir="$CLN_USER_DIR" \
+            --regtest \
+            "$@"
+    }
+
+    while [ \
+        "$(cln_user getinfo | jq -r '.blockheight')" -ne \
+        "$(btc_reg getblockcount)" \
+    ]; do
+        echo "waiting for cln user to sync with the chain..."
+        sleep 1
+    done
+
+    echo "cln user started, data directory is $CLN_USER_DIR"
+    echo "cln_user function set"
+}
+
+_cln_user_stop() {
+    if ! _pgrep_cln_user; then
+        echo "cln user already stopped"
+    else
+        if
+            ! "$LIGHTNING_CLI_BIN" \
+                --lightning-dir="$CLN_USER_DIR" \
+                --regtest \
+                stop >/dev/null
+        then
+            echo "error: cln user not stopped" >&2
+        fi
+
+        while _pgrep_cln_user; do
+            echo "waiting for cln user to stop..."
+            sleep 1
+        done
+        echo "cln user stopped"
+    fi
+}
+
+cln_user_stop_and_remove() {
+    _cln_user_stop || return "$?"
+
+    if [ ! -e "$CLN_USER_DIR" ]; then
+        echo "cln user directory not present"
+    else
+        if ! rm -rf "$CLN_USER_DIR"; then
+            echo "error: removing cln user directory $CLN_USER_DIR"
+            return 1
+        fi
+        echo "removed cln user directory $CLN_USER_DIR"
+    fi
+}
+
+_pgrep_lnd_coord() {
+    pgrep -f "$LND_BIN --lnddir=$LND_COORD_DIR --bitcoin.regtest" >/dev/null
+}
+
+lnd_coord_start() {
+    _bitcoin_regtest_check_started || return "$?"
+
+    _create_dir "$LND_COORD_DIR" || return "$?"
+
+    echo "writing lnd coordinator config"
+    cat << EOF > "$LND_COORD_DIR/lnd.conf"
+[Application Options]
+listen=localhost:$LND_COORD_LISTEN_PORT
+rpclisten=localhost:$LND_COORD_RPC_PORT
+restlisten=localhost:$LND_COORD_REST_PORT
+no-rest-tls=true
+tlsdisableautofill=true
+noseedbackup=true
+maxpendingchannels=16
+minchansize=20000
+alias=lnd-coordinator
+color=#300000
+
+[Bitcoin]
+bitcoin.node=bitcoind
+bitcoin.defaultchanconfs=1
+bitcoin.basefee=0
+bitcoin.feerate=0
+
+[Bitcoind]
+bitcoind.dir=$BITCOIN_DIR
+bitcoind.config=$BITCOIN_DIR/bitcoin.conf
+bitcoind.rpchost=localhost:$BITCOIN_REGTEST_RPC_PORT
+bitcoind.rpcuser=$BITCOIN_REGTEST_RPC_USER
+bitcoind.rpcpass=$BITCOIN_REGTEST_RPC_PASS
+bitcoind.zmqpubrawblock=tcp://127.0.0.1:$BITCOIN_REGTEST_ZMQ_BLOCK_PORT
+bitcoind.zmqpubrawtx=tcp://127.0.0.1:$BITCOIN_REGTEST_ZMQ_TX_PORT
+
+[protocol]
+protocol.wumbo-channels=true
+EOF
+
+    if ! _pgrep_lnd_coord; then
+        echo "starting lnd coordinator"
+        "$LND_BIN" \
+            --lnddir="$LND_COORD_DIR" \
+            --bitcoin.regtest \
+            >"$REGTEST_LOGS_DIR/lnd-coord" 2>&1 &
+    else
+        echo "lnd coordinator already started"
+    fi
+
+    lnd_coord() {
+        "$LNCLI_BIN" \
+            --lnddir="$LND_COORD_DIR" \
+            --network regtest \
+            --rpcserver localhost:"$LND_COORD_RPC_PORT" \
+            "$@"
+    }
+
+    while [ "$(lnd_coord getinfo 2>/dev/null | jq -r '.synced_to_chain')" != true ]; do
+        echo "waiting for lnd coordinator to sync with the chain..."
+        sleep 1
+    done
+
+    # while [ "$(lnd_coord getinfo 2>/dev/null | jq -r '.synced_to_graph')" != true ]; do
+    #     echo "waiting for lnd coordinator to sync with the graph..."
+    #     sleep 1
+    # done
+
+    echo "lnd coordinator started, data directory is $LND_COORD_DIR"
+    echo "lnd_coord function set"
+}
+
+_lnd_coord_stop() {
+    if ! _pgrep_lnd_coord; then
+        echo "lnd coordinator already stopped"
+    else
+        if
+            ! "$LNCLI_BIN" \
+                --lnddir="$LND_COORD_DIR" \
+                --network regtest \
+                --rpcserver localhost:"$LND_COORD_RPC_PORT" \
+                stop >/dev/null
+        then
+            echo "error: lnd coordinator not stopped" >&2
+        fi
+
+        while _pgrep_lnd_coord; do
+            echo "waiting for lnd coordinator to stop..."
+            sleep 1
+        done
+        echo "lnd coordinator stopped"
+    fi
+}
+
+lnd_coord_stop_and_remove() {
+    _lnd_coord_stop || return "$?"
+
+    if [ ! -e "$LND_COORD_DIR" ]; then
+        echo "lnd coordinator directory not present"
+    else
+        if ! rm -rf "$LND_COORD_DIR"; then
+            echo "error: removing lnd coordinator directory $LND_COORD_DIR"
+            return 1
+        fi
+        echo "removed lnd coordinator directory $LND_COORD_DIR"
+    fi
+}
+
+_pgrep_lnd_user() {
+    pgrep -f "$LND_BIN --lnddir=$LND_USER_DIR --bitcoin.regtest" >/dev/null
+}
+
+lnd_user_start() {
+    _bitcoin_regtest_check_started || return "$?"
+
+    _create_dir "$LND_USER_DIR" || return "$?"
+
+    echo "writing lnd user config"
+    cat << EOF > "$LND_USER_DIR/lnd.conf"
+[Application Options]
+listen=localhost:$LND_USER_LISTEN_PORT
+rpclisten=localhost:$LND_USER_RPC_PORT
+restlisten=localhost:$LND_USER_REST_PORT
+no-rest-tls=true
+tlsdisableautofill=true
+noseedbackup=true
+maxpendingchannels=16
+minchansize=20000
+alias=lnd-user
+color=#400000
+
+[Bitcoin]
+bitcoin.node=bitcoind
+bitcoin.defaultchanconfs=1
+bitcoin.basefee=0
+bitcoin.feerate=0
+
+[Bitcoind]
+bitcoind.dir=$BITCOIN_DIR
+bitcoind.config=$BITCOIN_DIR/bitcoin.conf
+bitcoind.rpchost=localhost:$BITCOIN_REGTEST_RPC_PORT
+bitcoind.rpcuser=$BITCOIN_REGTEST_RPC_USER
+bitcoind.rpcpass=$BITCOIN_REGTEST_RPC_PASS
+bitcoind.zmqpubrawblock=tcp://127.0.0.1:$BITCOIN_REGTEST_ZMQ_BLOCK_PORT
+bitcoind.zmqpubrawtx=tcp://127.0.0.1:$BITCOIN_REGTEST_ZMQ_TX_PORT
+
+[protocol]
+protocol.wumbo-channels=true
+EOF
+
+    if ! _pgrep_lnd_user; then
+        echo "starting lnd user"
+        "$LND_BIN" \
+            --lnddir="$LND_USER_DIR" \
+            --bitcoin.regtest \
+            >"$REGTEST_LOGS_DIR/lnd-user" 2>&1 &
+    else
+        echo "lnd user already started"
+    fi
+
+    lnd_user() {
+        "$LNCLI_BIN" \
+            --lnddir="$LND_USER_DIR" \
+            --network regtest \
+            --rpcserver localhost:"$LND_USER_RPC_PORT" \
+            "$@"
+    }
+
+    while [ "$(lnd_user getinfo 2>/dev/null | jq -r '.synced_to_chain')" != true ]; do
+        echo "waiting for lnd user to sync with the chain..."
+        sleep 1
+    done
+
+    # while [ "$(lnd_user getinfo 2>/dev/null | jq -r '.synced_to_graph')" != true ]; do
+    #     echo "waiting for lnd user to sync with the graph..."
+    #     sleep 1
+    # done
+
+    echo "lnd user started, data directory is $LND_USER_DIR"
+    echo "lnd_user function set"
+}
+
+_lnd_user_stop() {
+    if ! _pgrep_lnd_user; then
+        echo "lnd user already stopped"
+    else
+        if
+            ! "$LNCLI_BIN" \
+                --lnddir="$LND_USER_DIR" \
+                --network regtest \
+                --rpcserver localhost:"$LND_USER_RPC_PORT" \
+                stop >/dev/null
+        then
+            echo "error: lnd user not stopped" >&2
+        fi
+
+        while _pgrep_lnd_user; do
+            echo "waiting for lnd user to stop..."
+            sleep 1
+        done
+        echo "lnd user stopped"
+    fi
+}
+
+lnd_user_stop_and_remove() {
+    _lnd_user_stop || return "$?"
+
+    if [ ! -e "$LND_USER_DIR" ]; then
+        echo "lnd user directory not present"
+    else
+        if ! rm -rf "$LND_USER_DIR"; then
+            echo "error: removing lnd user directory $LND_USER_DIR"
+            return 1
+        fi
+        echo "removed lnd user directory $LND_USER_DIR"
+    fi
+}
+
+_mine_blocks_coordinator() {
+    coord_node="$1"
+    case "$coord_node" in
+        cln)
+            if ! coord_address="$(
+                cln_coord -k newaddr addresstype=p2tr | jq -r '.p2tr'
+            )"; then
+                echo "error: generating cln coordinator address" >&2
+                return 1
+            fi
+        ;;
+        lnd)
+            if ! coord_address="$(
+                lnd_coord newaddress p2tr | jq -r '.address'
+            )"; then
+                echo "error: generating lnd coordinator address" >&2
+                return 1
+            fi
+        ;;
+    esac
+
+    bitcoin_regtest_mine 101 "$coord_address" || return "$?"
+    unset user_address
+}
+
+_robosats_regtest_channel_create_cln_user() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert coordinator node" >&2
+        return 1
+    fi
+    coord_node="$1"
+    shift 1
+
+    _bitcoin_regtest_check_started || return "$?"
+
+    case "$coord_node" in
+        cln)
+            if ! _pgrep_cln_coord; then
+                echo "error: cln coordinator not started" >&2
+                return 1
+            fi
+            if ! _function_exist cln_coord; then
+                return 1
+            fi
+            coord_id="$(cln_coord getinfo | jq -r '.id')"
+            coord_port="$CLN_COORD_LISTEN_PORT"
+        ;;
+        lnd)
+            if ! _pgrep_lnd_coord; then
+                echo "error: cln coordinator not started" >&2
+                return 1
+            fi
+            if ! _function_exist lnd_coord; then
+                return 1
+            fi
+            coord_id="$(lnd_coord getinfo | jq -r '.identity_pubkey')"
+            coord_port="$LND_COORD_LISTEN_PORT"
+        ;;
+        *)
+            echo "error: coordinator node can only be cln and lnd" >&2
+            return 1
+        ;;
+    esac
+
+    if ! _pgrep_cln_user; then
+        echo "error: cln user not started" >&2
+        return 1
+    fi
+    if ! _function_exist cln_user; then
+        return 1
+    fi
+
+    if ! cln_user connect "$coord_id"@localhost:"$coord_port" >/dev/null; then
+        echo "error: connection lightning nodes" >&2
+        return 1
+    fi
+    echo "lightning nodes connected"
+
+    # check if channel not already present
+    if [ "$(
+        cln_user listpeerchannels "$coord_id" |
+        jq -r '.channels | length'
+    )" -ge 1 ]; then
+        echo "lightning nodes already have a channel, not opening a new one"
+    else
+        echo "mining blocks to coordinator $coord_node"
+        _mine_blocks_coordinator "$coord_node" || return "$?"
+
+        previous_output_number="$(cln_user listfunds | jq -r '.outputs | length')"
+
+        if ! user_address="$(cln_user -k newaddr addresstype=p2tr | jq -r '.p2tr')"; then
+            echo "error: generating user address" >&2
+            return 1
+        fi
+        echo "mining blocks to user cln"
+        bitcoin_regtest_mine 101 "$user_address" || return "$?"
+        unset user_address
+
+        while [ \
+            "$(cln_user listfunds | jq -r '.outputs | length')" -le \
+            "$previous_output_number" \
+        ]; do
+            echo "waiting for cln user to see the new blocks..."
+            sleep 5
+        done
+        while [ "$(cln_user listfunds | jq -r '.outputs[0].status')" != "confirmed" ]; do
+            echo "waiting for cln user funds to mature..."
+            sleep 1
+        done
+
+        unset previous_output_number
+
+        if ! cln_user -k fundchannel \
+            id="$coord_id" \
+            amount=1btc \
+            feerate=10000perkb \
+            announce=true \
+            >/dev/null
+        then
+            echo "error: funding lightning channel" >&2
+            return 1
+        fi
+        echo "lightning channel created"
+
+        bitcoin_regtest_mine 10 "new" || return "$?"
+        while [ "$(
+            cln_user listpeerchannels "$coord_id" |
+            jq -r '.channels | length'
+        )" -lt 1 ]; do
+            echo "waiting for channel to confirm..."
+            sleep 1
+        done
+        echo "lightning channel opened"
+    fi
+
+    while [ "$(
+        cln_user listpeerchannels "$coord_id" |
+        jq -r '.channels[].state'
+    )" != "CHANNELD_NORMAL" ]; do
+        echo "waiting for channel to be active..."
+        sleep 5
+    done
+    echo "lightning channel is active"
+
+    unset coord_port
+    unset coord_id
+    unset coord_node
+}
+
+_robosats_regtest_channel_create_lnd_user() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert coordinator node" >&2
+        return 1
+    fi
+    coord_node="$1"
+    shift 1
+
+    _bitcoin_regtest_check_started || return "$?"
+
+    case "$coord_node" in
+        cln)
+            if ! _pgrep_cln_coord; then
+                echo "error: cln coordinator not started" >&2
+                return 1
+            fi
+            if ! _function_exist cln_coord; then
+                return 1
+            fi
+            coord_id="$(cln_coord getinfo | jq -r '.id')"
+            coord_port="$CLN_COORD_LISTEN_PORT"
+        ;;
+        lnd)
+            if ! _pgrep_lnd_coord; then
+                echo "error: cln coordinator not started" >&2
+                return 1
+            fi
+            if ! _function_exist lnd_coord; then
+                return 1
+            fi
+            coord_id="$(lnd_coord getinfo | jq -r '.identity_pubkey')"
+            coord_port="$LND_COORD_LISTEN_PORT"
+        ;;
+        *)
+            echo "error: coordinator node can only be cln and lnd" >&2
+            return 1
+        ;;
+    esac
+
+    if ! _pgrep_lnd_user; then
+        echo "error: lnd user not started" >&2
+        return 1
+    fi
+    if ! _function_exist lnd_user; then
+        return 1
+    fi
+
+    already_connected=false
+    for pub_key in $(lnd_user listpeers | jq -r '.peers[].pub_key'); do
+        if [ "$pub_key" = "$coord_id" ]; then
+            already_connected=true
+            break
+        fi
+    done
+    unset pub_key
+    if [ "$already_connected" = false ]; then
+        if ! lnd_user connect "$coord_id"@localhost:"$coord_port" >/dev/null; then
+            echo "error: connection lightning nodes" >&2
+            return 1
+        fi
+    fi
+    unset already_connected
+    echo "lightning nodes connected"
+
+    # check if channel not already present
+    if [ "$(
+        lnd_user listchannels --peer "$coord_id" |
+        jq -r '.channels | length'
+    )" -ge 1 ]; then
+        echo "lightning nodes already have a channel, not opening a new one"
+    else
+        echo "mining blocks to coordinator $coord_node"
+        _mine_blocks_coordinator "$coord_node" || return "$?"
+
+        previous_output_number="$(lnd_user listunspent | jq -r '.utxos | length')"
+
+        if ! user_address="$(lnd_user newaddress p2tr | jq -r '.address')"; then
+            echo "error: generating user address" >&2
+            return 1
+        fi
+        echo "mining blocks to user lnd"
+        bitcoin_regtest_mine 101 "$user_address" || return "$?"
+        unset user_address
+
+        while [ \
+            "$(lnd_user listunspent | jq -r '.utxos | length')" -le \
+            "$previous_output_number" \
+        ]; do
+            echo "waiting for lnd user to see the new blocks..."
+            sleep 5
+        done
+        while [ "$(lnd_user listunspent | jq -r '.utxos[0].confirmations')" -lt 100 ]; do
+            echo "waiting for lnd user funds to mature..."
+            sleep 1
+        done
+
+        unset previous_output_number
+
+        if ! lnd_user openchannel \
+            --node_key "$coord_id" \
+            --local_amt "100000000" \
+            --sat_per_vbyte "10" \
+            --min_confs "1" \
+            --channel_type "anchors" \
+            >/dev/null
+        then
+            echo "error: funding lightning channel" >&2
+            return 1
+        fi
+        echo "lightning channel created"
+
+        bitcoin_regtest_mine 10 "new" || return "$?"
+        while [ "$(
+            lnd_user listchannels --peer "$coord_id" |
+            jq -r '.channels | length'
+        )" -lt 1 ]; do
+            echo "waiting for channel to confirm..."
+            sleep 1
+        done
+        echo "lightning channel opened"
+    fi
+
+    while [ "$(
+        lnd_user listchannels --peer "$coord_id" |
+        jq -r '.channels[].active'
+    )" != true ]; do
+        echo "waiting for channel to be active..."
+        sleep 5
+    done
+    echo "lightning channel is active"
+
+    unset coord_port
+    unset coord_id
+    unset coord_node
+}
+
+robosats_regtest_channel_create() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert coordinator node" >&2
+        return 1
+    fi
+    coord_node="$1"
+    shift 1
+
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert user node" >&2
+        return 1
+    fi
+    user_node="$1"
+    shift 1
+
+    case "$coord_node" in
+        cln|lnd) ;;
+        *)
+            echo "error: $coord_node should be cln or lnd" >&2
+            return 1
+        ;;
+    esac
+
+    case "$user_node" in
+        cln)
+            _robosats_regtest_channel_create_cln_user "$coord_node"
+        ;;
+        lnd)
+            _robosats_regtest_channel_create_lnd_user "$coord_node"
+        ;;
+        *)
+            echo "error: $user_node should be cln or lnd" >&2
+            return 1
+        ;;
+    esac
+
+    unset user_node
+    unset coord_node
+}
+
+roboauto_regtest_setup() {
+    if [ "$ROBOAUTO_GIT_DIR" = false ]; then
+        echo "error: roboauto is disable, set ROBOAUTO_GIT_DIR in .env to activate it" >&2
+        return 1
+    fi
+
+    _command_exist roboauto || return "$?"
+
+    _create_dir "$ROBOAUTO_DIR" || return "$?"
+
+    ra_reg() {
+        roboauto \
+            --config-dir "$REGTEST_NODES_DIR/roboauto" \
+            --data-dir "$REGTEST_NODES_DIR/roboauto" \
+            "$@"
+    }
+
+    echo "writing roboauto regtest config"
+    cat << EOF > "$ROBOAUTO_DIR/config.ini"
+[federation]
+exp = None
+sau = None
+tos = None
+tbl = None
+bve = None
+loc = "http://127.0.0.1:$RUNSERVER_PORT"
+EOF
+
+    case "$LNVENDOR_USER" in
+        cln)
+            roboauto_cln_script="$ROBOAUTO_GIT_DIR/data/lightning-node-core-lightning"
+            if [ ! -f "$roboauto_cln_script" ]; then
+                echo "error: roboauto cln script not found in $ROBOAUTO_GIT_DIR" >&2
+                return 1
+            fi
+
+            search_data=$(cat << EOF
+lightning-cli "\$@"
+EOF
+            )
+            new_data=$(cat << EOF
+"$LIGHTNING_CLI_BIN" \
+--lightning-dir="$CLN_USER_DIR" \
+--regtest \
+"\$@"
+EOF
+            )
+            sed "s|$search_data|$new_data|" \
+                "$roboauto_cln_script" > "$ROBOAUTO_DIR/lightning-node" || \
+                return "$?"
+
+            echo "roboauto cln node script set up"
+        ;;
+        lnd)
+            roboauto_lnd_script="$ROBOAUTO_GIT_DIR/data/lightning-node-lnd"
+            if [ ! -f "$roboauto_lnd_script" ]; then
+                echo "error: roboauto lnd script not found in $ROBOAUTO_GIT_DIR" >&2
+                return 1
+            fi
+
+            search_data=$(cat << EOF
+lncli "\$@"
+EOF
+            )
+            new_data=$(cat << EOF
+"$LNCLI_BIN" \
+--lnddir="$LND_USER_DIR" \
+--network regtest \
+--rpcserver localhost:"$LND_USER_RPC_PORT" \
+"\$@"
+EOF
+            )
+            sed "s|$search_data|$new_data|" \
+                "$roboauto_lnd_script" > "$ROBOAUTO_DIR/lightning-node" || \
+                return "$?"
+
+            echo "roboauto lnd node script set up"
+        ;;
+    esac
+    if ! chmod u+x "$ROBOAUTO_DIR/lightning-node"; then
+        echo "error: changing file mode on roboauto lightning-node" >&2
+        return 1
+    fi
+}
+
+roboauto_regtest_remove() {
+    if ! rm -rf "$ROBOAUTO_DIR"; then
+        echo "error: removing roboauto directory $ROBOAUTO_DIR" >&2
+        return 1
+    fi
+}
+
+robosats_regtest_stop_all() {
+    _lnd_user_stop
+    _lnd_coord_stop
+    _cln_user_stop
+    _cln_coord_stop
+    _bitcoin_regtest_stop
+}
+
+robosats_regtest_stop_and_remove_all() {
+    roboauto_regtest_remove
+    lnd_user_stop_and_remove
+    lnd_coord_stop_and_remove
+    cln_user_stop_and_remove
+    cln_coord_stop_and_remove
+    bitcoin_regtest_stop_and_remove
+}
+
+_node_test_setup() {
+    bitcoin_regtest_start || return "$?"
+
+    bitcoin_regtest_mine 1 "new" || return "$?"
+
+    printf "\n"
+
+    case "$LNVENDOR_COORD" in
+        cln)
+            cln_coord_start || return "$?"
+        ;;
+        lnd)
+            lnd_coord_start || return "$?"
+        ;;
+    esac
+
+    printf "\n"
+
+    case "$LNVENDOR_USER" in
+        cln)
+            cln_user_start || return "$?"
+        ;;
+        lnd)
+            lnd_user_start || return "$?"
+        ;;
+    esac
+}
+
+_node_server_setup() {
+    _node_test_setup || return "$?"
+
+    printf "\n"
+
+    robosats_regtest_channel_create \
+        "$LNVENDOR_COORD" "$LNVENDOR_USER" || return "$?"
+
+    if [ "$ROBOAUTO_GIT_DIR" != false ]; then
+        printf "\n"
+
+        roboauto_regtest_setup
+    fi
+}
+
+_robosats_regtest_info_print() {
+    cat << EOF
+regtest nodes directory is $REGTEST_NODES_DIR
+available command:
+
+bitcoin_regtest_start
+bitcoin_regtest_stop_and_remove
+bitcoin_regtest_mine number-of-blocks <address>|new
+cln_coord_start
+cln_coord_stop_and_remove
+cln_user_start
+cln_user_stop_and_remove
+lnd_coord_start
+lnd_coord_stop_and_remove
+lnd_user_start
+lnd_user_stop_and_remove
+roboauto_regtest_setup
+roboauto_regtest_remove
+robosats_regtest_stop_all
+robosats_regtest_stop_and_remove_all
+robosats_regtest_channel_create cln|lnd cln|lnd
+EOF
+}
+
+_nodes_main() {
+    _nodes_environment_set || return "$?"
+
+    # if shell is bash and script is sourced source also bash completions
+    if [ -n "$BASH_VERSION" ]; then
+        case "$0" in
+            /*|./*|../*) ;;
+            *)
+                if [ -f "scripts/traditional/robosats.bash-completion" ]; then
+                    # shellcheck disable=SC1091
+                    . scripts/traditional/robosats.bash-completion
+                fi
+                if
+                    [ "$ROBOAUTO_GIT_DIR" != false ] &&
+                    [ -f "$ROBOAUTO_GIT_DIR/completions/roboauto.bash-completion" ]
+                then
+                    # shellcheck disable=SC1091
+                    # shellcheck disable=SC3044
+                    . "$ROBOAUTO_GIT_DIR/completions/roboauto.bash-completion" &&
+                    complete -F __roboauto_completion ra_reg
+                fi
+            ;;
+        esac
+    fi
+
+    if [ "$#" -lt 1 ]; then
+        _robosats_regtest_info_print || return "$?"
+    else
+        case "$1" in
+            -h|--help)
+                cat << EOF
+regtest-nodes [server|test]
+EOF
+                return 0
+            ;;
+            test)
+                _robosats_regtest_info_print || return "$?"
+                printf "\n"
+                _node_test_setup || return "$?"
+            ;;
+            server)
+                _robosats_regtest_info_print || return "$?"
+                printf "\n"
+                _node_server_setup || return "$?"
+            ;;
+            *)
+                echo "error: action $1 not recognized" >&2
+                return 1
+            ;;
+        esac
+    fi
+}
+
+_nodes_main "$@"

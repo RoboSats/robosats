@@ -385,7 +385,7 @@ def compute_avg_premium(queryset):
 
 def validate_pgp_keys(pub_key, enc_priv_key):
     """Validates PGP valid keys. Formats them in a way understandable by the frontend"""
-    gpg = gnupg.GPG()
+    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
 
     # Standardize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
     enc_priv_key = enc_priv_key.replace("\r\n", "\n").replace("\\", "\n")
@@ -439,7 +439,7 @@ def verify_signed_message(pub_key, signed_message):
     Verifies a signed cleartext PGP message. Returns whether the signature
     is valid (was made by the given pub_key) and the content of the message.
     """
-    gpg = gnupg.GPG()
+    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
 
     # import the public key
     import_result = gpg.import_keys(pub_key)
