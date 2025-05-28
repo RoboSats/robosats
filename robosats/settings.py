@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import json
-import os
 import textwrap
 from pathlib import Path
 
@@ -59,7 +58,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 SESSION_COOKIE_HTTPONLY = False
 
 # Logging settings
-if os.environ.get("LOG_TO_CONSOLE"):
+if config("LOG_TO_CONSOLE", cast=bool, default=False):
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -70,12 +69,33 @@ if os.environ.get("LOG_TO_CONSOLE"):
         },
         "root": {
             "handlers": ["console"],
-            "level": "WARNING",
+            "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
         },
         "loggers": {
             "api.utils": {
                 "handlers": ["console"],
-                "level": "WARNING",
+                "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
+            },
+        },
+    }
+elif config("LOG_FILE", False):
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "file": {
+                "class": "logging.FileHandler",
+                "filename": config("LOG_FILE", cast=str),
+            },
+        },
+        "root": {
+            "handlers": ["file"],
+            "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
+        },
+        "loggers": {
+            "api.utils": {
+                "handlers": ["file"],
+                "level": config("LOGGER_LEVEL", cast=str, default="WARNING"),
             },
         },
     }
