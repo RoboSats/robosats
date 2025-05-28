@@ -488,7 +488,7 @@ const MakerForm = ({
           if (pos != null) handleAddLocation(pos);
           setOpenWorldmap(false);
         }}
-        zoom={maker.latitude != null && maker.longitude != null ? 6 : undefined}
+        zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
       />
       <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
