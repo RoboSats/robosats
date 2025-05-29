@@ -1,9 +1,17 @@
-robosats:
-  android:
-    identifier: com.robosats
-    name: Robosats
-    description: A simple and private bitcoin exchange
-    repository: https://github.com/RoboSats/robosats
-    license: AGPL-3.0
-    artifacts:
-      - robosats-v%v.alpha-universal.apk
+name: Robosats
+summary: A simple and private bitcoin exchange
+repository: https://github.com/RoboSats/robosats
+images:
+  - ../../fastlane/metadata/en-US/images/phoneScreenshots/01.jpg
+  - ../../fastlane/metadata/en-US/images/phoneScreenshots/02.jpg
+  - ../../fastlane/metadata/en-US/images/phoneScreenshots/03.jpg
+  - ../../fastlane/metadata/en-US/images/phoneScreenshots/04.jpg
+  - ../../fastlane/metadata/en-US/images/phoneScreenshots/05.jpg
+  - ../../fastlane/metadata/en-US/images/phoneScreenshots/06.jpg
+icon: ../../fastlane/metadata/en-US/images/icon.png
+tags: privacy lightning bitcoin p2p tor exchange foss
+license: AGPL-3.0
+remote_metadata:
+  - github
+assets: # for github
+  - robosats-v\d+\.\d+\.\d+.\w+-universal.apk
