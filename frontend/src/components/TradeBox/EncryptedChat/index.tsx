@@ -8,7 +8,6 @@ import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../contexts/FederationContext';
-import { AppContext, UseAppStoreType } from '../../../contexts/AppContext';
 
 interface Props {
   order: Order;
@@ -43,7 +42,6 @@ const EncryptedChat: React.FC<Props> = ({
   status,
 }: Props): React.JSX.Element => {
   const [turtleMode, setTurtleMode] = useState<boolean>(false);
-  const { settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -76,18 +74,22 @@ const EncryptedChat: React.FC<Props> = ({
 
     if (!slot?.nostrSecKey || !publicKey) return;
 
-    const recipient = {
-      publicKey,
-      relayUrl: coordinator.getRelayUrl(settings.network),
-    };
+    try {
+      const recipient = {
+        publicKey,
+        relayUrl: coordinator.getRelayUrl(coordinator.url),
+      };
 
-    const wrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, recipient, content);
+      const wrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, recipient, content);
 
     const oneMonth = 2419200;
 
     wrappedEvent.tags.push(['expiration', (wrappedEvent.created_at + oneMonth).toString()]);
 
-    federation.roboPool.sendEvent(wrappedEvent);
+      federation.roboPool.sendEvent(wrappedEvent);
+    } catch (error) {
+      console.error('Nostr nip17 error:', error);
+    }
   };
 
   return turtleMode ? (
