@@ -191,7 +191,7 @@ class OrderViewSchema:
             OpenApiExample(
                 "When Robosats node is down",
                 value={
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 },
                 status_codes=[400],
             ),
@@ -539,7 +539,7 @@ class InfoViewSchema:
               - 24h volume
               - all time volume
             - Node info
-              - lnd version
+              - node version
               - node id
               - node alias
               - network

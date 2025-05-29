@@ -103,3 +103,9 @@ You will need these commands also often or eventually:
 `docker exec -it lnd-dev lncli -network=testnet payinvoice <BOLT_11_INVOICE> --allow_self_payment`
 
 **RoboSats development site should be accessible on 127.0.0.1:8000**
+
+# Backend Development
+
+## Traditional environment without docker
+
+See [scripts/traditional/README.md](scripts/traditional/README.md)
