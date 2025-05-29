@@ -226,6 +226,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   }, [settings.fontSize, settings.mode, settings.lightQRs]);
 
   useEffect(() => {
+    setSettings(getSettings());
     void i18n.changeLanguage(settings.language);
     window.addEventListener('torStatus', (event) => {
       // Trick to improve UX on Android webview: delay the "Connected to TOR" status by 5 secs to avoid long waits on the first request.
