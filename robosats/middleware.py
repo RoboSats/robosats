@@ -30,11 +30,12 @@ class DisableCSRFMiddleware(object):
 class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
     """
     This middleware splits the HTTP_AUTHORIZATION, leaves on it only the `Token ` and creates
-    two new META headers for both PGP keys.
+    two new META headers for both PGP keys and one for the nostr pubkey.
     Given that API calls to a RoboSats API might be made from other host origin,
     there is a high chance browsers will not attach cookies and other sensitive information.
     Therefore, we are using the `HTTP_AUTHORIZATION` header to also embed the needed robot
-    pubKey and encPrivKey to create a new robot in the coordinator on the first request.
+    pubKey, encPrivKey and nostr pubkey to create a new robot in the coordinator on the
+    first request.
     """
 
     def process_request(self, request):
@@ -110,8 +111,8 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # If we get here the user does not have a robot on this coordinator
             # Let's create a new user & robot on-the-fly.
 
-            # The first ever request to a coordinator must public key (and encrypted priv key as of now). Either on the
-            # Authorization header or in the Cookies.
+            # The first ever request to a coordinator must provide a public key, the encrypted
+            # private key (as of now), and a nostr pubkey in the Authorization header.
             public_key = ""
             encrypted_private_key = ""
             nostr_pubkey = ""
@@ -127,13 +128,14 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 public_key = request.COOKIES.get("public_key")
                 encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
 
-            if not public_key or not encrypted_private_key:
+            if not public_key or not encrypted_private_key or not nostr_pubkey:
                 return JsonResponse(
                     {
-                        "bad_request": "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys"
+                        "bad_request": "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys and a nostr pubkey"
                     },
                     status=400,
                 )
+
             (
                 valid,
                 bad_keys_context,
