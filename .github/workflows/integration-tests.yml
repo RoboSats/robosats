@@ -33,7 +33,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: 'Download static files Artifact'
-      uses: dawidd6/action-download-artifact@v9
+      uses: dawidd6/action-download-artifact@v10
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
