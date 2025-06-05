@@ -29,6 +29,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
 |[Alby](#alby-browser-extension)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Aqua](#aqua-mobile)|[v0.1.55](https://aquawallet.io/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
+|[BitKit](#bitkit-mobile)|[1.1.1](https://bitkit.to/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
@@ -63,7 +64,10 @@ Instructions to install Alby in Tor Browser:
 ### Aqua (Mobile)
 Overall the wallet works as expected.
 Self-custodial Lightning+Liquid wallet with low fees and the option to swap directly to Tether.
-Bond refunds are locked for 3 days
+
+### Bitkit (Mobile)
+Overall the wallet works as expected.
+Self-custodial Lightning wallet.
 
 ### Blink (Mobile, former Bitcoin Beach Wallet)
 Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transaction history. Payouts to the Blink wallet function as intended. Custodial wallet by Galoy which originated from the Bitcoin Beach project in El Salvador (formerly known as "Bitcoin Beach Wallet").
