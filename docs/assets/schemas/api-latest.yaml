@@ -419,8 +419,8 @@ paths:
                   summary: When maker bond expires (as maker)
                 WhenRobosatsNodeIsDown:
                   value:
-                    bad_request: The lightning node is down. Write
-                      in the Telegram group to make sure the staff is aware.
+                    bad_request: The lightning node is down. Write in the Telegram
+                      group to make sure the staff is aware.
                   summary: When Robosats node is down
           description: ''
         '403':
