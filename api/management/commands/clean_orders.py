@@ -2,9 +2,27 @@ import time
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+from decouple import config
 
 from api.logics import Logics
 from api.models import Order, TakeOrder
+
+
+LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+
+
+def invoice_lookup_error(exc_string: str) -> bool:
+    if LNVENDOR == "LND":
+        if "unable to locate invoice" in exc_string:
+            return True
+    elif LNVENDOR == "CLN":
+        if (
+            "empty result for listdatastore_state" in exc_string or
+            "Invoice dropped from internal state unexpectedly" in exc_string
+        ):
+            return True
+
+    return False
 
 
 class Command(BaseCommand):
@@ -57,7 +75,7 @@ class Command(BaseCommand):
                 debug["failed_order_expiry"].append({idx: context})
                 debug["reason_failure"].append({idx: str(e)})
 
-                if "unable to locate invoice" in str(e):
+                if invoice_lookup_error(str(e)):
                     self.stdout.write(str(e))
                     order.update_status(Order.Status.EXP)
                     debug["expired_orders"].append({idx: context})
@@ -85,7 +103,7 @@ class Command(BaseCommand):
                 debug["failed_take_order_expiry"].append({idx: context})
                 debug["reason_take_failure"].append({idx: str(e)})
 
-                if "unable to locate invoice" in str(e):
+                if invoice_lookup_error(str(e)):
                     self.stdout.write(str(e))
                     debug["expired_take_orders"].append({idx: context})
 

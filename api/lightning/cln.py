@@ -307,7 +307,7 @@ class CLNNode:
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
         response = holdstub.HoldInvoiceLookup(request)
 
-        # Will fail if 'unable to locate invoice'. Happens if invoice expiry
+        # Will fail if 'empty result for listdatastore_state' or 'Invoice dropped from internal state unexpectedly'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
         if response.state == hold_pb2.Holdstate.OPEN:
@@ -361,7 +361,10 @@ class CLNNode:
             # If it fails at finding the invoice: it has been expired for more than an hour (and could be paid or just expired).
             # In RoboSats DB we make a distinction between cancelled and returned
             #  (holdinvoice plugin has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
-            if "empty result for listdatastore_state" in str(e):
+            if (
+                "empty result for listdatastore_state" in str(e) or
+                "Invoice dropped from internal state unexpectedly" in str(e)
+            ):
                 print(str(e))
                 request2 = node_pb2.ListinvoicesRequest(
                     payment_hash=bytes.fromhex(lnpayment.payment_hash)
@@ -369,20 +372,20 @@ class CLNNode:
                 try:
                     nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
                     response2 = nodestub.ListInvoices(request2).invoices
-                except Exception as e:
-                    print(str(e))
 
-                if (
-                    response2[0].status
-                    == node_pb2.ListinvoicesInvoices.ListinvoicesInvoicesStatus.PAID
-                ):
-                    status = LNPayment.Status.SETLED
-                elif (
-                    response2[0].status
-                    == node_pb2.ListinvoicesInvoices.ListinvoicesInvoicesStatus.EXPIRED
-                ):
-                    status = LNPayment.Status.CANCEL
-                else:
+                    if (
+                        response2[0].status
+                        == node_pb2.ListinvoicesInvoices.ListinvoicesInvoicesStatus.PAID
+                    ):
+                        status = LNPayment.Status.SETLED
+                    elif (
+                        response2[0].status
+                        == node_pb2.ListinvoicesInvoices.ListinvoicesInvoicesStatus.EXPIRED
+                    ):
+                        status = LNPayment.Status.CANCEL
+                    else:
+                        print(str(e))
+                except Exception as e:
                     print(str(e))
 
             # Other write to logs
