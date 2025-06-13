@@ -80,7 +80,7 @@
     "latlon-geohash": "^2.0.0",
     "leaflet": "^1.9.4",
     "light-bolt11-decoder": "^3.2.0",
-    "nostr-tools": "^2.13.0",
+    "nostr-tools": "^2.15.0",
     "npm": "^11.4.1",
     "openpgp": "^5.11.0",
     "react": "^19.1.0",
