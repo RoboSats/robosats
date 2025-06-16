@@ -353,7 +353,7 @@ class LNDNode:
                 status = LNPayment.Status.CANCEL
 
             # LND restarted.
-            if "wallet locked, unlock it" in str(e):
+            elif "wallet locked, unlock it" in str(e):
                 print(str(timezone.now()) + " :: Wallet Locked")
 
             # Other write to logs
