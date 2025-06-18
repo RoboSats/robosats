@@ -479,6 +479,60 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
 
+    def test_make_and_take_password_order(self):
+        """
+        Tests a trade with a password from order creation to taken.
+        """
+        password = "1234567"
+        password_maker_form = maker_form_buy_with_range.copy()
+        password_maker_form["password"] = password
+
+        trade = Trade(
+            self.client,
+            # add password to order
+            maker_form=password_maker_form,
+        )
+        trade.publish_order()
+
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        # Maker GET
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+
+        # External user GET
+        trade.get_order(trade.taker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 403)
+        self.assertEqual(data["bad_request"], "This order is password protected")
+
+        # Take with no password
+        trade.take_order()
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 403)
+        self.assertEqual(data["bad_request"], "Wrong password")
+
+        # Take with wrong password
+        trade.take_password_order("test")
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 403)
+        self.assertEqual(data["bad_request"], "Wrong password")
+
+        # Take with right password
+        trade.take_password_order(password)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
+        self.assertAlmostEqual(float(data["amount"]), 100)
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order()
+
     def test_make_and_take_order_multiple_takers(self):
         """
         Tests a trade from order creation to taken.

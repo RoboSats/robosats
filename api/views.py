@@ -119,6 +119,7 @@ class MakerView(CreateAPIView):
         bond_size = serializer.data.get("bond_size")
         latitude = serializer.data.get("latitude")
         longitude = serializer.data.get("longitude")
+        password = serializer.data.get("password")
 
         # Optional params
         if public_duration is None:
@@ -173,6 +174,7 @@ class MakerView(CreateAPIView):
             bond_size=bond_size,
             latitude=latitude,
             longitude=longitude,
+            password=password,
         )
 
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
@@ -230,6 +232,23 @@ class OrderView(viewsets.ViewSet):
         # This is our order.
         order = order[0]
 
+        data = ListOrderSerializer(order).data
+        take_order = TakeOrder.objects.filter(
+            taker=request.user, order=order, expires_at__gt=timezone.now()
+        )
+
+        # Add booleans if user is maker, taker, partipant, buyer or seller
+        data["is_maker"] = order.maker == request.user
+        data["is_taker"] = order.taker == request.user or take_order.exists()
+        data["is_participant"] = data["is_maker"] or data["is_taker"]
+
+        # 1) If order has a password
+        if not data["is_participant"] and order.password is not None:
+            return Response(
+                {"bad_request": "This order is password protected"},
+                status.HTTP_403_FORBIDDEN,
+            )
+
         # 2) If order has been cancelled
         if order.status == Order.Status.UCA:
             return Response(
@@ -242,21 +261,12 @@ class OrderView(viewsets.ViewSet):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        data = ListOrderSerializer(order).data
         data["total_secs_exp"] = order.t_to_expire(order.status)
 
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
         if is_penalized:
             data["penalty"] = request.user.robot.penalty_expiration
-
-        # Add booleans if user is maker, taker, partipant, buyer or seller
-        take_order = TakeOrder.objects.filter(
-            taker=request.user, order=order, expires_at__gt=timezone.now()
-        )
-        data["is_maker"] = order.maker == request.user
-        data["is_taker"] = order.taker == request.user or take_order.exists()
-        data["is_participant"] = data["is_maker"] or data["is_taker"]
 
         # 3.a) If not a participant and order is not public, forbid.
         if (
@@ -550,6 +560,7 @@ class OrderView(viewsets.ViewSet):
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
         cancel_status = serializer.data.get("cancel_status")
+        password = serializer.data.get("password")
 
         # 1) If action is take, it is a taker request!
         if action == "take":
@@ -557,6 +568,12 @@ class OrderView(viewsets.ViewSet):
                 valid, context, _ = Logics.validate_already_maker_or_taker(request.user)
                 if not valid:
                     return Response(context, status=status.HTTP_409_CONFLICT)
+
+                if order.password is not None and order.password != password:
+                    return Response(
+                        {"bad_request": "Wrong password"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
 
                 # For order with amount range, set the amount now.
                 if order.has_range:
@@ -734,7 +751,7 @@ class BookView(ListAPIView):
         currency = request.GET.get("currency", 0)
         type = request.GET.get("type", 2)
 
-        queryset = Order.objects.filter(status=Order.Status.PUB)
+        queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
 
         # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
         if int(currency) == 0 and int(type) != 2:

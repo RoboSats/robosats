@@ -183,11 +183,34 @@ class Trade:
         self.get_order()
 
     @patch("api.tasks.send_notification.delay", send_notification)
+    def publish_password_order(self):
+        # Maker's first order fetch. Should trigger maker bond hold invoice generation.
+        self.get_order()
+        invoice = self.response.json()["bond_invoice"]
+
+        # Lock the invoice from the robot's node
+        pay_invoice("robot", invoice)
+
+        # Check for invoice locked (the mocked LND will return ACCEPTED)
+        self.follow_hold_invoices()
+
+        # Get order
+        self.get_order()
+
+    @patch("api.tasks.send_notification.delay", send_notification)
     def take_order(self):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(self.taker_index)
         body = {"action": "take", "amount": self.take_amount}
+        self.response = self.client.post(path + params, body, **headers)
+
+    @patch("api.tasks.send_notification.delay", send_notification)
+    def take_password_order(self, password):
+        path = reverse("order")
+        params = f"?order_id={self.order_id}"
+        headers = self.get_robot_auth(self.taker_index)
+        body = {"action": "take", "amount": self.take_amount, "password": password}
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)

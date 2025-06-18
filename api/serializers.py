@@ -594,10 +594,18 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "bond_size",
             "latitude",
             "longitude",
+            "password",
         )
 
 
 class UpdateOrderSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        max_length=2000,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="In case the order is password protected",
+    )
     invoice = serializers.CharField(
         max_length=15000,
         allow_null=True,

@@ -15,6 +15,10 @@ class Nostr:
     async def send_order_event(self, order):
         """Creates the event and sends it to the coordinator relay"""
 
+        # Publish only public orders
+        if order.password is not None:
+            return
+
         if config("NOSTR_NSEC", cast=str, default="") == "":
             return
 
