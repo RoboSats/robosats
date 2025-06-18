@@ -26,7 +26,6 @@ const FederationTable = ({
   const { setOpen, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
   const [ratings, setRatings] = useState<Record<string, Record<string, number>>>(
     federation.getCoordinators().reduce((acc, coord) => {
       if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
@@ -57,12 +56,6 @@ const FederationTable = ({
   }, [federationUpdatedAt]);
 
   const loadRatings: () => void = () => {
-    if (settings.connection !== 'nostr') {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
     federation.roboPool.subscribeRatings({
       onevent: (event) => {
         const verfied = verifyCoordinatorToken(event);
@@ -77,7 +70,7 @@ const FederationTable = ({
           }
         }
       },
-      oneose: () => setLoading(false),
+      oneose: () => {},
     });
   };
 
@@ -324,7 +317,6 @@ const FederationTable = ({
       }
     >
       <DataGrid
-        loading={loading}
         sx={headerStyleFix}
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
