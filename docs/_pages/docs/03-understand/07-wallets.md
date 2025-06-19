@@ -70,7 +70,7 @@ Self-custodial Lightning wallet.
 
 ### Blink (Mobile, former Bitcoin Beach Wallet)
 Overall the wallet works as expected. 
-Offers option to swap in and out of synthetic USD. Custodial wallet developed by Galoy, El Salvador. Originated from the Bitcoin Beach project.
+Offers the option to swap in and out of synthetic USD. Custodial wallet developed by Galoy, El Salvador. Originated from the Bitcoin Beach project.
 
 ### Blixt (Android/iOS, LND light backend on device)
 Most development testing for RoboSats has been done using Blixt. This is one of the most complete Lightning wallets around. However, it does lead to misunderstanding when hold invoices are locked, as it shows a spinner with payment in transit. The user needs to check on the website for confirmation. Blixt allows for multiple pending HTLCs; this is necessary as a seller since you need to lock a taker/maker bond and then a trade escrow (2 pending concurrent HTLCs). It might eventually also display as paid/charged invoices that are still pending, especially if the user force closes Blixt and reopens it. Occasionally, it can display fidelity bonds as charged that have in fact been returned.
