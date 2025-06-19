@@ -41,6 +41,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
 |[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
+|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Zeus](#zeus-mobile-lnd-cln-eclair-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -107,6 +108,9 @@ Similar to Blixt or LND, Muun plays nicely with hold invoices. You can be a sell
 ### OBW (Mobile)
 One of the simplest and one of the best. The hodl invoice shows as "on fly", it is not custodial and can create your own channels. Buy one from a liquidity provider or use Hosted Channels. It is maintained by the great Fiatjaf and it is a fork of the abandoned SBW.
 *Update 26-10-23: At this moment it has no development or support
+
+### Phoenix (Mobile)
+This wallet does not support invoice lock.
 
 ### SBW (Mobile)
 From 2.5 it doesn't support lightning anymore.
