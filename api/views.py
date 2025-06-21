@@ -244,14 +244,9 @@ class OrderView(viewsets.ViewSet):
         data["has_password"] = order.password is not None
 
         # 2) If order has been cancelled
-        if order.status == Order.Status.UCA:
+        if order.status == Order.Status.UCA or order.status == Order.Status.CCA:
             return Response(
-                {"bad_request": "This order has been cancelled by the maker"},
-                status.HTTP_400_BAD_REQUEST,
-            )
-        if order.status == Order.Status.CCA:
-            return Response(
-                {"bad_request": "This order has been cancelled collaborativelly"},
+                {"bad_request": "This order has been cancelled"},
                 status.HTTP_400_BAD_REQUEST,
             )
 
@@ -262,7 +257,7 @@ class OrderView(viewsets.ViewSet):
         if is_penalized:
             data["penalty"] = request.user.robot.penalty_expiration
 
-        # 1) If order has a password
+        # 2.1) If order has a password
         if not data["is_participant"] and order.password is not None:
             return Response(data, status.HTTP_200_OK)
 
