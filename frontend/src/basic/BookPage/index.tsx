@@ -6,13 +6,14 @@ import DepthChart from '../../components/Charts/DepthChart';
 import BookTable from '../../components/BookTable';
 
 // Icons
-import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
+import { BarChart, FormatListBulleted, ManageSearch, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
 import thirdParties from '../../../static/thirdparties.json';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
 import { type PublicOrder } from '../../models';
+import GoToOrder from '../../components/Dialogs/GoToOrder';
 
 const BookPage = (): React.JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
@@ -22,6 +23,7 @@ const BookPage = (): React.JSX.Element => {
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth' | 'map'>('list');
   const [openVisitThirdParty, setOpenVisitThirdParty] = useState<boolean>(false);
+  const [goToOrder, setGoToOrder] = useState<boolean>(false);
   const [thirdPartyOrder, setThirdPartyOrder] = useState<PublicOrder>();
 
   const doubleView = windowSize.width > 100;
@@ -79,6 +81,15 @@ const BookPage = (): React.JSX.Element => {
             >
               <Map /> {t('Map')}
             </Button>
+            <Button
+              color='inherit'
+              variant='contained'
+              onClick={() => {
+                setGoToOrder(true);
+              }}
+            >
+              <ManageSearch /> {t('Search')}
+            </Button>
           </>
         )}
       </ButtonGroup>
@@ -87,6 +98,12 @@ const BookPage = (): React.JSX.Element => {
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
+      <GoToOrder
+        open={goToOrder}
+        onClose={() => {
+          setGoToOrder(false);
+        }}
+      />
       <VisitThirdParty
         open={openVisitThirdParty}
         onClose={() => {

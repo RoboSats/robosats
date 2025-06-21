@@ -405,7 +405,7 @@ paths:
               examples:
                 OrderCancelled:
                   value:
-                    bad_request: This order has been cancelled collaborativelly
+                    bad_request: This order has been cancelled
                   summary: Order cancelled
                 WhenTheOrderIsNotPublicAndYouNeitherTheTakerNorMaker:
                   value:
@@ -1328,6 +1328,10 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
           nullable: true
+        password:
+          type: string
+          nullable: true
+          maxLength: 2000
       required:
       - currency
       - type
@@ -1440,6 +1444,9 @@ components:
         is_participant:
           type: boolean
           description: True if you are either a taker or maker, False otherwise
+        has_password:
+          type: boolean
+          description: True if the order is password protected
         maker_status:
           type: string
           description: |-
@@ -1988,6 +1995,11 @@ components:
     UpdateOrder:
       type: object
       properties:
+        password:
+          type: string
+          nullable: true
+          description: In case the order is password protected
+          maxLength: 2000
         invoice:
           type: string
           nullable: true

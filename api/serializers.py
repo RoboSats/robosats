@@ -207,6 +207,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="True if you are either a taker or maker, False otherwise",
     )
+    has_password = serializers.BooleanField(
+        required=False,
+        help_text="True if the order is password protected",
+    )
     maker_status = serializers.CharField(
         required=False,
         help_text="Status of the maker:\n"
@@ -438,6 +442,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "is_maker",
             "is_taker",
             "is_participant",
+            "has_password",
             "maker_status",
             "taker_status",
             "price_now",
@@ -594,10 +599,18 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "bond_size",
             "latitude",
             "longitude",
+            "password",
         )
 
 
 class UpdateOrderSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        max_length=2000,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="In case the order is password protected",
+    )
     invoice = serializers.CharField(
         max_length=15000,
         allow_null=True,

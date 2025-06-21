@@ -41,6 +41,7 @@ import SelectCoordinator from './SelectCoordinator';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { useNavigate } from 'react-router-dom';
+import { sha256 } from 'js-sha256';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -252,6 +253,7 @@ const MakerForm = ({
         latitude: maker.latitude,
         longitude: maker.longitude,
         shortAlias: maker.coordinator,
+        password: maker.password ? sha256(maker.password) : null,
       };
 
       void slot
@@ -283,6 +285,13 @@ const MakerForm = ({
       ...maker,
       publicExpiryTime: date,
       publicDuration: totalSecs,
+    });
+  };
+
+  const handlePasswordChange = function (event: React.ChangeEvent<HTMLInputElement>): void {
+    setMaker({
+      ...maker,
+      password: event.target.value,
     });
   };
 
@@ -821,6 +830,24 @@ const MakerForm = ({
             />
           </Grid>
           <Collapse in={maker.advancedOptions} sx={{ width: '100%' }}>
+            <Grid item sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                label={`${t('Password')}`}
+                type='password'
+                value={maker.password}
+                style={{ marginBottom: 8 }}
+                inputProps={{
+                  style: {
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: 4,
+                  },
+                }}
+                onChange={handlePasswordChange}
+              />
+            </Grid>
+
             <Grid item sx={{ width: '100%' }}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker

@@ -165,6 +165,14 @@ class Order(models.Model):
         blank=True,
     )
 
+    # optionally makers can set a password for the order to be taken
+    password = models.TextField(
+        max_length=2000,
+        null=True,
+        default=None,
+        blank=True,
+    )
+
     # how many sats at creation and at last check (relevant for marked to market)
     t0_satoshis = models.PositiveBigIntegerField(
         null=True,
