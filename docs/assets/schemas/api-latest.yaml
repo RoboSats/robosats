@@ -405,7 +405,7 @@ paths:
               examples:
                 OrderCancelled:
                   value:
-                    bad_request: This order has been cancelled collaborativelly
+                    bad_request: This order has been cancelled
                   summary: Order cancelled
                 WhenTheOrderIsNotPublicAndYouNeitherTheTakerNorMaker:
                   value:
@@ -1444,6 +1444,9 @@ components:
         is_participant:
           type: boolean
           description: True if you are either a taker or maker, False otherwise
+        has_password:
+          type: boolean
+          description: True if the order is password protected
         maker_status:
           type: string
           description: |-

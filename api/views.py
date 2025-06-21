@@ -258,7 +258,7 @@ class OrderView(viewsets.ViewSet):
             data["penalty"] = request.user.robot.penalty_expiration
 
         # 2.1) If order has a password
-        if not data["is_participant"] and order.password is not None:
+        if not data["is_participant"] and data["has_password"]:
             return Response(data, status.HTTP_200_OK)
 
         # 3.a) If not a participant and order is not public, forbid.

@@ -301,9 +301,9 @@ const OrderDetails = ({
           </ListItem>
         )}
 
-        <Divider />
-        {!currentOrder.bad_request && (
+        {!currentOrder.bad_request && currentOrder.maker_hash_id && (
           <>
+            <Divider />
             <ListItem>
               <ListItemAvatar sx={{ width: '4em', height: '4em' }}>
                 <RobotAvatar
@@ -323,7 +323,6 @@ const OrderDetails = ({
                 secondary={t('Order maker')}
               />
             </ListItem>
-
             <Collapse in={currentOrder?.is_participant && currentOrder?.taker_nick !== 'None'}>
               <Divider />
               <ListItem>
@@ -539,7 +538,7 @@ const OrderDetails = ({
 
       {/* If the user has a penalty/limit */}
       {currentOrder?.penalty !== undefined ? (
-        <Grid item style={{ width: '100%' }}>
+        <Grid sx={{ marginBottom: 1, width: '100%', padding: '0 16px' }}>
           <Alert severity='warning' sx={{ borderRadius: '0' }}>
             <Countdown
               date={new Date(currentOrder?.penalty ?? '')}
@@ -551,8 +550,8 @@ const OrderDetails = ({
         <></>
       )}
 
-      {currentOrder.bad_request?.includes('password') && (
-        <Grid item style={{ width: '100%', padding: '16px' }}>
+      {!currentOrder?.is_participant && currentOrder?.has_password && (
+        <Grid item style={{ width: '100%', padding: '0 16px' }}>
           <TextField
             fullWidth
             label={`${t('Password')}`}
@@ -571,7 +570,7 @@ const OrderDetails = ({
         </Grid>
       )}
 
-      {!currentOrder?.is_participant || currentOrder.bad_request?.includes('password') ? (
+      {!currentOrder?.is_participant ? (
         <Grid item style={{ width: '100%', padding: '8px' }}>
           <TakeButton
             password={password}

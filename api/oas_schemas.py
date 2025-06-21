@@ -168,7 +168,7 @@ class OrderViewSchema:
         "examples": [
             OpenApiExample(
                 "Order cancelled",
-                value={"bad_request": "This order has been cancelled by the maker"},
+                value={"bad_request": "This order has been cancelled"},
                 status_codes=[400],
             ),
             OpenApiExample(
@@ -178,7 +178,7 @@ class OrderViewSchema:
             ),
             OpenApiExample(
                 "Order cancelled",
-                value={"bad_request": "This order has been cancelled collaborativelly"},
+                value={"bad_request": "This order has been cancelled"},
                 status_codes=[400],
             ),
             OpenApiExample(

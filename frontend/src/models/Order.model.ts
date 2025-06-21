@@ -78,6 +78,7 @@ class Order {
   is_maker: boolean = false;
   is_taker: boolean = false;
   is_participant: boolean = false;
+  has_password: boolean = false;
   maker_status: 'Active' | 'Seen recently' | 'Inactive' = 'Active';
   taker_status: 'Active' | 'Seen recently' | 'Inactive' = 'Active';
   price_now: number | undefined = undefined;

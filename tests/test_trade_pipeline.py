@@ -506,8 +506,9 @@ class TradeTest(BaseAPITestCase):
         # External user GET
         trade.get_order(trade.taker_index)
         data = trade.response.json()
-        self.assertEqual(trade.response.status_code, 403)
-        self.assertEqual(data["bad_request"], "This order is password protected")
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertTrue(data["has_password"])
+        self.assertNotIn("maker_nick", data)
 
         # Take with no password
         trade.take_order()
@@ -1072,9 +1073,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         self.assertResponse(trade.response)
 
-        self.assertEqual(
-            data["bad_request"], "This order has been cancelled by the maker"
-        )
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
         maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
@@ -1182,21 +1181,15 @@ class TradeTest(BaseAPITestCase):
 
         trade.cancel_order(trade.maker_index)
         data = trade.response.json()
-        self.assertEqual(
-            data["bad_request"], "This order has been cancelled by the maker"
-        )
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         trade.get_order(trade.taker_index)
         data = trade.response.json()
-        self.assertEqual(
-            data["bad_request"], "This order has been cancelled by the maker"
-        )
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         trade.get_order(trade.third_index)
         data = trade.response.json()
-        self.assertEqual(
-            data["bad_request"], "This order has been cancelled by the maker"
-        )
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
     def test_cancel_order_cancel_status(self):
         """
@@ -1219,7 +1212,7 @@ class TradeTest(BaseAPITestCase):
 
         self.assertEqual(
             trade.response.json()["bad_request"],
-            "This order has been cancelled by the maker",
+            "This order has been cancelled",
         )
 
     def test_cancel_order_different_cancel_status(self):
@@ -1281,7 +1274,7 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(trade.response)
         self.assertEqual(
             trade.response.json()["bad_request"],
-            "This order has been cancelled collaborativelly",
+            "This order has been cancelled",
         )
 
         maker_headers = trade.get_robot_auth(trade.maker_index)

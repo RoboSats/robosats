@@ -119,7 +119,7 @@ const OrderPage = (): React.JSX.Element => {
             });
         }}
       />
-      {!currentOrder?.maker_hash_id && !currentOrder?.bad_request && <CircularProgress />}
+      {!currentOrder?.maker && !currentOrder?.bad_request && <CircularProgress />}
       {currentOrder?.bad_request && currentOrder.status !== 5 ? (
         <>
           <Typography align='center' variant='subtitle2' color='secondary'>
@@ -141,7 +141,7 @@ const OrderPage = (): React.JSX.Element => {
           )}
         </>
       ) : null}
-      {currentOrder?.maker_hash_id && (!currentOrder.bad_request || currentOrder.status === 5) ? (
+      {currentOrder?.maker && (!currentOrder.bad_request || currentOrder.status === 5) ? (
         currentOrder.is_participant ? (
           windowSize.width > doublePageWidth ? (
             // DOUBLE PAPER VIEW
