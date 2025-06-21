@@ -27,10 +27,13 @@ import { computeSats } from '../../utils';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
+import { sha256 } from 'js-sha256';
 
 interface TakeButtonProps {
   currentOrder: Order;
+  password?: string;
   info?: Info;
+  setCurrentOrder: (currentOrder: Order) => void;
   onClickGenerateRobot?: () => void;
 }
 
@@ -41,7 +44,9 @@ interface OpenDialogsProps {
 const closeAll = { inactiveMaker: false, confirmation: false };
 
 const TakeButton = ({
+  password,
   currentOrder,
+  setCurrentOrder,
   info,
   onClickGenerateRobot = () => null,
 }: TakeButtonProps): React.JSX.Element => {
@@ -317,6 +322,8 @@ const TakeButton = ({
 
     if (currentOrder === null || slot === null) return;
 
+    if (password) currentOrder.password = sha256(password);
+
     setLoadingTake(true);
 
     slot
@@ -326,8 +333,10 @@ const TakeButton = ({
           setBadRequest(order.bad_request);
         } else {
           setBadRequest('');
+          setCurrentOrder(order);
           navigate(`/order/${order.shortAlias}/${order.id}`);
         }
+        setLoadingTake(false);
       })
       .catch(() => {
         setBadRequest('Request error');

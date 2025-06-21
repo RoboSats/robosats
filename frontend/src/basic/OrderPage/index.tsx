@@ -80,6 +80,7 @@ const OrderPage = (): React.JSX.Element => {
     <OrderDetails
       shortAlias={String(currentOrder.shortAlias)}
       currentOrder={currentOrder}
+      setCurrentOrder={setCurrentOrder}
       onClickCoordinator={onClickCoordinator}
     />
   ) : (
@@ -118,11 +119,27 @@ const OrderPage = (): React.JSX.Element => {
             });
         }}
       />
-      {!currentOrder?.maker_hash_id && <CircularProgress />}
+      {!currentOrder?.maker_hash_id && !currentOrder?.bad_request && <CircularProgress />}
       {currentOrder?.bad_request && currentOrder.status !== 5 ? (
-        <Typography align='center' variant='subtitle2' color='secondary'>
-          {t(currentOrder.bad_request)}
-        </Typography>
+        <>
+          <Typography align='center' variant='subtitle2' color='secondary'>
+            {t(currentOrder.bad_request)}
+          </Typography>
+          {currentOrder?.bad_request?.includes('password') && (
+            <Grid item xs={6} style={{ width: '21em' }}>
+              <Paper
+                elevation={12}
+                style={{
+                  width: '21em',
+                  maxHeight: `${maxHeight}em`,
+                  overflow: 'auto',
+                }}
+              >
+                {orderDetailsSpace}
+              </Paper>
+            </Grid>
+          )}
+        </>
       ) : null}
       {currentOrder?.maker_hash_id && (!currentOrder.bad_request || currentOrder.status === 5) ? (
         currentOrder.is_participant ? (

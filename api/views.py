@@ -241,13 +241,7 @@ class OrderView(viewsets.ViewSet):
         data["is_maker"] = order.maker == request.user
         data["is_taker"] = order.taker == request.user or take_order.exists()
         data["is_participant"] = data["is_maker"] or data["is_taker"]
-
-        # 1) If order has a password
-        if not data["is_participant"] and order.password is not None:
-            return Response(
-                {"bad_request": "This order is password protected"},
-                status.HTTP_403_FORBIDDEN,
-            )
+        data["has_password"] = order.password is not None
 
         # 2) If order has been cancelled
         if order.status == Order.Status.UCA:
@@ -267,6 +261,10 @@ class OrderView(viewsets.ViewSet):
         is_penalized, time_out = Logics.is_penalized(request.user)
         if is_penalized:
             data["penalty"] = request.user.robot.penalty_expiration
+
+        # 1) If order has a password
+        if not data["is_participant"] and order.password is not None:
+            return Response(data, status.HTTP_200_OK)
 
         # 3.a) If not a participant and order is not public, forbid.
         if (

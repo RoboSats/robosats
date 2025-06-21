@@ -22,6 +22,7 @@ export interface SubmitActionProps {
   rating?: number;
   amount?: number;
   cancel_status?: number;
+  password?: string;
 }
 
 export interface TradeRobotSummary {
@@ -83,6 +84,7 @@ class Order {
   satoshis_now: number = 0;
   latitude: number = 0;
   longitude: number = 0;
+  password: string | undefined = undefined;
   premium_now: number | undefined = undefined;
   premium_percentile: number = 0;
   num_similar_orders: number = 0;
@@ -199,6 +201,7 @@ class Order {
       bond_size: this.bond_size,
       latitude: this.latitude,
       longitude: this.longitude,
+      password: this.password,
     };
 
     if (slot) {
@@ -223,6 +226,7 @@ class Order {
   ) => {
     return await this.submitAction(federation, slot, {
       action: 'take',
+      password: this?.password,
       amount: this?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount),
     });
   };

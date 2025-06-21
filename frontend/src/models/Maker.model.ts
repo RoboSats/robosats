@@ -21,6 +21,7 @@ export interface Maker {
   badPremiumText: string;
   latitude: number;
   longitude: number;
+  password: string | null;
 }
 
 export const defaultMaker: Maker = {
@@ -47,6 +48,7 @@ export const defaultMaker: Maker = {
   badSatoshisText: '',
   latitude: 0,
   longitude: 0,
+  password: null,
 };
 
 export default Maker;
