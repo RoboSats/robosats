@@ -11,17 +11,6 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 <div align="center">
   <img width="75%" src="https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png">
 </div>
-<div align="center">
-    <a href="https://github.com/ImranR98/Obtainium" target="_blank">
-        <img src="./docs/obtainium.png" alt="Get it on Obtaininum" height="70" />
-    </a>
-    <a href="https://github.com/zapstore/zapstore/releases" target="_blank">
-        <img src="./docs/zapstore.svg" alt="Get it on Zap.Store" height="70" />
-    </a>
-    <a href="https://github.com/RoboSats/robosats/releases" target="_blank">
-        <img src="https://github.com/machiav3lli/oandbackupx/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="70">
-    </a>
-</div>
 
 ## Learn
 
@@ -34,6 +23,20 @@ Check our tutorials and many more at https://learn.robosats.org
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best privacy. The Clearnet URL redirects to a third party Tor2web service. Your privacy cannot be guaranteed to be respected. Use clearnet only to check around the app, never use for trading!*
 
 *You can use Testnet Bitcoin by going to the Settings page and switching to Testnet*
+
+Robosats is also available for Android devices
+
+<div align="center">
+    <a href="https://github.com/ImranR98/Obtainium" target="_blank">
+        <img src="./docs/obtainium.png" alt="Get it on Obtaininum" height="70" />
+    </a>
+    <a href="https://github.com/zapstore/zapstore/releases" target="_blank">
+        <img src="./docs/zapstore.svg" alt="Get it on Zap.Store" height="70" />
+    </a>
+    <a href="https://github.com/RoboSats/robosats/releases" target="_blank">
+        <img src="https://github.com/machiav3lli/oandbackupx/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="70">
+    </a>
+</div>
 
 ## How to use it
 https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-b93f-250f80bc5bca.mp4
