@@ -508,7 +508,8 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
         self.assertEqual(trade.response.status_code, 200)
         self.assertTrue(data["has_password"])
-        self.assertNotIn("maker_nick", data)
+        self.assertIsInstance(data["satoshis_now"], int)
+        self.assertNotIn("is_buyer", data)
 
         # Take with no password
         trade.take_order()
