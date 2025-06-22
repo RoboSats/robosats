@@ -845,7 +845,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
           >
             <div style={{ marginRight: 18 }}>
               <LoadingButton size='small' variant='outlined' color='primary' onClick={copyOrderUrl}>
-                {t('Copy')}
+                {t('Copy URL')}
               </LoadingButton>
             </div>
           </Tooltip>
