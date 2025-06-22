@@ -82,10 +82,11 @@ Check out our [Contribution Guide](https://learn.robosats.org/contribute/) to fi
 RoboSats is a monorepo, arguably a messy one at the moment.
  - The top level is a Django application (the coordinator backend) with apps `/api`, `/control`, and `/chat`. Django settings are in `/robosats` and `/tests` has integration tests for the RoboSats backend.
  - The `/frontend` directory contains the ReactJS client.
- - The `/nodeapp` directory contains the docker orchestration and utilities for the self-hosted application (Umbrel, StartOS, etc)
+ - The `/nodeapp` directory contains the docker orchestration and utilities for the self-hosted application (Umbrel, StartOS, etc). We also use this one in unsafe.robosats.org
+
  - The `/mobile` directory contains our React Native app (a wrapper around our ReactJS app in `/frontend`)
  - The `/docs` directory has the learn.robosats.org static Jekyll site markdown docs.
- - The `/web` directory is a light wrapper around our client app `/frontend` intended to host a RoboSats dex client to be used for the public. We use this one in unsafe.robosats.org
+ - The `/web` directory is a light wrapper around our client app `/frontend` intended to host a RoboSats dex client to be used for the public. Used for our official onion address.
 
 You can run the whole stack for local development following the instructions in [setup.md](/setup.md)
 
