@@ -27,6 +27,9 @@ Check our tutorials and many more at https://learn.robosats.org
 Robosats is also available for Android devices
 
 <div align="center">
+    <a href="https://apt.izzysoft.de/fdroid/index/apk/com.robosats" target="_blank">
+        <img src="./docs/IzzyOnDroid.png" alt="Get it on IzzyOnDroid.png" height="70" />
+    </a>
     <a href="https://github.com/ImranR98/Obtainium" target="_blank">
         <img src="./docs/obtainium.png" alt="Get it on Obtaininum" height="70" />
     </a>
