@@ -306,12 +306,6 @@ class OrderView(viewsets.ViewSet):
                     )
                 )
 
-        data["satoshis_now"] = order.last_satoshis
-
-        # 4.b) If order has a password
-        if not data["is_participant"] and data["has_password"]:
-            return Response(data, status.HTTP_200_OK)
-
         # For participants add positions, nicks and status as a message and hold invoices status
         data["is_buyer"] = Logics.is_buyer(order, request.user)
         data["is_seller"] = Logics.is_seller(order, request.user)
@@ -325,6 +319,7 @@ class OrderView(viewsets.ViewSet):
         data["longitude"] = order.longitude
         data["is_disputed"] = order.is_disputed
         data["ur_nick"] = request.user.username
+        data["satoshis_now"] = order.last_satoshis
 
         # Add whether hold invoices are LOCKED (ACCEPTED)
         # Is there a maker bond? If so, True if locked, False otherwise
