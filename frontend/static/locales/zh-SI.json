@@ -541,7 +541,7 @@
   "See Compatible Wallets": "查看兼容钱包列表",
   "#53": "Phrases in components/TradeBox/index.tsx",
   "A contact method is required": "A contact method is required",
-  "Copy": "Copy",
+  "Copy URL": "Copy URL",
   "Copy order URL": "Copy order URL",
   "The statement is too short. Make sure to be thorough.": "The statement is too short. Make sure to be thorough.",
   "#54": "Phrases in components/TradeBox/Dialogs/ConfirmCancel.tsx",
