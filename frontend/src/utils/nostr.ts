@@ -39,6 +39,7 @@ const eventToPublicOrder = (
   const statusTag = event.tags.find((t) => t[0] === 's') ?? [];
   const dTag = event.tags.find((t) => t[0] === 'd') ?? [];
   const network = event.tags.find((t) => t[0] === 'network') ?? [];
+  const platform = event.tags.find((t) => t[0] === 'y') ?? [];
   const coordinator = [...Object.values(defaultFederation), ...Object.values(thirdParties)].find(
     (coord) => coord.nostrHexPubkey === event.pubkey,
   );
@@ -47,6 +48,7 @@ const eventToPublicOrder = (
 
   publicOrder.coordinatorShortAlias = coordinator?.shortAlias;
   publicOrder.federated = coordinator?.federated ?? false;
+  publicOrder.id = parseInt(dTag[1], 16);
 
   event.tags.forEach((tag) => {
     switch (tag[0]) {
@@ -94,9 +96,12 @@ const eventToPublicOrder = (
         break;
       }
       case 'source': {
-        const orderUrl = tag[1].split('/');
-        publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
-        publicOrder.link = tag[1];
+        if (platform[1] === 'robosats') {
+          const orderUrl = tag[1].split('/');
+          publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
+        }
+
+        if (tag[1] !== '') publicOrder.link = tag[1];
         break;
       }
       default:
@@ -104,7 +109,7 @@ const eventToPublicOrder = (
     }
   });
 
-  if (!publicOrder.currency) return { dTag: dTag[1], publicOrder: null };
+  if (!publicOrder.currency) return { dTag: dTag[1], publicOrder: null, network: network[1] };
   if (!publicOrder.maker_hash_id)
     publicOrder.maker_hash_id = `${publicOrder.id}${coordinator?.shortAlias}`;
 
