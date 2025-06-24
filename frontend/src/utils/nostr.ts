@@ -6,6 +6,7 @@ import Geohash from 'latlon-geohash';
 import thirdParties from '../../static/thirdparties.json';
 import currencyDict from '../../static/assets/currencies.json';
 import defaultFederation from '../../static/federation.json';
+import hashStringToInteger from './stringToInteger';
 
 const eventToPublicOrder = (
   event: Event,
@@ -48,7 +49,6 @@ const eventToPublicOrder = (
 
   publicOrder.coordinatorShortAlias = coordinator?.shortAlias;
   publicOrder.federated = coordinator?.federated ?? false;
-  publicOrder.id = parseInt(dTag[1], 16);
 
   event.tags.forEach((tag) => {
     switch (tag[0]) {
@@ -99,6 +99,8 @@ const eventToPublicOrder = (
         if (platform[1] === 'robosats') {
           const orderUrl = tag[1].split('/');
           publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
+        } else {
+          publicOrder.id = hashStringToInteger(tag[1] + dTag[1]);
         }
 
         if (tag[1] !== '') publicOrder.link = tag[1];
