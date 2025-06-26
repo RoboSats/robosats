@@ -22,7 +22,6 @@
       "isFounder": true,
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
-      "robotsLove": false,
       "hasLargeLimits": true
     },
     "policies": {
@@ -73,7 +72,6 @@
       "isFounder": true,
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
-      "robotsLove": false,
       "hasLargeLimits": true
     },
     "policies": {
@@ -119,9 +117,8 @@
     "badges": {
       "isFounder": false,
       "donatesToDevFund": 20,
-      "hasGoodOpSec": false,
-      "robotsLove": false,
-      "hasLargeLimits": true
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -167,8 +164,7 @@
       "isFounder": false,
       "donatesToDevFund": 25,
       "hasGoodOpSec": true,
-      "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -214,7 +210,6 @@
       "isFounder": false,
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
-      "robotsLove": false,
       "hasLargeLimits": false
     },
     "policies": {
@@ -249,9 +244,9 @@
     "established": "2025-06-30",
     "nostrHexPubkey": "ded3dc02a1a9b61ce59d11f496539cb3fd15f00326a16f47e5f8d76baba24bdb",
     "contact": {
-      "email": "freedomsatoshis@gmail.com",
+      "email": "FreedomSatoshis@proton.me",
       "telegram": "@freedomsats",
-      "simplex": "freedomsatoshis@gmail.com",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FLjWY29_NGy7vujmzRCmnJocepWWMAk2D%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEAWRfXNPT2xQihjv0Ef2sV51J2YiAmboLcmE0adlEAv2c%253D%26q%3Dc%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
       "pgp": "/static/federation/pgp/9D3D3BAF4744305EE3F0B837331AB575DD78D930.asc",
       "nostr": "npub1mmfacq4p4xmpeevaz86fv5uuk073tuqry6sk73l9lrtkh2azf0dsykwxuj",
       "website": null,
@@ -261,7 +256,6 @@
       "isFounder": false,
       "donatesToDevFund": 20,
       "hasGoodOpSec": true,
-      "robotsLove": false,
       "hasLargeLimits": false
     },
     "policies": {
