@@ -10,5 +10,5 @@ Every new version always follows these steps in order:
 8. Every day at 19:00 GMT IzzyDroid checks automatically for new releases and download it to their repositories.
 9. Announce the new version to Zapstore from `/mobile/android` by running `zapstore publish robosats`
 9. SSH into the main server
-10. Go to /docs and run `docker compose build && docker compose up -d`
+10. Go to `/docs` and run `docker compose build && docker compose up -d`
 
