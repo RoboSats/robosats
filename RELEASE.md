@@ -11,4 +11,5 @@ Every new version always follows these steps in order:
 9. Announce the new version to Zapstore from `/mobile/android` by running `zapstore publish robosats`
 9. SSH into the main server
 10. Go to `/docs` and run `docker compose build && docker compose up -d`
-
+11. Go to `/frontend` and run `npm run build`, that will generate 2 main files (`basic.html` and `pro.html`) and the `/static` folder in 2 different folders: `/nodeapp` and `/web`
+12. Now `/nodeapp` should display the new version in the unsafe webapp and `/web` in the onion webapp
