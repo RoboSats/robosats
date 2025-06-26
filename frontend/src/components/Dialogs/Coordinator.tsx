@@ -62,7 +62,6 @@ import {
   BadgeFounder,
   BadgeDevFund,
   BadgePrivacy,
-  BadgeLoved,
   BadgeLimits,
   NostrIcon,
   SimplexIcon,
@@ -317,23 +316,6 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
       >
         <Grid item sx={{ filter: badges?.hasGoodOpSec === true ? undefined : 'grayscale(100%)' }}>
           <BadgePrivacy sx={sxProps} />
-        </Grid>
-      </Tooltip>
-
-      <Tooltip
-        {...tooltipProps}
-        title={
-          <Typography align='center' variant='body2'>
-            {badges?.robotsLove === true
-              ? t('Loved by robots: receives positive comments by robots over the internet.')
-              : t(
-                  'The coordinator does not seem to receive exceptional love from robots over the internet',
-                )}
-          </Typography>
-        }
-      >
-        <Grid item sx={{ filter: badges?.robotsLove === true ? undefined : 'grayscale(100%)' }}>
-          <BadgeLoved sx={sxProps} />
         </Grid>
       </Tooltip>
 

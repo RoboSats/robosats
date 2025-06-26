@@ -26,7 +26,6 @@ export interface Badges {
   isFounder?: boolean | undefined;
   donatesToDevFund: number;
   hasGoodOpSec?: boolean | undefined;
-  robotsLove?: boolean | undefined;
   hasLargeLimits?: boolean | undefined;
 }
 
@@ -87,7 +86,6 @@ export const coordinatorDefaultValues = {
     isFounder: false,
     donatesToDevFund: 0,
     hasGoodOpSec: false,
-    robotsLove: false,
     hasLargeLimits: false,
   },
   mainnet: undefined,
