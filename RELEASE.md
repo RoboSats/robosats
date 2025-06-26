@@ -1,4 +1,4 @@
-Every new version always follows these steps in order:
+Every new version always follows:
 
 1. Create a Pull Request upgrading JS packages, mobile version count and the release template (ie. https://github.com/RoboSats/robosats/pull/2015)
 2. Merge to main and add a new tag to the commit following our versioning structure: https://github.com/RoboSats/robosats/blob/main/.github/workflows/release.yml#L7
@@ -15,4 +15,4 @@ Every new version always follows these steps in order:
 12. Now `/nodeapp` should display the new version in the unsafe webapp and `/web` in the onion webapp
 13. Announce the new release to SimpleX, nostr, nostr group and Telegram
 14. Update the startOS instance (ie. https://github.com/RoboSats/robosats-startos/pull/36) and ping them
-15. Update the Umbrel instance (ie. https://github.com/getumbrel/umbrel-apps/pull/3076/). They will take care of marging it.
+15. Update the Umbrel instance (ie. https://github.com/getumbrel/umbrel-apps/pull/3076/). They will take care of merging it.
