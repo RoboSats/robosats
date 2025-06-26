@@ -13,3 +13,6 @@ Every new version always follows these steps in order:
 10. Go to `/docs` and run `docker compose build && docker compose up -d`
 11. Go to `/frontend` and run `npm run build`, that will generate 2 main files (`basic.html` and `pro.html`) and the `/static` folder in 2 different folders: `/nodeapp` and `/web`
 12. Now `/nodeapp` should display the new version in the unsafe webapp and `/web` in the onion webapp
+13. Announce the new release to SimpleX, nostr, nostr group and Telegram
+14. Update the startOS instance (ie. https://github.com/RoboSats/robosats-startos/pull/36) and ping them
+15. Update the Umbrel instance (ie. https://github.com/getumbrel/umbrel-apps/pull/3076/). They will take care of marging it.
