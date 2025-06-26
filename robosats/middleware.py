@@ -42,12 +42,7 @@ class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
         split_auth = auth_header.split(" | ")
 
-        if len(split_auth) == 3:
-            # Deprecated in favor of len 4
-            request.META["HTTP_AUTHORIZATION"] = split_auth[0]
-            request.META["PUBLIC_KEY"] = split_auth[1]
-            request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
-        elif len(split_auth) == 4:
+        if len(split_auth) == 4:
             request.META["HTTP_AUTHORIZATION"] = split_auth[0]
             request.META["PUBLIC_KEY"] = split_auth[1]
             request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
@@ -122,11 +117,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 "ENCRYPTED_PRIVATE_KEY", ""
             ).replace("Private ", "")
             nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace("Nostr ", "")
-
-            # Some legacy (pre-federation) clients will still send keys as cookies
-            if public_key == "" or encrypted_private_key == "":
-                public_key = request.COOKIES.get("public_key")
-                encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
 
             if not public_key or not encrypted_private_key or not nostr_pubkey:
                 return JsonResponse(
