@@ -12,7 +12,7 @@ The `Garage` contains user's tokens separated by `Slots`. Every `Slot` stores th
 
 ### Federation
 
-The `Federation` stores information from all available coordinators. All coordinators information is aggregated here: `book` for all orders and `exchange` for `Coordinator`'s meta data. When `nostr` connection is active, `book` is filled with orders from relays instead. 
+The `Federation` stores information from all available coordinators. All coordinators information is aggregated here: `book` for all orders and `exchange` for `Coordinator`'s meta data. When the Nostr connection is active, `book` is filled with orders from relays instead. 
 
 <div align="center">
   <img src="/development/assets/federation.png" width="500px">
