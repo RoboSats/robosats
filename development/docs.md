@@ -4,7 +4,7 @@
 
 ### Garage
 
-The `Garage` contains users' tokens separated by `Slots`. Every `Slot` stores the core data generated with the token and a set of `Robots`. Each `Robot` fetches the information that a `Coordinator` has about that specific token. Tokens should always be sent to all coordinators upon creation or recovery to ensure consistency and a good user experience.
+The `Garage` contains user's tokens separated by `Slots`. Every `Slot` stores the core data generated with the token and a set of `Robots`. Each `Robot` fetches the information that a `Coordinator` has about that specific token. Tokens should always be sent to all coordinators upon creation or recovery to ensure consistency and a good user experience.
 
 <div align="center">
   <img src="/development/assets/garage.png" width="500px">
