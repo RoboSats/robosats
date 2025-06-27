@@ -22,6 +22,7 @@ import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { DeleteRobotConfirmationDialog } from '../../components/Dialogs';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -48,6 +49,7 @@ const RobotProfile = ({
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const slot = garage.getSlot();
@@ -69,6 +71,20 @@ const RobotProfile = ({
       setInputToken(garage.getSlot()?.token ?? '');
       setLoading(true);
     }
+  };
+
+  const handleDeleteRobot = (): void => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = (): void => {
+    garage.deleteSlot();
+    setDeleteDialogOpen(false);
+    if (Object.keys(garage.slots).length < 1) setView('welcome');
+  };
+
+  const handleCancelDelete = (): void => {
+    setDeleteDialogOpen(false);
   };
 
   const slot = garage.getSlot();
@@ -300,13 +316,7 @@ const RobotProfile = ({
               ) : null}
 
               <Grid item>
-                <Button
-                  color='primary'
-                  onClick={() => {
-                    garage.deleteSlot();
-                    if (Object.keys(garage.slots).length < 1) setView('welcome');
-                  }}
-                >
+                <Button color='primary' onClick={handleDeleteRobot}>
                   <DeleteSweep /> <div style={{ width: '0.5em' }} />
                   {t('Delete Robot')}
                 </Button>
@@ -331,6 +341,13 @@ const RobotProfile = ({
           </Grid>
         </Box>
       </Grid>
+
+      <DeleteRobotConfirmationDialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        robotName={robot?.nickname}
+      />
     </Grid>
   );
 };
