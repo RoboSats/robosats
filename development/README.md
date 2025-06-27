@@ -13,7 +13,7 @@ RoboSats is a monorepo, arguably a messy one at the moment.
 
 ## Documentation
 
-We always try to keep a high level documentation of all involved workflows in coordinators and clients. Check [/docs.md](/docs.md)
+We always try to keep a high level documentation of all involved workflows in coordinators and clients. Check [/docs.md](/development/docs.md)
 
 ## Start
 
