@@ -17,7 +17,7 @@ We always try to keep a high level documentation of all involved workflows in co
 
 ## Start
 
-You can run the whole stack for local development following the [instructions](/setup.md)
+You can run the whole stack for local development following the [instructions](/development/setup.md)
 
 Officially mantained docker orchestration for coordinators can be found in the repo [robosats-deploy](https://github.com/RoboSats/robosats-deploy)
 
