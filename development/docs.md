@@ -4,7 +4,7 @@
 
 ### Garage
 
-The `Garage` contains user's tokens separated by `Slots`. Every `Slot` stores the core data generated with the token and a set of `Robots`. Each `Robot` fetches the information that a `Coordinator` has about that specific token. Tokens should always be sent to all coordinators upon creation or recovery to ensure consistency and a good user experience.
+The `Garage` contains user's tokens separated by `Slots`. Every `Slot` stores the core data generated with the token and a set of `Robots`. Tokens should always be sent to all coordinators upon creation or recovery to ensure consistency and a good user experience.
 
 <div align="center">
   <img src="/development/assets/garage.png" width="500px">
@@ -12,7 +12,7 @@ The `Garage` contains user's tokens separated by `Slots`. Every `Slot` stores th
 
 ### Federation
 
-The `Federation` stores information from all available coordinators. All coordinators information is aggregated here: `book` for all orders and `exchange` for `Coordinator`'s meta data. When the Nostr connection is active, `book` is filled with orders from relays instead. 
+The `Federation` stores information from all available coordinators. All coordinators information is aggregated here: `book` for all orders and `exchange` for `Coordinator`'s meta data. When the Nostr connection is active, `book` is filled with orders from relays instead.
 
 <div align="center">
   <img src="/development/assets/federation.png" width="500px">
@@ -24,6 +24,14 @@ A `Coordinator` contains the main data obtained from its primary API endpoints: 
 
 <div align="center">
   <img src="/development/assets/coordinator.png" width="300px">
+</div>
+
+### Robot
+
+A `Robot` fetches the information that a specific `Coordinator` has about a token and all necessary functions to interact with it.
+
+<div align="center">
+  <img src="/development/assets/robot.png" width="300px">
 </div>
 
 ### Order
