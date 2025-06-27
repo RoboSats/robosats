@@ -13,11 +13,11 @@ RoboSats is a monorepo, arguably a messy one at the moment.
 
 ## Documentation
 
-We always try to keep a high level documentation of all involved workflows in coordinators and clients. Check [/docs.md](/development/docs.md)
+We always try to keep a high level documentation of all involved workflows in coordinators and clients. Check the [docs](/development/docs.md)
 
 ## Start
 
-You can run the whole stack for local development following the instructions in [setup.md](/setup.md)
+You can run the whole stack for local development following the [instructions](/setup.md)
 
 Officially mantained docker orchestration for coordinators can be found in the repo [robosats-deploy](https://github.com/RoboSats/robosats-deploy)
 
