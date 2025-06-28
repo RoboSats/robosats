@@ -12,7 +12,7 @@
     "format": "prettier --write '**/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "dependencies": {
-    "@react-native-clipboard/clipboard": "^1.13.2",
+    "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-community/netinfo": "^11.3.0",
     "react": "18.2.0",
     "react-native": "^0.71.8",
