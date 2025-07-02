@@ -904,6 +904,7 @@ class RewardView(CreateAPIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         pgp_invoice = serializer.data.get("invoice")
+        routing_budget_ppm = serializer.data.get("routing_budget_ppm", None)
 
         valid_signature, invoice = verify_signed_message(
             request.user.robot.public_key, pgp_invoice
@@ -915,7 +916,7 @@ class RewardView(CreateAPIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        valid, context = Logics.withdraw_rewards(request.user, invoice)
+        valid, context = Logics.withdraw_rewards(request.user, invoice, routing_budget_ppm)
 
         if not valid:
             context["successful_withdrawal"] = False
