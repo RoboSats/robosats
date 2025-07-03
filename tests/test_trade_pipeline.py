@@ -1742,6 +1742,7 @@ class TradeTest(BaseAPITestCase):
         )
         body = {
             "invoice": signed_payout_invoice,
+            "routing_budget_ppm": 0
         }
 
         response = self.client.post(path, body, **taker_headers)
