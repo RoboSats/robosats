@@ -23,7 +23,7 @@ django-import-export==4.3.7
 requests[socks]
 shapely==2.0.7
 python-gnupg==0.5.4
-daphne==4.1.2
+daphne==4.2.1
 drf-spectacular==0.28.0
 drf-spectacular-sidecar==2025.5.1
 django-cors-headers==4.7.0
