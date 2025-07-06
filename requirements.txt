@@ -28,7 +28,7 @@ drf-spectacular==0.28.0
 drf-spectacular-sidecar==2025.5.1
 django-cors-headers==4.7.0
 base91==1.0.1
-nostr-sdk==0.35.1
+nostr-sdk==0.42.1
 pygeohash==3.0.1
 asgiref == 3.9.0
 secp256k1
