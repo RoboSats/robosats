@@ -39,11 +39,11 @@ class Nostr:
         robot_hash_id = await self.get_robot_hash_id(order)
         currency = await self.get_robot_currency(order)
 
-        event = EventBuilder(
-            Kind(38383),
-            "",
-            self.generate_tags(order, robot_name, robot_hash_id, currency),
-        ).to_event(keys)
+        event = (
+            EventBuilder(Kind(38383), "")
+            .tags(self.generate_tags(order, robot_name, robot_hash_id, currency))
+            .sign_with_keys(keys)
+        )
         await client.send_event(event)
         print(f"Nostr event sent: {event.as_json()}")
 
