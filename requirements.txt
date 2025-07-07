@@ -3,7 +3,7 @@ django-admin-relation-links==0.2.5
 django-celery-beat==2.8.1
 django-celery-results==2.6.0
 django-model-utils==5.0.0
-django-redis==5.4.0
+django-redis==6.0.0
 djangorestframework==3.16.0
 channels==4.2.2
 channels-redis==4.2.1
@@ -23,12 +23,12 @@ django-import-export==4.3.7
 requests[socks]
 shapely==2.0.7
 python-gnupg==0.5.4
-daphne==4.1.2
+daphne==4.2.1
 drf-spectacular==0.28.0
 drf-spectacular-sidecar==2025.5.1
 django-cors-headers==4.7.0
 base91==1.0.1
-nostr-sdk==0.35.1
+nostr-sdk==0.42.1
 pygeohash==3.0.1
-asgiref == 3.8.1
+asgiref == 3.9.0
 secp256k1
