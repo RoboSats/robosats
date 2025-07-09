@@ -72,7 +72,6 @@ import { systemClient } from '../../services/System';
 import type Coordinator from '../../models/Coordinator.model';
 import { type Badges } from '../../models/Coordinator.model';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
-import { verifyCoordinatorToken } from '../../utils/nostr';
 
 interface Props {
   open: boolean;
@@ -367,9 +366,8 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
         federation.roboPool.subscribeRatings(
           {
             onevent: (event) => {
-              const verfied = verifyCoordinatorToken(event);
               const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
-              if (verfied && coordinatorPubKey === coordinator.nostrHexPubkey) {
+              if (coordinatorPubKey === coordinator.nostrHexPubkey) {
                 const eventRating = event.tags.find((t) => t[0] === 'rating')?.[1];
                 if (eventRating) {
                   setRating((prev) => {
