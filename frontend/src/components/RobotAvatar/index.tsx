@@ -46,9 +46,15 @@ const RobotAvatar: React.FC<Props> = ({
   imageStyle = {},
   onLoad = () => {},
 }) => {
-  const [avatarSrc, setAvatarSrc] = useState<string>('');
-  const [activeBackground, setActiveBackground] = useState<boolean>(true);
   const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
+  const defaultAvatarSrc = useMemo(() => {
+    return client !== 'mobile'
+      ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
+      : `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}.webp`;
+  }, [shortAlias, small]);
+
+  const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatarSrc);
+  const [activeBackground, setActiveBackground] = useState<boolean>(true);
   const backgroundFadeTime = 3000;
 
   const [backgroundData] = useState<BackgroundData>(placeholder.loading);
@@ -63,7 +69,7 @@ const RobotAvatar: React.FC<Props> = ({
           setAvatarSrc(avatar);
         })
         .catch(() => {
-          setAvatarSrc('');
+          setAvatarSrc(defaultAvatarSrc);
         });
       setTimeout(() => {
         setActiveBackground(false);
@@ -73,15 +79,6 @@ const RobotAvatar: React.FC<Props> = ({
 
   useEffect(() => {
     if (shortAlias && shortAlias !== '') {
-      if (client !== 'mobile') {
-        setAvatarSrc(
-          `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`,
-        );
-      } else {
-        setAvatarSrc(
-          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}.webp`,
-        );
-      }
       setTimeout(() => {
         setActiveBackground(false);
       }, backgroundFadeTime);

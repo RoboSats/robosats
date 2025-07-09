@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
@@ -16,10 +16,10 @@ import {
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 
 // Icons
-import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { MUIStyledCommonProps } from '@mui/system';
+import { PaymentMethod } from '../PaymentMethods/MethodList';
 
 const Root = styled('div')(
   ({ theme }) => `
@@ -265,19 +265,21 @@ const Listbox = styled('ul')(
 );
 
 interface AutocompletePaymentsProps {
-  value: string;
+  paymentMethods: string[];
+  paymentMethodsText: string;
   optionsType: 'fiat' | 'swap';
-  onAutocompleteChange: (value: string) => void;
+  setHasCustomPaymentMethod: (value: boolean) => void;
+  onAutocompleteChange: (value: string[]) => void;
   tooltipTitle: string;
   labelProps: MUIStyledCommonProps;
   tagProps: MUIStyledCommonProps;
   listBoxProps: MUIStyledCommonProps;
-  error: string;
+  error: boolean;
   label: string;
   sx: SxProps<Theme>;
   addNewButtonText: string;
   isFilter: boolean;
-  multiple: number;
+  multiple: boolean;
   optionsDisplayLimit?: number;
   listHeaderText: string;
 }
@@ -286,10 +288,39 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
   // ** State
   const [val, setVal] = useState('');
   const [showFilterInput, setShowFilterInput] = useState(false);
+  const [customOptions, setCustomOptions] = useState<PaymentMethod[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<PaymentMethod[]>([]);
+  const [options, setOptions] = useState<PaymentMethod[]>([]);
 
   // ** Hooks
   const { t } = useTranslation();
   const filterInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setOptions(props.optionsType === 'fiat' ? [...customOptions, ...fiatMethods] : swapMethods);
+  }, [props.optionsType]);
+
+  useEffect(() => {
+    const selectedOptions: PaymentMethod[] = [];
+    const customSelectedOptions: PaymentMethod[] = [];
+
+    props.paymentMethods?.forEach((pm) => {
+      const paymentMethod = [...fiatMethods, ...swapMethods].find(
+        (defaultPaymentMethod) => pm === defaultPaymentMethod.name,
+      );
+      if (paymentMethod) {
+        selectedOptions.push(paymentMethod);
+      } else {
+        customSelectedOptions.push({ name: pm, icon: 'custom' });
+      }
+    });
+
+    setCustomOptions(customSelectedOptions);
+    if (props.setHasCustomPaymentMethod)
+      props.setHasCustomPaymentMethod(customSelectedOptions.length > 0);
+    setSelectedOptions([...selectedOptions, ...customSelectedOptions]);
+  }, [props.paymentMethodsText]);
+
   const {
     getRootProps,
     getInputLabelProps,
@@ -302,11 +333,10 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     popupOpen,
     setAnchorEl,
   } = useAutocomplete({
-    fullWidth: true,
     id: 'payment-methods',
     multiple: true,
-    value: props.value,
-    options: props.optionsType === 'fiat' ? fiatMethods : swapMethods,
+    value: selectedOptions,
+    options: options,
     open: props.isFilter ? showFilterInput : undefined,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => {
@@ -314,7 +344,8 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     },
     onChange: (event, value) => {
       if (props.isFilter) setShowFilterInput(false);
-      props.onAutocompleteChange(value);
+      setSelectedOptions(value);
+      props.onAutocompleteChange(value.map((v) => v.name));
     },
     onOpen: () => {
       if (props.isFilter) setShowFilterInput(true);
@@ -326,18 +357,6 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
 
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
-
-  function handleAddNew(
-    inputProps: React.InputHTMLAttributes<HTMLInputElement> & { ref: React.Ref<HTMLInputElement> },
-  ): void {
-    fiatMethods.push({ name: inputProps.value, icon: 'custom' });
-    const a = value.push({ name: inputProps.value, icon: 'custom' });
-    setVal(() => '');
-
-    if (a !== undefined) {
-      props.onAutocompleteChange(value);
-    }
-  }
 
   const tagsToDisplay = value.length
     ? props.optionsDisplayLimit
@@ -458,7 +477,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
             </div>
           ) : null}
           {groupedOptions.map((option, index) => (
-            <li key={option.name} {...getOptionProps({ option, index })}>
+            <li {...getOptionProps({ option, index })} key={index}>
               <Button
                 fullWidth={true}
                 color='inherit'
@@ -478,35 +497,6 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
               </div>
             </li>
           ))}
-          {val != null || !props.isFilter ? (
-            val.length > 2 ? (
-              <Button
-                size='small'
-                fullWidth={true}
-                onClick={() => {
-                  handleAddNew(getInputProps());
-                }}
-              >
-                <DashboardCustomizeIcon sx={{ width: '1em', height: '1em' }} />
-                {props.addNewButtonText}
-              </Button>
-            ) : null
-          ) : null}
-        </Listbox>
-      </Grow>
-
-      {/* Here goes what happens if there is no groupedOptions */}
-      <Grow in={getInputProps().value.length > 0 && !props.isFilter && groupedOptions.length === 0}>
-        <Listbox {...getListboxProps()}>
-          <Button
-            fullWidth={true}
-            onClick={() => {
-              handleAddNew(getInputProps());
-            }}
-          >
-            <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />
-            {props.addNewButtonText}
-          </Button>
         </Listbox>
       </Grow>
     </Root>

@@ -34,6 +34,7 @@ import currencyDict from '../../../static/assets/currencies.json';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 
 import { SelfImprovement, Lock, DeleteSweep, Edit, Map } from '@mui/icons-material';
+import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import { LoadingButton } from '@mui/lab';
 import { fiatMethods } from '../PaymentMethods';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -42,6 +43,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { useNavigate } from 'react-router-dom';
 import { sha256 } from 'js-sha256';
+import AddNewPaymentMethodDialog from '../Dialogs/AddNewPaymentMethodDialog';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -71,6 +73,8 @@ const MakerForm = ({
   const [currentPrice, setCurrentPrice] = useState<number>();
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
 
+  const [addNewPaymentMethodOpen, setAddNewPaymentMethodOpen] = useState<boolean>(false);
+  const [hasCustomPaymentMethod, setHasCustomPaymentMethod] = useState<boolean>(false);
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
@@ -174,16 +178,14 @@ const MakerForm = ({
     return maker.advancedOptions && amountRangeEnabled;
   }, [maker.advancedOptions, amountRangeEnabled]);
 
-  const handlePaymentMethodChange = function (
-    paymentArray: Array<{ name: string; icon: string }>,
-  ): void {
+  const handlePaymentMethodChange = function (paymentArray: string[]): void {
     let str = '';
     const arrayLength = paymentArray.length;
     let includeCoordinates = false;
 
     for (let i = 0; i < arrayLength; i++) {
-      str += paymentArray[i].name + ' ';
-      if (paymentArray[i].icon === 'cash') {
+      str += paymentArray[i] + ' ';
+      if (paymentArray[i] === 'cash') {
         includeCoordinates = true;
         if (i === arrayLength - 1) {
           setOpenWorldmap(true);
@@ -191,6 +193,7 @@ const MakerForm = ({
       }
     }
     const paymentMethodText = str.slice(0, -1);
+
     setMaker((maker) => {
       return {
         ...maker,
@@ -317,6 +320,11 @@ const MakerForm = ({
     }
   };
 
+  const handleAddNewPaymentMethod: (newPaymentMethod: string) => void = (newPaymentMethod) => {
+    handlePaymentMethodChange([...maker.paymentMethods, newPaymentMethod]);
+    setAddNewPaymentMethodOpen(false);
+  };
+
   const resetRange = function (advancedOptions: boolean): void {
     const index = fav.currency === 0 ? 1 : fav.currency;
     const minAmount =
@@ -409,12 +417,12 @@ const MakerForm = ({
           longitude: parseFloat(pos[1].toPrecision(6)),
         };
       });
-      const cashMethod = maker.paymentMethods.find((method) => method.icon === 'cash');
+      const cashMethod = maker.paymentMethods.find((method) => method === 'cash');
       if (cashMethod !== null) {
         const newMethods = maker.paymentMethods;
         const cash = fiatMethods.find((method) => method.icon === 'cash');
-        if (cash !== null) {
-          newMethods.unshift(cash);
+        if (cash) {
+          newMethods.unshift(cash.name);
           handlePaymentMethodChange(newMethods);
         }
       }
@@ -753,28 +761,60 @@ const MakerForm = ({
               </Grid>
             </Collapse>
           </Grid>
-
           <Grid item sx={{ width: '100%' }}>
-            <AutocompletePayments
-              onAutocompleteChange={handlePaymentMethodChange}
-              onClick={() => {
-                setOpenWorldmap(true);
-              }}
-              optionsType={fav.mode}
-              error={maker.badPaymentMethod}
-              helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
-              label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
-              tooltipTitle={t(
-                fav.mode === 'swap'
-                  ? t('Enter the destination of the Lightning swap')
-                  : 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
-              )}
-              listHeaderText={t('You can add new methods')}
-              addNewButtonText={t('Add New')}
-              isFilter={false}
-              multiple={true}
-              value={maker.paymentMethods}
-            />
+            <Grid item sx={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
+              <Grid item sx={{ width: '80%' }}>
+                <AutocompletePayments
+                  paymentMethods={maker.paymentMethods}
+                  paymentMethodsText={maker.paymentMethodsText}
+                  setHasCustomPaymentMethod={setHasCustomPaymentMethod}
+                  onAutocompleteChange={handlePaymentMethodChange}
+                  optionsType={fav.mode}
+                  error={maker.badPaymentMethod}
+                  label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
+                  tooltipTitle={t(
+                    fav.mode === 'swap'
+                      ? t('Enter the destination of the Lightning swap')
+                      : 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
+                  )}
+                  addNewButtonText={t('Add New')}
+                  isFilter={false}
+                  multiple={true}
+                />
+              </Grid>
+              <Grid item sx={{ width: '20%' }}>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={300}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Add custom payment method')}
+                >
+                  <Button
+                    color='inherit'
+                    variant={hasCustomPaymentMethod ? 'contained' : 'outlined'}
+                    fullWidth
+                    sx={{
+                      minHeight: '3.2em',
+                      minWidth: 0,
+                      padding: 0,
+                      justifyContent: 'center',
+                      fontWeight: 'normal',
+                      textTransform: 'none',
+                      backgroundColor: theme.palette.background.paper,
+                      color: theme.palette.text.secondary,
+                      borderColor: theme.palette.text.disabled,
+                    }}
+                    onClick={() => setAddNewPaymentMethodOpen(true)}
+                  >
+                    <DashboardCustomizeIcon
+                      sx={{ width: '1em', height: '1em' }}
+                      color={hasCustomPaymentMethod ? 'primary' : 'inherit'}
+                    />
+                  </Button>
+                </Tooltip>
+              </Grid>
+            </Grid>
             {maker.badPaymentMethod && (
               <FormHelperText error={true}>
                 {t('Must be shorter than 65 characters')}
@@ -1060,6 +1100,11 @@ const MakerForm = ({
           </Tooltip>
         </Collapse>
       </Grid>
+      <AddNewPaymentMethodDialog
+        open={addNewPaymentMethodOpen}
+        onClose={() => setAddNewPaymentMethodOpen(false)}
+        onConfirm={handleAddNewPaymentMethod}
+      />
     </Box>
   );
 };

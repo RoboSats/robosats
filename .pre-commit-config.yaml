@@ -23,8 +23,8 @@ repos:
       - id: collect-phrases
         name: Collect i18n phrases
         stages:
-          - commit
-          - merge-commit
+          - pre-commit
+          - pre-merge-commit
         language: system
         files: ^frontend/src/
         types_or: [javascript, jsx, ts, tsx] # uses https://github.com/pre-commit/identify
@@ -32,8 +32,8 @@ repos:
       - id: prettier-frontend
         name: prettier-frontend
         stages:
-          - commit
-          - merge-commit
+          - pre-commit
+          - pre-merge-commit
         language: system
         files: ^frontend/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
@@ -41,8 +41,8 @@ repos:
       - id: lintern-frontend
         name: lintern-frontend
         stages:
-          - commit
-          - merge-commit
+          - pre-commit
+          - pre-merge-commit
         language: system
         files: ^frontend/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
@@ -50,8 +50,8 @@ repos:
       - id: prettier-mobile
         name: prettier-mobile
         stages:
-          - commit
-          - merge-commit
+          - pre-commit
+          - pre-merge-commit
         language: system
         files: ^mobile/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
@@ -59,8 +59,8 @@ repos:
       - id: lintern-mobile
         name: lintern-mobile
         stages:
-          - commit
-          - merge-commit
+          - pre-commit
+          - pre-merge-commit
         language: system
         files: ^mobile/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
@@ -70,15 +70,15 @@ repos:
     hooks:
     - id: ruff
       stages:
-        - commit
-        - merge-commit
+        - pre-commit
+        - pre-merge-commit
       language: system
       args: [ --fix ]
       types: [python]
     - id: ruff-format
       stages:
-        - commit
-        - merge-commit
+        - pre-commit
+        - pre-merge-commit
       language: system
       types: [python]
 
