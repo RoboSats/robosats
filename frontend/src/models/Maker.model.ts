@@ -19,8 +19,8 @@ export interface Maker {
   maxAmount: number | null;
   badSatoshisText: string;
   badPremiumText: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   password: string | null;
 }
 

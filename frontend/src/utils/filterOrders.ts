@@ -1,6 +1,5 @@
 import { type PublicOrder, type Favorites, type Federation } from '../models';
 import thirdParties from '../../static/thirdparties.json';
-import { PaymentMethod } from '../components/PaymentMethods/MethodList';
 
 interface AmountFilter {
   amount: string;
@@ -17,13 +16,13 @@ interface FilterOrders {
   paymentMethods?: string[];
 }
 
-const filterByPayment = function (order: PublicOrder, paymentMethods: PaymentMethod[]): boolean {
+const filterByPayment = function (order: PublicOrder, paymentMethods: string[]): boolean {
   if (paymentMethods.length === 0) {
     return true;
   } else {
     let result = false;
     paymentMethods.forEach((method) => {
-      result = result || order.payment_method.includes(method.name);
+      result = result || order.payment_method.includes(method);
     });
     return result;
   }
