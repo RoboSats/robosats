@@ -783,28 +783,36 @@ const MakerForm = ({
                 />
               </Grid>
               <Grid item sx={{ width: '20%' }}>
-                <Button
-                  color='inherit'
-                  variant={hasCustomPaymentMethod ? 'contained' : 'outlined'}
-                  fullWidth
-                  sx={{
-                    minHeight: '3.2em',
-                    minWidth: 0,
-                    padding: 0,
-                    justifyContent: 'center',
-                    fontWeight: 'normal',
-                    textTransform: 'none',
-                    backgroundColor: theme.palette.background.paper,
-                    color: theme.palette.text.secondary,
-                    borderColor: theme.palette.text.disabled,
-                  }}
-                  onClick={() => setAddNewPaymentMethodOpen(true)}
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={300}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Add custom payment method')}
                 >
-                  <DashboardCustomizeIcon
-                    sx={{ width: '1em', height: '1em' }}
-                    color={hasCustomPaymentMethod ? 'primary' : 'inherit'}
-                  />
-                </Button>
+                  <Button
+                    color='inherit'
+                    variant={hasCustomPaymentMethod ? 'contained' : 'outlined'}
+                    fullWidth
+                    sx={{
+                      minHeight: '3.2em',
+                      minWidth: 0,
+                      padding: 0,
+                      justifyContent: 'center',
+                      fontWeight: 'normal',
+                      textTransform: 'none',
+                      backgroundColor: theme.palette.background.paper,
+                      color: theme.palette.text.secondary,
+                      borderColor: theme.palette.text.disabled,
+                    }}
+                    onClick={() => setAddNewPaymentMethodOpen(true)}
+                  >
+                    <DashboardCustomizeIcon
+                      sx={{ width: '1em', height: '1em' }}
+                      color={hasCustomPaymentMethod ? 'primary' : 'inherit'}
+                    />
+                  </Button>
+                </Tooltip>
               </Grid>
             </Grid>
             {maker.badPaymentMethod && (

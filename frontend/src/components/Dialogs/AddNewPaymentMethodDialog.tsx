@@ -53,7 +53,7 @@ const AddNewPaymentMethodDialog = ({
       <DialogTitle>
         <Box display='flex' alignItems='center' gap={1}>
           <DashboardCustomizeIcon color='primary' />
-          {t('Add payment method')}
+          {t('Add custom payment method')}
         </Box>
       </DialogTitle>
 
