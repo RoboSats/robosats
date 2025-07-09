@@ -1,6 +1,15 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Link, LinkOff } from '@mui/icons-material';
-import { Box, Checkbox, CircularProgress, Grid, Rating, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Grid,
+  Rating,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -33,6 +42,8 @@ const FederationTable = ({
     }, {}),
   );
   const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
+  const [verifyRatings, setVerifyRatings] = useState(false);
+  const [verifcationText, setVerificationText] = useState<string>();
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
@@ -50,17 +61,30 @@ const FederationTable = ({
   }, []);
 
   useEffect(() => {
+    if (verifyRatings) {
+      loadRatings();
+      setVerificationText(t('Reloading. Invalid ratings will be filtered.'));
+    }
+  }, [verifyRatings]);
+
+  useEffect(() => {
     if (useDefaultPageSize) {
       setPageSize(defaultPageSize);
     }
   }, [federationUpdatedAt]);
 
   const loadRatings: () => void = () => {
+    setRatings(
+      federation.getCoordinators().reduce((acc, coord) => {
+        if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
+        return acc;
+      }, {}),
+    );
     federation.roboPool.subscribeRatings({
       onevent: (event) => {
-        const verfied = verifyCoordinatorToken(event);
         const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
-        if (verfied && coordinatorPubKey) {
+        const verified = verifyRatings ? verifyCoordinatorToken(event) : true;
+        if (verified && coordinatorPubKey) {
           const rating = event.tags.find((t) => t[0] === 'rating')?.[1];
           if (rating) {
             setRatings((prev) => {
@@ -70,7 +94,9 @@ const FederationTable = ({
           }
         }
       },
-      oneose: () => {},
+      oneose: () => {
+        if (verifyRatings) setVerificationText(t('Invalid ratings have been filtered.'));
+      },
     });
   };
 
@@ -333,6 +359,33 @@ const FederationTable = ({
         }}
         hideFooter={true}
       />
+
+      <Grid item>
+        {!verifcationText && (
+          <Button
+            sx={{ maxHeight: 38, mt: '1em' }}
+            disabled={false}
+            onClick={() => setVerifyRatings(true)}
+            variant='contained'
+            color='secondary'
+            size='small'
+            type='submit'
+          >
+            {t('Verify ratings')}
+          </Button>
+        )}
+        <Typography
+          variant='body2'
+          color={verifcationText ? 'success.main' : 'warning.main'}
+          sx={{ mt: 2, fontWeight: 'bold' }}
+        >
+          {verifcationText
+            ? verifcationText
+            : t(
+                'Verifying all ratings might take some time; this window may freeze for a few seconds while the cryptographic certification is in progress.',
+              )}
+        </Typography>
+      </Grid>
     </Box>
   );
 };
