@@ -69,7 +69,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     if (Object.values(federation.book).length > 0) {
       const enriched = Object.values(federation.book).map((order) => {
         if (order?.currency) {
-          const limits = federation.getCoordinators()[0]?.limits;
+          const limits = federation.getLimits();
 
           const originalPrice =
             (limits[order.currency]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);

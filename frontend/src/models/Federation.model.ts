@@ -216,15 +216,11 @@ export class Federation {
     this.triggerHook('onFederationUpdate');
   };
 
-  getLimits = (shortAlias: string): LimitList => {
-    console.log('shortAlias', shortAlias);
-    let limits = this.coordinators[shortAlias]?.limits || {};
-
-    console.log('limits pre', Object.keys(limits).length);
+  getLimits = (shortAlias?: string): LimitList => {
+    let limits = shortAlias ? this.coordinators[shortAlias]?.limits || {} : {};
     if (Object.keys(limits).length === 0) {
       limits = this.getCoordinators()[0]?.limits;
     }
-    console.log('limits', Object.keys(limits).length);
     return limits;
   };
 

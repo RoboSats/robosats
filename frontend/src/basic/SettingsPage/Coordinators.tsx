@@ -4,7 +4,6 @@ import FederationTable from '../../components/FederationTable';
 import { t } from 'i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { Garage } from '../../models';
 import { Origin, Origins } from '../../models/Coordinator.model';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
@@ -20,11 +19,7 @@ const Coordinators = (): React.JSX.Element => {
   // Regular expression to match a valid .onion URL
   const onionUrlPattern = /^((http|https):\/\/)?[a-zA-Z2-7]{16,56}\.onion$\/?/;
 
-  const addNewCoordinator: (alias: string, garage: Garage, url: string) => void = (
-    alias,
-    garage,
-    url,
-  ) => {
+  const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.getCoordinator(alias)) {
       const attributes: object = {
         longAlias: alias,
@@ -57,7 +52,7 @@ const Coordinators = (): React.JSX.Element => {
         if (!/^((http|https):\/\/)/.test(fullNewUrl)) {
           fullNewUrl = `http://${newUrl}`;
         }
-        addNewCoordinator(newAlias, garage, fullNewUrl);
+        addNewCoordinator(newAlias, fullNewUrl);
         garage.syncCoordinator(federation, newAlias);
         setNewAlias('');
         setNewUrl('');
