@@ -92,7 +92,7 @@ export const PayoutPrompt = ({
               <Bolt /> {t('Lightning')}
             </div>
           </ToggleButton>
-          <ToggleButton value='onchain' disabled={!order.swap_allowed}>
+          <ToggleButton value='onchain' disabled={!order.swap_allowed || order.currency === 1000}>
             <div
               style={{
                 display: 'flex',

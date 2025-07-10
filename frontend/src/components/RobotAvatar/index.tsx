@@ -47,6 +47,7 @@ const RobotAvatar: React.FC<Props> = ({
   onLoad = () => {},
 }) => {
   const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
+  const backgroundFadeTime = 3000;
   const defaultAvatarSrc = useMemo(() => {
     return client !== 'mobile'
       ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
@@ -55,9 +56,8 @@ const RobotAvatar: React.FC<Props> = ({
 
   const [avatarSrc, setAvatarSrc] = useState<string>(defaultAvatarSrc);
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
-  const backgroundFadeTime = 3000;
-
   const [backgroundData] = useState<BackgroundData>(placeholder.loading);
+
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
@@ -79,6 +79,7 @@ const RobotAvatar: React.FC<Props> = ({
 
   useEffect(() => {
     if (shortAlias && shortAlias !== '') {
+      setAvatarSrc(defaultAvatarSrc);
       setTimeout(() => {
         setActiveBackground(false);
       }, backgroundFadeTime);

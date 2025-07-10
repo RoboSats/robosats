@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Grid,
   Select,
@@ -17,20 +17,22 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
 import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { Coordinator } from '../../models';
 
 interface SelectCoordinatorProps {
   coordinatorAlias: string;
-  setCoordinator: (coordinatorAlias: string) => void;
+  setCoordinatorAlias: (coordinatorAlias: string) => void;
 }
 
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   coordinatorAlias,
-  setCoordinator,
+  setCoordinatorAlias,
 }) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
+  const [coordinator, setCoordinator] = useState<Coordinator>();
 
   const onClickCurrentCoordinator = function (shortAlias: string): void {
     setOpen((open) => {
@@ -39,10 +41,13 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   };
 
   const handleCoordinatorChange = (e: SelectChangeEvent<string>): void => {
-    setCoordinator(e.target.value);
+    setCoordinatorAlias(e.target.value);
   };
 
-  const coordinator = federation.getCoordinator(coordinatorAlias);
+  useEffect(() => {
+    const selectedCoordinator = federation.getCoordinator(coordinatorAlias);
+    if (selectedCoordinator) setCoordinator(selectedCoordinator);
+  }, [coordinatorAlias]);
 
   return (
     <Grid item>
@@ -90,8 +95,8 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
             >
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
-                  hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
+                  shortAlias={coordinatorAlias}
+                  hashId={!coordinator?.federated ? coordinator?.mainnet.onion : undefined}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={false}

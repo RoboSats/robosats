@@ -1025,7 +1025,7 @@ const MakerForm = ({
 
       <SelectCoordinator
         coordinatorAlias={maker.coordinator}
-        setCoordinator={(coordinatorAlias) => {
+        setCoordinatorAlias={(coordinatorAlias) => {
           setMaker((maker) => {
             return { ...maker, coordinator: coordinatorAlias };
           });
