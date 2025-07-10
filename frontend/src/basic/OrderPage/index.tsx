@@ -73,11 +73,11 @@ const OrderPage = (): React.JSX.Element => {
     if ([1].includes(currentOrder.status)) {
       setOrderStep(1);
     } else if ([6, 7, 8].includes(currentOrder.status)) {
-      setOrderStep(2);
-    } else if ([9, 10, 11, 12, 13].includes(currentOrder.status)) {
-      setOrderStep(3);
-    } else if ([14, 15, 16, 17, 18].includes(currentOrder.status)) {
-      setOrderStep(4);
+      setOrderStep(currentOrder.is_taker ? 1 : 2);
+    } else if ([9, 10, 11, 12].includes(currentOrder.status)) {
+      setOrderStep(currentOrder.is_taker ? 2 : 3);
+    } else if ([13, 14, 15, 16, 17, 18].includes(currentOrder.status)) {
+      setOrderStep(5);
     }
   }, [currentOrder?.status]);
 
@@ -120,7 +120,9 @@ const OrderPage = (): React.JSX.Element => {
     <></>
   );
 
-  const steps = ['Publish', 'Wait', 'Setup', 'Trade', 'Finished'];
+  const steps = currentOrder?.is_taker
+    ? ['Take', 'Setup', 'Trade', 'Finished']
+    : ['Publish', 'Wait', 'Setup', 'Trade', 'Finished'];
 
   return (
     <Box>

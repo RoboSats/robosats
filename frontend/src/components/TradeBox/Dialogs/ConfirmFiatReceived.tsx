@@ -7,6 +7,8 @@ import {
   DialogContent,
   DialogContentText,
   Button,
+  Typography,
+  Box,
 } from '@mui/material';
 import { type Order } from '../../../models';
 import currencies from '../../../../static/assets/currencies.json';
@@ -37,14 +39,39 @@ export const ConfirmFiatReceivedDialog = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
-        {t('Confirm you received {{amount}} {{currencyCode}}?', { currencyCode, amount })}
+        {t('✅ Confirm you received {{amount}} {{currencyCode}}?', { currencyCode, amount })}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id='alert-dialog-description'>
-          {t(
-            'Confirming that you received {{amount}} {{currencyCode}} will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after {{amount}} {{currencyCode}} have arrived to your account. Note that if you have received the payment and do not click confirm, you risk losing your bond.',
-            { currencyCode, amount },
-          )}
+        <DialogContentText component='div'>
+          <Typography variant='body1' gutterBottom>
+            {t('Confirming will finalize the trade.', { currencyCode, amount })}
+          </Typography>
+
+          <Typography variant='body2' color='warning.main' sx={{ mt: 2, fontWeight: 'bold' }}>
+            {t('⚠️ This action cannot be undone!')}
+          </Typography>
+
+          <Typography variant='body2' sx={{ mt: 2 }}>
+            {t('The satoshis in the escrow will be released to the buyer:')}
+          </Typography>
+          <Box component='ul' sx={{ mt: 1, pl: 2 }}>
+            <Typography component='li' variant='body2'>
+              {t('Only confirm after {{amount}} {{currencyCode}} have arrived to your account.', {
+                currencyCode,
+                amount,
+              })}
+            </Typography>
+            <Typography component='li' variant='body2'>
+              {t(
+                'If you have received the payment and do not click confirm, you risk losing your bond.',
+              )}
+            </Typography>
+            <Typography component='li' variant='body2'>
+              {t(
+                'Some fiat payment methods might reverse their transactions up to 2 weeks after they are completed. Please keep this token and your order data in case you need to use them as proof.',
+              )}
+            </Typography>
+          </Box>
         </DialogContentText>
       </DialogContent>
       <DialogActions>
