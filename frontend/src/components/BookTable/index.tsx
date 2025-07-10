@@ -343,11 +343,9 @@ const BookTable = ({
       flex: 2,
       renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
-        const coordinator =
-          federation.getCoordinator(params.row.coordinatorShortAlias) ??
-          federation.getCoordinators()[0];
+        const limits = federation.getLimits(params.row.coordinatorShortAlias);
         const premium = parseFloat(params.row.premium);
-        const limitPrice = coordinator.limits[params.row.currency.toString()]?.price;
+        const limitPrice = limits[params.row.currency.toString()]?.price;
         const price = (limitPrice ?? 1) * (1 + premium / 100);
 
         return (
@@ -501,16 +499,13 @@ const BookTable = ({
       type: 'number',
       flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
-        const coordinator =
-          federation.getCoordinator(params.row.coordinatorShortAlias) ??
-          federation.getCoordinators()[0];
+        const limits = federation.getLimits(params.row.coordinatorShortAlias);
         const amount =
           params.row.has_range === true
             ? parseFloat(params.row.max_amount)
             : parseFloat(params.row.amount);
         const premium = parseFloat(params.row.premium);
-        const price =
-          (coordinator.limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
+        const price = (limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
         const satoshisNow = (100000000 * amount) / price;
 
         return (

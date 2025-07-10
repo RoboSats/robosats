@@ -87,30 +87,25 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    federation
-      .loadInfo()
-      .then(() => {})
-      .catch((error) => {
-        console.error('Error loading info:', error);
-      });
-  }, []);
-
-  useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
   }, [federationUpdatedAt]);
 
   useEffect(() => {
     updateCoordinatorInfo();
-  }, [maker.coordinator, federationUpdatedAt]);
+  }, [maker.coordinator]);
 
   const updateCoordinatorInfo = (): void => {
     if (maker.coordinator != null) {
-      const newLimits = federation.getCoordinator(maker.coordinator)?.limits;
-      if (newLimits && Object.keys(newLimits).length !== 0) {
-        updateAmountLimits(newLimits, fav.currency, maker.premium);
-        updateCurrentPrice(newLimits, fav.currency, maker.premium);
-        setLimits(newLimits);
-      }
+      const coordinator = federation.getCoordinator(maker.coordinator);
+      coordinator.loadInfo();
+      coordinator.loadLimits(() => {
+        const newLimits = coordinator.limits;
+        if (newLimits && Object.keys(newLimits).length !== 0) {
+          updateAmountLimits(newLimits, fav.currency, maker.premium);
+          updateCurrentPrice(newLimits, fav.currency, maker.premium);
+          setLimits(newLimits);
+        }
+      });
     }
   };
 
