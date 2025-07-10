@@ -9,7 +9,6 @@ import React, {
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 import { ThemeProvider } from '@mui/material';
-import { type GeoJsonObject } from 'geojson';
 
 import { Settings, type Version, type Origin, type Favorites } from '../models';
 
@@ -18,8 +17,6 @@ import { getClientVersion, getHost } from '../utils';
 import defaultFederation from '../../static/federation.json';
 import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
-import getWorldmapGeojson from '../geo/Web';
-import { apiClient } from '../services/api';
 import SettingsSelfhosted from '../models/Settings.default.basic.selfhosted';
 import SettingsSelfhostedPro from '../models/Settings.default.pro.selfhosted';
 import SettingsPro from '../models/Settings.default.pro';
@@ -156,7 +153,6 @@ export interface UseAppStoreType {
   hostUrl: string;
   fav: Favorites;
   setFav: Dispatch<SetStateAction<Favorites>>;
-  worldmap?: GeoJsonObject;
   client: 'mobile' | 'web' | 'desktop' | string;
   view: 'basic' | 'pro' | string;
 }
@@ -219,7 +215,6 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
     initialAppContext.acknowledgedWarning,
   );
-  const [worldmap, setWorldmap] = useState<GeoJsonObject>();
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -252,18 +247,6 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   }, []);
 
   useEffect(() => {
-    if (['offers', 'create'].includes(page) && !worldmap) {
-      getWorldmapGeojson(apiClient, hostUrl)
-        .then((data) => {
-          setWorldmap(data);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-    }
-  }, [page]);
-
-  useEffect(() => {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   }, [theme.typography.fontSize]);
 
@@ -293,7 +276,6 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
         origin,
         fav,
         setFav,
-        worldmap,
         client,
         view,
       }}
