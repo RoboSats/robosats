@@ -5,8 +5,8 @@ import {
   DialogTitle,
   DialogActions,
   DialogContent,
-  DialogContentText,
   Button,
+  Typography,
 } from '@mui/material';
 import { type Order } from '../../../models';
 import currencies from '../../../../static/assets/currencies.json';
@@ -37,15 +37,22 @@ export const ConfirmFiatSentDialog = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
-        {t('Confirm you sent {{amount}} {{currencyCode}}?', { currencyCode, amount })}
+        {t('✅ Confirm you sent {{amount}} {{currencyCode}}?', { currencyCode, amount })}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id='alert-dialog-description'>
+        <Typography variant='body1' gutterBottom>
+          {t('Confirming will allow your peer to finalize the trade.', { currencyCode, amount })}
+        </Typography>
+
+        <Typography variant='body2' color='warning.main' sx={{ mt: 2, fontWeight: 'bold' }}>
+          {t('⚠️ This action cannot be undone!')}
+        </Typography>
+
+        <Typography variant='body2' sx={{ mt: 2 }}>
           {t(
-            'Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not yet sent it and you still proceed to falsely confirm, you risk losing your bond.',
-            { currencyCode, amount },
+            'If you have not yet sent it and you still proceed to falsely confirm, you risk losing your bond.',
           )}
-        </DialogContentText>
+        </Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} autoFocus>

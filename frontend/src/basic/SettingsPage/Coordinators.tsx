@@ -17,7 +17,7 @@ const Coordinators = (): React.JSX.Element => {
   const [error, setError] = useState<string>();
   const [open, setOpen] = useState<boolean>(false);
   // Regular expression to match a valid .onion URL
-  const onionUrlPattern = /^((http|https):\/\/)?[a-zA-Z2-7]{16,56}\.onion$\/?/;
+  const onionUrlPattern = /^((http|https):\/\/)?([a-zA-Z2-7]{16,56}\.onion)(\/.*)?$/;
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.getCoordinator(alias)) {
@@ -47,11 +47,11 @@ const Coordinators = (): React.JSX.Element => {
     if (federation.getCoordinator(newAlias)) {
       setError(t('Alias already exists'));
     } else {
-      if (onionUrlPattern.test(newUrl)) {
-        let fullNewUrl = newUrl;
-        if (!/^((http|https):\/\/)/.test(fullNewUrl)) {
-          fullNewUrl = `http://${newUrl}`;
-        }
+      const match = newUrl.match(onionUrlPattern);
+      console.log(match);
+      if (match) {
+        const onionUrl = match[3];
+        const fullNewUrl = `http://${onionUrl}`;
         addNewCoordinator(newAlias, fullNewUrl);
         garage.syncCoordinator(federation, newAlias);
         setNewAlias('');
