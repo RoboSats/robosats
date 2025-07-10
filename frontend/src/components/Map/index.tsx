@@ -1,11 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 'react-leaflet';
 import { useTheme, LinearProgress } from '@mui/material';
+import { type GeoJsonObject } from 'geojson';
 import { DivIcon, type LeafletMouseEvent } from 'leaflet';
 import { type PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import getWorldmapGeojson from '../../geo/Web';
+import { apiClient } from '../../services/api';
 
 interface MapPinProps {
   fillColor: string;
@@ -41,7 +44,18 @@ const Map = ({
   interactive = false,
 }: Props): React.JSX.Element => {
   const theme = useTheme();
-  const { worldmap } = useContext<UseAppStoreType>(AppContext);
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const [worldmap, setWorldmap] = useState<GeoJsonObject>();
+
+  useEffect(() => {
+    getWorldmapGeojson(apiClient, hostUrl)
+      .then((data) => {
+        setWorldmap(data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }, []);
 
   const RobotMarker = (
     key: string | number,
@@ -112,8 +126,8 @@ const Map = ({
       attributionControl={false}
       style={{ height: '100%', width: '100%', backgroundColor: theme.palette.background.paper }}
     >
-      {!useTiles && worldmap == null && <LinearProgress />}
-      {!useTiles && worldmap != null && (
+      {!useTiles && !worldmap && <LinearProgress />}
+      {!useTiles && worldmap && (
         <GeoJSON
           data={worldmap}
           style={{
