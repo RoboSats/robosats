@@ -308,9 +308,9 @@ const OrderDetails = ({
               <ListItemAvatar sx={{ width: '4em', height: '4em' }}>
                 <RobotAvatar
                   statusColor={statusBadgeColor(currentOrder?.maker_status ?? '')}
-                  hashId={currentOrder?.maker_hash_id}
-                  tooltip={t(currentOrder?.maker_status ?? '')}
-                  orderType={currentOrder?.type}
+                  hashId={currentOrder.maker_hash_id}
+                  tooltip={t(currentOrder.maker_status ?? '')}
+                  orderType={currentOrder.type}
                   small={true}
                 />
               </ListItemAvatar>

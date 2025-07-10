@@ -47,7 +47,6 @@ const RobotAvatar: React.FC<Props> = ({
   onLoad = () => {},
 }) => {
   const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
-  const backgroundFadeTime = 3000;
   const defaultAvatarSrc = useMemo(() => {
     return client !== 'mobile'
       ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
@@ -62,27 +61,22 @@ const RobotAvatar: React.FC<Props> = ({
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    if (hashId !== undefined) {
+    if (hashId) {
       roboidentitiesClient
         .generateRobohash(hashId, small ? 'small' : 'large')
         .then((avatar) => {
           setAvatarSrc(avatar);
+          setActiveBackground(false);
         })
         .catch(() => {
-          setAvatarSrc(defaultAvatarSrc);
+          setActiveBackground(true);
         });
-      setTimeout(() => {
-        setActiveBackground(false);
-      }, backgroundFadeTime);
     }
-  }, [hashId]);
+  }, [hashId, small]);
 
   useEffect(() => {
     if (shortAlias && shortAlias !== '') {
       setAvatarSrc(defaultAvatarSrc);
-      setTimeout(() => {
-        setActiveBackground(false);
-      }, backgroundFadeTime);
     } else {
       setActiveBackground(true);
     }
