@@ -1,6 +1,17 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Tab, Tabs, Paper, CircularProgress, Grid, Typography, Box } from '@mui/material';
+import {
+  Tab,
+  Tabs,
+  Paper,
+  CircularProgress,
+  Grid,
+  Typography,
+  Box,
+  Stepper,
+  Step,
+  StepLabel,
+} from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import TradeBox from '../../components/TradeBox';
@@ -29,6 +40,7 @@ const OrderPage = (): React.JSX.Element => {
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
+  const [orderStep, setOrderStep] = useState<number>(0);
 
   useEffect(() => {
     paramsRef.current = params;
@@ -53,6 +65,21 @@ const OrderPage = (): React.JSX.Element => {
       setCurrentOrder(null);
     };
   }, [params.orderId, openNoRobot]);
+
+  useEffect(() => {
+    if (!currentOrder) return;
+
+    setOrderStep(0);
+    if ([1].includes(currentOrder.status)) {
+      setOrderStep(1);
+    } else if ([6, 7, 8].includes(currentOrder.status)) {
+      setOrderStep(2);
+    } else if ([9, 10, 11, 12, 13].includes(currentOrder.status)) {
+      setOrderStep(3);
+    } else if ([14, 15, 16, 17, 18].includes(currentOrder.status)) {
+      setOrderStep(4);
+    }
+  }, [currentOrder?.status]);
 
   const updateSlotFromOrder = (updatedOrder: Order, slot: Slot): void => {
     if (
@@ -93,6 +120,8 @@ const OrderPage = (): React.JSX.Element => {
     <></>
   );
 
+  const steps = ['Publish', 'Wait', 'Setup', 'Trade', 'Finished'];
+
   return (
     <Box>
       <WarningDialog
@@ -120,6 +149,7 @@ const OrderPage = (): React.JSX.Element => {
         }}
       />
       {!currentOrder?.maker && !currentOrder?.bad_request && <CircularProgress />}
+
       {currentOrder?.bad_request && currentOrder.status !== 5 ? (
         <>
           <Typography align='center' variant='subtitle2' color='secondary'>
@@ -153,6 +183,15 @@ const OrderPage = (): React.JSX.Element => {
               spacing={2}
               style={{ width: '43em' }}
             >
+              <Grid item xs={12} style={{ width: '42em' }}>
+                <Stepper activeStep={orderStep}>
+                  {steps.map((label) => (
+                    <Step key={label}>
+                      <StepLabel>{label}</StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
+              </Grid>
               <Grid item xs={6} style={{ width: '21em' }}>
                 <Paper
                   elevation={12}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Divider, Grid, Tooltip } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import { getWebln, pn } from '../../utils';
 import {
   ConfirmCancelDialog,
@@ -51,8 +51,6 @@ import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LoadingButton } from '@mui/lab';
-import { systemClient } from '../../services/System';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -288,12 +286,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
         },
       );
     }
-  };
-
-  const copyOrderUrl = () => {
-    const coordinator = federation.getCoordinator(currentOrder.shortAlias);
-    const orderOriginUrl = `${coordinator.url}/order/${coordinator.shortAlias}/${currentOrder.id}`;
-    systemClient.copyToClipboard(orderOriginUrl);
   };
 
   const pauseOrder = function (): void {
@@ -816,33 +808,17 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
         ) : (
           <></>
         )}
-
-        <Grid item style={{ paddingTop: '8px', display: 'flex', flexDirection: 'row' }}>
-          <Tooltip
-            placement='top'
-            enterTouchDelay={500}
-            enterDelay={700}
-            enterNextDelay={2000}
-            title={t('Copy order URL')}
-          >
-            <div style={{ marginRight: 18 }}>
-              <LoadingButton size='small' variant='outlined' color='primary' onClick={copyOrderUrl}>
-                {t('Copy URL')}
-              </LoadingButton>
-            </div>
-          </Tooltip>
-          <CancelButton
-            order={currentOrder ?? null}
-            onClickCancel={cancel}
-            openCancelDialog={() => {
-              setOpen({ ...closeAll, confirmCancel: true });
-            }}
-            openCollabCancelDialog={() => {
-              setOpen({ ...closeAll, confirmCollabCancel: true });
-            }}
-            loading={loadingButtons.cancel}
-          />
-        </Grid>
+        <CancelButton
+          order={currentOrder ?? null}
+          onClickCancel={cancel}
+          openCancelDialog={() => {
+            setOpen({ ...closeAll, confirmCancel: true });
+          }}
+          openCollabCancelDialog={() => {
+            setOpen({ ...closeAll, confirmCollabCancel: true });
+          }}
+          loading={loadingButtons.cancel}
+        />
       </Grid>
     </Box>
   );

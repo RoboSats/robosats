@@ -795,7 +795,7 @@ const MakerForm = ({
                     variant={hasCustomPaymentMethod ? 'contained' : 'outlined'}
                     fullWidth
                     sx={{
-                      minHeight: '3.2em',
+                      minHeight: '3.3em',
                       minWidth: 0,
                       padding: 0,
                       justifyContent: 'center',
