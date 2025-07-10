@@ -211,11 +211,11 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
         .then((data: Order) => {
           setOpen(closeAll);
           setLoadingButtons({ ...noLoadingButtons });
-          if (data.bad_address !== undefined) {
+          if (data.bad_address && data.bad_address !== '') {
             setOnchain({ ...onchain, badAddress: data.bad_address });
-          } else if (data.bad_invoice !== undefined) {
+          } else if (data.bad_invoice && data.bad_invoice !== '') {
             setLightning({ ...lightning, badInvoice: data.bad_invoice });
-          } else if (data.bad_statement !== undefined) {
+          } else if (data.bad_statement && data.bad_statement !== '') {
             setDispute({ ...dispute, badStatement: data.bad_statement });
           }
           slot.updateSlotFromOrder(data);
