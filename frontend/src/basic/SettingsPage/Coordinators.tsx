@@ -4,9 +4,13 @@ import FederationTable from '../../components/FederationTable';
 import { t } from 'i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { Origin, Origins } from '../../models/Coordinator.model';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 const Coordinators = (): React.JSX.Element => {
-  const { federation, addNewCoordinator } = useContext<UseFederationStoreType>(FederationContext);
+  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { federation, setFederationUpdatedAt } =
+    useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
@@ -14,6 +18,30 @@ const Coordinators = (): React.JSX.Element => {
   const [open, setOpen] = useState<boolean>(false);
   // Regular expression to match a valid .onion URL
   const onionUrlPattern = /^((http|https):\/\/)?[a-zA-Z2-7]{16,56}\.onion$\/?/;
+
+  const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
+    if (!federation.getCoordinator(alias)) {
+      const attributes: object = {
+        longAlias: alias,
+        shortAlias: alias,
+        federated: false,
+        enabled: true,
+      };
+      const origins: Origins = {
+        clearnet: undefined,
+        onion: url as Origin,
+        i2p: undefined,
+      };
+      if (settings.network === 'mainnet') {
+        attributes.mainnet = origins;
+      } else {
+        attributes.testnet = origins;
+      }
+      federation.addCoordinator(origin, settings, hostUrl, attributes);
+      garage.syncCoordinator(federation, alias);
+      setFederationUpdatedAt(new Date().toISOString());
+    }
+  };
 
   const addCoordinator: () => void = () => {
     if (federation.getCoordinator(newAlias)) {

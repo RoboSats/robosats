@@ -1,6 +1,7 @@
 import {
   Coordinator,
   type Exchange,
+  LimitList,
   type Origin,
   type PublicOrder,
   type Settings,
@@ -90,7 +91,7 @@ export class Federation {
     coordinators.forEach((c) => c.updateUrl(origin, settings, hostUrl));
     this.roboPool.updateRelays(hostUrl, Object.values(this.coordinators));
 
-    void this.loadLimits();
+    coordinators[0].loadLimits();
 
     if (this.connection === 'nostr') {
       this.loadBookNostr(coordinator !== 'any');
@@ -194,20 +195,6 @@ export class Federation {
     }
   };
 
-  loadLimits = async (): Promise<void> => {
-    this.loading = true;
-    this.exchange.onlineCoordinators = 0;
-    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
-    this.updateEnabledCoordinators();
-
-    for (const coor of Object.values(this.coordinators)) {
-      coor.loadLimits(() => {
-        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
-        this.onCoordinatorSaved();
-      });
-    }
-  };
-
   loadBook = async (): Promise<void> => {
     if (this.connection !== 'api') return;
 
@@ -227,6 +214,14 @@ export class Federation {
   updateExchange = (): void => {
     this.exchange.info = updateExchangeInfo(this);
     this.triggerHook('onFederationUpdate');
+  };
+
+  getLimits = (shortAlias?: string): LimitList => {
+    let limits = shortAlias ? this.coordinators[shortAlias]?.limits || {} : {};
+    if (Object.keys(limits).length === 0) {
+      limits = this.getCoordinators()[0]?.limits;
+    }
+    return limits;
   };
 
   // Coordinators

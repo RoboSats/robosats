@@ -388,7 +388,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
           coordinator.shortAlias,
         );
       }
-      coordinator?.loadInfo();
+      if (!coordinator.info) coordinator?.loadInfo();
     }
   }, [open]);
 
