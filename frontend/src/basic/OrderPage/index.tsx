@@ -187,7 +187,7 @@ const OrderPage = (): React.JSX.Element => {
                 <Stepper activeStep={orderStep}>
                   {steps.map((label) => (
                     <Step key={label}>
-                      <StepLabel>{label}</StepLabel>
+                      <StepLabel>{t(label)}</StepLabel>
                     </Step>
                   ))}
                 </Stepper>
