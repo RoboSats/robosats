@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button } from '@mui/material';
+import { systemClient } from '../../services/System';
 
 const SelfhostedAlert = (): React.JSX.Element => {
   const { t } = useTranslation();
-  const [show, setShow] = useState<boolean>(true);
+  const [show, setShow] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!systemClient.getItem('selfhosted-alert')) {
+      setShow(true);
+    }
+  }, []);
 
   // If alert is hidden return null
   if (!show) {
@@ -23,6 +30,7 @@ const SelfhostedAlert = (): React.JSX.Element => {
                 color='success'
                 onClick={() => {
                   setShow(false);
+                  systemClient.setItem('selfhosted-alert', 'false');
                 }}
               >
                 {t('Hide')}
