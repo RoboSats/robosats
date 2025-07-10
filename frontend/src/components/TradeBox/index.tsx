@@ -8,7 +8,6 @@ import {
   ConfirmFiatSentDialog,
   ConfirmUndoFiatSentDialog,
   ConfirmFiatReceivedDialog,
-  WebLNDialog,
 } from './Dialogs';
 
 import Title from './Title';
@@ -125,7 +124,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
-  const [waitingWebln, setWaitingWebln] = useState<boolean>(false);
   const [lastOrderStatus, setLastOrderStatus] = useState<number>(-1);
 
   // Forms
@@ -337,35 +335,27 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
     if (webln === undefined) {
       console.log('WebLN dialog will not be shown');
     } else if (order.is_maker && order.status === 0) {
-      webln.sendPayment(order.bond_invoice);
-      setWaitingWebln(true);
+      webln.sendPaymentAsync(order.bond_invoice);
       setOpen({ ...open, webln: true });
     } else if (order.is_taker && order.status === 3) {
-      webln.sendPayment(order.bond_invoice);
-      setWaitingWebln(true);
+      webln.sendPaymentAsync(order.bond_invoice);
       setOpen({ ...open, webln: true });
     } else if (order.is_seller && (order.status === 6 || order.status === 7)) {
-      webln.sendPayment(order.escrow_invoice);
-      setWaitingWebln(true);
+      webln.sendPaymentAsync(order.escrow_invoice);
       setOpen({ ...open, webln: true });
     } else if (order.is_buyer && (order.status === 6 || order.status === 8)) {
-      setWaitingWebln(true);
       setOpen({ ...open, webln: true });
       webln
         .makeInvoice(() => lightning.amount)
         .then((invoice: object) => {
           if (invoice !== undefined) {
             updateInvoice(invoice.paymentRequest);
-            setWaitingWebln(false);
             setOpen(closeAll);
           }
         })
         .catch(() => {
-          setWaitingWebln(false);
           setOpen(closeAll);
         });
-    } else {
-      setWaitingWebln(false);
     }
   };
 
@@ -747,14 +737,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
 
   return (
     <Box>
-      <WebLNDialog
-        open={open.webln}
-        onClose={() => {
-          setOpen(closeAll);
-        }}
-        waitingWebln={waitingWebln}
-        isBuyer={currentOrder.is_buyer ?? false}
-      />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
         onClose={() => {
