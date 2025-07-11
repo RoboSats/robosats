@@ -745,5 +745,7 @@
   "You must have a robot avatar to see the order details": "You must have a robot avatar to see the order details",
   "This order has been cancelled collaborativelly": "This order has been cancelled collaboratively",
   "This order is not available": "This order is not available",
+  "If you want to see it available, consider submitting a request on our": "If you want to see it available, consider submitting a request on our",
+  "Can't find your favorite payment method in the list?": "Can't find your favorite payment method in the list?",
   "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues": "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues"
 }
