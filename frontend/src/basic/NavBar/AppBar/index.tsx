@@ -56,7 +56,7 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Bar position='fixed' sx={{ top: 'auto', bottom: 0 }}>
-        <Toolbar>
+        <Toolbar style={{ display: 'flex', justifyContent: 'space-between', flexGrow: 1 }}>
           <Button
             size='large'
             color='inherit'
@@ -74,7 +74,7 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
           >
             <SettingsApplications />
           </Button>
-          <Typography variant='h6' noWrap component='div' sx={{ flexGrow: 1 }} />
+          <div style={{ width: '64px' }} />
           <Fab
             color='secondary'
             aria-label='add'
