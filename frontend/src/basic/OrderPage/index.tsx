@@ -121,8 +121,8 @@ const OrderPage = (): React.JSX.Element => {
   );
 
   const steps = currentOrder?.is_taker
-    ? ['Take', 'Setup', 'Trade', 'Finished']
-    : ['Publish', 'Wait', 'Setup', 'Trade', 'Finished'];
+    ? [t('Take'), t('Setup'), t('Trade'), t('Finish')]
+    : [t('Publish'), t('Wait'), t('Setup'), t('Trade'), t('Finish')];
 
   return (
     <Box>
