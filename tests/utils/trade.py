@@ -19,8 +19,8 @@ maker_form_buy_with_range = {
     "type": Order.Types.BUY,
     "currency": 1,
     "has_range": True,
-    "min_amount": 21,
-    "max_amount": 101.7,
+    "min_amount": 84,
+    "max_amount": 201.7,
     "payment_method": "Advcash Cash F2F",
     "is_explicit": False,
     "premium": 3.34,
@@ -47,7 +47,7 @@ class Trade:
         self,
         client,
         maker_form=maker_form_buy_with_range,
-        take_amount=80,
+        take_amount=100,
         maker_index=1,
         taker_index=2,
         third_index=3,
@@ -61,7 +61,7 @@ class Trade:
 
         self.make_order(self.maker_form, maker_index)
 
-    def get_robot_auth(self, robot_index, first_encounter=False):
+    def get_robot_auth(self, robot_index):
         """
         Create an AUTH header that embeds token, pub_key, and enc_priv_key into a single string
         as requested by the robosats token middleware.
@@ -70,14 +70,12 @@ class Trade:
         b91_token = read_file(f"tests/robots/{robot_index}/b91_token")
         pub_key = read_file(f"tests/robots/{robot_index}/pub_key")
         enc_priv_key = read_file(f"tests/robots/{robot_index}/enc_priv_key")
+        nostr_pubkey = read_file(f"tests/robots/{robot_index}/nostr_pubkey")
 
         # First time a robot authenticated, it is registered by the backend, so pub_key and enc_priv_key is needed
-        if first_encounter:
-            headers = {
-                "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key}"
-            }
-        else:
-            headers = {"HTTP_AUTHORIZATION": f"Token {b91_token}"}
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {nostr_pubkey}"
+        }
 
         return headers
 
@@ -86,7 +84,7 @@ class Trade:
         Creates the robots in /tests/robots/{robot_index}
         """
         path = reverse("robot")
-        headers = self.get_robot_auth(robot_index, True)
+        headers = self.get_robot_auth(robot_index)
 
         return self.client.get(path, **headers)
 
@@ -96,7 +94,7 @@ class Trade:
         """
         path = reverse("make")
         # Get valid robot auth headers
-        headers = self.get_robot_auth(robot_index, True)
+        headers = self.get_robot_auth(robot_index)
 
         response = self.client.post(path, maker_form, **headers)
 
@@ -104,14 +102,24 @@ class Trade:
         if response.status_code == 201:
             self.order_id = response.json()["id"]
 
-    def get_order(self, robot_index=1, first_encounter=False):
+    def get_order(self, robot_index=1):
         """
         Fetch the latest state of the order
         """
         path = reverse("order")
         params = f"?order_id={self.order_id}"
-        headers = self.get_robot_auth(robot_index, first_encounter)
+        headers = self.get_robot_auth(robot_index)
         self.response = self.client.get(path + params, **headers)
+
+    def get_review(self, robot_index=1):
+        """
+        Generates coordinator's review signature
+        """
+        path = reverse("review")
+        headers = self.get_robot_auth(robot_index)
+        nostr_pubkey = read_file(f"tests/robots/{robot_index}/nostr_pubkey")
+        body = {"pubkey": nostr_pubkey}
+        self.response = self.client.post(path, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
     def cancel_order(self, robot_index=1, cancel_status=None):
@@ -175,18 +183,41 @@ class Trade:
         self.get_order()
 
     @patch("api.tasks.send_notification.delay", send_notification)
+    def publish_password_order(self):
+        # Maker's first order fetch. Should trigger maker bond hold invoice generation.
+        self.get_order()
+        invoice = self.response.json()["bond_invoice"]
+
+        # Lock the invoice from the robot's node
+        pay_invoice("robot", invoice)
+
+        # Check for invoice locked (the mocked LND will return ACCEPTED)
+        self.follow_hold_invoices()
+
+        # Get order
+        self.get_order()
+
+    @patch("api.tasks.send_notification.delay", send_notification)
     def take_order(self):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
-        headers = self.get_robot_auth(self.taker_index, first_encounter=True)
+        headers = self.get_robot_auth(self.taker_index)
         body = {"action": "take", "amount": self.take_amount}
+        self.response = self.client.post(path + params, body, **headers)
+
+    @patch("api.tasks.send_notification.delay", send_notification)
+    def take_password_order(self, password):
+        path = reverse("order")
+        params = f"?order_id={self.order_id}"
+        headers = self.get_robot_auth(self.taker_index)
+        body = {"action": "take", "amount": self.take_amount, "password": password}
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
     def take_order_third(self):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
-        headers = self.get_robot_auth(self.third_index, first_encounter=True)
+        headers = self.get_robot_auth(self.third_index)
         body = {"action": "take", "amount": self.take_amount}
         self.response = self.client.post(path + params, body, **headers)
 

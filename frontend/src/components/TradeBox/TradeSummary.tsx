@@ -63,7 +63,7 @@ const TradeSummary = ({
   takerSummary,
   platformSummary,
   orderId,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const { client } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();

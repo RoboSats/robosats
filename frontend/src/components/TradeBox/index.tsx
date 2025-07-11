@@ -8,7 +8,6 @@ import {
   ConfirmFiatSentDialog,
   ConfirmUndoFiatSentDialog,
   ConfirmFiatReceivedDialog,
-  WebLNDialog,
 } from './Dialogs';
 
 import Title from './Title';
@@ -108,12 +107,12 @@ interface Contract {
   title: string;
   titleVariables: object;
   titleColor: string;
-  prompt: () => JSX.Element;
+  prompt: () => React.JSX.Element;
   bondStatus: 'hide' | 'locked' | 'unlocked' | 'settled';
-  titleIcon: () => JSX.Element;
+  titleIcon: () => React.JSX.Element;
 }
 
-const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element => {
+const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -123,7 +122,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
-  const [waitingWebln, setWaitingWebln] = useState<boolean>(false);
   const [lastOrderStatus, setLastOrderStatus] = useState<number>(-1);
 
   // Forms
@@ -209,11 +207,11 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
         .then((data: Order) => {
           setOpen(closeAll);
           setLoadingButtons({ ...noLoadingButtons });
-          if (data.bad_address !== undefined) {
+          if (data.bad_address && data.bad_address !== '') {
             setOnchain({ ...onchain, badAddress: data.bad_address });
-          } else if (data.bad_invoice !== undefined) {
+          } else if (data.bad_invoice && data.bad_invoice !== '') {
             setLightning({ ...lightning, badInvoice: data.bad_invoice });
-          } else if (data.bad_statement !== undefined) {
+          } else if (data.bad_statement && data.bad_statement !== '') {
             setDispute({ ...dispute, badStatement: data.bad_statement });
           }
           slot.updateSlotFromOrder(data);
@@ -329,35 +327,27 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
     if (webln === undefined) {
       console.log('WebLN dialog will not be shown');
     } else if (order.is_maker && order.status === 0) {
-      webln.sendPayment(order.bond_invoice);
-      setWaitingWebln(true);
+      webln.sendPaymentAsync(order.bond_invoice);
       setOpen({ ...open, webln: true });
     } else if (order.is_taker && order.status === 3) {
-      webln.sendPayment(order.bond_invoice);
-      setWaitingWebln(true);
+      webln.sendPaymentAsync(order.bond_invoice);
       setOpen({ ...open, webln: true });
     } else if (order.is_seller && (order.status === 6 || order.status === 7)) {
-      webln.sendPayment(order.escrow_invoice);
-      setWaitingWebln(true);
+      webln.sendPaymentAsync(order.escrow_invoice);
       setOpen({ ...open, webln: true });
     } else if (order.is_buyer && (order.status === 6 || order.status === 8)) {
-      setWaitingWebln(true);
       setOpen({ ...open, webln: true });
       webln
         .makeInvoice(() => lightning.amount)
-        .then((invoice: any) => {
+        .then((invoice: object) => {
           if (invoice !== undefined) {
             updateInvoice(invoice.paymentRequest);
-            setWaitingWebln(false);
             setOpen(closeAll);
           }
         })
         .catch(() => {
-          setWaitingWebln(false);
           setOpen(closeAll);
         });
-    } else {
-      setWaitingWebln(false);
     }
   };
 
@@ -739,14 +729,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
 
   return (
     <Box>
-      <WebLNDialog
-        open={open.webln}
-        onClose={() => {
-          setOpen(closeAll);
-        }}
-        waitingWebln={waitingWebln}
-        isBuyer={currentOrder.is_buyer ?? false}
-      />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
         onClose={() => {
@@ -826,20 +808,17 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): JSX.Element =>
         ) : (
           <></>
         )}
-
-        <Grid item>
-          <CancelButton
-            order={currentOrder ?? null}
-            onClickCancel={cancel}
-            openCancelDialog={() => {
-              setOpen({ ...closeAll, confirmCancel: true });
-            }}
-            openCollabCancelDialog={() => {
-              setOpen({ ...closeAll, confirmCollabCancel: true });
-            }}
-            loading={loadingButtons.cancel}
-          />
-        </Grid>
+        <CancelButton
+          order={currentOrder ?? null}
+          onClickCancel={cancel}
+          openCancelDialog={() => {
+            setOpen({ ...closeAll, confirmCancel: true });
+          }}
+          openCollabCancelDialog={() => {
+            setOpen({ ...closeAll, confirmCollabCancel: true });
+          }}
+          loading={loadingButtons.cancel}
+        />
       </Grid>
     </Box>
   );

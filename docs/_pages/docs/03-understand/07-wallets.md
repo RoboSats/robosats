@@ -29,6 +29,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
 |[Alby](#alby-browser-extension)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Aqua](#aqua-mobile)|[v0.1.55](https://aquawallet.io/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
+|[Bitkit](#bitkit-mobile)|[1.1.1](https://bitkit.to/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
@@ -39,7 +40,6 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Electrum](#electrum-mobile--desktop)|[4.5.8](https://github.com/spesmilo/electrum)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.unclear}}||
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
-|[Mutiny](#mutiny-mobile--web-browser-wallet)|[1.7.1](https://www.mutinywallet.com/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsdown}}||
 |[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -62,11 +62,15 @@ Instructions to install Alby in Tor Browser:
 
 ### Aqua (Mobile)
 Overall the wallet works as expected.
-Self-custodial Lightning+Liquid wallet with low fees and the option to swap directly to Tether.
-Bond refunds are locked for 3 days
+Self-custodial Lightning and Liquid wallet with the option to swap in and out of USDT. Developed by Samson Mow's company JAN3.
+
+### Bitkit (Mobile)
+Overall the wallet works as expected.
+Self-custodial Lightning wallet.
 
 ### Blink (Mobile, former Bitcoin Beach Wallet)
-Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transaction history. Payouts to the Blink wallet function as intended. Custodial wallet by Galoy which originated from the Bitcoin Beach project in El Salvador (formerly known as "Bitcoin Beach Wallet").
+Overall the wallet works as expected. 
+Offers the option to swap in and out of synthetic USD. Custodial wallet developed by Galoy, El Salvador. Originated from the Bitcoin Beach project.
 
 ### Blixt (Android/iOS, LND light backend on device)
 Most development testing for RoboSats has been done using Blixt. This is one of the most complete Lightning wallets around. However, it does lead to misunderstanding when hold invoices are locked, as it shows a spinner with payment in transit. The user needs to check on the website for confirmation. Blixt allows for multiple pending HTLCs; this is necessary as a seller since you need to lock a taker/maker bond and then a trade escrow (2 pending concurrent HTLCs). It might eventually also display as paid/charged invoices that are still pending, especially if the user force closes Blixt and reopens it. Occasionally, it can display fidelity bonds as charged that have in fact been returned.
@@ -96,13 +100,6 @@ Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not
 
 ### Mash Wallet App (Mobile PWA & Desktop Web-Wallet)
 Overall the [Mash](https://mash.com/consumer-experience/) wallet works end2end with Robosats on both selling & buying over lightning. Majority of relevant invoice details in the mash wallet are shown and clear to users throughout the process. When the transactions are complete, they open in the mobile app on both sender/receiver sides to highlight that the transactions are completed.The one UX hick-up is that the pending invoices list doesn't explicitly show HOLD invoices and there is a "spinning" screen on first HOLD invoice payment. The team has a bug open to fix this issue shortly (this note is from Aug 21st 2023).
-
-### Mutiny (Mobile & Web Browser Wallet)
-The wallet should work as expected, but the interface, transaction states, and the structure of the funds can sometimes be very confusing in the current release version.   
-Use the default free Fedimint(Chaumian eCash) account, with the possibility to use zero fee Lightning transfers. 
-What is inconvenient: 
-- occasionally wallet restart is needed
-- more than two pending hold invoices at the same time may cause a rejection of the new transaction    
 
 ### Muun (Mobile)
 Self-custodial wallet with a minimalist interface. 

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.7.6
+  version: 0.7.9
   x-logo:
     url: https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
@@ -162,7 +162,7 @@ paths:
           - 24h volume
           - all time volume
         - Node info
-          - lnd version
+          - node version
           - node id
           - node alias
           - network
@@ -405,7 +405,7 @@ paths:
               examples:
                 OrderCancelled:
                   value:
-                    bad_request: This order has been cancelled collaborativelly
+                    bad_request: This order has been cancelled
                   summary: Order cancelled
                 WhenTheOrderIsNotPublicAndYouNeitherTheTakerNorMaker:
                   value:
@@ -419,8 +419,8 @@ paths:
                   summary: When maker bond expires (as maker)
                 WhenRobosatsNodeIsDown:
                   value:
-                    bad_request: The Lightning Network Daemon (LND) is down. Write
-                      in the Telegram group to make sure the staff is aware.
+                    bad_request: The lightning node is down. Write in the Telegram
+                      group to make sure the staff is aware.
                   summary: When Robosats node is down
           description: ''
         '403':
@@ -492,6 +492,10 @@ paths:
             - `15` - Failed lightning network routing
             - `17` - Maker lost dispute
             - `18` - Taker lost dispute
+
+            The client can use `cancel_status` to cancel the order only
+            if it is in the specified status. The server will
+            return an error without cancelling the trade otherwise.
 
             Note that there are penalties involved for cancelling a order
             mid-trade so use this action carefully:
@@ -652,6 +656,44 @@ paths:
                       timestamp: '2022-09-13T14:32:40.591774Z'
                   summary: Truncated example. Real response contains all the currencies
           description: ''
+  /api/review/:
+    post:
+      operationId: review_create
+      description: Generates the token necesary for reviews of robot's latest order
+      summary: Generates a review token
+      tags:
+      - review
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bad_request:
+                    type: string
+                    description: Reason for the failure
+          description: ''
   /api/reward/:
     post:
       operationId: reward_create
@@ -804,6 +846,9 @@ paths:
                   public_key:
                     type: string
                     description: Armored ASCII PGP public key block
+                  nostr_pubkey:
+                    type: string
+                    description: Nostr public key in hex format
                   wants_stealth:
                     type: boolean
                     default: false
@@ -1283,6 +1328,10 @@ components:
           format: decimal
           pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
           nullable: true
+        password:
+          type: string
+          nullable: true
+          maxLength: 2000
       required:
       - currency
       - type
@@ -1395,6 +1444,9 @@ components:
         is_participant:
           type: boolean
           description: True if you are either a taker or maker, False otherwise
+        has_password:
+          type: boolean
+          description: True if the order is password protected
         maker_status:
           type: string
           description: |-
@@ -1451,12 +1503,18 @@ components:
         maker_hash_id:
           type: string
           description: The maker's robot hash
+        maker_nostr_pubkey:
+          type: string
+          description: The maker's robot nostr hex pubkey
         taker_nick:
           type: string
           description: The taker's robot hash
         taker_hash_id:
           type: string
           description: The taker's robot hash
+        taker_nostr_pubkey:
+          type: string
+          description: The taker's robot nostr hex pubkey
         status_message:
           type: string
           description: The current status of the order corresponding to the `status`
@@ -1775,6 +1833,14 @@ components:
         * `3` - 3
         * `4` - 4
         * `5` - 5
+    Review:
+      type: object
+      properties:
+        pubkey:
+          type: string
+          description: Robot's nostr hex pubkey
+      required:
+      - pubkey
     StatusEnum:
       enum:
       - 0
@@ -1929,6 +1995,11 @@ components:
     UpdateOrder:
       type: object
       properties:
+        password:
+          type: string
+          nullable: true
+          description: In case the order is password protected
+          maxLength: 2000
         invoice:
           type: string
           nullable: true
@@ -1975,8 +2046,33 @@ components:
           pattern: ^-?\d{0,3}(?:\.\d{0,3})?$
           nullable: true
         cancel_status:
-          allOf:
+          nullable: true
+          description: |-
+            Status the order should have for it to be cancelled.
+
+            * `0` - Waiting for maker bond
+            * `1` - Public
+            * `2` - Paused
+            * `3` - Waiting for taker bond
+            * `4` - Cancelled
+            * `5` - Expired
+            * `6` - Waiting for trade collateral and buyer invoice
+            * `7` - Waiting only for seller trade collateral
+            * `8` - Waiting only for buyer invoice
+            * `9` - Sending fiat - In chatroom
+            * `10` - Fiat sent - In chatroom
+            * `11` - In dispute
+            * `12` - Collaboratively cancelled
+            * `13` - Sending satoshis to buyer
+            * `14` - Successful trade
+            * `15` - Failed lightning network routing
+            * `16` - Wait for dispute resolution
+            * `17` - Maker lost dispute
+            * `18` - Taker lost dispute
+          oneOf:
           - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
       required:
       - action
     Version:

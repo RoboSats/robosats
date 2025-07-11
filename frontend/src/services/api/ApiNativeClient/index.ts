@@ -19,11 +19,11 @@ class ApiNativeClient implements ApiClient {
           Authorization: `Token ${auth.tokenSHA256}`,
         },
       };
-    } else if (auth?.keys != null) {
+    } else if (auth?.keys != null && auth.nostrPubkey != null) {
       headers = {
         ...headers,
         ...{
-          Authorization: `Token ${auth.tokenSHA256} | Public ${auth.keys.pubKey} | Private ${auth.keys.encPrivKey}`,
+          Authorization: `Token ${auth.tokenSHA256} | Public ${auth.keys.pubKey} | Private ${auth.keys.encPrivKey} | Nostr ${auth.nostrPubkey}`,
         },
       };
     }
@@ -31,7 +31,7 @@ class ApiNativeClient implements ApiClient {
     return headers;
   };
 
-  private readonly parseResponse = (response: Record<string, any>): object => {
+  private readonly parseResponse = (response: Record<string, object>): object => {
     if (response.headers['set-cookie'] != null) {
       response.headers['set-cookie'].forEach((cookie: string) => {
         const keySplit: string[] = cookie.split('=');

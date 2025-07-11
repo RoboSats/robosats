@@ -19,7 +19,7 @@ export const ConfirmDisputeDialog = ({
   open,
   onClose,
   onAgreeClick,
-}: ConfirmDisputeDialogProps): JSX.Element => {
+}: ConfirmDisputeDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

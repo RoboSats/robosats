@@ -27,10 +27,13 @@ import { computeSats } from '../../utils';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
+import { sha256 } from 'js-sha256';
 
 interface TakeButtonProps {
   currentOrder: Order;
+  password?: string;
   info?: Info;
+  setCurrentOrder: (currentOrder: Order) => void;
   onClickGenerateRobot?: () => void;
 }
 
@@ -41,10 +44,12 @@ interface OpenDialogsProps {
 const closeAll = { inactiveMaker: false, confirmation: false };
 
 const TakeButton = ({
+  password,
   currentOrder,
+  setCurrentOrder,
   info,
   onClickGenerateRobot = () => null,
-}: TakeButtonProps): JSX.Element => {
+}: TakeButtonProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -83,7 +88,7 @@ const TakeButton = ({
   const currencyCode: string =
     currentOrder?.currency === 1000 ? 'Sats' : currencies[`${Number(currentOrder?.currency)}`];
 
-  const InactiveMakerDialog = function (): JSX.Element {
+  const InactiveMakerDialog = function (): React.JSX.Element {
     return (
       <Dialog
         open={open.inactiveMaker}
@@ -128,7 +133,7 @@ const TakeButton = ({
   const countdownTakeOrderRenderer = function ({
     seconds,
     completed,
-  }: countdownTakeOrderRendererProps): JSX.Element {
+  }: countdownTakeOrderRendererProps): React.JSX.Element {
     if (isNaN(seconds) || completed) {
       return takeOrderButton();
     } else {
@@ -185,7 +190,7 @@ const TakeButton = ({
     );
   }, [takeAmount, slotUpdatedAt]);
 
-  const takeOrderButton = function (): JSX.Element {
+  const takeOrderButton = function (): React.JSX.Element {
     if (currentOrder?.has_range) {
       return (
         <Box
@@ -208,7 +213,7 @@ const TakeButton = ({
               alignItems='flex-start'
               justifyContent='space-evenly'
             >
-              <Grid item sx={{ width: '12em' }}>
+              <Grid item>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}
@@ -317,6 +322,8 @@ const TakeButton = ({
 
     if (currentOrder === null || slot === null) return;
 
+    if (password) currentOrder.password = sha256(password);
+
     setLoadingTake(true);
 
     slot
@@ -326,8 +333,10 @@ const TakeButton = ({
           setBadRequest(order.bad_request);
         } else {
           setBadRequest('');
+          setCurrentOrder(order);
           navigate(`/order/${order.shortAlias}/${order.id}`);
         }
+        setLoadingTake(false);
       })
       .catch(() => {
         setBadRequest('Request error');

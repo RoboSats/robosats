@@ -769,8 +769,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 }
 
-/* react-leaflet-cluster https://unpkg.com/@christopherpickering/react-leaflet-markercluster@1.1.0/dist/styles.min.css */
-
 .marker-cluster-small {
   background-color: rgba(181, 226, 140, 0.6);
 }

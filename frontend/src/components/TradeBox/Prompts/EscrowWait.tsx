@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { List, ListItem, Divider, Typography } from '@mui/material';
 
-export const EscrowWaitPrompt = (): JSX.Element => {
+export const EscrowWaitPrompt = (): React.JSX.Element => {
   const { t } = useTranslation();
   return (
     <List dense={true}>

@@ -6,18 +6,7 @@ import { Paper } from '@mui/material';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
-interface MakerWidgetProps {
-  style?: React.StyleHTMLAttributes<HTMLElement>;
-  className?: string;
-  onMouseDown?: () => void;
-  onMouseUp?: () => void;
-  onTouchEnd?: () => void;
-}
-
-const MakerWidget = React.forwardRef(function Component(
-  { style, className, onMouseDown, onMouseUp, onTouchEnd }: MakerWidgetProps,
-  ref,
-) {
+const MakerWidget = React.forwardRef(function Component() {
   const { fav } = useContext<UseAppStoreType>(AppContext);
   const { federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { maker } = useContext<UseGarageStoreType>(GarageContext);

@@ -1,0 +1,47 @@
+#!/bin/sh
+
+_get_env_var() {
+    if ! env_var="$(dotenv -f ".env" get "$1" 2>/dev/null)"; then
+        echo "error: getting $1 from .env" >&2
+        return 1
+    fi
+    printf "%s\n" "$env_var"
+
+    return 0
+}
+
+# transform relative path into absolute and remove trailing slashes
+_get_env_var_path() {
+    env_var="$(_get_env_var "$1")" || return "$?"
+    real_path="$(realpath -m "$env_var")" || return "$?"
+    printf "%s\n" "$real_path"
+
+    return 0
+}
+
+TRADITIONAL_SERVICES_DIR="$(_get_env_var_path "TRADITIONAL_SERVICES_DIR")" || return "$?"
+
+STRFRY_DIR="$TRADITIONAL_SERVICES_DIR/strfry"
+
+STRFRY_GIT_DIR="$(_get_env_var_path "STRFRY_GIT_DIR")" || return "$?"
+
+strfry_bin="$STRFRY_GIT_DIR/strfry"
+
+onion_url_list=$(cat << EOF
+wss://nostr.satstralia.com
+wss://relay.damus.io
+wss://freelay.sovbit.host
+EOF
+)
+
+while true; do
+    for onion_url in $onion_url_list; do
+        torsocks timeout 15s "$strfry_bin" \
+            --config "$STRFRY_DIR/strfry.conf" \
+            sync "$onion_url" \
+            --filter '{"kinds":[38383]}' \
+            --dir both
+    done
+
+    sleep 300
+done

@@ -17,7 +17,7 @@ export const DisputePrompt = ({
   shortAlias,
   onClickSubmit,
   setDispute,
-}: DisputePromptProps): JSX.Element => {
+}: DisputePromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   return (
     <Grid

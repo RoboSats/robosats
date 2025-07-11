@@ -20,7 +20,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import RecoveryDialog from '../../components/Dialogs/Recovery';
 
-const RobotPage = (): JSX.Element => {
+const RobotPage = (): React.JSX.Element => {
   const { torStatus, windowSize, settings, page, client } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -70,7 +70,7 @@ const RobotPage = (): JSX.Element => {
                 </linearGradient>
               </svg>
               <CircularProgress thickness={3} style={{ width: '11.2em', height: '11.2em' }} />
-              <Box sx={{ position: 'fixed', top: '4.6em' }}>
+              <Box sx={{ position: 'fixed', top: '6.2em' }}>
                 <TorIcon
                   sx={{
                     fill: 'url(#linearColors)',

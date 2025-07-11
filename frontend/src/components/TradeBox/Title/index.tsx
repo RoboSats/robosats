@@ -7,9 +7,9 @@ import stepXofY from '../stepXofY';
 interface TakerFoundPrompProps {
   order: Order | null;
   text: string;
-  variables?: any;
+  variables?: object;
   color?: string;
-  icon?: () => JSX.Element;
+  icon?: () => React.JSX.Element;
 }
 
 export const Title = ({
@@ -20,7 +20,7 @@ export const Title = ({
   icon = function () {
     return <></>;
   },
-}: TakerFoundPrompProps): JSX.Element => {
+}: TakerFoundPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 

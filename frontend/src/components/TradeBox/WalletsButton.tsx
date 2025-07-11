@@ -5,7 +5,7 @@ import { Button, Link } from '@mui/material';
 import { AccountBalanceWallet } from '@mui/icons-material';
 import { NewTabIcon } from '../Icons';
 
-const WalletsButton = (): JSX.Element => {
+const WalletsButton = (): React.JSX.Element => {
   const { t } = useTranslation();
   return (
     <Button

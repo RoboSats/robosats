@@ -6,12 +6,8 @@ import {
   Dialog,
   Typography,
   Paper,
-  ListItemButton,
-  ListItemText,
-  ListItemAvatar,
   useTheme,
   CircularProgress,
-  LinearProgress,
   IconButton,
   Tooltip,
   styled,
@@ -19,7 +15,6 @@ import {
 } from '@mui/material';
 import {
   DataGrid,
-  type GridColumnVisibilityModel,
   GridPagination,
   type GridPaginationModel,
   type GridColDef,
@@ -68,7 +63,6 @@ interface BookTableProps {
   fullHeight?: number;
   elevation?: number;
   defaultFullscreen?: boolean;
-  fillContainer?: boolean;
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
@@ -83,13 +77,12 @@ const BookTable = ({
   fullHeight = 70,
   defaultFullscreen = false,
   elevation = 6,
-  fillContainer = false,
   showControls = true,
   showFooter = true,
   showNoResults = true,
   onOrderClicked = () => null,
-}: BookTableProps): JSX.Element => {
-  const { fav, setOpen } = useContext<UseAppStoreType>(AppContext);
+}: BookTableProps): React.JSX.Element => {
+  const { fav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
@@ -98,37 +91,34 @@ const BookTable = ({
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
-    page: 1,
+    page: 0,
   });
-  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({});
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [page, setPage] = useState<number>(0);
 
   // all sizes in 'em'
   const [fontSize, defaultPageSize, height] = useMemo(() => {
     const fontSize = theme.typography.fontSize;
-    const verticalHeightFrame = 3.25 + (showControls ? 3.7 : 0.35) + (showFooter ? 2.35 : 0);
-    const verticalHeightRow = 3.25;
+    const verticalHeightHeader = 55 / fontSize;
+    const verticalHeightRow = 55 / fontSize;
+    const height = fullscreen ? fullHeight : maxHeight;
     const defaultPageSize = Math.max(
-      Math.floor(
-        ((fullscreen ? fullHeight * 0.9 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
-      ),
+      Math.floor((height - verticalHeightHeader) / verticalHeightRow),
       1,
     );
-    const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
     return [fontSize, defaultPageSize, height];
   }, [theme.typography.fontSize, maxHeight, fullscreen, fullHeight, showControls, showFooter]);
 
   useEffect(() => {
     setPaginationModel({
       pageSize: defaultPageSize,
-      page: paginationModel.page ?? 1,
+      page: 0,
     });
   }, [defaultPageSize]);
 
   const localeText = useMemo(() => {
     return {
-      MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
       noResultsOverlayLabel: t('No results found.'),
       errorOverlayDefaultLabel: t('An error occurred.'),
       toolbarColumns: t('Columns'),
@@ -178,48 +168,12 @@ const BookTable = ({
     };
   }, []);
 
-  const robotObj = useCallback((width: number) => {
+  const robotSmallObj = useCallback(() => {
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
-        return (
-          <ListItemButton
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            <ListItemAvatar sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}>
-              <RobotAvatar
-                hashId={params.row.maker_hash_id}
-                style={{ width: '3.215em', height: '3.215em' }}
-                smooth={true}
-                flipHorizontally={true}
-                orderType={params.row.type}
-                statusColor={statusBadgeColor(params.row.maker_status)}
-                tooltip={t(params.row.maker_status)}
-                small={true}
-              />
-            </ListItemAvatar>
-            <ListItemText
-              primary={params.row.maker_nick ?? thirdParty.longAlias}
-              sx={{ position: 'relative', left: '-1.3em', bottom: '0.6em' }}
-            />
-          </ListItemButton>
-        );
-      },
-    };
-  }, []);
-
-  const robotSmallObj = useCallback((width: number) => {
-    return {
-      field: 'maker_nick',
-      headerName: t('Robot'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
         const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
         const thirdParty = thirdParties[params.row.coordinatorShortAlias];
         return (
@@ -248,111 +202,59 @@ const BookTable = ({
     };
   }, []);
 
-  const onClickCoordinator = function (shortAlias: string): void {
-    setOpen((open) => {
-      const thirdParty = thirdParties[shortAlias];
-      if (thirdParty) {
-        return { ...open, thirdParty: shortAlias };
-      } else {
-        return { ...open, coordinator: shortAlias };
-      }
-    });
-  };
-
-  const coordinatorObj = useCallback((width: number) => {
+  const typeObj = useCallback(() => {
     return {
-      field: 'coordinatorShortAlias',
-      headerName: t('Host'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
-        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
+      field: 'type',
+      headerName: t('Is'),
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
         return (
-          <ListItemButton
+          <div
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              onClickCoordinator(params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            <ListItemAvatar sx={{ position: 'relative', left: '-1.54em', bottom: '0.4em' }}>
-              <RobotAvatar
-                shortAlias={
-                  thirdParty?.shortAlias ??
-                  (coordinator?.federated ? params.row.coordinatorShortAlias : undefined)
-                }
-                hashId={coordinator?.federated ? undefined : coordinator?.shortAlias}
-                style={{ width: '3.215em', height: '3.215em' }}
-                smooth={true}
-                small={true}
-              />
-            </ListItemAvatar>
-          </ListItemButton>
+            {params.row.type === 1
+              ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
+              : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
+          </div>
         );
       },
     };
-  }, []);
+  }, [fav.mode]);
 
-  const typeObj = useCallback(
-    (width: number) => {
-      return {
-        field: 'type',
-        headerName: t('Is'),
-        width: width * fontSize,
-        renderCell: (params: any) => {
-          return (
-            <div
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-              }}
-            >
-              {params.row.type === 1
-                ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
-                : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
-            </div>
-          );
-        },
-      };
-    },
-    [fav.mode],
-  );
+  const amountObj = useCallback(() => {
+    return {
+      field: 'amount',
+      headerName: t('Amount'),
+      type: 'number',
+      flex: 1.5,
+      renderCell: (params: { row: PublicOrder }) => {
+        const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
+        const minAmount = fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
+        const maxAmount = fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
+              (fav.mode === 'swap' ? 'M Sats' : '')}
+          </div>
+        );
+      },
+    };
+  }, [fav.mode]);
 
-  const amountObj = useCallback(
-    (width: number) => {
-      return {
-        field: 'amount',
-        headerName: t('Amount'),
-        type: 'number',
-        width: width * fontSize,
-        renderCell: (params: any) => {
-          const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
-          const minAmount =
-            fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
-          const maxAmount =
-            fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
-          return (
-            <div
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-              }}
-            >
-              {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
-                (fav.mode === 'swap' ? 'M Sats' : '')}
-            </div>
-          );
-        },
-      };
-    },
-    [fav.mode],
-  );
-
-  const currencyObj = useCallback((width: number) => {
+  const currencyObj = useCallback(() => {
     return {
       field: 'currency',
       headerName: t('Currency'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         return (
           <div
@@ -376,42 +278,39 @@ const BookTable = ({
     };
   }, []);
 
-  const paymentObj = useCallback(
-    (width: number) => {
-      return {
-        field: 'payment_method',
-        headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
-        width: width * fontSize,
-        renderCell: (params: any) => {
-          return (
-            <div
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-              }}
-            >
-              <div style={{ position: 'relative', top: '0.4em' }}>
-                <PaymentStringAsIcons
-                  othersText={t('Others')}
-                  verbose={true}
-                  size={1.7 * fontSize}
-                  text={params.row.payment_method}
-                />
-              </div>
+  const paymentObj = useCallback(() => {
+    return {
+      field: 'payment_method',
+      headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
+      flex: 2,
+      renderCell: (params: { row: PublicOrder }) => {
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            <div style={{ position: 'relative', top: '0.4em' }}>
+              <PaymentStringAsIcons
+                othersText={t('Others')}
+                verbose={false}
+                size={1.7 * fontSize}
+                text={params.row.payment_method}
+              />
             </div>
-          );
-        },
-      };
-    },
-    [fav.mode],
-  );
+          </div>
+        );
+      },
+    };
+  }, [fav.mode]);
 
-  const paymentSmallObj = useCallback((width: number) => {
+  const paymentSmallObj = useCallback(() => {
     return {
       field: 'payment_method',
       headerName: t('Pay'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{
@@ -427,6 +326,7 @@ const BookTable = ({
             <PaymentStringAsIcons
               othersText={t('Others')}
               size={1.3 * fontSize}
+              verbose={false}
               text={params.row.payment_method}
             />
           </div>
@@ -435,19 +335,17 @@ const BookTable = ({
     };
   }, []);
 
-  const priceObj = useCallback((width: number) => {
+  const priceObj = useCallback(() => {
     return {
       field: 'price',
       headerName: t('Price'),
       type: 'number',
-      width: width * fontSize,
-      renderCell: (params: any) => {
+      flex: 2,
+      renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
-        const coordinator =
-          federation.getCoordinator(params.row.coordinatorShortAlias) ??
-          federation.getCoordinators()[0];
+        const limits = federation.getLimits(params.row.coordinatorShortAlias);
         const premium = parseFloat(params.row.premium);
-        const limitPrice = coordinator.limits[params.row.currency.toString()]?.price;
+        const limitPrice = limits[params.row.currency.toString()]?.price;
         const price = (limitPrice ?? 1) * (1 + premium / 100);
 
         return (
@@ -468,71 +366,68 @@ const BookTable = ({
     };
   }, []);
 
-  const premiumObj = useCallback(
-    (width: number) => {
-      // coloring premium texts based on 4 params:
-      // Hardcoded: a sell order at 0% is an outstanding premium
-      // Hardcoded: a buy order at 10% is an outstanding premium
-      const sellStandardPremium = 10;
-      const buyOutstandingPremium = 10;
-      return {
-        field: 'premium',
-        headerName: t('Premium'),
-        type: 'number',
-        width: width * fontSize,
-        renderCell: (params: any) => {
-          const currencyCode = String(currencyDict[params.row.currency.toString()]);
-          let fontColor = `rgb(0,0,0)`;
-          let premiumPoint = 0;
-          if (params.row.type === 0) {
-            premiumPoint = params.row.premium / buyOutstandingPremium;
-            premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-            fontColor = premiumColor(
-              theme.palette.text.primary,
-              theme.palette.secondary.dark,
-              premiumPoint,
-            );
-          } else {
-            premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
-            premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-            fontColor = premiumColor(
-              theme.palette.text.primary,
-              theme.palette.primary.dark,
-              premiumPoint,
-            );
-          }
-          const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
-          return (
-            <Tooltip
-              placement='left'
-              enterTouchDelay={0}
-              title={`${pn(params.row.price)} ${currencyCode}/BTC`}
-            >
-              <div
-                style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-                }}
-              >
-                <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
-                  {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
-                </Typography>
-              </div>
-            </Tooltip>
+  const premiumObj = useCallback(() => {
+    // coloring premium texts based on 4 params:
+    // Hardcoded: a sell order at 0% is an outstanding premium
+    // Hardcoded: a buy order at 10% is an outstanding premium
+    const sellStandardPremium = 10;
+    const buyOutstandingPremium = 10;
+    return {
+      field: 'premium',
+      headerName: t('Premium'),
+      type: 'number',
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
+        const currencyCode = String(currencyDict[params.row.currency.toString()]);
+        let fontColor = `rgb(0,0,0)`;
+        let premiumPoint = 0;
+        if (params.row.type === 0) {
+          premiumPoint = params.row.premium / buyOutstandingPremium;
+          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+          fontColor = premiumColor(
+            theme.palette.text.primary,
+            theme.palette.secondary.dark,
+            premiumPoint,
           );
-        },
-      };
-    },
-    [theme],
-  );
+        } else {
+          premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
+          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+          fontColor = premiumColor(
+            theme.palette.text.primary,
+            theme.palette.primary.dark,
+            premiumPoint,
+          );
+        }
+        const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
+        return (
+          <Tooltip
+            placement='left'
+            enterTouchDelay={0}
+            title={`${pn(params.row.price)} ${currencyCode}/BTC`}
+          >
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              }}
+            >
+              <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
+                {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
+              </Typography>
+            </div>
+          </Tooltip>
+        );
+      },
+    };
+  }, [theme]);
 
-  const timerObj = useCallback((width: number) => {
+  const timerObj = useCallback(() => {
     return {
       field: 'escrow_duration',
       headerName: t('Timer'),
       type: 'number',
-      width: width * fontSize,
-      renderCell: (params: any) => {
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
         return (
@@ -549,13 +444,13 @@ const BookTable = ({
     };
   }, []);
 
-  const expiryObj = useCallback((width: number) => {
+  const expiryObj = useCallback(() => {
     return {
       field: 'expires_at',
       headerName: t('Expiry'),
       type: 'string',
-      width: width * fontSize,
-      renderCell: (params: any) => {
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
         const expiresAt: Date = new Date(params.row.expires_at);
         const timeToExpiry: number = Math.abs(expiresAt - new Date());
         const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
@@ -597,23 +492,20 @@ const BookTable = ({
     };
   }, []);
 
-  const satoshisObj = useCallback((width: number) => {
+  const satoshisObj = useCallback(() => {
     return {
       field: 'satoshis_now',
       headerName: t('Sats now'),
       type: 'number',
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        const coordinator =
-          federation.getCoordinator(params.row.coordinatorShortAlias) ??
-          federation.getCoordinators()[0];
+      flex: 1,
+      renderCell: (params: { row: PublicOrder }) => {
+        const limits = federation.getLimits(params.row.coordinatorShortAlias);
         const amount =
           params.row.has_range === true
             ? parseFloat(params.row.max_amount)
             : parseFloat(params.row.amount);
         const premium = parseFloat(params.row.premium);
-        const price =
-          (coordinator.limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
+        const price = (limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
         const satoshisNow = (100000000 * amount) / price;
 
         return (
@@ -632,35 +524,13 @@ const BookTable = ({
     };
   }, []);
 
-  const idObj = useCallback((width: number) => {
-    return {
-      field: 'id',
-      headerName: 'Order ID',
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            <Typography variant='caption' color='text.secondary'>
-              {`#${String(params.row.id)}`}
-            </Typography>
-          </div>
-        );
-      },
-    };
-  }, []);
-
   const bondObj = useCallback((width: number) => {
     return {
       field: 'bond_size',
       headerName: t('Bond'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params: any) => {
+      renderCell: (params: { row: PublicOrder }) => {
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -681,13 +551,13 @@ const BookTable = ({
         priority: 1,
         order: 5,
         normal: {
-          width: fav.mode === 'swap' ? 9.5 : 6.5,
+          width: fav.mode === 'swap' ? 9.5 : 7,
           object: amountObj,
         },
       },
       currency: {
         priority: 2,
-        order: 6,
+        order: 4,
         normal: {
           width: fav.mode === 'swap' ? 0 : 5.9,
           object: currencyObj,
@@ -698,6 +568,10 @@ const BookTable = ({
         order: 12,
         normal: {
           width: 6,
+          object: premiumObj,
+        },
+        small: {
+          width: 4,
           object: premiumObj,
         },
       },
@@ -717,11 +591,7 @@ const BookTable = ({
         priority: 5,
         order: 1,
         normal: {
-          width: 17.14,
-          object: robotObj,
-        },
-        small: {
-          width: 5.1,
+          width: 5,
           object: robotSmallObj,
         },
       },
@@ -757,25 +627,6 @@ const BookTable = ({
           object: satoshisObj,
         },
       },
-      coordinatorShortAlias: {
-        priority: 10,
-        order: 3,
-        normal: {
-          width: 4.1,
-          object: coordinatorObj,
-        },
-        small: {
-          width: 5.1,
-          object: () => {
-            return {
-              field: 'coordinatorShortAlias',
-              headerName: '',
-              width: 0,
-              renderCell: () => <></>,
-            };
-          },
-        },
-      },
       type: {
         priority: 11,
         order: 2,
@@ -792,14 +643,6 @@ const BookTable = ({
           object: bondObj,
         },
       },
-      id: {
-        priority: 13,
-        order: 13,
-        normal: {
-          width: 4.8,
-          object: idObj,
-        },
-      },
     };
   }, [fav.mode]);
 
@@ -809,8 +652,7 @@ const BookTable = ({
   } {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
-    const columnVisibilityModel: GridColumnVisibilityModel = {};
-    let width: number = 0;
+    let width: number = -4;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
       // do not use col currency on swaps
@@ -826,31 +668,26 @@ const BookTable = ({
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
         selectedColumns.push([colObject(colWidth), value.order]);
-        columnVisibilityModel[key] = true;
-      } else {
-        selectedColumns.push([colObject(colWidth), value.order]);
-        columnVisibilityModel[key] = false;
       }
     }
 
     // sort columns by column.order value
-    selectedColumns.sort(function (first, second) {
-      return first[1] - second[1];
-    });
+    const columns = selectedColumns
+      .sort(function (first, second) {
+        return first[1] - second[1];
+      })
+      .map(function (item) {
+        return item[0];
+      });
 
-    const columns: Array<GridColDef<GridValidRowModel>> = selectedColumns.map(function (item) {
-      return item[0];
-    });
-
-    setColumnVisibilityModel(columnVisibilityModel);
-    return { columns, width: width * 0.875 + 0.15 };
+    return { columns, width: maxWidth };
   };
 
   const { columns, width } = useMemo(() => {
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
-  const Footer = function (): JSX.Element {
+  const Footer = function (): React.JSX.Element {
     return (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
@@ -883,7 +720,7 @@ const BookTable = ({
     );
   };
 
-  const NoResultsOverlay = function (): JSX.Element {
+  const NoResultsOverlay = function (): React.JSX.Element {
     return (
       <Grid
         container
@@ -915,9 +752,7 @@ const BookTable = ({
   };
 
   const gridComponents = useMemo(() => {
-    const components: GridSlotsComponent = {
-      loadingOverlay: LinearProgress,
-    };
+    const components: GridSlotsComponent = {};
 
     if (showNoResults) {
       components.noResultsOverlay = NoResultsOverlay;
@@ -926,11 +761,8 @@ const BookTable = ({
     if (showFooter) {
       components.footer = Footer;
     }
-    if (showControls) {
-      components.toolbar = BookControl;
-    }
     return components;
-  }, [showNoResults, showFooter, showControls, fullscreen]);
+  }, [showNoResults, showFooter, fullscreen]);
 
   const filteredOrders = useMemo(() => {
     return showControls
@@ -946,38 +778,32 @@ const BookTable = ({
     return (
       <Paper
         elevation={elevation}
-        style={
-          fillContainer
-            ? { width: '100%', height: '100%' }
-            : { width: `${width}em`, height: `${height}em`, overflow: 'auto' }
-        }
+        style={{
+          width: `${width}em`,
+          height: `${height}em`,
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
+        {showControls && (
+          <BookControl
+            width={width}
+            paymentMethod={paymentMethods}
+            setPaymentMethods={setPaymentMethods}
+          />
+        )}
         <ClickThroughDataGrid
           sx={headerStyleFix}
           localeText={localeText}
-          rowHeight={3.714 * theme.typography.fontSize}
-          headerHeight={3.25 * theme.typography.fontSize}
           rows={filteredOrders}
           getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
           loading={federation.loading}
           columns={columns}
-          columnVisibilityModel={columnVisibilityModel}
-          onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
-            setColumnVisibilityModel(newColumnVisibilityModel);
-          }}
+          page={page}
+          onPageChange={setPage}
           hideFooter={!showFooter}
           slots={gridComponents}
-          slotProps={{
-            toolbar: {
-              width,
-              paymentMethod: paymentMethods,
-              setPaymentMethods,
-            },
-            loadingOverlay: {
-              variant: 'indeterminate',
-              value: federation.loading ? 0 : 100,
-            },
-          }}
           paginationModel={paginationModel}
           pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
           onPaginationModelChange={(newPaginationModel) => {
@@ -989,7 +815,22 @@ const BookTable = ({
   } else {
     return (
       <Dialog open={fullscreen} fullScreen={true}>
-        <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+        <Paper
+          style={{
+            width: '100%',
+            height: '100%',
+            overflow: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {showControls && (
+            <BookControl
+              width={width}
+              paymentMethod={paymentMethods}
+              setPaymentMethods={setPaymentMethods}
+            />
+          )}
           <ClickThroughDataGrid
             sx={headerStyleFix}
             localeText={localeText}
@@ -1000,17 +841,8 @@ const BookTable = ({
             columns={columns}
             hideFooter={!showFooter}
             slots={gridComponents}
-            columnVisibilityModel={columnVisibilityModel}
-            onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
-              setColumnVisibilityModel(newColumnVisibilityModel);
-            }}
-            slotProps={{
-              toolbar: {
-                width,
-                paymentMethod: paymentMethods,
-                setPaymentMethods,
-              },
-            }}
+            page={page}
+            onPageChange={setPage}
             paginationModel={paginationModel}
             pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
             onPaginationModelChange={(newPaginationModel) => {

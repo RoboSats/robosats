@@ -15,18 +15,10 @@ interface BookWidgetProps {
   onTouchEnd?: () => void;
 }
 
-const BookWidget = React.forwardRef(function Component(
-  {
-    layout,
-    gridCellSize = 2,
-    style,
-    className,
-    onMouseDown,
-    onMouseUp,
-    onTouchEnd,
-  }: BookWidgetProps,
-  ref,
-) {
+const BookWidget = React.forwardRef(function Component({
+  layout,
+  gridCellSize = 2,
+}: BookWidgetProps) {
   const { windowSize, fav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -35,7 +27,6 @@ const BookWidget = React.forwardRef(function Component(
       <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
         <BookTable
           elevation={0}
-          fillContainer={true}
           maxWidth={layout.w * gridCellSize} // EM units
           maxHeight={layout.h * gridCellSize} // EM units
           fullWidth={windowSize.width} // EM units

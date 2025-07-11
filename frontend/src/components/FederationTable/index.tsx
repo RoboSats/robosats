@@ -1,6 +1,15 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Link, LinkOff } from '@mui/icons-material';
-import { Box, Checkbox, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Grid,
+  Rating,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -8,6 +17,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { type Coordinator } from '../../models';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import RobotAvatar from '../RobotAvatar';
+import { verifyCoordinatorToken } from '../../utils/nostr';
 
 interface FederationTableProps {
   maxWidth?: number;
@@ -19,12 +29,21 @@ const FederationTable = ({
   maxWidth = 90,
   maxHeight = 50,
   fillContainer = false,
-}: FederationTableProps): JSX.Element => {
+}: FederationTableProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
-  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { setOpen, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
+  const [ratings, setRatings] = useState<Record<string, Record<string, number>>>(
+    federation.getCoordinators().reduce((acc, coord) => {
+      if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
+      return acc;
+    }, {}),
+  );
+  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
+  const [verifyRatings, setVerifyRatings] = useState(false);
+  const [verifcationText, setVerificationText] = useState<string>();
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
@@ -35,8 +54,19 @@ const FederationTable = ({
     1,
   );
   const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
+  const mobile = windowSize.width < 44;
 
-  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
+  useEffect(() => {
+    federation.loadInfo();
+    loadRatings();
+  }, []);
+
+  useEffect(() => {
+    if (verifyRatings) {
+      loadRatings();
+      setVerificationText(t('Reloading. Invalid ratings will be filtered.'));
+    }
+  }, [verifyRatings]);
 
   useEffect(() => {
     if (useDefaultPageSize) {
@@ -44,8 +74,34 @@ const FederationTable = ({
     }
   }, [federationUpdatedAt]);
 
+  const loadRatings: () => void = () => {
+    setRatings(
+      federation.getCoordinators().reduce((acc, coord) => {
+        if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
+        return acc;
+      }, {}),
+    );
+    federation.roboPool.subscribeRatings({
+      onevent: (event) => {
+        const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
+        const verified = verifyRatings ? verifyCoordinatorToken(event) : true;
+        if (verified && coordinatorPubKey) {
+          const rating = event.tags.find((t) => t[0] === 'rating')?.[1];
+          if (rating) {
+            setRatings((prev) => {
+              prev[coordinatorPubKey][event.pubkey] = parseFloat(rating);
+              return prev;
+            });
+          }
+        }
+      },
+      oneose: () => {
+        if (verifyRatings) setVerificationText(t('Invalid ratings have been filtered.'));
+      },
+    });
+  };
+
   const localeText = {
-    MuiTablePagination: { labelRowsPerPage: t('Coordinators per page:') },
     noResultsOverlayLabel: t('No coordinators found.'),
   };
 
@@ -55,18 +111,24 @@ const FederationTable = ({
     });
   };
 
-  const aliasObj = useCallback((width: number) => {
+  const aliasObj = useCallback(() => {
     return {
       field: 'longAlias',
-      headerName: t('Coordinator'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
+      headerName: mobile ? '' : t('Rating'),
+      width: mobile ? 60 : 190,
+      renderCell: (params: { row: Coordinator }) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
         return (
           <Grid
             container
             direction='row'
-            sx={{ cursor: 'pointer', position: 'relative', left: '-0.3em', width: '50em' }}
+            sx={{
+              cursor: 'pointer',
+              position: 'relative',
+              left: '-0.3em',
+              width: '50em',
+              marginTop: '2px',
+            }}
             wrap='nowrap'
             onClick={() => {
               onClickCoordinator(params.row.shortAlias);
@@ -83,14 +145,66 @@ const FederationTable = ({
                 small={true}
               />
             </Grid>
-            <Grid item>
-              <Typography>{params.row.longAlias}</Typography>
-            </Grid>
+            {!mobile ? (
+              <Grid item>
+                <Typography>{params.row.longAlias}</Typography>
+              </Grid>
+            ) : (
+              <></>
+            )}
           </Grid>
         );
       },
     };
   }, []);
+
+  const ratingObj = useCallback(() => {
+    return {
+      field: 'rating',
+      headerName: t('Rating'),
+      width: mobile ? 60 : 180,
+      renderCell: (params: { row: Coordinator }) => {
+        const coordinator = federation.getCoordinator(params.row.shortAlias);
+        const coordinatorRating = ratings[coordinator.nostrHexPubkey];
+
+        if (!coordinatorRating) return <></>;
+
+        const totalRatings = Object.values(coordinatorRating);
+        const total = totalRatings.length;
+        const sum: number = Object.values(totalRatings).reduce((accumulator, currentValue) => {
+          return accumulator + currentValue;
+        }, 0);
+        const average = total < 1 ? 0 : sum / total;
+
+        return (
+          <>
+            {mobile ? (
+              <Grid container direction='column' alignItems='center' style={{ paddingTop: 10 }}>
+                <Typography>{`${parseFloat((average * 10).toFixed(1))}`}</Typography>
+              </Grid>
+            ) : (
+              <>
+                <Rating
+                  readOnly
+                  precision={0.5}
+                  name='size-large'
+                  value={average * 5}
+                  defaultValue={0}
+                  disabled={settings.connection !== 'nostr'}
+                  onClick={() => {
+                    onClickCoordinator(params.row.shortAlias);
+                  }}
+                />
+                <Typography variant='caption' color='text.secondary'>
+                  {`(${total})`}
+                </Typography>
+              </>
+            )}
+          </>
+        );
+      },
+    };
+  }, [federationUpdatedAt]);
 
   const enabledObj = useCallback(
     (width: number) => {
@@ -98,7 +212,7 @@ const FederationTable = ({
         field: 'enabled',
         headerName: t('Enabled'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: Coordinator }) => {
           return (
             <Checkbox
               checked={params.row.enabled}
@@ -119,7 +233,7 @@ const FederationTable = ({
         field: 'up',
         headerName: t('Up'),
         width: width * fontSize,
-        renderCell: (params: any) => {
+        renderCell: (params: { row: Coordinator }) => {
           return (
             <div
               style={{ cursor: 'pointer' }}
@@ -127,7 +241,7 @@ const FederationTable = ({
                 onClickCoordinator(params.row.shortAlias);
               }}
             >
-              {Boolean(params.row.loadingLimits) && Boolean(params.row.enabled) ? (
+              {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
                 <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
               ) : params.row.limits !== undefined ? (
                 <Link color='success' />
@@ -151,9 +265,17 @@ const FederationTable = ({
         object: aliasObj,
       },
     },
+    rating: {
+      priority: 2,
+      order: 2,
+      normal: {
+        width: 12.1,
+        object: ratingObj,
+      },
+    },
     up: {
       priority: 3,
-      order: 2,
+      order: 3,
       normal: {
         width: 3.5,
         object: upObj,
@@ -161,7 +283,7 @@ const FederationTable = ({
     },
     enabled: {
       priority: 1,
-      order: 3,
+      order: 4,
       normal: {
         width: 5,
         object: enabledObj,
@@ -238,6 +360,33 @@ const FederationTable = ({
         }}
         hideFooter={true}
       />
+
+      <Grid item>
+        {!verifcationText && (
+          <Button
+            sx={{ maxHeight: 38, mt: '1em' }}
+            disabled={false}
+            onClick={() => setVerifyRatings(true)}
+            variant='contained'
+            color='secondary'
+            size='small'
+            type='submit'
+          >
+            {t('Verify ratings')}
+          </Button>
+        )}
+        <Typography
+          variant='body2'
+          color={verifcationText ? 'success.main' : 'warning.main'}
+          sx={{ mt: 2, fontWeight: 'bold' }}
+        >
+          {verifcationText
+            ? verifcationText
+            : t(
+                'Verifying all ratings might take some time; this window may freeze for a few seconds while the cryptographic certification is in progress.',
+              )}
+        </Typography>
+      </Grid>
     </Box>
   );
 };

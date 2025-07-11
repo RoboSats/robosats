@@ -1,4 +1,4 @@
-FROM python:3.12.3-slim-bookworm
+FROM python:3.13.5-slim-bookworm
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEVELOPMENT=False
 
@@ -11,7 +11,9 @@ RUN apt-get update -qq && \
         libpq-dev \
         curl \
         build-essential \
-        gnupg2
+        gnupg2 \
+        pkg-config \
+        libsecp256k1-dev
 
 RUN python -m pip install --upgrade pip
 

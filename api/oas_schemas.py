@@ -9,6 +9,7 @@ from api.serializers import (
     ListOrderSerializer,
     OrderDetailSerializer,
     StealthSerializer,
+    ReviewSerializer,
 )
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
@@ -167,7 +168,7 @@ class OrderViewSchema:
         "examples": [
             OpenApiExample(
                 "Order cancelled",
-                value={"bad_request": "This order has been cancelled by the maker"},
+                value={"bad_request": "This order has been cancelled"},
                 status_codes=[400],
             ),
             OpenApiExample(
@@ -177,7 +178,7 @@ class OrderViewSchema:
             ),
             OpenApiExample(
                 "Order cancelled",
-                value={"bad_request": "This order has been cancelled collaborativelly"},
+                value={"bad_request": "This order has been cancelled"},
                 status_codes=[400],
             ),
             OpenApiExample(
@@ -190,7 +191,7 @@ class OrderViewSchema:
             OpenApiExample(
                 "When Robosats node is down",
                 value={
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 },
                 status_codes=[400],
             ),
@@ -461,6 +462,10 @@ class RobotViewSchema:
                         "type": "string",
                         "description": "Armored ASCII PGP public key block",
                     },
+                    "nostr_pubkey": {
+                        "type": "string",
+                        "description": "Nostr public key in hex format",
+                    },
                     "wants_stealth": {
                         "type": "boolean",
                         "default": False,
@@ -534,7 +539,7 @@ class InfoViewSchema:
               - 24h volume
               - all time volume
             - Node info
-              - lnd version
+              - node version
               - node id
               - node alias
               - network
@@ -775,6 +780,25 @@ class StealthViewSchema:
         "description": "Update stealth invoice option for the user",
         "responses": {
             200: StealthSerializer,
+            400: {
+                "type": "object",
+                "properties": {
+                    "bad_request": {
+                        "type": "string",
+                        "description": "Reason for the failure",
+                    },
+                },
+            },
+        },
+    }
+
+
+class ReviewViewSchema:
+    post = {
+        "summary": "Generates a review token",
+        "description": "Generates the token necesary for reviews of robot's latest order",
+        "responses": {
+            200: ReviewSerializer,
             400: {
                 "type": "object",
                 "properties": {

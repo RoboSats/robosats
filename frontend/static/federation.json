@@ -22,7 +22,6 @@
       "isFounder": true,
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
-      "robotsLove": false,
       "hasLargeLimits": true
     },
     "policies": {
@@ -73,7 +72,6 @@
       "isFounder": true,
       "donatesToDevFund": 30,
       "hasGoodOpSec": true,
-      "robotsLove": false,
       "hasLargeLimits": true
     },
     "policies": {
@@ -119,9 +117,8 @@
     "badges": {
       "isFounder": false,
       "donatesToDevFund": 20,
-      "hasGoodOpSec": false,
-      "robotsLove": false,
-      "hasLargeLimits": true
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -167,8 +164,7 @@
       "isFounder": false,
       "donatesToDevFund": 25,
       "hasGoodOpSec": true,
-      "robotsLove": false,
-      "hasLargeLimits": false
+      "hasLargeLimits": true
     },
     "policies": {
       "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
@@ -192,28 +188,96 @@
     "testnetNodesPubkeys": ["02f0ddc838b35fe54daa13baa4abab84475c7b9f2670ff4b53c1724792843ef62a"],
     "federated": true
   },
-  "local": {
-    "longAlias": "Local Dev",
-    "shortAlias": "local",
-    "description": "This coordinator will only be available if you run a RoboSats coordinator on your own machine.",
-    "motto": "Buidl",
-    "color": "#000000",
-    "testnet": {
-      "onion": "",
-      "clearnet": "http://localhost:8000"
+  "bazaar": {
+    "longAlias": "LibreBazaar",
+    "shortAlias": "bazaar",
+    "identifier": "bazaar",
+    "description": "Unorthodox undockerized coordinator. Happy to help the decentralization of Robosats.",
+    "motto": "Freedom and Integrity",
+    "color": "#200000",
+    "established": "2025-05-20",
+    "nostrHexPubkey": "95521a33ba34f5924464f425e81b896b1aa9069796a778368ed053e3612c509b",
+    "contact": {
+      "email": "mail@librebazaar.com",
+      "telegram": "jerryfletcher21",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2FPtsqghzQKU83kYTlQ1VKg996dW4Cw4x_bvpKmiv8uns%3D%40smp18.simplex.im%2FV6N4pmHtaKhNbY8ab2Opmk9qJsGEaIYd%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEA7Uv1vk2CDBDL0Jcrfn0oe5xxK-QvZmyB0f731ftJbQ0%253D%26q%3Dc%26srv%3Dlyqpnwbs2zqfr45jqkncwpywpbtq7jrhxnib5qddtr6npjyezuwd3nqd.onion",
+      "pgp": "/static/federation/pgp/C6894FC235E06C4FC2FE77916FA7713E574EDEC3.asc",
+      "nostr": "npub1j4fp5va6xn6ey3ry7sj7sxufdvd2jp5hj6nhsd5w6pf7xcfv2zdspj5e5g",
+      "website": null,
+      "fingerprint": "C6894FC235E06C4FC2FE77916FA7713E574EDEC3"
     },
     "badges": {
-      "donatesToDevFund": 0
-    },
-    "mainnet": {
-      "onion": "",
-      "clearnet": ""
+      "isFounder": false,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
     },
     "policies": {
-      "Development Policy": "Don't look around, just buidl"
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and XMPP are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through TOR.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be first addressed through our public chats in the different social networks but never will be started using private chats."
     },
-    "mainnetNodesPubkeys": ["..."],
-    "testnetNodesPubkeys": ["..."],
+    "mainnet": {
+      "onion": "http://librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["03ab3468f06d3aac93992ef7ae79bce083e18617dc760f09ef687d7bca89667a15"],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "freedomsats": {
+    "longAlias": "FreedomSats",
+    "shortAlias": "freedomsats",
+    "identifier": "freedomsats",
+    "description": "A Decentralized, deflationary currency enthusiast. Hoping to add liquidity to a non-KYC means for purchasing and selling bitcoin. Robosats P2P solves many issues with the modern day fiat system, and FreedomSats is happy to aid in its decentralization. The focus of FreedomSats will be to ensure data privacy and uptime-consistency.",
+    "motto": "Liberty’s Network Above",
+    "color": "#5d2365",
+    "established": "2025-06-30",
+    "nostrHexPubkey": "ded3dc02a1a9b61ce59d11f496539cb3fd15f00326a16f47e5f8d76baba24bdb",
+    "contact": {
+      "email": "FreedomSatoshis@proton.me",
+      "telegram": "@freedomsats",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FLjWY29_NGy7vujmzRCmnJocepWWMAk2D%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEAWRfXNPT2xQihjv0Ef2sV51J2YiAmboLcmE0adlEAv2c%253D%26q%3Dc%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
+      "pgp": "/static/federation/pgp/9D3D3BAF4744305EE3F0B837331AB575DD78D930.asc",
+      "nostr": "npub1mmfacq4p4xmpeevaz86fv5uuk073tuqry6sk73l9lrtkh2azf0dsykwxuj",
+      "website": null,
+      "fingerprint": "9D3D3BAF4744305EE3F0B837331AB575DD78D930"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Dispute Evidence Submission: If a dispute arises, you will be asked to provide only the transaction-related documentation needed to evaluate your claim—for example, transaction IDs, payment‐confirmation screenshots, or other pertinent records. Please keep a record of all relevant information.",
+      "Privacy Policy 2": "Limited Retention Period: All sensitive data gathered for the purpose of resolving a dispute will be retained strictly for the duration of that process. Once the issue is fully resolved, this information will be irrevocably and securely deleted",
+      "Data Policy 1": "No Third-Party Data Sharing: RoboSats is deliberately designed to collect no user data—no IP addresses, geolocation, or personal identifiers—and will never share information with outside parties.",
+      "Data Policy 2": "Ephemeral Log Retention: All operational logs required to run the coordinator are automatically deleted after seven days, unless they’re essential for an active dispute.",
+      "Rule 1:": "Please do not share any personal information through the chat, if possible share as little revealing information as possible.",
+      "Rule 2:": "Email is provided for convenience but other means of communication are recommended. Like Nostr/SimpleX/Telegram"
+    },
+    "mainnet": {
+      "onion": "http://dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["028059662c65626f3002290dd3151186bc1952726c03f56012406f3ceadb81cacc"],
+    "testnetNodesPubkeys": [],
     "federated": true
   }
 }

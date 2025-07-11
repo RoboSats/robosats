@@ -34,7 +34,6 @@ import {
 interface DepthChartProps {
   maxWidth: number;
   maxHeight: number;
-  fillContainer?: boolean;
   elevation?: number;
   onOrderClicked?: (id: number, shortAlias: string) => void;
 }
@@ -42,7 +41,6 @@ interface DepthChartProps {
 const DepthChart: React.FC<DepthChartProps> = ({
   maxWidth,
   maxHeight,
-  fillContainer = false,
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
@@ -71,7 +69,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     if (Object.values(federation.book).length > 0) {
       const enriched = Object.values(federation.book).map((order) => {
         if (order?.currency) {
-          const limits = federation.getCoordinators()[0]?.limits;
+          const limits = federation.getLimits();
 
           const originalPrice =
             (limits[order.currency]?.price ?? 0) * (1 + parseFloat(order.premium) / 100);
@@ -276,39 +274,45 @@ const DepthChart: React.FC<DepthChartProps> = ({
   return (
     <Paper
       elevation={elevation}
-      style={
-        fillContainer
-          ? { width: '100%', maxHeight: '100%', height: '100%' }
-          : { width: `${width}em`, maxHeight: `${height}em` }
-      }
+      style={{
+        width: `${width}em`,
+        height: `${height}em`,
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      <Paper variant='outlined' style={{ width: '100%', height: '100%' }}>
+      <Paper
+        variant='outlined'
+        style={{
+          width: '100%',
+          height: `100%`,
+          justifyContent: 'center',
+        }}
+      >
         {center === undefined || enrichedOrders.length < 1 ? (
           <div
             style={{
               display: 'flex',
               justifyContent: 'center',
-              paddingTop: `${(height - 3) / 2 - 1}em`,
-              height: `${height}em`,
+              paddingTop: `${height / 2}em`,
             }}
           >
             <CircularProgress />
           </div>
         ) : (
-          <Grid container style={{ paddingTop: '1em' }}>
+          <Grid container alignItems='center' direction='column'>
             <Grid
               container
               direction='row'
-              justifyContent='space-around'
-              alignItems='flex-start'
-              style={{ position: 'absolute' }}
+              justifyContent='space-between'
+              alignItems='center'
+              style={{ width: '100%' }}
             >
-              <Grid
-                container
-                justifyContent='flex-start'
-                alignItems='flex-start'
-                style={{ paddingLeft: '1em' }}
-              >
+              <Grid container style={{ paddingLeft: '1em', paddingTop: 3 }}>
+                <b>{t('Chart')}</b>
+              </Grid>
+              <Grid container style={{ paddingLeft: '1em' }}>
                 <Select
                   variant='standard'
                   value={xType}
@@ -328,8 +332,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   </MenuItem>
                 </Select>
               </Grid>
-            </Grid>
-            <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid container justifyContent='center' alignItems='center'>
                 <Grid item>
                   <IconButton
@@ -359,7 +361,10 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid container style={{ height: `${height * 0.8}em`, padding: '1em' }}>
+            <Grid
+              container
+              style={{ height: `${height * 0.825}em`, width: '100%', padding: '1em' }}
+            >
               <ResponsiveLine
                 data={series}
                 enableArea={true}

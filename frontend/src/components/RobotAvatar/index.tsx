@@ -46,49 +46,51 @@ const RobotAvatar: React.FC<Props> = ({
   imageStyle = {},
   onLoad = () => {},
 }) => {
-  const [avatarSrc, setAvatarSrc] = useState<string>('');
-  const [activeBackground, setActiveBackground] = useState<boolean>(true);
-  const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
   const backgroundFadeTime = 3000;
-
   const [backgroundData] = useState<BackgroundData>(placeholder.loading);
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
+  const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
+  const [avatarSrc, setAvatarSrc] = useState<string>();
+  const [activeBackground, setActiveBackground] = useState<boolean>(true);
+
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    if (hashId !== undefined) {
-      roboidentitiesClient
-        .generateRobohash(hashId, small ? 'small' : 'large')
-        .then((avatar) => {
-          setAvatarSrc(avatar);
-        })
-        .catch(() => {
-          setAvatarSrc('');
-        });
+    if (hashId) {
+      generateAvatar();
+
       setTimeout(() => {
-        setActiveBackground(false);
+        if (!avatarSrc) generateAvatar();
       }, backgroundFadeTime);
     }
-  }, [hashId]);
+  }, [hashId, small]);
 
   useEffect(() => {
     if (shortAlias && shortAlias !== '') {
-      if (client !== 'mobile') {
-        setAvatarSrc(
-          `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`,
-        );
-      } else {
-        setAvatarSrc(
-          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}.webp`,
-        );
-      }
-      setTimeout(() => {
-        setActiveBackground(false);
-      }, backgroundFadeTime);
+      const coordinatorAvatar =
+        client !== 'mobile'
+          ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
+          : `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}.webp`;
+      setAvatarSrc(coordinatorAvatar);
     } else {
       setActiveBackground(true);
     }
   }, [shortAlias]);
+
+  const generateAvatar = () => {
+    if (!hashId) return;
+
+    roboidentitiesClient
+      .generateRobohash(hashId, small ? 'small' : 'large')
+      .then((avatar) => {
+        setAvatarSrc(avatar);
+        setActiveBackground(false);
+      })
+      .catch(() => {
+        console.log('CATCH');
+        setActiveBackground(true);
+      });
+  };
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '0.428em', top: '0.07em' }}>

@@ -2,6 +2,7 @@ import pygeohash
 import hashlib
 import uuid
 
+from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
 from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag
 from api.models import Order
@@ -13,6 +14,10 @@ class Nostr:
 
     async def send_order_event(self, order):
         """Creates the event and sends it to the coordinator relay"""
+
+        # Publish only public orders
+        if order.password is not None:
+            return
 
         if config("NOSTR_NSEC", cast=str, default="") == "":
             return
@@ -26,17 +31,19 @@ class Nostr:
 
         # Add relays and connect
         await client.add_relay("ws://localhost:7777")
+        strfry_port = config("STRFRY_PORT", cast=str, default="7778")
+        await client.add_relay(f"ws://localhost:{strfry_port}")
         await client.connect()
 
         robot_name = await self.get_robot_name(order)
         robot_hash_id = await self.get_robot_hash_id(order)
         currency = await self.get_robot_currency(order)
 
-        event = EventBuilder(
-            Kind(38383),
-            "",
-            self.generate_tags(order, robot_name, robot_hash_id, currency),
-        ).to_event(keys)
+        event = (
+            EventBuilder(Kind(38383), "")
+            .tags(self.generate_tags(order, robot_name, robot_hash_id, currency))
+            .sign_with_keys(keys)
+        )
         await client.send_event(event)
         print(f"Nostr event sent: {event.as_json()}")
 
@@ -108,7 +115,23 @@ class Nostr:
             return "success"
 
     def get_layer_tag(self, order):
-        if order.type == Order.Types.SELL:
+        if order.type == Order.Types.SELL and not config(
+            "DISABLE_ONCHAIN", cast=bool, default=True
+        ):
             return ["onchain", "lightning"]
         else:
             return ["lightning"]
+            return False
+
+    def sign_message(text: str) -> str:
+        try:
+            keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+            secret_key_hex = keys.secret_key().to_hex()
+            private_key = PrivateKey(bytes.fromhex(secret_key_hex))
+            signature = private_key.schnorr_sign(
+                text.encode("utf-8"), bip340tag=None, raw=True
+            )
+
+            return signature.hex()
+        except Exception:
+            return ""

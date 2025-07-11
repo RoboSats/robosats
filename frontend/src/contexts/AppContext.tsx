@@ -9,7 +9,6 @@ import React, {
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 import { ThemeProvider } from '@mui/material';
-import { type GeoJsonObject } from 'geojson';
 
 import { Settings, type Version, type Origin, type Favorites } from '../models';
 
@@ -18,8 +17,6 @@ import { getClientVersion, getHost } from '../utils';
 import defaultFederation from '../../static/federation.json';
 import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
-import getWorldmapGeojson from '../geo/Web';
-import { apiClient } from '../services/api';
 import SettingsSelfhosted from '../models/Settings.default.basic.selfhosted';
 import SettingsSelfhostedPro from '../models/Settings.default.pro.selfhosted';
 import SettingsPro from '../models/Settings.default.pro';
@@ -120,7 +117,6 @@ const getSettings = (): Settings => {
   } else {
     settings = view === 'pro' ? new SettingsPro() : new Settings();
   }
-
   return settings;
 };
 
@@ -145,7 +141,7 @@ export interface UseAppStoreType {
   navbarHeight: number;
   open: OpenDialogs;
   setOpen: Dispatch<SetStateAction<OpenDialogs>>;
-  windowSize?: WindowSize;
+  windowSize: WindowSize;
   acknowledgedWarning: boolean;
   setAcknowledgedWarning: Dispatch<SetStateAction<boolean>>;
   clientVersion: {
@@ -157,7 +153,6 @@ export interface UseAppStoreType {
   hostUrl: string;
   fav: Favorites;
   setFav: Dispatch<SetStateAction<Favorites>>;
-  worldmap?: GeoJsonObject;
   client: 'mobile' | 'web' | 'desktop' | string;
   view: 'basic' | 'pro' | string;
 }
@@ -165,7 +160,7 @@ export interface UseAppStoreType {
 export const initialAppContext: UseAppStoreType = {
   theme: undefined,
   torStatus: 'STARTING',
-  settings: new Settings(),
+  settings: getSettings(),
   setSettings: () => {},
   page: entryPage,
   setPage: () => {},
@@ -192,7 +187,7 @@ export const initialAppContext: UseAppStoreType = {
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
 
-export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.Element => {
+export const AppContextProvider = ({ children }: AppContextProviderProps): React.JSX.Element => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 
@@ -203,7 +198,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
   const origin = initialAppContext.origin;
   const [client, view] = window.RobosatsSettings.split('-');
 
-  const [settings, setSettings] = useState<Settings>(getSettings());
+  const [settings, setSettings] = useState<Settings>(initialAppContext.settings);
   const [theme, setTheme] = useState<Theme>(() => {
     return makeTheme(settings);
   });
@@ -213,20 +208,20 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
     initialAppContext.slideDirection,
   );
   const [open, setOpen] = useState<OpenDialogs>(initialAppContext.open);
-  const [windowSize, setWindowSize] = useState<WindowSize>(() =>
-    getWindowSize(theme.typography.fontSize),
+  const [windowSize, setWindowSize] = useState<WindowSize>(
+    () => getWindowSize(theme.typography.fontSize) ?? { width: 0, height: 0 },
   );
   const [fav, setFav] = useState<Favorites>(initialAppContext.fav);
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
     initialAppContext.acknowledgedWarning,
   );
-  const [worldmap, setWorldmap] = useState<GeoJsonObject>();
 
   useEffect(() => {
     setTheme(makeTheme(settings));
   }, [settings.fontSize, settings.mode, settings.lightQRs]);
 
   useEffect(() => {
+    setSettings(getSettings());
     void i18n.changeLanguage(settings.language);
     window.addEventListener('torStatus', (event) => {
       // Trick to improve UX on Android webview: delay the "Connected to TOR" status by 5 secs to avoid long waits on the first request.
@@ -252,24 +247,16 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
   }, []);
 
   useEffect(() => {
-    if (page === 'offers' && !worldmap) {
-      getWorldmapGeojson(apiClient, hostUrl)
-        .then((data) => {
-          setWorldmap(data);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-    }
-  }, [page]);
-
-  useEffect(() => {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   }, [theme.typography.fontSize]);
 
   const onResize = function (): void {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   };
+
+  useEffect(() => {
+    setOpen(closeAll);
+  }, [page, setOpen]);
 
   return (
     <AppContext.Provider
@@ -293,7 +280,6 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
         origin,
         fav,
         setFav,
-        worldmap,
         client,
         view,
       }}

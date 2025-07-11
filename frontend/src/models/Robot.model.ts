@@ -1,9 +1,8 @@
-import { apiClient } from '../services/api';
+import { apiClient, type Auth } from '../services/api';
 import type Federation from './Federation.model';
-import { type AuthHeaders } from './Slot.model';
 
 class Robot {
-  constructor(attributes?: Record<any, any>) {
+  constructor(attributes?: object) {
     Object.assign(this, attributes);
   }
 
@@ -27,17 +26,19 @@ class Robot {
   public tokenSHA256: string = '';
   public hasEnoughEntropy: boolean = false;
 
-  update = (attributes: Record<string, any>): void => {
+  update = (attributes: object): void => {
     Object.assign(this, attributes);
   };
 
-  getAuthHeaders = (): AuthHeaders | null => {
+  getAuthHeaders = (): Auth | null => {
     const tokenSHA256 = this.tokenSHA256 ?? '';
     const encPrivKey = this.encPrivKey ?? '';
     const pubKey = this.pubKey ?? '';
+    const nostrPubkey = this.nostrPubKey ?? '';
 
     return {
       tokenSHA256,
+      nostrPubkey,
       keys: {
         pubKey: pubKey.split('\n').join('\\'),
         encPrivKey: encPrivKey.split('\n').join('\\'),
@@ -54,8 +55,13 @@ class Robot {
     this.loading = true;
 
     await apiClient
-      .get(coordinator.url, `${coordinator.basePath}/api/robot/`, authHeaders)
-      .then((data: any) => {
+      .get(coordinator.url, '/api/robot/', authHeaders)
+      .then((data: object) => {
+        if (data?.bad_request) {
+          console.error(data?.bad_request);
+          return;
+        }
+
         this.update({
           nickname: data.nickname,
           activeOrderId: data.active_order_id ?? null,
@@ -69,6 +75,7 @@ class Robot {
           last_login: data.last_login,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
+          nostrPubKey: data.nostr_pubkey,
         });
       })
       .catch((e) => {
@@ -92,7 +99,7 @@ class Robot {
     const data = await apiClient
       .post(
         coordinator.url,
-        `${coordinator.basePath}/api/reward/`,
+        '/api/reward/',
         {
           invoice: signedInvoice,
         },
@@ -111,17 +118,37 @@ class Robot {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     await apiClient
-      .post(
-        coordinator.url,
-        `${coordinator.basePath}/api/stealth/`,
-        { wantsStealth },
-        { tokenSHA256: this.tokenSHA256 },
-      )
+      .post(coordinator.url, '/api/stealth/', { wantsStealth }, { tokenSHA256: this.tokenSHA256 })
       .catch((e) => {
         console.log(e);
       });
 
     this.stealthInvoices = wantsStealth;
+  };
+
+  loadReviewToken = (
+    federation: Federation,
+    onDataLoad: (token: string) => void = () => {},
+  ): void => {
+    if (!federation) return;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    const body = {
+      pubkey: this.nostrPubKey,
+    };
+
+    apiClient
+      .post(coordinator.url, '/api/review/', body, {
+        tokenSHA256: this.tokenSHA256,
+      })
+      .then((data) => {
+        if (data) {
+          onDataLoad(data.token);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 }
 

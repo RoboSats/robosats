@@ -353,7 +353,7 @@ class LNDNode:
                 status = LNPayment.Status.CANCEL
 
             # LND restarted.
-            if "wallet locked, unlock it" in str(e):
+            elif "wallet locked, unlock it" in str(e):
                 print(str(timezone.now()) + " :: Wallet Locked")
 
             # Other write to logs
@@ -472,7 +472,7 @@ class LNDNode:
                 * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                 float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
             )
-        )  # 200 ppm or 10 sats
+        )  # 1000 ppm or 2 sats
         timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
         request = router_pb2.SendPaymentRequest(
             payment_request=lnpayment.invoice,

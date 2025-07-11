@@ -36,7 +36,7 @@ export const ChatPrompt = ({
   loadingDispute,
   messages,
   setMessages,
-}: ChatPromptProps): JSX.Element => {
+}: ChatPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -46,7 +46,6 @@ export const ChatPrompt = ({
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
-  const [showWarning, setShowWarning] = useState<boolean>(false);
 
   const currencyCode: string = currencies[`${order.currency}`];
   const amount: string = pn(
@@ -59,7 +58,7 @@ export const ChatPrompt = ({
   }: {
     hours: number;
     minutes: number;
-  }): JSX.Element {
+  }): React.JSX.Element {
     return (
       <span>{`${t('To open a dispute you need to wait')} ${hours}h ${zeroPad(minutes)}m `}</span>
     );
@@ -88,7 +87,6 @@ export const ChatPrompt = ({
         setSentButton(false);
         setUndoSentButton(false);
         setReceivedButton(false);
-        setShowWarning(true);
         setText(
           t(
             'Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.',
@@ -127,20 +125,16 @@ export const ChatPrompt = ({
       <Grid item>
         <Typography variant='body2' align='center'>
           {text}{' '}
-          {showWarning ? (
-            <>
-              {'⚠️ '}
-              <a
-                href='https://robosats.org/docs/payment-methods/#scams'
-                target='_blank'
-                rel='noreferrer'
-              >
-                {t('Beware scams')}
-              </a>
-            </>
-          ) : (
-            ''
-          )}
+          <>
+            {'⚠️ '}
+            <a
+              href='https://robosats.org/docs/payment-methods/#scams'
+              target='_blank'
+              rel='noreferrer'
+            >
+              {t('Beware scams')}
+            </a>
+          </>
         </Typography>
       </Grid>
 

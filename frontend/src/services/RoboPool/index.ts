@@ -1,5 +1,5 @@
 import { type Event } from 'nostr-tools';
-import { type Settings } from '../../models';
+import { type Coordinator, type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
@@ -10,32 +10,10 @@ interface RoboPoolEvents {
 }
 
 class RoboPool {
-  constructor(settings: Settings, origin: string) {
+  constructor(settings: Settings) {
     this.network = settings.network ?? 'mainnet';
 
     this.relays = [];
-    const federationRelays = Object.values(defaultFederation)
-      .map((coord) => {
-        const url: string = coord[this.network][settings.selfhostedClient ? 'onion' : origin];
-
-        if (!url) return undefined;
-
-        return `ws://${url.replace(/^https?:\/\//, '')}/nostr`;
-      })
-      .filter((item) => item !== undefined);
-    if (settings.host) {
-      const hostNostr = `ws://${settings.host.replace(/^https?:\/\//, '')}/nostr`;
-      if (federationRelays.includes(hostNostr)) {
-        this.relays.push(hostNostr);
-      }
-    }
-    while (this.relays.length < 3) {
-      const randomRelay =
-        federationRelays[Math.floor(Math.random() * Object.keys(federationRelays).length)];
-      if (!this.relays.includes(randomRelay)) {
-        this.relays.push(randomRelay);
-      }
-    }
   }
 
   public relays: string[];
@@ -44,8 +22,25 @@ class RoboPool {
   public webSockets: Record<string, WebsocketConnection | null> = {};
   private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
 
-  connect = (): void => {
-    this.relays.forEach((url: string) => {
+  updateRelays = (hostUrl: string, coordinators: Coordinator[]) => {
+    this.close();
+    this.relays = [];
+    const federationRelays = coordinators.map((coord) => coord.getRelayUrl(hostUrl));
+    const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
+    if (hostRelay) this.relays.push(hostRelay);
+
+    while (this.relays.length < 3) {
+      const randomRelay =
+        federationRelays[Math.floor(Math.random() * Object.keys(federationRelays).length)];
+      if (!this.relays.includes(randomRelay)) {
+        this.relays.push(randomRelay);
+      }
+    }
+    this.connect();
+  };
+
+  connect = (relays: string[] = this.relays): void => {
+    relays.forEach((url: string) => {
       if (Object.keys(this.webSockets).find((wUrl) => wUrl === url)) return;
 
       this.webSockets[url] = null;
@@ -98,10 +93,12 @@ class RoboPool {
     });
   };
 
-  subscribeBook = (events: RoboPoolEvents): void => {
-    const authors = [...Object.values(defaultFederation), ...Object.values(thirdParties)]
-      .map((f) => f.nostrHexPubkey)
-      .filter((item) => item !== undefined);
+  subscribeBook = (robosatsOnly: boolean, events: RoboPoolEvents): void => {
+    let scope = Object.values(defaultFederation);
+    if (!robosatsOnly) {
+      scope = [...scope, ...Object.values(thirdParties)];
+    }
+    const authors = scope.map((f) => f.nostrHexPubkey).filter((item) => item !== undefined);
 
     const requestPending = [
       'REQ',
@@ -122,13 +119,51 @@ class RoboPool {
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
       if (jsonMessage[0] === 'EVENT') {
-        events.onevent(jsonMessage[2]);
+        const event: Event = jsonMessage[2];
+        const network = event.tags.find((e) => e[0] === 'network');
+        if (network?.[1] === this.network) events.onevent(jsonMessage[2]);
       } else if (jsonMessage[0] === 'EOSE') {
         events.oneose();
       }
     });
     this.sendMessage(JSON.stringify(requestPending));
     this.sendMessage(JSON.stringify(requestSuccess));
+  };
+
+  subscribeRatings = (events: RoboPoolEvents, pubkeys?: string[], id?: string): void => {
+    const defaultPubkeys = Object.values(defaultFederation)
+      .map((f) => f.nostrHexPubkey)
+      .filter((item) => item !== undefined);
+
+    const requestRatings = [
+      'REQ',
+      `subscribeRatings${id ?? ''}`,
+      { kinds: [31986], '#p': pubkeys ?? defaultPubkeys, since: 1746316800 },
+    ];
+
+    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+      const jsonMessage = JSON.parse(messageEvent.data);
+      if (jsonMessage[0] === 'EVENT') {
+        events.onevent(jsonMessage[2]);
+      } else if (jsonMessage[0] === 'EOSE') {
+        events.oneose();
+      }
+    });
+    this.sendMessage(JSON.stringify(requestRatings));
+  };
+
+  subscribeChat = (hexPubKeys: string[], since: number, events: RoboPoolEvents): void => {
+    const requestRatings = ['REQ', 'subscribeChat', { kinds: [1059], '#p': hexPubKeys, since }];
+
+    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+      const jsonMessage = JSON.parse(messageEvent.data);
+      if (jsonMessage[0] === 'EVENT') {
+        events.onevent(jsonMessage[2]);
+      } else if (jsonMessage[0] === 'EOSE') {
+        events.oneose();
+      }
+    });
+    this.sendMessage(JSON.stringify(requestRatings));
   };
 
   sendEvent = (event: Event): void => {

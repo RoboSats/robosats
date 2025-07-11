@@ -207,6 +207,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="True if you are either a taker or maker, False otherwise",
     )
+    has_password = serializers.BooleanField(
+        required=False,
+        help_text="True if the order is password protected",
+    )
     maker_status = serializers.CharField(
         required=False,
         help_text="Status of the maker:\n"
@@ -267,11 +271,17 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     maker_hash_id = serializers.CharField(
         required=False, help_text="The maker's robot hash"
     )
+    maker_nostr_pubkey = serializers.CharField(
+        required=False, help_text="The maker's robot nostr hex pubkey"
+    )
     taker_nick = serializers.CharField(
         required=False, help_text="The taker's robot hash"
     )
     taker_hash_id = serializers.CharField(
         required=False, help_text="The taker's robot hash"
+    )
+    taker_nostr_pubkey = serializers.CharField(
+        required=False, help_text="The taker's robot nostr hex pubkey"
     )
     status_message = serializers.CharField(
         required=False,
@@ -432,6 +442,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "is_maker",
             "is_taker",
             "is_participant",
+            "has_password",
             "maker_status",
             "taker_status",
             "price_now",
@@ -444,8 +455,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "is_seller",
             "maker_nick",
             "maker_hash_id",
+            "maker_nostr_pubkey",
             "taker_nick",
             "taker_hash_id",
+            "taker_nostr_pubkey",
             "status_message",
             "is_fiat_sent",
             "is_disputed",
@@ -586,10 +599,18 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "bond_size",
             "latitude",
             "longitude",
+            "password",
         )
 
 
 class UpdateOrderSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        max_length=2000,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="In case the order is password protected",
+    )
     invoice = serializers.CharField(
         max_length=15000,
         allow_null=True,
@@ -659,6 +680,14 @@ class ClaimRewardSerializer(serializers.Serializer):
         default=None,
         help_text="A valid LN invoice with the reward amount to withdraw",
     )
+    routing_budget_ppm = serializers.IntegerField(
+        default=0,
+        min_value=Decimal(0),
+        max_value=100_001,
+        allow_null=True,
+        required=False,
+        help_text="Max budget to allocate for routing in PPM",
+    )
 
 
 class PriceSerializer(serializers.Serializer):
@@ -677,6 +706,15 @@ class TickSerializer(serializers.ModelSerializer):
             "fee",
         )
         depth = 0
+
+
+class ReviewSerializer(serializers.Serializer):
+    pubkey = serializers.CharField(
+        help_text="Robot's nostr hex pubkey",
+        allow_null=False,
+        allow_blank=False,
+        required=True,
+    )
 
 
 class StealthSerializer(serializers.Serializer):

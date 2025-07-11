@@ -1,0 +1,621 @@
+#!/bin/sh
+
+_command_exist() {
+    if command -v "$1" >/dev/null 2>&1; then
+        return 0
+    else
+        echo "error: $1 command not found" >&2
+        return 1
+    fi
+}
+
+_create_dir() {
+    if [ ! -e "$1" ]; then
+        mkdir -p "$1" || return "$?"
+        if [ "$#" -ge 2 ]; then
+            if ! chmod "$2" "$1"; then
+                echo "error: setting chmod $2 of $1" >&2
+                return 1
+            fi
+        fi
+    elif [ ! -d "$1" ]; then
+        echo "error: $1 is not a directory" >&2
+        return 1
+    fi
+}
+
+# if $2 is provided use it as default
+# otherwise return error when not found
+_get_env_var() {
+    if ! env_var="$(dotenv -f ".env" get "$1" 2>/dev/null)"; then
+        if [ "$#" -ge 2 ]; then
+            env_var="$2"
+        else
+            echo "error: getting $1 from .env" >&2
+            return 1
+        fi
+    fi
+    printf "%s\n" "$env_var"
+
+    return 0
+}
+
+# transform relative path into absolute and remove trailing slashes
+_get_env_var_path() {
+    env_var="$(_get_env_var "$@")" || return "$?"
+    real_path="$(realpath -m "$env_var")" || return "$?"
+    printf "%s\n" "$real_path"
+
+    return 0
+}
+
+_services_environment_set() {
+    TRADITIONAL_SERVICES_DIR="$(_get_env_var_path "TRADITIONAL_SERVICES_DIR")" || return "$?"
+    TRADITIONAL_LOGS_DIR="$(_get_env_var_path "TRADITIONAL_LOGS_DIR")" || return "$?"
+    _create_dir "$TRADITIONAL_SERVICES_DIR" || return "$?"
+    _create_dir "$TRADITIONAL_LOGS_DIR" || return "$?"
+
+    POSTGRES_DIR="$TRADITIONAL_SERVICES_DIR/postgres"
+    REDIS_DIR="$TRADITIONAL_SERVICES_DIR/redis"
+    NGINX_DIR="$TRADITIONAL_SERVICES_DIR/nginx"
+    STRFRY_DIR="$TRADITIONAL_SERVICES_DIR/strfry"
+    GNUPG_DIR="$(_get_env_var_path "GNUPG_DIR")" || return "$?"
+
+    POSTGRES_DB="$(_get_env_var "POSTGRES_DB")" || return "$?"
+    POSTGRES_USER="$(_get_env_var "POSTGRES_USER")" || return "$?"
+    POSTGRES_PASS="$(_get_env_var "POSTGRES_PASSWORD")" || return "$?"
+    POSTGRES_PORT="$(_get_env_var "POSTGRES_PORT")" || return "$?"
+
+    REDIS_URL="$(_get_env_var "REDIS_URL")" || return "$?"
+    REDIS_PORT="$(
+        printf "%s\n" "$REDIS_URL" |
+        rev |
+        cut -d ":" -f 1 |
+        rev |
+        cut -d "/" -f 1
+    )"
+
+    STRFRY_GIT_DIR="$(_get_env_var_path "STRFRY_GIT_DIR")" || return "$?"
+
+    DAPHNE_PORT="$(_get_env_var "DAPHNE_PORT")" || return "$?"
+    GUNICORN_PORT="$(_get_env_var "GUNICORN_PORT")" || return "$?"
+    RUNSERVER_PORT="$(_get_env_var "RUNSERVER_PORT")" || return "$?"
+    STRFRY_PORT="$(_get_env_var "STRFRY_PORT")" || return "$?"
+
+    if [ "$POSTGRES_DB" = "postgres" ]; then
+        echo "error: POSTGRES_DB should not be postgres" >&2
+        return 1
+    fi
+    if [ "$POSTGRES_USER" = "$USER" ]; then
+        echo "error: POSTGRES_USER should not be the same as USER" >&2
+        return 1
+    fi
+
+    TRADITIONAL_DIR="$(realpath "$(dirname "$0")")"
+
+    NGINX_CONF="$NGINX_DIR/nginx.conf"
+    STRFRY_CONF="$STRFRY_DIR/strfry.conf"
+
+    gunicorn_workers=2
+
+    strfry_bin="$STRFRY_GIT_DIR/strfry"
+
+    # to prevent having same command names and killing wrong programs
+    python_bin="$(which python3)"
+    celery_bin="$(which celery)"
+
+    # docker-compose.yml
+
+    DAPHNE_COMMAND="daphne -b 0.0.0.0 -p $DAPHNE_PORT robosats.asgi:application"
+    GUNICORN_COMMAND="gunicorn --bind :$GUNICORN_PORT --max-requests 1000 --max-requests-jitter 200 -w $gunicorn_workers robosats.wsgi:application"
+    # -e stderr otherwise nginx complains that it can not open default root log file
+    NGINX_COMMAND="nginx -c $NGINX_CONF -p $NGINX_DIR -e stderr"
+    RUNSERVER_COMMAND="$python_bin manage.py runserver 0.0.0.0:$RUNSERVER_PORT"
+
+    CLEAN_ORDERS_COMMAND="$python_bin manage.py clean_orders"
+    FOLLOW_INVOICES_COMMAND="$python_bin manage.py follow_invoices"
+    TELEGRAM_WATCHER_COMMAND="$python_bin manage.py telegram_watcher"
+
+    CELERY_PROD_COMMAND="$celery_bin -A robosats worker --loglevel=WARNING"
+    CELERY_DEV_COMMAND="$celery_bin -A robosats worker --loglevel=INFO --concurrency 4 --max-tasks-per-child=4 --max-memory-per-child=200000"
+    CELERY_BEAT_COMMAND="$celery_bin -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+
+    STRFRY_RELAY_COMMAND="$strfry_bin --config $STRFRY_CONF relay"
+    STRFRY_SYNC_FEDERATION_COMMAND="$TRADITIONAL_DIR/strfry-sync-federation"
+    STRFRY_SYNC_EXTERNAL_COMMAND="$TRADITIONAL_DIR/strfry-sync-external"
+}
+
+nginx_setup() {
+    if [ -e "$NGINX_CONF" ]; then
+        echo "nginx conf $NGINX_CONF already exists"
+        return 0
+    fi
+
+    ONION_LOCATION="$(_get_env_var "ONION_LOCATION")" || return "$?"
+
+    _create_dir "$NGINX_DIR" "0700" || return "$?"
+    _create_dir "$NGINX_DIR/root" || return "$?"
+    _create_dir "$NGINX_DIR/static" || return "$?"
+    _create_dir "$NGINX_DIR/well-known" || return "$?"
+    _create_dir "$NGINX_DIR/temp" || return "$?"
+
+    cp "$TRADITIONAL_DIR/templates/nginx.conf" "$NGINX_CONF"
+
+    sed -i "s/\$ONION_LOCATION/$ONION_LOCATION/g" "$NGINX_CONF"
+    sed -i "s|\$NGINX_DIR|$NGINX_DIR|g" "$NGINX_CONF"
+    sed -i "s/\$GUNICORN_PORT/$GUNICORN_PORT/g" "$NGINX_CONF"
+    sed -i "s/\$DAPHNE_PORT/$DAPHNE_PORT/g" "$NGINX_CONF"
+    sed -i "s/\$RUNSERVER_PORT/$RUNSERVER_PORT/g" "$NGINX_CONF"
+    sed -i "s/\$STRFRY_PORT/$STRFRY_PORT/g" "$NGINX_CONF"
+
+    cp "$TRADITIONAL_DIR/templates/index.html" "$NGINX_DIR/root"
+
+    cp -r "$(
+        find "$VIRTUAL_ENV" \
+            -type d \
+            -wholename "*site-packages/django/contrib/admin/static/admin"
+    )" "$NGINX_DIR/static"
+
+    # copy favicon into $NGINX_DIR/favicon.ico
+    # copy custom index.html in $NGINX_DIR/root/index.html
+
+    echo "nginx directory set up"
+}
+
+strfry_setup() {
+    if [ -e "$STRFRY_CONF" ]; then
+        echo "strfry conf $STRFRY_CONF already exists"
+        return 0
+    fi
+
+    _create_dir "$STRFRY_DIR" "0700" || return "$?"
+
+    cp "$TRADITIONAL_DIR/templates/strfry.conf" "$STRFRY_CONF"
+
+    sed -i "s|\$STRFRY_DIR|$STRFRY_DIR|g" "$STRFRY_CONF"
+    sed -i "s/\$STRFRY_PORT/$STRFRY_PORT/g" "$STRFRY_CONF"
+
+    echo "strfry directory set up"
+}
+
+git_setup() {
+    git rev-parse HEAD > commit_sha
+
+    echo "git commit_sha set up"
+}
+
+postgres_action() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert postgres action" >&2
+        return 1
+    fi
+    action="$1"
+    shift 1
+    case "$action" in
+        setup|database|database-production) ;;
+        *)
+            echo "error: wrong action" >&2
+            return 1
+        ;;
+    esac
+
+    if ! _command_exist postgres; then
+        return 1
+    fi
+    if ! _command_exist initdb; then
+        return 1
+    fi
+    if ! _command_exist psql; then
+        return 1
+    fi
+
+    case "$action" in
+        setup)
+            if [ -e "$POSTGRES_DIR" ]; then
+                echo "postgres directory $POSTGRES_DIR already exists"
+                return 0
+            fi
+            _create_dir "$POSTGRES_DIR" "0700" || return "$?"
+
+            if ! initdb -D "$POSTGRES_DIR"; then
+                echo "error: running initdb" >&2
+                return 1
+            fi
+
+            cat << EOF > "$POSTGRES_DIR/postgresql.conf"
+port = $POSTGRES_PORT
+unix_socket_directories = '$POSTGRES_DIR'
+EOF
+        ;;
+        database|database-production)
+            if [ ! -d "$POSTGRES_DIR" ]; then
+                printf "%s%s\n" \
+                    "error: $POSTGRES_DIR is not a directory, " \
+                    "should run postgres-setup" \
+                    >&2
+                return 1
+            fi
+        ;;
+    esac
+
+    postgres_setup_log_file="$TRADITIONAL_LOGS_DIR/postgres-setup-log"
+    echo "starting postgres, setup log file is $postgres_setup_log_file"
+    postgres -D "$POSTGRES_DIR" >>"$postgres_setup_log_file" 2>&1 &
+    postgres_pid="$!"
+
+    _postgres_shut_down() {
+        echo "shutting down postgres"
+        if ! kill "$postgres_pid"; then
+            echo "error: shutting down postgres" >&2
+            return 1
+        fi
+    }
+
+    echo "wait..."
+    sleep 5
+
+    case "$action" in
+        setup)
+            echo "setting up postgres user $POSTGRES_USER"
+            psql_stdin=$(cat << EOF
+CREATE ROLE $POSTGRES_USER WITH LOGIN PASSWORD '$POSTGRES_PASS';
+ALTER ROLE $POSTGRES_USER CREATEDB;
+EOF
+            )
+        ;;
+        database|database-production)
+            psql_stdin=$(cat << EOF
+CREATE DATABASE $POSTGRES_DB OWNER $POSTGRES_USER;
+EOF
+            )
+        ;;
+    esac
+    printf "%s\n" "$psql_stdin" |
+    psql -h localhost -p "$POSTGRES_PORT" -U "$USER" -d postgres
+
+    echo "wait..."
+    sleep 5
+
+    case "$action" in
+        database|database-production)
+            if ! DJANGO_SUPERUSER_USERNAME="$(_get_env_var "ESCROW_USERNAME")"; then
+                _postgres_shut_down || return "$?"
+                return 1
+            fi
+
+            if ! python3 manage.py migrate; then
+                _postgres_shut_down || return "$?"
+                return 1
+            fi
+
+            if [ "$action" = "database" ]; then
+                # shellcheck disable=SC2034
+                DJANGO_SUPERUSER_PASSWORD="password"
+                DJANGO_SUPERUSER_EMAIL="superuser@email.com"
+                if ! python3 manage.py createsuperuser \
+                    --noinput \
+                    --username "$DJANGO_SUPERUSER_USERNAME" \
+                    --email "$DJANGO_SUPERUSER_EMAIL"
+                then
+                    _postgres_shut_down || return "$?"
+                    return 1
+                fi
+            elif [ "$action" = "database-production" ]; then
+                if ! python3 manage.py createsuperuser \
+                    --username "$DJANGO_SUPERUSER_USERNAME"
+                then
+                    _postgres_shut_down || return "$?"
+                    return 1
+                fi
+            fi
+        ;;
+    esac
+
+    _postgres_shut_down || return "$?"
+
+    return 0
+}
+
+cleanup_signal() {
+    printf "\n"
+    printf "%s\n" "Caught $1 signal, sending it to services..."
+
+    pkill -"$2" -f "$STRFRY_SYNC_EXTERNAL_COMMAND"
+    pkill -"$2" -f "$STRFRY_SYNC_FEDERATION_COMMAND"
+    pkill -"$2" -f "$STRFRY_RELAY_COMMAND"
+    pkill -"$2" -f "$CELERY_BEAT_COMMAND"
+    if [ -n "$CELERY_COMMAND" ]; then
+        pkill -"$2" -f "$CELERY_COMMAND"
+    fi
+    pkill -"$2" -f "$FOLLOW_INVOICES_COMMAND"
+    pkill -"$2" -f "$TELEGRAM_WATCHER_COMMAND"
+    pkill -"$2" -f "$CLEAN_ORDERS_COMMAND"
+    pkill -"$2" -f "$RUNSERVER_COMMAND"
+    pkill -"$2" -f "$DAPHNE_COMMAND"
+    pkill -"$2" -f "$GUNICORN_COMMAND"
+    pkill -"$2" -f "$NGINX_COMMAND"
+    pkill -"$2" -f "redis-server \*:${REDIS_PORT}"
+    pkill -"$2" -f "postgres -D $POSTGRES_DIR"
+
+    exit 0
+}
+
+cleanup_int() {
+    printf "\n"
+    printf "%s\n" "Caught INT signal, shutting down services..."
+
+    pkill -TERM -f "$STRFRY_SYNC_EXTERNAL_COMMAND"
+    pkill -TERM -f "$STRFRY_SYNC_FEDERATION_COMMAND"
+    pkill -TERM -f "$STRFRY_RELAY_COMMAND"
+    pkill -INT -f "$CELERY_BEAT_COMMAND"
+    if [ -n "$CELERY_COMMAND" ]; then
+        pkill -INT -f "$CELERY_COMMAND"
+    fi
+    pkill -TERM -f "$FOLLOW_INVOICES_COMMAND"
+    pkill -TERM -f "$TELEGRAM_WATCHER_COMMAND"
+    pkill -TERM -f "$CLEAN_ORDERS_COMMAND"
+    pkill -TERM -f "$RUNSERVER_COMMAND"
+    pkill -TERM -f "$DAPHNE_COMMAND"
+    pkill -INT -f "$GUNICORN_COMMAND"
+    pkill -QUIT -f "$NGINX_COMMAND"
+    pkill -INT -f "redis-server \*:${REDIS_PORT}"
+    pkill -INT -f "postgres -D $POSTGRES_DIR"
+
+    exit 0
+}
+
+main_loop() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert main loop action" >&2
+        return 1
+    fi
+    action="$1"
+    shift 1
+    case "$action" in
+        test|server|production) ;;
+        *)
+            echo "error: $1 is invalid" >&2
+            return 1
+        ;;
+    esac
+
+    if ! _command_exist postgres; then
+        return 1
+    fi
+    if ! _command_exist redis-server; then
+        return 1
+    fi
+    if [ "$action" = "server" ] || [ "$action" = "production" ]; then
+        if [ "$action" = "production" ]; then
+            if ! _command_exist daphne; then
+                return 1
+            fi
+            if ! _command_exist gunicorn; then
+                return 1
+            fi
+            if ! _command_exist nginx; then
+                return 1
+            fi
+        fi
+        if ! _command_exist celery; then
+            return 1
+        fi
+    fi
+
+    if [ ! -d "$POSTGRES_DIR" ]; then
+        printf "%s%s\n" \
+            "error: $POSTGRES_DIR is not a directory, " \
+            "should run postgres-setup and postgres-database" \
+            >&2
+        return 1
+    fi
+    if [ "$action" = "server" ] || [ "$action" = "production" ]; then
+        if [ "$action" = "production" ]; then
+            if [ ! -d "$NGINX_DIR" ]; then
+                printf "%s%s\n" \
+                    "error: $NGINX_DIR is not a directory, " \
+                    "should run setup" \
+                    >&2
+                return 1
+            fi
+        fi
+        if [ ! -d "$STRFRY_DIR" ]; then
+            printf "%s%s\n" \
+                "error: $STRFRY_DIR is not a directory, " \
+                "should run setup" \
+                >&2
+            return 1
+        fi
+    fi
+
+    if ! pgrep -a bitcoind >/dev/null 2>&1 || {
+        ! pgrep -a lightningd >/dev/null 2>&1 &&
+        ! pgrep -a lnd >/dev/null 2>&1
+    }; then
+        if [ "$action" = "production" ]; then
+            btc_lnc_suggestion="start them before running this script"
+        else
+            btc_lnc_suggestion="make sure to run this script after running regtest-nodes"
+        fi
+        printf "%s%s\n" \
+            "error: bitcoin or lightning not running, " \
+            "$btc_lnc_suggestion" \
+            >&2
+        return 1
+    fi
+
+    _create_dir "$REDIS_DIR" || return "$?"
+    _create_dir "$GNUPG_DIR" "0700" || return "$?"
+
+    if [ "$action" = "server" ]; then
+        CELERY_COMMAND="$CELERY_DEV_COMMAND"
+    elif [ "$action" = "production" ]; then
+        CELERY_COMMAND="$CELERY_PROD_COMMAND"
+    fi
+
+    trap "cleanup_signal HUP" HUP
+    trap "cleanup_signal QUIT" QUIT
+    trap "cleanup_signal TERM" TERM
+    trap "cleanup_int" INT
+
+    while true; do
+        if ! pgrep -f "postgres -D $POSTGRES_DIR" >/dev/null; then
+            echo "starting postgres"
+            postgres -D "$POSTGRES_DIR" >> "$TRADITIONAL_LOGS_DIR/postgres" 2>&1 &
+        fi
+
+        if ! pgrep -f "redis-server \*:${REDIS_PORT}" >/dev/null; then
+            echo "starting redis"
+            printf "%s\n%s\n%s\n" \
+                "dir $REDIS_DIR" \
+                "port $REDIS_PORT" \
+                "maxclients 1024" |
+            redis-server - >> "$TRADITIONAL_LOGS_DIR/redis" 2>&1 &
+        fi
+
+        if [ "$action" = "server" ] || [ "$action" = "production" ]; then
+            if [ "$action" = "server" ]; then
+                if ! pgrep -f "$RUNSERVER_COMMAND" >/dev/null; then
+                    echo "starting runserver"
+                    $RUNSERVER_COMMAND \
+                        >> "$TRADITIONAL_LOGS_DIR/runserver" 2>&1 &
+                fi
+            elif [ "$action" = "production" ]; then
+                if ! pgrep -f "$DAPHNE_COMMAND" >/dev/null; then
+                    echo "starting daphne"
+                    $DAPHNE_COMMAND \
+                        >> "$TRADITIONAL_LOGS_DIR/daphne" 2>&1 &
+                fi
+
+                if ! pgrep -f "$GUNICORN_COMMAND" >/dev/null; then
+                    echo "starting gunicorn"
+                    $GUNICORN_COMMAND \
+                        >> "$TRADITIONAL_LOGS_DIR/gunicorn" 2>&1 &
+                fi
+
+                if ! pgrep -f "$NGINX_COMMAND" >/dev/null; then
+                    echo "starting nginx"
+                    $NGINX_COMMAND -g 'daemon off; master_process on;' \
+                        >> "$TRADITIONAL_LOGS_DIR/nginx" 2>&1 &
+                fi
+
+                if ! pgrep -f "$STRFRY_SYNC_FEDERATION_COMMAND" >/dev/null; then
+                    echo "starting strfry sync federation"
+                    $STRFRY_SYNC_FEDERATION_COMMAND \
+                        >> "$TRADITIONAL_LOGS_DIR/strfry-sync-federation" 2>&1 &
+                fi
+
+                if ! pgrep -f "$STRFRY_SYNC_EXTERNAL_COMMAND" >/dev/null; then
+                    echo "starting strfry sync external"
+                    $STRFRY_SYNC_EXTERNAL_COMMAND \
+                        >> "$TRADITIONAL_LOGS_DIR/strfry-sync-external" 2>&1 &
+                fi
+
+                if _get_env_var "TELEGRAM_TOKEN" >/dev/null 2>&1; then
+                    if ! pgrep -f "$TELEGRAM_WATCHER_COMMAND" >/dev/null; then
+                        echo "starting telegram-watcher"
+                        $TELEGRAM_WATCHER_COMMAND \
+                            >> "$TRADITIONAL_LOGS_DIR/telegram-watcher" 2>&1 &
+                    fi
+                fi
+            fi
+
+            if ! pgrep -f "$STRFRY_RELAY_COMMAND" >/dev/null; then
+                echo "starting strfry relay"
+                $STRFRY_RELAY_COMMAND \
+                    >> "$TRADITIONAL_LOGS_DIR/strfry-relay" 2>&1 &
+            fi
+
+            if ! pgrep -f "$CLEAN_ORDERS_COMMAND" >/dev/null; then
+                echo "starting clean-orders"
+                $CLEAN_ORDERS_COMMAND \
+                    >> "$TRADITIONAL_LOGS_DIR/clean-orders" 2>&1 &
+            fi
+
+            if ! pgrep -f "$FOLLOW_INVOICES_COMMAND" >/dev/null; then
+                echo "starting follow-invoices"
+                $FOLLOW_INVOICES_COMMAND \
+                    >> "$TRADITIONAL_LOGS_DIR/follow-invoices" 2>&1 &
+            fi
+
+            if ! pgrep -f "$CELERY_COMMAND" >/dev/null; then
+                echo "starting celery worker"
+                $CELERY_COMMAND >> "$TRADITIONAL_LOGS_DIR/celery-worker" 2>&1 &
+            fi
+
+            if ! pgrep -f "$CELERY_BEAT_COMMAND" >/dev/null; then
+                echo "starting celery beat"
+                $CELERY_BEAT_COMMAND >> "$TRADITIONAL_LOGS_DIR/celery-beat" 2>&1 &
+            fi
+        fi
+
+        sleep 2
+    done
+}
+
+_services_main() {
+    if [ "$#" -lt 1 ]; then
+        echo "error: insert action" >&2
+        return 1
+    fi
+    action="$1"
+    shift 1
+
+    if [ ! -f ".env" ]; then
+        echo "error: .env is not present" >&2
+        return 1
+    fi
+    if ! _command_exist dotenv; then
+        return 1
+    fi
+
+    case "$action" in
+        -h|--help)
+            cat << EOF
+traditional-services action
+
+postgres-setup
+postgres-database
+postgres-database-production
+strfry-setup
+nginx-setup
+test
+server
+production
+EOF
+            return 0
+        ;;
+    esac
+
+    _services_environment_set || return "$?"
+
+    case "$action" in
+        postgres-setup)
+            postgres_action "setup"
+        ;;
+        postgres-database)
+            postgres_action "database"
+        ;;
+        postgres-database-production)
+            postgres_action "database-production"
+        ;;
+        strfry-setup)
+            strfry_setup
+        ;;
+        nginx-setup)
+            nginx_setup
+        ;;
+        # git-setup)
+        #     git_setup
+        # ;;
+        test|server|production)
+            main_loop "$action"
+        ;;
+        *)
+            echo "error: action $action not recognized" >&2
+            return 1
+        ;;
+    esac
+}
+
+_services_main "$@"

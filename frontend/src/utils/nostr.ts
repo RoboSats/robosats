@@ -1,12 +1,16 @@
 import { type Event } from 'nostr-tools';
+import { schnorr } from '@noble/curves/secp256k1';
 import { type PublicOrder } from '../models';
 import { fromUnixTime } from 'date-fns';
 import Geohash from 'latlon-geohash';
 import thirdParties from '../../static/thirdparties.json';
 import currencyDict from '../../static/assets/currencies.json';
 import defaultFederation from '../../static/federation.json';
+import hashStringToInteger from './stringToInteger';
 
-const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOrder | null } => {
+const eventToPublicOrder = (
+  event: Event,
+): { dTag: string; publicOrder: PublicOrder | null; network: string } => {
   const publicOrder: PublicOrder = {
     id: 0,
     coordinatorShortAlias: '',
@@ -35,10 +39,13 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
 
   const statusTag = event.tags.find((t) => t[0] === 's') ?? [];
   const dTag = event.tags.find((t) => t[0] === 'd') ?? [];
+  const network = event.tags.find((t) => t[0] === 'network') ?? [];
+  const platform = event.tags.find((t) => t[0] === 'y') ?? [];
   const coordinator = [...Object.values(defaultFederation), ...Object.values(thirdParties)].find(
     (coord) => coord.nostrHexPubkey === event.pubkey,
   );
-  if (!coordinator || statusTag[1] !== 'pending') return { dTag: dTag[1], publicOrder: null };
+  if (!coordinator || statusTag[1] !== 'pending')
+    return { dTag: dTag[1], publicOrder: null, network: network[1] };
 
   publicOrder.coordinatorShortAlias = coordinator?.shortAlias;
   publicOrder.federated = coordinator?.federated ?? false;
@@ -83,15 +90,20 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
       }
       case 'f': {
         const currencyNumber = Object.entries(currencyDict).find(
-          ([_key, value]) => value === tag[1],
+          ([key, value]) => key && value === tag[1],
         );
         publicOrder.currency = currencyNumber?.[0] ? parseInt(currencyNumber[0], 10) : null;
         break;
       }
       case 'source': {
-        const orderUrl = tag[1].split('/');
-        publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
-        publicOrder.link = tag[1];
+        if (platform[1] === 'robosats') {
+          const orderUrl = tag[1].split('/');
+          publicOrder.id = parseInt(orderUrl[orderUrl.length - 1] ?? '0');
+        } else {
+          publicOrder.id = hashStringToInteger(tag[1] + dTag[1]);
+        }
+
+        if (tag[1] !== '') publicOrder.link = tag[1];
         break;
       }
       default:
@@ -99,11 +111,40 @@ const eventToPublicOrder = (event: Event): { dTag: string; publicOrder: PublicOr
     }
   });
 
-  if (!publicOrder.currency) return { dTag: dTag[1], publicOrder: null };
+  if (!publicOrder.currency) return { dTag: dTag[1], publicOrder: null, network: network[1] };
   if (!publicOrder.maker_hash_id)
     publicOrder.maker_hash_id = `${publicOrder.id}${coordinator?.shortAlias}`;
 
-  return { dTag: dTag[1], publicOrder };
+  return { dTag: dTag[1], publicOrder, network: network[1] };
+};
+
+export const verifyCoordinatorToken: (event: Event) => boolean = (event) => {
+  const d = event.tags.find((t) => t[0] === 'd')?.[1];
+  const orderId = d?.split(':')?.[1];
+  const signatureHex = event.tags.find((t) => t[0] === 'sig')?.[1];
+  const coordinatorPubKeyHex = event.tags.find((t) => t[0] === 'p')?.[1];
+  const message = `${event.pubkey}${orderId ?? ''}`;
+
+  if (signatureHex && coordinatorPubKeyHex) {
+    try {
+      const signature = Uint8Array.from(hexToBytes(signatureHex));
+      const coordinatorPubKey = Uint8Array.from(hexToBytes(coordinatorPubKeyHex));
+      const hash = new TextEncoder().encode(message);
+      return schnorr.verify(signature, hash, coordinatorPubKey);
+    } catch {
+      return false;
+    }
+  }
+  return false;
+};
+
+const hexToBytes: (hex: string) => Uint8Array = (hex) => {
+  if (hex.length % 2 !== 0) throw new Error('Hex must have an even lenght');
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return bytes;
 };
 
 export default eventToPublicOrder;

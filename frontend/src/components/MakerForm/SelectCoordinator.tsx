@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Grid,
   Select,
@@ -17,20 +17,22 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
 import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { Coordinator } from '../../models';
 
 interface SelectCoordinatorProps {
   coordinatorAlias: string;
-  setCoordinator: (coordinatorAlias: string) => void;
+  setCoordinatorAlias: (coordinatorAlias: string) => void;
 }
 
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   coordinatorAlias,
-  setCoordinator,
+  setCoordinatorAlias,
 }) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
+  const [coordinator, setCoordinator] = useState<Coordinator>();
 
   const onClickCurrentCoordinator = function (shortAlias: string): void {
     setOpen((open) => {
@@ -39,10 +41,13 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   };
 
   const handleCoordinatorChange = (e: SelectChangeEvent<string>): void => {
-    setCoordinator(e.target.value);
+    setCoordinatorAlias(e.target.value);
   };
 
-  const coordinator = federation.getCoordinator(coordinatorAlias);
+  useEffect(() => {
+    const selectedCoordinator = federation.getCoordinator(coordinatorAlias);
+    if (selectedCoordinator) setCoordinator(selectedCoordinator);
+  }, [coordinatorAlias]);
 
   return (
     <Grid item>
@@ -73,16 +78,16 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
             'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
           )}
         >
-          <Grid container style={{ marginTop: 10 }}>
+          <Grid container style={{ marginTop: 10, width: '100%' }}>
             <Grid
               item
-              xs={3}
               sx={{
                 cursor: 'pointer',
                 position: 'relative',
                 left: '0.3em',
                 bottom: '0.1em',
                 marginBottom: 1,
+                width: '30%',
               }}
               onClick={() => {
                 onClickCurrentCoordinator(coordinatorAlias);
@@ -90,15 +95,14 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
             >
               <Grid item>
                 <RobotAvatar
-                  shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
-                  hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
+                  shortAlias={coordinatorAlias}
+                  hashId={!coordinator?.federated ? coordinator?.mainnet.onion : undefined}
                   style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={false}
                   small={true}
                 />
-                {(coordinator?.limits === undefined ||
-                  Object.keys(coordinator?.limits).length === 0) && (
+                {(coordinator?.loadingInfo || coordinator?.loadingLimits) && (
                   <CircularProgress
                     size={49}
                     thickness={5}
@@ -108,20 +112,22 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Grid>
             </Grid>
 
-            <Grid item xs={9}>
+            <Grid item xs={{ width: '100%' }}>
               <Select
                 variant='standard'
                 fullWidth
                 required={true}
                 inputProps={{
-                  style: { textAlign: 'center' },
+                  style: {
+                    textAlign: 'center',
+                  },
                 }}
                 value={coordinatorAlias}
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {federation.getCoordinators().map((coordinator): JSX.Element | null => {
-                  let row: JSX.Element | null = null;
+                {federation.getCoordinators().map((coordinator): React.JSX.Element | null => {
+                  let row: React.JSX.Element | null = null;
                   if (coordinator.enabled === true) {
                     row = (
                       <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>

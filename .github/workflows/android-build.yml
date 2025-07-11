@@ -32,7 +32,7 @@ jobs:
 
       - name: 'Download Android Web.bundle Artifact (built frontend)'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@v9
+        uses: dawidd6/action-download-artifact@v11
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
@@ -135,7 +135,7 @@ jobs:
       - name: 'Create Pre-release'
         id: create_release
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: ncipollo/release-action@v1.16.0
+        uses: ncipollo/release-action@v1.18.0
         with:
           tag: android-${{ steps.commit.outputs.short }}
           name: robosats-android-${{ steps.commit.outputs.short }}

@@ -10,6 +10,7 @@ interface TokenInputProps {
   editable?: boolean;
   fullWidth?: boolean;
   loading?: boolean;
+  inputRef?: React.Ref<HTMLElement>;
   inputToken: string;
   autoFocusTarget?: 'textfield' | 'copyButton' | 'none';
   onPressEnter: () => void;
@@ -23,6 +24,7 @@ const TokenInput = ({
   editable = true,
   showCopy = true,
   label,
+  inputRef,
   fullWidth = true,
   onPressEnter,
   autoFocusTarget = 'textfield',
@@ -30,7 +32,7 @@ const TokenInput = ({
   loading = false,
   setInputToken,
   setValidToken = () => {},
-}: TokenInputProps): JSX.Element => {
+}: TokenInputProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [showCopied, setShowCopied] = useState<boolean>(false);
@@ -71,6 +73,7 @@ const TokenInput = ({
         autoFocus={autoFocusTarget === 'textfield'}
         fullWidth={fullWidth}
         sx={{ borderColor: 'primary' }}
+        inputRef={inputRef}
         variant={editable ? 'outlined' : 'filled'}
         helperText={badToken}
         size='medium'

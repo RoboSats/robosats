@@ -1,6 +1,17 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Tab, Tabs, Paper, CircularProgress, Grid, Typography, Box } from '@mui/material';
+import {
+  Tab,
+  Tabs,
+  Paper,
+  CircularProgress,
+  Grid,
+  Typography,
+  Box,
+  Stepper,
+  Step,
+  StepLabel,
+} from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import TradeBox from '../../components/TradeBox';
@@ -13,7 +24,7 @@ import { Order, type Slot } from '../../models';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { genBase62Token } from '../../utils';
 
-const OrderPage = (): JSX.Element => {
+const OrderPage = (): React.JSX.Element => {
   const { windowSize, setOpen, acknowledgedWarning, setAcknowledgedWarning, navbarHeight } =
     useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -29,6 +40,7 @@ const OrderPage = (): JSX.Element => {
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
+  const [orderStep, setOrderStep] = useState<number>(0);
 
   useEffect(() => {
     paramsRef.current = params;
@@ -53,6 +65,21 @@ const OrderPage = (): JSX.Element => {
       setCurrentOrder(null);
     };
   }, [params.orderId, openNoRobot]);
+
+  useEffect(() => {
+    if (!currentOrder) return;
+
+    setOrderStep(0);
+    if ([1].includes(currentOrder.status)) {
+      setOrderStep(1);
+    } else if ([6, 7, 8].includes(currentOrder.status)) {
+      setOrderStep(currentOrder.is_taker ? 1 : 2);
+    } else if ([9, 10, 11, 12].includes(currentOrder.status)) {
+      setOrderStep(currentOrder.is_taker ? 2 : 3);
+    } else if ([13, 14, 15, 16, 17, 18].includes(currentOrder.status)) {
+      setOrderStep(5);
+    }
+  }, [currentOrder?.status]);
 
   const updateSlotFromOrder = (updatedOrder: Order, slot: Slot): void => {
     if (
@@ -80,6 +107,7 @@ const OrderPage = (): JSX.Element => {
     <OrderDetails
       shortAlias={String(currentOrder.shortAlias)}
       currentOrder={currentOrder}
+      setCurrentOrder={setCurrentOrder}
       onClickCoordinator={onClickCoordinator}
     />
   ) : (
@@ -91,6 +119,10 @@ const OrderPage = (): JSX.Element => {
   ) : (
     <></>
   );
+
+  const steps = currentOrder?.is_taker
+    ? [t('Take'), t('Setup'), t('Trade'), t('Finish')]
+    : [t('Publish'), t('Wait'), t('Setup'), t('Trade'), t('Finish')];
 
   return (
     <Box>
@@ -118,13 +150,30 @@ const OrderPage = (): JSX.Element => {
             });
         }}
       />
-      {!currentOrder?.maker_hash_id && <CircularProgress />}
+      {!currentOrder?.maker && !currentOrder?.bad_request && <CircularProgress />}
+
       {currentOrder?.bad_request && currentOrder.status !== 5 ? (
-        <Typography align='center' variant='subtitle2' color='secondary'>
-          {t(currentOrder.bad_request)}
-        </Typography>
+        <>
+          <Typography align='center' variant='subtitle2' color='secondary'>
+            {t(currentOrder.bad_request)}
+          </Typography>
+          {currentOrder?.bad_request?.includes('password') && (
+            <Grid item xs={6} style={{ width: '21em' }}>
+              <Paper
+                elevation={12}
+                style={{
+                  width: '21em',
+                  maxHeight: `${maxHeight}em`,
+                  overflow: 'auto',
+                }}
+              >
+                {orderDetailsSpace}
+              </Paper>
+            </Grid>
+          )}
+        </>
       ) : null}
-      {currentOrder?.maker_hash_id && (!currentOrder.bad_request || currentOrder.status === 5) ? (
+      {currentOrder?.maker && (!currentOrder.bad_request || currentOrder.status === 5) ? (
         currentOrder.is_participant ? (
           windowSize.width > doublePageWidth ? (
             // DOUBLE PAPER VIEW
@@ -136,6 +185,15 @@ const OrderPage = (): JSX.Element => {
               spacing={2}
               style={{ width: '43em' }}
             >
+              <Grid item xs={12} style={{ width: '42em' }}>
+                <Stepper activeStep={orderStep}>
+                  {steps.map((label) => (
+                    <Step key={label}>
+                      <StepLabel>{t(label)}</StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
+              </Grid>
               <Grid item xs={6} style={{ width: '21em' }}>
                 <Paper
                   elevation={12}

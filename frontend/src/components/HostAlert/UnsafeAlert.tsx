@@ -4,6 +4,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import { getHost } from '../../utils';
 import defaultFederation from '../../../static/federation.json';
+import { systemClient } from '../../services/System';
 
 function federationUrls(): string[] {
   const urls: string[] = [];
@@ -31,13 +32,19 @@ function federationUrls(): string[] {
 
 export const safeUrls = federationUrls();
 
-const UnsafeAlert = (): JSX.Element => {
+const UnsafeAlert = (): React.JSX.Element => {
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
-  const [show, setShow] = useState<boolean>(true);
+  const [show, setShow] = useState<boolean>(false);
 
   const [unsafeClient, setUnsafeClient] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!systemClient.getItem('unsafe-alert')) {
+      setShow(true);
+    }
+  }, []);
 
   const checkClient = (): void => {
     const unsafe = !safeUrls.includes(getHost());
@@ -63,6 +70,7 @@ const UnsafeAlert = (): JSX.Element => {
             <Button
               onClick={() => {
                 setShow(false);
+                systemClient.setItem('unsafe-alert', 'false');
               }}
             >
               {t('Hide')}

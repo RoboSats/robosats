@@ -56,10 +56,10 @@ class Garage {
     const slotsDump: string = systemClient.getItem('garage_slots') ?? '';
 
     if (slotsDump !== '') {
-      const rawSlots: Record<any, any> = JSON.parse(slotsDump);
-      Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
+      const rawSlots: Record<string, object> = JSON.parse(slotsDump);
+      Object.values(rawSlots).forEach((rawSlot: object) => {
         if (rawSlot?.token) {
-          const robotAttributes = Object.values(rawSlot.robots)[0] as Record<any, any>;
+          const robotAttributes = Object.values(rawSlot.robots)[0] as object;
           this.slots[rawSlot.token] = new Slot(
             rawSlot.token,
             Object.keys(rawSlot.robots),

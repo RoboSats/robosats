@@ -10,9 +10,9 @@ export const WebsocketState = {
 
 export interface WebsocketConnection {
   send: (message: string) => void;
-  onMessage: (event: (message: any) => void) => void;
+  onMessage: (event: (message: object) => void) => void;
   onClose: (event: () => void) => void;
-  onError: (event: (error: any) => void) => void;
+  onError: (event: (error: object) => void) => void;
   close: () => void;
   getReadyState: () => number;
 }

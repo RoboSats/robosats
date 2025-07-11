@@ -1,11 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 'react-leaflet';
 import { useTheme, LinearProgress } from '@mui/material';
+import { type GeoJsonObject } from 'geojson';
 import { DivIcon, type LeafletMouseEvent } from 'leaflet';
 import { type PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
-import MarkerClusterGroup from '@christopherpickering/react-leaflet-markercluster';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import getWorldmapGeojson from '../../geo/Web';
+import { apiClient } from '../../services/api';
 
 interface MapPinProps {
   fillColor: string;
@@ -39,16 +42,27 @@ const Map = ({
   onOrderClicked = () => null,
   center = [0, 0],
   interactive = false,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const theme = useTheme();
-  const { worldmap } = useContext<UseAppStoreType>(AppContext);
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const [worldmap, setWorldmap] = useState<GeoJsonObject>();
+
+  useEffect(() => {
+    getWorldmapGeojson(apiClient, hostUrl)
+      .then((data) => {
+        setWorldmap(data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }, []);
 
   const RobotMarker = (
     key: string | number,
     position: [number, number],
     orderType: number,
     order?: PublicOrder,
-  ): JSX.Element => {
+  ): React.JSX.Element => {
     const fillColor = orderType === 1 ? theme.palette.primary.main : theme.palette.secondary.main;
     const outlineColor = 'black';
     const eyesColor = 'white';
@@ -66,8 +80,8 @@ const Map = ({
           })
         }
         eventHandlers={{
-          click: (_event: LeafletMouseEvent) => {
-            order?.id != null && onOrderClicked(order.id, order.coordinatorShortAlias);
+          click: () => {
+            if (order?.id != null) onOrderClicked(order.id, order.coordinatorShortAlias);
           },
         }}
       >
@@ -80,7 +94,7 @@ const Map = ({
     );
   };
 
-  const LocationMarker = (): JSX.Element => {
+  const LocationMarker = (): React.JSX.Element => {
     useMapEvents({
       click(event: LeafletMouseEvent) {
         if (interactive) {
@@ -92,7 +106,7 @@ const Map = ({
     return position != null ? RobotMarker('marker', position, orderType ?? 0) : <></>;
   };
 
-  const getOrderMarkers = (): JSX.Element => {
+  const getOrderMarkers = (): React.JSX.Element => {
     if (orders.length < 1) return <></>;
     return (
       <MarkerClusterGroup showCoverageOnHover={true} disableClusteringAtZoom={14}>
@@ -112,8 +126,8 @@ const Map = ({
       attributionControl={false}
       style={{ height: '100%', width: '100%', backgroundColor: theme.palette.background.paper }}
     >
-      {!useTiles && worldmap == null && <LinearProgress />}
-      {!useTiles && worldmap != null && (
+      {!useTiles && !worldmap && <LinearProgress />}
+      {!useTiles && worldmap && (
         <GeoJSON
           data={worldmap}
           style={{

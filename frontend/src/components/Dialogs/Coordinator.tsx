@@ -22,6 +22,7 @@ import {
   AccordionSummary,
   AlertTitle,
   ListItemButton,
+  Rating,
 } from '@mui/material';
 
 import {
@@ -61,7 +62,6 @@ import {
   BadgeFounder,
   BadgeDevFund,
   BadgePrivacy,
-  BadgeLoved,
   BadgeLimits,
   NostrIcon,
   SimplexIcon,
@@ -91,7 +91,7 @@ const ContactButtons = ({
   simplex,
   website,
   reddit,
-}: Contact): JSX.Element => {
+}: Contact): React.JSX.Element => {
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
   const [showNostr, setShowNostr] = useState<boolean>(false);
@@ -258,7 +258,7 @@ interface BadgesProps {
   size_limit: number | undefined;
 }
 
-const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
+const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
   const { t } = useTranslation();
   const sxProps = {
     width: '3em',
@@ -322,23 +322,6 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
         {...tooltipProps}
         title={
           <Typography align='center' variant='body2'>
-            {badges?.robotsLove === true
-              ? t('Loved by robots: receives positive comments by robots over the internet.')
-              : t(
-                  'The coordinator does not seem to receive exceptional love from robots over the internet',
-                )}
-          </Typography>
-        }
-      >
-        <Grid item sx={{ filter: badges?.robotsLove === true ? undefined : 'grayscale(100%)' }}>
-          <BadgeLoved sx={sxProps} />
-        </Grid>
-      </Tooltip>
-
-      <Tooltip
-        {...tooltipProps}
-        title={
-          <Typography align='center' variant='body2'>
             {size_limit > 3000000
               ? t('Large limits: the coordinator has large trade limits.')
               : t('Does not have large trade limits.')}
@@ -353,11 +336,13 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): JSX.Element => {
   );
 };
 
-const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.Element => {
+const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
+  const [rating, setRating] = useState<Record<string, number>>({});
+  const [averageRating, setAvergeRating] = useState<number>(0);
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
   const [coordinator, setCoordinator] = useState<Coordinator>(
     federation.getCoordinator(shortAlias ?? ''),
@@ -370,10 +355,41 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias ?? ''));
+    setRating({});
+    setAvergeRating(0);
   }, [shortAlias]);
 
   useEffect(() => {
-    if (open) federation.getCoordinator(shortAlias ?? '')?.loadInfo();
+    if (open) {
+      const coordinator = federation.getCoordinator(shortAlias ?? '');
+      if (settings.connection === 'nostr') {
+        federation.roboPool.subscribeRatings(
+          {
+            onevent: (event) => {
+              const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
+              if (coordinatorPubKey === coordinator.nostrHexPubkey) {
+                const eventRating = event.tags.find((t) => t[0] === 'rating')?.[1];
+                if (eventRating) {
+                  setRating((prev) => {
+                    prev[event.pubkey] = parseFloat(eventRating);
+                    const totalRatings = Object.values(prev);
+                    const sum: number = Object.values(prev).reduce((accumulator, currentValue) => {
+                      return accumulator + currentValue;
+                    }, 0);
+                    setAvergeRating(sum / totalRatings.length);
+                    return prev;
+                  });
+                }
+              }
+            },
+            oneose: () => {},
+          },
+          [coordinator.nostrHexPubkey],
+          coordinator.shortAlias,
+        );
+      }
+      if (!coordinator.info) coordinator?.loadInfo();
+    }
   }, [open]);
 
   return (
@@ -397,6 +413,21 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
                 <Typography align='center' variant='body2'>
                   <i>{String(coordinator?.motto)}</i>
                 </Typography>
+              </Grid>
+              <Grid container direction='column' alignItems='center' padding={0}>
+                <Grid item>
+                  <Rating
+                    readOnly
+                    precision={0.5}
+                    name='size-large'
+                    value={averageRating * 5}
+                    defaultValue={0}
+                    disabled={settings.connection !== 'nostr'}
+                  />
+                  <Typography variant='caption' color='text.secondary'>
+                    {`(${Object.keys(rating).length ?? 0})`}
+                  </Typography>
+                </Grid>
               </Grid>
               <Grid item>
                 <ContactButtons {...coordinator?.contact} />
@@ -477,29 +508,31 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): JSX.El
             />
           </ListItem>
 
-          <ListItemButton
-            target='_blank'
-            href={coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin]}
-            rel='noreferrer'
-          >
-            <ListItemIcon>
-              <Web />
-            </ListItemIcon>
-            <ListItemText
-              secondary={t('Coordinator hosted web app')}
-              primaryTypographyProps={{
-                style: {
-                  maxWidth: '20em',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                },
-              }}
+          {coordinator?.[settings.network] && (
+            <ListItemButton
+              target='_blank'
+              href={coordinator[settings.network][settings.selfhostedClient ? 'onion' : origin]}
+              rel='noreferrer'
             >
-              {`${String(
-                coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin],
-              )}`}
-            </ListItemText>
-          </ListItemButton>
+              <ListItemIcon>
+                <Web />
+              </ListItemIcon>
+              <ListItemText
+                secondary={t('Coordinator hosted web app')}
+                primaryTypographyProps={{
+                  style: {
+                    maxWidth: '20em',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                  },
+                }}
+              >
+                {`${String(
+                  coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin],
+                )}`}
+              </ListItemText>
+            </ListItemButton>
+          )}
         </List>
 
         {!coordinator || coordinator?.loadingInfo ? (

@@ -16,13 +16,13 @@ interface FilterOrders {
   paymentMethods?: string[];
 }
 
-const filterByPayment = function (order: PublicOrder, paymentMethods: any[]): boolean {
+const filterByPayment = function (order: PublicOrder, paymentMethods: string[]): boolean {
   if (paymentMethods.length === 0) {
     return true;
   } else {
     let result = false;
     paymentMethods.forEach((method) => {
-      result = result || order.payment_method.includes(method.name);
+      result = result || order.payment_method.includes(method);
     });
     return result;
   }

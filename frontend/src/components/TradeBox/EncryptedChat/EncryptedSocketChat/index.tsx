@@ -20,7 +20,6 @@ import {
   type UseFederationStoreType,
   FederationContext,
 } from '../../../../contexts/FederationContext';
-import { type UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 
 const audioPath =
   window.NativeRobosats === undefined
@@ -38,6 +37,7 @@ interface Props {
   setMessages: (messages: EncryptedChatMessage[]) => void;
   turtleMode: boolean;
   setTurtleMode: (state: boolean) => void;
+  onSendMessage: (content: string) => void;
 }
 
 const EncryptedSocketChat: React.FC<Props> = ({
@@ -51,10 +51,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
   setMessages,
   turtleMode,
   setTurtleMode,
-}: Props): JSX.Element => {
+  onSendMessage,
+}: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -113,13 +113,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
     if (!slot?.token) return;
 
-    const { url, basePath } = federation
-      .getCoordinator(order.shortAlias)
-      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+    const url = federation.getCoordinator(order.shortAlias).url;
+    const protocol = url.includes('https') ? 'wss://' : 'ws://';
 
     websocketClient
       .open(
-        `${url.replace(/^https?:\/\//, 'ws://') + basePath}/ws/chat/${
+        `${url.replace(/^https?:\/\//, protocol)}/ws/chat/${
           order.id
         }/?token_sha256_hex=${sha256(slot?.token)}`,
       )
@@ -162,7 +161,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     };
   };
 
-  const onMessage: (message: any) => void = (message) => {
+  const onMessage: (message: object) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
@@ -248,6 +247,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
     // If input string contains '#' send unencrypted and unlogged message
     else if (connection != null && value.substring(0, 1) === '#') {
+      onSendMessage(value);
       connection.send(
         JSON.stringify({
           type: 'message',
@@ -263,6 +263,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
+      onSendMessage(value);
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
         .then((encryptedMessage) => {
           if (connection != null) {
@@ -347,7 +348,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%' }}>
+          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
             <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={9}>
               <TextField
                 label={t('Type a message')}

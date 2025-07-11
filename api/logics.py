@@ -1308,9 +1308,9 @@ class Logics:
         bond_satoshis = int(order.last_satoshis * order.bond_size / 100)
 
         if user.robot.wants_stealth:
-            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
-            description = f"{config("NODE_ALIAS")} - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
 
         # Gen hold Invoice
         try:
@@ -1327,7 +1327,7 @@ class Logics:
             print(str(e))
             if "failed to connect to all addresses" in str(e):
                 return False, {
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 }
             elif "wallet locked" in str(e):
                 return False, {
@@ -1450,11 +1450,11 @@ class Logics:
         bond_satoshis = int(take_order.last_satoshis * order.bond_size / 100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
         if user.robot.wants_stealth:
-            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
             description = (
                 f"{config("NODE_ALIAS")} - Taking 'Order {order.id}' {pos_text} BTC for {str(float(take_order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
-                + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+                + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
             )
 
         # Gen hold Invoice
@@ -1472,7 +1472,7 @@ class Logics:
         except Exception as e:
             if "status = StatusCode.UNAVAILABLE" in str(e):
                 return False, {
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 }
 
         take_order.taker_bond = LNPayment.objects.create(
@@ -1551,7 +1551,7 @@ class Logics:
         order.log(f"Escrow invoice amount is calculated as {escrow_satoshis} Sats")
 
         if user.robot.wants_stealth:
-            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
             description = f"{config("NODE_ALIAS")} - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
@@ -1572,7 +1572,7 @@ class Logics:
         except Exception as e:
             if "status = StatusCode.UNAVAILABLE" in str(e):
                 return False, {
-                    "bad_request": "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 }
 
         order.trade_escrow = LNPayment.objects.create(
@@ -1886,7 +1886,7 @@ class Logics:
         return
 
     @classmethod
-    def withdraw_rewards(cls, user, invoice):
+    def withdraw_rewards(cls, user, invoice, routing_budget_ppm):
         # only a user with positive withdraw balance can use this
 
         if user.robot.earned_rewards < 1:
@@ -1894,14 +1894,22 @@ class Logics:
 
         num_satoshis = user.robot.earned_rewards
 
-        routing_budget_sats = int(
-            max(
-                num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
-                float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+        if routing_budget_ppm is not None and routing_budget_ppm is not False:
+            routing_budget_sats = float(num_satoshis) * (
+                float(routing_budget_ppm) / 1_000_000
             )
-        )  # 1000 ppm or 10 sats
+            num_satoshis = int(num_satoshis - routing_budget_sats)
+        else:
+            # start deprecate in the future
+            routing_budget_sats = int(
+                max(
+                    num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                    float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+                )
+            )  # 1000 ppm or 2 sats
+            routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1_000_000
+            # end deprecate
 
-        routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1_000_000
         reward_payout = LNNode.validate_ln_invoice(
             invoice, num_satoshis, routing_budget_ppm
         )

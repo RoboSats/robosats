@@ -22,6 +22,7 @@ export interface SubmitActionProps {
   rating?: number;
   amount?: number;
   cancel_status?: number;
+  password?: string;
 }
 
 export interface TradeRobotSummary {
@@ -61,7 +62,7 @@ class Order {
   expires_at: Date = new Date();
   type: number = 0;
   currency: number = 0;
-  amount: number = 0;
+  amount: number | null = null;
   has_range: boolean = false;
   min_amount: number = 0;
   max_amount: number = 0;
@@ -77,12 +78,14 @@ class Order {
   is_maker: boolean = false;
   is_taker: boolean = false;
   is_participant: boolean = false;
+  has_password: boolean = false;
   maker_status: 'Active' | 'Seen recently' | 'Inactive' = 'Active';
   taker_status: 'Active' | 'Seen recently' | 'Inactive' = 'Active';
   price_now: number | undefined = undefined;
   satoshis_now: number = 0;
   latitude: number = 0;
   longitude: number = 0;
+  password: string | undefined = undefined;
   premium_now: number | undefined = undefined;
   premium_percentile: number = 0;
   num_similar_orders: number = 0;
@@ -93,8 +96,10 @@ class Order {
   is_seller: boolean = false;
   maker_nick: string = '';
   maker_hash_id: string = '';
+  maker_nostr_pubkey: string = '';
   taker_nick: string = '';
   taker_hash_id: string = '';
+  taker_nostr_pubkey: string = '';
   status_message: string = '';
   is_fiat_sent: boolean = false;
   is_disputed: boolean = false;
@@ -175,7 +180,7 @@ class Order {
   bad_invoice?: string = '';
   bad_statement?: string = '';
 
-  update = (attributes: Record<string, any>): Order => {
+  update = (attributes: object): Order => {
     Object.assign(this, attributes);
     return this;
   };
@@ -197,15 +202,15 @@ class Order {
       bond_size: this.bond_size,
       latitude: this.latitude,
       longitude: this.longitude,
+      password: this.password,
     };
 
     if (slot) {
       const coordinator = federation.getCoordinator(this.shortAlias);
-      const { basePath, url } = coordinator;
+      const authHeaders = slot.getRobot()?.getAuthHeaders();
+      if (!authHeaders) return this;
       const data = await apiClient
-        .post(url + basePath, '/api/make/', body, {
-          tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '',
-        })
+        .post(coordinator.url, '/api/make/', body, authHeaders)
         .catch((e) => {
           console.log(e);
         });
@@ -222,6 +227,7 @@ class Order {
   ) => {
     return await this.submitAction(federation, slot, {
       action: 'take',
+      password: this?.password,
       amount: this?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount),
     });
   };
@@ -232,9 +238,8 @@ class Order {
 
       if (slot) {
         const coordinator = federation.getCoordinator(this.shortAlias);
-        const { basePath, url } = coordinator;
         const data = await apiClient
-          .post(url + basePath, `/api/order/?order_id=${Number(this.id)}`, action, {
+          .post(coordinator.url, `/api/order/?order_id=${Number(this.id)}`, action, {
             tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '',
           })
           .catch((e) => {
@@ -252,9 +257,8 @@ class Order {
     const coordinator = federation.getCoordinator(this.shortAlias);
     const authHeaders = slot.getRobot()?.getAuthHeaders();
     if (!authHeaders) return this;
-    const { basePath, url } = coordinator;
     const data = await apiClient
-      .get(url + basePath, `/api/order/?order_id=${this.id}`, authHeaders)
+      .get(coordinator.url, `/api/order/?order_id=${this.id}`, authHeaders)
       .catch((e) => {
         console.log(e);
       });

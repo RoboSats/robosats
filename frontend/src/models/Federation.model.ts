@@ -1,6 +1,7 @@
 import {
   Coordinator,
   type Exchange,
+  LimitList,
   type Origin,
   type PublicOrder,
   type Settings,
@@ -19,15 +20,10 @@ type FederationHooks = 'onFederationUpdate';
 export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
     const coordinators = Object.entries(defaultFederation).reduce(
-      (acc: Record<string, Coordinator>, [key, value]: [string, any]) => {
-        if (getHost() !== '127.0.0.1:8000' && key === 'local') {
-          // Do not add `Local Dev` unless it is running on localhost
-          return acc;
-        } else {
-          acc[key] = new Coordinator(value, origin, settings, hostUrl);
-          acc[key].federated = true;
-          return acc;
-        }
+      (acc: Record<string, Coordinator>, [key, value]: [string, object]) => {
+        acc[key] = new Coordinator(value, origin, settings, hostUrl);
+        acc[key].federated = true;
+        return acc;
       },
       {},
     );
@@ -62,10 +58,10 @@ export class Federation {
     const tesnetHost = Object.values(this.coordinators).find((coor) => {
       return Object.values(coor.testnet).includes(url);
     });
-    if (tesnetHost) settings.network = 'testnet';
+    this.network = settings.network;
+    if (tesnetHost) this.network = 'testnet';
     this.connection = null;
-
-    this.roboPool = new RoboPool(settings, origin);
+    this.roboPool = new RoboPool(settings);
   }
 
   private coordinators: Record<string, Coordinator>;
@@ -73,32 +69,51 @@ export class Federation {
   public book: Record<string, PublicOrder | undefined>;
   public loading: boolean;
   public connection: 'api' | 'nostr' | null;
+  public network: 'testnet' | 'mainnet';
 
   public hooks: Record<FederationHooks, Array<() => void>>;
 
   public roboPool: RoboPool;
 
-  setConnection = (settings: Settings): void => {
+  setConnection = (
+    origin: Origin,
+    settings: Settings,
+    hostUrl: string,
+    coordinator: string,
+  ): void => {
     this.connection = settings.connection;
+    this.loading = true;
+    this.book = {};
+    this.exchange.loadingCache = this.roboPool.relays.length;
+    this.network = settings.network;
+
+    const coordinators = Object.values(this.coordinators);
+    coordinators.forEach((c) => c.updateUrl(origin, settings, hostUrl));
+    this.roboPool.updateRelays(hostUrl, Object.values(this.coordinators));
+
+    coordinators[0].loadLimits();
+
     if (this.connection === 'nostr') {
-      this.roboPool.connect();
-      this.loadBookNostr();
+      this.loadBookNostr(coordinator !== 'any');
     } else {
-      this.roboPool.close();
       void this.loadBook();
+    }
+
+    const federationUrls = Object.values(this.coordinators).map((c) => c.url);
+    systemClient.setCookie('federation', JSON.stringify(federationUrls));
+  };
+
+  refreshBookHosts: (robosatsOnly: boolean) => void = (robosatsOnly) => {
+    if (this.connection === 'nostr') {
+      this.loadBookNostr(robosatsOnly);
     }
   };
 
-  loadBookNostr = (): void => {
-    this.loading = true;
-    this.book = {};
-
-    this.exchange.loadingCache = this.roboPool.relays.length;
-
-    this.roboPool.subscribeBook({
+  loadBookNostr = (robosatsOnly: boolean): void => {
+    this.roboPool.subscribeBook(robosatsOnly, {
       onevent: (event) => {
-        const { dTag, publicOrder } = eventToPublicOrder(event);
-        if (publicOrder) {
+        const { dTag, publicOrder, network } = eventToPublicOrder(event);
+        if (publicOrder && network == this.network) {
           this.book[dTag] = publicOrder;
         } else {
           this.book[dTag] = undefined;
@@ -117,7 +132,7 @@ export class Federation {
     origin: Origin,
     settings: Settings,
     hostUrl: string,
-    attributes: Record<any, any>,
+    attributes: object,
   ): void => {
     const value = {
       ...coordinatorDefaultValues,
@@ -156,15 +171,6 @@ export class Federation {
     this.triggerHook('onFederationUpdate');
   };
 
-  updateUrl = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
-    const federationUrls = {};
-    for (const coor of Object.values(this.coordinators)) {
-      coor.updateUrl(origin, settings, hostUrl);
-      federationUrls[coor.shortAlias] = coor.url;
-    }
-    systemClient.setCookie('federation', JSON.stringify(federationUrls));
-  };
-
   loadInfo = async (): Promise<void> => {
     this.exchange.info = {
       num_public_buy_orders: 0,
@@ -183,20 +189,6 @@ export class Federation {
 
     for (const coor of Object.values(this.coordinators)) {
       coor.loadInfo(() => {
-        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
-        this.onCoordinatorSaved();
-      });
-    }
-  };
-
-  loadLimits = async (): Promise<void> => {
-    this.loading = true;
-    this.exchange.onlineCoordinators = 0;
-    this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
-    this.updateEnabledCoordinators();
-
-    for (const coor of Object.values(this.coordinators)) {
-      coor.loadLimits(() => {
         this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
         this.onCoordinatorSaved();
       });
@@ -222,6 +214,14 @@ export class Federation {
   updateExchange = (): void => {
     this.exchange.info = updateExchangeInfo(this);
     this.triggerHook('onFederationUpdate');
+  };
+
+  getLimits = (shortAlias?: string): LimitList => {
+    let limits = shortAlias ? this.coordinators[shortAlias]?.limits || {} : {};
+    if (Object.keys(limits).length === 0) {
+      limits = this.getCoordinators()[0]?.limits;
+    }
+    return limits;
   };
 
   // Coordinators

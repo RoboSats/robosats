@@ -7,8 +7,10 @@ on:
     branches: [ "main" ]
     paths: ["api", "chat", "control", "robosats"]
   pull_request_target:
-    branches: [ "main" ]
-    paths: ["api", "chat", "control", "robosats"]
+    branches:
+      - main
+    paths:
+      - '**.py'
 
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
@@ -31,7 +33,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: 'Download static files Artifact'
-      uses: dawidd6/action-download-artifact@v9
+      uses: dawidd6/action-download-artifact@v11
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
@@ -51,7 +53,7 @@ jobs:
           coordinator-docker-cache-
 
     - name: 'Compose Regtest Orchestration'
-      uses: isbang/compose-action@v2.2.0
+      uses: isbang/compose-action@v2.3.0
       with:
         compose-file: "./docker-tests.yml"
         down-flags: "--volumes"

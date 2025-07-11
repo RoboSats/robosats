@@ -12,16 +12,18 @@ import {
   Box,
   useTheme,
   type SelectChangeEvent,
+  IconButton,
 } from '@mui/material';
-import { Key, Bolt, Add, DeleteSweep, Download } from '@mui/icons-material';
+import { Key, Bolt, Add, DeleteSweep, Download, Settings } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { type Slot, type Robot } from '../../models';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { DeleteRobotConfirmationDialog } from '../../components/Dialogs';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -38,8 +40,8 @@ const RobotProfile = ({
   setInputToken,
   setView,
   width,
-}: RobotProfileProps): JSX.Element => {
-  const { windowSize, client, setOpen } = useContext<UseAppStoreType>(AppContext);
+}: RobotProfileProps): React.JSX.Element => {
+  const { windowSize, client, setOpen, open } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -48,6 +50,7 @@ const RobotProfile = ({
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const slot = garage.getSlot();
@@ -71,6 +74,20 @@ const RobotProfile = ({
     }
   };
 
+  const handleDeleteRobot = (): void => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = (): void => {
+    garage.deleteSlot();
+    setDeleteDialogOpen(false);
+    if (Object.keys(garage.slots).length < 1) setView('welcome');
+  };
+
+  const handleCancelDelete = (): void => {
+    setDeleteDialogOpen(false);
+  };
+
   const slot = garage.getSlot();
   const robot = slot?.getRobot();
 
@@ -84,6 +101,16 @@ const RobotProfile = ({
         spacing={1}
         sx={{ width: '100%' }}
       >
+        <Grid item sx={{ position: 'absolute', left: 0, marginLeft: 1 }}>
+          <IconButton
+            color='primary'
+            onClick={() => {
+              setOpen({ ...closeAll, profile: !open.profile });
+            }}
+          >
+            <Settings />
+          </IconButton>
+        </Grid>
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
           {slot?.nickname ? (
             <Typography align='center' component='h5' variant='h5'>
@@ -191,12 +218,6 @@ const RobotProfile = ({
                       'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
                     )}
                   </Grid>
-                  <Grid item sx={{ position: 'relative', right: '1em' }}>
-                    <Button color='success' size='small' onClick={handleAddRobot}>
-                      <Add />
-                      {t('Add a new Robot')}
-                    </Button>
-                  </Grid>
                 </Grid>
               </Alert>
             </Grid>
@@ -215,15 +236,14 @@ const RobotProfile = ({
           alignItems='stretch'
           sx={{ width: '100%' }}
         >
-          <Grid item xs={12}>
-            <TokenInput
-              inputToken={inputToken}
-              editable={false}
-              label={t('Store your token safely')}
-              setInputToken={setInputToken}
-              onPressEnter={() => null}
-            />
-          </Grid>
+          <TokenInput
+            fullWidth
+            inputToken={inputToken}
+            editable={false}
+            label={t('Store your token safely')}
+            setInputToken={setInputToken}
+            onPressEnter={() => null}
+          />
         </Grid>
       </Grid>
       <Grid item sx={{ width: '100%' }}>
@@ -307,13 +327,7 @@ const RobotProfile = ({
               ) : null}
 
               <Grid item>
-                <Button
-                  color='primary'
-                  onClick={() => {
-                    garage.deleteSlot();
-                    if (Object.keys(garage.slots).length < 1) setView('welcome');
-                  }}
-                >
+                <Button color='primary' onClick={handleDeleteRobot}>
                   <DeleteSweep /> <div style={{ width: '0.5em' }} />
                   {t('Delete Robot')}
                 </Button>
@@ -338,6 +352,13 @@ const RobotProfile = ({
           </Grid>
         </Box>
       </Grid>
+
+      <DeleteRobotConfirmationDialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        robotName={robot?.nickname}
+      />
     </Grid>
   );
 };

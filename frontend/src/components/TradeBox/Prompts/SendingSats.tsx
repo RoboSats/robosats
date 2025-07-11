@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, CircularProgress } from '@mui/material';
 
-export const SendingSatsPrompt = (): JSX.Element => {
+export const SendingSatsPrompt = (): React.JSX.Element => {
   const { t } = useTranslation();
 
   return (

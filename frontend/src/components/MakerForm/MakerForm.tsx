@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  InputAdornment,
   ButtonGroup,
   Slider,
   Switch,
@@ -15,9 +14,7 @@ import {
   FormHelperText,
   MenuItem,
   FormControl,
-  Radio,
   FormControlLabel,
-  RadioGroup,
   Box,
   useTheme,
   Collapse,
@@ -36,7 +33,8 @@ import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 
-import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit, Map } from '@mui/icons-material';
+import { SelfImprovement, Lock, DeleteSweep, Edit, Map } from '@mui/icons-material';
+import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import { LoadingButton } from '@mui/lab';
 import { fiatMethods } from '../PaymentMethods';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -44,10 +42,11 @@ import SelectCoordinator from './SelectCoordinator';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { useNavigate } from 'react-router-dom';
+import { sha256 } from 'js-sha256';
+import AddNewPaymentMethodDialog from '../Dialogs/AddNewPaymentMethodDialog';
 
 interface MakerFormProps {
   disableRequest?: boolean;
-  pricingMethods?: boolean;
   collapseAll?: boolean;
   onSubmit?: () => void;
   onReset?: () => void;
@@ -55,14 +54,13 @@ interface MakerFormProps {
 }
 
 const MakerForm = ({
-  pricingMethods = false,
   disableRequest = false,
   collapseAll = false,
   onSubmit = () => {},
   onReset = () => {},
   submitButtonLabel = 'Create Order',
-}: MakerFormProps): JSX.Element => {
-  const { fav, setFav } = useContext<UseAppStoreType>(AppContext);
+}: MakerFormProps): React.JSX.Element => {
+  const { fav, setFav, settings } = useContext<UseAppStoreType>(AppContext);
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -72,28 +70,21 @@ const MakerForm = ({
 
   const [badRequest, setBadRequest] = useState<string | null>(null);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
-  const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
-  const [currentPrice, setCurrentPrice] = useState<number | string>('...');
+  const [currentPrice, setCurrentPrice] = useState<number>();
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
 
+  const [addNewPaymentMethodOpen, setAddNewPaymentMethodOpen] = useState<boolean>(false);
+  const [hasCustomPaymentMethod, setHasCustomPaymentMethod] = useState<boolean>(false);
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
   const [amountRangeEnabled, setAmountRangeEnabled] = useState<boolean>(true);
+  const [hasRangeError, setHasRangeError] = useState<boolean>(false);
+  const [openPublicDuration, setOpenPublicDuration] = useState<boolean>(false);
+  const [openEscrowTimer, setOpenEscrowTimer] = useState<boolean>(false);
   const [limits, setLimits] = useState<LimitList>({});
 
-  const maxRangeAmountMultiple = 14.8;
-  const minRangeAmountMultiple = 1.6;
   const amountSafeThresholds = [1.03, 0.98];
-
-  useEffect(() => {
-    federation
-      .loadInfo()
-      .then(() => {})
-      .catch((error) => {
-        console.error('Error loading info:', error);
-      });
-  }, []);
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
@@ -101,17 +92,20 @@ const MakerForm = ({
 
   useEffect(() => {
     updateCoordinatorInfo();
-  }, [maker.coordinator, federationUpdatedAt]);
+  }, [maker.coordinator]);
 
   const updateCoordinatorInfo = (): void => {
     if (maker.coordinator != null) {
-      const newLimits = federation.getCoordinator(maker.coordinator).limits;
-      if (Object.keys(newLimits).length !== 0) {
-        updateAmountLimits(newLimits, fav.currency, maker.premium);
-        updateCurrentPrice(newLimits, fav.currency, maker.premium);
-        updateSatoshisLimits(newLimits);
-        setLimits(newLimits);
-      }
+      const coordinator = federation.getCoordinator(maker.coordinator);
+      coordinator.loadInfo();
+      coordinator.loadLimits(() => {
+        const newLimits = coordinator.limits;
+        if (newLimits && Object.keys(newLimits).length !== 0) {
+          updateAmountLimits(newLimits, fav.currency, maker.premium);
+          updateCurrentPrice(newLimits, fav.currency, maker.premium);
+          setLimits(newLimits);
+        }
+      });
     }
   };
 
@@ -135,28 +129,14 @@ const MakerForm = ({
     setAmountLimits([minAmountLimit, maxAmountLimit]);
   };
 
-  const updateSatoshisLimits = function (limitList: LimitList): void {
-    const minAmount: number = limitList[1000].min_amount * 100000000;
-    let maxAmount: number = limitList[1000].max_amount * 100000000;
-    maxAmount = Math.min(
-      federation.getCoordinator(maker.coordinator).size_limit / 100000000,
-      maxAmount,
-    );
-    setSatoshisLimits([minAmount, maxAmount]);
-  };
-
   const updateCurrentPrice = function (
     limitsList: LimitList,
     currency: number,
     premium: number,
   ): void {
     const index = currency === 0 ? 1 : currency;
-    let price = '...';
-    if (maker.isExplicit && maker.amount > 0 && maker.satoshis > 0) {
-      price = maker.amount / (maker.satoshis / 100000000);
-    } else if (!maker.isExplicit) {
-      price = limitsList[index].price * (1 + premium / 100);
-    }
+    const price = limitsList[index].price * (1 + premium / 100);
+
     setCurrentPrice(parseFloat(Number(price).toPrecision(5)));
   };
 
@@ -193,16 +173,14 @@ const MakerForm = ({
     return maker.advancedOptions && amountRangeEnabled;
   }, [maker.advancedOptions, amountRangeEnabled]);
 
-  const handlePaymentMethodChange = function (
-    paymentArray: Array<{ name: string; icon: string }>,
-  ): void {
+  const handlePaymentMethodChange = function (paymentArray: string[]): void {
     let str = '';
     const arrayLength = paymentArray.length;
     let includeCoordinates = false;
 
     for (let i = 0; i < arrayLength; i++) {
-      str += paymentArray[i].name + ' ';
-      if (paymentArray[i].icon === 'cash') {
+      str += paymentArray[i] + ' ';
+      if (paymentArray[i] === 'cash') {
         includeCoordinates = true;
         if (i === arrayLength - 1) {
           setOpenWorldmap(true);
@@ -210,6 +188,7 @@ const MakerForm = ({
       }
     }
     const paymentMethodText = str.slice(0, -1);
+
     setMaker((maker) => {
       return {
         ...maker,
@@ -219,24 +198,6 @@ const MakerForm = ({
         latitude: includeCoordinates ? maker.latitude : null,
         longitude: includeCoordinates ? maker.longitude : null,
       };
-    });
-  };
-
-  const handleMinAmountChange = function (
-    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
-  ): void {
-    setMaker({
-      ...maker,
-      minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
-    });
-  };
-
-  const handleMaxAmountChange = function (
-    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
-  ): void {
-    setMaker({
-      ...maker,
-      maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
     });
   };
 
@@ -263,42 +224,6 @@ const MakerForm = ({
       });
     };
 
-  const handleSatoshisChange = function (e: object): void {
-    const newSatoshis = e.target.value;
-    let badSatoshisText: string = '';
-    let satoshis: string = newSatoshis;
-    if (newSatoshis > satoshisLimits[1]) {
-      badSatoshisText = t('Must be less than {{maxSats}', { maxSats: pn(satoshisLimits[1]) });
-      satoshis = satoshisLimits[1];
-    }
-    if (newSatoshis < satoshisLimits[0]) {
-      badSatoshisText = t('Must be more than {{minSats}}', { minSats: pn(satoshisLimits[0]) });
-      satoshis = satoshisLimits[0];
-    }
-
-    setMaker({
-      ...maker,
-      satoshis,
-      badSatoshisText,
-    });
-  };
-
-  const handleClickRelative = function (): void {
-    setMaker({
-      ...maker,
-      isExplicit: false,
-    });
-  };
-
-  const handleClickExplicit = function (): void {
-    if (!maker.advancedOptions) {
-      setMaker({
-        ...maker,
-        isExplicit: true,
-      });
-    }
-  };
-
   const handleCreateOrder = function (): void {
     const slot = garage.getSlot();
 
@@ -318,15 +243,15 @@ const MakerForm = ({
         max_amount: makerHasAmountRange ? maker.maxAmount : null,
         payment_method:
           maker.paymentMethodsText === '' ? 'not specified' : maker.paymentMethodsText,
-        is_explicit: maker.isExplicit,
-        premium: maker.isExplicit ? null : maker.premium === '' ? 0 : maker.premium,
-        satoshis: maker.isExplicit ? maker.satoshis : null,
+        premium: !maker.premium ? 0 : maker.premium,
+        satoshis: null,
         public_duration: maker.publicDuration,
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
         latitude: maker.latitude,
         longitude: maker.longitude,
         shortAlias: maker.coordinator,
+        password: maker.password ? sha256(maker.password) : null,
       };
 
       void slot
@@ -361,6 +286,13 @@ const MakerForm = ({
     });
   };
 
+  const handlePasswordChange = function (event: React.ChangeEvent<HTMLInputElement>): void {
+    setMaker({
+      ...maker,
+      password: event.target.value,
+    });
+  };
+
   const handleChangeEscrowDuration = function (date: Date): void {
     const d = new Date(date);
     const hours: number = d.getHours();
@@ -377,40 +309,26 @@ const MakerForm = ({
 
   const handleClickAdvanced = function (): void {
     if (maker.advancedOptions) {
-      handleClickRelative();
       setMaker({ ...maker, advancedOptions: false });
     } else {
       resetRange(true);
     }
   };
 
-  const minAmountError = useMemo(() => {
-    return (
-      maker.minAmount < amountLimits[0] * 0.99 ||
-      maker.maxAmount < maker.minAmount ||
-      maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
-      maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
-    );
-  }, [maker.minAmount, maker.maxAmount, amountLimits]);
-
-  const maxAmountError = useMemo(() => {
-    return (
-      maker.maxAmount > amountLimits[1] * 1.01 ||
-      maker.maxAmount < maker.minAmount ||
-      maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
-      maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
-    );
-  }, [maker.minAmount, maker.maxAmount, amountLimits]);
+  const handleAddNewPaymentMethod: (newPaymentMethod: string) => void = (newPaymentMethod) => {
+    handlePaymentMethodChange([...maker.paymentMethods, newPaymentMethod]);
+    setAddNewPaymentMethodOpen(false);
+  };
 
   const resetRange = function (advancedOptions: boolean): void {
     const index = fav.currency === 0 ? 1 : fav.currency;
     const minAmount =
-      maker.amount !== ''
-        ? parseFloat((maker.amount / 2).toPrecision(2))
+      maker.amount !== null
+        ? (maker.amount / 2).toPrecision(2)
         : parseFloat(Number(limits[index].max_amount * 0.25).toPrecision(2));
     const maxAmount =
-      maker.amount !== ''
-        ? parseFloat(maker.amount)
+      maker.amount !== null
+        ? maker.amount
         : parseFloat(Number(limits[index].max_amount * 0.75).toPrecision(2));
 
     setMaker({
@@ -418,40 +336,6 @@ const MakerForm = ({
       advancedOptions,
       minAmount,
       maxAmount,
-    });
-  };
-
-  const handleRangeAmountChange = function (e: any, newValue, activeThumb: number): void {
-    let minAmount = e.target.value[0];
-    let maxAmount = e.target.value[1];
-
-    minAmount = Math.min(
-      (amountLimits[1] * amountSafeThresholds[1]) / minRangeAmountMultiple,
-      minAmount,
-    );
-    maxAmount = Math.max(
-      minRangeAmountMultiple * amountLimits[0] * amountSafeThresholds[0],
-      maxAmount,
-    );
-
-    if (minAmount > maxAmount / minRangeAmountMultiple) {
-      if (activeThumb === 0) {
-        maxAmount = minRangeAmountMultiple * minAmount;
-      } else {
-        minAmount = maxAmount / minRangeAmountMultiple;
-      }
-    } else if (minAmount < maxAmount / maxRangeAmountMultiple) {
-      if (activeThumb === 0) {
-        maxAmount = maxRangeAmountMultiple * minAmount;
-      } else {
-        minAmount = maxAmount / maxRangeAmountMultiple;
-      }
-    }
-
-    setMaker({
-      ...maker,
-      minAmount: parseFloat(Number(minAmount).toPrecision(minAmount < 100 ? 2 : 3)),
-      maxAmount: parseFloat(Number(maxAmount).toPrecision(maxAmount < 100 ? 2 : 3)),
     });
   };
 
@@ -501,14 +385,13 @@ const MakerForm = ({
     return (
       fav.type == null ||
       (!makerHasAmountRange &&
-        maker.amount !== '' &&
+        maker.amount &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       maker.badPaymentMethod ||
-      (maker.amount == null && (!makerHasAmountRange || Object.keys(limits).lenght < 1)) ||
-      (makerHasAmountRange && (minAmountError || maxAmountError)) ||
-      (!makerHasAmountRange && maker.amount <= 0) ||
-      (maker.isExplicit && (maker.badSatoshisText !== '' || maker.satoshis === '')) ||
-      (!maker.isExplicit && maker.badPremiumText !== '') ||
+      (maker.amount == null && (!makerHasAmountRange || (Object.keys(limits)?.length ?? 0) < 1)) ||
+      (makerHasAmountRange && hasRangeError) ||
+      (!makerHasAmountRange && maker.amount && maker.amount <= 0) ||
+      maker.badPremiumText !== '' ||
       federation.getCoordinator(maker.coordinator)?.limits === undefined ||
       typeof maker.premium !== 'number' ||
       maker.paymentMethods.length === 0
@@ -529,19 +412,21 @@ const MakerForm = ({
           longitude: parseFloat(pos[1].toPrecision(6)),
         };
       });
-      const cashMethod = maker.paymentMethods.find((method) => method.icon === 'cash');
+      const cashMethod = maker.paymentMethods.find((method) => method === 'cash');
       if (cashMethod !== null) {
         const newMethods = maker.paymentMethods;
         const cash = fiatMethods.find((method) => method.icon === 'cash');
-        if (cash !== null) {
-          newMethods.unshift(cash);
+        if (cash) {
+          newMethods.unshift(cash.name);
           handlePaymentMethodChange(newMethods);
         }
       }
     }
   };
 
-  const SummaryText = (): JSX.Element => {
+  const currencyFormatter = new Intl.NumberFormat(settings.language);
+
+  const SummaryText = (): React.JSX.Element => {
     return (
       <Typography
         component='h2'
@@ -569,15 +454,13 @@ const MakerForm = ({
               maker.maxAmount * 100000000,
             )}
         {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
-        {maker.isExplicit
-          ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
-          : maker.premium === 0
-            ? fav.mode === 'fiat'
-              ? t(' at market price')
-              : ''
-            : maker.premium > 0
-              ? t(' at a {{premium}}% premium', { premium: maker.premium })
-              : t(' at a {{discount}}% discount', { discount: -maker.premium })}
+        {maker.premium === 0
+          ? fav.mode === 'fiat'
+            ? t(' at market price')
+            : ''
+          : maker.premium > 0
+            ? t(' at a {{premium}}% premium', { premium: maker.premium })
+            : t(' at a {{discount}}% discount', { discount: -maker.premium })}
       </Typography>
     );
   };
@@ -617,7 +500,7 @@ const MakerForm = ({
           if (pos != null) handleAddLocation(pos);
           setOpenWorldmap(false);
         }}
-        zoom={maker.latitude != null && maker.longitude != null ? 6 : undefined}
+        zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
       />
       <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
@@ -692,47 +575,70 @@ const MakerForm = ({
                   </FormHelperText>
                   <div style={{ textAlign: 'center' }}>
                     <ButtonGroup>
-                      <Button
-                        size={maker.advancedOptions ? 'small' : 'large'}
-                        variant='contained'
-                        onClick={() => {
-                          setFav({
-                            ...fav,
-                            type: 1,
-                          });
-                        }}
-                        disableElevation={fav.type === 1}
+                      <Box
                         sx={{
-                          backgroundColor: fav.type === 1 ? 'primary.main' : 'background.paper',
-                          color: fav.type === 1 ? 'background.paper' : 'text.secondary',
-                          ':hover': {
-                            color: 'background.paper',
-                          },
+                          boxShadow: fav.type === 1 ? 0 : 3,
+                          display: 'inline-block',
+                          borderBottomLeftRadius: 4,
+                          borderTopLeftRadius: 4,
                         }}
                       >
-                        {fav.mode === 'fiat' ? t('Buy') : t('Swap In')}
-                      </Button>
-                      <Button
-                        size={maker.advancedOptions ? 'small' : 'large'}
-                        variant='contained'
-                        onClick={() => {
-                          setFav({
-                            ...fav,
-                            type: 0,
-                          });
-                        }}
-                        disableElevation={fav.type === 0}
-                        color='secondary'
+                        <Button
+                          size={maker.advancedOptions ? 'small' : 'large'}
+                          variant='contained'
+                          onClick={() => {
+                            setFav({
+                              ...fav,
+                              type: 1,
+                            });
+                          }}
+                          disableElevation={fav.type === 1}
+                          sx={{
+                            backgroundColor:
+                              fav.type === 1 ? 'primary.main' : theme.palette.background.paper,
+                            color:
+                              fav.type === 1 ? theme.palette.background.paper : 'text.secondary',
+                            ':hover': {
+                              color: theme.palette.background.paper,
+                              backgroundColor: 'primary.main',
+                            },
+                          }}
+                        >
+                          {fav.mode === 'fiat' ? t('Buy') : t('Swap In')}
+                        </Button>
+                      </Box>
+                      <Box
                         sx={{
-                          backgroundColor: fav.type === 0 ? 'secondary.main' : 'background.paper',
-                          color: fav.type === 0 ? 'background.secondary' : 'text.secondary',
-                          ':hover': {
-                            color: 'background.paper',
-                          },
+                          boxShadow: fav.type === 0 ? 0 : 3,
+                          display: 'inline-block',
+                          borderBottomRightRadius: 4,
+                          borderTopRightRadius: 4,
                         }}
                       >
-                        {fav.mode === 'fiat' ? t('Sell') : t('Swap Out')}
-                      </Button>
+                        <Button
+                          size={maker.advancedOptions ? 'small' : 'large'}
+                          variant='contained'
+                          onClick={() => {
+                            setFav({
+                              ...fav,
+                              type: 0,
+                            });
+                          }}
+                          color='secondary'
+                          sx={{
+                            boxShadow: 3,
+                            backgroundColor:
+                              fav.type === 0 ? 'secondary.main' : theme.palette.background.paper,
+                            color: fav.type === 0 ? 'background.secondary' : 'text.secondary',
+                            ':hover': {
+                              color: theme.palette.background.paper,
+                              backgroundColor: 'secondary.main',
+                            },
+                          }}
+                        >
+                          {fav.mode === 'fiat' ? t('Sell') : t('Swap Out')}
+                        </Button>
+                      </Box>
                     </ButtonGroup>
                   </div>
                 </FormControl>
@@ -762,133 +668,148 @@ const MakerForm = ({
             </Collapse>
             <Collapse in={makerHasAmountRange}>
               <AmountRange
-                minAmount={maker.minAmount}
-                handleRangeAmountChange={handleRangeAmountChange}
                 currency={fav.currency}
                 currencyCode={currencyCode}
                 handleCurrencyChange={handleCurrencyChange}
                 amountLimits={amountLimits}
-                maxAmount={maker.maxAmount}
-                minAmountError={minAmountError}
-                maxAmountError={maxAmountError}
-                handleMinAmountChange={handleMinAmountChange}
-                handleMaxAmountChange={handleMaxAmountChange}
+                amountSafeThresholds={amountSafeThresholds}
+                setHasRangeError={setHasRangeError}
               />
             </Collapse>
             <Collapse in={!makerHasAmountRange}>
-              <Grid item>
-                <Grid container alignItems='stretch' style={{ display: 'flex' }}>
-                  <Grid item xs={fav.mode === 'fiat' ? 6 : 12}>
-                    <Tooltip
-                      placement='top'
-                      enterTouchDelay={500}
-                      enterDelay={700}
-                      enterNextDelay={2000}
-                      title={
-                        fav.mode === 'fiat'
-                          ? t('Amount of fiat to exchange for bitcoin')
-                          : t('Amount of BTC to swap for LN Sats')
+              <Grid container>
+                <Grid item sx={{ width: fav.mode === 'fiat' ? '50%' : '100%' }}>
+                  <Tooltip
+                    placement='top'
+                    enterTouchDelay={500}
+                    enterDelay={700}
+                    enterNextDelay={2000}
+                    title={
+                      fav.mode === 'fiat'
+                        ? t('Amount of fiat to exchange for bitcoin')
+                        : t('Amount of BTC to swap for LN Sats')
+                    }
+                  >
+                    <TextField
+                      fullWidth
+                      disabled={makerHasAmountRange}
+                      variant={makerHasAmountRange ? 'filled' : 'outlined'}
+                      error={
+                        maker.amount !== null &&
+                        (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
                       }
-                    >
-                      <TextField
-                        fullWidth
-                        disabled={makerHasAmountRange}
-                        variant={makerHasAmountRange ? 'filled' : 'outlined'}
-                        error={
-                          maker.amount !== '' &&
-                          (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
-                        }
-                        helperText={
-                          maker.amount < amountLimits[0] && maker.amount !== ''
-                            ? t('Must be more than {{minAmount}}', {
-                                minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
+                      helperText={
+                        maker.amount && maker.amount < amountLimits[0]
+                          ? t('Must be more than {{minAmount}}', {
+                              minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
+                            })
+                          : maker.amount && maker.amount > amountLimits[1]
+                            ? t('Must be less than {{maxAmount}}', {
+                                maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
                               })
-                            : maker.amount > amountLimits[1] && maker.amount !== ''
-                              ? t('Must be less than {{maxAmount}}', {
-                                  maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
-                                })
-                              : null
-                        }
-                        label={amountLabel.label}
-                        required={true}
-                        value={maker.amount}
-                        type='number'
-                        inputProps={{
-                          min: 0,
-                          style: {
-                            textAlign: 'center',
-                            backgroundColor: theme.palette.background.paper,
-                            borderRadius: '4px',
-                          },
-                        }}
-                        onChange={(e) => {
-                          setMaker({ ...maker, amount: e.target.value });
-                        }}
-                      />
-                    </Tooltip>
-                    {fav.mode === 'swap' && maker.amount !== '' ? (
-                      <FormHelperText sx={{ textAlign: 'center' }}>
-                        {amountLabel.helper}
-                      </FormHelperText>
-                    ) : null}
-                  </Grid>
-
-                  {fav.mode === 'fiat' ? (
-                    <Grid item xs={6}>
-                      <Select
-                        fullWidth
-                        sx={{
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '4px',
-                        }}
-                        required={true}
-                        inputProps={{
-                          style: { textAlign: 'center' },
-                        }}
-                        value={fav.currency === 0 ? 1 : fav.currency}
-                        onChange={(e) => {
-                          handleCurrencyChange(e.target.value);
-                        }}
-                      >
-                        {Object.entries(currencyDict).map(([key, value]) => (
-                          <MenuItem key={key} value={parseInt(key)}>
-                            <div
-                              style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}
-                            >
-                              <FlagWithProps code={value} />
-                              {' ' + value}
-                            </div>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </Grid>
+                            : null
+                      }
+                      label={amountLabel.label}
+                      required={true}
+                      value={maker.amount}
+                      type='number'
+                      onChange={(e) => {
+                        setMaker({ ...maker, amount: Number(e.target.value) });
+                      }}
+                    />
+                  </Tooltip>
+                  {fav.mode === 'swap' && maker.amount ? (
+                    <FormHelperText sx={{ textAlign: 'center' }}>
+                      {amountLabel.helper}
+                    </FormHelperText>
                   ) : null}
                 </Grid>
+
+                {fav.mode === 'fiat' ? (
+                  <Grid item sx={{ width: '50%' }}>
+                    <Select
+                      fullWidth
+                      sx={{
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: '4px',
+                      }}
+                      required={true}
+                      inputProps={{
+                        style: { textAlign: 'center' },
+                      }}
+                      value={fav.currency === 0 ? 1 : fav.currency}
+                      onChange={(e) => {
+                        handleCurrencyChange(e.target.value);
+                      }}
+                    >
+                      {Object.entries(currencyDict).map(([key, value]) => (
+                        <MenuItem key={key} value={parseInt(key)}>
+                          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <FlagWithProps code={value} />
+                            {' ' + value}
+                          </div>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </Grid>
+                ) : null}
               </Grid>
             </Collapse>
           </Grid>
-
-          <Grid item xs={12}>
-            <AutocompletePayments
-              onAutocompleteChange={handlePaymentMethodChange}
-              onClick={() => {
-                setOpenWorldmap(true);
-              }}
-              optionsType={fav.mode}
-              error={maker.badPaymentMethod}
-              helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
-              label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
-              tooltipTitle={t(
-                fav.mode === 'swap'
-                  ? t('Enter the destination of the Lightning swap')
-                  : 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
-              )}
-              listHeaderText={t('You can add new methods')}
-              addNewButtonText={t('Add New')}
-              isFilter={false}
-              multiple={true}
-              value={maker.paymentMethods}
-            />
+          <Grid item sx={{ width: '100%' }}>
+            <Grid item sx={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
+              <Grid item sx={{ width: '80%' }}>
+                <AutocompletePayments
+                  paymentMethods={maker.paymentMethods}
+                  paymentMethodsText={maker.paymentMethodsText}
+                  setHasCustomPaymentMethod={setHasCustomPaymentMethod}
+                  onAutocompleteChange={handlePaymentMethodChange}
+                  optionsType={fav.mode}
+                  error={maker.badPaymentMethod}
+                  label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
+                  tooltipTitle={t(
+                    fav.mode === 'swap'
+                      ? t('Enter the destination of the Lightning swap')
+                      : 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
+                  )}
+                  addNewButtonText={t('Add New')}
+                  isFilter={false}
+                  multiple={true}
+                />
+              </Grid>
+              <Grid item sx={{ width: '20%' }}>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={300}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Add custom payment method')}
+                >
+                  <Button
+                    color='inherit'
+                    variant={hasCustomPaymentMethod ? 'contained' : 'outlined'}
+                    fullWidth
+                    sx={{
+                      minHeight: '3.3em',
+                      minWidth: 0,
+                      padding: 0,
+                      justifyContent: 'center',
+                      fontWeight: 'normal',
+                      textTransform: 'none',
+                      backgroundColor: theme.palette.background.paper,
+                      color: theme.palette.text.secondary,
+                      borderColor: theme.palette.text.disabled,
+                    }}
+                    onClick={() => setAddNewPaymentMethodOpen(true)}
+                  >
+                    <DashboardCustomizeIcon
+                      sx={{ width: '1em', height: '1em' }}
+                      color={hasCustomPaymentMethod ? 'primary' : 'inherit'}
+                    />
+                  </Button>
+                </Tooltip>
+              </Grid>
+            </Grid>
             {maker.badPaymentMethod && (
               <FormHelperText error={true}>
                 {t('Must be shorter than 65 characters')}
@@ -923,8 +844,110 @@ const MakerForm = ({
             </Grid>
           )}
 
-          {!maker.advancedOptions && pricingMethods ? (
-            <Grid item xs={12}>
+          <Grid item sx={{ width: '100%' }}>
+            <TextField
+              fullWidth
+              error={maker.badPremiumText !== ''}
+              helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
+              label={`${t('Premium over Market (%)')} *`}
+              type='number'
+              value={maker.premium}
+              inputProps={{
+                min: -100,
+                max: 999,
+                style: {
+                  textAlign: 'center',
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: '4px',
+                },
+              }}
+              onChange={handlePremiumChange}
+            />
+          </Grid>
+          <Collapse in={maker.advancedOptions} sx={{ width: '100%' }}>
+            <Grid item sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                label={`${t('Password')}`}
+                type='password'
+                value={maker.password}
+                style={{ marginBottom: 8 }}
+                inputProps={{
+                  style: {
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: 4,
+                  },
+                }}
+                onChange={handlePasswordChange}
+              />
+            </Grid>
+
+            <Grid item sx={{ width: '100%' }}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <MobileTimePicker
+                  open={openPublicDuration}
+                  onClose={() => setOpenPublicDuration(false)}
+                  ampm={false}
+                  localeText={{ toolbarTitle: t('Public order length') }}
+                  openTo='hours'
+                  views={['hours', 'minutes']}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      InputProps: {
+                        style: {
+                          backgroundColor: theme.palette.background.paper,
+                          borderRadius: '4px',
+                          marginBottom: 8,
+                        },
+                        onClick: () => setOpenPublicDuration(true),
+                      },
+                    },
+                  }}
+                  label={t('Public Duration (HH:mm)')}
+                  value={maker.publicExpiryTime}
+                  onChange={handleChangePublicDuration}
+                  minTime={new Date(0, 0, 0, 0, 10)}
+                  maxTime={new Date(0, 0, 0, 23, 59)}
+                />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid item sx={{ width: '100%' }}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <MobileTimePicker
+                  ampm={false}
+                  open={openEscrowTimer}
+                  onClose={() => setOpenEscrowTimer(false)}
+                  localeText={{ toolbarTitle: t('Escrow/invoice step length') }}
+                  openTo='hours'
+                  views={['hours', 'minutes']}
+                  inputFormat='HH:mm'
+                  mask='__:__'
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      InputProps: {
+                        style: {
+                          backgroundColor: theme.palette.background.paper,
+                          borderRadius: '4px',
+                          marginBottom: 8,
+                        },
+                        onClick: () => setOpenEscrowTimer(true),
+                      },
+                    },
+                  }}
+                  label={t('Escrow/Invoice Timer (HH:mm)')}
+                  value={maker.escrowExpiryTime}
+                  onChange={handleChangeEscrowDuration}
+                  minTime={new Date(0, 0, 0, 1, 0)}
+                  maxTime={new Date(0, 0, 0, 8, 0)}
+                />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid item sx={{ width: '100%', marginBottom: '8px' }}>
               <Box
                 sx={{
                   padding: '0.5em',
@@ -937,238 +960,67 @@ const MakerForm = ({
                   },
                 }}
               >
-                <FormControl component='fieldset'>
-                  <FormHelperText sx={{ textAlign: 'center', position: 'relative', top: '0.2em' }}>
-                    {t('Choose a Pricing Method')}
-                  </FormHelperText>
-                  <RadioGroup row defaultValue='relative'>
-                    <Tooltip
-                      placement='top'
-                      enterTouchDelay={0}
-                      enterDelay={1000}
-                      enterNextDelay={2000}
-                      title={t('Let the price move with the market')}
-                    >
-                      <FormControlLabel
-                        value='relative'
-                        control={<Radio color='primary' />}
-                        label={t('Relative')}
-                        labelPlacement='end'
-                        onClick={handleClickRelative}
-                      />
-                    </Tooltip>
-                    <Tooltip
-                      placement='top'
-                      enterTouchDelay={0}
-                      enterDelay={1000}
-                      enterNextDelay={2000}
-                      title={t('Set a fix amount of satoshis')}
-                    >
-                      <FormControlLabel
-                        disabled={maker.advancedOptions}
-                        value='explicit'
-                        control={<Radio color='secondary' />}
-                        label={t('Exact')}
-                        labelPlacement='end'
-                        onClick={handleClickExplicit}
-                      />
-                    </Tooltip>
-                  </RadioGroup>
-                </FormControl>
-              </Box>
-            </Grid>
-          ) : null}
-          <Grid item xs={12}>
-            <div style={{ display: maker.isExplicit ? '' : 'none' }}>
-              <TextField
-                fullWidth
-                label={t('Satoshis')}
-                error={maker.badSatoshisText !== ''}
-                helperText={maker.badSatoshisText === '' ? null : maker.badSatoshisText}
-                type='number'
-                required={true}
-                value={maker.satoshis}
-                inputProps={{
-                  min: satoshisLimits[0],
-                  max: satoshisLimits[1],
-                  style: {
-                    textAlign: 'center',
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: '4px',
-                  },
-                }}
-                onChange={handleSatoshisChange}
-              />
-            </div>
-            <div style={{ display: maker.isExplicit ? 'none' : '' }}>
-              <TextField
-                fullWidth
-                error={maker.badPremiumText !== ''}
-                helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
-                label={`${t('Premium over Market (%)')} *`}
-                type='number'
-                value={maker.premium}
-                inputProps={{
-                  min: -100,
-                  max: 999,
-                  style: {
-                    textAlign: 'center',
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: '4px',
-                  },
-                }}
-                onChange={handlePremiumChange}
-              />
-            </div>
-          </Grid>
-          <Grid item>
-            <Collapse in={maker.advancedOptions}>
-              <Grid container spacing={1}>
-                <Grid item xs={12}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <MobileTimePicker
-                      ampm={false}
-                      localeText={{ timePickerToolbarTitle: t('Public order length') }}
-                      openTo='hours'
-                      views={['hours', 'minutes']}
-                      inputFormat='HH:mm'
-                      mask='__:__'
-                      slotProps={{
-                        textField: {
-                          InputProps: {
-                            style: {
-                              backgroundColor: theme.palette.background.paper,
-                              borderRadius: '4px',
-                            },
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <HourglassTop />
-                              </InputAdornment>
-                            ),
-                          },
-                        },
-                      }}
-                      label={t('Public Duration (HH:mm)')}
-                      value={maker.publicExpiryTime}
-                      onChange={handleChangePublicDuration}
-                      minTime={new Date(0, 0, 0, 0, 10)}
-                      maxTime={new Date(0, 0, 0, 23, 59)}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <MobileTimePicker
-                      ampm={false}
-                      localeText={{ timePickerToolbarTitle: t('Escrow/invoice step length') }}
-                      openTo='hours'
-                      views={['hours', 'minutes']}
-                      inputFormat='HH:mm'
-                      mask='__:__'
-                      slotProps={{
-                        textField: {
-                          InputProps: {
-                            style: {
-                              backgroundColor: theme.palette.background.paper,
-                              borderRadius: '4px',
-                            },
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <HourglassTop />
-                              </InputAdornment>
-                            ),
-                          },
-                        },
-                      }}
-                      label={t('Escrow/Invoice Timer (HH:mm)')}
-                      value={maker.escrowExpiryTime}
-                      onChange={handleChangeEscrowDuration}
-                      minTime={new Date(0, 0, 0, 1, 0)}
-                      maxTime={new Date(0, 0, 0, 8, 0)}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Box
+                <Grid container direction='column' alignItems='center' spacing={0.5}>
+                  <Grid
+                    item
                     sx={{
-                      padding: '0.5em',
-                      backgroundColor: 'background.paper',
-                      border: '1px solid',
-                      borderRadius: '4px',
-                      borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-                      '&:hover': {
-                        borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-                      },
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
                     }}
                   >
-                    <Grid container direction='column' alignItems='center' spacing={0.5}>
-                      <Grid
-                        item
+                    <Tooltip
+                      enterDelay={800}
+                      enterTouchDelay={0}
+                      placement='top'
+                      title={t('Set the skin-in-the-game, increase for higher safety assurance')}
+                    >
+                      <Typography
+                        variant='caption'
                         sx={{
-                          width: '100%',
+                          color: 'text.secondary',
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
                           flexWrap: 'wrap',
                         }}
                       >
-                        <Tooltip
-                          enterDelay={800}
-                          enterTouchDelay={0}
-                          placement='top'
-                          title={t(
-                            'Set the skin-in-the-game, increase for higher safety assurance',
-                          )}
-                        >
-                          <Typography
-                            variant='caption'
-                            sx={{
-                              color: 'text.secondary',
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                            }}
-                          >
-                            {t('Fidelity Bond Size')}{' '}
-                            <Lock sx={{ height: '0.8em', width: '0.8em' }} />
-                          </Typography>
-                        </Tooltip>
-                      </Grid>
-                      <Grid item sx={{ width: 'calc(100% - 2em)' }}>
-                        <Slider
-                          sx={{ width: '100%', align: 'center' }}
-                          aria-label='Bond Size (%)'
-                          defaultValue={3}
-                          value={maker.bondSize}
-                          valueLabelDisplay='auto'
-                          valueLabelFormat={(x: string) => x + '%'}
-                          step={0.25}
-                          marks={[
-                            { value: 2, label: '2%' },
-                            { value: 5, label: '5%' },
-                            { value: 10, label: '10%' },
-                            { value: 15, label: '15%' },
-                          ]}
-                          min={2}
-                          max={15}
-                          onChange={(e) => {
-                            setMaker({ ...maker, bondSize: e.target.value });
-                          }}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
+                        {t('Fidelity Bond Size')} <Lock sx={{ height: '0.8em', width: '0.8em' }} />
+                      </Typography>
+                    </Tooltip>
+                  </Grid>
+                  <Grid item sx={{ width: 'calc(100% - 2em)' }}>
+                    <Slider
+                      sx={{ width: '100%', align: 'center' }}
+                      aria-label='Bond Size (%)'
+                      defaultValue={3}
+                      value={maker.bondSize}
+                      valueLabelDisplay='auto'
+                      valueLabelFormat={(x: string) => x + '%'}
+                      step={0.25}
+                      marks={[
+                        { value: 2, label: '2%' },
+                        { value: 5, label: '5%' },
+                        { value: 10, label: '10%' },
+                        { value: 15, label: '15%' },
+                      ]}
+                      min={2}
+                      max={15}
+                      onChange={(e) => {
+                        setMaker({ ...maker, bondSize: e.target.value });
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
-            </Collapse>
-          </Grid>
+              </Box>
+            </Grid>
+          </Collapse>
         </Grid>
       </Collapse>
 
       <SelectCoordinator
         coordinatorAlias={maker.coordinator}
-        setCoordinator={(coordinatorAlias) => {
+        setCoordinatorAlias={(coordinatorAlias) => {
           setMaker((maker) => {
             return { ...maker, coordinator: coordinatorAlias };
           });
@@ -1176,7 +1028,7 @@ const MakerForm = ({
       />
 
       <Grid container direction='column' alignItems='center'>
-        <Grid item>
+        <Grid item sx={{ marginBottom: '8px', marginTop: '8px' }}>
           <SummaryText />
         </Grid>
 
@@ -1197,9 +1049,7 @@ const MakerForm = ({
                   loading={submittingRequest}
                   color='primary'
                   variant='contained'
-                  onClick={() => {
-                    disableRequest ? onSubmit() : setOpenDialogs(true);
-                  }}
+                  onClick={() => (disableRequest ? onSubmit() : setOpenDialogs(true))}
                 >
                   {t(submitButtonLabel)}
                 </LoadingButton>
@@ -1237,19 +1087,19 @@ const MakerForm = ({
             enterTouchDelay={0}
             enterDelay={1000}
             enterNextDelay={2000}
-            title={
-              maker.isExplicit
-                ? t('Your order fixed exchange rate')
-                : t("Your order's current exchange rate. Rate will move with the market.")
-            }
+            title={t("Your order's current exchange rate. Rate will move with the market.")}
           >
             <Typography align='center' variant='caption' color='text.secondary'>
-              {(maker.isExplicit ? t('Order rate:') : t('Order current rate:')) +
-                ` ${pn(currentPrice)} ${currencyCode}/BTC`}
+              {`${t('Order current rate:')} ${currentPrice ? currencyFormatter.format(currentPrice) : '-'} ${currencyCode}/BTC`}
             </Typography>
           </Tooltip>
         </Collapse>
       </Grid>
+      <AddNewPaymentMethodDialog
+        open={addNewPaymentMethodOpen}
+        onClose={() => setAddNewPaymentMethodOpen(false)}
+        onConfirm={handleAddNewPaymentMethod}
+      />
     </Box>
   );
 };

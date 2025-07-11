@@ -12,16 +12,23 @@ interface Props {
   setInputToken: (inputToken: string) => void;
 }
 
-const RecoveryDialog = ({ setInputToken, setView }: Props): JSX.Element => {
+const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { open, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [recoveryToken, setRecoveryToken] = useState<string>('');
   const [validToken, setValidToken] = useState<boolean>(false);
+  const textFieldRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setRecoveryToken('');
+    if (open.recovery) {
+      const timer = setTimeout(() => {
+        textFieldRef.current?.focus();
+      }, 100); // Delay for 100 milliseconds
+      return () => clearTimeout(timer); // Cleanup the timer
+    }
   }, [open.recovery]);
 
   const onClickRecover = (): void => {
@@ -59,6 +66,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): JSX.Element => {
           <Grid item style={{ width: '100%' }}>
             <TokenInput
               fullWidth
+              inputRef={textFieldRef}
               showCopy={false}
               inputToken={recoveryToken}
               setInputToken={setRecoveryToken}

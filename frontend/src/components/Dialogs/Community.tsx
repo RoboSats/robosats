@@ -24,9 +24,8 @@ interface Props {
   onClose: () => void;
 }
 
-const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
+const CommunityDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
-  const [client] = window.RobosatsSettings.split('-');
 
   const flagProps = {
     width: 30,
@@ -81,16 +80,11 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <ListItemButton
             component='a'
             onClick={() => {
-              if (client === 'mobile') {
-                window.location.href =
-                  'nostr:npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82';
-              } else {
-                window.open(
-                  'https://njump.me/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82',
-                  '_blank',
-                  'noopener,noreferrer',
-                );
-              }
+              window.open(
+                'https://njump.me/nprofile1qqsyx53h3h7ec4fwlspjq0kqec5gv54t7rc48xdtq6q4y94wsw4fnjqsg3jtv',
+                '_blank',
+                'noopener,noreferrer',
+              );
             }}
           >
             <ListItemIcon>

@@ -38,7 +38,7 @@ export const PayoutPrompt = ({
   onchain,
   setOnchain,
   settings,
-}: PayoutPrompProps): JSX.Element => {
+}: PayoutPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
   const currencyCode: string = currencies[`${order.currency}`];
 
@@ -92,7 +92,7 @@ export const PayoutPrompt = ({
               <Bolt /> {t('Lightning')}
             </div>
           </ToggleButton>
-          <ToggleButton value='onchain' disabled={!order.swap_allowed}>
+          <ToggleButton value='onchain' disabled={!order.swap_allowed || order.currency === 1000}>
             <div
               style={{
                 display: 'flex',

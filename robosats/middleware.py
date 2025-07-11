@@ -30,11 +30,12 @@ class DisableCSRFMiddleware(object):
 class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
     """
     This middleware splits the HTTP_AUTHORIZATION, leaves on it only the `Token ` and creates
-    two new META headers for both PGP keys.
+    two new META headers for both PGP keys and one for the nostr pubkey.
     Given that API calls to a RoboSats API might be made from other host origin,
     there is a high chance browsers will not attach cookies and other sensitive information.
     Therefore, we are using the `HTTP_AUTHORIZATION` header to also embed the needed robot
-    pubKey and encPrivKey to create a new robot in the coordinator on the first request.
+    pubKey, encPrivKey and nostr pubkey to create a new robot in the coordinator on the
+    first request.
     """
 
     def process_request(self, request):
@@ -42,9 +43,15 @@ class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
         split_auth = auth_header.split(" | ")
 
         if len(split_auth) == 3:
+            # Deprecated in favor of len 4
             request.META["HTTP_AUTHORIZATION"] = split_auth[0]
             request.META["PUBLIC_KEY"] = split_auth[1]
             request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
+        elif len(split_auth) == 4:
+            request.META["HTTP_AUTHORIZATION"] = split_auth[0]
+            request.META["PUBLIC_KEY"] = split_auth[1]
+            request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
+            request.META["NOSTR_PUBKEY"] = split_auth[3]
 
 
 class RobotTokenSHA256AuthenticationMiddleWare:
@@ -104,28 +111,31 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # If we get here the user does not have a robot on this coordinator
             # Let's create a new user & robot on-the-fly.
 
-            # The first ever request to a coordinator must public key (and encrypted priv key as of now). Either on the
-            # Authorization header or in the Cookies.
+            # The first ever request to a coordinator must provide a public key, the encrypted
+            # private key (as of now), and a nostr pubkey in the Authorization header.
             public_key = ""
             encrypted_private_key = ""
+            nostr_pubkey = ""
 
             public_key = request.META.get("PUBLIC_KEY", "").replace("Public ", "")
             encrypted_private_key = request.META.get(
                 "ENCRYPTED_PRIVATE_KEY", ""
             ).replace("Private ", "")
+            nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace("Nostr ", "")
 
             # Some legacy (pre-federation) clients will still send keys as cookies
             if public_key == "" or encrypted_private_key == "":
                 public_key = request.COOKIES.get("public_key")
                 encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
 
-            if not public_key or not encrypted_private_key:
+            if not public_key or not encrypted_private_key or not nostr_pubkey:
                 return JsonResponse(
                     {
-                        "bad_request": "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys"
+                        "bad_request": "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys and a nostr pubkey"
                     },
                     status=400,
                 )
+
             (
                 valid,
                 bad_keys_context,
@@ -157,6 +167,10 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 user.robot.public_key = public_key
             if not user.robot.encrypted_private_key:
                 user.robot.encrypted_private_key = encrypted_private_key
+
+            # Add nostr key to the new user
+            if not user.robot.nostr_pubkey:
+                user.robot.nostr_pubkey = nostr_pubkey
 
             update_last_login(None, user)
             user.save()
