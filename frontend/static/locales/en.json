@@ -239,7 +239,7 @@
   "If the order is cancelled now but you already tried to pay the invoice, you might loose your bond.": "If the order is cancelled now but you already tried to pay the invoice, you might loose your bond.",
   "#22": "Phrases in components/Dialogs/Client.tsx",
   "... somewhere on Earth!": "... somewhere on Earth!",
-  "Client info": "Client info",
+  "Client": "Client",
   "Made with": "Made with",
   "RoboSats client version": "RoboSats client version",
   "and": "and",
@@ -262,7 +262,6 @@
   "24h non-KYC bitcoin premium": "24h non-KYC bitcoin premium",
   "Book liquidity": "Book liquidity",
   "CLN version": "CLN version",
-  "Client": "Client",
   "Coordinator": "Coordinator",
   "Coordinator Notice": "Coordinator Notice",
   "Coordinator commit hash": "Coordinator commit hash",
@@ -745,7 +744,5 @@
   "You must have a robot avatar to see the order details": "You must have a robot avatar to see the order details",
   "This order has been cancelled collaborativelly": "This order has been cancelled collaboratively",
   "This order is not available": "This order is not available",
-  "If you want to see it available, consider submitting a request on our": "If you want to see it available, consider submitting a request on our",
-  "Can't find your favorite payment method in the list?": "Can't find your favorite payment method in the list?",
   "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues": "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues"
 }

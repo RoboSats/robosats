@@ -32,7 +32,7 @@ const ClientDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
     <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <Typography component='h5' variant='h5'>
-          {t('Client info')}
+          {t('Client')}
         </Typography>
 
         <List dense>
