@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme, styled, Grid, IconButton } from '@mui/material';
 import Tooltip, { type TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import { closeAll, type UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { closeAll, type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 
 import { BubbleChart, Info, People, PriceChange, School } from '@mui/icons-material';
 

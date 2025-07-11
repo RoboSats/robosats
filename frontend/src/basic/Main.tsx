@@ -64,11 +64,10 @@ const Main: React.FC = () => {
       ) : (
         <></>
       )}
-
+      <NavBar />
       <MainBox navbarHeight={navbarHeight} style={{ paddingTop: client === 'mobile' ? '25px' : 0 }}>
         <Routes />
       </MainBox>
-      <NavBar />
       <MainDialogs />
     </Router>
   );
