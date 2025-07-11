@@ -329,7 +329,6 @@
   "You do not have a robot avatar": "Huna picha ya mwakilishi wa roboti",
   "#32": "Phrases in components/Dialogs/Profile.tsx",
   "Coordinators that know your robot:": "Coordinators that know your robot:",
-  "Looking for your robot!": "Looking for your robot!",
   "Your Robot": "Roboti yako",
   "#33": "Phrases in components/Dialogs/Recovery.tsx",
   "Enter your robot token to re-build your robot and gain access to its trades.": "Ingiza alama ya roboti yako ili kuirekebisha roboti yako na kupata ufikiaji wa biashara zake.",

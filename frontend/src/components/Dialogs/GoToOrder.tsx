@@ -7,9 +7,9 @@ import {
   DialogContent,
   DialogContentText,
   Button,
-  Grid,
   TextField,
   useTheme,
+  Typography,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -46,27 +46,27 @@ const GoToOrder = ({ open, onClose }: Props): React.JSX.Element => {
       <DialogTitle>{t('Search order')}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {t("Enter here an order URL to search for it, even if it's password protected")}
+          <Typography variant='body2'>
+            {t("Enter here an order URL to search for it, even if it's password protected")}
+          </Typography>
         </DialogContentText>
         <DialogContentText>
-          <Grid item sx={{ width: '100%' }}>
-            <TextField
-              fullWidth
-              label={`${t('Order URL')}`}
-              type='url'
-              error={error}
-              value={orderUrl}
-              style={{ marginTop: 8 }}
-              inputProps={{
-                style: {
-                  textAlign: 'center',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 4,
-                },
-              }}
-              onChange={(e) => setOrderUrl(e.target.value)}
-            />
-          </Grid>
+          <TextField
+            fullWidth
+            label={`${t('Order URL')}`}
+            type='url'
+            error={error}
+            value={orderUrl}
+            style={{ marginTop: 8 }}
+            inputProps={{
+              style: {
+                textAlign: 'center',
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: 4,
+              },
+            }}
+            onChange={(e) => setOrderUrl(e.target.value)}
+          />
         </DialogContentText>
       </DialogContent>
       <DialogActions>

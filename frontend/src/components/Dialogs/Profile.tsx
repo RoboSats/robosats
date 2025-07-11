@@ -30,17 +30,13 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
 
-  const slot = garage.getSlot();
-
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadingRobots, setLoadingRobots] = useState<number>(
-    Object.values(slot?.robots ?? {}).length,
-  );
 
   useEffect(() => {
     setLoading(!garage.getSlot()?.hashId);
-    setLoadingRobots(Object.values(slot?.robots ?? {}).filter((robot) => robot.loading).length);
   }, [slotUpdatedAt]);
+
+  const slot = garage.getSlot();
 
   return (
     <Dialog
@@ -62,42 +58,31 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           <ListItem className='profileNickname'>
             <ListItemText>
               <Typography component='h6' variant='h6'>
-                {!garage.getSlot()?.nickname && (
-                  <div style={{ position: 'relative', left: '-7px' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'left',
-                        flexWrap: 'wrap',
-                        width: 300,
-                      }}
-                    >
-                      <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
+                <div style={{ position: 'relative', left: '-7px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'left',
+                      flexWrap: 'wrap',
+                      width: 300,
+                    }}
+                  >
+                    <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
 
-                      <a>{garage.getSlot()?.nickname}</a>
+                    <a>{slot?.nickname}</a>
 
-                      <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
-                    </div>
+                    <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
                   </div>
-                )}
+                </div>
               </Typography>
-
-              {loadingRobots > 0 ? (
-                <>
-                  <b>{t('Looking for your robot!')}</b>
-                  <LinearProgress />
-                </>
-              ) : (
-                <></>
-              )}
             </ListItemText>
 
             <ListItemAvatar>
               <RobotAvatar
                 avatarClass='profileAvatar'
                 style={{ width: 65, height: 65 }}
-                hashId={garage.getSlot()?.hashId ?? ''}
+                hashId={slot?.hashId ?? ''}
               />
             </ListItemAvatar>
           </ListItem>

@@ -329,7 +329,6 @@
   "You do not have a robot avatar": "你没有机器人头像",
   "#32": "Phrases in components/Dialogs/Profile.tsx",
   "Coordinators that know your robot:": "Coordinators that know your robot:",
-  "Looking for your robot!": "Looking for your robot!",
   "Your Robot": "你的机器人",
   "#33": "Phrases in components/Dialogs/Recovery.tsx",
   "Enter your robot token to re-build your robot and gain access to its trades.": "输入你的机器人令牌来重造你的机器人并访问它的交易。",
