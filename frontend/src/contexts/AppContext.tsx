@@ -254,6 +254,10 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
     setWindowSize(getWindowSize(theme.typography.fontSize));
   };
 
+  useEffect(() => {
+    setOpen(closeAll);
+  }, [page, setOpen]);
+
   return (
     <AppContext.Provider
       value={{

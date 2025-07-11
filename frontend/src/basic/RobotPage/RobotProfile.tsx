@@ -12,12 +12,13 @@ import {
   Box,
   useTheme,
   type SelectChangeEvent,
+  IconButton,
 } from '@mui/material';
-import { Key, Bolt, Add, DeleteSweep, Download } from '@mui/icons-material';
+import { Key, Bolt, Add, DeleteSweep, Download, Settings } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { type Slot, type Robot } from '../../models';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
@@ -40,7 +41,7 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): React.JSX.Element => {
-  const { windowSize, client, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, client, setOpen, open } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -100,6 +101,16 @@ const RobotProfile = ({
         spacing={1}
         sx={{ width: '100%' }}
       >
+        <Grid item sx={{ position: 'absolute', left: 0, marginLeft: 1 }}>
+          <IconButton
+            color='primary'
+            onClick={() => {
+              setOpen({ ...closeAll, profile: !open.profile });
+            }}
+          >
+            <Settings />
+          </IconButton>
+        </Grid>
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
           {slot?.nickname ? (
             <Typography align='center' component='h5' variant='h5'>

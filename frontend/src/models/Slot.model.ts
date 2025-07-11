@@ -121,10 +121,12 @@ class Slot {
   makeOrder = async (federation: Federation, attributes: object): Promise<Order> => {
     const order = new Order(attributes);
     await order.make(federation, this);
-    this.lastOrder = this.activeOrder;
-    this.activeOrder = order;
-    this.onSlotUpdate();
-    return this.activeOrder;
+    if (!order?.bad_request) {
+      this.lastOrder = this.activeOrder;
+      this.activeOrder = order;
+      this.onSlotUpdate();
+    }
+    return order;
   };
 
   updateSlotFromOrder: (newOrder: Order | null) => void = (newOrder) => {
