@@ -42,12 +42,7 @@ class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
         split_auth = auth_header.split(" | ")
 
-        if len(split_auth) == 3:
-            # Deprecated in favor of len 4
-            request.META["HTTP_AUTHORIZATION"] = split_auth[0]
-            request.META["PUBLIC_KEY"] = split_auth[1]
-            request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
-        elif len(split_auth) == 4:
+        if len(split_auth) == 4:
             request.META["HTTP_AUTHORIZATION"] = split_auth[0]
             request.META["PUBLIC_KEY"] = split_auth[1]
             request.META["ENCRYPTED_PRIVATE_KEY"] = split_auth[2]
