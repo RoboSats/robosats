@@ -14,12 +14,15 @@ import {
   useTheme,
   Fab,
   Button,
+  Collapse,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import {
   Add,
   Assignment,
   BubbleChart,
+  ExpandLess,
+  ExpandMore,
   Info,
   Menu as MenuIcon,
   People,
@@ -34,6 +37,8 @@ import { Page } from '..';
 import RobotAvatar from '../../../components/RobotAvatar';
 import { AppContext, closeAll, UseAppStoreType } from '../../../contexts/AppContext';
 import { RoboSatsTextIcon } from '../../../components/Icons';
+import { genBase62Token } from '../../../utils';
+import { UseFederationStoreType, FederationContext } from '../../../contexts/FederationContext';
 
 interface AppBarProps {
   changePage: (newPage: Page) => void;
@@ -44,13 +49,20 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
   const theme = useTheme();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { open, setOpen, page } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [show, setShow] = useState<boolean>(false);
+  const [openGarage, setOpenGarage] = useState<boolean>(false);
 
   const slot = garage.getSlot();
 
   const onSectionClick = (newPage: Page) => {
     setShow(false);
     changePage(newPage);
+  };
+
+  const handleAddRobot = (): void => {
+    const token = genBase62Token(36);
+    void garage.createRobot(federation, token, Object.keys(garage.slots).length > 0);
   };
 
   return (
@@ -112,27 +124,87 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
         </Toolbar>
       </Bar>
       <Drawer anchor='left' open={show} onClose={() => setShow(false)}>
-        <Box sx={{ width: 250, height: '100%' }} role='presentation'>
+        <Box sx={{ width: 270, height: '100%' }} role='presentation'>
           <List sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {slot?.hashId ? (
               <>
                 <ListItem disablePadding>
                   <ListItemButton
+                    sx={{ pr: 0 }}
                     onClick={() => {
                       setOpen({ ...closeAll, profile: !open.profile });
                     }}
                   >
-                    <RobotAvatar style={{ width: '2em', height: '2em' }} hashId={slot?.hashId} />
+                    <ListItemIcon>
+                      <RobotAvatar
+                        style={{ width: '1.5em', height: '1.5em' }}
+                        hashId={slot?.hashId}
+                      />
+                    </ListItemIcon>
+                  </ListItemButton>
+                  <ListItemButton
+                    onClick={() => setOpenGarage((op) => !op)}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      pl: 0,
+                    }}
+                  >
                     <Typography align='center' sx={{ ml: 1 }}>
                       <b>{slot?.nickname}</b>
                     </Typography>
+                    {openGarage ? <ExpandLess /> : <ExpandMore />}
                   </ListItemButton>
                 </ListItem>
-                <Divider sx={{ mt: 1 }} />
+                <Collapse in={openGarage} timeout='auto' unmountOnExit>
+                  <List component='div' disablePadding>
+                    {Object.values(garage.slots).map((garageSlot, index) => {
+                      if (garageSlot.token === slot.token) return <div key={index}></div>;
+
+                      return (
+                        <ListItem disablePadding key={index}>
+                          <ListItemButton
+                            sx={{ pr: 0 }}
+                            onClick={() => {
+                              garage.setCurrentSlot(garageSlot.token ?? '');
+                              setOpenGarage(false);
+                              setTimeout(() => setShow(false), 300);
+                            }}
+                          >
+                            <ListItemIcon>
+                              <RobotAvatar
+                                style={{ width: '1.5em', height: '1.5em' }}
+                                hashId={garageSlot.hashId ?? ''}
+                              />
+                            </ListItemIcon>
+                            <Typography align='center' sx={{ ml: 1 }}>
+                              <b>{garageSlot?.nickname}</b>
+                            </Typography>
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    })}
+                    <ListItemButton sx={{ pr: 0 }} onClick={handleAddRobot} key='add_robot'>
+                      <ListItemIcon>
+                        <Add /> <div style={{ width: '0.5em' }} />
+                        {t('Add Robot')}
+                      </ListItemIcon>
+                    </ListItemButton>
+                  </List>
+                </Collapse>
               </>
             ) : (
-              <></>
+              <ListItem disablePadding sx={{ height: '30px', mt: '8px', mb: '8px' }}>
+                <ListItemButton sx={{ pr: 0 }} onClick={handleAddRobot}>
+                  <ListItemIcon>
+                    <Add /> <div style={{ width: '0.5em' }} />
+                    {t('Add Robot')}
+                  </ListItemIcon>
+                </ListItemButton>
+              </ListItem>
             )}
+            <Divider sx={{ mt: 1 }} />
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => {

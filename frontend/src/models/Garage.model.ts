@@ -129,37 +129,36 @@ class Garage {
   };
 
   // Robots
-  createRobot: (federation: Federation, token: string) => Promise<void> = async (
-    federation,
-    token,
-  ) => {
-    if (!token) return;
+  createRobot: (federation: Federation, token: string, skipSelect?: boolean) => Promise<void> =
+    async (federation, token, skipSelect) => {
+      if (!token) return;
 
-    if (this.getSlot(token) === null) {
-      try {
-        const key = await genKey(token);
-        const robotAttributes = {
-          token,
-          pubKey: key.publicKeyArmored,
-          encPrivKey: key.encryptedPrivateKeyArmored,
-        };
+      if (this.getSlot(token) === null) {
+        try {
+          const key = await genKey(token);
+          const robotAttributes = {
+            token,
+            pubKey: key.publicKeyArmored,
+            encPrivKey: key.encryptedPrivateKeyArmored,
+          };
 
-        this.setCurrentSlot(token);
-        this.slots[token] = new Slot(
-          token,
-          federation.getCoordinatorsAlias(),
-          robotAttributes,
-          () => {
-            this.triggerHook('onSlotUpdate');
-          },
-        );
-        void this.fetchRobot(federation, token);
-        this.save();
-      } catch (error) {
-        console.error('Error:', error);
+          if (!skipSelect) this.setCurrentSlot(token);
+
+          this.slots[token] = new Slot(
+            token,
+            federation.getCoordinatorsAlias(),
+            robotAttributes,
+            () => {
+              this.triggerHook('onSlotUpdate');
+            },
+          );
+          void this.fetchRobot(federation, token);
+          this.save();
+        } catch (error) {
+          console.error('Error:', error);
+        }
       }
-    }
-  };
+    };
 
   fetchRobot = async (federation: Federation, token: string): Promise<void> => {
     const slot = this.getSlot(token);
