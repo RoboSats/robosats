@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   AppBar as Bar,
   Toolbar,
@@ -64,6 +64,10 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
     const token = genBase62Token(36);
     void garage.createRobot(federation, token, Object.keys(garage.slots).length > 0);
   };
+
+  useEffect(() => {
+    if (!show) setOpenGarage(false);
+  }, [show]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
