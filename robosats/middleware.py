@@ -91,7 +91,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                     update_last_login(None, token.user)
 
                     # START deprecate after v0.8.0
-                    # Add the nostr_pubkey to robots
+                    # Add the nostr_pubkey to robots created before nostr_pubkey were introduced
                     nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace(
                         "Nostr ", ""
                     )
