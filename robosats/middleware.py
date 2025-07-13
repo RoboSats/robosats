@@ -95,9 +95,11 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                     nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace(
                         "Nostr ", ""
                     )
-                    token.user.robot.nostr_pubkey = nostr_pubkey
 
-                    token.user.robot.save(update_fields=["nostr_pubkey"])
+                    if token.user.robot.nostr_pubkey != nostr_pubkey:
+                        token.user.robot.nostr_pubkey = nostr_pubkey
+
+                        token.user.robot.save(update_fields=["nostr_pubkey"])
                     # END deprecate after v0.8.0
 
             except Exception:
