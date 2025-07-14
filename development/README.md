@@ -21,7 +21,7 @@ You can run the whole stack for local development following the [instructions](/
 
 Officially mantained docker orchestration for coordinators can be found in the repo [robosats-deploy](https://github.com/RoboSats/robosats-deploy)
 
-### Release
+## Release
 
 Learn all the steps we do when we want to announce a new [release](./release.md)
 
