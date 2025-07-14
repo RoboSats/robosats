@@ -21,5 +21,9 @@ You can run the whole stack for local development following the [instructions](/
 
 Officially mantained docker orchestration for coordinators can be found in the repo [robosats-deploy](https://github.com/RoboSats/robosats-deploy)
 
+### Release
+
+Learn all the steps we do when we want to announce a new [release](./release.md)
+
 ## ⚡Developer Rewards ⚡
 Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
