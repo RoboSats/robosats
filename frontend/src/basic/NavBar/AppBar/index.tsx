@@ -71,7 +71,7 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Bar position='fixed' sx={{ top: 'auto', bottom: 0 }}>
+      <Bar position='fixed' sx={{ top: 'auto', bottom: 0 }} color='white'>
         <Toolbar style={{ display: 'flex', justifyContent: 'space-between', flexGrow: 1 }}>
           <Button
             size='large'
