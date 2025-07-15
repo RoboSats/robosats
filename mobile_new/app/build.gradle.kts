@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -33,6 +35,34 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    splits {
+
+        // Configures multiple APKs based on ABI. This helps keep the size
+        // down, since PT binaries can be large.
+        abi {
+
+            // Enables building multiple APKs per ABI.
+            isEnable = true
+
+            // By default, all ABIs are included, so use reset() and include to specify
+            // that we only want APKs for x86 and x86_64, armeabi-v7a, and arm64-v8a.
+
+            // Resets the list of ABIs that Gradle should create APKs for to none.
+            reset()
+
+            // Specifies a list of ABIs that Gradle should create APKs for.
+            include("x86", "armeabi-v7a", "arm64-v8a", "x86_64")
+
+            // Specify whether you wish to also generate a universal APK that
+            // includes _all_ ABIs.
+            isUniversalApk = true
+        }
+    }
+
+    fun Packaging.() {
+        jniLibs.useLegacyPackaging = true
+    }
 }
 
 dependencies {
@@ -40,6 +70,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(libs.kmp.tor)
+    // Add the KMP Tor binary dependency (contains the native .so files)
+    implementation(libs.kmp.tor.binary)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)

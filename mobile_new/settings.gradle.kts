@@ -3,12 +3,16 @@ pluginManagement {
         google ()
         mavenCentral()
         gradlePluginPortal()
+        jcenter()
+        maven("https://mvnrepository.com")
     }
 }
 dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        jcenter()
+        maven("https://mvnrepository.com")
     }
 }
 

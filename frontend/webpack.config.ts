@@ -236,6 +236,60 @@ const configMobile: Configuration = {
         },
       },
     }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: false,
+      },
+      filename: path.resolve(__dirname, '../mobile_new/app/src/main/assets/index.html'),
+      inject: 'body',
+      robosatsSettings: 'mobile-basic',
+      basePath: 'file:///android_asset/Web.bundle/',
+    }),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, 'static/css'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/Web.bundle/static/css',
+              ),
+            },
+            {
+              source: path.resolve(__dirname, 'static/assets/sounds'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/Web.bundle/assets/sounds',
+              ),
+            },
+            {
+              source: path.resolve(__dirname, 'static/federation'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/Web.bundle/assets/federation',
+              ),
+            },
+          ],
+        },
+      },
+    }),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/static/frontend',
+              ),
+            },
+          ],
+        },
+      },
+    }),
   ],
 };
 

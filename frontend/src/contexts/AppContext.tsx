@@ -36,13 +36,8 @@ export interface SlideDirection {
 
 export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
 
-export const isNativeRoboSats = !(window.NativeRobosats === undefined);
-
 const pageFromPath = window.location.pathname.split('/')[1];
 const isPagePathEmpty = pageFromPath === '';
-const entryPage: Page = !isNativeRoboSats
-  ? ((isPagePathEmpty ? 'garage' : pageFromPath) as Page)
-  : 'garage';
 
 export const closeAll: OpenDialogs = {
   more: false,
@@ -56,6 +51,7 @@ export const closeAll: OpenDialogs = {
   update: false,
   profile: false,
   recovery: false,
+  thirdParty: '',
 };
 
 const makeTheme = function (settings: Settings): Theme {
@@ -108,7 +104,7 @@ const getOrigin = (network = 'mainnet'): Origin => {
   return origin;
 };
 
-const getSettings = (): Settings => {
+export const getSettings = (): Settings => {
   let settings;
 
   const [client, view] = window.RobosatsSettings.split('-');
@@ -119,6 +115,11 @@ const getSettings = (): Settings => {
   }
   return settings;
 };
+
+const entryPage: Page =
+  getSettings().client == 'mobile'
+    ? 'garage'
+    : ((isPagePathEmpty ? 'garage' : pageFromPath) as Page);
 
 export interface WindowSize {
   width: number;
@@ -159,7 +160,7 @@ export interface UseAppStoreType {
 
 export const initialAppContext: UseAppStoreType = {
   theme: undefined,
-  torStatus: 'STARTING',
+  torStatus: 'ON',
   settings: getSettings(),
   setSettings: () => {},
   page: entryPage,

@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import Close from '@mui/icons-material/Close';
 import { type Page } from '../../basic/NavBar';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { getSettings } from '../../contexts/AppContext';
 
 interface NotificationsProps {
   rewards: number | undefined;
@@ -30,9 +31,9 @@ interface NotificationMessage {
 }
 
 const path =
-  window.NativeRobosats === undefined
-    ? '/static/assets/sounds'
-    : 'file:///android_asset/Web.bundle/assets/sounds';
+  getSettings().client == 'mobile'
+    ? 'file:///android_asset/Web.bundle/assets/sounds'
+    : '/static/assets/sounds';
 
 const audio = {
   chat: new Audio(`${path}/chat-open.mp3`),
