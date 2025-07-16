@@ -35,7 +35,7 @@ class RoboidentitiesAndroidClient implements RoboidentitiesClient {
         try {
           const result = await new Promise<string>((resolve, reject) => {
             const uuid: string = uuidv4();
-            window.AndroidAppRobosats?.generateRobohash(uuid, initialString);
+            window.AndroidAppRobosats?.generateRobohash(uuid, key);
             window.AndroidRobosats?.storePromise(uuid, resolve, reject);
           });
 
