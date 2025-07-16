@@ -1,15 +1,21 @@
-package com.koalasat.robosats
+package com.robosats
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.webkit.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.koalasat.robosats.WebAppInterface
+import com.robosats.R
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
+import java.io.ByteArrayInputStream
+import java.net.HttpURLConnection
 import java.net.InetSocketAddress
+import java.net.Proxy
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
@@ -50,10 +56,10 @@ class MainActivity : AppCompatActivity() {
 
             // Show a toast notification about the critical error
             runOnUiThread {
-                android.widget.Toast.makeText(
+                Toast.makeText(
                     this,
                     "Critical error: Tor initialization failed. App cannot proceed securely.",
-                    android.widget.Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }
@@ -66,10 +72,10 @@ class MainActivity : AppCompatActivity() {
         try {
             // Display connecting message
             runOnUiThread {
-                android.widget.Toast.makeText(
+                Toast.makeText(
                     this,
                     "Connecting to Tor network...",
-                    android.widget.Toast.LENGTH_SHORT
+                    Toast.LENGTH_SHORT
                 ).show()
             }
 
@@ -84,10 +90,10 @@ class MainActivity : AppCompatActivity() {
                 // Update status on UI thread every few retries
                 if (retries % 3 == 0) {
                     runOnUiThread {
-                        android.widget.Toast.makeText(
+                        Toast.makeText(
                             this,
                             "Still connecting to Tor (attempt $retries/$maxRetries)...",
-                            android.widget.Toast.LENGTH_SHORT
+                            Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
@@ -99,10 +105,10 @@ class MainActivity : AppCompatActivity() {
 
                 // Show success message
                 runOnUiThread {
-                    android.widget.Toast.makeText(
+                    Toast.makeText(
                         this,
                         "Tor connected successfully",
-                        android.widget.Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT
                     ).show()
 
                     // Now that Tor is connected, set up the WebView
@@ -113,10 +119,10 @@ class MainActivity : AppCompatActivity() {
                 Log.e("TorInitialization", "Failed to connect to Tor after $maxRetries retries")
 
                 runOnUiThread {
-                    android.widget.Toast.makeText(
+                    Toast.makeText(
                         this,
                         "Failed to connect to Tor after multiple attempts. App cannot proceed securely.",
-                        android.widget.Toast.LENGTH_LONG
+                        Toast.LENGTH_LONG
                     ).show()
                 }
             }
@@ -124,10 +130,10 @@ class MainActivity : AppCompatActivity() {
             Log.e("TorInitialization", "Error during Tor connection: ${e.message}", e)
 
             runOnUiThread {
-                android.widget.Toast.makeText(
+                Toast.makeText(
                     this,
                     "Error connecting to Tor: ${e.message}",
-                    android.widget.Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }
@@ -190,10 +196,10 @@ class MainActivity : AppCompatActivity() {
 
         // Show message that we're setting up secure browsing
         runOnUiThread {
-            android.widget.Toast.makeText(
+            Toast.makeText(
                 this,
                 "Setting up secure Tor browsing...",
-                android.widget.Toast.LENGTH_SHORT
+                Toast.LENGTH_SHORT
             ).show()
         }
 
@@ -225,10 +231,10 @@ class MainActivity : AppCompatActivity() {
 
                 // Success - now configure WebViewClient and load URL on UI thread
                 runOnUiThread {
-                    android.widget.Toast.makeText(
+                    Toast.makeText(
                         this,
                         "Secure connection established",
-                        android.widget.Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT
                     ).show()
 
                     // Create a custom WebViewClient that forces all traffic through Tor
@@ -249,14 +255,14 @@ class MainActivity : AppCompatActivity() {
 
                                 // For .onion domains, we must use SOCKS proxy type
                                 val proxyType = if (isOnionDomain)
-                                    java.net.Proxy.Type.SOCKS
+                                    Proxy.Type.SOCKS
                                 else
-                                    java.net.Proxy.Type.HTTP
+                                    Proxy.Type.HTTP
 
                                 // Create a proxy instance for Tor with the appropriate type
-                                val torProxy = java.net.Proxy(
+                                val torProxy = Proxy(
                                     proxyType,
-                                    java.net.InetSocketAddress(proxyHost, proxyPort)
+                                    InetSocketAddress(proxyHost, proxyPort)
                                 )
 
                                 if (isOnionDomain) {
@@ -264,14 +270,14 @@ class MainActivity : AppCompatActivity() {
                                 }
 
                                 // Create connection with proxy already configured
-                                val url = java.net.URL(urlString)
+                                val url = URL(urlString)
                                 val connection = url.openConnection(torProxy)
 
                                 // Configure basic connection properties
                                 connection.connectTimeout = 60000  // Longer timeout for onion domains
                                 connection.readTimeout = 60000
 
-                                if (connection is java.net.HttpURLConnection) {
+                                if (connection is HttpURLConnection) {
                                     // Ensure no connection reuse to prevent proxy leaks
                                     connection.setRequestProperty("Connection", "close")
 
@@ -305,7 +311,7 @@ class MainActivity : AppCompatActivity() {
 
                                     // Get the correct input stream based on response code
                                     val inputStream = if (responseCode >= 400) {
-                                        connection.errorStream ?: java.io.ByteArrayInputStream(byteArrayOf())
+                                        connection.errorStream ?: ByteArrayInputStream(byteArrayOf())
                                     } else {
                                         connection.inputStream
                                     }
@@ -371,7 +377,7 @@ class MainActivity : AppCompatActivity() {
                             super.onReceivedError(view, request, error)
                         }
 
-                        override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
+                        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                             // Verify Tor is connected when page starts loading
                             if (!torKmp.isConnected()) {
                                 Log.e("SecurityError", "Tor disconnected as page started loading")
@@ -409,10 +415,10 @@ class MainActivity : AppCompatActivity() {
                 // Show error and exit - DO NOT LOAD WEBVIEW
                 runOnUiThread {
                     // Show toast with error
-                    android.widget.Toast.makeText(
+                    Toast.makeText(
                         this,
                         "SECURITY ERROR: Cannot set up secure browsing: ${e.message}",
-                        android.widget.Toast.LENGTH_LONG
+                        Toast.LENGTH_LONG
                     ).show()
                 }
             }
@@ -478,7 +484,7 @@ class MainActivity : AppCompatActivity() {
 
             try {
                 // Try to set global proxy through ConnectivityManager
-                val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
+                val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE)
                 val setDefaultProxyMethod = connectivityManager.javaClass.getDeclaredMethod("setDefaultProxy", proxyClass)
                 setDefaultProxyMethod.isAccessible = true
                 setDefaultProxyMethod.invoke(connectivityManager, proxyInfo)

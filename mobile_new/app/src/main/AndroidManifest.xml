@@ -17,7 +17,7 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Robosats">
         <activity
-            android:name=".MainActivity"
+            android:name="com.robosats.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

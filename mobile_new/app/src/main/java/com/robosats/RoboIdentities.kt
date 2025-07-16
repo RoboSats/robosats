@@ -1,4 +1,4 @@
-package com.koalasat.robosats
+package com.robosats
 
 import android.util.Log
 

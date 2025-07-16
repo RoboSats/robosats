@@ -1,4 +1,4 @@
-package com.koalasat.robosats
+package com.robosats
 
 import android.content.Context
 import android.util.Log
@@ -26,18 +26,36 @@ class WebAppInterface(private val context: Context, private val webView: WebView
     fun generateRoboname(uuid: String, message: String) {
         try {
             val roboname = roboIdentities.generateRoboname(message)
-            Log.d(TAG, "Generated roboname: $roboname for message: $message")
-
             webView.post {
                 webView.evaluateJavascript("javascript:window.AndroidRobosats.onResolvePromise('${uuid}', '${roboname}')", null)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in generateRoboname: ${e.message}", e)
+            Log.e(TAG, "Error in generateRoboname", e)
 
             // Handle error gracefully by returning a fallback value
             webView.post {
                 webView.evaluateJavascript(
                     "javascript:window.AndroidRobosats.onRejectPromise('${uuid}', 'Error generating robot name')",
+                    null
+                )
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun generateRobohash(uuid: String, message: String) {
+        try {
+            val roboname = roboIdentities.generateRobohash(message)
+            webView.post {
+                webView.evaluateJavascript("javascript:window.AndroidRobosats.onResolvePromise('${uuid}', '${roboname}')", null)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in generateRobohash", e)
+
+            // Handle error gracefully by returning a fallback value
+            webView.post {
+                webView.evaluateJavascript(
+                    "javascript:window.AndroidRobosats.onRejectPromise('${uuid}', 'Error generating robot hash')",
                     null
                 )
             }

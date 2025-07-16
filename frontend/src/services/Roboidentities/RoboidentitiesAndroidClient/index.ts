@@ -32,15 +32,20 @@ class RoboidentitiesAndroidClient implements RoboidentitiesClient {
       if (this.robohashes[key]) {
         return this.robohashes[key];
       } else {
-        const response = await window.NativeRobosats?.postMessage({
-          category: 'roboidentities',
-          type: 'robohash',
-          detail: key,
-        });
-        const result: string = response ? Object.values(response)[0] : '';
-        const image: string = `data:image/png;base64,${result}`;
-        this.robohashes[key] = image;
-        return image;
+        try {
+          const result = await new Promise<string>((resolve, reject) => {
+            const uuid: string = uuidv4();
+            window.AndroidAppRobosats?.generateRobohash(uuid, initialString);
+            window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+          });
+
+          const image: string = `data:image/png;base64,${result}`;
+          this.robohashes[key] = image;
+          return image;
+        } catch (error) {
+          console.error('Error generating robohash:', error);
+          return '';
+        }
       }
     };
 }

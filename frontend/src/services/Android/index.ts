@@ -8,6 +8,7 @@ declare global {
 
 interface AndroidAppRobosats {
   generateRoboname: (uuid: string, initialString: string) => void;
+  generateRobohash: (uuid: string, initialString: string) => void;
 }
 
 class AndroidRobosats {

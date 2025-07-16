@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.koalasat.robosats"
+    namespace = "com.robosats"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.koalasat.robosats"
+        applicationId = "com.robosats"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
