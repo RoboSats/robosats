@@ -36,7 +36,7 @@ interface SettingsFormProps {
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element => {
-  const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
+  const { settings, setSettings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -241,7 +241,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
               </ToggleButtonGroup>
             </ListItem>
 
-            {client === 'mobile' && (
+            {window.navigator.userAgent.includes('robosats') && (
               <ListItem>
                 <ListItemIcon>
                   <TorIcon />

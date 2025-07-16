@@ -61,4 +61,22 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             }
         }
     }
+
+    @JavascriptInterface
+    fun copyToClipboard(message: String) {
+        try {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val clip = android.content.ClipData.newPlainText("RoboSats Data", message)
+            clipboard.setPrimaryClip(clip)
+
+            // Show a toast notification
+            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+
+            // Log the action
+            Log.d(TAG, "Text copied to clipboard")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error copying to clipboard", e)
+            Toast.makeText(context, "Failed to copy to clipboard", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

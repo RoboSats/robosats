@@ -8,8 +8,10 @@ class SystemAndroidClient implements SystemClient {
 
   public loading = false;
 
-  // TODO
-  public copyToClipboard: (value: string) => void = () => {};
+  // Clipboard
+  public copyToClipboard: (value: string) => void = (value) => {
+    window.AndroidAppRobosats?.copyToClipboard(value ?? '');
+  };
 
   // Cookies
   public getCookie: (key: string) => string = (key) => {
