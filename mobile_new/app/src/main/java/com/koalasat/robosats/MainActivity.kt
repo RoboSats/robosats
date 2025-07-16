@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
+import com.koalasat.robosats.tor.WebAppInterface
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
 import java.net.InetSocketAddress
@@ -393,6 +394,11 @@ class MainActivity : AppCompatActivity() {
                             super.onPageFinished(view, url)
                         }
                     }
+
+                    webView.settings.userAgentString = "AndroidRobosats"
+
+                    // Add the JavaScript interface
+                    webView.addJavascriptInterface(WebAppInterface(this, webView), "AndroidAppRobosats")
 
                     // Now it's safe to load the local HTML file
                     webView.loadUrl("file:///android_asset/index.html")
