@@ -58,7 +58,7 @@ const RobotPage = (): React.JSX.Element => {
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
           <Grid item>
             <Typography align='center' variant='h6'>
-              {t('Connecting to TOR')}
+              {t('Connecting to Tor')}
             </Typography>
           </Grid>
           <Grid item>
@@ -85,7 +85,7 @@ const RobotPage = (): React.JSX.Element => {
           </Grid>
           <Grid item>
             <Alert>
-              <AlertTitle>{t('Connection encrypted and anonymized using TOR.')}</AlertTitle>
+              <AlertTitle>{t('Connection encrypted and anonymized using Tor.')}</AlertTitle>
               {t(
                 'This ensures maximum privacy, however you might feel the app behaves slow. If connection is lost, restart the app.',
               )}

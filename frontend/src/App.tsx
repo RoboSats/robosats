@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
 import { CssBaseline } from '@mui/material';
 import HostAlert from './components/HostAlert';
-import TorConnectionBadge from './components/TorConnection';
 
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n/Web';
@@ -28,7 +27,6 @@ const App = (): React.JSX.Element => {
                   <CssBaseline />
                   {client === 'mobile' ? (
                     <div style={{ display: 'inline-flex', position: 'fixed', top: '0.5em' }}>
-                      <TorConnectionBadge />
                       <NotificationSwitchBadge />
                     </div>
                   ) : (
