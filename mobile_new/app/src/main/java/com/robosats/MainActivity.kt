@@ -5,9 +5,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.webkit.*
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.robosats.R
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
@@ -20,6 +23,8 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var torKmp: TorKmp
+    private lateinit var loadingContainer: ConstraintLayout
+    private lateinit var statusTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,8 +32,13 @@ class MainActivity : AppCompatActivity() {
         // We don't need edge-to-edge since we're using fitsSystemWindows
         setContentView(R.layout.activity_main)
 
-        // Set up the WebView reference
+        // Set up the UI references
         webView = findViewById(R.id.webView)
+        loadingContainer = findViewById(R.id.loadingContainer)
+        statusTextView = findViewById(R.id.statusTextView)
+
+        // Set initial status message
+        updateStatus("Initializing Tor connection...")
 
         // Initialize Tor and setup WebView only after Tor is properly connected
         initializeTor()
@@ -54,15 +64,18 @@ class MainActivity : AppCompatActivity() {
             // Log the error and show a critical error message
             Log.e("TorInitialization", "Failed to initialize Tor: ${e.message}", e)
 
-            // Show a toast notification about the critical error
+            // Show error message on the loading screen
             runOnUiThread {
-                Toast.makeText(
-                    this,
-                    "Critical error: Tor initialization failed. App cannot proceed securely.",
-                    Toast.LENGTH_LONG
-                ).show()
+                updateStatus("Critical error: Tor initialization failed. App cannot proceed securely.")
             }
         }
+    }
+
+    /**
+     * Updates the status message on the loading screen
+     */
+    private fun updateStatus(message: String) {
+        statusTextView.text = message
     }
 
     private fun waitForTorConnection() {
@@ -72,11 +85,7 @@ class MainActivity : AppCompatActivity() {
         try {
             // Display connecting message
             runOnUiThread {
-                Toast.makeText(
-                    this,
-                    "Connecting to Tor network...",
-                    Toast.LENGTH_SHORT
-                ).show()
+                updateStatus("Connecting to Tor network...")
             }
 
             // Wait for Tor to connect with retry mechanism
@@ -90,11 +99,7 @@ class MainActivity : AppCompatActivity() {
                 // Update status on UI thread every few retries
                 if (retries % 3 == 0) {
                     runOnUiThread {
-                        Toast.makeText(
-                            this,
-                            "Still connecting to Tor (attempt $retries/$maxRetries)...",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        updateStatus("Still connecting to Tor (attempt $retries/$maxRetries)...")
                     }
                 }
             }
@@ -103,13 +108,9 @@ class MainActivity : AppCompatActivity() {
             if (torKmp.isConnected()) {
                 Log.d("TorInitialization", "Tor connected successfully after $retries retries")
 
-                // Show success message
+                // Show success message and proceed
                 runOnUiThread {
-                    Toast.makeText(
-                        this,
-                        "Tor connected successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    updateStatus("Tor connected successfully. Setting up secure browser...")
 
                     // Now that Tor is connected, set up the WebView
                     setupWebView()
@@ -119,22 +120,14 @@ class MainActivity : AppCompatActivity() {
                 Log.e("TorInitialization", "Failed to connect to Tor after $maxRetries retries")
 
                 runOnUiThread {
-                    Toast.makeText(
-                        this,
-                        "Failed to connect to Tor after multiple attempts. App cannot proceed securely.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    updateStatus("Failed to connect to Tor after multiple attempts. App cannot proceed securely.")
                 }
             }
         } catch (e: Exception) {
             Log.e("TorInitialization", "Error during Tor connection: ${e.message}", e)
 
             runOnUiThread {
-                Toast.makeText(
-                    this,
-                    "Error connecting to Tor: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                updateStatus("Error connecting to Tor: ${e.message}")
             }
         }
     }
@@ -196,11 +189,7 @@ class MainActivity : AppCompatActivity() {
 
         // Show message that we're setting up secure browsing
         runOnUiThread {
-            Toast.makeText(
-                this,
-                "Setting up secure Tor browsing...",
-                Toast.LENGTH_SHORT
-            ).show()
+            updateStatus("Setting up secure Tor browsing...")
         }
 
         // Configure proxy for WebView in a background thread to avoid NetworkOnMainThreadException
@@ -231,11 +220,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Success - now configure WebViewClient and load URL on UI thread
                 runOnUiThread {
-                    Toast.makeText(
-                        this,
-                        "Secure connection established",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    updateStatus("Secure connection established. Loading app...")
 
                     // Create a custom WebViewClient that forces all traffic through Tor
                     webView.webViewClient = object : WebViewClient() {
@@ -406,6 +391,10 @@ class MainActivity : AppCompatActivity() {
                     // Add the JavaScript interface
                     webView.addJavascriptInterface(WebAppInterface(this, webView), "AndroidAppRobosats")
 
+                    // Show WebView and hide loading screen
+                    loadingContainer.visibility = View.GONE
+                    webView.visibility = View.VISIBLE
+
                     // Now it's safe to load the local HTML file
                     webView.loadUrl("file:///android_asset/index.html")
                 }
@@ -414,12 +403,8 @@ class MainActivity : AppCompatActivity() {
 
                 // Show error and exit - DO NOT LOAD WEBVIEW
                 runOnUiThread {
-                    // Show toast with error
-                    Toast.makeText(
-                        this,
-                        "SECURITY ERROR: Cannot set up secure browsing: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    // Show error on loading screen
+                    updateStatus("SECURITY ERROR: Cannot set up secure browsing: ${e.message}")
                 }
             }
         }.start()
