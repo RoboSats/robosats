@@ -5,6 +5,7 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import com.robosats.tor.TorKmpManager.getTorKmpObject
 
 class WebAppInterface(private val context: Context, private val webView: WebView) {
     private val TAG = "WebAppInterface"
@@ -77,6 +78,15 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         } catch (e: Exception) {
             Log.e(TAG, "Error copying to clipboard", e)
             Toast.makeText(context, "Failed to copy to clipboard", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @JavascriptInterface
+    fun getTorStatus(uuid: String) {
+        val torState = getTorKmpObject().torState.state.name
+
+        webView.post {
+            webView.evaluateJavascript("javascript:window.AndroidRobosats.onResolvePromise('${uuid}', '${torState}')", null)
         }
     }
 }

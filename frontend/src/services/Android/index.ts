@@ -10,6 +10,7 @@ interface AndroidAppRobosats {
   generateRoboname: (uuid: string, initialString: string) => void;
   generateRobohash: (uuid: string, initialString: string) => void;
   copyToClipboard: (value: string) => void;
+  getTorStatus: (uuid: string) => void;
 }
 
 class AndroidRobosats {
@@ -23,7 +24,8 @@ class AndroidRobosats {
 
   public storePromise: (
     uuid: string,
-    resolve: (value: string | PromiseLike<string>) => void,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolve: (value: any | PromiseLike<any>) => void,
     reject?: (reason?: string) => void,
   ) => void = (uuid, resolve, reject) => {
     this.promises[uuid] = {
