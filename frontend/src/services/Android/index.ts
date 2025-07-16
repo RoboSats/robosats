@@ -11,17 +11,41 @@ interface AndroidAppRobosats {
 }
 
 class AndroidRobosats {
-  private promises: Record<string, (value: string | PromiseLike<string>) => void> = {};
+  private promises: Record<
+    string,
+    {
+      resolve: (value: string | PromiseLike<string>) => void;
+      reject: (reason?: string) => void;
+    }
+  > = {};
 
   public storePromise: (
     uuid: string,
-    promise: (value: string | PromiseLike<string>) => void,
-  ) => void = (uuid, promise) => {
-    this.promises[uuid] = promise;
+    resolve: (value: string | PromiseLike<string>) => void,
+    reject?: (reason?: string) => void,
+  ) => void = (uuid, resolve, reject) => {
+    this.promises[uuid] = {
+      resolve,
+      reject: reject || ((error) => console.error('Promise rejected:', error)),
+    };
   };
 
-  public onResolvePromise: (uuid: string, response: string) => void = (uuid, respone) => {
-    this.promises[uuid](respone);
+  public onResolvePromise: (uuid: string, response: string) => void = (uuid, response) => {
+    if (this.promises[uuid]) {
+      this.promises[uuid].resolve(response);
+      delete this.promises[uuid]; // Clean up after resolving
+    } else {
+      console.warn(`No promise found for UUID: ${uuid}`);
+    }
+  };
+
+  public onRejectPromise: (uuid: string, error: string) => void = (uuid, error) => {
+    if (this.promises[uuid]) {
+      this.promises[uuid].reject(error);
+      delete this.promises[uuid]; // Clean up after rejecting
+    } else {
+      console.warn(`No promise found for UUID: ${uuid}`);
+    }
   };
 }
 

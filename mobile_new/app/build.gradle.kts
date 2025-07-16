@@ -60,7 +60,7 @@ android {
         }
     }
 
-    fun Packaging.() {
+    packaging {
         jniLibs.useLegacyPackaging = true
     }
 }

@@ -9,15 +9,19 @@ class RoboidentitiesAndroidClient implements RoboidentitiesClient {
     if (this.robonames[initialString]) {
       return this.robonames[initialString];
     } else {
-      const result = await new Promise<string>((resolve) => {
-        const uuid: string = uuidv4();
-        window.AndroidAppRobosats?.generateRoboname(uuid, initialString);
-        window.AndroidRobosats?.storePromise(uuid, resolve);
-      });
+      try {
+        const result = await new Promise<string>((resolve, reject) => {
+          const uuid: string = uuidv4();
+          window.AndroidAppRobosats?.generateRoboname(uuid, initialString);
+          window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+        });
 
-      this.robonames[initialString] = result;
-
-      return result;
+        this.robonames[initialString] = result;
+        return result;
+      } catch (error) {
+        console.error('Error generating roboname:', error);
+        return '';
+      }
     }
   };
 

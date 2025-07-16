@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
-import com.koalasat.robosats.tor.WebAppInterface
+import com.koalasat.robosats.WebAppInterface
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
 import java.net.InetSocketAddress
