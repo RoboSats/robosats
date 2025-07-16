@@ -1,17 +1,29 @@
 package com.robosats
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.webkit.*
+import android.webkit.ConsoleMessage
+import android.webkit.CookieManager
+import android.webkit.GeolocationPermissions
+import android.webkit.PermissionRequest
+import android.webkit.ServiceWorkerController
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
+import android.webkit.WebStorage
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.robosats.R
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
 import java.io.ByteArrayInputStream
@@ -25,6 +37,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var torKmp: TorKmp
     private lateinit var loadingContainer: ConstraintLayout
     private lateinit var statusTextView: TextView
+
+    // Security constants
+    private val ALLOWED_DOMAINS = arrayOf(".onion")
+    private val CONTENT_SECURITY_POLICY = "default-src 'self'; connect-src 'self' https://*.onion http://*.onion; " +
+            "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
+            "img-src 'self' data:; font-src 'self' data:; object-src 'none'; " +
+            "media-src 'none'; frame-src 'none'; worker-src 'self';"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -152,40 +171,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Configure WebView settings on UI thread
-        val webSettings = webView.settings
-
-        // Enable JavaScript
-        webSettings.javaScriptEnabled = true
-
-        // Enable DOM storage for HTML5 apps
-        webSettings.domStorageEnabled = true
-
-        // Enable CORS and cross-origin requests
-        webSettings.allowUniversalAccessFromFileURLs = true
-        webSettings.allowFileAccessFromFileURLs = true
-
-        // Disable cache completely to prevent leaks
-        webSettings.cacheMode = WebSettings.LOAD_NO_CACHE
-
-        // Enable mixed content (http in https)
-        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-
-        // Enable zooming
-        webSettings.setSupportZoom(true)
-        webSettings.builtInZoomControls = true
-        webSettings.displayZoomControls = false
-
-        // Enable HTML5 features
-        webSettings.allowFileAccess = true
-        webSettings.allowContentAccess = true
-        webSettings.loadWithOverviewMode = true
-        webSettings.useWideViewPort = true
-        webSettings.setSupportMultipleWindows(true)
-        webSettings.javaScriptCanOpenWindowsAutomatically = true
-
-        // Improve display for better Android integration
-        webSettings.textZoom = 100 // Normal text zoom
+        // Configure WebView settings on UI thread with security as priority
+        secureWebViewSettings()
 
         // Show message that we're setting up secure browsing
         runOnUiThread {
@@ -222,6 +209,30 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     updateStatus("Secure connection established. Loading app...")
 
+                    // Set up WebChromeClient with restricted permissions
+                    webView.webChromeClient = object : WebChromeClient() {
+                        override fun onGeolocationPermissionsShowPrompt(
+                            origin: String,
+                            callback: GeolocationPermissions.Callback
+                        ) {
+                            // Deny all geolocation requests
+                            callback.invoke(origin, false, false)
+                            Log.d("SecurityPolicy", "Blocked geolocation request from: $origin")
+                        }
+
+                        override fun onPermissionRequest(request: PermissionRequest) {
+                            // Deny all permission requests from web content
+                            request.deny()
+                            Log.d("SecurityPolicy", "Denied permission request: ${request.resources.joinToString()}")
+                        }
+
+                        // Control console messages
+                        override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+                            Log.d("WebViewConsole", "${consoleMessage.message()} -- From line ${consoleMessage.lineNumber()} of ${consoleMessage.sourceId()}")
+                            return true
+                        }
+                    }
+
                     // Create a custom WebViewClient that forces all traffic through Tor
                     webView.webViewClient = object : WebViewClient() {
                         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -234,9 +245,21 @@ class MainActivity : AppCompatActivity() {
                             val urlString = request.url.toString()
                             Log.d("TorProxy", "Intercepting request: $urlString")
 
+                            // Block all external requests that aren't to .onion domains or local files
+                            if (!isAllowedRequest(urlString)) {
+                                Log.e("SecurityPolicy", "Blocked forbidden request to: $urlString")
+                                return WebResourceResponse("text/plain", "UTF-8", null)
+                            }
+
                             try {
                                 // Special handling for .onion domains
                                 val isOnionDomain = urlString.contains(".onion")
+
+                                // Only proceed if it's an onion domain or local file
+                                if (!isOnionDomain && !urlString.startsWith("file://")) {
+                                    Log.e("SecurityPolicy", "Blocked non-onion external request: $urlString")
+                                    return WebResourceResponse("text/plain", "UTF-8", null)
+                                }
 
                                 // For .onion domains, we must use SOCKS proxy type
                                 val proxyType = if (isOnionDomain)
@@ -254,6 +277,12 @@ class MainActivity : AppCompatActivity() {
                                     Log.d("TorProxy", "Handling .onion domain with SOCKS proxy: $urlString")
                                 }
 
+                                // If it's a local file, return it directly
+                                if (urlString.startsWith("file://")) {
+                                    // Let the system handle local files
+                                    return super.shouldInterceptRequest(view, request)
+                                }
+
                                 // Create connection with proxy already configured
                                 val url = URL(urlString)
                                 val connection = url.openConnection(torProxy)
@@ -266,22 +295,46 @@ class MainActivity : AppCompatActivity() {
                                     // Ensure no connection reuse to prevent proxy leaks
                                     connection.setRequestProperty("Connection", "close")
 
+                                    // Add security headers
+                                    connection.setRequestProperty("Sec-Fetch-Site", "same-origin")
+                                    connection.setRequestProperty("Sec-Fetch-Mode", "cors")
+                                    connection.setRequestProperty("DNT", "1") // Do Not Track
+
                                     // Copy request headers
                                     request.requestHeaders.forEach { (key, value) ->
                                         connection.setRequestProperty(key, value)
                                     }
 
+                                    // Set the request method
+                                    connection.requestMethod = request.method
+
                                     // Special handling for OPTIONS (CORS preflight) requests
                                     if (request.method == "OPTIONS") {
-                                        // Handle preflight CORS request
-                                        connection.requestMethod = "OPTIONS"
-                                        connection.setRequestProperty("Access-Control-Request-Method",
-                                            request.requestHeaders["Access-Control-Request-Method"] ?: "GET, POST, OPTIONS")
-                                        connection.setRequestProperty("Access-Control-Request-Headers",
-                                            request.requestHeaders["Access-Control-Request-Headers"] ?: "")
-                                    } else {
-                                        // Set request method for non-OPTIONS requests
-                                        connection.requestMethod = request.method
+                                        // For OPTIONS, we'll create a custom response without making a network request
+                                        // This is the most reliable way to handle CORS preflight
+                                        Log.d("CORS", "Handling OPTIONS preflight request for: $urlString")
+
+                                        // Create CORS headers map
+                                        val preflightHeaders = HashMap<String, String>()
+                                        preflightHeaders["Access-Control-Allow-Origin"] = "*"
+                                        preflightHeaders["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE, HEAD"
+                                        preflightHeaders["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+                                        preflightHeaders["Access-Control-Max-Age"] = "86400" // Cache preflight for 24 hours
+                                        preflightHeaders["Access-Control-Allow-Credentials"] = "true"
+                                        preflightHeaders["Content-Type"] = "text/plain"
+
+                                        // Log CORS headers for debugging
+                                        Log.d("CORS", "Preflight response with CORS headers: $preflightHeaders")
+
+                                        // Return a custom preflight response without actually connecting
+                                        return WebResourceResponse(
+                                            "text/plain",
+                                            "UTF-8",
+                                            200,
+                                            "OK",
+                                            preflightHeaders,
+                                            ByteArrayInputStream("".toByteArray())
+                                        )
                                     }
 
                                     // Try to connect
@@ -301,27 +354,50 @@ class MainActivity : AppCompatActivity() {
                                         connection.inputStream
                                     }
 
-                                    // Create response headers map with CORS headers
+                                    // Create response headers map with security headers
                                     val responseHeaders = HashMap<String, String>()
 
-                                    // Add CORS headers
-                                    responseHeaders["Access-Control-Allow-Origin"] = "*"
-                                    responseHeaders["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-                                    responseHeaders["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
-                                    responseHeaders["Access-Control-Allow-Credentials"] = "true"
-
-                                    // Copy original response headers
+                                    // First copy original response headers, but carefully handle CORS headers
                                     for (i in 0 until connection.headerFields.size) {
                                         val key = connection.headerFields.keys.elementAtOrNull(i)
-                                        if (key != null) {
-                                            val value = connection.getHeaderField(key)
-                                            if (value != null) {
-                                                responseHeaders[key] = value
+                                        if (key != null && key.isNotEmpty()) {
+                                            // Skip any CORS headers from the original response - we'll add our own
+                                            if (!key.startsWith("Access-Control-")) {
+                                                val value = connection.getHeaderField(key)
+                                                if (value != null) {
+                                                    responseHeaders[key] = value
+                                                }
+                                            } else {
+                                                // Log any CORS headers we're skipping from the original response
+                                                Log.d("CORS", "Skipping original CORS header: $key: ${connection.getHeaderField(key)}")
                                             }
                                         }
                                     }
 
-                                    // Return proxied response with CORS headers
+                                    // Add our own CORS headers
+                                    responseHeaders["Access-Control-Allow-Origin"] = "*"
+                                    responseHeaders["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE, HEAD"
+                                    responseHeaders["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+                                    responseHeaders["Access-Control-Allow-Credentials"] = "true"
+                                    if (!responseHeaders.containsKey("Content-Security-Policy")) {
+                                        responseHeaders["Content-Security-Policy"] = CONTENT_SECURITY_POLICY
+                                    }
+                                    if (!responseHeaders.containsKey("X-Content-Type-Options")) {
+                                        responseHeaders["X-Content-Type-Options"] = "nosniff"
+                                    }
+                                    if (!responseHeaders.containsKey("X-Frame-Options")) {
+                                        responseHeaders["X-Frame-Options"] = "DENY"
+                                    }
+                                    if (!responseHeaders.containsKey("Referrer-Policy")) {
+                                        responseHeaders["Referrer-Policy"] = "no-referrer"
+                                    }
+
+                                    // Log the CORS headers for debugging
+                                    responseHeaders["Access-Control-Allow-Origin"]?.let {
+                                        Log.d("CORS", "Access-Control-Allow-Origin: $it")
+                                    }
+
+                                    // Return proxied response with security headers
                                     return WebResourceResponse(
                                         mimeType,
                                         encoding,
@@ -343,10 +419,12 @@ class MainActivity : AppCompatActivity() {
                             } catch (e: Exception) {
                                 Log.e("TorProxy", "Error proxying request: $urlString - ${e.message}", e)
 
-                                // For non-onion domains, let the system handle it
-                                return super.shouldInterceptRequest(view, request)
+                                // For security, block the request rather than falling back to system handling
+                                return WebResourceResponse("text/plain", "UTF-8", null)
                             }
                         }
+
+                        // We're not handling SSL, so we don't need the onReceivedSslError method
 
                         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                             // Verify Tor is still connected before allowing any request
@@ -450,6 +528,117 @@ class MainActivity : AppCompatActivity() {
     /**
      * Sets the proxy for WebView using the most direct approach that's known to work with Tor
      */
+    /**
+     * Configure WebView settings with a security-first approach
+     */
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun secureWebViewSettings() {
+        val webSettings = webView.settings
+
+        // --- SECURITY SETTINGS ---
+
+        // 1. JavaScript is required for the app to function, but we restrict it
+        webSettings.javaScriptEnabled = true // Required, but we'll restrict its capabilities
+
+        // 2. Disable features that could lead to data leakage
+        webSettings.saveFormData = false
+        webSettings.savePassword = false
+        webSettings.cacheMode = WebSettings.LOAD_NO_CACHE
+        webSettings.setGeolocationEnabled(false)
+
+        // 3. Disable database access
+        webSettings.databaseEnabled = false
+        webSettings.domStorageEnabled = true // Required for most modern web apps
+
+        // 4. File access settings - must allow cross-origin access for our use case
+        webSettings.allowFileAccess = true // Needed for loading internal HTML
+        webSettings.allowContentAccess = false
+        webSettings.allowFileAccessFromFileURLs = true // Required for local HTML to work
+        webSettings.allowUniversalAccessFromFileURLs = true // Required to allow CORS from file:// to onion URLs
+
+        // Log these critical settings for debugging
+        Log.d("WebViewSettings", "allowFileAccessFromFileURLs: ${webSettings.allowFileAccessFromFileURLs}")
+        Log.d("WebViewSettings", "allowUniversalAccessFromFileURLs: ${webSettings.allowUniversalAccessFromFileURLs}")
+
+        // 5. Disable potentially risky features
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            webSettings.javaScriptCanOpenWindowsAutomatically = false
+        }
+        webSettings.setSupportMultipleWindows(false)
+
+        // 6. Set secure mixed content mode
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+        }
+
+        // 7. Disable plugins (none needed for our app)
+        webSettings.pluginState = WebSettings.PluginState.OFF
+
+        // 8. Configure cookies for security
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true) // We need cookies for the app to function
+        cookieManager.setAcceptThirdPartyCookies(webView, false) // Block 3rd party cookies
+
+        // 10. Disable Service Workers (not needed for our local app)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ServiceWorkerController.getInstance().setServiceWorkerClient(null)
+        }
+
+        // --- USABILITY SETTINGS ---
+
+        // Allow zooming for better accessibility
+        webSettings.setSupportZoom(true)
+        webSettings.builtInZoomControls = true
+        webSettings.displayZoomControls = false
+
+        // Improve display for better Android integration
+        webSettings.loadWithOverviewMode = true
+        webSettings.useWideViewPort = true
+        webSettings.textZoom = 100
+    }
+
+    /**
+     * Check if a URL request is allowed based on security policy
+     */
+    private fun isAllowedRequest(url: String): Boolean {
+        // Always allow local file requests
+        if (url.startsWith("file:///android_asset/") || url.startsWith("file:///data/")) {
+            return true
+        }
+
+        // Allow onion domains
+        if (ALLOWED_DOMAINS.any { url.contains(it) }) {
+            return true
+        }
+
+        // Block everything else
+        return false
+    }
+
+    // SSL error description method removed as we're not using SSL
+
+    /**
+     * Clear all WebView data when activity is destroyed
+     */
+    override fun onDestroy() {
+        // Clear all cookies, cache, and WebView data for privacy
+        CookieManager.getInstance().removeAllCookies(null)
+        CookieManager.getInstance().flush()
+
+        webView.clearCache(true)
+        webView.clearHistory()
+        webView.clearFormData()
+        webView.clearSslPreferences()
+
+        WebStorage.getInstance().deleteAllData()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            CookieManager.getInstance().removeSessionCookies(null)
+        }
+
+        super.onDestroy()
+    }
+
     private fun setWebViewProxy(context: Context, proxyHost: String, proxyPort: Int) {
         try {
             // First set system properties (required as a foundation)

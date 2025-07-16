@@ -161,7 +161,7 @@ export interface UseAppStoreType {
 
 export const initialAppContext: UseAppStoreType = {
   theme: undefined,
-  torStatus: 'STARTING',
+  torStatus: 'ON',
   settings: getSettings(),
   setSettings: () => {},
   page: entryPage,
