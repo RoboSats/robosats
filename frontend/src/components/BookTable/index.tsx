@@ -779,6 +779,7 @@ const BookTable = ({
       <Paper
         elevation={elevation}
         style={{
+          minWidth: `23em`,
           width: `${width}em`,
           height: `${height}em`,
           overflow: 'auto',

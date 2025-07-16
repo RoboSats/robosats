@@ -48,6 +48,7 @@ const RobotProfile = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
+  const mobileView = windowSize?.width < 50;
 
   const [loading, setLoading] = useState<boolean>(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
@@ -101,17 +102,19 @@ const RobotProfile = ({
         spacing={1}
         sx={{ width: '100%' }}
       >
-        <Grid item sx={{ position: 'absolute', left: 0, marginLeft: 1 }}>
+        <Grid
+          item
+          sx={{ height: '2.3em', position: 'relative', display: 'flex', flexDirection: 'row' }}
+        >
           <IconButton
             color='primary'
             onClick={() => {
               setOpen({ ...closeAll, profile: !open.profile });
             }}
+            style={{}}
           >
             <Settings />
           </IconButton>
-        </Grid>
-        <Grid item sx={{ height: '2.3em', position: 'relative' }}>
           {slot?.nickname ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
@@ -309,7 +312,7 @@ const RobotProfile = ({
               <Grid item>
                 <LoadingButton loading={loading} color='primary' onClick={handleAddRobot}>
                   <Add /> <div style={{ width: '0.5em' }} />
-                  {t('Add Robot')}
+                  {!mobileView && t('Add Robot')}
                 </LoadingButton>
               </Grid>
 
@@ -329,26 +332,49 @@ const RobotProfile = ({
               <Grid item>
                 <Button color='primary' onClick={handleDeleteRobot}>
                   <DeleteSweep /> <div style={{ width: '0.5em' }} />
-                  {t('Delete Robot')}
+                  {!mobileView && t('Delete Robot')}
                 </Button>
               </Grid>
+
+              {mobileView && (
+                <Grid item>
+                  <Button
+                    color='primary'
+                    onClick={() => {
+                      setOpen((open) => {
+                        return { ...open, recovery: true };
+                      });
+                    }}
+                  >
+                    <Key /> <div style={{ width: '0.5em' }} />
+                  </Button>
+                </Grid>
+              )}
             </Grid>
-            <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
-              <Grid item>
-                <Button
-                  size='small'
-                  color='primary'
-                  onClick={() => {
-                    setOpen((open) => {
-                      return { ...open, recovery: true };
-                    });
-                  }}
-                >
-                  <Key /> <div style={{ width: '0.5em' }} />
-                  {t('Recovery')}
-                </Button>
+            {!mobileView && (
+              <Grid
+                item
+                container
+                direction='row'
+                alignItems='center'
+                justifyContent='space-evenly'
+              >
+                <Grid item>
+                  <Button
+                    size='small'
+                    color='primary'
+                    onClick={() => {
+                      setOpen((open) => {
+                        return { ...open, recovery: true };
+                      });
+                    }}
+                  >
+                    <Key /> <div style={{ width: '0.5em' }} />
+                    {t('Recovery')}
+                  </Button>
+                </Grid>
               </Grid>
-            </Grid>
+            )}
           </Grid>
         </Box>
       </Grid>

@@ -21,12 +21,20 @@ const NavBar = (): React.JSX.Element => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const pagesPosition = {
-    robot: 1,
+  const pagesPositionWeb = {
+    garage: 1,
     offers: 2,
     create: 3,
     order: 4,
     settings: 5,
+  };
+
+  const pagesPositionMobile = {
+    garage: 5,
+    offers: 4,
+    order: 3,
+    create: 2,
+    settings: 1,
   };
 
   useEffect(() => {
@@ -42,8 +50,9 @@ const NavBar = (): React.JSX.Element => {
   }, [location]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
-    const oldPos: number = pagesPosition[oldPage];
-    const newPos: number = pagesPosition[newPage];
+    const position = mobileView ? pagesPositionMobile : pagesPositionWeb;
+    const oldPos: number = position[oldPage];
+    const newPos: number = position[newPage];
     setSlideDirection(
       newPos > oldPos ? { in: 'left', out: 'right' } : { in: 'right', out: 'left' },
     );
