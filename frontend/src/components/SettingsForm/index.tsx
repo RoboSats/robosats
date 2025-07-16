@@ -28,9 +28,6 @@ import {
   NotificationsActive,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
-import { TorIcon } from '../Icons';
-import { apiClient } from '../../services/api';
-import { websocketClient } from '../../services/Websocket';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -241,32 +238,6 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                 </ToggleButton>
               </ToggleButtonGroup>
             </ListItem>
-
-            {window.navigator.userAgent.includes('robosats') && (
-              <ListItem>
-                <ListItemIcon>
-                  <TorIcon />
-                </ListItemIcon>
-                <ToggleButtonGroup
-                  exclusive={true}
-                  sx={{ width: '100%' }}
-                  value={settings.useProxy}
-                  onChange={(_e, useProxy) => {
-                    setSettings({ ...settings, useProxy });
-                    systemClient.setItem('settings_use_proxy', String(useProxy));
-                    apiClient.useProxy = useProxy;
-                    websocketClient.useProxy = useProxy;
-                  }}
-                >
-                  <ToggleButton value={true} color='primary' sx={{ flexGrow: 1 }}>
-                    {t('Build-in')}
-                  </ToggleButton>
-                  <ToggleButton value={false} color='secondary' sx={{ flexGrow: 1 }}>
-                    {t('Disabled')}
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </ListItem>
-            )}
 
             {client == 'mobile' && (
               <ListItem>

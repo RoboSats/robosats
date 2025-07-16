@@ -336,45 +336,20 @@ const RobotProfile = ({
                 </Button>
               </Grid>
 
-              {mobileView && (
-                <Grid item>
-                  <Button
-                    color='primary'
-                    onClick={() => {
-                      setOpen((open) => {
-                        return { ...open, recovery: true };
-                      });
-                    }}
-                  >
-                    <Key /> <div style={{ width: '0.5em' }} />
-                  </Button>
-                </Grid>
-              )}
-            </Grid>
-            {!mobileView && (
-              <Grid
-                item
-                container
-                direction='row'
-                alignItems='center'
-                justifyContent='space-evenly'
-              >
-                <Grid item>
-                  <Button
-                    size='small'
-                    color='primary'
-                    onClick={() => {
-                      setOpen((open) => {
-                        return { ...open, recovery: true };
-                      });
-                    }}
-                  >
-                    <Key /> <div style={{ width: '0.5em' }} />
-                    {t('Recovery')}
-                  </Button>
-                </Grid>
+              <Grid item>
+                <Button
+                  color='primary'
+                  onClick={() => {
+                    setOpen((open) => {
+                      return { ...open, recovery: true };
+                    });
+                  }}
+                >
+                  <Key /> <div style={{ width: '0.5em' }} />
+                  {!mobileView && t('Recovery')}
+                </Button>
               </Grid>
-            )}
+            </Grid>
           </Grid>
         </Box>
       </Grid>
