@@ -12,7 +12,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AppContextProvider } from './contexts/AppContext';
 import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
-import NotificationSwitchBadge from './components/NotificationSwitch';
 
 const App = (): React.JSX.Element => {
   const [client] = window.RobosatsSettings.split('-');
@@ -25,13 +24,7 @@ const App = (): React.JSX.Element => {
               <FederationContextProvider>
                 <GarageContextProvider>
                   <CssBaseline />
-                  {client === 'mobile' ? (
-                    <div style={{ display: 'inline-flex', position: 'fixed', top: '0.5em' }}>
-                      <NotificationSwitchBadge />
-                    </div>
-                  ) : (
-                    <HostAlert />
-                  )}
+                  {client !== 'mobile' && <HostAlert />}
                   <Main />
                 </GarageContextProvider>
               </FederationContextProvider>

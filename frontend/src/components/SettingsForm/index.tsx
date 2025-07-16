@@ -25,6 +25,7 @@ import {
   Link,
   QrCode,
   SettingsInputAntenna,
+  NotificationsActive,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { TorIcon } from '../Icons';
@@ -36,7 +37,7 @@ interface SettingsFormProps {
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element => {
-  const { settings, setSettings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -257,11 +258,38 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                     websocketClient.useProxy = useProxy;
                   }}
                 >
-                  <ToggleButton value={true} color='primary'>
+                  <ToggleButton value={true} color='primary' sx={{ flexGrow: 1 }}>
                     {t('Build-in')}
                   </ToggleButton>
-                  <ToggleButton value={false} color='secondary'>
+                  <ToggleButton value={false} color='secondary' sx={{ flexGrow: 1 }}>
                     {t('Disabled')}
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </ListItem>
+            )}
+
+            {client == 'mobile' && (
+              <ListItem>
+                <ListItemIcon>
+                  <NotificationsActive />
+                </ListItemIcon>
+                <ToggleButtonGroup
+                  exclusive={true}
+                  sx={{ width: '100%' }}
+                  value={settings.stopNotifications}
+                  onChange={(_e, stopNotifications) => {
+                    setSettings({ ...settings, stopNotifications });
+                    systemClient.setItem(
+                      'settings_stop_notifications',
+                      String(settings.stopNotifications),
+                    );
+                  }}
+                >
+                  <ToggleButton value={false} color='primary' sx={{ flexGrow: 1 }}>
+                    {t('On')}
+                  </ToggleButton>
+                  <ToggleButton value={true} color='secondary' sx={{ flexGrow: 1 }}>
+                    {t('Off')}
                   </ToggleButton>
                 </ToggleButtonGroup>
               </ListItem>
