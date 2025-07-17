@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
 import { CssBaseline } from '@mui/material';
 import HostAlert from './components/HostAlert';
-import TorConnectionBadge from './components/TorConnection';
 
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n/Web';
@@ -13,7 +12,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AppContextProvider } from './contexts/AppContext';
 import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
-import NotificationSwitchBadge from './components/NotificationSwitch';
 
 const App = (): React.JSX.Element => {
   const [client] = window.RobosatsSettings.split('-');
@@ -26,14 +24,7 @@ const App = (): React.JSX.Element => {
               <FederationContextProvider>
                 <GarageContextProvider>
                   <CssBaseline />
-                  {client === 'mobile' ? (
-                    <div style={{ display: 'inline-flex', position: 'fixed', top: '0.5em' }}>
-                      <TorConnectionBadge />
-                      <NotificationSwitchBadge />
-                    </div>
-                  ) : (
-                    <HostAlert />
-                  )}
+                  {client !== 'mobile' && <HostAlert />}
                   <Main />
                 </GarageContextProvider>
               </FederationContextProvider>

@@ -20,11 +20,12 @@ import {
   type UseFederationStoreType,
   FederationContext,
 } from '../../../../contexts/FederationContext';
+import { getSettings } from '../../../../contexts/AppContext';
 
 const audioPath =
-  window.NativeRobosats === undefined
-    ? '/static/assets/sounds'
-    : 'file:///android_asset/Web.bundle/assets/sounds';
+  getSettings().client == 'mobile'
+    ? 'file:///android_asset/Web.bundle/assets/sounds'
+    : '/static/assets/sounds';
 
 interface Props {
   order: Order;

@@ -43,7 +43,7 @@ const MainBox = styled(Box)<MainBoxProps>((props) => ({
 
 const Main: React.FC = () => {
   const { t } = useTranslation();
-  const { settings, page, setOpen, windowSize, navbarHeight, client } =
+  const { settings, page, setOpen, windowSize, navbarHeight } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -65,7 +65,7 @@ const Main: React.FC = () => {
         <></>
       )}
       <NavBar />
-      <MainBox navbarHeight={navbarHeight} style={{ paddingTop: client === 'mobile' ? '25px' : 0 }}>
+      <MainBox navbarHeight={navbarHeight}>
         <Routes />
       </MainBox>
       <MainDialogs />

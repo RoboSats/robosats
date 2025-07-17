@@ -25,11 +25,9 @@ import {
   Link,
   QrCode,
   SettingsInputAntenna,
+  NotificationsActive,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
-import { TorIcon } from '../Icons';
-import { apiClient } from '../../services/api';
-import { websocketClient } from '../../services/Websocket';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -241,27 +239,28 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
               </ToggleButtonGroup>
             </ListItem>
 
-            {client === 'mobile' && (
+            {client == 'mobile' && (
               <ListItem>
                 <ListItemIcon>
-                  <TorIcon />
+                  <NotificationsActive />
                 </ListItemIcon>
                 <ToggleButtonGroup
                   exclusive={true}
                   sx={{ width: '100%' }}
-                  value={settings.useProxy}
-                  onChange={(_e, useProxy) => {
-                    setSettings({ ...settings, useProxy });
-                    systemClient.setItem('settings_use_proxy', String(useProxy));
-                    apiClient.useProxy = useProxy;
-                    websocketClient.useProxy = useProxy;
+                  value={settings.stopNotifications}
+                  onChange={(_e, stopNotifications) => {
+                    setSettings({ ...settings, stopNotifications });
+                    systemClient.setItem(
+                      'settings_stop_notifications',
+                      String(settings.stopNotifications),
+                    );
                   }}
                 >
-                  <ToggleButton value={true} color='primary'>
-                    {t('Build-in')}
+                  <ToggleButton value={false} color='primary' sx={{ flexGrow: 1 }}>
+                    {t('On')}
                   </ToggleButton>
-                  <ToggleButton value={false} color='secondary'>
-                    {t('Disabled')}
+                  <ToggleButton value={true} color='secondary' sx={{ flexGrow: 1 }}>
+                    {t('Off')}
                   </ToggleButton>
                 </ToggleButtonGroup>
               </ListItem>

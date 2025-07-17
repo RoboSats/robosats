@@ -5,8 +5,11 @@ import {
   Button,
   Checkbox,
   CircularProgress,
+  Dialog,
+  DialogContent,
   Grid,
   Rating,
+  TextField,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -14,10 +17,12 @@ import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-g
 import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { type Coordinator } from '../../models';
+import { Origin, type Coordinator } from '../../models';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import RobotAvatar from '../RobotAvatar';
 import { verifyCoordinatorToken } from '../../utils/nostr';
+import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { Origins } from '../../models/Coordinator.model';
 
 interface FederationTableProps {
   maxWidth?: number;
@@ -31,8 +36,11 @@ const FederationTable = ({
   fillContainer = false,
 }: FederationTableProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
-  const { setOpen, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
+  const { federation, federationUpdatedAt, setFederationUpdatedAt } =
+    useContext<UseFederationStoreType>(FederationContext);
+  const { setOpen, windowSize, settings, origin, hostUrl } =
+    useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
   const [ratings, setRatings] = useState<Record<string, Record<string, number>>>(
@@ -41,9 +49,13 @@ const FederationTable = ({
       return acc;
     }, {}),
   );
+  const [newAlias, setNewAlias] = useState<string>('');
+  const [newUrl, setNewUrl] = useState<string>('');
+  const [error, setError] = useState<string>();
   const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
   const [verifyRatings, setVerifyRatings] = useState(false);
   const [verifcationText, setVerificationText] = useState<string>();
+  const [openAddCoordinator, setOpenAddCoordinator] = useState<boolean>(false);
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
@@ -55,6 +67,32 @@ const FederationTable = ({
   );
   const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
   const mobile = windowSize.width < 44;
+  // Regular expression to match a valid .onion URL
+  const onionUrlPattern = /^((http|https):\/\/)?([a-zA-Z2-7]{16,56}\.onion)(\/.*)?$/;
+
+  const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
+    if (!federation.getCoordinator(alias)) {
+      const attributes: object = {
+        longAlias: alias,
+        shortAlias: alias,
+        federated: false,
+        enabled: true,
+      };
+      const origins: Origins = {
+        clearnet: undefined,
+        onion: url as Origin,
+        i2p: undefined,
+      };
+      if (settings.network === 'mainnet') {
+        attributes.mainnet = origins;
+      } else {
+        attributes.testnet = origins;
+      }
+      federation.addCoordinator(origin, settings, hostUrl, attributes);
+      garage.syncCoordinator(federation, alias);
+      setFederationUpdatedAt(new Date().toISOString());
+    }
+  };
 
   useEffect(() => {
     federation.loadInfo();
@@ -335,6 +373,26 @@ const FederationTable = ({
     }
   };
 
+  const addCoordinator: () => void = () => {
+    setOpenAddCoordinator(false);
+    if (federation.getCoordinator(newAlias)) {
+      setError(t('Alias already exists'));
+    } else {
+      const match = newUrl.match(onionUrlPattern);
+      console.log(match);
+      if (match) {
+        const onionUrl = match[3];
+        const fullNewUrl = `http://${onionUrl}`;
+        addNewCoordinator(newAlias, fullNewUrl);
+        garage.syncCoordinator(federation, newAlias);
+        setNewAlias('');
+        setNewUrl('');
+      } else {
+        setError(t('Invalid Onion URL'));
+      }
+    }
+  };
+
   return (
     <Box
       sx={
@@ -361,20 +419,39 @@ const FederationTable = ({
         hideFooter={true}
       />
 
+      <Grid
+        item
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          width: '100%',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Button
+          sx={{ maxHeight: 38, mt: '1em', width: '49%' }}
+          disabled={false}
+          onClick={() => setOpenAddCoordinator(true)}
+          variant='contained'
+          color='primary'
+          size='small'
+          type='submit'
+        >
+          {t('Add Coordinator')}
+        </Button>
+        <Button
+          sx={{ maxHeight: 38, mt: '1em', width: '49%' }}
+          disabled={false}
+          onClick={() => setVerifyRatings(true)}
+          variant='contained'
+          color='secondary'
+          size='small'
+          type='submit'
+        >
+          {t('Verify ratings')}
+        </Button>
+      </Grid>
       <Grid item>
-        {!verifcationText && (
-          <Button
-            sx={{ maxHeight: 38, mt: '1em' }}
-            disabled={false}
-            onClick={() => setVerifyRatings(true)}
-            variant='contained'
-            color='secondary'
-            size='small'
-            type='submit'
-          >
-            {t('Verify ratings')}
-          </Button>
-        )}
         <Typography
           variant='body2'
           color={verifcationText ? 'success.main' : 'warning.main'}
@@ -387,6 +464,72 @@ const FederationTable = ({
               )}
         </Typography>
       </Grid>
+      <Dialog
+        open={openAddCoordinator}
+        onClose={() => {
+          setOpenAddCoordinator(false);
+        }}
+        aria-labelledby='recovery-dialog-title'
+        aria-describedby='recovery-description'
+      >
+        <DialogContent>
+          <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+            {error ?? (
+              <Grid item xs={12}>
+                <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
+                  {error}
+                </Typography>
+              </Grid>
+            )}
+            <Grid item xs={12}>
+              <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+                <Grid item>
+                  <Typography variant='h5' align='center'>
+                    {t('Add coordinator')}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    id='outlined-basic'
+                    label={t('Alias')}
+                    variant='outlined'
+                    size='small'
+                    value={newAlias}
+                    onChange={(e) => {
+                      setNewAlias(e.target.value);
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    id='outlined-basic'
+                    label={t('URL')}
+                    variant='outlined'
+                    size='small'
+                    value={newUrl}
+                    onChange={(e) => {
+                      setNewUrl(e.target.value);
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={1}>
+                  <Button
+                    sx={{ maxHeight: 38 }}
+                    disabled={false}
+                    onClick={addCoordinator}
+                    variant='contained'
+                    color='primary'
+                    size='small'
+                    type='submit'
+                  >
+                    {t('Add coordinator')}
+                  </Button>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

@@ -15,6 +15,7 @@ import {
   Fab,
   Button,
   Collapse,
+  CircularProgress,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import {
@@ -36,7 +37,7 @@ import { UseGarageStoreType, GarageContext } from '../../../contexts/GarageConte
 import { Page } from '..';
 import RobotAvatar from '../../../components/RobotAvatar';
 import { AppContext, closeAll, UseAppStoreType } from '../../../contexts/AppContext';
-import { RoboSatsTextIcon } from '../../../components/Icons';
+import { RoboSatsTextIcon, TorIcon } from '../../../components/Icons';
 import { genBase62Token } from '../../../utils';
 import { UseFederationStoreType, FederationContext } from '../../../contexts/FederationContext';
 
@@ -48,12 +49,34 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { open, setOpen, page } = useContext<UseAppStoreType>(AppContext);
+  const { open, setOpen, page, torStatus, client } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [show, setShow] = useState<boolean>(false);
   const [openGarage, setOpenGarage] = useState<boolean>(false);
 
+  const [torColor, setTorColor] = useState<
+    'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' | 'inherit'
+  >('error');
+  const [torProgress, setTorProgress] = useState<boolean>(true);
+  const [torTitle, setTorTitle] = useState<string>(t('Connection error'));
+
   const slot = garage.getSlot();
+
+  useEffect(() => {
+    if (torStatus === 'OFF' || torStatus === 'STOPPING') {
+      setTorColor('primary');
+      setTorProgress(true);
+      setTorTitle(t('Initializing Tor daemon'));
+    } else if (torStatus === 'STARTING') {
+      setTorColor('warning');
+      setTorProgress(true);
+      setTorTitle(t('Connecting to Tor network'));
+    } else if (torStatus === 'ON') {
+      setTorColor('success');
+      setTorProgress(false);
+      setTorTitle(t('Connected to Tor network'));
+    }
+  }, [torStatus]);
 
   const onSectionClick = (newPage: Page) => {
     setShow(false);
@@ -274,6 +297,38 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
               </ListItemButton>
             </ListItem>
             <div style={{ flexGrow: 1 }} />
+            {client === 'mobile' && (
+              <ListItem disablePadding sx={{ display: 'flex', flexDirection: 'column' }}>
+                <ListItemButton selected>
+                  <ListItemIcon>
+                    {torProgress ? (
+                      <>
+                        <CircularProgress color={torColor} thickness={6} size={22} />
+                        <Box
+                          sx={{
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            right: 0,
+                            position: 'absolute',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <TorIcon color={torColor} sx={{ width: 20, height: 20 }} />
+                        </Box>
+                      </>
+                    ) : (
+                      <Box>
+                        <TorIcon color={torColor} sx={{ width: 20, height: 20 }} />
+                      </Box>
+                    )}
+                  </ListItemIcon>
+                  <ListItemText primary={torTitle} />
+                </ListItemButton>
+              </ListItem>
+            )}
             <ListItem disablePadding sx={{ display: 'flex', flexDirection: 'column' }}>
               <svg width={0} height={0}>
                 <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>

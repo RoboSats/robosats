@@ -19,6 +19,7 @@ import {
 } from '../../../../contexts/FederationContext';
 import { type UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
 import { type Order } from '../../../../models';
+import { getSettings } from '../../../../contexts/AppContext';
 
 interface Props {
   order: Order;
@@ -35,9 +36,9 @@ interface Props {
 }
 
 const audioPath =
-  window.NativeRobosats === undefined
-    ? '/static/assets/sounds'
-    : 'file:///android_asset/Web.bundle/assets/sounds';
+  getSettings().client == 'mobile'
+    ? 'file:///android_asset/Web.bundle/assets/sounds'
+    : '/static/assets/sounds';
 
 const EncryptedTurtleChat: React.FC<Props> = ({
   order,

@@ -152,7 +152,7 @@ const configNode: Configuration = {
   ],
 };
 
-const configMobile: Configuration = {
+const configNative: Configuration = {
   ...config,
   module: {
     ...config.module,
@@ -163,7 +163,7 @@ const configMobile: Configuration = {
         loader: 'file-replace-loader',
         options: {
           condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/i18n/Native.js'),
+          replacement: path.resolve(__dirname, 'src/i18n/Mobile.js'),
           async: true,
         },
       },
@@ -172,7 +172,7 @@ const configMobile: Configuration = {
         loader: 'file-replace-loader',
         options: {
           condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/geo/Native.js'),
+          replacement: path.resolve(__dirname, 'src/geo/Mobile.js'),
           async: true,
         },
       },
@@ -239,4 +239,115 @@ const configMobile: Configuration = {
   ],
 };
 
-export default [configNode, configMobile];
+const configAndroid: Configuration = {
+  ...config,
+  module: {
+    ...config.module,
+    rules: [
+      ...(config?.module?.rules || []),
+      {
+        test: path.resolve(__dirname, 'src/i18n/Web.js'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/i18n/Mobile.js'),
+          async: true,
+        },
+      },
+      {
+        test: path.resolve(__dirname, 'src/geo/Web.js'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/geo/Mobile.js'),
+          async: true,
+        },
+      },
+      {
+        test: path.resolve(__dirname, 'src/services/Roboidentities/Web.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/services/Roboidentities/Android.ts'),
+          async: true,
+        },
+      },
+      {
+        test: path.resolve(__dirname, 'src/components/RobotAvatar/placeholder.json'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(
+            __dirname,
+            'src/components/RobotAvatar/placeholder_highres.json',
+          ),
+          async: true,
+        },
+      },
+    ],
+  },
+  output: {
+    path: path.resolve(__dirname, '../mobile_new/app/src/main/assets/static/frontend'),
+    filename: `main.v${version}.[contenthash].js`,
+    clean: true,
+    publicPath: './static/frontend/',
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
+      templateParameters: {
+        pro: false,
+      },
+      filename: path.resolve(__dirname, '../mobile_new/app/src/main/assets/index.html'),
+      inject: 'body',
+      robosatsSettings: 'mobile-basic',
+      basePath: 'file:///android_asset/Web.bundle/',
+    }),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, 'static/css'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/Web.bundle/static/css',
+              ),
+            },
+            {
+              source: path.resolve(__dirname, 'static/assets/sounds'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/Web.bundle/assets/sounds',
+              ),
+            },
+            {
+              source: path.resolve(__dirname, 'static/federation'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/Web.bundle/assets/federation',
+              ),
+            },
+          ],
+        },
+      },
+    }),
+    new FileManagerPlugin({
+      events: {
+        onEnd: {
+          copy: [
+            {
+              source: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
+              destination: path.resolve(
+                __dirname,
+                '../mobile_new/app/src/main/assets/static/frontend',
+              ),
+            },
+          ],
+        },
+      },
+    }),
+  ],
+};
+
+export default [configNode, configNative, configAndroid];

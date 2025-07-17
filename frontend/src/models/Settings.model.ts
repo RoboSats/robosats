@@ -51,6 +51,7 @@ class BaseSettings {
     this.host = getHost();
 
     const [client] = window.RobosatsSettings.split('-');
+    this.client = client;
 
     const stopNotifications = systemClient.getItem('settings_stop_notifications');
     this.stopNotifications = client === 'mobile' && stopNotifications === 'true';
@@ -63,6 +64,7 @@ class BaseSettings {
 
   public frontend: 'basic' | 'pro' = 'basic';
   public mode: 'light' | 'dark' = 'light';
+  public client: 'web' | 'mobile' = 'web';
   public fontSize: number = 14;
   public lightQRs: boolean = false;
   public language?: Language;

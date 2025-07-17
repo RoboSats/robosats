@@ -9,6 +9,7 @@ import React, {
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 import { ThemeProvider } from '@mui/material';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Settings, type Version, type Origin, type Favorites } from '../models';
 
@@ -36,13 +37,8 @@ export interface SlideDirection {
 
 export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
 
-export const isNativeRoboSats = !(window.NativeRobosats === undefined);
-
 const pageFromPath = window.location.pathname.split('/')[1];
 const isPagePathEmpty = pageFromPath === '';
-const entryPage: Page = !isNativeRoboSats
-  ? ((isPagePathEmpty ? 'garage' : pageFromPath) as Page)
-  : 'garage';
 
 export const closeAll: OpenDialogs = {
   more: false,
@@ -56,6 +52,7 @@ export const closeAll: OpenDialogs = {
   update: false,
   profile: false,
   recovery: false,
+  thirdParty: '',
 };
 
 const makeTheme = function (settings: Settings): Theme {
@@ -108,7 +105,7 @@ const getOrigin = (network = 'mainnet'): Origin => {
   return origin;
 };
 
-const getSettings = (): Settings => {
+export const getSettings = (): Settings => {
   let settings;
 
   const [client, view] = window.RobosatsSettings.split('-');
@@ -119,6 +116,11 @@ const getSettings = (): Settings => {
   }
   return settings;
 };
+
+const entryPage: Page =
+  getSettings().client == 'mobile'
+    ? 'garage'
+    : ((isPagePathEmpty ? 'garage' : pageFromPath) as Page);
 
 export interface WindowSize {
   width: number;
@@ -159,7 +161,7 @@ export interface UseAppStoreType {
 
 export const initialAppContext: UseAppStoreType = {
   theme: undefined,
-  torStatus: 'STARTING',
+  torStatus: 'ON',
   settings: getSettings(),
   setSettings: () => {},
   page: entryPage,
@@ -223,15 +225,6 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   useEffect(() => {
     setSettings(getSettings());
     void i18n.changeLanguage(settings.language);
-    window.addEventListener('torStatus', (event) => {
-      // Trick to improve UX on Android webview: delay the "Connected to TOR" status by 5 secs to avoid long waits on the first request.
-      setTimeout(
-        () => {
-          setTorStatus(event?.detail);
-        },
-        event?.detail === 'ON' ? 5000 : 0,
-      );
-    });
   }, []);
 
   useEffect(() => {
@@ -244,6 +237,24 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
         window.removeEventListener('resize', onResize);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    const getTorstaus = () => {
+      new Promise<TorStatus>((resolve, reject) => {
+        const uuid: string = uuidv4();
+        window.AndroidAppRobosats?.getTorStatus(uuid);
+        window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+      }).then((result) => {
+        setTorStatus(result);
+      });
+    };
+
+    if (client === 'mobile') {
+      getTorstaus();
+      const interval = setInterval(getTorstaus, 5000);
+      return () => clearInterval(interval);
+    }
   }, []);
 
   useEffect(() => {
