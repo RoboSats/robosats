@@ -32,6 +32,7 @@ import { getWebln } from '../../utils';
 import { signCleartextMessage } from '../../pgp';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
   coordinator: Coordinator;
@@ -41,6 +42,7 @@ interface Props {
 
 const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -128,8 +130,9 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
           {robot?.activeOrderId ? (
             <ListItemButton
               onClick={() => {
-                navigate(
-                  `/order/${String(coordinator.shortAlias)}/${String(robot?.activeOrderId)}`,
+                navigateToPage(
+                  `order/${String(coordinator.shortAlias)}/${String(robot?.activeOrderId)}`,
+                  navigate,
                 );
                 onClose();
               }}
@@ -149,7 +152,10 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
           ) : robot?.lastOrderId ? (
             <ListItemButton
               onClick={() => {
-                navigate(`order/${String(coordinator.shortAlias)}/${String(robot?.lastOrderId)}`);
+                navigateToPage(
+                  `order/${String(coordinator.shortAlias)}/${String(robot?.lastOrderId)}`,
+                  navigate,
+                );
                 onClose();
               }}
             >

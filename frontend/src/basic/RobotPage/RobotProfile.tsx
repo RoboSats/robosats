@@ -41,7 +41,8 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): React.JSX.Element => {
-  const { windowSize, client, setOpen, open } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, client, setOpen, open, navigateToPage } =
+    useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -190,8 +191,9 @@ const RobotProfile = ({
           <Grid item>
             <Button
               onClick={() => {
-                navigate(
-                  `/order/${String(slot?.activeOrder?.shortAlias)}/${String(slot?.activeOrder?.id)}`,
+                navigateToPage(
+                  `order/${String(slot?.activeOrder?.shortAlias)}/${String(slot?.activeOrder?.id)}`,
+                  navigate,
                 );
               }}
             >
@@ -205,8 +207,9 @@ const RobotProfile = ({
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate(
-                    `/order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
+                  navigateToPage(
+                    `order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
+                    navigate,
                   );
                 }}
               >
