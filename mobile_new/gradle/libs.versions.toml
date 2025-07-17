@@ -11,6 +11,7 @@ activity = "1.10.1"
 constraintlayout = "2.2.1"
 kmpTor= "4.8.10-0-1.4.5"
 kmpTorBinary= "4.8.10-0"
+okhttp = "5.0.0-alpha.14"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -23,6 +24,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 kmp-tor = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor", version.ref = "kmpTor" }
 kmp-tor-binary = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor-binary-extract-android", version.ref = "kmpTorBinary" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

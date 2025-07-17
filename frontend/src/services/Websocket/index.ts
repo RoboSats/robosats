@@ -1,3 +1,4 @@
+import WebsocketAndroidClient from './WebsocketAndroidClient';
 import WebsocketNativeClient from './WebsocketNativeClient';
 import WebsocketWebClient from './WebsocketWebClient';
 
@@ -23,7 +24,11 @@ export interface WebsocketClient {
 }
 
 function getWebsocketClient(): WebsocketClient {
-  if (window.navigator.userAgent.includes('robosats')) {
+  if (window.navigator.userAgent.includes('AndroidRobosats')) {
+    // If userAgent has "AndroidRobosats", we assume the app is running inside of the
+    // WebView of the Kotlin RoboSats Android app.
+    return new WebsocketAndroidClient();
+  } else if (window.navigator.userAgent.includes('robosats')) {
     // If userAgent has "RoboSats", we assume the app is running inside of the
     // react-native-web view of the RoboSats Android app.
     return new WebsocketNativeClient();

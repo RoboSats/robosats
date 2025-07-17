@@ -203,7 +203,7 @@ class MainActivity : AppCompatActivity() {
                 val proxyPort = System.getProperty("http.proxyPort")?.toIntOrNull()
                     ?: throw SecurityException("Missing or invalid proxy port in system properties")
 
-                Log.d("TorProxy", "Using proxy settings: $proxyHost:$proxyPort")
+                Log.d("WebViewProxy", "Using proxy settings: $proxyHost:$proxyPort")
 
                 // Success - now configure WebViewClient and load URL on UI thread
                 runOnUiThread {
@@ -243,7 +243,7 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             val urlString = request.url.toString()
-                            Log.d("TorProxy", "Intercepting request: $urlString")
+                            Log.d("WebViewProxy", "Intercepting request: $urlString")
 
                             // Block all external requests that aren't to .onion domains or local files
                             if (!isAllowedRequest(urlString)) {
@@ -274,7 +274,7 @@ class MainActivity : AppCompatActivity() {
                                 )
 
                                 if (isOnionDomain) {
-                                    Log.d("TorProxy", "Handling .onion domain with SOCKS proxy: $urlString")
+                                    Log.d("WebViewProxy", "Handling .onion domain with SOCKS proxy: $urlString")
                                 }
 
                                 // If it's a local file, return it directly
@@ -345,7 +345,7 @@ class MainActivity : AppCompatActivity() {
                                     val mimeType = connection.contentType ?: "text/plain"
                                     val encoding = connection.contentEncoding ?: "UTF-8"
 
-                                    Log.d("TorProxy", "Successfully proxied request to $url (HTTP ${connection.responseCode})")
+                                    Log.d("WebViewProxy", "Successfully proxied request to $url (HTTP ${connection.responseCode})")
 
                                     // Get the correct input stream based on response code
                                     val inputStream = if (responseCode >= 400) {
@@ -409,7 +409,7 @@ class MainActivity : AppCompatActivity() {
                                 } else {
                                     // For non-HTTP connections (rare)
                                     val inputStream = connection.getInputStream()
-                                    Log.d("TorProxy", "Successfully established non-HTTP connection to $url")
+                                    Log.d("WebViewProxy", "Successfully established non-HTTP connection to $url")
                                     return WebResourceResponse(
                                         "application/octet-stream",
                                         "UTF-8",
@@ -417,7 +417,7 @@ class MainActivity : AppCompatActivity() {
                                     )
                                 }
                             } catch (e: Exception) {
-                                Log.e("TorProxy", "Error proxying request: $urlString - ${e.message}", e)
+                                Log.e("WebViewProxy", "Error proxying request: $urlString - ${e.message}", e)
 
                                 // For security, block the request rather than falling back to system handling
                                 return WebResourceResponse("text/plain", "UTF-8", null)

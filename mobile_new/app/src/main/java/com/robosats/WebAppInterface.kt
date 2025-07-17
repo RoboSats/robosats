@@ -1,15 +1,23 @@
 package com.robosats
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
 import com.robosats.tor.TorKmpManager.getTorKmpObject
-import android.annotation.SuppressLint
-import android.text.TextUtils
-import java.util.UUID
+import okhttp3.OkHttpClient
+import okhttp3.OkHttpClient.Builder
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import okio.ByteString
+import java.util.Objects
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import okhttp3.Request.Builder as RequestBuilder
 
 /**
  * Provides a secure bridge between JavaScript and native Android code.
@@ -20,6 +28,7 @@ import java.util.regex.Pattern
 class WebAppInterface(private val context: Context, private val webView: WebView) {
     private val TAG = "WebAppInterface"
     private val roboIdentities = RoboIdentities()
+    private val webSockets: MutableMap<String?, WebSocket?> = HashMap<String?, WebSocket?>()
 
     // Security patterns for input validation
     private val UUID_PATTERN = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE)
@@ -40,61 +49,6 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         }
     }
 
-    /**
-     * Validates that a string contains only safe characters and is within length limits
-     */
-    private fun isValidInput(input: String?, maxLength: Int = MAX_INPUT_LENGTH): Boolean {
-        if (input == null || input.isEmpty() || input.length > maxLength) {
-            return false
-        }
-        return SAFE_STRING_PATTERN.matcher(input).matches()
-    }
-
-    /**
-     * Validates that a string is a valid UUID
-     */
-    private fun isValidUuid(uuid: String?): Boolean {
-        if (uuid == null || uuid.isEmpty()) {
-            return false
-        }
-        return UUID_PATTERN.matcher(uuid).matches()
-    }
-
-    /**
-     * Safely evaluates JavaScript, escaping any potentially dangerous characters
-     */
-    private fun safeEvaluateJavascript(script: String) {
-        // Remove any null bytes which could be used to trick the JS interpreter
-        val sanitizedScript = script.replace("\u0000", "")
-
-        webView.post {
-            try {
-                webView.evaluateJavascript(sanitizedScript, null)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error evaluating JavaScript: $e")
-            }
-        }
-    }
-
-    /**
-     * Safely encodes a string for use in JavaScript
-     */
-    private fun encodeForJavaScript(input: String): String {
-        return input.replace("\\", "\\\\")
-                   .replace("'", "\\'")
-                   .replace("\"", "\\\"")
-                   .replace("\n", "\\n")
-                   .replace("\r", "\\r")
-                   .replace("<", "\\u003C")
-                   .replace(">", "\\u003E")
-                   .replace("&", "\\u0026")
-    }
-
-    /**
-     * Generate a robot name from the given message
-     * @param uuid A unique identifier for the JavaScript Promise
-     * @param message The input message to generate a robot name from
-     */
     @JavascriptInterface
     fun generateRoboname(uuid: String, message: String) {
         // Validate inputs before processing
@@ -119,37 +73,6 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         }
     }
 
-    /**
-     * Helper function to safely resolve a JavaScript Promise
-     */
-    private fun resolvePromise(uuid: String, result: String) {
-        if (!isValidUuid(uuid)) {
-            Log.e(TAG, "Invalid UUID for promise resolution: $uuid")
-            return
-        }
-
-        val encodedResult = encodeForJavaScript(result)
-        safeEvaluateJavascript("javascript:window.AndroidRobosats.onResolvePromise('$uuid', '$encodedResult')")
-    }
-
-    /**
-     * Helper function to safely reject a JavaScript Promise
-     */
-    private fun rejectPromise(uuid: String, errorMessage: String) {
-        if (!isValidUuid(uuid)) {
-            Log.e(TAG, "Invalid UUID for promise rejection: $uuid")
-            return
-        }
-
-        val encodedError = encodeForJavaScript(errorMessage)
-        safeEvaluateJavascript("javascript:window.AndroidRobosats.onRejectPromise('$uuid', '$encodedError')")
-    }
-
-    /**
-     * Generate a robot hash from the given message
-     * @param uuid A unique identifier for the JavaScript Promise
-     * @param message The input message to generate a robot hash from
-     */
     @JavascriptInterface
     fun generateRobohash(uuid: String, message: String) {
         // Validate inputs before processing
@@ -174,10 +97,6 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         }
     }
 
-    /**
-     * Copy text to the clipboard
-     * @param message The text to copy to the clipboard
-     */
     @JavascriptInterface
     fun copyToClipboard(message: String) {
         // Validate input
@@ -211,10 +130,6 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         }
     }
 
-    /**
-     * Get the current Tor connection status
-     * @param uuid A unique identifier for the JavaScript Promise
-     */
     @JavascriptInterface
     fun getTorStatus(uuid: String) {
         // Validate UUID
@@ -234,4 +149,165 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             rejectPromise(uuid, "Error retrieving Tor status")
         }
     }
+
+    @JavascriptInterface
+    fun openWS(uuid: String, path: String) {
+        // Validate UUID
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for getTorStatus: $uuid")
+            return
+        }
+
+        try {
+            Log.d(TAG, "WebSocket opening: " + path)
+            val client: OkHttpClient = Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
+                .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
+                .proxy(getTorKmpObject().proxy)
+                .build()
+
+
+            // Create a request for the WebSocket connection
+            val request: Request = RequestBuilder()
+                .url(path) // Replace with your WebSocket URL
+                .build()
+
+
+            // Create a WebSocket listener
+            val listener: WebSocketListener = object : WebSocketListener() {
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    Log.d(TAG, "WebSocket opened: " + response.message)
+                    resolvePromise(uuid, "true")
+                    synchronized(webSockets) {
+                        webSockets.put(
+                            path,
+                            webSocket
+                        ) // Store the WebSocket instance with its URL
+                        resolvePromise(uuid, path)
+                    }
+                }
+
+                override fun onMessage(webSocket: WebSocket, text: String) {
+                    onWsMessage(path, text)
+                }
+
+                override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                    onWsMessage(path, bytes.hex())
+                }
+
+                override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                    Log.d(TAG, "WebSocket closing: " + reason)
+                    onWsClose(path)
+                    synchronized(webSockets) {
+                        webSockets.remove(path) // Remove the WebSocket instance by URL
+                    }
+                }
+
+                override fun onFailure(
+                    webSocket: WebSocket,
+                    t: Throwable,
+                    response: Response?
+                ) {
+                    Log.d(TAG, "WebSocket error: " + t.message)
+                    onWsError(path)
+                    rejectPromise(uuid, "false")
+                }
+            }
+
+            client.newWebSocket(request, listener)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error connecting to WebSocket", e)
+            rejectPromise(uuid, "Error connecting Tor WebSocket")
+        }
+    }
+
+    @JavascriptInterface
+    fun sendWsMessage(uuid: String, path: String, message: String) {
+        // Validate UUID
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for getTorStatus: $uuid")
+            return
+        }
+
+        val websocket = webSockets.get(path)
+        if (websocket != null) {
+            websocket.send(message)
+            resolvePromise(uuid, "true")
+        } else {
+            rejectPromise(uuid, "Error sending WebSocket message")
+        }
+    }
+
+    private fun onWsMessage(path: String?, message: String?) {
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWSMessage('$path', '$message')")
+    }
+
+    private fun onWsError(path: String?) {
+        Log.d(TAG, "WebSocket error: $path")
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWsError('$path')")
+    }
+
+    private fun onWsClose(path: String?) {
+        Log.d(TAG, "WebSocket close: $path")
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWsClose('$path')")
+    }
+
+    private fun resolvePromise(uuid: String, result: String) {
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for promise resolution: $uuid")
+            return
+        }
+
+        val encodedResult = encodeForJavaScript(result)
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onResolvePromise('$uuid', '$encodedResult')")
+    }
+
+    private fun rejectPromise(uuid: String, errorMessage: String) {
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for promise rejection: $uuid")
+            return
+        }
+
+        val encodedError = encodeForJavaScript(errorMessage)
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onRejectPromise('$uuid', '$encodedError')")
+    }
+
+    private fun isValidInput(input: String?, maxLength: Int = MAX_INPUT_LENGTH): Boolean {
+        if (input == null || input.isEmpty() || input.length > maxLength) {
+            return false
+        }
+        return SAFE_STRING_PATTERN.matcher(input).matches()
+    }
+
+    private fun isValidUuid(uuid: String?): Boolean {
+        if (uuid == null || uuid.isEmpty()) {
+            return false
+        }
+        return UUID_PATTERN.matcher(uuid).matches()
+    }
+
+    private fun safeEvaluateJavascript(script: String) {
+        // Remove any null bytes which could be used to trick the JS interpreter
+        val sanitizedScript = script.replace("\u0000", "")
+
+        webView.post {
+            try {
+                webView.evaluateJavascript(sanitizedScript, null)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error evaluating JavaScript: $e")
+            }
+        }
+    }
+
+    private fun encodeForJavaScript(input: String): String {
+        return input.replace("\\", "\\\\")
+            .replace("'", "\\'")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("<", "\\u003C")
+            .replace(">", "\\u003E")
+            .replace("&", "\\u0026")
+    }
+
 }

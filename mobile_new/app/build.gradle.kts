@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(libs.okhttp)
     implementation(libs.kmp.tor)
     // Add the KMP Tor binary dependency (contains the native .so files)
     implementation(libs.kmp.tor.binary)

@@ -11,9 +11,15 @@ interface AndroidAppRobosats {
   generateRobohash: (uuid: string, initialString: string) => void;
   copyToClipboard: (value: string) => void;
   getTorStatus: (uuid: string) => void;
+  openWS: (uuid: string, path: string) => void;
+  sendWsMessage: (uuid: string, path: string, message: string) => void;
 }
 
 class AndroidRobosats {
+  private WSConnections: Record<string, (message?: string) => void> = {};
+  private WSError: Record<string, () => void> = {};
+  private WSClose: Record<string, () => void> = {};
+
   private promises: Record<
     string,
     {
@@ -50,6 +56,35 @@ class AndroidRobosats {
     } else {
       console.warn(`No promise found for UUID: ${uuid}`);
     }
+  };
+
+  public registerWSConnection: (
+    path: string,
+    onMesage: (message?: string) => void,
+    onClose: () => void,
+    onError: () => void,
+  ) => void = (path, onMesage, onClose, onError) => {
+    this.WSConnections[path] = onMesage;
+    this.WSError[path] = onError;
+    this.WSClose[path] = onClose;
+  };
+
+  public removeWSConnection: (path: string) => void = (path) => {
+    delete this.WSConnections[path];
+    delete this.WSError[path];
+    delete this.WSClose[path];
+  };
+
+  public onWSMessage: (path: string, message: string) => void = (path, message) => {
+    this.WSConnections[path](message);
+  };
+
+  public onWsError: (path: string) => void = (path) => {
+    this.WSError[path]();
+  };
+
+  public onWsClose: (path: string) => void = (path) => {
+    this.WSClose[path]();
   };
 }
 
