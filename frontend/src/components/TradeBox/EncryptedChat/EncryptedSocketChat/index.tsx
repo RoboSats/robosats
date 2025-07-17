@@ -20,7 +20,7 @@ import {
   type UseFederationStoreType,
   FederationContext,
 } from '../../../../contexts/FederationContext';
-import { getSettings } from '../../../../contexts/AppContext';
+import getSettings from '../../../../utils/settings';
 
 const audioPath =
   getSettings().client == 'mobile'

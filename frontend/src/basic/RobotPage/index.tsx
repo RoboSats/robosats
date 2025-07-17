@@ -39,9 +39,6 @@ const RobotPage = (): React.JSX.Element => {
     const token = urlToken ?? garage.currentSlot;
     if (token !== undefined && token !== null && page === 'garage') {
       setInputToken(token.replace(/\s+/g, ''));
-      if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
-        setView('profile');
-      }
     }
   }, [torStatus, page, slotUpdatedAt]);
 

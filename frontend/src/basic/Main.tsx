@@ -9,6 +9,7 @@ import Notifications from '../components/Notifications';
 import { useTranslation } from 'react-i18next';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 import Routes from './Routes';
+import TopBar from './TopBar';
 
 const getRouter = (): (({
   basename,
@@ -46,6 +47,7 @@ const Main: React.FC = () => {
   const { settings, page, setOpen, windowSize, navbarHeight } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const mobileView = windowSize?.width < 50;
 
   return (
     <Router>
@@ -64,10 +66,11 @@ const Main: React.FC = () => {
       ) : (
         <></>
       )}
-      <NavBar />
+      {mobileView && <TopBar />}
       <MainBox navbarHeight={navbarHeight}>
         <Routes />
       </MainBox>
+      <NavBar />
       <MainDialogs />
     </Router>
   );

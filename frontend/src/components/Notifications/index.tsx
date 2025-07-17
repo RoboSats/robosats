@@ -10,9 +10,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Close from '@mui/icons-material/Close';
-import { type Page } from '../../basic/NavBar';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { getSettings } from '../../contexts/AppContext';
+import { Page } from '../../contexts/AppContext';
+import getSettings from '../../utils/settings';
 
 interface NotificationsProps {
   rewards: number | undefined;

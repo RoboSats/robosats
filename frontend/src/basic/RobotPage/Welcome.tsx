@@ -16,7 +16,7 @@ interface WelcomeProps {
 }
 
 const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Element => {
-  const { setPage } = useContext<UseAppStoreType>(AppContext);
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -122,8 +122,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
             const token = genBase62Token(36);
             void garage.createRobot(federation, token);
             setInputToken(token);
-            navigate('/create');
-            setPage('create');
+            navigateToPage('create', navigate);
           }}
         >
           <FastForward /> <div style={{ width: '0.5em' }} />

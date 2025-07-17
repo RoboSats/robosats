@@ -6,39 +6,22 @@ import React, {
   type SetStateAction,
   type ReactNode,
 } from 'react';
-import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 import { ThemeProvider } from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Settings, type Version, type Origin, type Favorites } from '../models';
 
-import { getClientVersion, getHost } from '../utils';
+import { getClientVersion } from '../utils';
 
-import defaultFederation from '../../static/federation.json';
-import { createTheme, type Theme } from '@mui/material/styles';
+import { type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
-import SettingsSelfhosted from '../models/Settings.default.basic.selfhosted';
-import SettingsSelfhostedPro from '../models/Settings.default.pro.selfhosted';
-import SettingsPro from '../models/Settings.default.pro';
-
-const getWindowSize = function (fontSize: number): { width: number; height: number } {
-  // returns window size in EM units
-  return {
-    width: window.innerWidth / fontSize,
-    height: window.innerHeight / fontSize,
-  };
-};
-
-export interface SlideDirection {
-  in: 'left' | 'right' | undefined;
-  out: 'left' | 'right' | undefined;
-}
+import { NavigateFunction } from 'react-router-dom';
+import { getHostUrl, getOrigin } from '../utils/getHost';
+import makeTheme, { getWindowSize } from '../utils/theme';
+import getSettings from '../utils/settings';
 
 export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
-
-const pageFromPath = window.location.pathname.split('/')[1];
-const isPagePathEmpty = pageFromPath === '';
 
 export const closeAll: OpenDialogs = {
   more: false,
@@ -55,68 +38,14 @@ export const closeAll: OpenDialogs = {
   thirdParty: '',
 };
 
-const makeTheme = function (settings: Settings): Theme {
-  const theme: Theme = createTheme({
-    palette: {
-      mode: settings.mode,
-      background: {
-        default: settings.mode === 'dark' ? '#070707' : '#fff',
-      },
-    },
-    typography: { fontSize: settings.fontSize },
-  });
+export type Page = 'garage' | 'order' | 'create' | 'offers' | 'settings' | 'none';
 
-  return theme;
-};
+export function isPage(page: string): page is Page {
+  return ['garage', 'order', 'create', 'offers', 'settings', 'none'].includes(page.split('/')[0]);
+}
 
-const getHostUrl = (network = 'mainnet'): string => {
-  const [client] = window.RobosatsSettings.split('-');
-  const randomAlias =
-    Object.keys(defaultFederation)[
-      Math.floor(Math.random() * Object.keys(defaultFederation).length)
-    ];
-  let host: string = defaultFederation[randomAlias][network].onion;
-  let protocol: string = 'http:';
-  if (client !== 'mobile') {
-    host = getHost();
-    protocol = location.protocol;
-  }
-  const hostUrl = `${protocol}//${host}`;
-  return hostUrl;
-};
-
-const getOrigin = (network = 'mainnet'): Origin => {
-  const host = getHostUrl(network);
-  let origin: Origin = 'onion';
-  const [client] = window.RobosatsSettings.split('-');
-  if (
-    client === 'mobile' ||
-    client === 'desktop' ||
-    host.includes('.onion') ||
-    host.includes(':8888')
-  ) {
-    origin = 'onion';
-  } else if (host.includes('i2p')) {
-    origin = 'i2p';
-  } else {
-    origin = 'clearnet';
-  }
-
-  return origin;
-};
-
-export const getSettings = (): Settings => {
-  let settings;
-
-  const [client, view] = window.RobosatsSettings.split('-');
-  if (client === 'selfhosted') {
-    settings = view === 'pro' ? new SettingsSelfhostedPro() : new SettingsSelfhosted();
-  } else {
-    settings = view === 'pro' ? new SettingsPro() : new Settings();
-  }
-  return settings;
-};
-
+const pageFromPath = window.location.pathname.split('/')[1];
+const isPagePathEmpty = pageFromPath === '';
 const entryPage: Page =
   getSettings().client == 'mobile'
     ? 'garage'
@@ -137,9 +66,7 @@ export interface UseAppStoreType {
   settings: Settings;
   setSettings: Dispatch<SetStateAction<Settings>>;
   page: Page;
-  setPage: Dispatch<SetStateAction<Page>>;
-  slideDirection: SlideDirection;
-  setSlideDirection: Dispatch<SetStateAction<SlideDirection>>;
+  navigateToPage: (newPage: Page, navigate: NavigateFunction) => void;
   navbarHeight: number;
   open: OpenDialogs;
   setOpen: Dispatch<SetStateAction<OpenDialogs>>;
@@ -165,16 +92,11 @@ export const initialAppContext: UseAppStoreType = {
   settings: getSettings(),
   setSettings: () => {},
   page: entryPage,
-  setPage: () => {},
-  slideDirection: {
-    in: undefined,
-    out: undefined,
-  },
-  setSlideDirection: () => {},
+  navigateToPage: () => {},
   navbarHeight: 2.5,
   open: closeAll,
   setOpen: () => {},
-  windowSize: undefined,
+  windowSize: { width: 0, height: 0 },
   origin: getOrigin(),
   hostUrl: getHostUrl(),
   clientVersion: getClientVersion(),
@@ -182,7 +104,6 @@ export const initialAppContext: UseAppStoreType = {
   acknowledgedWarning: false,
   fav: { type: null, currency: 0, mode: 'fiat', coordinator: 'robosats' },
   setFav: () => {},
-  worldmap: undefined,
   client: 'web',
   view: 'basic',
 };
@@ -206,9 +127,6 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   });
   const [torStatus, setTorStatus] = useState<TorStatus>(initialAppContext.torStatus);
   const [page, setPage] = useState<Page>(initialAppContext.page);
-  const [slideDirection, setSlideDirection] = useState<SlideDirection>(
-    initialAppContext.slideDirection,
-  );
   const [open, setOpen] = useState<OpenDialogs>(initialAppContext.open);
   const [windowSize, setWindowSize] = useState<WindowSize>(
     () => getWindowSize(theme.typography.fontSize) ?? { width: 0, height: 0 },
@@ -217,6 +135,18 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
     initialAppContext.acknowledgedWarning,
   );
+
+  const navigateToPage: (newPage: Page, navigate: NavigateFunction) => void = (
+    newPage,
+    navigate,
+  ) => {
+    if (isPage(newPage)) {
+      setPage(newPage);
+      setTimeout(() => {
+        navigate(`/${newPage}`);
+      }, theme.transitions.duration.leavingScreen);
+    }
+  };
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -277,9 +207,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
         settings,
         setSettings,
         page,
-        setPage,
-        slideDirection,
-        setSlideDirection,
+        navigateToPage,
         navbarHeight,
         open,
         setOpen,
