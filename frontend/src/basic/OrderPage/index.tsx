@@ -25,8 +25,14 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { genBase62Token } from '../../utils';
 
 const OrderPage = (): React.JSX.Element => {
-  const { windowSize, setOpen, acknowledgedWarning, setAcknowledgedWarning, navbarHeight } =
-    useContext<UseAppStoreType>(AppContext);
+  const {
+    windowSize,
+    setOpen,
+    acknowledgedWarning,
+    setAcknowledgedWarning,
+    navbarHeight,
+    navigateToPage,
+  } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -100,7 +106,7 @@ const OrderPage = (): React.JSX.Element => {
   };
 
   const startAgain = (): void => {
-    navigate('/garage');
+    navigateToPage('order', navigate);
   };
 
   const orderDetailsSpace = currentOrder ? (

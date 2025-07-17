@@ -114,7 +114,7 @@ interface Contract {
 
 const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { settings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -175,7 +175,8 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
         shortAlias: newOrder.shortAlias,
       };
       void slot.makeOrder(federation, orderAttributes).then((order: Order) => {
-        if (order?.id) navigate(`/order/${String(order?.shortAlias)}/${String(order.id)}`);
+        if (order?.id)
+          navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
       });
     }
   };

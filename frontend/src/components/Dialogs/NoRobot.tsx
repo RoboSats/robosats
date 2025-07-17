@@ -36,7 +36,7 @@ const NoRobotDialog = ({
       <DialogActions>
         <Button
           onClick={() => {
-            navigate('/garage');
+            navigate('garage');
           }}
         >
           <Key /> <div style={{ width: '0.5em' }} />

@@ -66,7 +66,7 @@ export interface UseAppStoreType {
   settings: Settings;
   setSettings: Dispatch<SetStateAction<Settings>>;
   page: Page;
-  navigateToPage: (newPage: Page, navigate: NavigateFunction) => void;
+  navigateToPage: (newPage: Page | string, navigate: NavigateFunction) => void;
   navbarHeight: number;
   open: OpenDialogs;
   setOpen: Dispatch<SetStateAction<OpenDialogs>>;
@@ -140,11 +140,10 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
     newPage,
     navigate,
   ) => {
-    if (isPage(newPage)) {
-      setPage(newPage);
-      setTimeout(() => {
-        navigate(`/${newPage}`);
-      }, theme.transitions.duration.leavingScreen);
+    const pathPage: Page | string = newPage.split('/')[0];
+    if (isPage(pathPage)) {
+      setPage(pathPage);
+      navigate(`/${newPage}`);
     }
   };
 

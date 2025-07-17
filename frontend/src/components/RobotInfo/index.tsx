@@ -149,7 +149,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
           ) : robot?.lastOrderId ? (
             <ListItemButton
               onClick={() => {
-                navigate(`/order/${String(coordinator.shortAlias)}/${String(robot?.lastOrderId)}`);
+                navigate(`order/${String(coordinator.shortAlias)}/${String(robot?.lastOrderId)}`);
                 onClose();
               }}
             >

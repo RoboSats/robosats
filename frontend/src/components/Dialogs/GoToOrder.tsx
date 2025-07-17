@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -22,6 +23,7 @@ const GoToOrder = ({ open, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const [orderUrl, setOrderUrl] = useState<string>();
   const [error, setError] = useState<boolean>(false);
 
@@ -32,7 +34,7 @@ const GoToOrder = ({ open, onClose }: Props): React.JSX.Element => {
       if (match) {
         const coordinator = match[2];
         const orderId = match[3];
-        navigate(`/order/${coordinator}/${orderId}`);
+        navigateToPage(`order/${coordinator}/${orderId}`, navigate);
       } else {
         setError(true);
       }

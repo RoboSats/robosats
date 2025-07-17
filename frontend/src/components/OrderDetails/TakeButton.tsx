@@ -28,6 +28,7 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
 import { sha256 } from 'js-sha256';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface TakeButtonProps {
   currentOrder: Order;
@@ -53,6 +54,7 @@ const TakeButton = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -334,7 +336,7 @@ const TakeButton = ({
         } else {
           setBadRequest('');
           setCurrentOrder(order);
-          navigate(`/order/${order.shortAlias}/${order.id}`);
+          navigateToPage(`order/${order.shortAlias}/${order.id}`, navigate);
         }
         setLoadingTake(false);
       })
