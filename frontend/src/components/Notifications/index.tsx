@@ -10,9 +10,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Close from '@mui/icons-material/Close';
-import { type Page } from '../../basic/NavBar';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { getSettings } from '../../contexts/AppContext';
+import { AppContext, Page, UseAppStoreType } from '../../contexts/AppContext';
+import getSettings from '../../utils/settings';
 
 interface NotificationsProps {
   rewards: number | undefined;
@@ -70,6 +70,7 @@ const Notifications = ({
 }: NotificationsProps): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [message, setMessage] = useState<NotificationMessage>(emptyNotificationMessage);
@@ -86,7 +87,8 @@ const Notifications = ({
   const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
   const moveToOrderPage = function (): void {
-    navigate(`/order/${String(garage.getSlot()?.activeOrder?.id)}`);
+    const slot = garage.getSlot();
+    navigateToPage(`order/${slot?.activeOrder?.shortAlias}/${slot?.activeOrder?.id}`, navigate);
     setShow(false);
   };
 

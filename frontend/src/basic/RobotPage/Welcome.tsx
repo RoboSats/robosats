@@ -16,7 +16,7 @@ interface WelcomeProps {
 }
 
 const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Element => {
-  const { setPage } = useContext<UseAppStoreType>(AppContext);
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -99,7 +99,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
             </Grid>
             <Grid item>
               <Button
-                size='small'
+                size='large'
                 color='primary'
                 onClick={() => {
                   setOpen((open) => {
@@ -116,14 +116,13 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
       </Grid>
       <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
         <Button
-          size='small'
+          size='large'
           color='primary'
           onClick={() => {
             const token = genBase62Token(36);
             void garage.createRobot(federation, token);
             setInputToken(token);
-            navigate('/create');
-            setPage('create');
+            navigateToPage('create', navigate);
           }}
         >
           <FastForward /> <div style={{ width: '0.5em' }} />

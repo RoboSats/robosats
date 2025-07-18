@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Dialog,
   DialogContent,
+  DialogTitle,
   Grid,
   Rating,
   TextField,
@@ -379,7 +380,6 @@ const FederationTable = ({
       setError(t('Alias already exists'));
     } else {
       const match = newUrl.match(onionUrlPattern);
-      console.log(match);
       if (match) {
         const onionUrl = match[3];
         const fullNewUrl = `http://${onionUrl}`;
@@ -404,6 +404,7 @@ const FederationTable = ({
       <DataGrid
         sx={headerStyleFix}
         localeText={localeText}
+        style={{ maxHeight: `${height / 2}em` }}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
         rows={federation.getCoordinators()}
@@ -429,23 +430,23 @@ const FederationTable = ({
         }}
       >
         <Button
-          sx={{ maxHeight: 38, mt: '1em', width: '49%' }}
+          sx={{ mt: '1em', width: '49%' }}
           disabled={false}
           onClick={() => setOpenAddCoordinator(true)}
           variant='contained'
           color='primary'
-          size='small'
+          size='medium'
           type='submit'
         >
           {t('Add Coordinator')}
         </Button>
         <Button
-          sx={{ maxHeight: 38, mt: '1em', width: '49%' }}
+          sx={{ mt: '1em', width: '49%' }}
           disabled={false}
           onClick={() => setVerifyRatings(true)}
           variant='contained'
           color='secondary'
-          size='small'
+          size='medium'
           type='submit'
         >
           {t('Verify ratings')}
@@ -472,6 +473,7 @@ const FederationTable = ({
         aria-labelledby='recovery-dialog-title'
         aria-describedby='recovery-description'
       >
+        <DialogTitle>{t('Add coordinator')}</DialogTitle>
         <DialogContent>
           <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
             {error ?? (
@@ -482,30 +484,25 @@ const FederationTable = ({
               </Grid>
             )}
             <Grid item xs={12}>
-              <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
-                <Grid item>
-                  <Typography variant='h5' align='center'>
-                    {t('Add coordinator')}
-                  </Typography>
-                </Grid>
+              <Grid container direction='column' alignItems='center'>
                 <Grid item xs={4}>
                   <TextField
                     id='outlined-basic'
                     label={t('Alias')}
                     variant='outlined'
-                    size='small'
+                    size='medium'
                     value={newAlias}
                     onChange={(e) => {
                       setNewAlias(e.target.value);
                     }}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={6} padding={2}>
                   <TextField
                     id='outlined-basic'
                     label={t('URL')}
                     variant='outlined'
-                    size='small'
+                    size='medium'
                     value={newUrl}
                     onChange={(e) => {
                       setNewUrl(e.target.value);
@@ -514,12 +511,12 @@ const FederationTable = ({
                 </Grid>
                 <Grid item xs={1}>
                   <Button
-                    sx={{ maxHeight: 38 }}
+                    sx={{ maxHeight: 38, marginTop: 2.5 }}
                     disabled={false}
                     onClick={addCoordinator}
                     variant='contained'
                     color='primary'
-                    size='small'
+                    size='large'
                     type='submit'
                   >
                     {t('Add coordinator')}

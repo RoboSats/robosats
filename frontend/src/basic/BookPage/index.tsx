@@ -16,7 +16,7 @@ import { type PublicOrder } from '../../models';
 import GoToOrder from '../../components/Dialogs/GoToOrder';
 
 const BookPage = (): React.JSX.Element => {
-  const { windowSize } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
@@ -43,7 +43,7 @@ const BookPage = (): React.JSX.Element => {
         setOpenVisitThirdParty(true);
       }
     } else {
-      navigate(`/order/${shortAlias}/${id}`);
+      navigateToPage(`order/${shortAlias}/${id}`, navigate);
     }
   };
 
@@ -97,7 +97,13 @@ const BookPage = (): React.JSX.Element => {
   };
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
+    <Grid
+      container
+      direction='column'
+      alignItems='center'
+      spacing={1}
+      sx={{ minWidth: 400, marginTop: 2.5 }}
+    >
       <GoToOrder
         open={goToOrder}
         onClose={() => {
@@ -151,19 +157,19 @@ const BookPage = (): React.JSX.Element => {
         ) : view === 'depth' ? (
           <DepthChart
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.72} // EM units
+            maxHeight={windowSize.height * 0.68} // EM units
             onOrderClicked={onOrderClicked}
           />
         ) : view === 'map' ? (
           <MapChart
             maxWidth={windowSize.width * 0.8} // M units
-            maxHeight={windowSize.height * 0.72} // EM units
+            maxHeight={windowSize.height * 0.68} // EM units
             onOrderClicked={onOrderClicked}
           />
         ) : (
           <BookTable
             maxWidth={windowSize.width * 0.8} // EM units
-            maxHeight={windowSize.height * 0.72} // EM units
+            maxHeight={windowSize.height * 0.68} // EM units
             fullWidth={windowSize.width} // EM units
             fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}

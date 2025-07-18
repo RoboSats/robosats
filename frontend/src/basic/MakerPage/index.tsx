@@ -15,7 +15,7 @@ import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
 import { type PublicOrder } from '../../models';
 
 const MakerPage = (): React.JSX.Element => {
-  const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
+  const { fav, windowSize, navbarHeight, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -68,7 +68,7 @@ const MakerPage = (): React.JSX.Element => {
       }
     } else {
       if (garage.getSlot()?.hashId) {
-        navigate(`/order/${shortAlias}/${id}`);
+        navigateToPage(`order/${shortAlias}/${id}`, navigate);
       } else {
         setClickedOrder({ id, shortAlias });
         setOpenNoRobot(true);
@@ -96,7 +96,8 @@ const MakerPage = (): React.JSX.Element => {
             .createRobot(federation, token)
             .then(() => {
               setOpenNoRobot(true);
-              if (clickedOrder) navigate(`/order/${clickedOrder?.shortAlias}/${clickedOrder?.id}`);
+              if (clickedOrder)
+                navigateToPage(`order/${clickedOrder?.shortAlias}/${clickedOrder?.id}`, navigate);
             })
             .catch((e) => {
               console.log(e);

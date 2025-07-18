@@ -32,8 +32,8 @@ const BookControl = ({
   const theme = useTheme();
 
   const [orderType, setOrderType] = useState<string>('any');
-  const [small, medium, large] = useMemo(() => {
-    const small = fav.mode === 'fiat' ? 16 : 7.5;
+  const [_small, medium, large] = useMemo(() => {
+    const small = 16;
     const medium = small + 13;
     const large = medium + (t('and use').length + t('pay with').length) * 0.6 + 5;
     return [small, medium, large];
@@ -141,7 +141,7 @@ const BookControl = ({
                 borderColor: 'text.primary',
               },
             }}
-            size='small'
+            size='large'
             label={t('Select Order Type')}
             required={true}
             value={orderType}
@@ -216,7 +216,7 @@ const BookControl = ({
                   borderColor: 'text.primary',
                 },
               }}
-              size='small'
+              size='large'
               label={t('Select Payment Currency')}
               required={true}
               value={fav.currency}
@@ -270,21 +270,21 @@ const BookControl = ({
               tagProps={{ sx: { height: '1.8em' } }}
               listBoxProps={{ sx: { width: '13em' } }}
               onAutocompleteChange={setPaymentMethods}
-              value={paymentMethod}
+              paymentMethods={paymentMethod}
+              paymentMethodsText={paymentMethod.join(' ')}
               optionsType={fav.currency === 1000 ? 'swap' : 'fiat'}
               error={false}
-              helperText={''}
               label={fav.currency === 1000 ? t('DESTINATION') : t('METHOD')}
               tooltipTitle=''
               addNewButtonText=''
               isFilter={true}
               multiple={true}
-              optionsDisplayLimit={1}
+              listHeaderText={''}
             />
           </Grid>
         ) : null}
 
-        {width > small && width <= medium ? (
+        {width <= medium ? (
           <Grid item>
             <Select
               sx={{
@@ -297,24 +297,30 @@ const BookControl = ({
                   borderColor: 'text.primary',
                 },
               }}
-              size='small'
+              size='large'
               label={t('Select Payment Method')}
               required={true}
-              renderValue={(value) =>
-                value === 'ANY' ? (
-                  <CheckBoxOutlineBlankIcon style={{ position: 'relative', top: '0.1em' }} />
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <PaymentIcon width={22} height={22} icon={value.icon} />
-                  </div>
-                )
-              }
+              renderValue={(value) => {
+                if (value === 'ANY') {
+                  return (
+                    <CheckBoxOutlineBlankIcon style={{ position: 'relative', top: '0.1em' }} />
+                  );
+                } else {
+                  const methods = fav.currency === 1000 ? swapMethods : fiatMethods;
+                  const method = methods.find((m) => m.name === value);
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <PaymentIcon width={22} height={22} icon={method.icon} />
+                    </div>
+                  );
+                }
+              }}
               inputProps={{
                 style: { textAlign: 'center' },
               }}
               value={paymentMethod[0] ?? 'ANY'}
               onChange={(e) => {
-                setPaymentMethods(e.target.value === 'ANY' ? [] : [e.target.value]);
+                setPaymentMethods(e.target.value === 'ANY' ? [] : [e.target.value.name]);
               }}
             >
               <MenuItem value={'ANY'}>
@@ -383,7 +389,7 @@ const BookControl = ({
                 borderColor: 'text.primary',
               },
             }}
-            size='small'
+            size='large'
             label={t('Select Host')}
             required={true}
             value={fav.coordinator}

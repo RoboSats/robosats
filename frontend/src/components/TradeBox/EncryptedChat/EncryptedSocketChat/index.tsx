@@ -2,25 +2,22 @@ import React, { useEffect, useLayoutEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
-import { AuditPGPDialog } from '../../../Dialogs';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
-import CircularProgress from '@mui/material/CircularProgress';
-import KeyIcon from '@mui/icons-material/Key';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
-import ChatBottom from '../ChatBottom';
 import { sha256 } from 'js-sha256';
 import { type Order } from '../../../../models';
 import {
   type UseFederationStoreType,
   FederationContext,
 } from '../../../../contexts/FederationContext';
-import { getSettings } from '../../../../contexts/AppContext';
+import getSettings from '../../../../utils/settings';
+import { Send } from '@mui/icons-material';
 
 const audioPath =
   getSettings().client == 'mobile'
@@ -39,6 +36,8 @@ interface Props {
   turtleMode: boolean;
   setTurtleMode: (state: boolean) => void;
   onSendMessage: (content: string) => void;
+  peerPubKey?: string;
+  setPeerPubKey: (peerPubKey: string) => void;
 }
 
 const EncryptedSocketChat: React.FC<Props> = ({
@@ -53,6 +52,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
   turtleMode,
   setTurtleMode,
   onSendMessage,
+  peerPubKey,
+  setPeerPubKey,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -62,11 +63,9 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [connected, setConnected] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
-  const [peerPubKey, setPeerPubKey] = useState<string>();
   const [serverMessages, setServerMessages] = useState<ServerMessage[]>([]);
   const [value, setValue] = useState<string>('');
   const [connection, setConnection] = useState<WebsocketConnection>();
-  const [audit, setAudit] = useState<boolean>(false);
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [lastSent, setLastSent] = useState<string>('---BLANK---');
   const [messageCount, setMessageCount] = useState<number>(0);
@@ -148,18 +147,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
       .catch(() => {
         setConnected(false);
       });
-  };
-
-  const createJsonFile: () => object = () => {
-    return {
-      credentials: {
-        own_public_key: garage.getSlot()?.getRobot()?.pubKey,
-        peer_public_key: peerPubKey,
-        encrypted_private_key: garage.getSlot()?.getRobot()?.encPrivKey,
-        passphrase: garage.getSlot()?.token,
-      },
-      messages,
-    };
   };
 
   const onMessage: (message: object) => void = (message) => {
@@ -292,21 +279,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
       alignItems='center'
       spacing={0.5}
     >
-      <AuditPGPDialog
-        open={audit}
-        onClose={() => {
-          setAudit(false);
-        }}
-        orderId={Number(order.id)}
-        messages={messages}
-        ownPubKey={garage.getSlot()?.getRobot()?.pubKey ?? ''}
-        ownEncPrivKey={garage.getSlot()?.getRobot()?.encPrivKey ?? ''}
-        peerPubKey={peerPubKey ?? 'Not received yet'}
-        passphrase={garage.getSlot()?.token ?? ''}
-        onClickBack={() => {
-          setAudit(false);
-        }}
-      />
       <Grid item>
         <ChatHeader
           connected={connected && Boolean(peerPubKey)}
@@ -348,79 +320,39 @@ const EncryptedSocketChat: React.FC<Props> = ({
             }}
           />
         </Paper>
-        <form noValidate onSubmit={onButtonClicked}>
+        <form noValidate onSubmit={onButtonClicked} style={{ width: '100%' }}>
           <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
-            <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={9}>
-              <TextField
-                label={t('Type a message')}
-                variant='standard'
-                size='small'
-                multiline
-                maxRows={3}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    onButtonClicked(e);
-                  }
-                }}
-                helperText={
-                  connected
-                    ? peerPubKey !== undefined
-                      ? null
-                      : t('Waiting for peer public key...')
-                    : t('Connecting...')
+            <TextField
+              label={t('Type a message')}
+              variant='standard'
+              size='small'
+              multiline
+              maxRows={3}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  onButtonClicked(e);
                 }
-                value={value}
-                onChange={(e) => {
-                  setValue(e.target.value);
-                }}
-                fullWidth={true}
-              />
-            </Grid>
-            <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={3}>
-              <Button
-                fullWidth={true}
-                disabled={!connected || waitingEcho || peerPubKey === undefined}
-                type='submit'
-                variant='contained'
-                color='primary'
-              >
-                {waitingEcho ? (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      minWidth: '4.68em',
-                      width: '4.68em',
-                      position: 'relative',
-                      left: '1em',
-                    }}
-                  >
-                    <div style={{ width: '1.2em' }}>
-                      <KeyIcon sx={{ width: '1em' }} />
-                    </div>
-                    <div style={{ width: '1em', position: 'relative', left: '0.5em' }}>
-                      <CircularProgress size={1.1 * theme.typography.fontSize} thickness={5} />
-                    </div>
-                  </div>
-                ) : (
-                  t('Send')
-                )}
-              </Button>
-            </Grid>
+              }}
+              value={value}
+              onChange={(e) => {
+                setValue(e.target.value);
+              }}
+              fullWidth
+            />
+            <Button
+              disabled={!connected || waitingEcho || peerPubKey === undefined}
+              type='submit'
+              variant='contained'
+              color='primary'
+              loading={waitingEcho}
+            >
+              <Send />
+            </Button>
           </Grid>
           <Typography color='error' variant='caption'>
             {error}
           </Typography>
         </form>
-      </Grid>
-      <Grid item>
-        <ChatBottom
-          orderId={order.id}
-          audit={audit}
-          setAudit={setAudit}
-          createJsonFile={createJsonFile}
-        />
       </Grid>
     </Grid>
   );

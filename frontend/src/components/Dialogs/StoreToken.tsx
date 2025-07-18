@@ -50,7 +50,7 @@ const StoreTokenDialog = ({
             label={t('Back it up!')}
             value={garage.getSlot()?.token}
             variant='filled'
-            size='small'
+            size='medium'
             InputProps={{
               endAdornment: (
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>

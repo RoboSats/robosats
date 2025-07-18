@@ -143,13 +143,14 @@ export const OnchainPayoutForm = ({
         </Grid>
       </Grid>
 
-      <Grid item>
+      <Grid item style={{ marginTop: 16 }}>
         <LoadingButton
           loading={loading}
           onClick={onClickSubmit}
           disabled={invalidFee}
           variant='outlined'
           color='primary'
+          size='large'
         >
           {t('Submit')}
         </LoadingButton>

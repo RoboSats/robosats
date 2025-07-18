@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Key, Add } from '@mui/icons-material';
 import {
@@ -10,6 +10,7 @@ import {
   Button,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -24,6 +25,7 @@ const NoRobotDialog = ({
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -36,7 +38,7 @@ const NoRobotDialog = ({
       <DialogActions>
         <Button
           onClick={() => {
-            navigate('/garage');
+            navigateToPage('garage', navigate);
           }}
         >
           <Key /> <div style={{ width: '0.5em' }} />

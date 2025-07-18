@@ -32,14 +32,7 @@ import {
 } from './Prompts';
 import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
-import {
-  defaultLightning,
-  type LightningForm,
-  defaultOnchain,
-  type OnchainForm,
-  type DisputeForm,
-  defaultDispute,
-} from './Forms';
+import { defaultLightning, type LightningForm, defaultOnchain, type OnchainForm } from './Forms';
 
 import { type Order } from '../../models';
 import { type EncryptedChatMessage } from './EncryptedChat';
@@ -51,6 +44,7 @@ import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { DisputeForm, defaultDispute } from './Prompts/Dispute';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -114,7 +108,7 @@ interface Contract {
 
 const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { settings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -175,7 +169,8 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
         shortAlias: newOrder.shortAlias,
       };
       void slot.makeOrder(federation, orderAttributes).then((order: Order) => {
-        if (order?.id) navigate(`/order/${String(order?.shortAlias)}/${String(order.id)}`);
+        if (order?.id)
+          navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
       });
     }
   };
@@ -561,6 +556,9 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
               onClickDispute={() => {
                 setOpen({ ...open, confirmDispute: true });
               }}
+              onClickCollabCancel={() => {
+                setOpen({ ...open, confirmCollabCancel: true });
+              }}
               loadingDispute={loadingButtons.openDispute}
               messages={messages}
               setMessages={setMessages}
@@ -801,8 +799,7 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
         <Grid item>{contract?.prompt()}</Grid>
 
         {contract?.bondStatus !== 'hide' ? (
-          <Grid item sx={{ width: '100%' }}>
-            <Divider />
+          <Grid item sx={{ width: '100%', mt: 1 }}>
             <BondStatus status={contract?.bondStatus} isMaker={currentOrder?.is_maker ?? false} />
           </Grid>
         ) : (
@@ -813,9 +810,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
           onClickCancel={cancel}
           openCancelDialog={() => {
             setOpen({ ...closeAll, confirmCancel: true });
-          }}
-          openCollabCancelDialog={() => {
-            setOpen({ ...closeAll, confirmCollabCancel: true });
           }}
           loading={loadingButtons.cancel}
         />

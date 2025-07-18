@@ -38,7 +38,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { setPage } = useContext<UseAppStoreType>(AppContext);
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -118,6 +118,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                           setStep('2');
                           void garage.createRobot(federation, inputToken);
                         }}
+                        disabled={loading}
                         variant='contained'
                         size='large'
                       >
@@ -241,8 +242,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                 <Button
                   color='primary'
                   onClick={() => {
-                    navigate('/offers');
-                    setPage('offers');
+                    navigateToPage('offers', navigate);
                   }}
                 >
                   <Storefront /> <div style={{ width: '0.5em' }} />
@@ -251,8 +251,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                 <Button
                   color='secondary'
                   onClick={() => {
-                    navigate('/create');
-                    setPage('create');
+                    navigateToPage('create', navigate);
                   }}
                 >
                   <AddBox /> <div style={{ width: '0.5em' }} />

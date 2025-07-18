@@ -394,7 +394,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogContent style={{ width: 600 }}>
+      <DialogContent>
         <Typography align='center' component='h5' variant='h5'>
           {String(coordinator?.longAlias)}
         </Typography>

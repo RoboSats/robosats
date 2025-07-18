@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { Routes as DomRoutes, Route, useNavigate } from 'react-router-dom';
-import { Slide } from '@mui/material';
-import { type UseAppStoreType, AppContext } from '../contexts/AppContext';
+import { Fade } from '@mui/material';
+import { type UseAppStoreType, AppContext, Page } from '../contexts/AppContext';
 
 import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage } from '.';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
@@ -9,7 +9,7 @@ import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContex
 const Routes: React.FC = () => {
   const navigate = useNavigate();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { page, slideDirection } = useContext<UseAppStoreType>(AppContext);
+  const { page, navigateToPage } = useContext<UseAppStoreType>(AppContext);
 
   useEffect(() => {
     window.addEventListener('navigateToPage', (event) => {
@@ -19,11 +19,19 @@ const Routes: React.FC = () => {
         const slot = garage.getSlotByOrder(coordinator, parseInt(orderId, 10));
         if (slot?.token) {
           garage.setCurrentSlot(slot?.token);
-          navigate(`/order/${coordinator}/${orderId}`);
+          navigateToPage(`order/${coordinator}/${orderId}`, navigate);
         }
       }
     });
   }, []);
+
+  useEffect(() => {
+    // change tab (page) into the current route
+    const pathPage: Page | string = location.pathname.split('/')[1];
+    if (pathPage === 'index.html') {
+      navigateToPage('garage', navigate);
+    }
+  }, [location]);
 
   return (
     <DomRoutes>
@@ -32,15 +40,11 @@ const Routes: React.FC = () => {
           <Route
             path={path}
             element={
-              <Slide
-                direction={page === 'garage' ? slideDirection.in : slideDirection.out}
-                in={page === 'garage'}
-                appear={slideDirection.in !== undefined}
-              >
+              <Fade in={page === 'garage'} appear>
                 <div>
                   <RobotPage />
                 </div>
-              </Slide>
+              </Fade>
             }
             key={index}
           />
@@ -50,60 +54,44 @@ const Routes: React.FC = () => {
       <Route
         path={'/offers'}
         element={
-          <Slide
-            direction={page === 'offers' ? slideDirection.in : slideDirection.out}
-            in={page === 'offers'}
-            appear={slideDirection.in !== undefined}
-          >
+          <Fade in={page === 'offers'} appear>
             <div>
               <BookPage />
             </div>
-          </Slide>
+          </Fade>
         }
       />
 
       <Route
         path='/create'
         element={
-          <Slide
-            direction={page === 'create' ? slideDirection.in : slideDirection.out}
-            in={page === 'create'}
-            appear={slideDirection.in !== undefined}
-          >
+          <Fade in={page === 'create'} appear>
             <div>
               <MakerPage />
             </div>
-          </Slide>
+          </Fade>
         }
       />
 
       <Route
         path='/order/:shortAlias/:orderId'
         element={
-          <Slide
-            direction={page === 'order' ? slideDirection.in : slideDirection.out}
-            in={page === 'order'}
-            appear={slideDirection.in !== undefined}
-          >
+          <Fade in={page === 'order'} appear>
             <div>
               <OrderPage />
             </div>
-          </Slide>
+          </Fade>
         }
       />
 
       <Route
         path='/settings'
         element={
-          <Slide
-            direction={page === 'settings' ? slideDirection.in : slideDirection.out}
-            in={page === 'settings'}
-            appear={slideDirection.in !== undefined}
-          >
+          <Fade in={page === 'settings'} appear>
             <div>
               <SettingsPage />
             </div>
-          </Slide>
+          </Fade>
         }
       />
     </DomRoutes>

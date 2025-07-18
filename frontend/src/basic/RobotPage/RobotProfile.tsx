@@ -6,13 +6,13 @@ import {
   Grid,
   LinearProgress,
   Typography,
-  Alert,
   Select,
   MenuItem,
   Box,
   useTheme,
   type SelectChangeEvent,
   IconButton,
+  Tooltip,
 } from '@mui/material';
 import { Key, Bolt, Add, DeleteSweep, Download, Settings } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
@@ -41,7 +41,8 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): React.JSX.Element => {
-  const { windowSize, client, setOpen, open } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, client, setOpen, open, navigateToPage } =
+    useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -157,7 +158,8 @@ const RobotProfile = ({
         <Grid item sx={{ width: `13.5em` }}>
           <RobotAvatar
             hashId={slot?.hashId}
-            smooth={true}
+            error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
+            smooth
             style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
             placeholderType='generating'
             imageStyle={{
@@ -167,19 +169,18 @@ const RobotProfile = ({
               height: `12.4em`,
               width: `12.4em`,
             }}
-            tooltip={t('This is your trading avatar')}
+            tooltip={
+              !slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)
+                ? t(
+                    'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
+                  )
+                : t('This is your trading avatar')
+            }
             tooltipPosition='top'
           />
-          {robot?.found && Boolean(slot?.lastOrder?.id) ? (
-            <Typography align='center' variant='h6'>
-              {t('Welcome back!')}
-            </Typography>
-          ) : (
-            <></>
-          )}
         </Grid>
 
-        {federation.loading && !slot?.activeOrder?.id ? (
+        {federation.loading && !slot?.activeOrder && !slot?.lastOrder ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />
@@ -190,8 +191,9 @@ const RobotProfile = ({
           <Grid item>
             <Button
               onClick={() => {
-                navigate(
-                  `/order/${String(slot?.activeOrder?.shortAlias)}/${String(slot?.activeOrder?.id)}`,
+                navigateToPage(
+                  `order/${String(slot?.activeOrder?.shortAlias)}/${String(slot?.activeOrder?.id)}`,
+                  navigate,
                 );
               }}
             >
@@ -200,29 +202,19 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id) ? (
+        {!slot?.activeOrder && slot?.lastOrder ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate(
-                    `/order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
+                  navigateToPage(
+                    `order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
+                    navigate,
                   );
                 }}
               >
                 {t('Last order #{{orderID}}', { orderID: slot?.lastOrder?.id })}
               </Button>
-            </Grid>
-            <Grid item>
-              <Alert severity='warning'>
-                <Grid container direction='column' alignItems='center'>
-                  <Grid item>
-                    {t(
-                      'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
-                    )}
-                  </Grid>
-                </Grid>
-              </Alert>
             </Grid>
           </Grid>
         ) : null}
@@ -231,23 +223,33 @@ const RobotProfile = ({
           <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
 
-        <Grid
-          item
-          container
-          direction='row'
-          justifyContent='stretch'
-          alignItems='stretch'
-          sx={{ width: '100%' }}
+        <Tooltip
+          placement='top'
+          enterTouchDelay={0}
+          hidden={!slot?.lastOrder?.id}
+          title={t(
+            'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
+          )}
         >
-          <TokenInput
-            fullWidth
-            inputToken={inputToken}
-            editable={false}
-            label={t('Store your token safely')}
-            setInputToken={setInputToken}
-            onPressEnter={() => null}
-          />
-        </Grid>
+          <Grid
+            item
+            container
+            direction='row'
+            justifyContent='stretch'
+            alignItems='stretch'
+            sx={{ width: '100%' }}
+          >
+            <TokenInput
+              error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
+              fullWidth
+              inputToken={inputToken}
+              editable={false}
+              label={t('Store your token safely')}
+              setInputToken={setInputToken}
+              onPressEnter={() => null}
+            />
+          </Grid>
+        </Tooltip>
       </Grid>
       <Grid item sx={{ width: '100%' }}>
         <Box
@@ -262,6 +264,7 @@ const RobotProfile = ({
             <Grid item sx={{ width: '100%' }}>
               <Typography variant='caption'>{t('Robot Garage')}</Typography>
               <Select
+                error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
                 fullWidth
                 required={true}
                 inputProps={{
@@ -310,7 +313,12 @@ const RobotProfile = ({
 
             <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
               <Grid item>
-                <LoadingButton loading={loading} color='primary' onClick={handleAddRobot}>
+                <LoadingButton
+                  loading={loading}
+                  color='primary'
+                  onClick={handleAddRobot}
+                  size='large'
+                >
                   <Add /> <div style={{ width: '0.5em' }} />
                   {!mobileView && t('Add Robot')}
                 </LoadingButton>
@@ -319,6 +327,7 @@ const RobotProfile = ({
               {client !== 'mobile' ? (
                 <Grid item>
                   <Button
+                    size='large'
                     color='primary'
                     onClick={() => {
                       garage.download();
@@ -330,7 +339,7 @@ const RobotProfile = ({
               ) : null}
 
               <Grid item>
-                <Button color='primary' onClick={handleDeleteRobot}>
+                <Button color='primary' onClick={handleDeleteRobot} size='large'>
                   <DeleteSweep /> <div style={{ width: '0.5em' }} />
                   {!mobileView && t('Delete Robot')}
                 </Button>
@@ -339,6 +348,7 @@ const RobotProfile = ({
               <Grid item>
                 <Button
                   color='primary'
+                  size='large'
                   onClick={() => {
                     setOpen((open) => {
                       return { ...open, recovery: true };

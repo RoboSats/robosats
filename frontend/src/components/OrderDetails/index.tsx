@@ -5,7 +5,6 @@ import {
   ListItem,
   Alert,
   Chip,
-  ListItemAvatar,
   ListItemText,
   ListItemIcon,
   Divider,
@@ -22,27 +21,16 @@ import {
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
 import currencies from '../../../static/assets/currencies.json';
-import {
-  AccessTime,
-  Numbers,
-  PriceChange,
-  Payments,
-  Article,
-  HourglassTop,
-  ExpandLess,
-  ExpandMore,
-  Map,
-} from '@mui/icons-material';
+import { AccessTime, PriceChange, Payments, HourglassTop, Map } from '@mui/icons-material';
 import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import type Coordinator from '../../models';
-import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
+import { pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
-import { type Order } from '../../models';
+import { Coordinator, type Order } from '../../models';
 
 interface OrderDetailsProps {
   shortAlias: string;
@@ -66,7 +54,6 @@ const OrderDetails = ({
     federation.getCoordinator(shortAlias),
   );
   const [currencyCode, setCurrencyCode] = useState<string | null>();
-  const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [password, setPassword] = useState<string>();
 
@@ -291,81 +278,32 @@ const OrderDetails = ({
             </Grid>
           </Grid>
         </ListItemButton>
-        {coordinator?.info && !coordinator?.info?.swap_enabled && (
-          <ListItem>
-            <Grid sx={{ marginBottom: 1 }}>
-              <Alert severity='warning'>
-                {t('This coordinator does not support on-chain swaps.')}
-              </Alert>
-            </Grid>
-          </ListItem>
-        )}
+        <ListItem>
+          <Grid sx={{ marginBottom: 1, width: '100%' }}>
+            <Alert
+              severity={
+                coordinator?.info
+                  ? coordinator?.info?.swap_enabled
+                    ? 'success'
+                    : 'warning'
+                  : 'info'
+              }
+              style={{ width: '100%' }}
+            >
+              {coordinator?.info
+                ? coordinator?.info?.swap_enabled
+                  ? t('Supports on-chain swaps.')
+                  : t('Does not support on-chain swaps.')
+                : t('Loading cooridnator info...')}
+            </Alert>
+          </Grid>
+        </ListItem>
 
         {!currentOrder.bad_request && currentOrder.maker_hash_id && (
           <>
-            <Divider />
-            <ListItem>
-              <ListItemAvatar sx={{ width: '4em', height: '4em' }}>
-                <RobotAvatar
-                  statusColor={statusBadgeColor(currentOrder?.maker_status ?? '')}
-                  hashId={currentOrder.maker_hash_id}
-                  tooltip={t(currentOrder.maker_status ?? '')}
-                  orderType={currentOrder.type}
-                  small={true}
-                />
-              </ListItemAvatar>
-              <ListItemText
-                primary={`${String(currentOrder?.maker_nick)} (${
-                  currentOrder?.type === 1
-                    ? t(currentOrder?.currency === 1000 ? 'Swapping Out' : 'Seller')
-                    : t(currentOrder?.currency === 1000 ? 'Swapping In' : 'Buyer')
-                })`}
-                secondary={t('Order maker')}
-              />
-            </ListItem>
-            <Collapse in={currentOrder?.is_participant && currentOrder?.taker_nick !== 'None'}>
-              <Divider />
-              <ListItem>
-                <ListItemText
-                  primary={`${String(currentOrder?.taker_nick)} (${
-                    currentOrder?.type === 1
-                      ? t(currentOrder?.currency === 1000 ? 'Swapping In' : 'Buyer')
-                      : t(currentOrder?.currency === 1000 ? 'Swapping Out' : 'Seller')
-                  })`}
-                  secondary={t('Order taker')}
-                />
-                <ListItemAvatar>
-                  <RobotAvatar
-                    avatarClass='smallAvatar'
-                    statusColor={statusBadgeColor(currentOrder?.taker_status ?? '')}
-                    hashId={
-                      currentOrder?.taker_hash_id === 'None'
-                        ? undefined
-                        : currentOrder?.taker_hash_id
-                    }
-                    tooltip={t(currentOrder?.taker_status ?? '')}
-                    orderType={currentOrder?.type === 0 ? 1 : 0}
-                    small={true}
-                  />
-                </ListItemAvatar>
-              </ListItem>
-            </Collapse>
             <Divider>
               <Chip label={t('Order Details')} />
             </Divider>
-
-            <Collapse in={currentOrder?.is_participant}>
-              <ListItem>
-                <ListItemIcon>
-                  <Article />
-                </ListItemIcon>
-                <ListItemText
-                  primary={t(currentOrder?.status_message ?? '')}
-                  secondary={t('Order status')}
-                />
-              </ListItem>
-              <Divider />
-            </Collapse>
 
             <ListItem>
               <ListItemIcon>
@@ -386,40 +324,29 @@ const OrderDetails = ({
                 primary={amountString}
                 secondary={(currentOrder?.amount ?? 0) > 0 ? 'Amount' : 'Amount Range'}
               />
-              <ListItemIcon>
-                <IconButton
-                  onClick={() => {
-                    setShowSatsDetails(!showSatsDetails);
-                  }}
-                >
-                  {showSatsDetails ? <ExpandLess /> : <ExpandMore color='primary' />}
-                </IconButton>
-              </ListItemIcon>
             </ListItem>
 
-            <Collapse in={showSatsDetails}>
-              <List dense={true} sx={{ position: 'relative', bottom: '0.5em' }}>
-                <ListItem>
-                  <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
-                    <SendReceiveIcon
-                      sx={{ transform: 'scaleX(-1)', width: '0.9em', opacity: 0.9 }}
-                      color='secondary'
-                    />
-                  </ListItemIcon>
-                  <Typography variant='body2'>{satsSummary.send}</Typography>
-                </ListItem>
+            <List dense={true} sx={{ position: 'relative', bottom: '0.5em' }}>
+              <ListItem>
+                <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
+                  <SendReceiveIcon
+                    sx={{ transform: 'scaleX(-1)', width: '0.9em', opacity: 0.9 }}
+                    color='secondary'
+                  />
+                </ListItemIcon>
+                <Typography variant='body2'>{satsSummary.send}</Typography>
+              </ListItem>
 
-                <ListItem>
-                  <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
-                    <SendReceiveIcon
-                      sx={{ left: '0.1em', width: '0.9em', opacity: 0.9 }}
-                      color='primary'
-                    />
-                  </ListItemIcon>
-                  <Typography variant='body2'>{satsSummary.receive}</Typography>
-                </ListItem>
-              </List>
-            </Collapse>
+              <ListItem>
+                <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
+                  <SendReceiveIcon
+                    sx={{ left: '0.1em', width: '0.9em', opacity: 0.9 }}
+                    color='primary'
+                  />
+                </ListItemIcon>
+                <Typography variant='body2'>{satsSummary.receive}</Typography>
+              </ListItem>
+            </List>
 
             <Divider />
 
@@ -492,41 +419,32 @@ const OrderDetails = ({
               ) : null}
             </ListItem>
 
-            <Divider />
-
-            <Grid container direction='row' justifyContent='center' alignItems='center'>
-              <ListItem style={{ width: '50%' }}>
-                <ListItemIcon>
-                  <Numbers />
-                </ListItemIcon>
-                <ListItemText primary={currentOrder?.id} secondary={t('Order ID')} />
-              </ListItem>
-
-              <ListItem style={{ width: '50%' }}>
-                <ListItemIcon>
-                  <HourglassTop />
-                </ListItemIcon>
-                <ListItemText
-                  primary={timerRenderer(currentOrder?.escrow_duration)}
-                  secondary={t('Deposit')}
-                />
-              </ListItem>
-            </Grid>
-
             {/* if order is in a status that does not expire, do not show countdown */}
             <Collapse in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(currentOrder?.status ?? 0)}>
               <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <AccessTime />
-                </ListItemIcon>
-                <ListItemText secondary={t('Expires in')}>
-                  <Countdown
-                    date={new Date(currentOrder?.expires_at ?? '')}
-                    renderer={countdownRenderer}
+              <Grid container direction='row' justifyContent='center' alignItems='center'>
+                <ListItem style={{ width: '60%' }}>
+                  <ListItemIcon>
+                    <AccessTime />
+                  </ListItemIcon>
+                  <ListItemText secondary={t('Expires in')}>
+                    <Countdown
+                      date={new Date(currentOrder?.expires_at ?? '')}
+                      renderer={countdownRenderer}
+                    />
+                  </ListItemText>
+                </ListItem>
+
+                <ListItem style={{ width: '40%' }}>
+                  <ListItemIcon>
+                    <HourglassTop />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={timerRenderer(currentOrder?.escrow_duration)}
+                    secondary={t('Deposit')}
                   />
-                </ListItemText>
-              </ListItem>
+                </ListItem>
+              </Grid>
               <LinearDeterminate
                 totalSecsExp={currentOrder?.total_secs_exp ?? 0}
                 expiresAt={currentOrder?.expires_at ?? ''}

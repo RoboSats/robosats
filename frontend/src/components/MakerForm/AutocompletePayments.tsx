@@ -268,7 +268,7 @@ interface AutocompletePaymentsProps {
   paymentMethods: string[];
   paymentMethodsText: string;
   optionsType: 'fiat' | 'swap';
-  setHasCustomPaymentMethod: (value: boolean) => void;
+  setHasCustomPaymentMethod?: (value: boolean) => void;
   onAutocompleteChange: (value: string[]) => void;
   tooltipTitle: string;
   labelProps: MUIStyledCommonProps;

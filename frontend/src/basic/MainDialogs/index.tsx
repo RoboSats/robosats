@@ -25,6 +25,7 @@ export interface OpenDialogs {
   update: boolean;
   profile: boolean;
   recovery: boolean;
+  confirmCollabCancel: boolean;
   thirdParty: string;
 }
 
