@@ -153,6 +153,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
-          asset_name: pokey-universal-${{ steps.set_asset_name.outputs.asset_tag }}.apk
+          asset_path: android/app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
+          asset_name: robosats-universal-${{ steps.set_asset_name.outputs.asset_tag }}.apk
           asset_content_type: application/zip
