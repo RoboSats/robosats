@@ -99,7 +99,6 @@ jobs:
       # Create app-universal-release APK artifact asset for Release
       - name: 'Upload universal .apk Artifact'
         uses: actions/upload-artifact@v4
-        if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-universal.apk
           path: android/app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
@@ -107,7 +106,6 @@ jobs:
       # Create app-arm64-v8a-release APK artifact asset for Release
       - name: 'Upload arm64-v8a .apk Artifact'
         uses: actions/upload-artifact@v4
-        if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-arm64-v8a.apk
           path: android/app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk
@@ -115,7 +113,6 @@ jobs:
       # Create app-armeabi-v7a-release APK artifact asset for Release
       - name: 'Upload armeabi-v7a .apk Artifact'
         uses: actions/upload-artifact@v4
-        if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-armeabi-v7a.apk
           path: android/app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk
@@ -123,7 +120,6 @@ jobs:
       # Create app-x86_64-release APK artifact asset for Release
       - name: 'Upload x86_64 .apk Artifact'
         uses: actions/upload-artifact@v4
-        if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-x86_64.apk
           path: android/app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk
