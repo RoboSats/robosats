@@ -1,8 +1,13 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { Configuration } from 'webpack';
-import FileManagerPlugin from 'filemanager-webpack-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { version } from './package.json';
+
+// Setup __dirname equivalent for TypeScript
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const config: Configuration = {
   entry: './src/index.js',
@@ -81,17 +86,13 @@ const configNode: Configuration = {
       robosatsSettings: 'selfhosted-pro',
       basePath: '/',
     }),
-    new FileManagerPlugin({
-      events: {
-        onEnd: {
-          copy: [
-            {
-              source: path.resolve(__dirname, 'static'),
-              destination: path.resolve(__dirname, '../nodeapp/static'),
-            },
-          ],
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../nodeapp/static'),
         },
-      },
+      ],
     }),
     // Desktop App
     new HtmlWebpackPlugin({
@@ -104,17 +105,13 @@ const configNode: Configuration = {
       robosatsSettings: 'desktop-basic',
       basePath: '/',
     }),
-    new FileManagerPlugin({
-      events: {
-        onEnd: {
-          copy: [
-            {
-              source: path.resolve(__dirname, 'static'),
-              destination: path.resolve(__dirname, '../desktopApp/static'),
-            },
-          ],
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../desktopApp/static'),
         },
-      },
+      ],
     }),
     // Web App
     new HtmlWebpackPlugin({
@@ -137,17 +134,13 @@ const configNode: Configuration = {
       robosatsSettings: 'web-pro',
       basePath: '/',
     }),
-    new FileManagerPlugin({
-      events: {
-        onEnd: {
-          copy: [
-            {
-              source: path.resolve(__dirname, 'static'),
-              destination: path.resolve(__dirname, '../web/static'),
-            },
-          ],
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, '../web/static'),
         },
-      },
+      ],
     }),
   ],
 };
@@ -216,25 +209,21 @@ const configNative: Configuration = {
       robosatsSettings: 'mobile-basic',
       basePath: './',
     }),
-    new FileManagerPlugin({
-      events: {
-        onEnd: {
-          copy: [
-            {
-              source: path.resolve(__dirname, 'static/css'),
-              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/static/css'),
-            },
-            {
-              source: path.resolve(__dirname, 'static/assets/sounds'),
-              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
-            },
-            {
-              source: path.resolve(__dirname, 'static/federation'),
-              destination: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/federation'),
-            },
-          ],
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static/css'),
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/static/css'),
         },
-      },
+        {
+          from: path.resolve(__dirname, 'static/assets/sounds'),
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
+        },
+        {
+          from: path.resolve(__dirname, 'static/federation'),
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/federation'),
+        },
+      ],
     }),
   ],
 };
@@ -303,49 +292,28 @@ const configAndroid: Configuration = {
       robosatsSettings: 'mobile-basic',
       basePath: 'file:///android_asset/Web.bundle/',
     }),
-    new FileManagerPlugin({
-      events: {
-        onEnd: {
-          copy: [
-            {
-              source: path.resolve(__dirname, 'static/css'),
-              destination: path.resolve(
-                __dirname,
-                '../mobile_new/app/src/main/assets/Web.bundle/static/css',
-              ),
-            },
-            {
-              source: path.resolve(__dirname, 'static/assets/sounds'),
-              destination: path.resolve(
-                __dirname,
-                '../mobile_new/app/src/main/assets/Web.bundle/assets/sounds',
-              ),
-            },
-            {
-              source: path.resolve(__dirname, 'static/federation'),
-              destination: path.resolve(
-                __dirname,
-                '../mobile_new/app/src/main/assets/Web.bundle/assets/federation',
-              ),
-            },
-          ],
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static/css'),
+          to: path.resolve(__dirname, '../mobile_new/app/src/main/assets/Web.bundle/static/css'),
         },
-      },
-    }),
-    new FileManagerPlugin({
-      events: {
-        onEnd: {
-          copy: [
-            {
-              source: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
-              destination: path.resolve(
-                __dirname,
-                '../mobile_new/app/src/main/assets/static/frontend',
-              ),
-            },
-          ],
+        {
+          from: path.resolve(__dirname, 'static/assets/sounds'),
+          to: path.resolve(__dirname, '../mobile_new/app/src/main/assets/Web.bundle/assets/sounds'),
         },
-      },
+        {
+          from: path.resolve(__dirname, 'static/federation'),
+          to: path.resolve(
+            __dirname,
+            '../mobile_new/app/src/main/assets/Web.bundle/assets/federation',
+          ),
+        },
+        {
+          from: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
+          to: path.resolve(__dirname, '../mobile_new/app/src/main/assets/static/frontend'),
+        },
+      ],
     }),
   ],
 };
