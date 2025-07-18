@@ -3,6 +3,7 @@ import { Configuration } from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { version } from './package.json';
+import { Buffer } from 'buffer';
 
 // Declare __dirname for TypeScript
 declare const __dirname: string;
@@ -143,89 +144,6 @@ const configNode: Configuration = {
   ],
 };
 
-const configNative: Configuration = {
-  ...config,
-  module: {
-    ...config.module,
-    rules: [
-      ...(config?.module?.rules || []),
-      {
-        test: path.resolve(__dirname, 'src/i18n/Web.js'),
-        loader: 'file-replace-loader',
-        options: {
-          condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/i18n/Mobile.js'),
-          async: true,
-        },
-      },
-      {
-        test: path.resolve(__dirname, 'src/geo/Web.js'),
-        loader: 'file-replace-loader',
-        options: {
-          condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/geo/Mobile.js'),
-          async: true,
-        },
-      },
-      {
-        test: path.resolve(__dirname, 'src/services/Roboidentities/Web.ts'),
-        loader: 'file-replace-loader',
-        options: {
-          condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/services/Roboidentities/Native.ts'),
-          async: true,
-        },
-      },
-      {
-        test: path.resolve(__dirname, 'src/components/RobotAvatar/placeholder.json'),
-        loader: 'file-replace-loader',
-        options: {
-          condition: 'if-replacement-exists',
-          replacement: path.resolve(
-            __dirname,
-            'src/components/RobotAvatar/placeholder_highres.json',
-          ),
-          async: true,
-        },
-      },
-    ],
-  },
-  output: {
-    path: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
-    filename: `main.v${version}.[contenthash].js`,
-    clean: true,
-    publicPath: './static/frontend/',
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
-      templateParameters: {
-        pro: false,
-      },
-      filename: path.resolve(__dirname, '../mobile/html/Web.bundle/index.html'),
-      inject: 'body',
-      robosatsSettings: 'mobile-basic',
-      basePath: './',
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'static/css'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/static/css'),
-        },
-        {
-          from: path.resolve(__dirname, 'static/assets/sounds'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
-        },
-        {
-          from: path.resolve(__dirname, 'static/federation'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/federation'),
-        },
-      ],
-    }),
-  ],
-};
-
 const configAndroid: Configuration = {
   ...config,
   module: {
@@ -274,7 +192,7 @@ const configAndroid: Configuration = {
     ],
   },
   output: {
-    path: path.resolve(__dirname, '../mobile_new/app/src/main/assets/static/frontend'),
+    path: path.resolve(__dirname, '../android/app/src/main/assets/static/frontend'),
     filename: `main.v${version}.[contenthash].js`,
     clean: true,
     publicPath: './static/frontend/',
@@ -285,35 +203,43 @@ const configAndroid: Configuration = {
       templateParameters: {
         pro: false,
       },
-      filename: path.resolve(__dirname, '../mobile_new/app/src/main/assets/index.html'),
+      filename: path.resolve(__dirname, '../android/app/src/main/assets/index.html'),
       inject: 'body',
       robosatsSettings: 'mobile-basic',
-      basePath: 'file:///android_asset/Web.bundle/',
+      basePath: 'file:///android_asset/',
     }),
     new CopyWebpackPlugin({
       patterns: [
         {
           from: path.resolve(__dirname, 'static/css'),
-          to: path.resolve(__dirname, '../mobile_new/app/src/main/assets/Web.bundle/static/css'),
+          to: path.resolve(__dirname, '../android/app/src/main/assets/static/css'),
+          transform(content, path) {
+            if (path.endsWith('.css')) {
+              let cssContent = content.toString();
+              cssContent = cssContent.replace(
+                /url\(\/static\/css\/fonts\/roboto/g,
+                'url(file:///android_asset/static/css/fonts/roboto',
+              );
+              return Buffer.from(cssContent);
+            }
+            return content;
+          },
         },
         {
           from: path.resolve(__dirname, 'static/assets/sounds'),
-          to: path.resolve(__dirname, '../mobile_new/app/src/main/assets/Web.bundle/assets/sounds'),
+          to: path.resolve(__dirname, '../android/app/src/main/assets/static/assets/sounds'),
+        },
+        {
+          from: path.resolve(__dirname, 'static/assets/images/favicon-*'),
+          to: path.resolve(__dirname, '../android/app/src/main/assets'),
         },
         {
           from: path.resolve(__dirname, 'static/federation'),
-          to: path.resolve(
-            __dirname,
-            '../mobile_new/app/src/main/assets/Web.bundle/assets/federation',
-          ),
-        },
-        {
-          from: path.resolve(__dirname, '../mobile/html/Web.bundle/static/frontend'),
-          to: path.resolve(__dirname, '../mobile_new/app/src/main/assets/static/frontend'),
+          to: path.resolve(__dirname, '../android/app/src/main/assets/static/assets/federation'),
         },
       ],
     }),
   ],
 };
 
-export default [configNode, configNative, configAndroid];
+export default [configNode, configAndroid];

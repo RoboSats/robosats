@@ -17,6 +17,6 @@
     "typeRoots": ["./node_modules/@types"],
     "allowImportingTsExtensions": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "webpack.config.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
