@@ -55,7 +55,9 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build APK
-        run: android/gradlew assembleRelease --stacktrace
+        run: |
+          cd android
+          ./gradlew assembleRelease --stacktrace
 
       - name: 'Check for non-FOSS libraries'
         run: |
