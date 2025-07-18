@@ -94,18 +94,24 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           <b>{t('Coordinators that know your robot:')}</b>
         </Typography>
 
-        {federation.getCoordinators().map((coordinator: Coordinator): React.JSX.Element => {
-          const coordinatorRobot = garage.getSlot()?.getRobot(coordinator.shortAlias);
-          return (
-            <div key={coordinator.shortAlias}>
-              <RobotInfo
-                coordinator={coordinator}
-                onClose={onClose}
-                disabled={coordinatorRobot?.loading}
-              />
-            </div>
-          );
-        })}
+        <List
+          sx={{ width: '100%', bgcolor: 'background.paper' }}
+          component='nav'
+          aria-labelledby='coordinators-list'
+        >
+          {federation.getCoordinators().map((coordinator: Coordinator): React.JSX.Element => {
+            const coordinatorRobot = garage.getSlot()?.getRobot(coordinator.shortAlias);
+            return (
+              <div key={coordinator.shortAlias}>
+                <RobotInfo
+                  coordinator={coordinator}
+                  onClose={onClose}
+                  disabled={coordinatorRobot?.loading}
+                />
+              </div>
+            );
+          })}
+        </List>
       </DialogContent>
     </Dialog>
   );
