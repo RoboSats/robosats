@@ -95,9 +95,9 @@ jobs:
         id: commit
         uses: pr-mpt/actions-commit-hash@v3
 
-      # Create artifacts (only for Release)
       # Create app-universal-release APK artifact asset for Release
       - name: 'Upload universal .apk Artifact'
+        if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
           name: robosats-${{ inputs.semver }}-universal.apk
@@ -105,6 +105,7 @@ jobs:
 
       # Create app-arm64-v8a-release APK artifact asset for Release
       - name: 'Upload arm64-v8a .apk Artifact'
+        if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
           name: robosats-${{ inputs.semver }}-arm64-v8a.apk
@@ -112,6 +113,7 @@ jobs:
 
       # Create app-armeabi-v7a-release APK artifact asset for Release
       - name: 'Upload armeabi-v7a .apk Artifact'
+        if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
           name: robosats-${{ inputs.semver }}-armeabi-v7a.apk
@@ -119,7 +121,38 @@ jobs:
 
       # Create app-x86_64-release APK artifact asset for Release
       - name: 'Upload x86_64 .apk Artifact'
+        if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
           name: robosats-${{ inputs.semver }}-x86_64.apk
           path: android/app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk
+
+      - name: Create Pre-Release
+        id: create_release
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: true
+
+      - name: Set asset_name
+        id: set_asset_name
+        if: inputs.semver == ''
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "::set-output name=asset_tag::$TAG_NAME"
+
+      - name: Upload APK Universal Asset
+        id: upload-release-asset-universal-apk
+        if: inputs.semver == ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
+          asset_name: pokey-universal-${{ steps.set_asset_name.outputs.asset_tag }}.apk
+          asset_content_type: application/zip
