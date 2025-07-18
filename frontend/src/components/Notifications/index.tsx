@@ -87,7 +87,8 @@ const Notifications = ({
   const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
   const moveToOrderPage = function (): void {
-    navigateToPage(`order/${String(garage.getSlot()?.activeOrder?.id)}`, navigate);
+    const slot = garage.getSlot();
+    navigateToPage(`order/${slot?.activeOrder?.shortAlias}/${slot?.activeOrder?.id}`, navigate);
     setShow(false);
   };
 

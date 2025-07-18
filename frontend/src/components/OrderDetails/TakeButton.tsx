@@ -142,7 +142,13 @@ const TakeButton = ({
       return (
         <Tooltip enterTouchDelay={0} title={t('Wait until you can take an order')}>
           <Grid container sx={{ width: '100%' }} padding={1} justifyContent='center'>
-            <LoadingButton loading={loadingTake} disabled={true} variant='outlined' color='primary'>
+            <LoadingButton
+              loading={loadingTake}
+              disabled={true}
+              variant='outlined'
+              color='primary'
+              size='large'
+            >
               {t('Take Order')}
             </LoadingButton>
           </Grid>
@@ -310,6 +316,7 @@ const TakeButton = ({
             sx={{ height: '2.71em' }}
             variant='outlined'
             color='primary'
+            size='large'
             onClick={onTakeOrderClicked}
           >
             {t('Take Order')}

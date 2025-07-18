@@ -11,7 +11,6 @@ interface CancelButtonProps {
   order: Order | null;
   onClickCancel: () => void;
   openCancelDialog: () => void;
-  openCollabCancelDialog: () => void;
   loading: boolean;
 }
 
@@ -19,7 +18,6 @@ const CancelButton = ({
   order,
   onClickCancel,
   openCancelDialog,
-  openCollabCancelDialog,
   loading = false,
 }: CancelButtonProps): React.JSX.Element => {
   const { t } = useTranslation();
@@ -29,7 +27,6 @@ const CancelButton = ({
   const showCancelButton =
     Boolean(order?.is_maker && [0, 1, 2].includes(order?.status)) ||
     Boolean([3, 6, 7].includes(order?.status ?? -1));
-  const showCollabCancelButton = order?.status === 9 && !order?.asked_for_cancel;
   const unTaken = Boolean(order?.is_maker && [1, 2].includes(order?.status));
   const noConfirmation =
     Boolean(order?.is_maker && [0, 1, 2].includes(order?.status)) ||
@@ -56,7 +53,7 @@ const CancelButton = ({
             title={t('Copy order URL')}
           >
             <div style={{ marginRight: 18 }}>
-              <LoadingButton size='small' variant='outlined' color='primary' onClick={copyOrderUrl}>
+              <LoadingButton size='large' variant='outlined' color='primary' onClick={copyOrderUrl}>
                 {t('Copy URL')}
               </LoadingButton>
             </div>
@@ -69,7 +66,7 @@ const CancelButton = ({
             title={noConfirmation ? t('Cancel order') : t('Unilateral cancelation (bond at risk!)')}
           >
             <LoadingButton
-              size='small'
+              size='large'
               loading={loading}
               variant='outlined'
               color='secondary'
@@ -97,19 +94,6 @@ const CancelButton = ({
         }}
         onAccept={onClickCancel}
       />
-      {showCollabCancelButton ? (
-        <LoadingButton
-          size='small'
-          loading={loading}
-          variant='outlined'
-          color='secondary'
-          onClick={openCollabCancelDialog}
-        >
-          {t('Collaborative Cancel')}
-        </LoadingButton>
-      ) : (
-        <></>
-      )}
     </Box>
   );
 };

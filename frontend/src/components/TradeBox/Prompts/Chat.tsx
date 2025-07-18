@@ -1,19 +1,33 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, Typography, Tooltip, Collapse } from '@mui/material';
+import {
+  Grid,
+  Typography,
+  Tooltip,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 
 import { type Order } from '../../../models';
-import { pn } from '../../../utils';
+import { pn, saveAsJson } from '../../../utils';
 import EncryptedChat, { type EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
 import { type UseGarageStoreType, GarageContext } from '../../../contexts/GarageContext';
+import { MoreHoriz, Key, Handshake, Balance } from '@mui/icons-material';
+import AuditPGPDialog from '../../Dialogs/AuditPGP';
+import { ExportIcon } from '../../Icons';
+import { systemClient } from '../../../services/System';
+import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 
 interface ChatPromptProps {
   order: Order;
   onClickConfirmSent: () => void;
   onClickUndoConfirmSent: () => void;
+  onClickCollabCancel: () => void;
   loadingSent: boolean;
   loadingUndoSent: boolean;
   onClickConfirmReceived: () => void;
@@ -29,6 +43,7 @@ export const ChatPrompt = ({
   onClickConfirmSent,
   onClickUndoConfirmSent,
   onClickConfirmReceived,
+  onClickCollabCancel,
   loadingSent,
   loadingUndoSent,
   loadingReceived,
@@ -38,14 +53,18 @@ export const ChatPrompt = ({
   setMessages,
 }: ChatPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { slotUpdatedAt, garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { client } = useContext<UseAppStoreType>(AppContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
   const [undoSentButton, setUndoSentButton] = useState<boolean>(false);
+  const [audit, setAudit] = useState<boolean>(false);
+  const [peerPubKey, setPeerPubKey] = useState<string>();
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
+  const [openOrderOptions, setOpenOrderOptions] = useState<boolean>(false);
 
   const currencyCode: string = currencies[`${order.currency}`];
   const amount: string = pn(
@@ -113,6 +132,18 @@ export const ChatPrompt = ({
     }
   }, [slotUpdatedAt]);
 
+  const createJsonFile = (): object => {
+    return {
+      credentials: {
+        own_public_key: garage.getSlot()?.getRobot()?.pubKey,
+        peer_public_key: peerPubKey,
+        encrypted_private_key: garage.getSlot()?.getRobot()?.encPrivKey,
+        passphrase: garage.getSlot()?.token,
+      },
+      messages,
+    };
+  };
+
   return (
     <Grid
       container
@@ -145,78 +176,168 @@ export const ChatPrompt = ({
           order={order}
           messages={messages}
           setMessages={setMessages}
+          peerPubKey={peerPubKey}
+          setPeerPubKey={setPeerPubKey}
         />
       </Grid>
 
-      <Grid item>
-        <Tooltip
-          placement='top'
-          componentsProps={{
-            tooltip: { sx: { position: 'relative', top: '3em' } },
-          }}
-          disableHoverListener={enableDisputeButton}
-          disableTouchListener={enableDisputeButton}
-          enterTouchDelay={0}
-          title={
-            <Countdown date={new Date(enableDisputeTime)} renderer={disputeCountdownRenderer} />
-          }
+      <Grid
+        item
+        direction='row'
+        sx={{ width: '100%', display: 'flex', justifyContent: 'space-around', mt: 2.5 }}
+      >
+        <Button
+          size='large'
+          color='primary'
+          variant='outlined'
+          aria-label='open options'
+          onClick={() => setOpenOrderOptions(true)}
         >
-          <div>
-            <LoadingButton
-              loading={loadingDispute}
-              disabled={!enableDisputeButton}
-              color='inherit'
-              onClick={onClickDispute}
-            >
-              {t('Open Dispute')}
-            </LoadingButton>
-          </div>
-        </Tooltip>
-      </Grid>
-      <Grid item padding={0.5}>
+          <MoreHoriz />
+        </Button>
         {sentButton ? (
-          <Collapse in={sentButton}>
-            <LoadingButton
-              loading={loadingSent}
-              variant='contained'
-              color='secondary'
-              onClick={onClickConfirmSent}
-            >
-              {t('Confirm {{amount}} {{currencyCode}} sent', { currencyCode, amount })}
-            </LoadingButton>
-          </Collapse>
+          <LoadingButton
+            loading={loadingSent}
+            variant='contained'
+            color='secondary'
+            onClick={onClickConfirmSent}
+          >
+            {t('Confirm {{amount}} {{currencyCode}} sent', { currencyCode, amount })}
+          </LoadingButton>
         ) : (
           <></>
         )}
         {undoSentButton ? (
-          <Collapse in={undoSentButton}>
-            <LoadingButton
-              size='small'
-              sx={{ color: 'text.secondary' }}
-              loading={loadingUndoSent}
-              onClick={onClickUndoConfirmSent}
-            >
-              {t('Payment failed?')}
-            </LoadingButton>
-          </Collapse>
+          <LoadingButton
+            size='small'
+            sx={{ color: 'text.secondary' }}
+            loading={loadingUndoSent}
+            onClick={onClickUndoConfirmSent}
+          >
+            {t('Payment failed?')}
+          </LoadingButton>
         ) : (
           <></>
         )}
         {receivedButton ? (
-          <Collapse in={receivedButton}>
-            <LoadingButton
-              loading={loadingReceived}
-              variant='contained'
-              color='secondary'
-              onClick={onClickConfirmReceived}
-            >
-              {t('Confirm {{amount}} {{currencyCode}} received', { currencyCode, amount })}
-            </LoadingButton>
-          </Collapse>
+          <LoadingButton
+            loading={loadingReceived}
+            variant='contained'
+            color='secondary'
+            onClick={onClickConfirmReceived}
+          >
+            {t('Confirm {{amount}} {{currencyCode}} received', { currencyCode, amount })}
+          </LoadingButton>
         ) : (
           <></>
         )}
       </Grid>
+      <Dialog
+        open={openOrderOptions}
+        onClose={() => {
+          setOpenOrderOptions(false);
+        }}
+        aria-labelledby='order-options-dialog-title'
+        aria-describedby='order-options-description'
+      >
+        <DialogTitle>{t('Order options')}</DialogTitle>
+        <DialogContent>
+          <DialogContent>
+            <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+              <Grid item xs={1} style={{ width: '100%' }}>
+                <Button
+                  fullWidth
+                  disabled={false}
+                  onClick={() => setAudit(true)}
+                  variant='contained'
+                  color='primary'
+                  size='large'
+                  startIcon={<Key />}
+                >
+                  {t('Audit Chat')}
+                </Button>
+              </Grid>
+
+              <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    return client === 'mobile'
+                      ? systemClient.copyToClipboard(JSON.stringify(createJsonFile()))
+                      : saveAsJson(`complete_log_chat_${order.id}.json`, createJsonFile());
+                  }}
+                  variant='contained'
+                  color='primary'
+                  size='large'
+                  startIcon={<ExportIcon />}
+                >
+                  {t('Export')}
+                </Button>
+              </Grid>
+              <Tooltip
+                placement='top'
+                enterTouchDelay={0}
+                title={
+                  <Countdown
+                    date={new Date(enableDisputeTime)}
+                    renderer={disputeCountdownRenderer}
+                  />
+                }
+              >
+                <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                  <Button
+                    fullWidth
+                    loading={loadingDispute}
+                    disabled={!enableDisputeButton}
+                    color='warning'
+                    variant='contained'
+                    size='large'
+                    onClick={() => {
+                      setOpenOrderOptions(false);
+                      onClickDispute();
+                    }}
+                    startIcon={<Balance />}
+                  >
+                    {t('Open Dispute')}
+                  </Button>
+                </Grid>
+              </Tooltip>
+
+              <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    setOpenOrderOptions(false);
+                    onClickCollabCancel();
+                  }}
+                  size='large'
+                  variant='contained'
+                  color='secondary'
+                  startIcon={<Handshake />}
+                >
+                  {t('Collaborative Cancel')}
+                </Button>
+              </Grid>
+            </Grid>
+          </DialogContent>
+        </DialogContent>
+      </Dialog>
+
+      <AuditPGPDialog
+        open={audit}
+        onClose={() => {
+          setAudit(false);
+        }}
+        order={order}
+        messages={messages}
+        ownPubKey={garage.getSlot()?.getRobot()?.pubKey ?? ''}
+        ownEncPrivKey={garage.getSlot()?.getRobot()?.encPrivKey ?? ''}
+        peerPubKey={peerPubKey ?? ''}
+        passphrase={garage.getSlot()?.token ?? ''}
+        onClickBack={() => {
+          setAudit(false);
+        }}
+      />
     </Grid>
   );
 };

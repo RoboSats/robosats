@@ -73,7 +73,7 @@ export const PayoutPrompt = ({
 
       <Grid item>
         <ToggleButtonGroup
-          size='small'
+          size='medium'
           value={tab}
           exclusive
           onChange={(mouseEvent, value) => {

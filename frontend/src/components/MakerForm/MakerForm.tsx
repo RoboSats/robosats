@@ -574,7 +574,7 @@ const MakerForm = ({
                     {`${fav.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')} *`}
                   </FormHelperText>
                   <div style={{ textAlign: 'center' }}>
-                    <ButtonGroup>
+                    <ButtonGroup size='large'>
                       <Box
                         sx={{
                           boxShadow: fav.type === 1 ? 0 : 3,
@@ -1039,7 +1039,7 @@ const MakerForm = ({
               {disableSubmit ? (
                 <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
                   <div>
-                    <Button disabled color='primary' variant='contained'>
+                    <Button disabled color='primary' variant='contained' size='large'>
                       {t(submitButtonLabel)}
                     </Button>
                   </div>
@@ -1048,6 +1048,7 @@ const MakerForm = ({
                 <LoadingButton
                   loading={submittingRequest}
                   color='primary'
+                  size='large'
                   variant='contained'
                   onClick={() => (disableRequest ? onSubmit() : setOpenDialogs(true))}
                 >

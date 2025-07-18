@@ -562,7 +562,7 @@ export const LightningPayoutForm = ({
               />
             </Grid>
 
-            <Grid item>
+            <Grid item style={{ marginTop: 16 }}>
               {lightning.useLnproxy ? (
                 <LoadingButton
                   loading={loadingLnproxy}
@@ -574,6 +574,7 @@ export const LightningPayoutForm = ({
                   onClick={fetchLnproxy}
                   variant='outlined'
                   color='primary'
+                  size='large'
                 >
                   {t('Wrap')}
                 </LoadingButton>
@@ -588,6 +589,7 @@ export const LightningPayoutForm = ({
                 }}
                 variant='outlined'
                 color='primary'
+                size='large'
               >
                 {t('Submit')}
               </LoadingButton>

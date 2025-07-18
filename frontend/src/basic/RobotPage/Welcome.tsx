@@ -99,7 +99,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
             </Grid>
             <Grid item>
               <Button
-                size='small'
+                size='large'
                 color='primary'
                 onClick={() => {
                   setOpen((open) => {
@@ -116,7 +116,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
       </Grid>
       <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
         <Button
-          size='small'
+          size='large'
           color='primary'
           onClick={() => {
             const token = genBase62Token(36);

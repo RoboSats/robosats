@@ -15,6 +15,8 @@ interface Props {
   chatOffset: number;
   messages: EncryptedChatMessage[];
   setMessages: (state: EncryptedChatMessage[]) => void;
+  peerPubKey?: string;
+  setPeerPubKey: (peerPubKey: string) => void;
 }
 
 export interface EncryptedChatMessage {
@@ -40,6 +42,8 @@ const EncryptedChat: React.FC<Props> = ({
   setMessages,
   messages,
   status,
+  peerPubKey,
+  setPeerPubKey,
 }: Props): React.JSX.Element => {
   const [turtleMode, setTurtleMode] = useState<boolean>(false);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -105,6 +109,8 @@ const EncryptedChat: React.FC<Props> = ({
       chatOffset={chatOffset}
       turtleMode={turtleMode}
       setTurtleMode={setTurtleMode}
+      peerPubKey={peerPubKey}
+      setPeerPubKey={setPeerPubKey}
     />
   ) : (
     <EncryptedSocketChat
@@ -119,6 +125,8 @@ const EncryptedChat: React.FC<Props> = ({
       userNick={order.ur_nick}
       turtleMode={turtleMode}
       setTurtleMode={setTurtleMode}
+      peerPubKey={peerPubKey}
+      setPeerPubKey={setPeerPubKey}
     />
   );
 };

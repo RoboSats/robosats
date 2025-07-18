@@ -141,7 +141,7 @@ const BookControl = ({
                 borderColor: 'text.primary',
               },
             }}
-            size='small'
+            size='large'
             label={t('Select Order Type')}
             required={true}
             value={orderType}
@@ -216,7 +216,7 @@ const BookControl = ({
                   borderColor: 'text.primary',
                 },
               }}
-              size='small'
+              size='large'
               label={t('Select Payment Currency')}
               required={true}
               value={fav.currency}
@@ -297,7 +297,7 @@ const BookControl = ({
                   borderColor: 'text.primary',
                 },
               }}
-              size='small'
+              size='large'
               label={t('Select Payment Method')}
               required={true}
               renderValue={(value) => {
@@ -389,7 +389,7 @@ const BookControl = ({
                 borderColor: 'text.primary',
               },
             }}
-            size='small'
+            size='large'
             label={t('Select Host')}
             required={true}
             value={fav.coordinator}

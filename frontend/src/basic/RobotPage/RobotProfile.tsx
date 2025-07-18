@@ -313,7 +313,12 @@ const RobotProfile = ({
 
             <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
               <Grid item>
-                <LoadingButton loading={loading} color='primary' onClick={handleAddRobot}>
+                <LoadingButton
+                  loading={loading}
+                  color='primary'
+                  onClick={handleAddRobot}
+                  size='large'
+                >
                   <Add /> <div style={{ width: '0.5em' }} />
                   {!mobileView && t('Add Robot')}
                 </LoadingButton>
@@ -322,6 +327,7 @@ const RobotProfile = ({
               {client !== 'mobile' ? (
                 <Grid item>
                   <Button
+                    size='large'
                     color='primary'
                     onClick={() => {
                       garage.download();
@@ -333,7 +339,7 @@ const RobotProfile = ({
               ) : null}
 
               <Grid item>
-                <Button color='primary' onClick={handleDeleteRobot}>
+                <Button color='primary' onClick={handleDeleteRobot} size='large'>
                   <DeleteSweep /> <div style={{ width: '0.5em' }} />
                   {!mobileView && t('Delete Robot')}
                 </Button>
@@ -342,6 +348,7 @@ const RobotProfile = ({
               <Grid item>
                 <Button
                   color='primary'
+                  size='large'
                   onClick={() => {
                     setOpen((open) => {
                       return { ...open, recovery: true };
