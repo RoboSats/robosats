@@ -14,7 +14,6 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["node", "react", "react-dom", "jest", "@babel/core", "webpack", "url"],
     "typeRoots": ["./node_modules/@types"],
     "allowImportingTsExtensions": true
   },

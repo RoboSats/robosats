@@ -1,13 +1,11 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { Configuration } from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { version } from './package.json';
 
-// Setup __dirname equivalent for TypeScript
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Declare __dirname for TypeScript
+declare const __dirname: string;
 
 const config: Configuration = {
   entry: './src/index.js',
