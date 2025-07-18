@@ -10,7 +10,7 @@ toc_sticky: true
 src: "_pages/docs/es/contribute/03-liquidity.md"
 ---
 
-Una forma de contribuir a RoboSats es abrir un canal al [nodo coordinador experimental de RoboSats](https://amboss.space/node/0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e) y proporcionar al nodo liquidez de salida. Basta con utilizar la plataforma para vender bitcoin y empujar la liquidez hacia el extremo de RoboSats.
+Una forma de contribuir a RoboSats es abrir un canal al nodo de los coordinadores que suelas usar con más frecuencia y proporcionarles liquidez de salida. Basta con utilizar la plataforma para vender bitcoin y empujar la liquidez hacia el extremo de RoboSats.
 
 ## RoboSats no es un nodo de enrutamiento
 
