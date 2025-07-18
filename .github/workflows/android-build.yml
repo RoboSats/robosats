@@ -150,7 +150,7 @@ jobs:
         if: inputs.semver == ''
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: android/app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
