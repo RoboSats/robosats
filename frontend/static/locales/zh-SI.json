@@ -60,7 +60,6 @@
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "重复使用交易身份会降低您相对其他用户、协调员和观察者的隐私。",
   "Robot Garage": "机器人车库",
   "Store your token safely": "安全地存储您的令牌",
-  "Welcome back!": "欢迎回来！",
   "#10": "Phrases in basic/RobotPage/TokenInput.tsx",
   "Copied!": "已复制！",
   "Not enough entropy, make it more complex": "熵不够，使其更复杂",

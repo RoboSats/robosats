@@ -60,7 +60,6 @@
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "Truke nortasuna berriro erabiltzeak pribatutasuna kaltetzen du beste erabiltzaile, koordinatzaile eta behatzaileei dagokienez.",
   "Robot Garage": "Robot Garajea",
   "Store your token safely": "Gorde zure tokena era seguru batean",
-  "Welcome back!": "Ongi etorri berriro!",
   "#10": "Phrases in basic/RobotPage/TokenInput.tsx",
   "Copied!": "Kopiatuta!",
   "Not enough entropy, make it more complex": "Ez da nahikoa entropia dago, jar ezazu konplexuago",

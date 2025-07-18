@@ -60,7 +60,6 @@
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "La réutilisation de l'identité d'échange dégrade votre vie privée par rapport aux autres utilisateurs, coordinateurs et observateurs.",
   "Robot Garage": "Garage des robots",
   "Store your token safely": "Stockez votre jeton en sécurité",
-  "Welcome back!": "Bon retour parmi nous !",
   "#10": "Phrases in basic/RobotPage/TokenInput.tsx",
   "Copied!": "Copié !",
   "Not enough entropy, make it more complex": "L'entropie n'est pas suffisante, il faut la rendre plus complexe",

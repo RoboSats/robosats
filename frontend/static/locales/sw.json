@@ -60,7 +60,6 @@
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "Kutumia tena utambulisho wa biashara hupunguza faragha yako dhidi ya watumiaji wengine, waongozaji na waangalizi.",
   "Robot Garage": "Ghala la Roboti",
   "Store your token safely": "Hifadhi alama yako kwa usalama",
-  "Welcome back!": "Karibu tena!",
   "#10": "Phrases in basic/RobotPage/TokenInput.tsx",
   "Copied!": "Imekopiwa!",
   "Not enough entropy, make it more complex": "Utaratibu haifai, ifanye kuwa ngumu zaidi",

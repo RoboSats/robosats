@@ -60,7 +60,6 @@
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "การใช้ตัวตนการซื้อขายซ้ำจะลดความเป็นส่วนตัวของคุณต่อผู้ใช้คนอื่น ผู้ประสานงานและผู้สังเกตการณ์",
   "Robot Garage": "โรงรถหุ่นยนต์",
   "Store your token safely": "รักษาโทเค็นของคุณให้ปลอดภัย",
-  "Welcome back!": "ยินดีต้อนรับกลับ!",
   "#10": "Phrases in basic/RobotPage/TokenInput.tsx",
   "Copied!": "คัดลอกแล้ว!",
   "Not enough entropy, make it more complex": "ความซับซ้อนไม่เพียงพอ ทำให้ซับซ้อนมากขึ้น",

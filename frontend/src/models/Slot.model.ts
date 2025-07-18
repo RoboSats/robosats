@@ -90,14 +90,16 @@ class Slot {
   };
 
   updateSlotFromRobot = (robot: Robot | null): void => {
-    if (robot?.lastOrderId && this.lastOrder?.id !== robot?.lastOrderId) {
+    if (!robot) return;
+
+    if (robot.lastOrderId && this.lastOrder?.id !== robot.lastOrderId) {
       this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
       if (this.activeOrder?.id === robot.lastOrderId) {
         this.lastOrder = this.activeOrder;
         this.activeOrder = null;
       }
     }
-    if (robot?.activeOrderId && this.activeOrder?.id !== robot.activeOrderId) {
+    if (robot.activeOrderId && this.activeOrder?.id !== robot.activeOrderId) {
       this.activeOrder = new Order({
         id: robot.activeOrderId,
         shortAlias: robot.shortAlias,

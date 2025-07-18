@@ -60,7 +60,6 @@
   "Reusing trading identity degrades your privacy against other users, coordinators and observers.": "Повторное использование торговых данных ухудшает вашу конфиденциальность по отношению к другим пользователям, координаторам и наблюдателям.",
   "Robot Garage": "Гараж роботов",
   "Store your token safely": "Храните Ваш токен в безопасности",
-  "Welcome back!": "С возвращением!",
   "#10": "Phrases in basic/RobotPage/TokenInput.tsx",
   "Copied!": "Скопировано!",
   "Not enough entropy, make it more complex": "Недостаточно энтропии, усложните",

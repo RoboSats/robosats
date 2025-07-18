@@ -18,6 +18,7 @@ interface TokenInputProps {
   setInputToken: (state: string) => void;
   showCopy?: boolean;
   label?: string;
+  error?: boolean;
 }
 
 const TokenInput = ({
@@ -32,6 +33,7 @@ const TokenInput = ({
   loading = false,
   setInputToken,
   setValidToken = () => {},
+  error,
 }: TokenInputProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -65,7 +67,7 @@ const TokenInput = ({
   } else {
     return (
       <TextField
-        error={inputToken.length > 20 ? Boolean(badToken) : false}
+        error={error || (inputToken.length > 20 ? Boolean(badToken) : false)}
         disabled={!editable}
         required={true}
         label={label ?? ''}

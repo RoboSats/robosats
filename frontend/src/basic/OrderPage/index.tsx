@@ -70,7 +70,7 @@ const OrderPage = (): React.JSX.Element => {
     return () => {
       setCurrentOrder(null);
     };
-  }, [params.orderId, openNoRobot]);
+  }, [params.orderId, openNoRobot, garage.currentSlot]);
 
   useEffect(() => {
     if (!currentOrder) return;
