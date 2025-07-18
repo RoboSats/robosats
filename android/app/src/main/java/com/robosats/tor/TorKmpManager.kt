@@ -23,11 +23,9 @@ import io.matthewnelson.kmp.tor.manager.common.state.isOff
 import io.matthewnelson.kmp.tor.manager.common.state.isOn
 import io.matthewnelson.kmp.tor.manager.common.state.isStarting
 import io.matthewnelson.kmp.tor.manager.common.state.isStopping
-import io.matthewnelson.kmp.tor.manager.R
 import kotlinx.coroutines.*
 import java.net.InetSocketAddress
 import java.net.Proxy
-import java.util.concurrent.ExecutionException
 
 class TorKmp(application : Application) {
 
@@ -234,14 +232,11 @@ class TorKmp(application : Application) {
                         if (seconds == null) {
                             it
                         } else {
-                            appContext.getString(
-                                R.string.kmp_tor_newnym_rate_limited,
-                                seconds
-                            )
+                            TorControlSignal.NEW_NYM_RATE_LIMITED
                         }
                     }
                     it == TorControlSignal.NEW_NYM_SUCCESS -> {
-                        appContext.getString(R.string.kmp_tor_newnym_success)
+                        TorControlSignal.NEW_NYM_SUCCESS
                     }
                     else -> {
                         null

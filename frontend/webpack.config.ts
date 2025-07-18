@@ -48,6 +48,7 @@ const configNode: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: false,
+        mobile: false,
       },
       filename: path.resolve(__dirname, 'templates/frontend/basic.html'),
       inject: 'body',
@@ -58,6 +59,7 @@ const configNode: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: true,
+        mobile: false,
       },
       filename: path.resolve(__dirname, 'templates/frontend/pro.html'),
       inject: 'body',
@@ -69,6 +71,7 @@ const configNode: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: false,
+        mobile: false,
       },
       filename: path.resolve(__dirname, '../nodeapp/basic.html'),
       inject: 'body',
@@ -79,6 +82,7 @@ const configNode: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: true,
+        mobile: false,
       },
       filename: path.resolve(__dirname, '../nodeapp/pro.html'),
       inject: 'body',
@@ -98,6 +102,7 @@ const configNode: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: false,
+        mobile: false,
       },
       filename: path.resolve(__dirname, '../desktopApp/index.html'),
       inject: 'body',
@@ -117,6 +122,7 @@ const configNode: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: false,
+        mobile: false,
       },
       filename: path.resolve(__dirname, '../web/basic.html'),
       inject: 'body',
@@ -127,6 +133,7 @@ const configNode: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: true,
+        mobile: false,
       },
       filename: path.resolve(__dirname, '../web/pro.html'),
       inject: 'body',
@@ -202,6 +209,7 @@ const configAndroid: Configuration = {
       template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
       templateParameters: {
         pro: false,
+        mobile: true,
       },
       filename: path.resolve(__dirname, '../android/app/src/main/assets/index.html'),
       inject: 'body',

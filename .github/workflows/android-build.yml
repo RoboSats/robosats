@@ -138,13 +138,6 @@ jobs:
           release_name: ${{ github.ref }}
           draft: true
 
-      - name: Set asset_name
-        id: set_asset_name
-        if: inputs.semver == ''
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "::set-output name=asset_tag::$TAG_NAME"
-
       - name: Upload APK Universal Asset
         id: upload-release-asset-universal-apk
         if: inputs.semver == ''
@@ -154,5 +147,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: android/app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
-          asset_name: robosats-universal-${{ steps.set_asset_name.outputs.asset_tag }}.apk
+          asset_name: robosats-universal-${{ github.ref }}.apk
           asset_content_type: application/zip
