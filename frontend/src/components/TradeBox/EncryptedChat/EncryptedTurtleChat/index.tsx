@@ -37,7 +37,7 @@ interface Props {
 
 const audioPath =
   getSettings().client == 'mobile'
-    ? 'file:///android_asset/Web.bundle/assets/sounds'
+    ? 'file:///android_asset/static/assets/sounds'
     : '/static/assets/sounds';
 
 const EncryptedTurtleChat: React.FC<Props> = ({
