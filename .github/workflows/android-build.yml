@@ -30,165 +30,159 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
-      # - name: 'Download Android Web.bundle Artifact (built frontend)'
-      #   if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      #   uses: dawidd6/action-download-artifact@v11
-      #   with:
-      #     workflow: frontend-build.yml
-      #     workflow_conclusion: success
-      #     name: mobile-web.bundle
-      #     path: mobile/html/Web.bundle
+      - name: 'Download Android Web.bundle Artifact (built frontend)'
+        if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          workflow: frontend-build.yml
+          workflow_conclusion: success
+          name: mobile-web.bundle
+          path: android/app/src/main/assets
 
-      # - name: 'Download main.js Artifact for a release'
-      #   if: inputs.semver != ''  # Only if fired as job in release.yml
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: mobile-web.bundle
-      #     path: mobile/html/Web.bundle
+      - name: 'Download main.js Artifact for a release'
+        if: inputs.semver != ''  # Only if fired as job in release.yml
+        uses: actions/download-artifact@v4
+        with:
+          name: mobile-web.bundle
+          path: android/app/src/main/assets
 
-      # - name: 'Install npm Dependencies'
-      #   run: |
-      #     cd mobile
-      #     npm install
+      - name: Cache gradle
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-      # - name: 'Patch modules' # react-native-tor and react-native-encrypted-storage rely on deprecated jcenter repositories. We patch the modules temporarily
-      #   run: |
-      #     cd mobile
-      #     cp -r patch_modules/* node_modules/
-      # - uses: actions/setup-java@v4
-      #   with:
-      #     distribution: temurin
-      #     java-version: 11
+      - name: Build APK
+        run: ./gradlew assembleRelease --stacktrace
 
-      # - name: Setup Gradle
-      #   uses: gradle/gradle-build-action@v3
+      - name: 'Check for non-FOSS libraries'
+        run: |
+          wget https://github.com/iBotPeaches/Apktool/releases/download/v2.7.0/apktool_2.7.0.jar
+          wget https://github.com/iBotPeaches/Apktool/raw/master/scripts/linux/apktool
+          # clone the repo
+          git clone https://gitlab.com/IzzyOnDroid/repo.git
+          # create a directory for Apktool and move the apktool* files there
+          mkdir -p repo/lib/radar/tool
+          mv apktool* repo/lib/radar/tool
+          # create an alias for ease of use
+          chmod u+x repo/lib/radar/tool/apktool
+          mv repo/lib/radar/tool/apktool_2.7.0.jar repo/lib/radar/tool/apktool.jar
+          repo/bin/scanapk.php app/build/outputs/apk/release/app-universal-release-unsigned.apk
 
-      # - name: Decode Keystore
-      #   id: decode_keystore
-      #   uses: timheuer/base64-to-file@v1.2
-      #   with:
-      #     fileName: 'keystore.jks'
-      #     fileDir: './'
-      #     encodedString: ${{ secrets.KEYSTORE }}
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.KEYSTORE }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASS }}
+          keyPassword: ${{ secrets.KEY_PASS }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
 
-      # - name: 'Build Android Release'
-      #   run: |
-      #     cd mobile/android
-      #     ./gradlew assembleRelease
-      #   env:
-      #     KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      #     KEY_PASS: ${{ secrets.KEY_PASS }}
-      #     KEY_STORE_PASS: ${{ secrets.KEY_STORE_PASS }}
+      - uses: kaisugi/action-regex-match@v1.0.1
+        id: regex-match
+        with:
+          text: ${{ github.ref }}
+          regex: '(v*-pre*)'
+          flags: gm
 
+      - name: 'Get Commit Hash'
+        id: commit
+        uses: pr-mpt/actions-commit-hash@v3
 
-      # - name: 'Check for non-FOSS libraries'
-      #   run: |
-      #     wget https://github.com/iBotPeaches/Apktool/releases/download/v2.7.0/apktool_2.7.0.jar
-      #     wget https://github.com/iBotPeaches/Apktool/raw/master/scripts/linux/apktool
-      #     # clone the repo
-      #     git clone https://gitlab.com/IzzyOnDroid/repo.git
-      #     # create a directory for Apktool and move the apktool* files there
-      #     mkdir -p repo/lib/radar/tool
-      #     mv apktool* repo/lib/radar/tool
-      #     # create an alias for ease of use
-      #     chmod u+x repo/lib/radar/tool/apktool
-      #     mv repo/lib/radar/tool/apktool_2.7.0.jar repo/lib/radar/tool/apktool.jar
-      #     repo/bin/scanapk.php mobile/android/app/build/outputs/apk/release/app-universal-release.apk
+      # Create artifacts (only for Release)
+      # Create app-universal-release APK artifact asset for Release
+      - name: 'Upload universal .apk Release Artifact (for Release)'
+        uses: actions/upload-artifact@v4
+        if: inputs.semver != ''  # If this workflow is called from release.yml
+        with:
+          name: robosats-${{ inputs.semver }}-universal.apk
+          path: android/app/build/outputs/apk/release/app-universal-release.apk
 
-      # - name: 'Get Commit Hash'
-      #   id: commit
-      #   uses: pr-mpt/actions-commit-hash@v3
+      # Create app-arm64-v8a-release APK artifact asset for Release
+      - name: 'Upload arm64-v8a .apk Release Artifact (for Release)'
+        uses: actions/upload-artifact@v4
+        if: inputs.semver != ''  # If this workflow is called from release.yml
+        with:
+          name: robosats-${{ inputs.semver }}-arm64-v8a.apk
+          path: android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
 
-      # # Create artifacts (only for Release)
-      # # Create app-universal-release APK artifact asset for Release
-      # - name: 'Upload universal .apk Release Artifact (for Release)'
-      #   uses: actions/upload-artifact@v4
-      #   if: inputs.semver != ''  # If this workflow is called from release.yml
-      #   with:
-      #     name: robosats-${{ inputs.semver }}-universal.apk
-      #     path: mobile/android/app/build/outputs/apk/release/app-universal-release.apk
+      # Create app-armeabi-v7a-release APK artifact asset for Release
+      - name: 'Upload armeabi-v7a .apk Release Artifact (for Release)'
+        uses: actions/upload-artifact@v4
+        if: inputs.semver != ''  # If this workflow is called from release.yml
+        with:
+          name: robosats-${{ inputs.semver }}-armeabi-v7a.apk
+          path: android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
 
-      # # Create app-arm64-v8a-release APK artifact asset for Release
-      # - name: 'Upload arm64-v8a .apk Release Artifact (for Release)'
-      #   uses: actions/upload-artifact@v4
-      #   if: inputs.semver != ''  # If this workflow is called from release.yml
-      #   with:
-      #     name: robosats-${{ inputs.semver }}-arm64-v8a.apk
-      #     path: mobile/android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
+      # Create app-x86_64-release APK artifact asset for Release
+      - name: 'Upload x86_64 .apk Release Artifact (for Release)'
+        uses: actions/upload-artifact@v4
+        if: inputs.semver != ''  # If this workflow is called from release.yml
+        with:
+          name: robosats-${{ inputs.semver }}-x86_64.apk
+          path: android/app/build/outputs/apk/release/app-x86_64-release.apk
 
-      # # Create app-armeabi-v7a-release APK artifact asset for Release
-      # - name: 'Upload armeabi-v7a .apk Release Artifact (for Release)'
-      #   uses: actions/upload-artifact@v4
-      #   if: inputs.semver != ''  # If this workflow is called from release.yml
-      #   with:
-      #     name: robosats-${{ inputs.semver }}-armeabi-v7a.apk
-      #     path: mobile/android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+      - name: 'Create Pre-release'
+        id: create_release
+        if: inputs.semver == ''
+        uses: ncipollo/release-action@v1.18.0
+        with:
+          tag: android-${{ steps.commit.outputs.short }}
+          name: robosats-android-${{ steps.commit.outputs.short }}
+          prerelease: true
 
-      # # Create app-x86_64-release APK artifact asset for Release
-      # - name: 'Upload x86_64 .apk Release Artifact (for Release)'
-      #   uses: actions/upload-artifact@v4
-      #   if: inputs.semver != ''  # If this workflow is called from release.yml
-      #   with:
-      #     name: robosats-${{ inputs.semver }}-x86_64.apk
-      #     path: mobile/android/app/build/outputs/apk/release/app-x86_64-release.apk
+      # Upload universal APK to pre-release
+      - name: 'Upload universal Pre-release APK Asset'
+        id: upload-release-universal-apk-asset
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./android/app/build/outputs/apk/release/app-universal-release.apk
+          asset_name: robosats-${{ steps.commit.outputs.short }}-universal.apk
+          asset_content_type: application/apk
 
-      # - name: 'Create Pre-release'
-      #   id: create_release
-      #   if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-      #   uses: ncipollo/release-action@v1.18.0
-      #   with:
-      #     tag: android-${{ steps.commit.outputs.short }}
-      #     name: robosats-android-${{ steps.commit.outputs.short }}
-      #     prerelease: true
+      # Upload arm64-v8a APK to pre-release
+      - name: 'Upload arm64-v8a Pre-release APK Asset'
+        id: upload-release-arm64-v8a-apk-asset
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
+          asset_name: robosats-${{ steps.commit.outputs.short }}-arm64-v8a.apk
+          asset_content_type: application/apk
 
-      # # Upload universal APK to pre-release
-      # - name: 'Upload universal Pre-release APK Asset'
-      #   id: upload-release-universal-apk-asset
-      #   if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./mobile/android/app/build/outputs/apk/release/app-universal-release.apk
-      #     asset_name: robosats-${{ steps.commit.outputs.short }}-universal.apk
-      #     asset_content_type: application/apk
+      # Upload armeabi-v7a APK to pre-release
+      - name: 'Upload armeabi-v7a Pre-release APK Asset'
+        id: upload-release-armeabi-v7a-apk-asset
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+          asset_name: robosats-${{ steps.commit.outputs.short }}-armeabi-v7a.apk
+          asset_content_type: application/apk
 
-      # # Upload arm64-v8a APK to pre-release
-      # - name: 'Upload arm64-v8a Pre-release APK Asset'
-      #   id: upload-release-arm64-v8a-apk-asset
-      #   if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./mobile/android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
-      #     asset_name: robosats-${{ steps.commit.outputs.short }}-arm64-v8a.apk
-      #     asset_content_type: application/apk
-
-      # # Upload armeabi-v7a APK to pre-release
-      # - name: 'Upload armeabi-v7a Pre-release APK Asset'
-      #   id: upload-release-armeabi-v7a-apk-asset
-      #   if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./mobile/android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
-      #     asset_name: robosats-${{ steps.commit.outputs.short }}-armeabi-v7a.apk
-      #     asset_content_type: application/apk
-
-      # # Upload x86_64 APK to pre-release
-      # - name: 'Upload x86_64 Pre-release APK Asset'
-      #   id: upload-release-x86_64-apk-asset
-      #   if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./mobile/android/app/build/outputs/apk/release/app-x86_64-release.apk
-      #     asset_name: robosats-${{ steps.commit.outputs.short }}-x86_64.apk
-      #     asset_content_type: application/apk
+      # Upload x86_64 APK to pre-release
+      - name: 'Upload x86_64 Pre-release APK Asset'
+        id: upload-release-x86_64-apk-asset
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./android/app/build/outputs/apk/release/app-x86_64-release.apk
+          asset_name: robosats-${{ steps.commit.outputs.short }}-x86_64.apk
+          asset_content_type: application/apk
