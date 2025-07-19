@@ -13,6 +13,13 @@ interface AndroidAppRobosats {
   getTorStatus: (uuid: string) => void;
   openWS: (uuid: string, path: string) => void;
   sendWsMessage: (uuid: string, path: string, message: string) => void;
+  sendRequest: (
+    uuid: string,
+    action: 'GET' | 'POST' | 'DELETE',
+    url: string,
+    headers: string,
+    body: string,
+  ) => void;
 }
 
 class AndroidRobosats {

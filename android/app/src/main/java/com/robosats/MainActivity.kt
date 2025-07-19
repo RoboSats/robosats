@@ -3,7 +3,6 @@ package com.robosats
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
-import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +13,6 @@ import android.webkit.GeolocationPermissions
 import android.webkit.PermissionRequest
 import android.webkit.ServiceWorkerController
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -26,24 +24,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
-import java.io.ByteArrayInputStream
-import java.net.HttpURLConnection
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var torKmp: TorKmp
     private lateinit var loadingContainer: ConstraintLayout
     private lateinit var statusTextView: TextView
-
-    // Security constants
-    private val ALLOWED_DOMAINS = arrayOf(".onion")
-    private val CONTENT_SECURITY_POLICY = "default-src 'self'; connect-src 'self' https://*.onion http://*.onion; " +
-            "script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
-            "img-src 'self' data:; font-src 'self' data:; object-src 'none'; " +
-            "media-src 'none'; frame-src 'none'; worker-src 'self';"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // IMMEDIATELY set a blocking WebViewClient to prevent ANY network access
+        // Set a blocking WebViewClient to prevent ANY network access
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 // Block ALL requests until we're sure Tor proxy is correctly set up
@@ -166,7 +152,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                // Block ALL URL loading attempts until proxy is properly configured
+                // Block ALL URL loading attempts
                 return true
             }
         }
@@ -187,23 +173,11 @@ class MainActivity : AppCompatActivity() {
                     throw SecurityException("Tor disconnected during proxy setup")
                 }
 
-                // Try to set up the proxy
-                setupProxyForWebView()
-
                 // If we get here, proxy setup was successful
                 // Perform one final Tor connection check
                 if (!torKmp.isConnected()) {
                     throw SecurityException("Tor disconnected after proxy setup")
                 }
-
-                // Now get the proxy information that we previously verified in setupProxyForWebView
-                // Use system properties that we've already set up and verified
-                val proxyHost = System.getProperty("http.proxyHost")
-                    ?: throw SecurityException("Missing proxy host in system properties")
-                val proxyPort = System.getProperty("http.proxyPort")?.toIntOrNull()
-                    ?: throw SecurityException("Missing or invalid proxy port in system properties")
-
-                Log.d("WebViewProxy", "Using proxy settings: $proxyHost:$proxyPort")
 
                 // Success - now configure WebViewClient and load URL on UI thread
                 runOnUiThread {
@@ -233,237 +207,6 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    // Create a custom WebViewClient that forces all traffic through Tor
-                    webView.webViewClient = object : WebViewClient() {
-                        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                            // Verify Tor is connected before allowing any resource request
-                            if (!torKmp.isConnected()) {
-                                Log.e("SecurityError", "Tor disconnected during resource request")
-                                return WebResourceResponse("text/plain", "UTF-8", null)
-                            }
-
-                            val urlString = request.url.toString()
-                            Log.d("WebViewProxy", "Intercepting request: $urlString")
-
-                            // Block all external requests that aren't to .onion domains or local files
-                            if (!isAllowedRequest(urlString)) {
-                                Log.e("SecurityPolicy", "Blocked forbidden request to: $urlString")
-                                return WebResourceResponse("text/plain", "UTF-8", null)
-                            }
-
-                            try {
-                                // Special handling for .onion domains
-                                val isOnionDomain = urlString.contains(".onion")
-
-                                // Only proceed if it's an onion domain or local file
-                                if (!isOnionDomain && !urlString.startsWith("file://")) {
-                                    Log.e("SecurityPolicy", "Blocked non-onion external request: $urlString")
-                                    return WebResourceResponse("text/plain", "UTF-8", null)
-                                }
-
-                                // For .onion domains, we must use SOCKS proxy type
-                                val proxyType = if (isOnionDomain)
-                                    Proxy.Type.SOCKS
-                                else
-                                    Proxy.Type.HTTP
-
-                                // Create a proxy instance for Tor with the appropriate type
-                                val torProxy = Proxy(
-                                    proxyType,
-                                    InetSocketAddress(proxyHost, proxyPort)
-                                )
-
-                                if (isOnionDomain) {
-                                    Log.d("WebViewProxy", "Handling .onion domain with SOCKS proxy: $urlString")
-                                }
-
-                                // If it's a local file, return it directly
-                                if (urlString.startsWith("file://")) {
-                                    // Let the system handle local files
-                                    return super.shouldInterceptRequest(view, request)
-                                }
-
-                                // Create connection with proxy already configured
-                                val url = URL(urlString)
-                                val connection = url.openConnection(torProxy)
-
-                                // Configure basic connection properties
-                                connection.connectTimeout = 60000  // Longer timeout for onion domains
-                                connection.readTimeout = 60000
-
-                                if (connection is HttpURLConnection) {
-                                    // Ensure no connection reuse to prevent proxy leaks
-                                    connection.setRequestProperty("Connection", "close")
-
-                                    // Add security headers
-                                    connection.setRequestProperty("Sec-Fetch-Site", "same-origin")
-                                    connection.setRequestProperty("Sec-Fetch-Mode", "cors")
-                                    connection.setRequestProperty("DNT", "1") // Do Not Track
-
-                                    // Copy request headers
-                                    request.requestHeaders.forEach { (key, value) ->
-                                        connection.setRequestProperty(key, value)
-                                    }
-
-                                    // Set the request method
-                                    connection.requestMethod = request.method
-
-                                    // Special handling for OPTIONS (CORS preflight) requests
-                                    if (request.method == "OPTIONS") {
-                                        // For OPTIONS, we'll create a custom response without making a network request
-                                        // This is the most reliable way to handle CORS preflight
-                                        Log.d("CORS", "Handling OPTIONS preflight request for: $urlString")
-
-                                        // Create CORS headers map
-                                        val preflightHeaders = HashMap<String, String>()
-                                        preflightHeaders["Access-Control-Allow-Origin"] = "*"
-                                        preflightHeaders["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE, HEAD"
-                                        preflightHeaders["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-                                        preflightHeaders["Access-Control-Max-Age"] = "86400" // Cache preflight for 24 hours
-                                        preflightHeaders["Access-Control-Allow-Credentials"] = "true"
-                                        preflightHeaders["Content-Type"] = "text/plain"
-
-                                        // Log CORS headers for debugging
-                                        Log.d("CORS", "Preflight response with CORS headers: $preflightHeaders")
-
-                                        // Return a custom preflight response without actually connecting
-                                        return WebResourceResponse(
-                                            "text/plain",
-                                            "UTF-8",
-                                            200,
-                                            "OK",
-                                            preflightHeaders,
-                                            ByteArrayInputStream("".toByteArray())
-                                        )
-                                    }
-
-                                    // Try to connect
-                                    connection.connect()
-                                    val responseCode = connection.responseCode
-
-                                    // Get content type
-                                    val mimeType = connection.contentType ?: "text/plain"
-                                    val encoding = connection.contentEncoding ?: "UTF-8"
-
-                                    Log.d("WebViewProxy", "Successfully proxied request to $url (HTTP ${connection.responseCode})")
-
-                                    // Get the correct input stream based on response code
-                                    val inputStream = if (responseCode >= 400) {
-                                        connection.errorStream ?: ByteArrayInputStream(byteArrayOf())
-                                    } else {
-                                        connection.inputStream
-                                    }
-
-                                    // Create response headers map with security headers
-                                    val responseHeaders = HashMap<String, String>()
-
-                                    // First copy original response headers, but carefully handle CORS headers
-                                    for (i in 0 until connection.headerFields.size) {
-                                        val key = connection.headerFields.keys.elementAtOrNull(i)
-                                        if (key != null && key.isNotEmpty()) {
-                                            // Skip any CORS headers from the original response - we'll add our own
-                                            if (!key.startsWith("Access-Control-")) {
-                                                val value = connection.getHeaderField(key)
-                                                if (value != null) {
-                                                    responseHeaders[key] = value
-                                                }
-                                            } else {
-                                                // Log any CORS headers we're skipping from the original response
-                                                Log.d("CORS", "Skipping original CORS header: $key: ${connection.getHeaderField(key)}")
-                                            }
-                                        }
-                                    }
-
-                                    // Add our own CORS headers
-                                    responseHeaders["Access-Control-Allow-Origin"] = "*"
-                                    responseHeaders["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE, HEAD"
-                                    responseHeaders["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-                                    responseHeaders["Access-Control-Allow-Credentials"] = "true"
-                                    if (!responseHeaders.containsKey("Content-Security-Policy")) {
-                                        responseHeaders["Content-Security-Policy"] = CONTENT_SECURITY_POLICY
-                                    }
-                                    if (!responseHeaders.containsKey("X-Content-Type-Options")) {
-                                        responseHeaders["X-Content-Type-Options"] = "nosniff"
-                                    }
-                                    if (!responseHeaders.containsKey("X-Frame-Options")) {
-                                        responseHeaders["X-Frame-Options"] = "DENY"
-                                    }
-                                    if (!responseHeaders.containsKey("Referrer-Policy")) {
-                                        responseHeaders["Referrer-Policy"] = "no-referrer"
-                                    }
-
-                                    // Log the CORS headers for debugging
-                                    responseHeaders["Access-Control-Allow-Origin"]?.let {
-                                        Log.d("CORS", "Access-Control-Allow-Origin: $it")
-                                    }
-
-                                    // Return proxied response with security headers
-                                    return WebResourceResponse(
-                                        mimeType,
-                                        encoding,
-                                        responseCode,
-                                        "OK",
-                                        responseHeaders,
-                                        inputStream
-                                    )
-                                } else {
-                                    // For non-HTTP connections (rare)
-                                    val inputStream = connection.getInputStream()
-                                    Log.d("WebViewProxy", "Successfully established non-HTTP connection to $url")
-                                    return WebResourceResponse(
-                                        "application/octet-stream",
-                                        "UTF-8",
-                                        inputStream
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                Log.e("WebViewProxy", "Error proxying request: $urlString - ${e.message}", e)
-
-                                // For security, block the request rather than falling back to system handling
-                                return WebResourceResponse("text/plain", "UTF-8", null)
-                            }
-                        }
-
-                        // We're not handling SSL, so we don't need the onReceivedSslError method
-
-                        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                            // Verify Tor is still connected before allowing any request
-                            if (!torKmp.isConnected()) {
-                                Log.e("SecurityError", "Tor disconnected during navigation")
-                                return true // Block the request
-                            }
-                            return false // Let our proxied client handle it
-                        }
-
-                        override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
-                            Log.e("WebViewError", "Error loading resource: ${error.description}")
-                            super.onReceivedError(view, request, error)
-                        }
-
-                        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-                            // Verify Tor is connected when page starts loading
-                            if (!torKmp.isConnected()) {
-                                Log.e("SecurityError", "Tor disconnected as page started loading")
-                                view.stopLoading()
-                                return
-                            }
-                            super.onPageStarted(view, url, favicon)
-                        }
-
-                        override fun onPageFinished(view: WebView, url: String) {
-                            // Verify Tor is still connected when page finishes loading
-                            if (!torKmp.isConnected()) {
-                                Log.e("SecurityError", "Tor disconnected after page loaded")
-                                return
-                            }
-
-                            // No JavaScript injection - just log page load completion
-                            Log.d("WebView", "Page finished loading: $url")
-
-                            super.onPageFinished(view, url)
-                        }
-                    }
-
                     webView.settings.userAgentString = "AndroidRobosats"
 
                     // Add the JavaScript interface
@@ -488,46 +231,6 @@ class MainActivity : AppCompatActivity() {
         }.start()
     }
 
-    private fun setupProxyForWebView() {
-        // Triple-check Tor is connected
-        if (!torKmp.isConnected()) {
-            throw SecurityException("Cannot set up proxy - Tor is not connected")
-        }
-
-        try {
-            // Get the proxy from TorKmpManager, handling possible exceptions
-            val proxy = TorKmpManager.getTorKmpObject().proxy ?:
-                throw SecurityException("Tor proxy is null despite Tor being connected")
-
-            val inetSocketAddress = proxy.address() as InetSocketAddress
-            val host = inetSocketAddress.hostName
-            val port = inetSocketAddress.port
-
-            if (host.isBlank() || port <= 0) {
-                throw SecurityException("Invalid Tor proxy address: $host:$port")
-            }
-
-            Log.d("WebViewProxy", "Setting up Tor proxy: $host:$port")
-
-            // Set up the proxy
-            setWebViewProxy(applicationContext, host, port)
-
-            // Verify proxy was set correctly
-            if (System.getProperty("http.proxyHost") != host ||
-                System.getProperty("http.proxyPort") != port.toString()) {
-                throw SecurityException("Proxy verification failed - system properties don't match expected values")
-            }
-
-            Log.d("WebViewProxy", "Proxy setup completed successfully")
-        } catch (e: Exception) {
-            Log.e("WebViewProxy", "Error setting up proxy: ${e.message}", e)
-            throw SecurityException("Failed to set up Tor proxy: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Sets the proxy for WebView using the most direct approach that's known to work with Tor
-     */
     /**
      * Configure WebView settings with a security-first approach
      */
@@ -597,24 +300,6 @@ class MainActivity : AppCompatActivity() {
         webSettings.textZoom = 100
     }
 
-    /**
-     * Check if a URL request is allowed based on security policy
-     */
-    private fun isAllowedRequest(url: String): Boolean {
-        // Always allow local file requests
-        if (url.startsWith("file:///android_asset/") || url.startsWith("file:///data/")) {
-            return true
-        }
-
-        // Allow onion domains
-        if (ALLOWED_DOMAINS.any { url.contains(it) }) {
-            return true
-        }
-
-        // Block everything else
-        return false
-    }
-
     // SSL error description method removed as we're not using SSL
 
     /**
@@ -637,58 +322,5 @@ class MainActivity : AppCompatActivity() {
         }
 
         super.onDestroy()
-    }
-
-    private fun setWebViewProxy(context: Context, proxyHost: String, proxyPort: Int) {
-        try {
-            // First set system properties (required as a foundation)
-            System.setProperty("http.proxyHost", proxyHost)
-            System.setProperty("http.proxyPort", proxyPort.toString())
-            System.setProperty("https.proxyHost", proxyHost)
-            System.setProperty("https.proxyPort", proxyPort.toString())
-            System.setProperty("proxy.host", proxyHost)
-            System.setProperty("proxy.port", proxyPort.toString())
-
-            Log.d("WebViewProxy", "Set system proxy properties")
-
-            // Create and apply a proxy at the application level
-            val proxyClass = Class.forName("android.net.ProxyInfo")
-            val proxyConstructor = proxyClass.getConstructor(String::class.java, Int::class.javaPrimitiveType, String::class.java)
-            val proxyInfo = proxyConstructor.newInstance(proxyHost, proxyPort, null)
-
-            try {
-                // Try to set global proxy through ConnectivityManager
-                val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE)
-                val setDefaultProxyMethod = connectivityManager.javaClass.getDeclaredMethod("setDefaultProxy", proxyClass)
-                setDefaultProxyMethod.isAccessible = true
-                setDefaultProxyMethod.invoke(connectivityManager, proxyInfo)
-                Log.d("WebViewProxy", "Set proxy via ConnectivityManager")
-            } catch (e: Exception) {
-                Log.w("WebViewProxy", "Could not set proxy via ConnectivityManager: ${e.message}")
-            }
-
-            // WebView operations must be run on the UI thread
-            runOnUiThread {
-                try {
-                    // Force WebView to use proxy via direct settings (must be on UI thread)
-                    webView.settings.javaClass.getDeclaredMethod("setHttpProxy", String::class.java, Int::class.javaPrimitiveType)
-                        ?.apply { isAccessible = true }
-                        ?.invoke(webView.settings, proxyHost, proxyPort)
-                    Log.d("WebViewProxy", "Applied proxy directly to WebView settings")
-                } catch (e: Exception) {
-                    Log.w("WebViewProxy", "Could not set proxy directly on WebView settings: ${e.message}")
-                    // Continue - we'll rely on system properties and connection-level proxying
-                }
-            }
-
-            // Wait to ensure UI thread operations complete
-            // This prevents race conditions with WebView operations
-            Thread.sleep(500)
-
-            Log.d("WebViewProxy", "Proxy setup completed")
-        } catch (e: Exception) {
-            Log.e("WebViewProxy", "Error setting WebView proxy", e)
-            throw SecurityException("Failed to set WebView proxy: ${e.message}", e)
-        }
     }
 }

@@ -73,11 +73,11 @@ jobs:
         path: |
           web/static
           web/*.html
-    # - name: 'Archive Mobile Build Results'
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: mobile-web.bundle
-    #     path: mobile/html/Web.bundle
+    - name: 'Archive Mobile Build Results'
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-web.bundle
+        path: android/app/src/main/assets
 
     # Invoke pre-release image build if this was not a tag push
     # Docker images tagged only with short commit hash

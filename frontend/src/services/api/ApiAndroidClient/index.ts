@@ -1,8 +1,9 @@
 import { type ApiClient, type Auth } from '..';
 import { systemClient } from '../../System';
 import ApiWebClient from '../ApiWebClient';
+import { v4 as uuidv4 } from 'uuid';
 
-class ApiNativeClient implements ApiClient {
+class ApiAndroidClient implements ApiClient {
   public useProxy = true;
 
   private readonly webClient: ApiClient = new ApiWebClient();
@@ -54,13 +55,16 @@ class ApiNativeClient implements ApiClient {
   public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> =
     async (baseUrl, path, auth) => {
       if (!this.useProxy) return await this.webClient.delete(baseUrl, path, auth);
-      return await window.NativeRobosats?.postMessage({
-        category: 'http',
-        type: 'delete',
-        baseUrl,
-        path,
-        headers: this.getHeaders(auth),
-      }).then(this.parseResponse);
+
+      const jsonHeaders = JSON.stringify(this.getHeaders(auth));
+
+      const result = await new Promise<string>((resolve, reject) => {
+        const uuid: string = uuidv4();
+        window.AndroidAppRobosats?.sendRequest(uuid, 'DELETE', baseUrl + path, jsonHeaders, '');
+        window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+      });
+
+      return this.parseResponse(JSON.parse(result));
     };
 
   public post: (
@@ -70,14 +74,17 @@ class ApiNativeClient implements ApiClient {
     auth?: Auth,
   ) => Promise<object | undefined> = async (baseUrl, path, body, auth) => {
     if (!this.useProxy) return await this.webClient.post(baseUrl, path, body, auth);
-    return await window.NativeRobosats?.postMessage({
-      category: 'http',
-      type: 'post',
-      baseUrl,
-      path,
-      body,
-      headers: this.getHeaders(auth),
-    }).then(this.parseResponse);
+
+    const jsonHeaders = JSON.stringify(this.getHeaders(auth));
+    const jsonBody = JSON.stringify(body);
+
+    const result = await new Promise<string>((resolve, reject) => {
+      const uuid: string = uuidv4();
+      window.AndroidAppRobosats?.sendRequest(uuid, 'POST', baseUrl + path, jsonHeaders, jsonBody);
+      window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+    });
+
+    return this.parseResponse(JSON.parse(result));
   };
 
   public get: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> = async (
@@ -86,14 +93,17 @@ class ApiNativeClient implements ApiClient {
     auth,
   ) => {
     if (!this.useProxy) return await this.webClient.get(baseUrl, path, auth);
-    return await window.NativeRobosats?.postMessage({
-      category: 'http',
-      type: 'get',
-      baseUrl,
-      path,
-      headers: this.getHeaders(auth),
-    }).then(this.parseResponse);
+
+    const jsonHeaders = JSON.stringify(this.getHeaders(auth));
+
+    const result = await new Promise<string>((resolve, reject) => {
+      const uuid: string = uuidv4();
+      window.AndroidAppRobosats?.sendRequest(uuid, 'GET', baseUrl + path, jsonHeaders, '');
+      window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+    });
+
+    return this.parseResponse(JSON.parse(result));
   };
 }
 
-export default ApiNativeClient;
+export default ApiAndroidClient;
