@@ -58,7 +58,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
           }
           sx={{ marginTop: 2 }}
         >
-          {coordinator?.info
+          {!coordinator?.loadingInfo
             ? coordinator?.info?.swap_enabled
               ? t('Supports on-chain swaps.')
               : t('Does not support on-chain swaps.')
