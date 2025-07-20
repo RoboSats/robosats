@@ -1,5 +1,5 @@
 import ApiWebClient from './ApiWebClient';
-import ApiNativeClient from './ApiNativeClient';
+import ApiAndroidClient from './ApiAndroidClient';
 
 export interface Auth {
   tokenSHA256: string;
@@ -15,5 +15,6 @@ export interface ApiClient {
   delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined>;
 }
 
-export const apiClient: ApiClient =
-  window.ReactNativeWebView != null ? new ApiNativeClient() : new ApiWebClient();
+export const apiClient: ApiClient = window.navigator.userAgent.includes('AndroidRobosats')
+  ? new ApiAndroidClient()
+  : new ApiWebClient();

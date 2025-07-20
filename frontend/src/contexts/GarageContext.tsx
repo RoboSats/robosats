@@ -10,7 +10,6 @@ import React, {
 } from 'react';
 
 import { defaultMaker, type Maker, Garage } from '../models';
-import { systemClient } from '../services/System';
 import { type UseAppStoreType, AppContext } from './AppContext';
 import { type UseFederationStoreType, FederationContext } from './FederationContext';
 
@@ -66,7 +65,7 @@ export const GarageContextProvider = ({
   children,
 }: GarageContextProviderProps): React.JSX.Element => {
   // All garage data structured
-  const { settings, torStatus, open, page, client } = useContext<UseAppStoreType>(AppContext);
+  const { settings, torStatus, page } = useContext<UseAppStoreType>(AppContext);
   const pageRef = useRef(page);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [garage] = useState<Garage>(initialGarageContext.garage);
@@ -97,30 +96,13 @@ export const GarageContextProvider = ({
   }, []);
 
   useEffect(() => {
-    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
-      const token = garage.getSlot()?.token;
-      if (token) void garage.fetchRobot(federation, token);
-    }
+    const token = garage.getSlot()?.token;
+    if (token) void garage.fetchRobot(federation, token);
   }, [settings.network, settings.useProxy, torStatus]);
-
-  useEffect(() => {
-    if (client === 'mobile' && !systemClient.loading) {
-      garage.loadSlots();
-    }
-  }, [systemClient.loading]);
 
   useEffect(() => {
     pageRef.current = page;
   }, [page]);
-
-  // use effects to fetchRobots on Profile open
-  useEffect(() => {
-    const slot = garage.getSlot();
-
-    if (open.profile && slot?.hashId && slot?.token) {
-      void garage.fetchRobot(federation, slot?.token); // refresh/update existing robot
-    }
-  }, [open.profile]);
 
   const fetchSlotActiveOrder: () => void = () => {
     const slot = garage?.getSlot();

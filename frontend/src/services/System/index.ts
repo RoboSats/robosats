@@ -1,4 +1,3 @@
-import SystemNativeClient from './SystemNativeClient';
 import SystemWebClient from './SystemWebClient';
 import SystemDesktopClient from './SystemDesktopClient';
 import SystemAndroidClient from './SystemAndroidClient';
@@ -15,11 +14,7 @@ export interface SystemClient {
 }
 
 function getSystemClient(): SystemClient {
-  if (window.navigator.userAgent.includes('robosats')) {
-    // If userAgent has "RoboSats", we assume the app is running inside of the
-    // react-native-web view of the RoboSats Android app.
-    return new SystemNativeClient();
-  } else if (window.navigator.userAgent.includes('Electron')) {
+  if (window.navigator.userAgent.includes('Electron')) {
     // If userAgent has "Electron", we assume the app is running inside of an Electron app.
     return new SystemDesktopClient();
   } else if (window.navigator.userAgent.includes('AndroidRobosats')) {

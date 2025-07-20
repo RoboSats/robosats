@@ -294,7 +294,7 @@ const OrderDetails = ({
                 ? coordinator?.info?.swap_enabled
                   ? t('Supports on-chain swaps.')
                   : t('Does not support on-chain swaps.')
-                : t('Loading cooridnator info...')}
+                : t('Loading coordinator info...')}
             </Alert>
           </Grid>
         </ListItem>

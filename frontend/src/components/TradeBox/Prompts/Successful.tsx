@@ -7,7 +7,6 @@ import {
   Collapse,
   Link,
   Alert,
-  AlertTitle,
   Tooltip,
   IconButton,
   Button,
@@ -15,7 +14,7 @@ import {
 } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 import TradeSummary from '../TradeSummary';
-import { Favorite, RocketLaunch, ContentCopy, Refresh, Info } from '@mui/icons-material';
+import { Favorite, RocketLaunch, ContentCopy, Refresh } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { finalizeEvent, type Event } from 'nostr-tools';
 import { type Order } from '../../../models';
@@ -26,6 +25,7 @@ import {
 } from '../../../contexts/FederationContext';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
+import { useTheme } from '@mui/system';
 
 interface SuccessfulPromptProps {
   order: Order;
@@ -43,6 +43,7 @@ export const SuccessfulPrompt = ({
   loadingRenew,
 }: SuccessfulPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const currencyCode: string = currencies[`${order.currency}`];
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -50,7 +51,6 @@ export const SuccessfulPrompt = ({
 
   const [coordinatorToken, setCoordinatorToken] = useState<string>();
   const [hostRating, setHostRating] = useState<number>();
-  const [tokenError, setTokenError] = useState<boolean>(false);
 
   const rateHostPlatform = function (): void {
     if (!hostRating) return;
@@ -60,7 +60,6 @@ export const SuccessfulPrompt = ({
 
     if (!coordinatorToken) {
       console.error('Missing coordinator token');
-      setTokenError(true);
       return;
     }
 
@@ -108,48 +107,50 @@ export const SuccessfulPrompt = ({
       spacing={0.5}
       padding={1}
     >
-      <Grid item xs={12}>
-        <Typography variant='body2' align='center'>
-          {t('Rate your trade experience')}
-        </Typography>
-      </Grid>
-      <Grid item>
-        <Rating
-          name='size-large'
-          defaultValue={0}
-          size='large'
-          onChange={(e) => {
-            const rate = e.target.value;
-            rateUserPlatform(rate);
-          }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <Typography variant='body2' align='center'>
-          {t('Rate your host')} <b>{federation.getCoordinator(order.shortAlias)?.longAlias}</b>{' '}
-          <Tooltip title={t('You need to enable nostr to rate your coordinator.')}>
-            <Info sx={{ width: 15 }} />
-          </Tooltip>
-        </Typography>
-      </Grid>
-      {tokenError && (
-        <Grid sx={{ marginBottom: 1 }}>
-          <Alert severity='error' sx={{ marginTop: 2 }}>
-            {t("Error obatining coordinator' s token.")}
-          </Alert>
+      <Grid container direction='row'>
+        <Grid item width='48%'>
+          <Typography variant='body2' align='center'>
+            {t('Rate your trade experience')}
+          </Typography>
+          <Rating
+            name='size-large'
+            defaultValue={0}
+            size='large'
+            onChange={(e) => {
+              const rate = e.target.value;
+              rateUserPlatform(rate);
+            }}
+          />
         </Grid>
-      )}
-      <Grid item>
-        <Rating
-          disabled={settings.connection !== 'nostr'}
-          name='size-large'
-          defaultValue={0}
-          size='large'
-          onChange={(e) => {
-            const rate = e.target.value;
-            setHostRating(parseInt(rate));
-          }}
-        />
+        <Grid item width='48%'>
+          <Tooltip
+            title={t('You need to enable nostr to rate your coordinator.')}
+            disableHoverListener={settings.connection === 'nostr'}
+          >
+            <div
+              style={{
+                borderLeft: `1px solid ${theme.palette.divider}`,
+                marginLeft: '6px',
+                paddingLeft: '6px',
+              }}
+            >
+              <Typography variant='body2' align='center'>
+                {t('Rate your host')}{' '}
+                <b>{federation.getCoordinator(order.shortAlias)?.longAlias}</b>{' '}
+              </Typography>
+              <Rating
+                disabled={settings.connection !== 'nostr'}
+                name='size-large'
+                defaultValue={0}
+                size='large'
+                onChange={(e) => {
+                  const rate = e.target.value;
+                  setHostRating(parseInt(rate));
+                }}
+              />
+            </div>
+          </Tooltip>
+        </Grid>
       </Grid>
       {hostRating ? (
         <Grid item xs={12}>
@@ -205,75 +206,45 @@ export const SuccessfulPrompt = ({
       )}
 
       {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
-      <Collapse in={Boolean(order.txid)} sx={{ marginTop: 0.5 }}>
-        <Alert severity='success'>
-          <AlertTitle>
-            {t('Your TXID')}
-            <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-              <IconButton
-                color='inherit'
-                onClick={() => {
-                  systemClient.copyToClipboard(order.txid);
-                }}
-              >
-                <ContentCopy sx={{ width: '1em', height: '1em' }} />
-              </IconButton>
-            </Tooltip>
-          </AlertTitle>
-          <Typography
-            variant='body2'
-            align='center'
-            sx={{ wordWrap: 'break-word', width: '15.71em' }}
-          >
-            <Link
-              target='_blank'
-              href={
-                'http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/' +
-                (order.network === 'testnet' ? 'testnet/' : '') +
-                'tx/' +
-                order.txid
-              }
+      <Collapse in={Boolean(order.txid)} sx={{ width: '100%' }}>
+        <Alert
+          severity='success'
+          style={{ marginTop: 0.5 }}
+          action={
+            <IconButton
+              color='inherit'
+              onClick={() => {
+                systemClient.copyToClipboard(order.txid);
+              }}
             >
-              {order.txid}
-            </Link>
-          </Typography>
+              <ContentCopy sx={{ width: '0.8em', height: '0.8em' }} />
+            </IconButton>
+          }
+        >
+          {t('Your TXID')}
         </Alert>
       </Collapse>
 
       <Collapse
         in={order.tx_queued && order.address !== undefined && order.txid == null}
-        sx={{ marginTop: 0.5 }}
+        sx={{ width: '100%' }}
       >
-        <Alert severity='info'>
-          <AlertTitle>
-            <CircularProgress sx={{ maxWidth: '0.8em', maxHeight: '0.8em' }} />
-            <a> </a>
-            {t('Sending coins to')}
-            <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-              <IconButton
-                color='inherit'
-                onClick={() => {
-                  systemClient.copyToClipboard(order.address);
-                }}
-              >
-                <ContentCopy sx={{ width: '0.8em', height: '0.8em' }} />
-              </IconButton>
-            </Tooltip>
-          </AlertTitle>
-          <Typography
-            variant='body2'
-            align='center'
-            sx={{ wordWrap: 'break-word', width: '15.71em' }}
-          >
-            <Link
-              target='_blank'
-              href={`http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/${
-                order.network === 'testnet' ? 'testnet/' : ''
-              }address/${order.address}`}
+        <Alert
+          sx={{ marginTop: 0.5 }}
+          severity='info'
+          action={
+            <IconButton
+              color='inherit'
+              onClick={() => {
+                systemClient.copyToClipboard(order.address);
+              }}
             >
-              {order.address}
-            </Link>
-          </Typography>
+              <ContentCopy sx={{ width: '0.8em', height: '0.8em' }} />
+            </IconButton>
+          }
+        >
+          <CircularProgress sx={{ maxWidth: '0.8em', maxHeight: '0.8em', marginRight: '5px' }} />
+          {t('Sending coins')}
         </Alert>
       </Collapse>
 
@@ -307,7 +278,7 @@ export const SuccessfulPrompt = ({
       </Grid>
 
       {order.platform_summary != null ? (
-        <Grid item>
+        <Grid item sx={{ marginTop: 0.5 }}>
           <TradeSummary
             robotNick={order.ur_nick}
             isMaker={order.is_maker}

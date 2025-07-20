@@ -28,8 +28,8 @@ class Slot {
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
     const tokenSHA256 = hexToBase91(sha256(token));
 
-    const nostrHash = sha256Hash(sha512(this.token));
-    this.nostrSecKey = nostrHash;
+    const nostrSecKey = sha256Hash(sha512(this.token));
+    this.nostrSecKey = nostrSecKey;
     const nostrPubKey = getPublicKey(this.nostrSecKey);
     this.nostrPubKey = nostrPubKey;
 
@@ -167,6 +167,7 @@ class Slot {
         token: defaultRobot.token,
         pubKey: defaultRobot.pubKey,
         encPrivKey: defaultRobot.encPrivKey,
+        nostrPubKey: defaultRobot.nostrPubKey,
       });
       void this.robots[shortAlias].fetch(federation);
       this.updateSlotFromRobot(this.robots[shortAlias]);

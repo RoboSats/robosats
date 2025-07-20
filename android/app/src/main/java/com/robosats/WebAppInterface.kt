@@ -7,17 +7,23 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
 import com.robosats.tor.TorKmpManager.getTorKmpObject
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.OkHttpClient.Builder
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
-import java.util.Objects
+import org.json.JSONObject
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import okhttp3.Request.Builder as RequestBuilder
+
 
 /**
  * Provides a secure bridge between JavaScript and native Android code.
@@ -235,6 +241,80 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             resolvePromise(uuid, "true")
         } else {
             rejectPromise(uuid, "Error sending WebSocket message")
+        }
+    }
+
+    @JavascriptInterface
+    fun sendRequest(uuid: String, action: String, url: String, headers: String, body: String) {
+        // Validate inputs
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for sendRequest: $uuid")
+            rejectPromise(uuid, "Invalid UUID")
+            return
+        }
+
+        try {
+            // Create OkHttpClient with Tor proxy
+            val client = Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
+                .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
+                .proxy(getTorKmpObject().proxy)
+                .build()
+
+            // Build request with URL
+            val requestBuilder = RequestBuilder().url(url)
+
+            // Add headers from JSON
+            val headersObject = JSONObject(headers)
+            val keys = headersObject.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val value = headersObject.optString(key)
+                requestBuilder.addHeader(key, value)
+            }
+
+            // Set request method and body
+            when (action) {
+                "DELETE" -> requestBuilder.delete()
+                "POST" -> {
+                    val mediaType = "application/json; charset=utf-8".toMediaType()
+                    val requestBody = body.toRequestBody(mediaType)
+                    requestBuilder.post(requestBody)
+                }
+                else -> requestBuilder.get()
+            }
+
+            // Build and execute request
+            val request = requestBuilder.build()
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.d("RobosatsError", e.toString())
+                    rejectPromise(uuid, "Request failed: ${e.message}")
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        // Get response body
+                        val responseBody = response.body.string()
+
+                        // Create JSON object with headers
+                        val headersJson = JSONObject()
+                        response.headers.names().forEach { name ->
+                            headersJson.put(name, response.header(name))
+                        }
+
+                        // Return response as JSON string
+                        val result = "{\"json\":$responseBody, \"headers\": $headersJson}"
+                        resolvePromise(uuid, result)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error processing response", e)
+                        rejectPromise(uuid, "Error processing response: ${e.message}")
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in sendRequest", e)
+            rejectPromise(uuid, "Error sending request: ${e.message}")
         }
     }
 

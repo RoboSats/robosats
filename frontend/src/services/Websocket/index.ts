@@ -1,5 +1,4 @@
 import WebsocketAndroidClient from './WebsocketAndroidClient';
-import WebsocketNativeClient from './WebsocketNativeClient';
 import WebsocketWebClient from './WebsocketWebClient';
 
 export const WebsocketState = {
@@ -28,10 +27,6 @@ function getWebsocketClient(): WebsocketClient {
     // If userAgent has "AndroidRobosats", we assume the app is running inside of the
     // WebView of the Kotlin RoboSats Android app.
     return new WebsocketAndroidClient();
-  } else if (window.navigator.userAgent.includes('robosats')) {
-    // If userAgent has "RoboSats", we assume the app is running inside of the
-    // react-native-web view of the RoboSats Android app.
-    return new WebsocketNativeClient();
   } else {
     // Otherwise, we assume the app is running in a web browser.
     return new WebsocketWebClient();
