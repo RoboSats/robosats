@@ -513,7 +513,6 @@
   "Claim": "รับรางวัล",
   "Enable Telegram Notifications": "เปิดใช้การแจ้งเตือน Telegram",
   "Finished order": "Finished order",
-  "Generate with Webln": "สร้างด้วย Webln",
   "Inactive order": "คำสั่งซื้อที่ไม่ใช้งาน",
   "Invoice for {{amountSats}} Sats": "ใบแจ้งหนี้สำหรับ {{amountSats}} Sats",
   "No active orders": "ไม่มีคำสั่งซื้อที่ใช้งานอยู่",

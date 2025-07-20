@@ -513,7 +513,6 @@
   "Claim": "Запросить",
   "Enable Telegram Notifications": "Включить уведомления Telegram",
   "Finished order": "Finished order",
-  "Generate with Webln": "Генерировать с помощью Webln",
   "Inactive order": "Неактивный ордер",
   "Invoice for {{amountSats}} Sats": "Инвойс на {{amountSats}} Сатоши",
   "No active orders": "Нет активных ордеров",

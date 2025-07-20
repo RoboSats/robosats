@@ -47,8 +47,9 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
       onClose={onClose}
       aria-labelledby='profile-title'
       aria-describedby='profile-description'
+      fullWidth
     >
-      <DialogContent>
+      <DialogContent style={{ width: '100%' }}>
         <Typography component='h5' variant='h5'>
           {t('Your Robot')}
         </Typography>

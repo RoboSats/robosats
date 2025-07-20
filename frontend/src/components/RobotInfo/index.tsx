@@ -28,7 +28,6 @@ import { useTranslation } from 'react-i18next';
 import { EnableTelegramDialog } from '../Dialogs';
 import { UserNinjaIcon } from '../Icons';
 
-import { getWebln } from '../../utils';
 import { signCleartextMessage } from '../../pgp';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
@@ -54,7 +53,6 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const [withdrawn, setWithdrawn] = useState<boolean>(false);
   const [badInvoice, setBadInvoice] = useState<string>('');
   const [openClaimRewards, setOpenClaimRewards] = useState<boolean>(false);
-  const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
   const [openOptions, setOpenOptions] = useState<boolean>(false);
   const [disabled, setDisable] = useState<boolean>(false);
@@ -68,33 +66,6 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   useEffect(() => {
     setDisable(Boolean(robot?.loading));
   }, [robot?.loading]);
-
-  const handleWebln = async (): Promise<void> => {
-    void getWebln()
-      .then(() => {
-        setWeblnEnabled(true);
-      })
-      .catch(() => {
-        setWeblnEnabled(false);
-        console.log('WebLN not available');
-      });
-  };
-
-  useEffect(() => {
-    void handleWebln();
-  }, []);
-
-  const handleWeblnInvoiceClicked = async (e: MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    e.preventDefault();
-    if (robot != null && robot.earnedRewards > 0) {
-      const webln = await getWebln();
-      const invoice = webln.makeInvoice(robot.earnedRewards).then(() => {
-        if (invoice != null) {
-          handleSubmitInvoiceClicked(e, invoice.paymentRequest);
-        }
-      });
-    }
-  };
 
   const handleSubmitInvoiceClicked = (e: Event, rewardInvoice: string): void => {
     setBadInvoice('');
@@ -347,26 +318,6 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       </Button>
                     </Grid>
                   </Grid>
-                  {weblnEnabled ? (
-                    <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                      <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 240 }}>
-                        <Button
-                          sx={{ maxHeight: 38, minWidth: 230 }}
-                          onClick={(e) => {
-                            handleWeblnInvoiceClicked(e);
-                          }}
-                          variant='contained'
-                          color='primary'
-                          size='small'
-                          type='submit'
-                        >
-                          {t('Generate with Webln')}
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  ) : (
-                    <></>
-                  )}
                 </form>
               )}
             </ListItem>

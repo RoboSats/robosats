@@ -513,7 +513,6 @@
   "Claim": "請求する",
   "Enable Telegram Notifications": "Telegram通知を有効にする",
   "Finished order": "Finished order",
-  "Generate with Webln": "Weblnで生成",
   "Inactive order": "非アクティブなオーダー",
   "Invoice for {{amountSats}} Sats": " {{amountSats}} Satsのインボイス",
   "No active orders": "アクティブなオーダーはありません",

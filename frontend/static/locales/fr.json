@@ -513,7 +513,6 @@
   "Claim": "Réclamer",
   "Enable Telegram Notifications": "Activer les notifications Telegram",
   "Finished order": "Finished order",
-  "Generate with Webln": "Générer avec Webln",
   "Inactive order": "Ordre inactif",
   "Invoice for {{amountSats}} Sats": "Facture pour {{amountSats}} Sats",
   "No active orders": "Aucun ordre actif",

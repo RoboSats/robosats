@@ -513,7 +513,6 @@
   "Claim": "领取",
   "Enable Telegram Notifications": "开启电报通知",
   "Finished order": "Finished order",
-  "Generate with Webln": "使用 Webln 生成",
   "Inactive order": "不活跃订单",
   "Invoice for {{amountSats}} Sats": "{{amountSats}}聪的发票",
   "No active orders": "没有活跃的订单",
