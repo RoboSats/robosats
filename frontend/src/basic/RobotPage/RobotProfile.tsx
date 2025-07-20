@@ -225,7 +225,7 @@ const RobotProfile = ({
         <Tooltip
           placement='top'
           enterTouchDelay={0}
-          hidden={!slot?.lastOrder?.id}
+          disableHoverListener={!slot?.lastOrder?.id}
           title={t(
             'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
           )}
