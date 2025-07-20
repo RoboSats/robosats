@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
   Badge,
@@ -20,7 +19,6 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import {
-  Schedule,
   PriceChange,
   LockOpen,
   AccountBalance,
@@ -70,11 +68,6 @@ const TradeSummary = ({
 
   const [buttonValue, setButtonValue] = useState<number>(isMaker ? 0 : 2);
   const userSummary = buttonValue === 0 ? makerSummary : takerSummary;
-  const contractTimestamp = new Date(platformSummary.contract_timestamp ?? null);
-  const totalTime = platformSummary.contract_total_time;
-  const hours = parseInt(totalTime / 3600);
-  const mins = parseInt((totalTime - hours * 3600) / 60);
-  const secs = parseInt(totalTime - hours * 3600 - mins * 60);
 
   const onClickExport = function (): void {
     const summary = {
@@ -100,6 +93,7 @@ const TradeSummary = ({
         backgroundColor: theme.palette.background.paper,
         borderRadius: '0.3em',
         padding: '0.5em',
+        width: '19em',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -317,22 +311,6 @@ const TradeSummary = ({
                 platformSummary.contract_exchange_rate.toPrecision(7),
               )} ${currencyCode}/BTC`}
               secondary={t('Contract exchange rate')}
-            />
-          </ListItem>
-
-          <ListItem>
-            <ListItemText
-              primary={format(contractTimestamp, 'do LLL HH:mm:ss')}
-              secondary={t('Timestamp')}
-            />
-            <ListItemIcon>
-              <Schedule />
-            </ListItemIcon>
-            <ListItemText
-              primary={`${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(
-                secs,
-              ).padStart(2, '0')}`}
-              secondary={t('Completed in')}
             />
           </ListItem>
         </List>

@@ -3,6 +3,7 @@ package com.robosats
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -33,6 +34,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Lock the screen orientation to portrait mode
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         // We don't need edge-to-edge since we're using fitsSystemWindows
         setContentView(R.layout.activity_main)

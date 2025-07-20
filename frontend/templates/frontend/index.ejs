@@ -2,11 +2,12 @@
 <html>
   <head>
     <meta http-equiv="onion-location" content="{{ ONION_LOCATION }}" />
-    <link rel="shortcut icon" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" />
-    <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-192x192.png" sizes="192x192">
-
+    <% if (!mobile) { %>
+      <link rel="shortcut icon" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" />
+      <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-32x32.png" sizes="32x32">
+      <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" sizes="96x96">
+      <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-192x192.png" sizes="192x192">
+    <% } %>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="A simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. No user registration required.">

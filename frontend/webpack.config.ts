@@ -238,10 +238,6 @@ const configAndroid: Configuration = {
           to: path.resolve(__dirname, '../android/app/src/main/assets/static/assets/sounds'),
         },
         {
-          from: path.resolve(__dirname, 'static/assets/images/favicon-*'),
-          to: path.resolve(__dirname, '../android/app/src/main/assets'),
-        },
-        {
           from: path.resolve(__dirname, 'static/federation'),
           to: path.resolve(__dirname, '../android/app/src/main/assets/static/assets/federation'),
         },

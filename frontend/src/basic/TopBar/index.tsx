@@ -241,6 +241,7 @@ const TopBar = (): React.JSX.Element => {
                 <ListItemText primary={t('Client info')} />
               </ListItemButton>
             </ListItem>
+            <div style={{ flexGrow: 1 }} />
             <ListItem disablePadding>
               <ListItemButton onClick={() => changePage('settings')}>
                 <ListItemIcon>
@@ -249,7 +250,6 @@ const TopBar = (): React.JSX.Element => {
                 <ListItemText primary={t('Settings')} />
               </ListItemButton>
             </ListItem>
-            <div style={{ flexGrow: 1 }} />
             {client === 'mobile' && (
               <ListItem disablePadding sx={{ display: 'flex', flexDirection: 'column' }}>
                 <ListItemButton selected>

@@ -88,7 +88,7 @@ const AuditPGPDialog = ({
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const slot = garage.getSlotByOrder(order.shortAlias, order.id);
-
+  console.log(slot);
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t("Don't trust, verify")}</DialogTitle>

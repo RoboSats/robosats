@@ -51,13 +51,20 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
 
   return (
     <Grid item>
-      {coordinator?.info && !coordinator?.info?.swap_enabled && (
-        <Grid sx={{ marginBottom: 1 }}>
-          <Alert severity='warning' sx={{ marginTop: 2 }}>
-            {t('This coordinator does not support on-chain swaps.')}
-          </Alert>
-        </Grid>
-      )}
+      <Grid sx={{ marginBottom: 1 }}>
+        <Alert
+          severity={
+            coordinator?.info ? (coordinator?.info?.swap_enabled ? 'success' : 'warning') : 'info'
+          }
+          sx={{ marginTop: 2 }}
+        >
+          {coordinator?.info
+            ? coordinator?.info?.swap_enabled
+              ? t('Supports on-chain swaps.')
+              : t('Does not support on-chain swaps.')
+            : t('Loading coordinator info...')}
+        </Alert>
+      </Grid>
       <Box
         sx={{
           backgroundColor: 'background.paper',

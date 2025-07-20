@@ -147,5 +147,29 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: android/app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
-          asset_name: robosats-universal-${{ github.ref }}.apk
+          asset_name: robosats-${{ github.ref }}-universal.apk
+          asset_content_type: application/zip
+
+      - name: Upload APK arm64-v8a Asset
+        id: upload-release-asset-arm64-v8a
+        if: inputs.semver == ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: android/app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk
+          asset_name: robosats-${{ github.ref }}-arm64-v8a.apk
+          asset_content_type: application/zip
+
+      - name: Upload APK armeabi-v7a Asset
+        id: upload-release-asset-armeabi-v7a
+        if: inputs.semver == ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: android/app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk
+          asset_name: robosats-${{ github.ref }}-armeabi-v7a.apk
           asset_content_type: application/zip

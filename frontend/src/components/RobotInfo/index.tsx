@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { Numbers, Send, EmojiEvents } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { type Coordinator } from '../../models';
+import { Robot, type Coordinator } from '../../models';
 import { useTranslation } from 'react-i18next';
 import { EnableTelegramDialog } from '../Dialogs';
 import { UserNinjaIcon } from '../Icons';
@@ -38,11 +38,10 @@ import RobotAvatar from '../RobotAvatar';
 interface Props {
   coordinator: Coordinator;
   onClose: () => void;
-  disabled?: boolean;
 }
 
-const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) => {
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { setOpen, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
@@ -58,8 +57,17 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
   const [openOptions, setOpenOptions] = useState<boolean>(false);
+  const [disabled, setDisable] = useState<boolean>(false);
+  const [robot, setRobot] = useState<Robot | null>(null);
 
-  const robot = garage.getSlot()?.getRobot(coordinator.shortAlias);
+  useEffect(() => {
+    const robot = garage.getSlot()?.getRobot(coordinator.shortAlias) ?? null;
+    setRobot(robot);
+  }, [slotUpdatedAt]);
+
+  useEffect(() => {
+    setDisable(Boolean(robot?.loading));
+  }, [robot?.loading]);
 
   const handleWebln = async (): Promise<void> => {
     void getWebln()
@@ -134,7 +142,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose, disabled }: Props) =
             ) : robot?.lastOrderId ? (
               <Typography color='warning'>&nbsp;{t('Finished order')}</Typography>
             ) : (
-              <Typography>{t('No existing orders found')}</Typography>
+              <Typography>{t('No orders found')}</Typography>
             )
           }
         />

@@ -41,8 +41,7 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): React.JSX.Element => {
-  const { windowSize, client, setOpen, open, navigateToPage } =
-    useContext<UseAppStoreType>(AppContext);
+  const { windowSize, setOpen, open, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -319,12 +318,12 @@ const RobotProfile = ({
                   onClick={handleAddRobot}
                   size='large'
                 >
-                  <Add /> <div style={{ width: '0.5em' }} />
+                  <Add />
                   {!mobileView && t('Add Robot')}
                 </LoadingButton>
               </Grid>
 
-              {client !== 'mobile' ? (
+              {!mobileView ? (
                 <Grid item>
                   <Button
                     size='large'
@@ -340,7 +339,7 @@ const RobotProfile = ({
 
               <Grid item>
                 <Button color='primary' onClick={handleDeleteRobot} size='large'>
-                  <DeleteSweep /> <div style={{ width: '0.5em' }} />
+                  <DeleteSweep />
                   {!mobileView && t('Delete Robot')}
                 </Button>
               </Grid>
@@ -355,7 +354,7 @@ const RobotProfile = ({
                     });
                   }}
                 >
-                  <Key /> <div style={{ width: '0.5em' }} />
+                  <Key />
                   {!mobileView && t('Recovery')}
                 </Button>
               </Grid>
