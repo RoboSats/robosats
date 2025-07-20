@@ -290,7 +290,7 @@ const OrderDetails = ({
               }
               style={{ width: '100%' }}
             >
-              {coordinator?.info
+              {!coordinator?.loadingInfo
                 ? coordinator?.info?.swap_enabled
                   ? t('Supports on-chain swaps.')
                   : t('Does not support on-chain swaps.')

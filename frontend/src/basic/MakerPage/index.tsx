@@ -6,6 +6,7 @@ import { filterOrders, genBase62Token } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
+import thirdParties from '../../../static/thirdparties.json';
 
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
@@ -20,6 +21,7 @@ const MakerPage = (): React.JSX.Element => {
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const mobileView = windowSize?.width < 50;
 
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
@@ -76,6 +78,9 @@ const MakerPage = (): React.JSX.Element => {
     }
   };
 
+  const tableMaxWidth = mobileView ? windowSize.width * 0.8 : Math.min(windowSize.width, 60);
+  const tableMaxHeight = Math.min(matches.length * 3.25 + 3, windowSize.height * 0.68);
+
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
       <VisitThirdParty
@@ -113,8 +118,8 @@ const MakerPage = (): React.JSX.Element => {
             <Grid item>
               <BookTable
                 orderList={matches}
-                maxWidth={Math.min(windowSize.width, 60)} // EM units
-                maxHeight={Math.min(matches.length * 3.25 + 3, 16)} // EM units
+                maxWidth={tableMaxWidth} // EM units
+                maxHeight={tableMaxHeight} // EM units
                 defaultFullscreen={false}
                 showControls={false}
                 showFooter={false}
