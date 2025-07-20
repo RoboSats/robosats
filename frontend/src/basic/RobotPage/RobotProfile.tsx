@@ -41,7 +41,8 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): React.JSX.Element => {
-  const { windowSize, setOpen, open, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, setOpen, open, navigateToPage, client } =
+    useContext<UseAppStoreType>(AppContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -261,7 +262,20 @@ const RobotProfile = ({
         >
           <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
             <Grid item sx={{ width: '100%' }}>
-              <Typography variant='caption'>{t('Robot Garage')}</Typography>
+              <Grid container direction='row' justifyContent='space-between'>
+                <Typography variant='caption'>{t('Robot Garage')}</Typography>
+                {client !== 'mobile' && (
+                  <Button
+                    size='small'
+                    color='primary'
+                    onClick={() => {
+                      garage.download();
+                    }}
+                  >
+                    <Download style={{ width: '0.6em', height: '0.6em' }} />
+                  </Button>
+                )}
+              </Grid>
               <Select
                 error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
                 fullWidth
@@ -310,7 +324,7 @@ const RobotProfile = ({
               </Select>
             </Grid>
 
-            <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
+            <Grid item container direction='row' justifyContent='space-between' width='100%'>
               <Grid item>
                 <LoadingButton
                   loading={loading}
@@ -322,28 +336,6 @@ const RobotProfile = ({
                   {!mobileView && t('Add Robot')}
                 </LoadingButton>
               </Grid>
-
-              {!mobileView ? (
-                <Grid item>
-                  <Button
-                    size='large'
-                    color='primary'
-                    onClick={() => {
-                      garage.download();
-                    }}
-                  >
-                    <Download />
-                  </Button>
-                </Grid>
-              ) : null}
-
-              <Grid item>
-                <Button color='primary' onClick={handleDeleteRobot} size='large'>
-                  <DeleteSweep />
-                  {!mobileView && t('Delete Robot')}
-                </Button>
-              </Grid>
-
               <Grid item>
                 <Button
                   color='primary'
@@ -355,7 +347,12 @@ const RobotProfile = ({
                   }}
                 >
                   <Key />
-                  {!mobileView && t('Recovery')}
+                </Button>
+              </Grid>
+              <Grid item>
+                <Button color='primary' onClick={handleDeleteRobot} size='large'>
+                  <DeleteSweep />
+                  {!mobileView && t('Delete Robot')}
                 </Button>
               </Grid>
             </Grid>
