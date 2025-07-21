@@ -107,3 +107,26 @@ After six months, or approximately 12,288 blocks, a coordinator reaches maturity
 ## Timeline
 
 In a sense the RoboSats federation is already online. New coordinators can gradually join. Any coordinator that registers and gets his backend up and running integrated on the RoboSats client app **during 2023 will receive the Founder badge**.
+
+## Security & Privacy
+
+If coordinators want to prioritize their privacy ans security, there are some key considerations that should not pass under their radar.
+
+### Security
+
+A coordinator is a honeypot by definition. You should be aware of and responsible for its security, as there will always be someone trying to breach your system.
+
+1. Make sure your Coordinator software runs on a single-purpose machine; more software means more attack vectors.
+2. Configure your local network security. Coordinators can be attacked from the outside, but infected machines in your local network can also be used as attackers.
+3. Configure SSH access to allow only specific PGP keys.
+4. Ensure your server is configured to automatically manage attackers using tools like `ufw`, `fail2ban`, `lynis`, etc.
+5. Your Bitcoin/LN setup is properly configured and secured.
+
+### Privacy
+
+The Robosats suite is configured to offer maximum privacy from the inside, but there are some external factors you should control and configure.
+
+1. Coordinators are only accessible from Tor, but the host where you run the software still has clearnet access. Consider using a VPN with a kill switch  as the first line of defense.
+2. Install and configure `torsocks` to be used in all commands. This can be achieved by adding `. torsocks on` to your `.bashrc`. Together with an external VPN, you'll have a Tor-over-VPN configuration, the best privacy oriented setup.
+3. Install and configure `privoxy` for commands that are not compatible with SOCKS.
+4. Docker builds its own network and can often bypass Tor and the VPN's kill switch, including pulling from docker.io and any requests made inside containers. Make sure to define and test proxy settings for Docker (test it with `docker run --rm curlimages/curl https://check.torproject.org`).
