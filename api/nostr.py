@@ -22,18 +22,10 @@ class Nostr:
         if config("NOSTR_NSEC", cast=str, default="") == "":
             return
 
-        print("Sending nostr event")
+        print("Sending nostr ORDER event")
 
-        # Initialize with coordinator Keys
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        signer = NostrSigner.keys(keys)
-        client = Client(signer)
-
-        # Add relays and connect
-        await client.add_relay("ws://localhost:7777")
-        strfry_port = config("STRFRY_PORT", cast=str, default="7778")
-        await client.add_relay(f"ws://localhost:{strfry_port}")
-        await client.connect()
+        client = await self.initialize_client(keys)
 
         robot_name = await self.get_robot_name(order)
         robot_hash_id = await self.get_robot_hash_id(order)
@@ -45,11 +37,45 @@ class Nostr:
             .sign_with_keys(keys)
         )
         await client.send_event(event)
-        print(f"Nostr event sent: {event.as_json()}")
+        print(f"Nostr ORDER event sent: {event.as_json()}")
 
-    @sync_to_async
-    def get_robot_name(self, order):
-        return order.maker.username
+    async def send_notification_event(self, robot, order, text):
+        """Creates the notification event and sends it to the coordinator relay"""
+        if config("NOSTR_NSEC", cast=str, default="") == "":
+            return
+
+        print("Sending nostr NOTIFICATION event")
+
+        keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+        client = await self.initialize_client(keys)
+
+        tags = [
+            Tag.parse(
+                [
+                    "order_id",
+                    f"{config("COORDINATOR_ALIAS", cast=str)}#{order.id}".encode(
+                        "utf-8"
+                    ),
+                ]
+            ),
+            Tag.parse(["status", Order.Status(order.status).label]),
+        ]
+
+        await client.send_private_msg(robot.nostr_pubkey, text, tags)
+        print("Nostr NOTIFICATION event sent")
+
+    def initialize_client(self, keys):
+        # Initialize with coordinator Keys
+        signer = NostrSigner.keys(keys)
+        client = Client(signer)
+
+        # Add relays and connect
+        await client.add_relay("ws://localhost:7777")
+        strfry_port = config("STRFRY_PORT", cast=str, default="7778")
+        await client.add_relay(f"ws://localhost:{strfry_port}")
+        await client.connect()
+
+        return client
 
     @sync_to_async
     def get_robot_hash_id(self, order):
