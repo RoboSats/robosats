@@ -110,7 +110,7 @@ In a sense the RoboSats federation is already online. New coordinators can gradu
 
 ## Security & Privacy
 
-If coordinators want to prioritize their privacy ans security, there are some key considerations that should not pass under their radar.
+If coordinators want to prioritize their privacy and security, there are some key considerations that should not pass under their radar.
 
 ### Security
 
