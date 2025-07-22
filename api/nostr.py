@@ -53,10 +53,10 @@ class Nostr:
             Tag.parse(
                 [
                     "order_id",
-                    f"{config("COORDINATOR_ALIAS", cast=str)}#{order.id}",
+                    f"{config("COORDINATOR_ALIAS", cast=str).lower()}#{order.id}",
                 ]
             ),
-            Tag.parse(["status", Order.Status(order.status).label]),
+            Tag.parse(["status", order.status]),
         ]
 
         await client.send_private_msg(PublicKey.parse(robot.nostr_pubkey), text, tags)
