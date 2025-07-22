@@ -27,7 +27,7 @@ class Nostr:
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
         client = await self.initialize_client(keys)
 
-        robot_name = await self.get_robot_name(order)
+        robot_name = await self.get_user_name(order)
         robot_hash_id = await self.get_robot_hash_id(order)
         currency = await self.get_robot_currency(order)
 
@@ -53,9 +53,7 @@ class Nostr:
             Tag.parse(
                 [
                     "order_id",
-                    f"{config("COORDINATOR_ALIAS", cast=str)}#{order.id}".encode(
-                        "utf-8"
-                    ),
+                    f"{config("COORDINATOR_ALIAS", cast=str)}#{order.id}",
                 ]
             ),
             Tag.parse(["status", Order.Status(order.status).label]),
@@ -76,6 +74,10 @@ class Nostr:
         await client.connect()
 
         return client
+
+    @sync_to_async
+    def get_user_name(self, order):
+        return order.maker.username
 
     @sync_to_async
     def get_robot_hash_id(self, order):
