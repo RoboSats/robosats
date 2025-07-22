@@ -4,7 +4,7 @@ import uuid
 
 from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag
+from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag, PublicKey
 from api.models import Order
 from decouple import config
 
@@ -59,7 +59,9 @@ class Nostr:
             Tag.parse(["status", Order.Status(order.status).label]),
         ]
 
-        await client.send_private_msg(robot.nostr_pubkey, text, tags)
+        await client.send_private_msg(
+            PublicKey.from_hex(robot.nostr_pubkey), text, tags
+        )
         print("Nostr NOTIFICATION event sent")
 
     async def initialize_client(self, keys):
