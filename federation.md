@@ -131,3 +131,5 @@ The Robosats suite is configured to offer maximum privacy from the inside, but t
 3. Install and configure `privoxy` for commands that are not compatible with SOCKS.
 4. Docker builds its own network and can often bypass Tor and the VPN's kill switch, including pulling from docker.io and any requests made inside containers. Make sure to define and test proxy settings for Docker (test it with `docker run --rm curlimages/curl https://check.torproject.org`).
 5. Possibly the best option to obtain the Robosats Docker image is to avoid using docker.io and instead build the releases locally.
+6. If you want to avoid GitHub, we have mirrored repositories available at [http://git.robosats.org](http://git.robosats.org).
+
