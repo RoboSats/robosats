@@ -130,3 +130,4 @@ The Robosats suite is configured to offer maximum privacy from the inside, but t
 2. Install and configure `torsocks` to be used in all commands. This can be achieved by adding `. torsocks on` to your `.bashrc`. Together with an external VPN, you'll have a Tor-over-VPN configuration, the best privacy oriented setup.
 3. Install and configure `privoxy` for commands that are not compatible with SOCKS.
 4. Docker builds its own network and can often bypass Tor and the VPN's kill switch, including pulling from docker.io and any requests made inside containers. Make sure to define and test proxy settings for Docker (test it with `docker run --rm curlimages/curl https://check.torproject.org`).
+5. Possibly the best option to obtain the Robosats Docker image is to avoid using docker.io and instead build the releases locally.
