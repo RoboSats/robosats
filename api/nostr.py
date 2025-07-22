@@ -59,9 +59,7 @@ class Nostr:
             Tag.parse(["status", Order.Status(order.status).label]),
         ]
 
-        await client.send_private_msg(
-            PublicKey.from_hex(robot.nostr_pubkey), text, tags
-        )
+        await client.send_private_msg(PublicKey.parse(robot.nostr_pubkey), text, tags)
         print("Nostr NOTIFICATION event sent")
 
     async def initialize_client(self, keys):
