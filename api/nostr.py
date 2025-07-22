@@ -64,7 +64,7 @@ class Nostr:
         await client.send_private_msg(robot.nostr_pubkey, text, tags)
         print("Nostr NOTIFICATION event sent")
 
-    def initialize_client(self, keys):
+    async def initialize_client(self, keys):
         # Initialize with coordinator Keys
         signer = NostrSigner.keys(keys)
         client = Client(signer)
