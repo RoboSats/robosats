@@ -20,6 +20,19 @@ import { Close } from '@mui/icons-material';
 import { systemClient } from '../../../services/System';
 import { useNavigate } from 'react-router-dom';
 import arraysAreDifferent from '../../../utils/array';
+import getSettings from '../../../utils/settings';
+
+const path =
+  getSettings().client == 'mobile'
+    ? 'file:///android_asset/static/assets/sounds'
+    : '/static/assets/sounds';
+
+const audio = {
+  chat: new Audio(`${path}/chat-open.mp3`),
+  takerFound: new Audio(`${path}/taker-found.mp3`),
+  ding: new Audio(`${path}/locked-invoice.mp3`),
+  successful: new Audio(`${path}/successful.mp3`),
+};
 
 interface NotificationsDrawerProps {
   show: boolean;
@@ -63,10 +76,36 @@ const NotificationsDrawer = ({
     if (settings.connection === 'nostr' && !federation.loading) loadNotifciationsNostr();
   }, [settings.connection, federation.loading, slotUpdatedAt]);
 
+  const cleanUpNotifications = () => {
+    setMessages((msg) => {
+      const pubKeys = Object.values(garage.slots).map((s) => s.nostrPubKey);
+      return new Map<string, Event>(
+        [...msg].filter(([_, event]) => {
+          const nostrHexPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
+          return pubKeys.includes(nostrHexPubkey);
+        }),
+      );
+    });
+  };
+
+  const playSound = (orderStatus: number) => {
+    const soundByStatus: Record<number, 'takerFound' | 'ding' | 'successful'> = {
+      5: 'takerFound',
+      13: 'successful',
+      14: 'successful',
+      15: 'successful',
+    };
+
+    const soundType = soundByStatus[orderStatus] ?? 'ding';
+    const sound = audio[soundType];
+    void sound.play();
+  };
+
   const loadNotifciationsNostr = (): void => {
     const tokens = Object.keys(garage.slots);
     if (!arraysAreDifferent(subscribedTokens, tokens)) return;
 
+    cleanUpNotifications();
     setSubscribedTokens(tokens);
     federation.roboPool.subscribeNotifications(garage, {
       onevent: (event) => {
@@ -76,6 +115,10 @@ const NotificationsDrawer = ({
               setSnakevent(event);
               setOpenSnak(true);
               systemClient.setItem('last_notification', event.created_at.toString());
+
+              const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
+              if (orderStatus) playSound(parseInt(orderStatus, 10));
+
               return event.created_at;
             } else {
               return last;
