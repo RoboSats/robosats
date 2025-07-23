@@ -90,7 +90,7 @@ const NotificationsDrawer = ({
 
   const playSound = (orderStatus: number) => {
     const soundByStatus: Record<number, 'takerFound' | 'ding' | 'successful'> = {
-      5: 'takerFound',
+      6: 'takerFound',
       13: 'successful',
       14: 'successful',
       15: 'successful',
@@ -115,7 +115,7 @@ const NotificationsDrawer = ({
               setSnakevent(event);
               setOpenSnak(true);
               systemClient.setItem('last_notification', event.created_at.toString());
-
+              console.log(event);
               const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
               if (orderStatus) playSound(parseInt(orderStatus, 10));
 
