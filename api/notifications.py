@@ -6,6 +6,7 @@ from api.models import (
     Notification,
 )
 from api.utils import get_session
+from api.tasks import nostr_send_notification_event
 
 
 class Notifications:
@@ -32,8 +33,12 @@ class Notifications:
         return context
 
     def send_message(self, order, robot, title, description=""):
-        """Save a message for a user and sends it to Telegram"""
+        """Save a message for a user and sends it to Telegram and/or Nostr"""
         self.save_message(order, robot, title, description)
+        if robot.nostr_pubkey:
+            nostr_send_notification_event.delay(
+                robot_id=robot.id, order_id=order.id, text=title
+            )
         if robot.telegram_enabled:
             self.send_telegram_message(robot.telegram_chat_id, title, description)
 

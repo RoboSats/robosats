@@ -28,6 +28,7 @@ import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 import { Order } from '../../models';
 import { nip19 } from 'nostr-tools';
+import { EncryptedChatMessage } from '../TradeBox/EncryptedChat';
 
 function CredentialTextfield(props): React.JSX.Element {
   return (
@@ -62,12 +63,9 @@ function CredentialTextfield(props): React.JSX.Element {
 interface Props {
   open: boolean;
   onClose: () => void;
-  order: Order;
-  messages: string[];
-  ownPubKey: string;
-  ownEncPrivKey: string;
-  peerPubKey: string;
-  passphrase: string;
+  order?: Order;
+  messages?: EncryptedChatMessage[];
+  peerPubKey?: string;
   onClickBack: () => void;
 }
 
@@ -76,10 +74,7 @@ const AuditPGPDialog = ({
   onClose,
   order,
   messages,
-  ownPubKey,
-  ownEncPrivKey,
   peerPubKey,
-  passphrase,
   onClickBack,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
@@ -87,8 +82,14 @@ const AuditPGPDialog = ({
   const [tab, setTab] = useState<'nostr' | 'pgp'>('nostr');
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
-  const slot = garage.getSlotByOrder(order.shortAlias, order.id);
-  console.log(slot);
+  const slot = order
+    ? garage.getSlotByOrder(order?.shortAlias ?? '', order?.id ?? 0)
+    : garage.getSlot();
+
+  const ownPubKey = slot?.getRobot()?.pubKey ?? '';
+  const ownEncPrivKey = slot?.getRobot()?.encPrivKey ?? '';
+  const passphrase = slot?.token ?? '';
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t("Don't trust, verify")}</DialogTitle>
@@ -123,14 +124,16 @@ const AuditPGPDialog = ({
               copiedTitle={t('Copied!')}
             />
 
-            <CredentialTextfield
-              tooltipTitle={t(
-                'Your peer PGP public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.',
-              )}
-              label={t('Peer public key')}
-              value={peerPubKey}
-              copiedTitle={t('Copied!')}
-            />
+            {peerPubKey && (
+              <CredentialTextfield
+                tooltipTitle={t(
+                  'Your peer PGP public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.',
+                )}
+                label={t('Peer public key')}
+                value={peerPubKey}
+                copiedTitle={t('Copied!')}
+              />
+            )}
 
             <CredentialTextfield
               tooltipTitle={t(
@@ -174,7 +177,7 @@ const AuditPGPDialog = ({
 
                       return client === 'mobile'
                         ? systemClient.copyToClipboard(JSON.stringify(object))
-                        : saveAsJson(`pgp_keys_${order.id}.json`, object);
+                        : saveAsJson(`pgp_keys_${order?.id ?? ''}.json`, object);
                     }}
                   >
                     <div style={{ width: 26, height: 18 }}>
@@ -188,34 +191,36 @@ const AuditPGPDialog = ({
                 </Tooltip>
               </Grid>
 
-              <Grid item style={{ width: '50%' }}>
-                <Tooltip
-                  placement='top'
-                  enterTouchDelay={0}
-                  enterDelay={1000}
-                  enterNextDelay={2000}
-                  title={t('Save messages as a JSON file')}
-                >
-                  <Button
-                    size='small'
-                    color='primary'
-                    variant='contained'
-                    onClick={() => {
-                      return client === 'mobile'
-                        ? systemClient.copyToClipboard(JSON.stringify(messages))
-                        : saveAsJson(`pgp_messages_${order.id}.json`, messages);
-                    }}
+              {messages && (
+                <Grid item style={{ width: '50%' }}>
+                  <Tooltip
+                    placement='top'
+                    enterTouchDelay={0}
+                    enterDelay={1000}
+                    enterNextDelay={2000}
+                    title={t('Save messages as a JSON file')}
                   >
-                    <div style={{ width: 28, height: 20 }}>
-                      <ExportIcon sx={{ width: 18, height: 18 }} />
-                    </div>
-                    {t('Messages')}
-                    <div style={{ width: 26, height: 20 }}>
-                      <ForumIcon sx={{ width: 20, height: 20 }} />
-                    </div>
-                  </Button>
-                </Tooltip>
-              </Grid>
+                    <Button
+                      size='small'
+                      color='primary'
+                      variant='contained'
+                      onClick={() => {
+                        return client === 'mobile'
+                          ? systemClient.copyToClipboard(JSON.stringify(messages))
+                          : saveAsJson(`pgp_messages_${order?.id ?? ''}.json`, messages);
+                      }}
+                    >
+                      <div style={{ width: 28, height: 20 }}>
+                        <ExportIcon sx={{ width: 18, height: 18 }} />
+                      </div>
+                      {t('Messages')}
+                      <div style={{ width: 26, height: 20 }}>
+                        <ForumIcon sx={{ width: 20, height: 20 }} />
+                      </div>
+                    </Button>
+                  </Tooltip>
+                </Grid>
+              )}
             </Grid>
           </Grid>
         </div>
@@ -231,28 +236,28 @@ const AuditPGPDialog = ({
                 'Your nostr public key. Your peer uses it to encrypt messages only you can read.',
               )}
               label={t('Your public key')}
-              value={nip19.npubEncode(
-                order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey,
-              )}
+              value={nip19.npubEncode(slot?.nostrPubKey ?? '')}
               copiedTitle={t('Copied!')}
             />
 
-            <CredentialTextfield
-              tooltipTitle={t(
-                'Your peer nostr public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.',
-              )}
-              label={t('Peer public key')}
-              value={nip19.npubEncode(
-                order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
-              )}
-              copiedTitle={t('Copied!')}
-            />
+            {order && (
+              <CredentialTextfield
+                tooltipTitle={t(
+                  'Your peer nostr public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.',
+                )}
+                label={t('Peer public key')}
+                value={nip19.npubEncode(
+                  order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
+                )}
+                copiedTitle={t('Copied!')}
+              />
+            )}
 
             <CredentialTextfield
               tooltipTitle={t(
                 'Your nostr private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.',
               )}
-              label={t('Your nostr private key')}
+              label={t('Your private key')}
               value={slot?.nostrSecKey ? nip19.nsecEncode(slot?.nostrSecKey) : ''}
               copiedTitle={t('Copied!')}
             />
@@ -273,18 +278,19 @@ const AuditPGPDialog = ({
                     variant='contained'
                     onClick={() => {
                       const object = {
-                        own_public_key: nip19.npubEncode(
-                          order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey,
-                        ),
-                        peer_public_key: nip19.npubEncode(
-                          order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
-                        ),
+                        own_public_key: nip19.npubEncode(slot?.nostrPubKey ?? ''),
                         private_key: slot?.nostrSecKey ? nip19.nsecEncode(slot?.nostrSecKey) : '',
                       };
 
+                      if (order) {
+                        object.peer_public_key = nip19.npubEncode(
+                          order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
+                        );
+                      }
+
                       return client === 'mobile'
                         ? systemClient.copyToClipboard(JSON.stringify(object))
-                        : saveAsJson(`nostr_keys_${order.id}.json`, object);
+                        : saveAsJson(`nostr_keys_${order?.id ?? ''}.json`, object);
                     }}
                   >
                     <div style={{ width: 26, height: 18 }}>
@@ -298,34 +304,36 @@ const AuditPGPDialog = ({
                 </Tooltip>
               </Grid>
 
-              <Grid item style={{ width: '50%' }}>
-                <Tooltip
-                  placement='top'
-                  enterTouchDelay={0}
-                  enterDelay={1000}
-                  enterNextDelay={2000}
-                  title={t('Save messages as a JSON file')}
-                >
-                  <Button
-                    size='small'
-                    color='primary'
-                    variant='contained'
-                    onClick={() => {
-                      return client === 'mobile'
-                        ? systemClient.copyToClipboard(JSON.stringify(messages))
-                        : saveAsJson(`nostr_messages_${order.id}.json`, messages);
-                    }}
+              {messages && (
+                <Grid item style={{ width: '50%' }}>
+                  <Tooltip
+                    placement='top'
+                    enterTouchDelay={0}
+                    enterDelay={1000}
+                    enterNextDelay={2000}
+                    title={t('Save messages as a JSON file')}
                   >
-                    <div style={{ width: 28, height: 20 }}>
-                      <ExportIcon sx={{ width: 18, height: 18 }} />
-                    </div>
-                    {t('Messages')}
-                    <div style={{ width: 26, height: 20 }}>
-                      <ForumIcon sx={{ width: 20, height: 20 }} />
-                    </div>
-                  </Button>
-                </Tooltip>
-              </Grid>
+                    <Button
+                      size='small'
+                      color='primary'
+                      variant='contained'
+                      onClick={() => {
+                        return client === 'mobile'
+                          ? systemClient.copyToClipboard(JSON.stringify(messages))
+                          : saveAsJson(`nostr_messages_${order?.id ?? ''}.json`, messages);
+                      }}
+                    >
+                      <div style={{ width: 28, height: 20 }}>
+                        <ExportIcon sx={{ width: 18, height: 18 }} />
+                      </div>
+                      {t('Messages')}
+                      <div style={{ width: 26, height: 20 }}>
+                        <ForumIcon sx={{ width: 20, height: 20 }} />
+                      </div>
+                    </Button>
+                  </Tooltip>
+                </Grid>
+              )}
             </Grid>
           </Grid>
         </div>

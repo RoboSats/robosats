@@ -1,13 +1,11 @@
 import React, { useContext } from 'react';
 import { MemoryRouter, HashRouter, BrowserRouter, BrowserRouterProps } from 'react-router-dom';
 import { Box, Typography, styled } from '@mui/material';
-import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../contexts/AppContext';
 
 import { NavBar, MainDialogs } from './';
-import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
-import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 import Routes from './Routes';
 import TopBar from './TopBar';
 
@@ -44,21 +42,10 @@ const MainBox = styled(Box)<MainBoxProps>((props) => ({
 
 const Main: React.FC = () => {
   const { t } = useTranslation();
-  const { settings, page, setOpen, windowSize, navbarHeight } =
-    useContext<UseAppStoreType>(AppContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const mobileView = windowSize?.width < 50;
+  const { settings, navbarHeight } = useContext<UseAppStoreType>(AppContext);
 
   return (
     <Router>
-      <Notifications
-        page={page}
-        openProfile={() => {
-          setOpen({ ...closeAll, profile: true });
-        }}
-        rewards={garage.getSlot()?.getRobot()?.earnedRewards}
-        windowWidth={windowSize?.width}
-      />
       {settings.network === 'testnet' ? (
         <TestnetTypography color='secondary' align='center'>
           <i>{t('Using Testnet Bitcoin')}</i>
@@ -66,7 +53,7 @@ const Main: React.FC = () => {
       ) : (
         <></>
       )}
-      {mobileView && <TopBar />}
+      <TopBar />
       <MainBox navbarHeight={navbarHeight}>
         <Routes />
       </MainBox>

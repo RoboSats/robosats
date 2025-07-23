@@ -266,6 +266,21 @@ def nostr_send_order_event(order_id=None):
     return
 
 
+@shared_task(name="", ignore_result=True, time_limit=120)
+def nostr_send_notification_event(robot_id=None, order_id=None, text=None):
+    if order_id:
+        from api.models import Robot, Order
+        from api.nostr import Nostr
+
+        robot = Robot.objects.get(id=robot_id)
+        order = Order.objects.get(id=order_id)
+
+        nostr = Nostr()
+        async_to_sync(nostr.send_notification_event)(robot, order, text)
+
+    return
+
+
 @shared_task(name="send_notification", ignore_result=True, time_limit=120)
 def send_notification(order_id=None, chat_message_id=None, message=None):
     if order_id:

@@ -1,5 +1,5 @@
-import { type Event } from 'nostr-tools';
-import { type Coordinator, type Settings } from '../../models';
+import { nip17, type Event } from 'nostr-tools';
+import { Garage, type Coordinator, type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
@@ -26,7 +26,8 @@ class RoboPool {
     this.close();
     this.relays = [];
     const federationRelays = coordinators.map((coord) => coord.getRelayUrl(hostUrl));
-    const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
+    // const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
+    const hostRelay = 'ws://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion/relay/';
     if (hostRelay) this.relays.push(hostRelay);
 
     while (this.relays.length < 3) {
@@ -100,14 +101,17 @@ class RoboPool {
     }
     const authors = scope.map((f) => f.nostrHexPubkey).filter((item) => item !== undefined);
 
+    const subscribeBookPending = 'subscribeBookPending';
+    const subscribeBookSuccess = 'subscribeBookPending';
+
     const requestPending = [
       'REQ',
-      'subscribeBookPending',
+      subscribeBookPending,
       { authors, kinds: [38383], '#s': ['pending'] },
     ];
     const requestSuccess = [
       'REQ',
-      'subscribeBookSuccess',
+      subscribeBookSuccess,
       {
         authors,
         kinds: [38383],
@@ -118,6 +122,9 @@ class RoboPool {
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
+
+      if (![subscribeBookPending, subscribeBookSuccess].includes(jsonMessage[1])) return;
+
       if (jsonMessage[0] === 'EVENT') {
         const event: Event = jsonMessage[2];
         const network = event.tags.find((e) => e[0] === 'network');
@@ -135,14 +142,18 @@ class RoboPool {
       .map((f) => f.nostrHexPubkey)
       .filter((item) => item !== undefined);
 
+    const subscribeRatings = `subscribeRatings${id ?? ''}`;
     const requestRatings = [
       'REQ',
-      `subscribeRatings${id ?? ''}`,
+      subscribeRatings,
       { kinds: [31986], '#p': pubkeys ?? defaultPubkeys, since: 1746316800 },
     ];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
+
+      if (subscribeRatings !== jsonMessage[1]) return;
+
       if (jsonMessage[0] === 'EVENT') {
         events.onevent(jsonMessage[2]);
       } else if (jsonMessage[0] === 'EOSE') {
@@ -152,18 +163,38 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestRatings));
   };
 
-  subscribeChat = (hexPubKeys: string[], since: number, events: RoboPoolEvents): void => {
-    const requestRatings = ['REQ', 'subscribeChat', { kinds: [1059], '#p': hexPubKeys, since }];
+  subscribeNotifications = (garage: Garage, events: RoboPoolEvents): void => {
+    const subscribeChat = 'subscribeChat';
+    this.sendMessage(JSON.stringify(['CLOSE', subscribeChat]));
+
+    const hexPubKeys = Object.values(garage.slots).map((s) => s.nostrPubKey);
+
+    if (hexPubKeys.length === 0) return;
+
+    const requestNotifications = ['REQ', subscribeChat, { kinds: [1059], '#p': hexPubKeys }];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
+
+      if (subscribeChat !== jsonMessage[1]) return;
+
       if (jsonMessage[0] === 'EVENT') {
-        events.onevent(jsonMessage[2]);
+        const wrappedEvent: Event = jsonMessage[2];
+
+        const hexPubKey = wrappedEvent.tags.find((t) => t[0] == 'p')?.[1];
+
+        const slot = Object.values(garage.slots).find((s) => s.nostrPubKey == hexPubKey);
+
+        if (slot?.nostrSecKey) {
+          const unwrappedEvent = nip17.unwrapEvent(wrappedEvent, slot.nostrSecKey);
+          events.onevent(unwrappedEvent as Event);
+        }
       } else if (jsonMessage[0] === 'EOSE') {
         events.oneose();
       }
     });
-    this.sendMessage(JSON.stringify(requestRatings));
+
+    this.sendMessage(JSON.stringify(requestNotifications));
   };
 
   sendEvent = (event: Event): void => {
