@@ -128,6 +128,14 @@ class Garage {
     );
   };
 
+  getSlotByNostrPubKey: (nostrHexPubkey: string) => Slot | null = (nostrHexPubkey) => {
+    return (
+      Object.values(this.slots).find((slot) => {
+        return slot.nostrPubKey === nostrHexPubkey;
+      }) ?? null
+    );
+  };
+
   // Robots
   createRobot: (federation: Federation, token: string, skipSelect?: boolean) => Promise<void> =
     async (federation, token, skipSelect) => {

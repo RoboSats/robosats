@@ -330,10 +330,7 @@ export const ChatPrompt = ({
         }}
         order={order}
         messages={messages}
-        ownPubKey={garage.getSlot()?.getRobot()?.pubKey ?? ''}
-        ownEncPrivKey={garage.getSlot()?.getRobot()?.encPrivKey ?? ''}
         peerPubKey={peerPubKey ?? ''}
-        passphrase={garage.getSlot()?.token ?? ''}
         onClickBack={() => {
           setAudit(false);
         }}

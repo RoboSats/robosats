@@ -5,6 +5,7 @@ import MenuDrawer from './MenuDrawer';
 import NotificationsDrawer from './NotificationsDrawer';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
+import { LoadingButton } from '@mui/lab';
 
 const TopBar = (): React.JSX.Element => {
   const { t } = useTranslation();
@@ -12,6 +13,7 @@ const TopBar = (): React.JSX.Element => {
 
   const [showMenuDrawer, setShowMenuDrawer] = useState<boolean>(false);
   const [showNotificationsDrawer, setShowNotificationsDrawer] = useState<boolean>(false);
+  const [loadingNotifications, setLoadingNotifications] = useState<boolean>(true);
 
   const mobileView = windowSize?.width < 50;
 
@@ -35,19 +37,23 @@ const TopBar = (): React.JSX.Element => {
         disableHoverListener={settings.connection === 'nostr'}
       >
         <Grid item>
-          <Button
-            size='large'
-            color='inherit'
+          <LoadingButton
             aria-label='open notifications drawer'
+            color='primary'
+            size='large'
             onClick={() => setShowNotificationsDrawer((s) => !s)}
             disabled={settings.connection !== 'nostr'}
-          >
-            <Notifications />
-          </Button>
+            loading={loadingNotifications}
+            endIcon={<Notifications />}
+          />
         </Grid>
       </Tooltip>
       <MenuDrawer show={showMenuDrawer} setShow={setShowMenuDrawer} />
-      <NotificationsDrawer show={showNotificationsDrawer} setShow={setShowNotificationsDrawer} />
+      <NotificationsDrawer
+        show={showNotificationsDrawer}
+        setShow={setShowNotificationsDrawer}
+        setLoading={setLoadingNotifications}
+      />
     </Grid>
   );
 };

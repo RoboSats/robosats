@@ -520,18 +520,15 @@ export const LightningPayoutForm = ({
             <Grid item>
               {lightning.useLnproxy ? (
                 <TextField
-                  fullWidth={true}
+                  fullWidth
                   disabled={!lightning.useLnproxy}
                   error={lightning.badLnproxy !== ''}
-                  FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
                   helperText={lightning.badLnproxy !== '' ? t(lightning.badLnproxy) : ''}
                   label={t('Invoice to wrap')}
                   required
                   value={lightning.lnproxyInvoice}
-                  inputProps={{
-                    style: { textAlign: 'center' },
-                  }}
                   variant='outlined'
+                  maxRows={1}
                   onChange={(e) => {
                     setLightning({ ...lightning, lnproxyInvoice: e.target.value ?? '' });
                   }}
@@ -540,22 +537,17 @@ export const LightningPayoutForm = ({
                 <></>
               )}
               <TextField
-                fullWidth={true}
+                fullWidth
                 sx={lightning.useLnproxy ? { borderRadius: 0 } : {}}
                 disabled={lightning.useLnproxy}
                 error={lightning.badInvoice !== ''}
                 helperText={lightning.badInvoice !== '' ? t(lightning.badInvoice) : ''}
-                FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
                 label={lightning.useLnproxy ? t('Wrapped invoice') : t('Payout Lightning Invoice')}
                 required
                 value={lightning.invoice}
-                inputProps={{
-                  style: { textAlign: 'center', maxHeight: '8em' },
-                }}
                 variant={lightning.useLnproxy ? 'filled' : 'standard'}
                 multiline={!lightning.useLnproxy}
-                minRows={3}
-                maxRows={5}
+                maxRows={1}
                 onChange={(e) => {
                   setLightning({ ...lightning, invoice: e.target.value ?? '' });
                 }}

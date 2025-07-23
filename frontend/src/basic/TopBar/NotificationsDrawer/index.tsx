@@ -1,22 +1,59 @@
-import React, { useContext, useEffect } from 'react';
-import { Box, Drawer, List, ListItem, Typography, useTheme } from '@mui/material';
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  Box,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  Snackbar,
+  SnackbarContent,
+  useTheme,
+} from '@mui/material';
+import defaultFederation from '../../../../static/federation.json';
 import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
-import { RoboSatsTextIcon } from '../../../components/Icons';
-import { useTranslation } from 'react-i18next';
+import { type Event } from 'nostr-tools';
 import { UseFederationStoreType, FederationContext } from '../../../contexts/FederationContext';
 import { GarageContext, UseGarageStoreType } from '../../../contexts/GarageContext';
+import NotificationCard from './NotificationCard';
+import { Coordinator } from '../../../models';
+import { Close } from '@mui/icons-material';
+import { systemClient } from '../../../services/System';
+import { useNavigate } from 'react-router-dom';
+import arraysAreDifferent from '../../../utils/array';
 
 interface NotificationsDrawerProps {
   show: boolean;
   setShow: (show: boolean) => void;
+  setLoading: (loading: boolean) => void;
 }
 
-const NotificationsDrawer = ({ show, setShow }: NotificationsDrawerProps): React.JSX.Element => {
-  const { t } = useTranslation();
+const defaultPubkeys = Object.values(defaultFederation)
+  .map((f) => f.nostrHexPubkey)
+  .filter((item) => item !== undefined);
+
+const NotificationsDrawer = ({
+  show,
+  setShow,
+  setLoading,
+}: NotificationsDrawerProps): React.JSX.Element => {
   const theme = useTheme();
-  const { page, settings } = useContext<UseAppStoreType>(AppContext);
+  const navigate = useNavigate();
+  const { page, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+
+  const [messages, setMessages] = useState<Map<string, Event>>(new Map());
+  const [openSnak, setOpenSnak] = React.useState<boolean>(false);
+  const [snakEvent, setSnakevent] = React.useState<Event>();
+  const [subscribedTokens, setSubscribedTokens] = React.useState<string[]>([]);
+  const [_, setLastNotification] = React.useState<number>(
+    parseInt(
+      systemClient.getItem('last_notification') === ''
+        ? '0'
+        : (systemClient.getItem('last_notification') ?? '0'),
+      10,
+    ),
+  );
 
   useEffect(() => {
     setShow(false);
@@ -24,45 +61,108 @@ const NotificationsDrawer = ({ show, setShow }: NotificationsDrawerProps): React
 
   useEffect(() => {
     if (settings.connection === 'nostr' && !federation.loading) loadNotifciationsNostr();
-  }, [settings.connection, federation.loading]);
+  }, [settings.connection, federation.loading, slotUpdatedAt]);
 
   const loadNotifciationsNostr = (): void => {
+    const tokens = Object.keys(garage.slots);
+    if (!arraysAreDifferent(subscribedTokens, tokens)) return;
+
+    setSubscribedTokens(tokens);
     federation.roboPool.subscribeNotifications(garage, {
-      onevent: (_event) => {},
-      oneose: () => {},
+      onevent: (event) => {
+        if (defaultPubkeys.includes(event.pubkey)) {
+          setLastNotification((last) => {
+            if (last < event.created_at) {
+              setSnakevent(event);
+              setOpenSnak(true);
+              systemClient.setItem('last_notification', event.created_at.toString());
+              return event.created_at;
+            } else {
+              return last;
+            }
+          });
+          setMessages((msg) => {
+            msg.set(event.id, event);
+            return msg;
+          });
+        }
+      },
+      oneose: () => setLoading(false),
     });
   };
 
+  const handleCloseSnak = () => {
+    setOpenSnak(false);
+  };
+
+  const handleOnClickSnak = () => {
+    const orderId = snakEvent?.tags.find((t) => t[0] === 'order_id')?.[1];
+    if (orderId) {
+      const nostrHexPubkey = snakEvent.tags.find((t) => t[0] === 'p')?.[1];
+      const slot = garage.getSlotByNostrPubKey(nostrHexPubkey ?? '');
+      if (slot?.token) {
+        setShow(false);
+        garage.setCurrentSlot(slot.token);
+        navigateToPage(`order/${orderId.replace('#', '/')}`, navigate);
+      }
+    }
+  };
+
   return (
-    <Drawer anchor='right' open={show} onClose={() => setShow(false)}>
-      <Box sx={{ width: 270, height: '100%' }} role='presentation'>
-        <List sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <ListItem disablePadding sx={{ display: 'flex', flexDirection: 'column' }}>
-            <svg width={0} height={0}>
-              <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
-                <stop offset={0} stopColor={theme.palette.primary.main} />
-                <stop offset={1} stopColor={theme.palette.secondary.main} />
-              </linearGradient>
-            </svg>
-            <RoboSatsTextIcon
-              sx={{
-                fill: 'url(#linearColors)',
-                height: `3.5em`,
-                width: `10em`,
-              }}
-            />
-            <Typography
-              lineHeight={0.82}
-              sx={{ position: 'relative', bottom: '0.3em' }}
-              color='secondary'
-              align='center'
-            >
-              {t('A Simple and Private LN P2P Exchange')}
-            </Typography>
-          </ListItem>
-        </List>
-      </Box>
-    </Drawer>
+    <>
+      <Drawer anchor='right' open={show} onClose={() => setShow(false)}>
+        <Box sx={{ width: 270, height: '100%' }} role='presentation'>
+          <List
+            sx={{ display: 'flex', flexDirection: 'column', height: '100%', paddingRight: '16px' }}
+          >
+            {Array.from(messages.entries())
+              .sort((a, b) => {
+                return b[1].created_at - a[1].created_at;
+              })
+              .map(([index, event]) => {
+                const coordinator: Coordinator = Object.values(defaultFederation).find(
+                  (c) => c.nostrHexPubkey === event.pubkey,
+                );
+                const nostrHexPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
+                const slot = garage.getSlotByNostrPubKey(nostrHexPubkey ?? '');
+
+                if (!coordinator) return;
+
+                return (
+                  <ListItem disablePadding style={{ margin: 8 }} key={index}>
+                    <NotificationCard
+                      event={event}
+                      coordinator={coordinator}
+                      robotHashId={slot?.hashId ?? ''}
+                      setShow={setShow}
+                    />
+                  </ListItem>
+                );
+              })}
+          </List>
+        </Box>
+      </Drawer>
+      <Snackbar
+        style={{ margin: '0 8px' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        open={openSnak}
+        onClose={handleCloseSnak}
+        onClick={handleOnClickSnak}
+      >
+        <SnackbarContent
+          style={{
+            background: theme.palette.mode === 'light' ? '#d1e6fa' : '#082745',
+            color: theme.palette.text.secondary,
+          }}
+          message={snakEvent?.content}
+          action={
+            <IconButton size='small' aria-label='close' color='inherit' onClick={handleCloseSnak}>
+              <Close fontSize='small' />
+            </IconButton>
+          }
+        />
+      </Snackbar>
+    </>
   );
 };
 

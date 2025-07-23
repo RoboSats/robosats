@@ -26,8 +26,7 @@ class RoboPool {
     this.close();
     this.relays = [];
     const federationRelays = coordinators.map((coord) => coord.getRelayUrl(hostUrl));
-    // const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
-    const hostRelay = 'ws://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion/relay/';
+    const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
     if (hostRelay) this.relays.push(hostRelay);
 
     while (this.relays.length < 3) {
@@ -164,11 +163,13 @@ class RoboPool {
   };
 
   subscribeNotifications = (garage: Garage, events: RoboPoolEvents): void => {
+    const subscribeChat = 'subscribeChat';
+    this.sendMessage(JSON.stringify(['CLOSE', subscribeChat]));
+
     const hexPubKeys = Object.values(garage.slots).map((s) => s.nostrPubKey);
 
     if (hexPubKeys.length === 0) return;
 
-    const subscribeChat = 'subscribeChat';
     const requestNotifications = ['REQ', subscribeChat, { kinds: [1059], '#p': hexPubKeys }];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
@@ -185,7 +186,6 @@ class RoboPool {
 
         if (slot?.nostrSecKey) {
           const unwrappedEvent = nip17.unwrapEvent(wrappedEvent, slot.nostrSecKey);
-          console.log('unwrappedEvent', unwrappedEvent);
           events.onevent(unwrappedEvent as Event);
         }
       } else if (jsonMessage[0] === 'EOSE') {

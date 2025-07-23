@@ -53,7 +53,7 @@ class Nostr:
             Tag.parse(
                 [
                     "order_id",
-                    f"{config("COORDINATOR_ALIAS", cast=str).lower()}#{order.id}",
+                    f"{config("COORDINATOR_ALIAS", cast=str).lower()}/{order.id}",
                 ]
             ),
             Tag.parse(["status", str(order.status)]),

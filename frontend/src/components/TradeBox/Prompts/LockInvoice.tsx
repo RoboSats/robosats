@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Box, Grid, Typography, TextField, Tooltip, useTheme } from '@mui/material';
+import { Button, Box, Grid, Typography, Tooltip, useTheme } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import QRCode from 'react-qr-code';
 import { type Order } from '../../../models';
@@ -127,15 +127,7 @@ export const LockInvoicePrompt = ({
       </Grid>
 
       <Grid item xs={12}>
-        <TextField
-          hiddenLabel
-          variant='standard'
-          size='small'
-          value={invoice ?? 'Undefined: BOLT11 invoice not received'}
-          disabled={true}
-          helperText={helperText}
-          color='secondary'
-        />
+        <Typography variant='caption'>{helperText}</Typography>
       </Grid>
     </Grid>
   );

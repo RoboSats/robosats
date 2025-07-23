@@ -114,10 +114,8 @@ export const OnchainPayoutForm = ({
               label={t('Bitcoin Address')}
               required
               value={onchain.address}
-              fullWidth={true}
-              inputProps={{
-                style: { textAlign: 'center' },
-              }}
+              fullWidth
+              maxRows={1}
               onChange={(e) => {
                 setOnchain({ ...onchain, address: e.target.value });
               }}
