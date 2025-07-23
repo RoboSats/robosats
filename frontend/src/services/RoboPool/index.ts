@@ -26,7 +26,8 @@ class RoboPool {
     this.close();
     this.relays = [];
     const federationRelays = coordinators.map((coord) => coord.getRelayUrl(hostUrl));
-    const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
+    // const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
+    const hostRelay = 'ws://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion/relay/';
     if (hostRelay) this.relays.push(hostRelay);
 
     while (this.relays.length < 3) {
@@ -178,14 +179,13 @@ class RoboPool {
       if (jsonMessage[0] === 'EVENT') {
         const wrappedEvent: Event = jsonMessage[2];
 
-        console.log('wrappedEvent', wrappedEvent);
-
         const hexPubKey = wrappedEvent.tags.find((t) => t[0] == 'p')?.[1];
 
         const slot = Object.values(garage.slots).find((s) => s.nostrPubKey == hexPubKey);
 
         if (slot?.nostrSecKey) {
           const unwrappedEvent = nip17.unwrapEvent(wrappedEvent, slot.nostrSecKey);
+          console.log('unwrappedEvent', unwrappedEvent);
           events.onevent(unwrappedEvent as Event);
         }
       } else if (jsonMessage[0] === 'EOSE') {
