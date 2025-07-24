@@ -26,7 +26,7 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface OnboardingProps {
-  setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
+  setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   robot: Robot;
   setRobot: (state: Robot) => void;
   inputToken: string;

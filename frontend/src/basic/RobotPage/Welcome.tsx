@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface WelcomeProps {
-  setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
+  setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   width: number;
   setInputToken: (state: string) => void;
 }
