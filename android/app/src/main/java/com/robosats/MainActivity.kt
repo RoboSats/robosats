@@ -19,6 +19,8 @@ import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.content.Intent
+import android.net.Uri
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -185,6 +187,38 @@ class MainActivity : AppCompatActivity() {
                 // Success - now configure WebViewClient and load URL on UI thread
                 runOnUiThread {
                     updateStatus("Secure connection established. Loading app...")
+
+                    // Set up WebViewClient that allows external links and deep links to be opened
+                    webView.webViewClient = object : WebViewClient() {
+                        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                            val url = request.url.toString()
+                            val uri = request.url
+
+                            if (url.startsWith("file:///android_asset/")) return false
+
+                            try {
+                                Log.d("ExternalLink", "Attempting to open: $url")
+
+                                val intent = Intent(Intent.ACTION_VIEW, uri)
+                                if (intent.resolveActivity(packageManager) != null) {
+                                    startActivity(intent)
+                                    Log.d("ExternalLink", "Successfully opened link in external app")
+                                } else {
+                                    Log.w("ExternalLink", "No app found to handle: $url")
+                                    if (url.startsWith("http://") || url.startsWith("https://")) {
+                                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                        startActivity(browserIntent)
+                                        Log.d("ExternalLink", "Opened http/https link in browser")
+                                    }
+                                }
+
+                                return true
+                            } catch (e: Exception) {
+                                Log.e("ExternalLink", "Failed to open external link: ${e.message}", e)
+                                return true
+                            }
+                        }
+                    }
 
                     // Set up WebChromeClient with restricted permissions
                     webView.webChromeClient = object : WebChromeClient() {
