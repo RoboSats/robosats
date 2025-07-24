@@ -319,7 +319,14 @@ class WebAppInterface(private val context: Context, private val webView: WebView
     }
 
     private fun onWsMessage(path: String?, message: String?) {
-        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWSMessage('$path', '$message')")
+        val escapedMessage = message
+            ?.replace("\\", "\\\\")
+            ?.replace("'", "\\'")
+            ?.replace("\"", "\\\"")
+            ?.replace("\n", "\\n")
+            ?.replace("\r", "\\r")
+            ?.replace("\t", "\\t")
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWSMessage('$path', '$escapedMessage')")
     }
 
     private fun onWsError(path: String?) {
