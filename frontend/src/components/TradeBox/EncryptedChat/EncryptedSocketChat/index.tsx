@@ -21,7 +21,7 @@ import { Send } from '@mui/icons-material';
 
 const audioPath =
   getSettings().client == 'mobile'
-    ? 'file:///android_asset//static/assets/sounds'
+    ? 'file:///android_asset/static/assets/sounds'
     : '/static/assets/sounds';
 
 interface Props {
@@ -135,7 +135,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
         );
 
         connection.onMessage((message) => {
-          setServerMessages((prev) => [...prev, message]);
+          setServerMessages((prev) => [...prev, message as ServerMessage]);
         });
         connection.onClose(() => {
           setConnected(false);

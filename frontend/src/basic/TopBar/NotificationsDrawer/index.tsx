@@ -23,7 +23,7 @@ import arraysAreDifferent from '../../../utils/array';
 import getSettings from '../../../utils/settings';
 
 const path =
-  getSettings().client == 'mobile'
+  getSettings().client === 'mobile'
     ? 'file:///android_asset/static/assets/sounds'
     : '/static/assets/sounds';
 
@@ -98,12 +98,16 @@ const NotificationsDrawer = ({
 
     const soundType = soundByStatus[orderStatus] ?? 'ding';
     const sound = audio[soundType];
+    console.log(sound);
     void sound.play();
   };
 
   const loadNotifciationsNostr = (): void => {
     const tokens = Object.keys(garage.slots);
-    if (!arraysAreDifferent(subscribedTokens, tokens)) return;
+    if (!arraysAreDifferent(subscribedTokens, tokens)) {
+      setLoading(false);
+      return;
+    }
 
     cleanUpNotifications();
     setSubscribedTokens(tokens);
