@@ -388,6 +388,7 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             .replace("\"", "\\\"")
             .replace("\n", "\\n")
             .replace("\r", "\\r")
+            .replace("\t", "\\t")
             .replace("<", "\\u003C")
             .replace(">", "\\u003E")
             .replace("&", "\\u0026")
