@@ -28,7 +28,7 @@ import { DeleteRobotConfirmationDialog } from '../../components/Dialogs';
 interface RobotProfileProps {
   robot: Robot;
   setRobot: (state: Robot) => void;
-  setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
+  setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   inputToken: string;
   setInputToken: (state: string) => void;
   width: number;

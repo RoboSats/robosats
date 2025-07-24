@@ -8,7 +8,7 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 interface Props {
-  setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
+  setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   setInputToken: (inputToken: string) => void;
 }
 
