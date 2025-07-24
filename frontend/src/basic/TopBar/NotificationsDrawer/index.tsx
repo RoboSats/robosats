@@ -98,7 +98,9 @@ const NotificationsDrawer = ({
 
     const soundType = soundByStatus[orderStatus] ?? 'ding';
     const sound = audio[soundType];
-    console.log(sound);
+
+    void sound.play();
+    void sound.play();
     void sound.play();
   };
 
