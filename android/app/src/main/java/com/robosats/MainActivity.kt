@@ -1,5 +1,6 @@
 package com.robosats
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.pm.ActivityInfo
@@ -20,14 +21,19 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
 
 class MainActivity : AppCompatActivity() {
+    private val requestCodePostNotifications: Int = 1
     private lateinit var webView: WebView
     private lateinit var torKmp: TorKmp
     private lateinit var loadingContainer: ConstraintLayout
@@ -52,6 +58,28 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize Tor and setup WebView only after Tor is properly connected
         initializeTor()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                requestCodePostNotifications,
+            )
+        }
+    }
+
+    private fun initializeNotifications() {
+        startForegroundService(
+            Intent(
+                this,
+                NotificationsService::class.java,
+            ),
+        )
     }
 
     private fun initializeTor() {
@@ -255,6 +283,8 @@ class MainActivity : AppCompatActivity() {
 
                     // Now it's safe to load the local HTML file
                     webView.loadUrl("file:///android_asset/index.html")
+
+                    initializeNotifications()
                 }
             } catch (e: Exception) {
                 Log.e("WebViewSetup", "Security error in WebView setup: ${e.message}", e)

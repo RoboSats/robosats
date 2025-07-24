@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.robosats"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 15
         versionName = "0.8.1-alpha"
@@ -72,6 +72,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.kmp.tor)
+    implementation(libs.quartz)
+    implementation(libs.ammolite)
     // Add the KMP Tor binary dependency (contains the native .so files)
     implementation(libs.kmp.tor.binary)
     implementation(libs.androidx.activity)
