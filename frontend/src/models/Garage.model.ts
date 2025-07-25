@@ -51,9 +51,9 @@ class Garage {
     this.triggerHook('onSlotUpdate');
   };
 
-  loadSlots = (): void => {
+  loadSlots = async (): Promise<void> => {
     this.slots = {};
-    const slotsDump: string = systemClient.getItem('garage_slots') ?? '';
+    const slotsDump: string = (await systemClient.getItem('garage_slots')) ?? '';
 
     if (slotsDump !== '') {
       const rawSlots: Record<string, object> = JSON.parse(slotsDump);

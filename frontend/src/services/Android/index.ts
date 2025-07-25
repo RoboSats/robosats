@@ -7,6 +7,9 @@ declare global {
 }
 
 interface AndroidAppRobosats {
+  getEncryptedStorage: (uuid: string, key: string) => void;
+  setEncryptedStorage: (uuid: string, key: string, value: string) => void;
+  deleteEncryptedStorage: (uuid: string, key: string) => void;
   generateRoboname: (uuid: string, initialString: string) => void;
   generateRobohash: (uuid: string, initialString: string) => void;
   copyToClipboard: (value: string) => void;

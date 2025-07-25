@@ -59,14 +59,13 @@ const NotificationsDrawer = ({
   const [openSnak, setOpenSnak] = React.useState<boolean>(false);
   const [snakEvent, setSnakevent] = React.useState<Event>();
   const [subscribedTokens, setSubscribedTokens] = React.useState<string[]>([]);
-  const [_, setLastNotification] = React.useState<number>(
-    parseInt(
-      systemClient.getItem('last_notification') === ''
-        ? '0'
-        : (systemClient.getItem('last_notification') ?? '0'),
-      10,
-    ),
-  );
+  const [_, setLastNotification] = React.useState<number>(0);
+
+  useEffect(() => {
+    systemClient.getItem('last_notification').then((result) => {
+      setLastNotification(!result || result === '' ? 0 : parseInt(result, 10));
+    });
+  }, []);
 
   useEffect(() => {
     setShow(false);

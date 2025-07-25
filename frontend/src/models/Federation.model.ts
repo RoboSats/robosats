@@ -8,7 +8,6 @@ import {
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
-import { systemClient } from '../services/System';
 import { federationLottery, getHost } from '../utils';
 import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
@@ -98,9 +97,6 @@ export class Federation {
     } else {
       void this.loadBook();
     }
-
-    const federationUrls = Object.values(this.coordinators).map((c) => c.url);
-    systemClient.setCookie('federation', JSON.stringify(federationUrls));
   };
 
   refreshBookHosts: (robosatsOnly: boolean) => void = (robosatsOnly) => {

@@ -66,7 +66,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -74,6 +73,7 @@ dependencies {
     implementation(libs.kmp.tor)
     implementation(libs.quartz)
     implementation(libs.ammolite)
+    implementation(libs.security.crypto.ktx)
     // Add the KMP Tor binary dependency (contains the native .so files)
     implementation(libs.kmp.tor.binary)
     implementation(libs.androidx.activity)

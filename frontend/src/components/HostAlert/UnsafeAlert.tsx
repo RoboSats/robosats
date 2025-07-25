@@ -41,9 +41,9 @@ const UnsafeAlert = (): React.JSX.Element => {
   const [unsafeClient, setUnsafeClient] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!systemClient.getItem('unsafe-alert')) {
-      setShow(true);
-    }
+    systemClient.getItem('unsafe-alert').then((result) => {
+      if (result) setShow(true);
+    });
   }, []);
 
   const checkClient = (): void => {

@@ -28,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.robosats.models.EncryptedStorage
 import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
@@ -41,6 +42,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        EncryptedStorage.init(this)
 
         // Lock the screen orientation to portrait mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -73,6 +76,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Initialize Notifications service
+     */
     private fun initializeNotifications() {
         startForegroundService(
             Intent(
@@ -82,8 +88,10 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Initialize TorKmp if it's not already initialized
+     */
     private fun initializeTor() {
-        // Initialize TorKmp if it's not already initialized
         try {
             try {
                 torKmp = TorKmpManager.getTorKmpObject()
@@ -170,6 +178,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Configures initial WebView settings with external blocked
+     */
     private fun setupWebView() {
         // Double-check Tor is connected before proceeding
         if (!torKmp.isConnected()) {
@@ -366,8 +377,6 @@ class MainActivity : AppCompatActivity() {
         webSettings.useWideViewPort = true
         webSettings.textZoom = 100
     }
-
-    // SSL error description method removed as we're not using SSL
 
     /**
      * Clear all WebView data when activity is destroyed

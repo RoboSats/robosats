@@ -1,103 +1,119 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="onion-location" content="{{ ONION_LOCATION }}" />
-    <% if (!mobile) { %>
-      <link rel="shortcut icon" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" />
-      <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-32x32.png" sizes="32x32">
-      <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" sizes="96x96">
-      <link rel="icon" type="image/png" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-192x192.png" sizes="192x192">
+
+<head>
+  <meta http-equiv="onion-location" content="{{ ONION_LOCATION }}" />
+  <% if (!mobile) { %>
+    <link rel="shortcut icon" href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" />
+    <link rel="icon" type="image/png"
+      href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png"
+      href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png"
+      href="<%= htmlWebpackPlugin.options.basePath %>static/assets/images/favicon-192x192.png" sizes="192x192">
     <% } %>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="A simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. No user registration required.">
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta name="description"
+        content="A simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. No user registration required.">
 
-    <% if (pro) { %>
-      <title>RoboSats PRO - Simple and Private Bitcoin Exchange</title>
-      <link rel="stylesheet" href="<%= htmlWebpackPlugin.options.basePath %>static/css_pro/fonts.css"/>
-      <link rel="stylesheet" type="text/css" href="<%= htmlWebpackPlugin.options.basePath %>static/css_pro/react-grid-layout.css"/>
-      <link rel="stylesheet" type="text/css" href="<%= htmlWebpackPlugin.options.basePath %>static/css_pro/react-resizable.css"/>
-    <% } else { %>
-      <title>RoboSats - Simple and Private Bitcoin Exchange</title>
-      <link rel="stylesheet" href="<%= htmlWebpackPlugin.options.basePath %>static/css/fonts.css"/>
-    <% } %>
+      <% if (pro) { %>
+        <title>RoboSats PRO - Simple and Private Bitcoin Exchange</title>
+        <link rel="stylesheet" href="<%= htmlWebpackPlugin.options.basePath %>static/css_pro/fonts.css" />
+        <link rel="stylesheet" type="text/css"
+          href="<%= htmlWebpackPlugin.options.basePath %>static/css_pro/react-grid-layout.css" />
+        <link rel="stylesheet" type="text/css"
+          href="<%= htmlWebpackPlugin.options.basePath %>static/css_pro/react-resizable.css" />
+        <% } else { %>
+          <title>RoboSats - Simple and Private Bitcoin Exchange</title>
+          <link rel="stylesheet" href="<%= htmlWebpackPlugin.options.basePath %>static/css/fonts.css" />
+          <% } %>
 
-    <link rel="stylesheet" type="text/css" href="<%= htmlWebpackPlugin.options.basePath %>static/css/loader.css"/>
-    <link rel="stylesheet" type="text/css" href="<%= htmlWebpackPlugin.options.basePath %>static/css/index.css"/>
-    <link rel="stylesheet" type="text/css" href="<%= htmlWebpackPlugin.options.basePath %>static/css/leaflet.css"/>
+            <link rel="stylesheet" type="text/css"
+              href="<%= htmlWebpackPlugin.options.basePath %>static/css/loader.css" />
+            <link rel="stylesheet" type="text/css"
+              href="<%= htmlWebpackPlugin.options.basePath %>static/css/index.css" />
+            <link rel="stylesheet" type="text/css"
+              href="<%= htmlWebpackPlugin.options.basePath %>static/css/leaflet.css" />
 
-    <style>
-      /* Styles for the JavaScript-disabled disclaimer */
-      .noscript-container {
-        max-width: 600px;
-        margin: 40px auto;
-        padding: 20px;
-        border: 2px solid #e74c3c;
-        background-color: #fdecea;
-        color: #c0392b;
-        text-align: center;
-        font-family: Arial, sans-serif;
-      }
-      .noscript-container h2 {
-        margin-top: 0;
-        font-size: 1.8em;
-      }
-      .noscript-container p {
-        font-size: 1.1em;
-        line-height: 1.4;
-      }
-      .noscript-container a {
-        color: #c0392b;
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- This block is only rendered if JavaScript is disabled -->
-    <noscript>
-      <div class="noscript-container">
-        <h2>JavaScript is Disabled</h2>
-        <p>This website requires JavaScript for full functionality. Please enable JavaScript in your browser settings to proceed.</p>
-        <p>If you’re using Tor Browser, ensure your "Security Level" is set to "Standard". If the issue persists, try clearing your cache and storage.</p>
-        <p>Need more help? Visit our support channel on Telegram: <a href="https://t.me/robosats" target="_blank" rel="noopener">t.me/robosats</a>.</p>
-      </div>
-    </noscript>
+            <style>
+              /* Styles for the JavaScript-disabled disclaimer */
+              .noscript-container {
+                max-width: 600px;
+                margin: 40px auto;
+                padding: 20px;
+                border: 2px solid #e74c3c;
+                background-color: #fdecea;
+                color: #c0392b;
+                text-align: center;
+                font-family: Arial, sans-serif;
+              }
 
-    <div id="main">
-      <div id="app">
-        <div class="loaderCenter">
-          <% if (!mobile) { %>
-            <div class="loaderSpinner"></div>
-            <div class="content-slider">
-              <div class="slider">
-                <div class="mask">
-                  <ul>
-                    <li class="anim1">
-                      <div class="quote">Looking for robot parts ...</div>
-                    </li>
-                    <li class="anim2">
-                      <div class="quote">Adding layers to the onion ...</div>
-                    </li>
-                    <li class="anim3">
-                      <div class="quote">Winning at game theory ...</div>
-                    </li>
-                    <li class="anim4">
-                      <div class="quote">Moving Sats at light speed ...</div>
-                    </li>
-                    <li class="anim5">
-                      <div class="quote">Hiding in 2^256 bits of entropy...</div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            <% } %>
+              .noscript-container h2 {
+                margin-top: 0;
+                font-size: 1.8em;
+              }
+
+              .noscript-container p {
+                font-size: 1.1em;
+                line-height: 1.4;
+              }
+
+              .noscript-container a {
+                color: #c0392b;
+                text-decoration: underline;
+              }
+            </style>
+</head>
+
+<body>
+  <!-- This block is only rendered if JavaScript is disabled -->
+  <noscript>
+    <div class="noscript-container">
+      <h2>JavaScript is Disabled</h2>
+      <p>This website requires JavaScript for full functionality. Please enable JavaScript in your browser settings to
+        proceed.</p>
+      <p>If you’re using Tor Browser, ensure your "Security Level" is set to "Standard". If the issue persists, try
+        clearing your cache and storage.</p>
+      <p>Need more help? Visit our support channel on Telegram: <a href="https://t.me/robosats" target="_blank"
+          rel="noopener">t.me/robosats</a>.</p>
+    </div>
+  </noscript>
+
+  <div id="main">
+    <div id="app">
+      <div class="loaderCenter">
+        <div class="loaderSpinner"></div>
+        <div class="content-slider">
+          <div class="slider">
+            <div class="mask">
+              <ul>
+                <li class="anim1">
+                  <div class="quote">Looking for robot parts ...</div>
+                </li>
+                <li class="anim2">
+                  <div class="quote">Adding layers to the onion ...</div>
+                </li>
+                <li class="anim3">
+                  <div class="quote">Winning at game theory ...</div>
+                </li>
+                <li class="anim4">
+                  <div class="quote">Moving Sats at light speed ...</div>
+                </li>
+                <li class="anim5">
+                  <div class="quote">Hiding in 2^256 bits of entropy...</div>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script>
-      window.RobosatsSettings = '<%= htmlWebpackPlugin.options.robosatsSettings %>';
-    </script>
-  </body>
+  <script>
+    window.RobosatsSettings = '<%= htmlWebpackPlugin.options.robosatsSettings %>';
+  </script>
+</body>
+
 </html>

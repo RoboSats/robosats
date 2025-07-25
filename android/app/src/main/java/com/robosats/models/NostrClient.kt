@@ -7,6 +7,7 @@ import com.vitorpamplona.ammolite.relays.Relay
 import com.vitorpamplona.ammolite.relays.RelayPool
 import com.vitorpamplona.ammolite.relays.TypedFilter
 import com.vitorpamplona.ammolite.relays.filters.SincePerRelayFilter
+import org.json.JSONObject
 
 object NostrClient {
     private var subscriptionNotificationId = "robosatsNotificationId"
@@ -41,6 +42,10 @@ object NostrClient {
     }
 
     private fun connectRelays() {
+        val garageString = EncryptedStorage.getEncryptedStorage("garage_slots")
+
+        val garage = JSONObject(garageString)
+
         val relays = emptyList<String>()
 
         relays.forEach {
