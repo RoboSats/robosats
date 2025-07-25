@@ -7,6 +7,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
 import com.robosats.models.EncryptedStorage
+import com.robosats.models.NostrClient
 import com.robosats.tor.TorKmpManager.getTorKmpObject
 import okhttp3.Call
 import okhttp3.Callback
@@ -166,11 +167,10 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         }
 
         try {
-            Log.d(TAG, "WebSocket opening: " + path)
+            Log.d(TAG, "WebSocket opening: $path")
             val client: OkHttpClient = Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
                 .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
-                .proxy(getTorKmpObject().proxy)
                 .build()
 
 
@@ -236,7 +236,7 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             return
         }
 
-        val websocket = webSockets.get(path)
+        val websocket = webSockets[path]
         if (websocket != null) {
             websocket.send(message)
             resolvePromise(uuid, "true")
@@ -355,6 +355,8 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         val sanitizedValue = value.trim()
 
         EncryptedStorage.setEncryptedStorage(sanitizedKey, sanitizedValue)
+
+        if (key == "federation_relays") NostrClient.refresh()
 
         // Safely encode and return the result
         resolvePromise(uuid, key)

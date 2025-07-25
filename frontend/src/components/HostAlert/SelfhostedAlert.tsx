@@ -9,7 +9,7 @@ const SelfhostedAlert = (): React.JSX.Element => {
 
   useEffect(() => {
     systemClient.getItem('selfhosted-alert').then((result) => {
-      if (result) setShow(true);
+      if (!result) setShow(true);
     });
   }, []);
 

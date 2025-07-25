@@ -13,6 +13,7 @@ import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 import eventToPublicOrder from '../utils/nostr';
 import RoboPool from '../services/RoboPool';
+import { systemClient } from '../services/System';
 
 type FederationHooks = 'onFederationUpdate';
 
@@ -61,6 +62,11 @@ export class Federation {
     if (tesnetHost) this.network = 'testnet';
     this.connection = null;
     this.roboPool = new RoboPool(settings);
+
+    if (settings.client === 'mobile') {
+      const federationUrls = Object.values(this.coordinators).map((c) => c.getRelayUrl());
+      systemClient.setItem('federation_relays', JSON.stringify(federationUrls));
+    }
   }
 
   private coordinators: Record<string, Coordinator>;

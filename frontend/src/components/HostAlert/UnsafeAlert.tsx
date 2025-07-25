@@ -42,7 +42,7 @@ const UnsafeAlert = (): React.JSX.Element => {
 
   useEffect(() => {
     systemClient.getItem('unsafe-alert').then((result) => {
-      if (result) setShow(true);
+      if (!result) setShow(true);
     });
   }, []);
 

@@ -279,5 +279,51 @@
     "mainnetNodesPubkeys": ["028059662c65626f3002290dd3151186bc1952726c03f56012406f3ceadb81cacc"],
     "testnetNodesPubkeys": [],
     "federated": true
+  },
+  "satstralia": {
+    "longAlias": "Satstralia",
+    "shortAlias": "satstralia",
+    "identifier": "satstralia",
+    "description": "A Decentralized, deflationary currency enthusiast. Hoping to add liquidity to a non-KYC means for purchasing and selling bitcoin. Robosats P2P solves many issues with the modern day fiat system, and FreedomSats is happy to aid in its decentralization. The focus of FreedomSats will be to ensure data privacy and uptime-consistency.",
+    "motto": "Liberty’s Network Above",
+    "color": "#5d2365",
+    "established": "2025-06-30",
+    "nostrHexPubkey": "116bf3493edd2136f5e0c6a11b6c24d0eb34bbd5bf8ede965a9548726de710c7",
+    "contact": {
+      "email": "FreedomSatoshis@proton.me",
+      "telegram": "@freedomsats",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FLjWY29_NGy7vujmzRCmnJocepWWMAk2D%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEAWRfXNPT2xQihjv0Ef2sV51J2YiAmboLcmE0adlEAv2c%253D%26q%3Dc%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
+      "pgp": "/static/federation/pgp/9D3D3BAF4744305EE3F0B837331AB575DD78D930.asc",
+      "nostr": "npub1mmfacq4p4xmpeevaz86fv5uuk073tuqry6sk73l9lrtkh2azf0dsykwxuj",
+      "website": null,
+      "fingerprint": "9D3D3BAF4744305EE3F0B837331AB575DD78D930"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Dispute Evidence Submission: If a dispute arises, you will be asked to provide only the transaction-related documentation needed to evaluate your claim—for example, transaction IDs, payment‐confirmation screenshots, or other pertinent records. Please keep a record of all relevant information.",
+      "Privacy Policy 2": "Limited Retention Period: All sensitive data gathered for the purpose of resolving a dispute will be retained strictly for the duration of that process. Once the issue is fully resolved, this information will be irrevocably and securely deleted",
+      "Data Policy 1": "No Third-Party Data Sharing: RoboSats is deliberately designed to collect no user data—no IP addresses, geolocation, or personal identifiers—and will never share information with outside parties.",
+      "Data Policy 2": "Ephemeral Log Retention: All operational logs required to run the coordinator are automatically deleted after seven days, unless they’re essential for an active dispute.",
+      "Rule 1:": "Please do not share any personal information through the chat, if possible share as little revealing information as possible.",
+      "Rule 2:": "Email is provided for convenience but other means of communication are recommended. Like Nostr/SimpleX/Telegram"
+    },
+    "mainnet": {
+      "onion": "http://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["028059662c65626f3002290dd3151186bc1952726c03f56012406f3ceadb81cacc"],
+    "testnetNodesPubkeys": [],
+    "federated": true
   }
 }

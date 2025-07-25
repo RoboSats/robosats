@@ -71,10 +71,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.kmp.tor)
-    implementation(libs.quartz)
-    implementation(libs.ammolite)
+    implementation(libs.quartz) {
+        exclude("net.java.dev.jna")
+    }
+    implementation(libs.ammolite) {
+        exclude("net.java.dev.jna")
+    }
+    implementation(libs.jna) { artifact { type = "aar" } }
     implementation(libs.security.crypto.ktx)
-    // Add the KMP Tor binary dependency (contains the native .so files)
     implementation(libs.kmp.tor.binary)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)

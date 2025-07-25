@@ -32,6 +32,8 @@ import com.robosats.models.EncryptedStorage
 import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
+import com.robosats.tor.TorKmpManager.getTorKmpObject
+import com.vitorpamplona.ammolite.service.HttpClientManager
 
 class MainActivity : AppCompatActivity() {
     private val requestCodePostNotifications: Int = 1
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var torKmp: TorKmp
     private lateinit var loadingContainer: ConstraintLayout
     private lateinit var statusTextView: TextView
+    private lateinit var intentData: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +77,26 @@ class MainActivity : AppCompatActivity() {
                 requestCodePostNotifications,
             )
         }
+
+        val intent = intent
+        if (intent != null) {
+            val orderId = intent.getStringExtra("order_id")
+            if (orderId?.isNotEmpty() == true) {
+                intentData = orderId
+            }
+        }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.let {
+            val orderId = intent.getStringExtra("order_id")
+            if (orderId?.isNotEmpty() == true) {
+                intentData = orderId
+            }
+        }
+    }
+
 
     /**
      * Initialize Notifications service
@@ -157,6 +179,8 @@ class MainActivity : AppCompatActivity() {
                 // Show success message and proceed
                 runOnUiThread {
                     updateStatus("Tor connected successfully. Setting up secure browser...")
+
+                    HttpClientManager.setDefaultProxy(getTorKmpObject().proxy)
 
                     // Now that Tor is connected, set up the WebView
                     setupWebView()
@@ -296,6 +320,14 @@ class MainActivity : AppCompatActivity() {
                     webView.loadUrl("file:///android_asset/index.html")
 
                     initializeNotifications()
+
+                    webView.post {
+                        try {
+                            webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
+                        } catch (e: Exception) {
+                            Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("WebViewSetup", "Security error in WebView setup: ${e.message}", e)

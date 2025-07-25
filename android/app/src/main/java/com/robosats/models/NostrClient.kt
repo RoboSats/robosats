@@ -7,6 +7,9 @@ import com.vitorpamplona.ammolite.relays.Relay
 import com.vitorpamplona.ammolite.relays.RelayPool
 import com.vitorpamplona.ammolite.relays.TypedFilter
 import com.vitorpamplona.ammolite.relays.filters.SincePerRelayFilter
+import com.vitorpamplona.quartz.crypto.KeyPair
+import com.vitorpamplona.quartz.encoders.Hex
+import org.json.JSONArray
 import org.json.JSONObject
 
 object NostrClient {
@@ -25,6 +28,15 @@ object NostrClient {
         subscribeToInbox()
     }
 
+    fun refresh() {
+        val federationRelays = EncryptedStorage.getEncryptedStorage("federation_relays")
+        val relayPool = RelayPool.getAll().map { it.url }
+        if (federationRelays.toSet() != relayPool.toSet()) {
+            stop()
+            start()
+        }
+    }
+
     fun checkRelaysHealth() {
         if (RelayPool.getAll().isEmpty()) {
             stop()
@@ -41,45 +53,101 @@ object NostrClient {
         }
     }
 
-    private fun connectRelays() {
+    fun garagePubKeys(): List<String> {
         val garageString = EncryptedStorage.getEncryptedStorage("garage_slots")
+        var authors = emptyList<String>()
 
-        val garage = JSONObject(garageString)
+        if (garageString.isNotEmpty()) {
+            val garage = JSONObject(garageString)
 
-        val relays = emptyList<String>()
+            val keys = garage.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val slot = garage.getJSONObject(key) // Get the value associated with the key
+                val hexPubKey = slot.getString("nostrPubKey")
+                if (hexPubKey.isNotEmpty()) {
+                    authors = authors.plus(hexPubKey)
+                }
+            }
+        }
 
-        relays.forEach {
-            Client.sendFilterOnlyIfDisconnected()
-            if (RelayPool.getRelays(it).isEmpty()) {
-                RelayPool.addRelay(
-                    Relay(
-                        it,
-                        read = true,
-                        write = false,
-                        forceProxy = false,
-                        activeTypes = COMMON_FEED_TYPES,
-                    ),
-                )
+        return authors
+    }
+
+    fun getRobotKeyPair(hexPubKey: String): KeyPair {
+        val garageString = EncryptedStorage.getEncryptedStorage("garage_slots")
+        var privKey = ""
+        var pubKey = ""
+
+        if (garageString.isNotEmpty()) {
+            val garage = JSONObject(garageString)
+
+            val keys = garage.keys()
+            while (keys.hasNext() && privKey == "") {
+                val key = keys.next()
+                val slot = garage.getJSONObject(key)
+                val slotPubKey = slot.getString("nostrPubKey")
+                if (slotPubKey == hexPubKey) {
+                    pubKey = slotPubKey
+                    val nostrSecKeyJson = slot.getJSONObject("nostrSecKey")
+                    val byteArray = ByteArray(nostrSecKeyJson.length()) { index ->
+                        nostrSecKeyJson.getInt(index.toString()).toByte()
+                    }
+                    privKey = byteArray.joinToString("") { byte -> "%02x".format(byte) }
+                }
+            }
+        }
+
+        return KeyPair(
+            Hex.decode(privKey),
+            Hex.decode(pubKey),
+        )
+    }
+
+    private fun connectRelays() {
+        val federationRelays = EncryptedStorage.getEncryptedStorage("federation_relays")
+
+        if (federationRelays.isNotEmpty()) {
+            val relaysUrls = JSONArray(federationRelays)
+
+            for (i in 0 until relaysUrls.length()) {
+                val url = relaysUrls.getString(i)
+                Client.sendFilterOnlyIfDisconnected()
+                if (RelayPool.getRelays(url).isEmpty()) {
+                    RelayPool.addRelay(
+                        Relay(
+                            url,
+                            read = true,
+                            write = false,
+                            forceProxy = true,
+                            activeTypes = COMMON_FEED_TYPES,
+                        ),
+                    )
+                }
             }
         }
     }
 
     private fun subscribeToInbox() {
-        val authors = emptyList<String>()
+        val garageString = EncryptedStorage.getEncryptedStorage("garage_slots")
 
-        if (authors.isNotEmpty()) {
-            Client.sendFilter(
-                subscriptionNotificationId,
-                listOf(
-                    TypedFilter(
-                        types = COMMON_FEED_TYPES,
-                        filter = SincePerRelayFilter(
-                            kinds = listOf(1, 4, 6, 7, 9735),
-                            tags = mapOf("p" to authors),
+        if (garageString.isNotEmpty()) {
+            val authors = garagePubKeys()
+
+            if (authors.isNotEmpty()) {
+                Client.sendFilter(
+                    subscriptionNotificationId,
+                    listOf(
+                        TypedFilter(
+                            types = COMMON_FEED_TYPES,
+                            filter = SincePerRelayFilter(
+                                kinds = listOf(1059),
+                                tags = mapOf("p" to authors),
+                            ),
                         ),
                     ),
-                ),
-            )
+                )
+            }
         }
     }
 }

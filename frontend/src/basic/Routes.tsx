@@ -12,18 +12,19 @@ const Routes: React.FC = () => {
   const { page, navigateToPage } = useContext<UseAppStoreType>(AppContext);
 
   useEffect(() => {
-    window.addEventListener('navigateToPage', (event) => {
-      const orderId: string = event?.order_id;
-      const coordinator: string = event?.coordinator;
+    if (window.AndroidDataRobosats && garage.currentSlot) {
+      const orderPath = window.AndroidDataRobosats.navigateToPage ?? '';
+      const [coordinator, orderId] = orderPath.replace('#', '/').split('/');
+      window.AndroidDataRobosats = undefined;
+
       if (orderId && coordinator) {
         const slot = garage.getSlotByOrder(coordinator, parseInt(orderId, 10));
-        if (slot?.token) {
-          garage.setCurrentSlot(slot?.token);
-          navigateToPage(`order/${coordinator}/${orderId}`, navigate);
-        }
+        if (slot?.token) garage.setCurrentSlot(slot.token);
+
+        navigateToPage(`order/${coordinator}/${orderId}`, navigate);
       }
-    });
-  }, []);
+    }
+  }, [garage.currentSlot]);
 
   useEffect(() => {
     // change tab (page) into the current route
