@@ -2,10 +2,14 @@ package com.robosats
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import com.robosats.models.EncryptedStorage
+import com.robosats.models.NostrClient
+import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmpManager.getTorKmpObject
 import okhttp3.Call
 import okhttp3.Callback
@@ -165,7 +169,7 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         }
 
         try {
-            Log.d(TAG, "WebSocket opening: " + path)
+            Log.d(TAG, "WebSocket opening: $path")
             val client: OkHttpClient = Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
                 .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
@@ -235,7 +239,7 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             return
         }
 
-        val websocket = webSockets.get(path)
+        val websocket = webSockets[path]
         if (websocket != null) {
             websocket.send(message)
             resolvePromise(uuid, "true")
@@ -316,6 +320,74 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             Log.e(TAG, "Error in sendRequest", e)
             rejectPromise(uuid, "Error sending request: ${e.message}")
         }
+    }
+
+    @JavascriptInterface
+    fun getEncryptedStorage(uuid: String, key: String) {
+        // Validate inputs before processing
+        if (!isValidUuid(uuid) || !isValidInput(key)) {
+            Log.e(TAG, "Invalid input for getEncryptedStorage: uuid=$uuid, key=$key")
+            rejectPromise(uuid, "Invalid input parameters")
+            return
+        }
+
+        try {
+            // Sanitize the input before passing to native code
+            val sanitizedKey = key.trim()
+
+            val value = EncryptedStorage.getEncryptedStorage(sanitizedKey)
+
+            // Safely encode and return the result
+            resolvePromise(uuid, value)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in getEncryptedStorage", e)
+            rejectPromise(uuid, "Error obtaining encrypted storage: $key")
+        }
+    }
+
+    @JavascriptInterface
+    fun setEncryptedStorage(uuid: String, key: String, value: String) {
+        // Validate inputs before processing
+        if (!isValidUuid(uuid) || !isValidInput(key)) {
+            Log.e(TAG, "Invalid input for setEncryptedStorage: uuid=$uuid, key=$key")
+            rejectPromise(uuid, "Invalid input parameters")
+            return
+        }
+        // Sanitize the input before passing to native code
+        val sanitizedKey = key.trim()
+        val sanitizedValue = value.trim()
+
+        EncryptedStorage.setEncryptedStorage(sanitizedKey, sanitizedValue)
+
+        if (key == "garage_slots") NostrClient.refresh()
+        if (key == "settings_notifications") {
+            val serviceIntent = Intent(context, NotificationsService::class.java)
+            if (value == "true") {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.stopService(serviceIntent)
+            }
+        }
+
+        // Safely encode and return the result
+        resolvePromise(uuid, key)
+    }
+
+    @JavascriptInterface
+    fun deleteEncryptedStorage(uuid: String, key: String) {
+        // Validate inputs before processing
+        if (!isValidUuid(uuid) || !isValidInput(key)) {
+            Log.e(TAG, "Invalid input for deleteEncryptedStorage: uuid=$uuid, key=$key")
+            rejectPromise(uuid, "Invalid input parameters")
+            return
+        }
+        // Sanitize the input before passing to native code
+        val sanitizedKey = key.trim()
+
+        EncryptedStorage.deleteEncryptedStorage(sanitizedKey)
+
+        // Safely encode and return the result
+        resolvePromise(uuid, key)
     }
 
     private fun onWsMessage(path: String?, message: String?) {

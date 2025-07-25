@@ -25,9 +25,9 @@ class RoboPool {
   updateRelays = (hostUrl: string, coordinators: Coordinator[]) => {
     this.close();
     this.relays = [];
-    const federationRelays = coordinators.map((coord) => coord.getRelayUrl(hostUrl));
-    // const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
-    const hostRelay = 'ws://45gzfolhp3dcfv6w7a4p2iwekvurdjcf4p2onhnmvyhauwxfsx7kguad.onion/relay/';
+    const federationRelays = coordinators.map((coord) => coord.getRelayUrl());
+    const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
+
     if (hostRelay) this.relays.push(hostRelay);
 
     while (this.relays.length < 3) {

@@ -51,7 +51,7 @@ const NotificationsDrawer = ({
 }: NotificationsDrawerProps): React.JSX.Element => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { page, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { page, settings, navigateToPage, client } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -59,14 +59,13 @@ const NotificationsDrawer = ({
   const [openSnak, setOpenSnak] = React.useState<boolean>(false);
   const [snakEvent, setSnakevent] = React.useState<Event>();
   const [subscribedTokens, setSubscribedTokens] = React.useState<string[]>([]);
-  const [_, setLastNotification] = React.useState<number>(
-    parseInt(
-      systemClient.getItem('last_notification') === ''
-        ? '0'
-        : (systemClient.getItem('last_notification') ?? '0'),
-      10,
-    ),
-  );
+  const [_, setLastNotification] = React.useState<number>(0);
+
+  useEffect(() => {
+    systemClient.getItem('last_notification').then((result) => {
+      setLastNotification(!result || result === '' ? 0 : parseInt(result, 10));
+    });
+  }, []);
 
   useEffect(() => {
     setShow(false);
@@ -119,11 +118,10 @@ const NotificationsDrawer = ({
           setLastNotification((last) => {
             if (last < event.created_at) {
               setSnakevent(event);
-              setOpenSnak(true);
               systemClient.setItem('last_notification', event.created_at.toString());
-              console.log(event);
               const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
               if (orderStatus) playSound(parseInt(orderStatus, 10));
+              if (client !== 'mobile') setOpenSnak(true);
 
               return event.created_at;
             } else {
@@ -152,7 +150,7 @@ const NotificationsDrawer = ({
       if (slot?.token) {
         setShow(false);
         garage.setCurrentSlot(slot.token);
-        navigateToPage(`order/${orderId.replace('#', '/')}`, navigate);
+        navigateToPage(`order/${orderId}`, navigate);
       }
     }
   };

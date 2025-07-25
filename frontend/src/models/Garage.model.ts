@@ -42,18 +42,20 @@ class Garage {
 
   save = (): void => {
     systemClient.setItem('garage_slots', JSON.stringify(this.slots));
+    if (this.currentSlot) systemClient.setItem('garage_current_slot', this.currentSlot);
   };
 
   delete = (): void => {
     this.slots = {};
     this.currentSlot = null;
     systemClient.deleteItem('garage_slots');
+    systemClient.deleteItem('garage_current_slot');
     this.triggerHook('onSlotUpdate');
   };
 
-  loadSlots = (): void => {
+  loadSlots = async (): Promise<void> => {
     this.slots = {};
-    const slotsDump: string = systemClient.getItem('garage_slots') ?? '';
+    const slotsDump: string = (await systemClient.getItem('garage_slots')) ?? '';
 
     if (slotsDump !== '') {
       const rawSlots: Record<string, object> = JSON.parse(slotsDump);
@@ -73,9 +75,11 @@ class Garage {
           );
           this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.lastOrder));
           this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.activeOrder));
-          this.currentSlot = rawSlot?.token;
         }
       });
+
+      this.currentSlot =
+        (await systemClient.getItem('garage_current_slot')) ?? Object.keys(rawSlots)[0];
       console.log('Robot Garage was loaded from local storage');
       this.triggerHook('onSlotUpdate');
     }

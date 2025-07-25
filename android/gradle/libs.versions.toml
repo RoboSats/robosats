@@ -2,6 +2,7 @@
 agp = "8.11.1"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
+securityCryptoKtx = "1.1.0-beta01"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -11,7 +12,9 @@ activity = "1.10.1"
 constraintlayout = "2.2.1"
 kmpTor= "4.8.10-0-1.4.5"
 kmpTorBinary= "4.8.10-0"
+jna = "5.14.0"
 okhttp = "5.0.0-alpha.14"
+quartz = "0.92.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -25,6 +28,10 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 kmp-tor = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor", version.ref = "kmpTor" }
 kmp-tor-binary = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor-binary-extract-android", version.ref = "kmpTorBinary" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+quartz = { module = "com.github.vitorpamplona.amethyst:quartz", version.ref = "quartz" }
+ammolite = { module = "com.github.vitorpamplona.amethyst:ammolite", version.ref = "quartz" }
+security-crypto-ktx = { module = "androidx.security:security-crypto-ktx", version.ref = "securityCryptoKtx" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
