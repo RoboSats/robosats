@@ -150,7 +150,7 @@ const NotificationsDrawer = ({
       if (slot?.token) {
         setShow(false);
         garage.setCurrentSlot(slot.token);
-        navigateToPage(`order/${orderId.replace('#', '/')}`, navigate);
+        navigateToPage(`order/${orderId}`, navigate);
       }
     }
   };

@@ -141,7 +141,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
     newPage,
     navigate,
   ) => {
-    const pathPage: Page | string = newPage.replace('#', '/').split('/')[0];
+    const pathPage: Page | string = newPage.split('/')[0];
     if (isPage(pathPage)) {
       setPage(pathPage);
       navigate(`/${newPage}`);

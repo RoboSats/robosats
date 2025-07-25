@@ -14,7 +14,7 @@ const Routes: React.FC = () => {
   useEffect(() => {
     if (window.AndroidDataRobosats && garage.currentSlot) {
       const orderPath = window.AndroidDataRobosats.navigateToPage ?? '';
-      const [coordinator, orderId] = orderPath.replace('#', '/').split('/');
+      const [coordinator, orderId] = orderPath.split('/');
       window.AndroidDataRobosats = undefined;
 
       if (orderId && coordinator) {
