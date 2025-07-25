@@ -14,6 +14,7 @@ import org.json.JSONObject
 
 object NostrClient {
     private var subscriptionNotificationId = "robosatsNotificationId"
+    private var authors = garagePubKeys()
 
     fun init() {
         RelayPool.register(Client)
@@ -29,11 +30,9 @@ object NostrClient {
     }
 
     fun refresh() {
-        val federationRelays = EncryptedStorage.getEncryptedStorage("federation_relays")
-        val relayPool = RelayPool.getAll().map { it.url }
-        if (federationRelays.toSet() != relayPool.toSet()) {
-            stop()
-            start()
+        val pubKeys = garagePubKeys()
+        if (authors.toSet() != pubKeys.toSet()) {
+            subscribeToInbox()
         }
     }
 
@@ -55,7 +54,7 @@ object NostrClient {
 
     fun garagePubKeys(): List<String> {
         val garageString = EncryptedStorage.getEncryptedStorage("garage_slots")
-        var authors = emptyList<String>()
+        var pubKeys = emptyList<String>()
 
         if (garageString.isNotEmpty()) {
             val garage = JSONObject(garageString)
@@ -66,12 +65,12 @@ object NostrClient {
                 val slot = garage.getJSONObject(key) // Get the value associated with the key
                 val hexPubKey = slot.getString("nostrPubKey")
                 if (hexPubKey.isNotEmpty()) {
-                    authors = authors.plus(hexPubKey)
+                    pubKeys = pubKeys.plus(hexPubKey)
                 }
             }
         }
 
-        return authors
+        return pubKeys
     }
 
     fun getRobotKeyPair(hexPubKey: String): KeyPair {
@@ -110,8 +109,10 @@ object NostrClient {
         if (federationRelays.isNotEmpty()) {
             val relaysUrls = JSONArray(federationRelays)
 
-            for (i in 0 until relaysUrls.length()) {
-                val url = relaysUrls.getString(i)
+            val relayList = (0 until relaysUrls.length()).map { relaysUrls.getString(it) }
+            val randomRelays = relayList.shuffled().take(3)
+
+            for (url in randomRelays) {
                 Client.sendFilterOnlyIfDisconnected()
                 if (RelayPool.getRelays(url).isEmpty()) {
                     RelayPool.addRelay(
@@ -126,15 +127,20 @@ object NostrClient {
                 }
             }
         }
+
     }
 
     private fun subscribeToInbox() {
         val garageString = EncryptedStorage.getEncryptedStorage("garage_slots")
 
         if (garageString.isNotEmpty()) {
-            val authors = garagePubKeys()
+            authors = garagePubKeys()
 
             if (authors.isNotEmpty()) {
+                Log.d(
+                    "RobosatsNostrClient",
+                    "Relay subscription authors: ${authors.size}",
+                )
                 Client.sendFilter(
                     subscriptionNotificationId,
                     listOf(

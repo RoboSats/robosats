@@ -51,7 +51,7 @@ const NotificationsDrawer = ({
 }: NotificationsDrawerProps): React.JSX.Element => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { page, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { page, settings, navigateToPage, client } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -118,11 +118,10 @@ const NotificationsDrawer = ({
           setLastNotification((last) => {
             if (last < event.created_at) {
               setSnakevent(event);
-              setOpenSnak(true);
               systemClient.setItem('last_notification', event.created_at.toString());
-              console.log(event);
               const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
               if (orderStatus) playSound(parseInt(orderStatus, 10));
+              if (client !== 'mobile') setOpenSnak(true);
 
               return event.created_at;
             } else {

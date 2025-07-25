@@ -97,12 +97,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Initialize Notifications service
+     */
+    fun initializeNotifications() {
+        startForegroundService(
+            Intent(
+                this,
+                NotificationsService::class.java,
+            ),
+        )
+    }
 
     /**
      * Initialize Notifications service
      */
-    private fun initializeNotifications() {
-        startForegroundService(
+    fun stopNotifications() {
+        stopService(
             Intent(
                 this,
                 NotificationsService::class.java,
@@ -319,7 +330,8 @@ class MainActivity : AppCompatActivity() {
                     // Now it's safe to load the local HTML file
                     webView.loadUrl("file:///android_asset/index.html")
 
-                    initializeNotifications()
+                    val notifications = EncryptedStorage.getEncryptedStorage("settings_notifications")
+                    if (notifications != "false") initializeNotifications()
 
                     webView.post {
                         try {
@@ -424,6 +436,8 @@ class MainActivity : AppCompatActivity() {
         webView.clearSslPreferences()
 
         WebStorage.getInstance().deleteAllData()
+
+        stopNotifications()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CookieManager.getInstance().removeSessionCookies(null)

@@ -13,7 +13,6 @@ import android.graphics.Path
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.Uri
 import android.os.IBinder
 import android.util.Base64
 import android.util.Log
@@ -22,7 +21,9 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationChannelGroupCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.graphics.createBitmap
 import com.robosats.Connectivity
+import com.robosats.MainActivity
 import com.robosats.R
 import com.robosats.RoboIdentities
 import com.robosats.models.EncryptedStorage
@@ -45,8 +46,6 @@ import org.json.JSONObject
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.ConcurrentHashMap
-import androidx.core.graphics.createBitmap
-import com.robosats.MainActivity
 
 class NotificationsService : Service() {
     private var channelRelaysId = "RelaysConnections"

@@ -59,8 +59,8 @@ class BaseSettings {
       this.network = result && result !== '' ? (result as 'mainnet' | 'testnet') : this.network;
     });
 
-    systemClient.getItem('settings_stop_notifications').then((result) => {
-      this.stopNotifications = client === 'mobile' && result === 'true';
+    systemClient.getItem('settings_notifications').then((result) => {
+      this.androidNotifications = result === 'true';
     });
 
     systemClient.getItem('settings_use_proxy').then((result) => {
@@ -87,7 +87,7 @@ class BaseSettings {
   public unsafeClient: boolean = false;
   public selfhostedClient: boolean = false;
   public useProxy: boolean = false;
-  public stopNotifications: boolean = false;
+  public androidNotifications: boolean = false;
 }
 
 export default BaseSettings;

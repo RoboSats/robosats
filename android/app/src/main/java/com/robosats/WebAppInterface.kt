@@ -2,12 +2,14 @@ package com.robosats
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
 import com.robosats.models.EncryptedStorage
 import com.robosats.models.NostrClient
+import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmpManager.getTorKmpObject
 import okhttp3.Call
 import okhttp3.Callback
@@ -171,6 +173,7 @@ class WebAppInterface(private val context: Context, private val webView: WebView
             val client: OkHttpClient = Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
                 .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
+                .proxy(getTorKmpObject().proxy)
                 .build()
 
 
@@ -356,7 +359,15 @@ class WebAppInterface(private val context: Context, private val webView: WebView
 
         EncryptedStorage.setEncryptedStorage(sanitizedKey, sanitizedValue)
 
-        if (key == "federation_relays") NostrClient.refresh()
+        if (key == "garage_slots") NostrClient.refresh()
+        if (key == "settings_notifications") {
+            val serviceIntent = Intent(context, NotificationsService::class.java)
+            if (value == "true") {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.stopService(serviceIntent)
+            }
+        }
 
         // Safely encode and return the result
         resolvePromise(uuid, key)
