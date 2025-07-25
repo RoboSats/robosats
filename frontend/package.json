@@ -29,7 +29,7 @@
     "@types/leaflet": "^1.9.18",
     "@types/node": "^24.0.14",
     "@types/react": "^19.1.6",
-    "@types/react-dom": "^19.1.5",
+    "@types/react-dom": "^19.1.6",
     "@types/webpack": "^5.28.5",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.36.0",
