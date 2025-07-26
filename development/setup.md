@@ -14,9 +14,7 @@ docker-compose up
 # Check out http://localhost:12596 on your browser
 ```
 
-You can edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm-dev` container process will pack the code into the local `main.js`. Visit `http://localhost:12596` and you will see your changes on the frontend.
-
-**You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm run dev` process will pack the code into the local `main.js`. Visit your selected {robosats-site} and you will see your new awesome frontend! :)
+**You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm run build` container process will pack the code into the local `main.js`. Visit `http://localhost:12596` and you will see your changes on the frontend.
 
 Every time you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R).
 
