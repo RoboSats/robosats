@@ -18,7 +18,6 @@ export interface WebsocketConnection {
 }
 
 export interface WebsocketClient {
-  useProxy: boolean;
   open: (path: string) => Promise<WebsocketConnection>;
 }
 

@@ -8,9 +8,9 @@ const SelfhostedAlert = (): React.JSX.Element => {
   const [show, setShow] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!systemClient.getItem('selfhosted-alert')) {
-      setShow(true);
-    }
+    systemClient.getItem('selfhosted-alert').then((result) => {
+      if (!result) setShow(true);
+    });
   }, []);
 
   // If alert is hidden return null

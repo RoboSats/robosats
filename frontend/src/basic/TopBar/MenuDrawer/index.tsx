@@ -43,7 +43,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { open, setOpen, client, torStatus, page, navigateToPage } =
+  const { open, setOpen, client, torStatus, page, navigateToPage, settings } =
     useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [openGarage, setOpenGarage] = useState<boolean>(false);
@@ -242,28 +242,14 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
               <ListItemText primary={t('Settings')} />
             </ListItemButton>
           </ListItem>
-          {client === 'mobile' && (
+          {client === 'mobile' && settings.useProxy && (
             <ListItem disablePadding sx={{ display: 'flex', flexDirection: 'column' }}>
               <ListItemButton selected>
                 <ListItemIcon>
                   {torProgress ? (
-                    <>
+                    <Box>
                       <CircularProgress color={torColor} thickness={6} size={22} />
-                      <Box
-                        sx={{
-                          top: 0,
-                          left: 0,
-                          bottom: 0,
-                          right: 0,
-                          position: 'absolute',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <TorIcon color={torColor} sx={{ width: 20, height: 20 }} />
-                      </Box>
-                    </>
+                    </Box>
                   ) : (
                     <Box>
                       <TorIcon color={torColor} sx={{ width: 20, height: 20 }} />

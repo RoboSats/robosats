@@ -1,12 +1,20 @@
 declare global {
   interface Window {
+    AndroidDataRobosats?: AndroidDataRobosats;
     AndroidAppRobosats?: AndroidAppRobosats;
     AndroidRobosats?: AndroidRobosats;
     RobosatsSettings: 'web-basic' | 'web-pro' | 'selfhosted-basic' | 'selfhosted-pro';
   }
 }
 
+interface AndroidDataRobosats {
+  navigateToPage: string;
+}
+
 interface AndroidAppRobosats {
+  getEncryptedStorage: (uuid: string, key: string) => void;
+  setEncryptedStorage: (uuid: string, key: string, value: string) => void;
+  deleteEncryptedStorage: (uuid: string, key: string) => void;
   generateRoboname: (uuid: string, initialString: string) => void;
   generateRobohash: (uuid: string, initialString: string) => void;
   copyToClipboard: (value: string) => void;
@@ -34,6 +42,10 @@ class AndroidRobosats {
       reject: (reason?: string) => void;
     }
   > = {};
+
+  public navigateToPage: (orderPath: string) => void = (orderPath) => {
+    console.log('orderPath', orderPath);
+  };
 
   public storePromise: (
     uuid: string,
@@ -83,15 +95,15 @@ class AndroidRobosats {
   };
 
   public onWSMessage: (path: string, message: string) => void = (path, message) => {
-    this.WSConnections[path](message);
+    this.WSConnections[path]?.(message);
   };
 
   public onWsError: (path: string) => void = (path) => {
-    this.WSError[path]();
+    this.WSError[path]?.();
   };
 
   public onWsClose: (path: string) => void = (path) => {
-    this.WSClose[path]();
+    this.WSClose[path]?.();
   };
 }
 

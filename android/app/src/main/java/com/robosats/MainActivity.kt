@@ -1,5 +1,6 @@
 package com.robosats
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.pm.ActivityInfo
@@ -20,21 +21,36 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.robosats.models.EncryptedStorage
+import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
+import com.robosats.tor.TorKmpManager.getTorKmpObject
+import com.vitorpamplona.ammolite.service.HttpClientManager
 
 class MainActivity : AppCompatActivity() {
+    private val requestCodePostNotifications: Int = 1
     private lateinit var webView: WebView
     private lateinit var torKmp: TorKmp
     private lateinit var loadingContainer: ConstraintLayout
     private lateinit var statusTextView: TextView
+    private lateinit var intentData: String
+    private lateinit var useOrbotButton: Button
+    var useProxy: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        EncryptedStorage.init(this)
 
         // Lock the screen orientation to portrait mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -46,19 +62,108 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         loadingContainer = findViewById(R.id.loadingContainer)
         statusTextView = findViewById(R.id.statusTextView)
+        useOrbotButton = findViewById(R.id.useOrbotButton)
+
+        // Set click listener for action button
+        useOrbotButton.setOnClickListener {
+            onUseOrbotButtonClicked()
+        }
 
         // Set initial status message
         updateStatus("Initializing Tor connection...")
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                requestCodePostNotifications,
+            )
+        }
+
+        val intent = intent
+        if (intent != null) {
+            val orderId = intent.getStringExtra("order_id")
+            if (orderId?.isNotEmpty() == true) {
+                intentData = orderId
+            }
+        }
+
         // Initialize Tor and setup WebView only after Tor is properly connected
         initializeTor()
+
+        val settingProxy = EncryptedStorage.getEncryptedStorage("settings_use_proxy")
+        if (settingProxy == "false") {
+            // Setup WebView to use Orbot if the user previously clicked
+            onUseOrbotButtonClicked()
+        }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.let {
+            val orderId = intent.getStringExtra("order_id")
+            if (orderId?.isNotEmpty() == true) {
+                intentData = orderId
+            }
+        }
+    }
+
+    /**
+     * Disables the built-in proxy for users with Orbot configured
+     * This assumes that Orbot is already running and properly configured
+     * to handle .onion addresses through the system proxy settings
+     */
+    private fun onUseOrbotButtonClicked() {
+        Log.d("OrbotMode", "Switching to Orbot proxy mode")
+        EncryptedStorage.setEncryptedStorage("settings_use_proxy", "false")
+        useProxy = false
+
+        // Show a message to the user
+        Toast.makeText(
+            this,
+            "Using Orbot. Make sure it's running!",
+            Toast.LENGTH_LONG
+        ).show()
+
+        setupWebView()
+    }
+
+    /**
+     * Initialize Notifications service
+     */
+    fun initializeNotifications() {
+        startForegroundService(
+            Intent(
+                this,
+                NotificationsService::class.java,
+            ),
+        )
+    }
+
+    /**
+     * Initialize Notifications service
+     */
+    fun stopNotifications() {
+        stopService(
+            Intent(
+                this,
+                NotificationsService::class.java,
+            ),
+        )
+    }
+
+    /**
+     * Initialize TorKmp if it's not already initialized
+     */
     private fun initializeTor() {
-        // Initialize TorKmp if it's not already initialized
         try {
             try {
-                torKmp = TorKmpManager.getTorKmpObject()
+                torKmp = getTorKmpObject()
             } catch (e: UninitializedPropertyAccessException) {
                 torKmp = TorKmp(application as Application)
                 TorKmpManager.updateTorKmpObject(torKmp)
@@ -122,6 +227,8 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     updateStatus("Tor connected successfully. Setting up secure browser...")
 
+                    HttpClientManager.setDefaultProxy(getTorKmpObject().proxy)
+
                     // Now that Tor is connected, set up the WebView
                     setupWebView()
                 }
@@ -142,21 +249,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Configures initial WebView settings with external blocked
+     */
     private fun setupWebView() {
         // Double-check Tor is connected before proceeding
-        if (!torKmp.isConnected()) {
+        if (useProxy && !torKmp.isConnected()) {
             Log.e("SecurityError", "Attempted to set up WebView without Tor connection")
             return
         }
 
         // Set a blocking WebViewClient to prevent ANY network access
         webView.webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
                 // Block ALL requests until we're sure Tor proxy is correctly set up
                 return WebResourceResponse("text/plain", "UTF-8", null)
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            override fun shouldOverrideUrlLoading(
+                view: WebView,
+                request: WebResourceRequest
+            ): Boolean {
                 // Block ALL URL loading attempts
                 return true
             }
@@ -167,21 +283,15 @@ class MainActivity : AppCompatActivity() {
 
         // Show message that we're setting up secure browsing
         runOnUiThread {
-            updateStatus("Setting up secure Tor browsing...")
+            updateStatus(if (useProxy) "Setting up secure Tor browsing..." else "Setting up Orbot browsing...")
         }
 
         // Configure proxy for WebView in a background thread to avoid NetworkOnMainThreadException
         Thread {
             try {
                 // First verify Tor is still connected
-                if (!torKmp.isConnected()) {
+                if (useProxy && !torKmp.isConnected()) {
                     throw SecurityException("Tor disconnected during proxy setup")
-                }
-
-                // If we get here, proxy setup was successful
-                // Perform one final Tor connection check
-                if (!torKmp.isConnected()) {
-                    throw SecurityException("Tor disconnected after proxy setup")
                 }
 
                 // Success - now configure WebViewClient and load URL on UI thread
@@ -255,6 +365,17 @@ class MainActivity : AppCompatActivity() {
 
                     // Now it's safe to load the local HTML file
                     webView.loadUrl("file:///android_asset/index.html")
+
+                    val notifications = EncryptedStorage.getEncryptedStorage("settings_notifications")
+                    if (notifications != "false") initializeNotifications()
+
+                    webView.post {
+                        try {
+                            webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
+                        } catch (e: Exception) {
+                            Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("WebViewSetup", "Security error in WebView setup: ${e.message}", e)
@@ -337,8 +458,6 @@ class MainActivity : AppCompatActivity() {
         webSettings.textZoom = 100
     }
 
-    // SSL error description method removed as we're not using SSL
-
     /**
      * Clear all WebView data when activity is destroyed
      */
@@ -353,6 +472,8 @@ class MainActivity : AppCompatActivity() {
         webView.clearSslPreferences()
 
         WebStorage.getInstance().deleteAllData()
+
+        stopNotifications()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CookieManager.getInstance().removeSessionCookies(null)

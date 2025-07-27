@@ -1,5 +1,5 @@
-coverage==7.9.2
 ruff==0.12.5
+coverage==7.10.0
 git+https://github.com/Reckless-Satoshi/drf-openapi-tester.git@soften-django-requirements
 pre-commit==4.2.0
 python-dotenv[cli]==1.1.1

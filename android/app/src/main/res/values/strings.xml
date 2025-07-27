@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Robosats</string>
+    <string name="service">Background Service</string>
+    <string name="connection">Connection</string>
+    <string name="configuration">Configuration</string>
+    <string name="robosats_is_running_in_background">Robosats is running in background fetching for notifications</string>
+    <string name="notifications">Notifications</string>
+    <string name="useOrbotButton">Use Orbot</string>
 </resources>

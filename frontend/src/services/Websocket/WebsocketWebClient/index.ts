@@ -39,8 +39,6 @@ class WebsocketConnectionWeb implements WebsocketConnection {
 }
 
 class WebsocketWebClient implements WebsocketClient {
-  public useProxy = false;
-
   public open: (path: string) => Promise<WebsocketConnection> = async (path) => {
     return await new Promise<WebsocketConnection>((resolve, reject) => {
       try {

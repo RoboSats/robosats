@@ -81,7 +81,7 @@ const EncryptedChat: React.FC<Props> = ({
     try {
       const recipient = {
         publicKey,
-        relayUrl: coordinator.getRelayUrl(coordinator.url),
+        relayUrl: coordinator.getRelayUrl(),
       };
 
       const wrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, recipient, content);

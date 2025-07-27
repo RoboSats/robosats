@@ -281,8 +281,8 @@ export class Coordinator {
     this.book = {};
   };
 
-  getRelayUrl = (hostUrl: string): string => {
-    const protocol = hostUrl.includes('https') ? 'wss://' : 'ws://';
+  getRelayUrl = (): string => {
+    const protocol = this.url.includes('https') ? 'wss://' : 'ws://';
     return this.url.replace(/^https?:\/\//, protocol) + '/relay/';
   };
 }
