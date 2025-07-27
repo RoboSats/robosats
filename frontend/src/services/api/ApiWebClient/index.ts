@@ -1,8 +1,6 @@
 import { type ApiClient, type Auth } from '..';
 
 class ApiWebClient implements ApiClient {
-  public useProxy = false;
-
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
       'Content-Type': 'application/json',

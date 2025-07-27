@@ -23,7 +23,9 @@ import android.webkit.WebViewClient
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
@@ -42,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var loadingContainer: ConstraintLayout
     private lateinit var statusTextView: TextView
     private lateinit var intentData: String
+    private lateinit var useOrbotButton: Button
+    var useProxy: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,12 +62,15 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         loadingContainer = findViewById(R.id.loadingContainer)
         statusTextView = findViewById(R.id.statusTextView)
+        useOrbotButton = findViewById(R.id.useOrbotButton)
+
+        // Set click listener for action button
+        useOrbotButton.setOnClickListener {
+            onUseOrbotButtonClicked()
+        }
 
         // Set initial status message
         updateStatus("Initializing Tor connection...")
-
-        // Initialize Tor and setup WebView only after Tor is properly connected
-        initializeTor()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
@@ -85,6 +92,15 @@ class MainActivity : AppCompatActivity() {
                 intentData = orderId
             }
         }
+
+        // Initialize Tor and setup WebView only after Tor is properly connected
+        initializeTor()
+
+        val settingProxy = EncryptedStorage.getEncryptedStorage("settings_use_proxy")
+        if (settingProxy == "false") {
+            // Setup WebView to use Orbot if the user previously clicked
+            onUseOrbotButtonClicked()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -95,6 +111,26 @@ class MainActivity : AppCompatActivity() {
                 intentData = orderId
             }
         }
+    }
+
+    /**
+     * Disables the built-in proxy for users with Orbot configured
+     * This assumes that Orbot is already running and properly configured
+     * to handle .onion addresses through the system proxy settings
+     */
+    private fun onUseOrbotButtonClicked() {
+        Log.d("OrbotMode", "Switching to Orbot proxy mode")
+        EncryptedStorage.setEncryptedStorage("settings_use_proxy", "false")
+        useProxy = false
+
+        // Show a message to the user
+        Toast.makeText(
+            this,
+            "Using Orbot. Make sure it's running!",
+            Toast.LENGTH_LONG
+        ).show()
+
+        setupWebView()
     }
 
     /**
@@ -127,7 +163,7 @@ class MainActivity : AppCompatActivity() {
     private fun initializeTor() {
         try {
             try {
-                torKmp = TorKmpManager.getTorKmpObject()
+                torKmp = getTorKmpObject()
             } catch (e: UninitializedPropertyAccessException) {
                 torKmp = TorKmp(application as Application)
                 TorKmpManager.updateTorKmpObject(torKmp)
@@ -218,19 +254,25 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupWebView() {
         // Double-check Tor is connected before proceeding
-        if (!torKmp.isConnected()) {
+        if (useProxy && !torKmp.isConnected()) {
             Log.e("SecurityError", "Attempted to set up WebView without Tor connection")
             return
         }
 
         // Set a blocking WebViewClient to prevent ANY network access
         webView.webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
                 // Block ALL requests until we're sure Tor proxy is correctly set up
                 return WebResourceResponse("text/plain", "UTF-8", null)
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            override fun shouldOverrideUrlLoading(
+                view: WebView,
+                request: WebResourceRequest
+            ): Boolean {
                 // Block ALL URL loading attempts
                 return true
             }
@@ -241,21 +283,15 @@ class MainActivity : AppCompatActivity() {
 
         // Show message that we're setting up secure browsing
         runOnUiThread {
-            updateStatus("Setting up secure Tor browsing...")
+            updateStatus(if (useProxy) "Setting up secure Tor browsing..." else "Setting up Orbot browsing...")
         }
 
         // Configure proxy for WebView in a background thread to avoid NetworkOnMainThreadException
         Thread {
             try {
                 // First verify Tor is still connected
-                if (!torKmp.isConnected()) {
+                if (useProxy && !torKmp.isConnected()) {
                     throw SecurityException("Tor disconnected during proxy setup")
-                }
-
-                // If we get here, proxy setup was successful
-                // Perform one final Tor connection check
-                if (!torKmp.isConnected()) {
-                    throw SecurityException("Tor disconnected after proxy setup")
                 }
 
                 // Success - now configure WebViewClient and load URL on UI thread

@@ -14,7 +14,6 @@ import com.robosats.tor.TorKmpManager.getTorKmpObject
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
 import okhttp3.OkHttpClient.Builder
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -35,7 +34,7 @@ import okhttp3.Request.Builder as RequestBuilder
  * sanitization, and proper error handling.
  */
 @SuppressLint("SetJavaScriptEnabled")
-class WebAppInterface(private val context: Context, private val webView: WebView) {
+class WebAppInterface(private val context: MainActivity, private val webView: WebView) {
     private val TAG = "WebAppInterface"
     private val roboIdentities = RoboIdentities()
     private val webSockets: MutableMap<String?, WebSocket?> = HashMap<String?, WebSocket?>()
@@ -170,12 +169,16 @@ class WebAppInterface(private val context: Context, private val webView: WebView
 
         try {
             Log.d(TAG, "WebSocket opening: $path")
-            val client: OkHttpClient = Builder()
+            // Create OkHttpClient
+            var builder = Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
-                .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
-                .proxy(getTorKmpObject().proxy)
-                .build()
+                .readTimeout(120, TimeUnit.SECONDS) // Set read timeout
 
+            if (context.useProxy) {
+                builder = builder.proxy(getTorKmpObject().proxy)
+            }
+
+            val client = builder.build()
 
             // Create a request for the WebSocket connection
             val request: Request = RequestBuilder()
@@ -258,12 +261,16 @@ class WebAppInterface(private val context: Context, private val webView: WebView
         }
 
         try {
-            // Create OkHttpClient with Tor proxy
-            val client = Builder()
+            // Create OkHttpClient
+            var builder = Builder()
                 .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
-                .readTimeout(30, TimeUnit.SECONDS) // Set read timeout
-                .proxy(getTorKmpObject().proxy)
-                .build()
+                .readTimeout(120, TimeUnit.SECONDS) // Set read timeout
+
+            if (context.useProxy) {
+                builder = builder.proxy(getTorKmpObject().proxy)
+            }
+
+            val client = builder.build()
 
             // Build request with URL
             val requestBuilder = RequestBuilder().url(url)
