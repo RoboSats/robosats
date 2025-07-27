@@ -1,12 +1,7 @@
 import { type ApiClient, type Auth } from '..';
-import ApiWebClient from '../ApiWebClient';
 import { v4 as uuidv4 } from 'uuid';
 
 class ApiAndroidClient implements ApiClient {
-  public useProxy = true;
-
-  private readonly webClient: ApiClient = new ApiWebClient();
-
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
       'Content-Type': 'application/json',
@@ -47,8 +42,6 @@ class ApiAndroidClient implements ApiClient {
 
   public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> =
     async (baseUrl, path, auth) => {
-      if (!this.useProxy) return await this.webClient.delete(baseUrl, path, auth);
-
       const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
       const result = await new Promise<string>((resolve, reject) => {
@@ -66,8 +59,6 @@ class ApiAndroidClient implements ApiClient {
     body: object,
     auth?: Auth,
   ) => Promise<object | undefined> = async (baseUrl, path, body, auth) => {
-    if (!this.useProxy) return await this.webClient.post(baseUrl, path, body, auth);
-
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
     const jsonBody = JSON.stringify(body);
 
@@ -85,8 +76,6 @@ class ApiAndroidClient implements ApiClient {
     path,
     auth,
   ) => {
-    if (!this.useProxy) return await this.webClient.get(baseUrl, path, auth);
-
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
     const result = await new Promise<string>((resolve, reject) => {

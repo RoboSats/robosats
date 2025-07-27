@@ -1,7 +1,5 @@
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
-import { websocketClient } from '../services/Websocket';
-import { apiClient } from '../services/api';
 import { getHost } from '../utils';
 
 export type Language =
@@ -65,8 +63,6 @@ class BaseSettings {
 
     systemClient.getItem('settings_use_proxy').then((result) => {
       this.useProxy = client === 'mobile' && result !== 'false';
-      apiClient.useProxy = this.useProxy;
-      websocketClient.useProxy = this.useProxy;
     });
   }
 

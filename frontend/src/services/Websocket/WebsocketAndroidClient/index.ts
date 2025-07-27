@@ -47,13 +47,9 @@ class WebsocketConnectionAndroid implements WebsocketConnection {
 }
 
 class WebsocketAndroidClient implements WebsocketClient {
-  public useProxy = true;
-
   private readonly webClient: WebsocketWebClient = new WebsocketWebClient();
 
   public open: (path: string) => Promise<WebsocketConnection> = async (path) => {
-    if (!this.useProxy) return await this.webClient.open(path);
-
     return new Promise<WebsocketConnectionAndroid>((resolve, reject) => {
       const uuid: string = uuidv4();
       window.AndroidAppRobosats?.openWS(uuid, path);
