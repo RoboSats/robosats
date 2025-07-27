@@ -19,7 +19,7 @@ const RobotPage = (): React.JSX.Element => {
 
   const [inputToken, setInputToken] = useState<string>('');
   const [view, setView] = useState<'welcome' | 'onboarding' | 'profile'>(
-    garage.currentSlot !== null ? 'profile' : 'welcome',
+    Object.keys(garage.slots).length > 0 ? 'profile' : 'welcome',
   );
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const RobotPage = (): React.JSX.Element => {
   }, [torStatus, page, slotUpdatedAt]);
 
   useEffect(() => {
-    if (garage.currentSlot && view === 'welcome') setView('profile');
+    if (Object.keys(garage.slots).length > 0 && view === 'welcome') setView('profile');
   }, [garage.currentSlot]);
 
   return (

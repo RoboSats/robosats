@@ -1,5 +1,6 @@
 package com.robosats
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.pm.ActivityInfo
@@ -20,21 +21,32 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.robosats.models.EncryptedStorage
+import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
+import com.robosats.tor.TorKmpManager.getTorKmpObject
+import com.vitorpamplona.ammolite.service.HttpClientManager
 
 class MainActivity : AppCompatActivity() {
+    private val requestCodePostNotifications: Int = 1
     private lateinit var webView: WebView
     private lateinit var torKmp: TorKmp
     private lateinit var loadingContainer: ConstraintLayout
     private lateinit var statusTextView: TextView
+    private lateinit var intentData: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        EncryptedStorage.init(this)
 
         // Lock the screen orientation to portrait mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -52,10 +64,67 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize Tor and setup WebView only after Tor is properly connected
         initializeTor()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                requestCodePostNotifications,
+            )
+        }
+
+        val intent = intent
+        if (intent != null) {
+            val orderId = intent.getStringExtra("order_id")
+            if (orderId?.isNotEmpty() == true) {
+                intentData = orderId
+            }
+        }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.let {
+            val orderId = intent.getStringExtra("order_id")
+            if (orderId?.isNotEmpty() == true) {
+                intentData = orderId
+            }
+        }
+    }
+
+    /**
+     * Initialize Notifications service
+     */
+    fun initializeNotifications() {
+        startForegroundService(
+            Intent(
+                this,
+                NotificationsService::class.java,
+            ),
+        )
+    }
+
+    /**
+     * Initialize Notifications service
+     */
+    fun stopNotifications() {
+        stopService(
+            Intent(
+                this,
+                NotificationsService::class.java,
+            ),
+        )
+    }
+
+    /**
+     * Initialize TorKmp if it's not already initialized
+     */
     private fun initializeTor() {
-        // Initialize TorKmp if it's not already initialized
         try {
             try {
                 torKmp = TorKmpManager.getTorKmpObject()
@@ -122,6 +191,8 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     updateStatus("Tor connected successfully. Setting up secure browser...")
 
+                    HttpClientManager.setDefaultProxy(getTorKmpObject().proxy)
+
                     // Now that Tor is connected, set up the WebView
                     setupWebView()
                 }
@@ -142,6 +213,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Configures initial WebView settings with external blocked
+     */
     private fun setupWebView() {
         // Double-check Tor is connected before proceeding
         if (!torKmp.isConnected()) {
@@ -255,6 +329,17 @@ class MainActivity : AppCompatActivity() {
 
                     // Now it's safe to load the local HTML file
                     webView.loadUrl("file:///android_asset/index.html")
+
+                    val notifications = EncryptedStorage.getEncryptedStorage("settings_notifications")
+                    if (notifications != "false") initializeNotifications()
+
+                    webView.post {
+                        try {
+                            webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
+                        } catch (e: Exception) {
+                            Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("WebViewSetup", "Security error in WebView setup: ${e.message}", e)
@@ -337,8 +422,6 @@ class MainActivity : AppCompatActivity() {
         webSettings.textZoom = 100
     }
 
-    // SSL error description method removed as we're not using SSL
-
     /**
      * Clear all WebView data when activity is destroyed
      */
@@ -353,6 +436,8 @@ class MainActivity : AppCompatActivity() {
         webView.clearSslPreferences()
 
         WebStorage.getInstance().deleteAllData()
+
+        stopNotifications()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CookieManager.getInstance().removeSessionCookies(null)

@@ -1,5 +1,4 @@
 import { type ApiClient, type Auth } from '..';
-import { systemClient } from '../../System';
 import ApiWebClient from '../ApiWebClient';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,14 +31,8 @@ class ApiAndroidClient implements ApiClient {
     return headers;
   };
 
-  private readonly parseResponse = (response: Record<string, object>): object => {
-    if (response.headers['set-cookie'] != null) {
-      response.headers['set-cookie'].forEach((cookie: string) => {
-        const keySplit: string[] = cookie.split('=');
-        systemClient.setCookie(keySplit[0], keySplit[1].split(';')[0]);
-      });
-    }
-    return response.json;
+  private readonly parseResponse = (response: string): object => {
+    return JSON.parse(response).json;
   };
 
   public put: (baseUrl: string, path: string, body: object) => Promise<object | undefined> = async (
@@ -64,7 +57,7 @@ class ApiAndroidClient implements ApiClient {
         window.AndroidRobosats?.storePromise(uuid, resolve, reject);
       });
 
-      return this.parseResponse(JSON.parse(result));
+      return this.parseResponse(result);
     };
 
   public post: (
@@ -84,7 +77,7 @@ class ApiAndroidClient implements ApiClient {
       window.AndroidRobosats?.storePromise(uuid, resolve, reject);
     });
 
-    return this.parseResponse(JSON.parse(result));
+    return this.parseResponse(result);
   };
 
   public get: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> = async (
@@ -102,7 +95,7 @@ class ApiAndroidClient implements ApiClient {
       window.AndroidRobosats?.storePromise(uuid, resolve, reject);
     });
 
-    return this.parseResponse(JSON.parse(result));
+    return this.parseResponse(result);
   };
 }
 

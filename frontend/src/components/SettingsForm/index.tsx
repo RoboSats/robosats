@@ -247,19 +247,16 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                 <ToggleButtonGroup
                   exclusive={true}
                   sx={{ width: '100%' }}
-                  value={settings.stopNotifications}
-                  onChange={(_e, stopNotifications) => {
-                    setSettings({ ...settings, stopNotifications });
-                    systemClient.setItem(
-                      'settings_stop_notifications',
-                      String(settings.stopNotifications),
-                    );
+                  value={settings.androidNotifications}
+                  onChange={(_e, androidNotifications) => {
+                    setSettings({ ...settings, androidNotifications });
+                    systemClient.setItem('settings_notifications', String(androidNotifications));
                   }}
                 >
-                  <ToggleButton value={false} color='primary' sx={{ flexGrow: 1 }}>
+                  <ToggleButton value={true} color='primary' sx={{ flexGrow: 1 }}>
                     {t('On')}
                   </ToggleButton>
-                  <ToggleButton value={true} color='secondary' sx={{ flexGrow: 1 }}>
+                  <ToggleButton value={false} color='secondary' sx={{ flexGrow: 1 }}>
                     {t('Off')}
                   </ToggleButton>
                 </ToggleButtonGroup>

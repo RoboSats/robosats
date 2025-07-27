@@ -137,7 +137,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
     initialAppContext.acknowledgedWarning,
   );
 
-  const navigateToPage: (newPage: Page, navigate: NavigateFunction) => void = (
+  const navigateToPage: (newPage: Page | string, navigate: NavigateFunction) => void = (
     newPage,
     navigate,
   ) => {
