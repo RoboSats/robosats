@@ -67,7 +67,10 @@ class BaseSettings {
   }
 
   getMode = (): 'light' | 'dark' => {
-    return window?.matchMedia('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+    return (systemClient.getSyncItem?.('settings_mode') as 'light' | 'dark') ||
+      window?.matchMedia('(prefers-color-scheme: dark)')?.matches
+      ? 'dark'
+      : 'light';
   };
 
   public frontend: 'basic' | 'pro' = 'basic';
