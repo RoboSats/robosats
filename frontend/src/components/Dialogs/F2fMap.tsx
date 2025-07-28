@@ -17,8 +17,8 @@ import Map from '../Map';
 interface Props {
   open: boolean;
   orderType: number;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | null;
+  longitude?: number | null;
   onClose?: (position?: [number, number]) => void;
   interactive?: boolean;
   zoom?: number;

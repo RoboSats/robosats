@@ -553,7 +553,7 @@ const OrderDetails = ({
               size={2.5 * theme.typography.fontSize}
               othersText={t('Others')}
               verbose={true}
-              text={currentOrder?.payment_method}
+              text={orderReversiblePaymentMethods.join(' ')}
               style={{ width: '30%' }}
             />
           </DialogContentText>

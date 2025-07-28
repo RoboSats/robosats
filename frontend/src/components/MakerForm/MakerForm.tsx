@@ -176,12 +176,12 @@ const MakerForm = ({
   const handlePaymentMethodChange = function (paymentArray: string[]): void {
     let str = '';
     const arrayLength = paymentArray.length;
-    let includeCoordinates = false;
+    let includesCash = false;
 
     for (let i = 0; i < arrayLength; i++) {
       str += paymentArray[i] + ' ';
-      if (paymentArray[i] === 'cash') {
-        includeCoordinates = true;
+      if (paymentArray[i].includes('F2F')) {
+        includesCash = true;
         if (i === arrayLength - 1) {
           setOpenWorldmap(true);
         }
@@ -195,8 +195,8 @@ const MakerForm = ({
         paymentMethods: paymentArray,
         paymentMethodsText: paymentMethodText,
         badPaymentMethod: paymentMethodText.length > 50,
-        latitude: includeCoordinates ? maker.latitude : null,
-        longitude: includeCoordinates ? maker.longitude : null,
+        latitude: includesCash ? maker.latitude : null,
+        longitude: includesCash ? maker.longitude : null,
       };
     });
   };
