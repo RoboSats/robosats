@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Servei en segon pla</string>
+    <string name="connection">Connexió</string>
+    <string name="configuration">Configuració</string>
+    <string name="robosats_is_running_in_background">Robosats s\'està executant en segon pla cercant notificacions</string>
+    <string name="notifications">Notificacions</string>
+    <string name="useOrbotButton">Utilitzar Orbot</string>
+</resources>

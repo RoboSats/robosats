@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">バックグラウンドサービス</string>
+    <string name="connection">接続</string>
+    <string name="configuration">設定</string>
+    <string name="robosats_is_running_in_background">Robosatsはバックグラウンドで通知を取得しています</string>
+    <string name="notifications">通知</string>
+    <string name="useOrbotButton">Orbotを使用</string>
+</resources>

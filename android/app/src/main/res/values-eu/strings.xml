@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Atzeko planoko zerbitzua</string>
+    <string name="connection">Konexioa</string>
+    <string name="configuration">Konfigurazioa</string>
+    <string name="robosats_is_running_in_background">Robosats atzeko planoan exekutatzen ari da jakinarazpenak bilatzen</string>
+    <string name="notifications">Jakinarazpenak</string>
+    <string name="useOrbotButton">Orbot erabili</string>
+</resources>

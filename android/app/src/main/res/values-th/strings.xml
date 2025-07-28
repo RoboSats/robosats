@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">บริการเบื้องหลัง</string>
+    <string name="connection">การเชื่อมต่อ</string>
+    <string name="configuration">การตั้งค่า</string>
+    <string name="robosats_is_running_in_background">Robosats กำลังทำงานในเบื้องหลังและค้นหาการแจ้งเตือน</string>
+    <string name="notifications">การแจ้งเตือน</string>
+    <string name="useOrbotButton">ใช้ Orbot</string>
+</resources>

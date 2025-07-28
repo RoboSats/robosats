@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Servizio in background</string>
+    <string name="connection">Connessione</string>
+    <string name="configuration">Configurazione</string>
+    <string name="robosats_is_running_in_background">Robosats è in esecuzione in background cercando notifiche</string>
+    <string name="notifications">Notifiche</string>
+    <string name="useOrbotButton">Usa Orbot</string>
+</resources>

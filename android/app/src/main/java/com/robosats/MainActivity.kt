@@ -3,7 +3,12 @@ package com.robosats
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -20,9 +25,6 @@ import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -31,6 +33,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.robosats.models.EncryptedStorage
+import com.robosats.models.LanguageManager
 import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
@@ -50,7 +53,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize EncryptedStorage
         EncryptedStorage.init(this)
+
+        // Initialize language manager and apply saved language setting
+        LanguageManager.init(this)
 
         // Lock the screen orientation to portrait mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT

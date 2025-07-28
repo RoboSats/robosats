@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Služba na pozadí</string>
+    <string name="connection">Připojení</string>
+    <string name="configuration">Konfigurace</string>
+    <string name="robosats_is_running_in_background">Robosats běží na pozadí a vyhledává oznámení</string>
+    <string name="notifications">Oznámení</string>
+    <string name="useOrbotButton">Použít Orbot</string>
+</resources>

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Huduma ya Usuli</string>
+    <string name="connection">Muunganisho</string>
+    <string name="configuration">Usanidi</string>
+    <string name="robosats_is_running_in_background">Robosats inaendesha katika usuli ikitafuta arifa</string>
+    <string name="notifications">Arifa</string>
+    <string name="useOrbotButton">Tumia Orbot</string>
+</resources>

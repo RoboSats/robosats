@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Bakgrundstjänst</string>
+    <string name="connection">Anslutning</string>
+    <string name="configuration">Konfiguration</string>
+    <string name="robosats_is_running_in_background">Robosats körs i bakgrunden och söker efter meddelanden</string>
+    <string name="notifications">Meddelanden</string>
+    <string name="useOrbotButton">Använd Orbot</string>
+</resources>
