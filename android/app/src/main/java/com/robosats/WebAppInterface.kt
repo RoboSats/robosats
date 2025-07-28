@@ -368,7 +368,12 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         EncryptedStorage.setEncryptedStorage(sanitizedKey, sanitizedValue)
 
         if (key == "garage_slots") NostrClient.refresh()
-        if (key == "settings_language") LanguageManager.applyLanguage(value)
+        if (key == "settings_language") {
+            context.changeAppLanguage(value)
+            // Return immediately as recreate() will be called
+            resolvePromise(uuid, key)
+            return
+        }
         if (key == "settings_notifications") {
             val serviceIntent = Intent(context, NotificationsService::class.java)
             if (value == "true") {

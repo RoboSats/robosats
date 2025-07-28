@@ -34,7 +34,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.robosats.models.EncryptedStorage
 import com.robosats.models.LanguageManager
+import com.robosats.models.LanguageManager.LANGUAGE_KEY
+import com.robosats.models.LanguageManager.applyLanguage
 import com.robosats.services.NotificationsService
+import java.util.Locale
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
 import com.robosats.tor.TorKmpManager.getTorKmpObject
@@ -58,6 +61,8 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize language manager and apply saved language setting
         LanguageManager.init(this)
+        val languageCode = EncryptedStorage.getEncryptedStorage(LANGUAGE_KEY)
+        changeAppLanguage(languageCode)
 
         // Lock the screen orientation to portrait mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -93,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val intent = intent
+        intentData = ""
         if (intent != null) {
             val orderId = intent.getStringExtra("order_id")
             if (orderId?.isNotEmpty() == true) {
@@ -100,13 +106,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Initialize Tor and setup WebView only after Tor is properly connected
-        initializeTor()
 
         val settingProxy = EncryptedStorage.getEncryptedStorage("settings_use_proxy")
         if (settingProxy == "false") {
             // Setup WebView to use Orbot if the user previously clicked
             onUseOrbotButtonClicked()
+        } else {
+            // Initialize Tor and setup WebView only after Tor is properly connected
+            initializeTor()
         }
     }
 
@@ -376,11 +383,13 @@ class MainActivity : AppCompatActivity() {
                     val notifications = EncryptedStorage.getEncryptedStorage("settings_notifications")
                     if (notifications != "false") initializeNotifications()
 
-                    webView.post {
-                        try {
-                            webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
-                        } catch (e: Exception) {
-                            Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
+                    if (intentData != "") {
+                        webView.post {
+                            try {
+                                webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
+                            } catch (e: Exception) {
+                                Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
+                            }
                         }
                     }
                 }
@@ -463,6 +472,18 @@ class MainActivity : AppCompatActivity() {
         webSettings.loadWithOverviewMode = true
         webSettings.useWideViewPort = true
         webSettings.textZoom = 100
+    }
+
+    /**
+     * Change the app's language and recreate the activity
+     * @param languageCode The language code to switch to (e.g., "en", "es", "fr")
+     */
+    fun changeAppLanguage(languageCode: String) {
+        // Apply the language change
+        if (LanguageManager.applyLanguage(languageCode)) {
+            // Restart the activity to apply changes
+            recreate()
+        }
     }
 
     /**

@@ -13,9 +13,6 @@ object LanguageManager {
     val LANGUAGE_KEY = "settings_language"
 
     fun init(context: MainActivity) {
-        val value = EncryptedStorage.getEncryptedStorage(LANGUAGE_KEY)
-        applyLanguage(value)
-
         resources = context.resources
     }
 
