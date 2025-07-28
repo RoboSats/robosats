@@ -43,7 +43,7 @@ const TopBar = (): React.JSX.Element => {
             size='large'
             onClick={() => setShowNotificationsDrawer((s) => !s)}
             disabled={settings.connection !== 'nostr'}
-            loading={loadingNotifications}
+            loading={loadingNotifications && settings.connection === 'nostr'}
             endIcon={<Notifications />}
           />
         </Grid>
