@@ -482,6 +482,7 @@ const PaymentIcon: React.FC = (props) => {
         {...props}
         src={icons[props.icon].image}
         style={{
+          border: props.reversible ? '2px solid red' : '',
           borderRadius: '23%',
           filter: `${
             theme.palette.mode === 'dark' ? 'brightness(115%)' : ''

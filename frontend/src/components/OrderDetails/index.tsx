@@ -16,13 +16,19 @@ import {
   Tooltip,
   ListItemButton,
   TextField,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  DialogContentText,
 } from '@mui/material';
 
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
 import currencies from '../../../static/assets/currencies.json';
-import { AccessTime, PriceChange, Payments, HourglassTop, Map } from '@mui/icons-material';
-import { PaymentStringAsIcons } from '../../components/PaymentMethods';
+import { AccessTime, PriceChange, Payments, HourglassTop, Map, Warning } from '@mui/icons-material';
+import { fiatMethods, PaymentStringAsIcons, swapMethods } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
@@ -31,6 +37,7 @@ import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { Coordinator, type Order } from '../../models';
+import { Box } from '@mui/system';
 
 interface OrderDetailsProps {
   shortAlias: string;
@@ -55,6 +62,7 @@ const OrderDetails = ({
   );
   const [currencyCode, setCurrencyCode] = useState<string | null>();
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
+  const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
   const [password, setPassword] = useState<string>();
 
   useEffect(() => {
@@ -239,6 +247,19 @@ const OrderDetails = ({
     return { send, receive };
   }, [currentOrder, amountString]);
 
+  const revesiblePaymentMethods = useMemo(() => {
+    return swapMethods
+      .concat(fiatMethods)
+      .filter((pm) => pm.reversible)
+      .map((pm) => pm.name);
+  }, []);
+
+  const orderReversiblePaymentMethods = useMemo(() => {
+    return revesiblePaymentMethods.filter((pm) =>
+      currentOrder.payment_method.toLowerCase().includes(pm.toLowerCase()),
+    );
+  }, [currentOrder]);
+
   return (
     <Grid container spacing={0}>
       <F2fMapDialog
@@ -350,7 +371,9 @@ const OrderDetails = ({
 
             <Divider />
 
-            <ListItem>
+            <ListItem
+              onClick={() => orderReversiblePaymentMethods.length > 0 && setOpenWarningDialog(true)}
+            >
               <ListItemIcon>
                 <Payments />
               </ListItemIcon>
@@ -382,6 +405,11 @@ const OrderDetails = ({
                       </IconButton>
                     </div>
                   </Tooltip>
+                </ListItemIcon>
+              )}
+              {orderReversiblePaymentMethods.length > 0 && (
+                <ListItemIcon>
+                  <Warning color='warning' />
                 </ListItemIcon>
               )}
             </ListItem>
@@ -501,6 +529,62 @@ const OrderDetails = ({
       ) : (
         <></>
       )}
+      <Dialog
+        open={openWarningDialog}
+        onClose={() => {
+          setOpenWarningDialog(false);
+        }}
+      >
+        <DialogTitle>{t('Reversible payments')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText component='div'>
+            <Typography variant='body1' gutterBottom>
+              {t(
+                'This order offers one or multiple payment methods that the community has consistently reported as reverting their transactions.',
+              )}
+            </Typography>
+          </DialogContentText>
+          <DialogContentText
+            component='div'
+            sx={{ mt: 2 }}
+            style={{ display: 'flex', justifyContent: 'space-around' }}
+          >
+            <PaymentStringAsIcons
+              size={2.5 * theme.typography.fontSize}
+              othersText={t('Others')}
+              verbose={true}
+              text={currentOrder?.payment_method}
+              style={{ width: '30%' }}
+            />
+          </DialogContentText>
+          <DialogContentText component='div'>
+            <Box component='ul' sx={{ mt: 1, pl: 2 }}>
+              <Typography component='li' variant='body2' sx={{ fontWeight: 'bold' }}>
+                {t(
+                  'If you receive a fiat transaction, it can be unilatery reverted up to 80 days after the trade has been completed.',
+                )}
+              </Typography>
+              <Typography component='li' variant='body2'>
+                {t('Robosats and their coordinators have no control over the legacy fiat system.')}
+              </Typography>
+              <Typography component='li' variant='body2'>
+                {t(
+                  'Scammers can exploit this vulnerability in the legacy fiat system to take away both your bitcoin and your fiat.',
+                )}
+              </Typography>
+            </Box>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenWarningDialog(false);
+            }}
+          >
+            {t('Acknowledged')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };
