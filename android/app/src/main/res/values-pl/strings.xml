@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Usługa w tle</string>
+    <string name="connection">Połączenie</string>
+    <string name="configuration">Konfiguracja</string>
+    <string name="robosats_is_running_in_background">Robosats działa w tle, pobierając powiadomienia</string>
+    <string name="notifications">Powiadomienia</string>
+    <string name="useOrbotButton">Użyj Orbot</string>
+    <string name="init_tor">Inicjalizacja połączenia Tor...</string>
+    <string name="using_orbot">Korzystanie z Orbot. Upewnij się, że jest uruchomiony!</string>
+    <string name="tor_init_error">Błąd krytyczny: Inicjalizacja Tor nie powiodła się. Aplikacja nie może bezpiecznie kontynuować.</string>
+    <string name="connecting_tor">Łączenie z siecią Tor...</string>
+    <string name="still_connecting_tor">Nadal łączenie z Tor...</string>
+    <string name="connected_tor">Tor pomyślnie połączony. Konfigurowanie bezpiecznej przeglądarki...</string>
+    <string name="fail_tor">Nie udało się połączyć z Tor po wielu próbach. Aplikacja nie może bezpiecznie kontynuować.</string>
+    <string name="error_tor">"Błąd podczas łączenia z Tor: "</string>
+    <string name="setting_tor">Konfigurowanie bezpiecznego przeglądania przez Tor...</string>
+    <string name="setting_orbot">Konfigurowanie przeglądania przez Orbot...</string>
+    <string name="loading_app">Bezpieczne połączenie ustanowione. Ładowanie aplikacji...</string>
+</resources>

@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Atzeko planoko zerbitzua</string>
+    <string name="connection">Konexioa</string>
+    <string name="configuration">Konfigurazioa</string>
+    <string name="robosats_is_running_in_background">Robosats atzeko planoan exekutatzen ari da jakinarazpenak bilatzen</string>
+    <string name="notifications">Jakinarazpenak</string>
+    <string name="useOrbotButton">Orbot erabili</string>
+    <string name="init_tor">Tor konexioa hasieratzen...</string>
+    <string name="using_orbot">Orbot erabiltzen. Ziurtatu martxan dagoela!</string>
+    <string name="tor_init_error">Errore kritikoa: Tor hasieratzeak huts egin du. Aplikazioak ezin du modu seguruan jarraitu.</string>
+    <string name="connecting_tor">Tor sarera konektatzen...</string>
+    <string name="still_connecting_tor">Oraindik Tor-era konektatzen...</string>
+    <string name="connected_tor">Tor arrakastaz konektatu da. Nabigatzaile segurua konfiguratzen...</string>
+    <string name="fail_tor">Ezin izan da Tor-era konektatu hainbat saiakera eta gero. Aplikazioak ezin du modu seguruan jarraitu.</string>
+    <string name="error_tor">"Errorea Tor-era konektatzean: "</string>
+    <string name="setting_tor">Tor-en bidezko nabigazio segurua konfiguratzen...</string>
+    <string name="setting_orbot">Orbot nabigazioa konfiguratzen...</string>
+    <string name="loading_app">Konexio segurua ezarri da. Aplikazioa kargatzen...</string>
+</resources>

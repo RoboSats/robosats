@@ -3,7 +3,10 @@ package com.robosats
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -20,9 +23,6 @@ import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -31,6 +31,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.robosats.models.EncryptedStorage
+import com.robosats.models.LanguageManager
 import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
@@ -50,7 +51,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize EncryptedStorage
         EncryptedStorage.init(this)
+
+        // Initialize language manager with system language
+        LanguageManager.init(this)
 
         // Lock the screen orientation to portrait mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -70,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Set initial status message
-        updateStatus("Initializing Tor connection...")
+        updateStatus(getString(R.string.init_tor))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
@@ -86,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val intent = intent
+        intentData = ""
         if (intent != null) {
             val orderId = intent.getStringExtra("order_id")
             if (orderId?.isNotEmpty() == true) {
@@ -93,13 +99,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Initialize Tor and setup WebView only after Tor is properly connected
-        initializeTor()
 
         val settingProxy = EncryptedStorage.getEncryptedStorage("settings_use_proxy")
         if (settingProxy == "false") {
             // Setup WebView to use Orbot if the user previously clicked
             onUseOrbotButtonClicked()
+        } else {
+            // Initialize Tor and setup WebView only after Tor is properly connected
+            initializeTor()
         }
     }
 
@@ -126,7 +133,7 @@ class MainActivity : AppCompatActivity() {
         // Show a message to the user
         Toast.makeText(
             this,
-            "Using Orbot. Make sure it's running!",
+            getString(R.string.using_orbot),
             Toast.LENGTH_LONG
         ).show()
 
@@ -181,7 +188,7 @@ class MainActivity : AppCompatActivity() {
 
             // Show error message on the loading screen
             runOnUiThread {
-                updateStatus("Critical error: Tor initialization failed. App cannot proceed securely.")
+                updateStatus(getString(R.string.tor_init_error))
             }
         }
     }
@@ -200,7 +207,7 @@ class MainActivity : AppCompatActivity() {
         try {
             // Display connecting message
             runOnUiThread {
-                updateStatus("Connecting to Tor network...")
+                updateStatus(getString(R.string.connecting_tor))
             }
 
             // Wait for Tor to connect with retry mechanism
@@ -214,7 +221,7 @@ class MainActivity : AppCompatActivity() {
                 // Update status on UI thread every few retries
                 if (retries % 3 == 0) {
                     runOnUiThread {
-                        updateStatus("Still connecting to Tor (attempt $retries/$maxRetries)...")
+                        updateStatus(getString(R.string.still_connecting_tor))
                     }
                 }
             }
@@ -225,7 +232,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Show success message and proceed
                 runOnUiThread {
-                    updateStatus("Tor connected successfully. Setting up secure browser...")
+                    updateStatus(getString(R.string.connected_tor))
 
                     HttpClientManager.setDefaultProxy(getTorKmpObject().proxy)
 
@@ -237,14 +244,14 @@ class MainActivity : AppCompatActivity() {
                 Log.e("TorInitialization", "Failed to connect to Tor after $maxRetries retries")
 
                 runOnUiThread {
-                    updateStatus("Failed to connect to Tor after multiple attempts. App cannot proceed securely.")
+                    updateStatus(getString(R.string.fail_tor))
                 }
             }
         } catch (e: Exception) {
             Log.e("TorInitialization", "Error during Tor connection: ${e.message}", e)
 
             runOnUiThread {
-                updateStatus("Error connecting to Tor: ${e.message}")
+                updateStatus(getString(R.string.error_tor) + "${e.message}")
             }
         }
     }
@@ -283,7 +290,7 @@ class MainActivity : AppCompatActivity() {
 
         // Show message that we're setting up secure browsing
         runOnUiThread {
-            updateStatus(if (useProxy) "Setting up secure Tor browsing..." else "Setting up Orbot browsing...")
+            updateStatus(if (useProxy) getString(R.string.setting_tor) else getString(R.string.setting_orbot))
         }
 
         // Configure proxy for WebView in a background thread to avoid NetworkOnMainThreadException
@@ -296,7 +303,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Success - now configure WebViewClient and load URL on UI thread
                 runOnUiThread {
-                    updateStatus("Secure connection established. Loading app...")
+                    updateStatus(getString(R.string.loading_app))
 
                     // Set up WebViewClient that allows external links and deep links to be opened
                     webView.webViewClient = object : WebViewClient() {
@@ -369,11 +376,13 @@ class MainActivity : AppCompatActivity() {
                     val notifications = EncryptedStorage.getEncryptedStorage("settings_notifications")
                     if (notifications != "false") initializeNotifications()
 
-                    webView.post {
-                        try {
-                            webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
-                        } catch (e: Exception) {
-                            Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
+                    if (intentData != "") {
+                        webView.post {
+                            try {
+                                webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
+                            } catch (e: Exception) {
+                                Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
+                            }
                         }
                     }
                 }
@@ -441,9 +450,7 @@ class MainActivity : AppCompatActivity() {
         cookieManager.setAcceptThirdPartyCookies(webView, false) // Block 3rd party cookies
 
         // 10. Disable Service Workers (not needed for our local app)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            ServiceWorkerController.getInstance().setServiceWorkerClient(null)
-        }
+        ServiceWorkerController.getInstance().setServiceWorkerClient(null)
 
         // --- USABILITY SETTINGS ---
 
@@ -457,6 +464,7 @@ class MainActivity : AppCompatActivity() {
         webSettings.useWideViewPort = true
         webSettings.textZoom = 100
     }
+
 
     /**
      * Clear all WebView data when activity is destroyed

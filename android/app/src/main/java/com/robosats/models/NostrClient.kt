@@ -15,9 +15,18 @@ import org.json.JSONObject
 object NostrClient {
     private var subscriptionNotificationId = "robosatsNotificationId"
     private var authors = garagePubKeys()
+    private var initialized = false
 
     fun init() {
-        RelayPool.register(Client)
+        if (!initialized) {
+            try {
+                RelayPool.register(Client)
+                initialized = true
+            } catch (e: Exception) {
+                Log.e("NostrClient", "Error initializing NostrClient: ${e.message}", e)
+                // Don't set initialized to true if there was an error
+            }
+        }
     }
 
     fun stop() {

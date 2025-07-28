@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Фоновая служба</string>
+    <string name="connection">Соединение</string>
+    <string name="configuration">Конфигурация</string>
+    <string name="robosats_is_running_in_background">Robosats работает в фоновом режиме и ищет уведомления</string>
+    <string name="notifications">Уведомления</string>
+    <string name="useOrbotButton">Использовать Orbot</string>
+    <string name="init_tor">Инициализация соединения Tor...</string>
+    <string name="using_orbot">Использование Orbot. Убедитесь, что он запущен!</string>
+    <string name="tor_init_error">Критическая ошибка: Не удалось инициализировать Tor. Приложение не может безопасно продолжить работу.</string>
+    <string name="connecting_tor">Подключение к сети Tor...</string>
+    <string name="still_connecting_tor">Всё ещё подключается к Tor...</string>
+    <string name="connected_tor">Tor успешно подключен. Настройка безопасного браузера...</string>
+    <string name="fail_tor">Не удалось подключиться к Tor после нескольких попыток. Приложение не может безопасно продолжить работу.</string>
+    <string name="error_tor">"Ошибка при подключении к Tor: "</string>
+    <string name="setting_tor">Настройка безопасного просмотра через Tor...</string>
+    <string name="setting_orbot">Настройка просмотра через Orbot...</string>
+    <string name="loading_app">Безопасное соединение установлено. Загрузка приложения...</string>
+</resources>

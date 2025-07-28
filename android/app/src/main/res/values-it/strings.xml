@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Servizio in background</string>
+    <string name="connection">Connessione</string>
+    <string name="configuration">Configurazione</string>
+    <string name="robosats_is_running_in_background">Robosats è in esecuzione in background cercando notifiche</string>
+    <string name="notifications">Notifiche</string>
+    <string name="useOrbotButton">Usa Orbot</string>
+    <string name="init_tor">Inizializzazione connessione Tor...</string>
+    <string name="using_orbot">Utilizzo di Orbot. Assicurati che sia in esecuzione!</string>
+    <string name="tor_init_error">Errore critico: Inizializzazione di Tor fallita. L\'app non può procedere in modo sicuro.</string>
+    <string name="connecting_tor">Connessione alla rete Tor...</string>
+    <string name="still_connecting_tor">Ancora in connessione a Tor...</string>
+    <string name="connected_tor">Tor connesso con successo. Configurazione del browser sicuro...</string>
+    <string name="fail_tor">Impossibile connettersi a Tor dopo diversi tentativi. L\'app non può procedere in modo sicuro.</string>
+    <string name="error_tor">"Errore durante la connessione a Tor: "</string>
+    <string name="setting_tor">Configurazione della navigazione sicura con Tor...</string>
+    <string name="setting_orbot">Configurazione della navigazione con Orbot...</string>
+    <string name="loading_app">Connessione sicura stabilita. Caricamento dell\'app...</string>
+</resources>

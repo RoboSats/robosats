@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">背景服務</string>
+    <string name="connection">連接</string>
+    <string name="configuration">配置</string>
+    <string name="robosats_is_running_in_background">Robosats 正在背景執行獲取通知</string>
+    <string name="notifications">通知</string>
+    <string name="useOrbotButton">使用 Orbot</string>
+    <string name="init_tor">正在初始化 Tor 連接...</string>
+    <string name="using_orbot">正在使用 Orbot。請確保它正在運行！</string>
+    <string name="tor_init_error">嚴重錯誤：Tor 初始化失敗。應用無法安全地繼續。</string>
+    <string name="connecting_tor">正在連接到 Tor 網絡...</string>
+    <string name="still_connecting_tor">仍在連接到 Tor...</string>
+    <string name="connected_tor">Tor 成功連接。正在設置安全瀏覽器...</string>
+    <string name="fail_tor">多次嘗試後無法連接到 Tor。應用無法安全地繼續。</string>
+    <string name="error_tor">"連接到 Tor 時出錯: "</string>
+    <string name="setting_tor">正在設置安全的 Tor 瀏覽...</string>
+    <string name="setting_orbot">正在設置 Orbot 瀏覽...</string>
+    <string name="loading_app">安全連接已建立。正在加載應用...</string>
+</resources>

@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Robosats</string>
+    <string name="service">Servei en segon pla</string>
+    <string name="connection">Connexió</string>
+    <string name="configuration">Configuració</string>
+    <string name="robosats_is_running_in_background">Robosats s\'està executant en segon pla cercant notificacions</string>
+    <string name="notifications">Notificacions</string>
+    <string name="useOrbotButton">Utilitzar Orbot</string>
+    <string name="init_tor">Inicialitzant connexió Tor...</string>
+    <string name="using_orbot">Utilitzant Orbot. Assegureu-vos que està en execució!</string>
+    <string name="tor_init_error">Error crític: La inicialització de Tor ha fallat. L\'aplicació no pot continuar de manera segura.</string>
+    <string name="connecting_tor">Connectant a la xarxa Tor...</string>
+    <string name="still_connecting_tor">Encara connectant a Tor...</string>
+    <string name="connected_tor">Tor connectat amb èxit. Configurant navegador segur...</string>
+    <string name="fail_tor">No s\'ha pogut connectar a Tor després de diversos intents. L\'aplicació no pot continuar de manera segura.</string>
+    <string name="error_tor">"Error en connectar a Tor: "</string>
+    <string name="setting_tor">Configurant navegació segura amb Tor...</string>
+    <string name="setting_orbot">Configurant navegació amb Orbot...</string>
+    <string name="loading_app">Connexió segura establerta. Carregant aplicació...</string>
+</resources>
