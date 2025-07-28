@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { CSSProperties, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PaymentIcon from './Icons';
 import { Tooltip } from '@mui/material';
@@ -7,14 +7,21 @@ import { fiatMethods, swapMethods } from './MethodList';
 const ns = [{ name: 'not specified', icon: 'notspecified' }];
 const methods = ns.concat(swapMethods).concat(fiatMethods);
 
-interface Props {
+interface StringAsIconsProps {
   othersText: string;
   verbose: boolean;
   size: number;
   text: string;
+  style?: CSSProperties;
 }
 
-const StringAsIcons: React.FC = ({ othersText, verbose, size, text = '' }: Props) => {
+const StringAsIcons: React.FC<StringAsIconsProps> = ({
+  othersText,
+  verbose,
+  size,
+  text = '',
+  style = {},
+}) => {
   const { t } = useTranslation();
 
   const parsedText = useMemo(() => {
@@ -44,7 +51,12 @@ const StringAsIcons: React.FC = ({ othersText, verbose, size, text = '' }: Props
                 height: size,
               }}
             >
-              <PaymentIcon width={size} height={size} icon={method.icon} />
+              <PaymentIcon
+                width={size}
+                height={size}
+                icon={method.icon}
+                reversible={method.reversible}
+              />
             </div>
           </Tooltip>,
         );
@@ -98,7 +110,9 @@ const StringAsIcons: React.FC = ({ othersText, verbose, size, text = '' }: Props
   }, [text]);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>{parsedText}</div>
+    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', ...style }}>
+      {parsedText}
+    </div>
   );
 };
 
