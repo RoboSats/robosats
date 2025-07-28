@@ -141,8 +141,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-         * Initialize Notifications service
-         */
+     * Initialize Notifications service
+     */
     fun initializeNotifications() {
         startForegroundService(
             Intent(

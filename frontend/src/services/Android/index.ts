@@ -12,7 +12,6 @@ interface AndroidDataRobosats {
 }
 
 interface AndroidAppRobosats {
-  changeLanguage: (uuid: string, languageCode: string) => void;
   getEncryptedStorage: (uuid: string, key: string) => void;
   setEncryptedStorage: (uuid: string, key: string, value: string) => void;
   deleteEncryptedStorage: (uuid: string, key: string) => void;
