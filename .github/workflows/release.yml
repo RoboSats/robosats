@@ -25,7 +25,7 @@ jobs:
         read -ra semverArray <<< $semver
         tagV=$(echo ${semverArray[0]} | sed 's/v//')
         clientV=$(jq -r .version frontend/package.json)
-        androidV=$(grep -oP '(?<=versionName ").*?((?=\-)|$)' mobile/android/app/build.gradle)
+        androidV=$(grep -oP '(?<=versionName = ").*?((?=\-)|$)' android/app/build.gradle.kts)
         coordinatorV=$(jq -r .major version.json).$(jq -r .minor version.json).$(jq -r .patch version.json)
 
         printf "Client version: ${clientV}\nCoordinator version: ${coordinatorV}\nGit tag version: ${tagV}\n"
