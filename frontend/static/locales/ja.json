@@ -464,7 +464,7 @@
   "You will send {{satoshis}} Sats (Approx)": "{{satoshis}} Satsを送信します（おおよその金額）",
   "#48": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "受け付ける支払い方法",
-  "Acknowledged": "Acknowledged",
+  "Acknowledged": "確認する",
   "Amount of Satoshis": "サトシの金額",
   "Deposit": "デポジットタイマー",
   "Expires in": "有効期限",

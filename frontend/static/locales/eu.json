@@ -464,7 +464,7 @@
   "You will send {{satoshis}} Sats (Approx)": "Bidali dituzu {{satoshis}} Sats (Gutxi gora behera)",
   "#48": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "Onartuta ordainketa moduak",
-  "Acknowledged": "Acknowledged",
+  "Acknowledged": "Berretsi",
   "Amount of Satoshis": "Satoshi kopurua",
   "Deposit": "Gordailu tenporizadorea",
   "Expires in": "Iraungitze denbora",

@@ -464,7 +464,7 @@
   "You will send {{satoshis}} Sats (Approx)": "Du kommer att skicka {{satoshis}} Sats (Ungefärligt)",
   "#48": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "Accepterade betalningsmetoder",
-  "Acknowledged": "Acknowledged",
+  "Acknowledged": "Bekräfta",
   "Amount of Satoshis": "Belopp av Satoshis",
   "Deposit": "Insättningstimer",
   "Expires in": "Går ut om",

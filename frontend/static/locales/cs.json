@@ -464,7 +464,7 @@
   "You will send {{satoshis}} Sats (Approx)": "Odešlete přibližně {{satoshis}} Sats",
   "#48": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "Přijaté platební metody",
-  "Acknowledged": "Acknowledged",
+  "Acknowledged": "Potvrdit",
   "Amount of Satoshis": "Částka Satoshi",
   "Deposit": "Vklad",
   "Expires in": "Vyprší za",

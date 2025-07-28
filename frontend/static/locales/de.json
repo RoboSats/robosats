@@ -464,7 +464,7 @@
   "You will send {{satoshis}} Sats (Approx)": "Du wirst ungefähr {{satoshis}} Sats senden",
   "#48": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "Akzeptierte Zahlungsmethoden",
-  "Acknowledged": "Acknowledged",
+  "Acknowledged": "Bestätigen",
   "Amount of Satoshis": "Anzahl der Satoshis",
   "Deposit": "Einzahlungstimer",
   "Expires in": "Läuft ab in",

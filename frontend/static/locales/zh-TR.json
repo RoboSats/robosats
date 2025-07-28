@@ -464,7 +464,7 @@
   "You will send {{satoshis}} Sats (Approx)": "您將發送約 {{satoshis}} 聰",
   "#48": "Phrases in components/OrderDetails/index.tsx",
   "Accepted payment methods": "接受的付款方法",
-  "Acknowledged": "Acknowledged",
+  "Acknowledged": "確認",
   "Amount of Satoshis": "聰的金額",
   "Deposit": "存款",
   "Expires in": "到期於",
