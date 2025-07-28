@@ -100,7 +100,7 @@ jobs:
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
-          name: robosats-${{ inputs.semver }}-universal.apk
+          name: app-universal-release.apk
           path: android/app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
 
       # Create app-arm64-v8a-release APK artifact asset for Release
@@ -108,7 +108,7 @@ jobs:
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
-          name: robosats-${{ inputs.semver }}-arm64-v8a.apk
+          name: app-arm64-v8a-release.apk
           path: android/app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk
 
       # Create app-armeabi-v7a-release APK artifact asset for Release
@@ -116,7 +116,7 @@ jobs:
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
-          name: robosats-${{ inputs.semver }}-armeabi-v7a.apk
+          name: app-armeabi-v7a-release.apk
           path: android/app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk
 
       # Create app-x86_64-release APK artifact asset for Release
@@ -124,7 +124,7 @@ jobs:
         if: inputs.semver != ''
         uses: actions/upload-artifact@v4
         with:
-          name: robosats-${{ inputs.semver }}-x86_64.apk
+          name: app-x86_64-release.apk
           path: android/app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk
 
       - name: Create Pre-Release
