@@ -33,6 +33,11 @@ class SystemWebClient implements SystemClient {
     return value ?? '';
   };
 
+  public getSyncItem: (key: string) => string | undefined = (key) => {
+    const value = window.localStorage.getItem(key);
+    return value ?? '';
+  };
+
   public setItem: (key: string, value: string) => void = (key, value) => {
     window.localStorage.setItem(key, value);
   };

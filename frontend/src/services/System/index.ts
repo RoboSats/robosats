@@ -5,6 +5,7 @@ import SystemAndroidClient from './SystemAndroidClient';
 export interface SystemClient {
   loading: boolean;
   copyToClipboard: (value: string) => void;
+  getSyncItem?: (key: string) => string | undefined;
   getItem: (key: string) => Promise<string | undefined>;
   setItem: (key: string, value: string) => void;
   deleteItem: (key: string) => void;
