@@ -6,4 +6,15 @@
     <string name="robosats_is_running_in_background">Robosats está rodando em segundo plano buscando notificações</string>
     <string name="notifications">Notificações</string>
     <string name="useOrbotButton">Usar Orbot</string>
+    <string name="init_tor">Inicializando conexão Tor...</string>
+    <string name="using_orbot">Usando Orbot. Certifique-se de que está rodando!</string>
+    <string name="tor_init_error">Erro crítico: Falha na inicialização do Tor. O aplicativo não pode prosseguir com segurança.</string>
+    <string name="connecting_tor">Conectando à rede Tor...</string>
+    <string name="still_connecting_tor">Ainda conectando ao Tor...</string>
+    <string name="connected_tor">Tor conectado com sucesso. Configurando navegador seguro...</string>
+    <string name="fail_tor">Falha ao conectar ao Tor após várias tentativas. O aplicativo não pode prosseguir com segurança.</string>
+    <string name="error_tor">"Erro ao conectar ao Tor: "</string>
+    <string name="setting_tor">Configurando navegação segura com Tor...</string>
+    <string name="setting_orbot">Configurando navegação com Orbot...</string>
+    <string name="loading_app">Conexão segura estabelecida. Carregando aplicativo...</string>
 </resources>

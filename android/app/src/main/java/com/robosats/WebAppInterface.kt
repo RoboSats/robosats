@@ -8,7 +8,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
 import com.robosats.models.EncryptedStorage
-import com.robosats.models.LanguageManager
 import com.robosats.models.NostrClient
 import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmpManager.getTorKmpObject
@@ -368,12 +367,6 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         EncryptedStorage.setEncryptedStorage(sanitizedKey, sanitizedValue)
 
         if (key == "garage_slots") NostrClient.refresh()
-        if (key == "settings_language") {
-            context.changeAppLanguage(value)
-            // Return immediately as recreate() will be called
-            resolvePromise(uuid, key)
-            return
-        }
         if (key == "settings_notifications") {
             val serviceIntent = Intent(context, NotificationsService::class.java)
             if (value == "true") {

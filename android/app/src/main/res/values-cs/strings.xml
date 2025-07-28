@@ -6,4 +6,15 @@
     <string name="robosats_is_running_in_background">Robosats běží na pozadí a vyhledává oznámení</string>
     <string name="notifications">Oznámení</string>
     <string name="useOrbotButton">Použít Orbot</string>
+    <string name="init_tor">Inicializace připojení Tor...</string>
+    <string name="using_orbot">Používá se Orbot. Ujistěte se, že běží!</string>
+    <string name="tor_init_error">Kritická chyba: Inicializace Tor selhala. Aplikace nemůže bezpečně pokračovat.</string>
+    <string name="connecting_tor">Připojování k síti Tor...</string>
+    <string name="still_connecting_tor">Stále se připojuje k Tor...</string>
+    <string name="connected_tor">Tor úspěšně připojen. Nastavování bezpečného prohlížeče...</string>
+    <string name="fail_tor">Nepodařilo se připojit k Tor po několika pokusech. Aplikace nemůže bezpečně pokračovat.</string>
+    <string name="error_tor">"Chyba při připojování k Tor: "</string>
+    <string name="setting_tor">Nastavování bezpečného prohlížení přes Tor...</string>
+    <string name="setting_orbot">Nastavování prohlížení přes Orbot...</string>
+    <string name="loading_app">Bezpečné připojení navázáno. Načítání aplikace...</string>
 </resources>

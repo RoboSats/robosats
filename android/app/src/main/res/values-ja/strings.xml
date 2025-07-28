@@ -6,4 +6,15 @@
     <string name="robosats_is_running_in_background">Robosatsはバックグラウンドで通知を取得しています</string>
     <string name="notifications">通知</string>
     <string name="useOrbotButton">Orbotを使用</string>
+    <string name="init_tor">Tor接続を初期化中...</string>
+    <string name="using_orbot">Orbotを使用中。実行中であることを確認してください！</string>
+    <string name="tor_init_error">重大なエラー：Torの初期化に失敗しました。アプリは安全に続行できません。</string>
+    <string name="connecting_tor">Torネットワークに接続中...</string>
+    <string name="still_connecting_tor">まだTorに接続中...</string>
+    <string name="connected_tor">Torに正常に接続されました。セキュアなブラウザを設定中...</string>
+    <string name="fail_tor">複数回の試行後、Torに接続できませんでした。アプリは安全に続行できません。</string>
+    <string name="error_tor">"Torへの接続エラー: "</string>
+    <string name="setting_tor">セキュアなTorブラウジングを設定中...</string>
+    <string name="setting_orbot">Orbotブラウジングを設定中...</string>
+    <string name="loading_app">セキュアな接続が確立されました。アプリを読み込み中...</string>
 </resources>

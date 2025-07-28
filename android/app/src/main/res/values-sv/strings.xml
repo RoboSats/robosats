@@ -6,4 +6,15 @@
     <string name="robosats_is_running_in_background">Robosats körs i bakgrunden och söker efter meddelanden</string>
     <string name="notifications">Meddelanden</string>
     <string name="useOrbotButton">Använd Orbot</string>
+    <string name="init_tor">Initierar Tor-anslutning...</string>
+    <string name="using_orbot">Använder Orbot. Se till att den körs!</string>
+    <string name="tor_init_error">Kritiskt fel: Initiering av Tor misslyckades. Appen kan inte fortsätta säkert.</string>
+    <string name="connecting_tor">Ansluter till Tor-nätverket...</string>
+    <string name="still_connecting_tor">Fortfarande ansluter till Tor...</string>
+    <string name="connected_tor">Tor ansluten framgångsrikt. Konfigurerar säker webbläsare...</string>
+    <string name="fail_tor">Det gick inte att ansluta till Tor efter flera försök. Appen kan inte fortsätta säkert.</string>
+    <string name="error_tor">"Fel vid anslutning till Tor: "</string>
+    <string name="setting_tor">Konfigurerar säker Tor-surfning...</string>
+    <string name="setting_orbot">Konfigurerar Orbot-surfning...</string>
+    <string name="loading_app">Säker anslutning etablerad. Laddar app...</string>
 </resources>

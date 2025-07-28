@@ -133,11 +133,20 @@ class NotificationsService : Service() {
     }
 
     override fun onCreate() {
-        val connectivityManager =
-            (getSystemService(ConnectivityManager::class.java) as ConnectivityManager)
-        connectivityManager.registerDefaultNetworkCallback(networkCallback)
-        NostrClient.init()
-        super.onCreate()
+        try {
+            val connectivityManager =
+                (getSystemService(ConnectivityManager::class.java) as ConnectivityManager)
+            connectivityManager.registerDefaultNetworkCallback(networkCallback)
+
+            // Initialize NostrClient safely
+            NostrClient.init()
+
+            super.onCreate()
+        } catch (e: Exception) {
+            Log.e("NotificationsService", "Error in onCreate", e)
+            // Call super.onCreate() even if there's an error to ensure proper service lifecycle
+            super.onCreate()
+        }
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)

@@ -6,4 +6,15 @@
     <string name="robosats_is_running_in_background">Robosats inaendesha katika usuli ikitafuta arifa</string>
     <string name="notifications">Arifa</string>
     <string name="useOrbotButton">Tumia Orbot</string>
+    <string name="init_tor">Inaanzisha muunganisho wa Tor...</string>
+    <string name="using_orbot">Inatumia Orbot. Hakikisha inafanya kazi!</string>
+    <string name="tor_init_error">Hitilafu muhimu: Kuanzisha Tor kumeshindwa. Programu haiwezi kuendelea kwa usalama.</string>
+    <string name="connecting_tor">Inaunganisha kwa mtandao wa Tor...</string>
+    <string name="still_connecting_tor">Bado inaunganisha na Tor...</string>
+    <string name="connected_tor">Tor imeunganishwa kwa mafanikio. Inaunda kivinjari salama...</string>
+    <string name="fail_tor">Imeshindwa kuunganisha na Tor baada ya majaribio mengi. Programu haiwezi kuendelea kwa usalama.</string>
+    <string name="error_tor">"Hitilafu wakati wa kuunganisha na Tor: "</string>
+    <string name="setting_tor">Inaunda uvinjari salama wa Tor...</string>
+    <string name="setting_orbot">Inaunda uvinjari wa Orbot...</string>
+    <string name="loading_app">Muunganisho salama umeundwa. Inapakia programu...</string>
 </resources>

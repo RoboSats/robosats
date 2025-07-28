@@ -3,8 +3,6 @@ package com.robosats
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -34,10 +32,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.robosats.models.EncryptedStorage
 import com.robosats.models.LanguageManager
-import com.robosats.models.LanguageManager.LANGUAGE_KEY
-import com.robosats.models.LanguageManager.applyLanguage
 import com.robosats.services.NotificationsService
-import java.util.Locale
 import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
 import com.robosats.tor.TorKmpManager.getTorKmpObject
@@ -59,10 +54,8 @@ class MainActivity : AppCompatActivity() {
         // Initialize EncryptedStorage
         EncryptedStorage.init(this)
 
-        // Initialize language manager and apply saved language setting
+        // Initialize language manager with system language
         LanguageManager.init(this)
-        val languageCode = EncryptedStorage.getEncryptedStorage(LANGUAGE_KEY)
-        changeAppLanguage(languageCode)
 
         // Lock the screen orientation to portrait mode
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -82,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Set initial status message
-        updateStatus("Initializing Tor connection...")
+        updateStatus(getString(R.string.init_tor))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
@@ -140,7 +133,7 @@ class MainActivity : AppCompatActivity() {
         // Show a message to the user
         Toast.makeText(
             this,
-            "Using Orbot. Make sure it's running!",
+            getString(R.string.using_orbot),
             Toast.LENGTH_LONG
         ).show()
 
@@ -148,8 +141,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Initialize Notifications service
-     */
+         * Initialize Notifications service
+         */
     fun initializeNotifications() {
         startForegroundService(
             Intent(
@@ -195,7 +188,7 @@ class MainActivity : AppCompatActivity() {
 
             // Show error message on the loading screen
             runOnUiThread {
-                updateStatus("Critical error: Tor initialization failed. App cannot proceed securely.")
+                updateStatus(getString(R.string.tor_init_error))
             }
         }
     }
@@ -214,7 +207,7 @@ class MainActivity : AppCompatActivity() {
         try {
             // Display connecting message
             runOnUiThread {
-                updateStatus("Connecting to Tor network...")
+                updateStatus(getString(R.string.connecting_tor))
             }
 
             // Wait for Tor to connect with retry mechanism
@@ -228,7 +221,7 @@ class MainActivity : AppCompatActivity() {
                 // Update status on UI thread every few retries
                 if (retries % 3 == 0) {
                     runOnUiThread {
-                        updateStatus("Still connecting to Tor (attempt $retries/$maxRetries)...")
+                        updateStatus(getString(R.string.still_connecting_tor))
                     }
                 }
             }
@@ -239,7 +232,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Show success message and proceed
                 runOnUiThread {
-                    updateStatus("Tor connected successfully. Setting up secure browser...")
+                    updateStatus(getString(R.string.connected_tor))
 
                     HttpClientManager.setDefaultProxy(getTorKmpObject().proxy)
 
@@ -251,14 +244,14 @@ class MainActivity : AppCompatActivity() {
                 Log.e("TorInitialization", "Failed to connect to Tor after $maxRetries retries")
 
                 runOnUiThread {
-                    updateStatus("Failed to connect to Tor after multiple attempts. App cannot proceed securely.")
+                    updateStatus(getString(R.string.fail_tor))
                 }
             }
         } catch (e: Exception) {
             Log.e("TorInitialization", "Error during Tor connection: ${e.message}", e)
 
             runOnUiThread {
-                updateStatus("Error connecting to Tor: ${e.message}")
+                updateStatus(getString(R.string.error_tor) + "${e.message}")
             }
         }
     }
@@ -297,7 +290,7 @@ class MainActivity : AppCompatActivity() {
 
         // Show message that we're setting up secure browsing
         runOnUiThread {
-            updateStatus(if (useProxy) "Setting up secure Tor browsing..." else "Setting up Orbot browsing...")
+            updateStatus(if (useProxy) getString(R.string.setting_tor) else getString(R.string.setting_orbot))
         }
 
         // Configure proxy for WebView in a background thread to avoid NetworkOnMainThreadException
@@ -310,7 +303,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Success - now configure WebViewClient and load URL on UI thread
                 runOnUiThread {
-                    updateStatus("Secure connection established. Loading app...")
+                    updateStatus(getString(R.string.loading_app))
 
                     // Set up WebViewClient that allows external links and deep links to be opened
                     webView.webViewClient = object : WebViewClient() {
@@ -457,9 +450,7 @@ class MainActivity : AppCompatActivity() {
         cookieManager.setAcceptThirdPartyCookies(webView, false) // Block 3rd party cookies
 
         // 10. Disable Service Workers (not needed for our local app)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            ServiceWorkerController.getInstance().setServiceWorkerClient(null)
-        }
+        ServiceWorkerController.getInstance().setServiceWorkerClient(null)
 
         // --- USABILITY SETTINGS ---
 
@@ -474,17 +465,6 @@ class MainActivity : AppCompatActivity() {
         webSettings.textZoom = 100
     }
 
-    /**
-     * Change the app's language and recreate the activity
-     * @param languageCode The language code to switch to (e.g., "en", "es", "fr")
-     */
-    fun changeAppLanguage(languageCode: String) {
-        // Apply the language change
-        if (LanguageManager.applyLanguage(languageCode)) {
-            // Restart the activity to apply changes
-            recreate()
-        }
-    }
 
     /**
      * Clear all WebView data when activity is destroyed
