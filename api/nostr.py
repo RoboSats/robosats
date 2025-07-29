@@ -136,17 +136,7 @@ class Nostr:
             Tag.parse(
                 [
                     "expiration",
-                    str(
-                        int(
-                            (
-                                datetime.now()
-                                + timedelta(days=14)
-                                + timedelta(
-                                    seconds=random.randint(0, 14 * 24 * 60 * 60)
-                                )
-                            ).timestamp()
-                        )
-                    ),
+                    str(int(order.expires_at.timestamp())),
                     str(order.escrow_duration),
                 ]
             ),
