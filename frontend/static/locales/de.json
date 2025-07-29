@@ -569,7 +569,7 @@
   "Confirming will finalize the trade.": "Das Bestätigen wird den Handel abschließen.",
   "If you have received the payment and do not click confirm, you risk losing your bond.": "Wenn du die Zahlung erhalten hast und nicht auf Bestätigen klickst, riskierst du, deine Kaution zu verlieren.",
   "Only confirm after {{amount}} {{currencyCode}} have arrived to your account.": "Bestätige erst, nachdem {{amount}} {{currencyCode}} auf deinem Konto eingegangen sind.",
-  "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.": "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.",
+  "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.": "Einige Fiat-Zahlungsmethoden können ihre Transaktionen bis zu 80 Tage nach Abschluss rückgängig machen. Bitte bewahren Sie dieses Token und Ihre Bestelldaten auf, falls Sie sie als Nachweis benötigen.",
   "The satoshis in the escrow will be released to the buyer:": "Die Satoshis im Treuhandkonto werden an den Käufer übergeben:",
   "✅ Confirm you received {{amount}} {{currencyCode}}?": "✅ Bestätige, dass du {{amount}} {{currencyCode}} erhalten hast?",
   "#60": "Phrases in components/TradeBox/Dialogs/ConfirmFiatSent.tsx",
