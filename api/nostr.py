@@ -1,6 +1,8 @@
 import pygeohash
 import hashlib
 import uuid
+import random
+from datetime import datetime, timedelta
 
 from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
@@ -57,6 +59,22 @@ class Nostr:
                 ]
             ),
             Tag.parse(["status", str(order.status)]),
+            Tag.parse(
+                [
+                    "expiration",
+                    str(
+                        int(
+                            (
+                                datetime.now()
+                                + timedelta(days=14)
+                                + timedelta(
+                                    seconds=random.randint(0, 14 * 24 * 60 * 60)
+                                )
+                            ).timestamp()
+                        )
+                    ),
+                ]
+            ),
         ]
 
         await client.send_private_msg(PublicKey.parse(robot.nostr_pubkey), text, tags)
@@ -118,7 +136,17 @@ class Nostr:
             Tag.parse(
                 [
                     "expiration",
-                    str(int(order.expires_at.timestamp())),
+                    str(
+                        int(
+                            (
+                                datetime.now()
+                                + timedelta(days=14)
+                                + timedelta(
+                                    seconds=random.randint(0, 14 * 24 * 60 * 60)
+                                )
+                            ).timestamp()
+                        )
+                    ),
                     str(order.escrow_duration),
                 ]
             ),
