@@ -569,7 +569,7 @@
   "Confirming will finalize the trade.": "Kuthibitisha kumaliza biashara.",
   "If you have received the payment and do not click confirm, you risk losing your bond.": "Ikiwa umepokea malipo na haukubofya kuthibitisha, unahatarisha kupoteza dhamana yako.",
   "Only confirm after {{amount}} {{currencyCode}} have arrived to your account.": "Thibitisha baada tu ya {{amount}} {{currencyCode}} kufika kwenye akaunti yako.",
-  "Some fiat payment methods might reverse their transactions up to 2 weeks after they are completed. Please keep this token and your order data in case you need to use them as proof.": "Baadhi ya njia za malipo za fiat zinaweza kubadilisha malipo yao hadi wiki 2 baada ya kukamilika. Tafadhali hifadhi alama hii na data yako ya agizo ikiwa utahitaji kuitumia kama ushahidi.",
+  "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.": "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.",
   "The satoshis in the escrow will be released to the buyer:": "Satoshis zilizomo ndani ya escrow zitaachiliwa kwa mnunuzi:",
   "✅ Confirm you received {{amount}} {{currencyCode}}?": "✅ Thibitisha unapokea {{amount}} {{currencyCode}}?",
   "#60": "Phrases in components/TradeBox/Dialogs/ConfirmFiatSent.tsx",

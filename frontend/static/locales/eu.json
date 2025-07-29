@@ -569,7 +569,7 @@
   "Confirming will finalize the trade.": "Baieztapena trukea amaitzea ekarriko du.",
   "If you have received the payment and do not click confirm, you risk losing your bond.": "Ordainketa jaso baduzu eta ez baduzu baieztatzen klik egiten, fidantza gal dezakezu.",
   "Only confirm after {{amount}} {{currencyCode}} have arrived to your account.": "Baieztatu bakarrik {{amount}} {{currencyCode}} zure kontura iritsi ondoren.",
-  "Some fiat payment methods might reverse their transactions up to 2 weeks after they are completed. Please keep this token and your order data in case you need to use them as proof.": "Fiat ordainketa metodo batzuk transakzioak buelta ditzakete 2 aste arte eginda daudenetik. Mesedez, gorde token hau eta eskaera datuak froga bezala erabiltzeko beharra izanez gero.",
+  "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.": "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.",
   "The satoshis in the escrow will be released to the buyer:": "Eskrow-eko satoshia erosleari askatuko zaio:",
   "✅ Confirm you received {{amount}} {{currencyCode}}?": "✅ Jaso duzula {{amount}} {{currencyCode}} baieztatzen duzu?",
   "#60": "Phrases in components/TradeBox/Dialogs/ConfirmFiatSent.tsx",

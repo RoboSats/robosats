@@ -569,7 +569,7 @@
   "Confirming will finalize the trade.": "确认将完成交易。",
   "If you have received the payment and do not click confirm, you risk losing your bond.": "如果您已收到付款但不点击确认，您将失去保证金。",
   "Only confirm after {{amount}} {{currencyCode}} have arrived to your account.": "只有{{amount}} {{currencyCode}}到达您的账户后才能确认。",
-  "Some fiat payment methods might reverse their transactions up to 2 weeks after they are completed. Please keep this token and your order data in case you need to use them as proof.": "一些法币支付方法可能会在完成交易最多2周后撤销交易。请保留此令牌和您的订单数据，以防需要将它们作为证明。",
+  "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.": "Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.",
   "The satoshis in the escrow will be released to the buyer:": "托管中的聪将被释放给买家：",
   "✅ Confirm you received {{amount}} {{currencyCode}}?": "✅ 确认您收到了{{amount}} {{currencyCode}}？",
   "#60": "Phrases in components/TradeBox/Dialogs/ConfirmFiatSent.tsx",

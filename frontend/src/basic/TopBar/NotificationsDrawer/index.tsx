@@ -40,10 +40,6 @@ interface NotificationsDrawerProps {
   setLoading: (loading: boolean) => void;
 }
 
-const defaultPubkeys = Object.values(defaultFederation)
-  .map((f) => f.nostrHexPubkey)
-  .filter((item) => item !== undefined);
-
 const NotificationsDrawer = ({
   show,
   setShow,
@@ -112,27 +108,25 @@ const NotificationsDrawer = ({
 
     cleanUpNotifications();
     setSubscribedTokens(tokens);
-    federation.roboPool.subscribeNotifications(garage, {
+    federation.roboPool.subscribeNotifications(garage, federation, {
       onevent: (event) => {
-        if (defaultPubkeys.includes(event.pubkey)) {
-          setLastNotification((last) => {
-            if (last < event.created_at) {
-              setSnakevent(event);
-              systemClient.setItem('last_notification', event.created_at.toString());
-              const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
-              if (orderStatus) playSound(parseInt(orderStatus, 10));
-              if (client !== 'mobile') setOpenSnak(true);
+        setLastNotification((last) => {
+          if (last < event.created_at) {
+            setSnakevent(event);
+            systemClient.setItem('last_notification', event.created_at.toString());
+            const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
+            if (orderStatus) playSound(parseInt(orderStatus, 10));
+            if (client !== 'mobile') setOpenSnak(true);
 
-              return event.created_at;
-            } else {
-              return last;
-            }
-          });
-          setMessages((msg) => {
-            msg.set(event.id, event);
-            return msg;
-          });
-        }
+            return event.created_at;
+          } else {
+            return last;
+          }
+        });
+        setMessages((msg) => {
+          msg.set(event.id, event);
+          return msg;
+        });
       },
       oneose: () => setLoading(false),
     });
