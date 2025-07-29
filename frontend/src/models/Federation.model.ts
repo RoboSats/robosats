@@ -65,7 +65,10 @@ export class Federation {
 
     if (settings.client === 'mobile') {
       const federationUrls = Object.values(this.coordinators).map((c) => c.getRelayUrl());
+      const federationPubKeys = Object.values(this.coordinators).map((c) => c.nostrHexPubkey);
+
       systemClient.setItem('federation_relays', JSON.stringify(federationUrls));
+      systemClient.setItem('federation_pubkeys', JSON.stringify(federationPubKeys));
     }
   }
 

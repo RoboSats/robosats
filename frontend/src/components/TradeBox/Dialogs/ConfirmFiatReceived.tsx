@@ -68,7 +68,7 @@ export const ConfirmFiatReceivedDialog = ({
             </Typography>
             <Typography component='li' variant='body2'>
               {t(
-                'Some fiat payment methods might reverse their transactions up to 2 weeks after they are completed. Please keep this token and your order data in case you need to use them as proof.',
+                'Some fiat payment methods might reverse their transactions up to 80 days after they are completed. Please keep this token and your order data in case you need to use them as proof.',
               )}
             </Typography>
           </Box>

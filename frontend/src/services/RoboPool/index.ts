@@ -1,5 +1,5 @@
 import { nip17, type Event } from 'nostr-tools';
-import { Garage, type Coordinator, type Settings } from '../../models';
+import { Federation, Garage, type Coordinator, type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
@@ -27,7 +27,6 @@ class RoboPool {
     this.relays = [];
     const federationRelays = coordinators.map((coord) => coord.getRelayUrl());
     const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
-
     if (hostRelay) this.relays.push(hostRelay);
 
     while (this.relays.length < 3) {
@@ -163,7 +162,11 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestRatings));
   };
 
-  subscribeNotifications = (garage: Garage, events: RoboPoolEvents): void => {
+  subscribeNotifications = (
+    garage: Garage,
+    federation: Federation,
+    events: RoboPoolEvents,
+  ): void => {
     const subscribeChat = 'subscribeChat';
     this.sendMessage(JSON.stringify(['CLOSE', subscribeChat]));
 
@@ -187,7 +190,13 @@ class RoboPool {
 
         if (slot?.nostrSecKey) {
           const unwrappedEvent = nip17.unwrapEvent(wrappedEvent, slot.nostrSecKey);
-          events.onevent(unwrappedEvent as Event);
+          const federationPubKeys = Object.values(federation.getCoordinators()).map(
+            (c) => c.nostrHexPubkey,
+          );
+
+          if (federationPubKeys.includes(unwrappedEvent.pubkey)) {
+            events.onevent(unwrappedEvent as Event);
+          }
         }
       } else if (jsonMessage[0] === 'EOSE') {
         events.oneose();

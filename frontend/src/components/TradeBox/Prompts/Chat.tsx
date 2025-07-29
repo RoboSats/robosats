@@ -105,7 +105,7 @@ export const ChatPrompt = ({
       } else {
         setSentButton(false);
         setUndoSentButton(false);
-        setReceivedButton(false);
+        setReceivedButton(true);
         setText(
           t(
             'Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.',
@@ -225,6 +225,7 @@ export const ChatPrompt = ({
             variant='contained'
             color='secondary'
             onClick={onClickConfirmReceived}
+            disabled={order.status < 10}
           >
             {t('Confirm {{amount}} {{currencyCode}} received', { currencyCode, amount })}
           </LoadingButton>

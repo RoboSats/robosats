@@ -103,12 +103,6 @@ jobs:
           name: app-universal-release.apk
           path: .
 
-      - name: 'Debug: List Downloaded Files'
-        run: |
-          echo "Current directory: $(pwd)"
-          find . -type f -name "*.apk" | sort
-          ls -la
-
       - name: 'Upload universal APK Asset'
         id: upload-universal-release-asset
         uses: actions/upload-release-asset@v1

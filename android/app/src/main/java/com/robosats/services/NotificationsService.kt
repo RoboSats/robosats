@@ -79,7 +79,14 @@ class NotificationsService : Service() {
                             if (gift is SealedGossipEvent) {
                                 gift.unseal(nostrSigner) { rumor ->
                                     if (rumor is ChatMessageEvent) {
-                                        displayOrderNotification(rumor, firstTaggedUser)
+                                        val lastNotification = EncryptedStorage.getEncryptedStorage("last_notification")
+                                        if (lastNotification == "" || lastNotification.toLong() < rumor.createdAt) {
+                                            val federationPubKeys = EncryptedStorage.getEncryptedStorage("federation_pubkeys")
+                                            if (federationPubKeys.contains(rumor.pubKey)) {
+                                                EncryptedStorage.setEncryptedStorage("last_notification", rumor.createdAt.toString())
+                                                displayOrderNotification(rumor, firstTaggedUser)
+                                            }
+                                        }
                                     }
                                 }
                             }
