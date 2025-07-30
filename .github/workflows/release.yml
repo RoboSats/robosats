@@ -89,6 +89,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get short SHA
+        id: short-sha
+        run: echo "short_sha=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+
       - name: Release
         id: create-release
         uses: softprops/action-gh-release@v2
@@ -112,7 +116,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: ./app-universal-release-unsigned-signed.apk
-          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-universal.${{ github.sha.substring(0, 7) }}.apk
+          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-universal.${{ steps.short-sha.outputs.short_sha }}.apk
           asset_content_type: application/apk
 
       # Upload app-arm64-v8a-release APK artifact asset
@@ -129,7 +133,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: ./app-arm64-v8a-release-unsigned-signed.apk
-          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-arm64-v8a.${{ github.sha.substring(0, 7) }}.apk
+          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-arm64-v8a.${{ steps.short-sha.outputs.short_sha }}.apk
           asset_content_type: application/apk
 
       # Upload app-armeabi-v7a-release APK artifact asset
@@ -146,7 +150,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: ./app-armeabi-v7a-release-unsigned-signed.apk
-          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-armeabi-v7a.${{ github.sha.substring(0, 7) }}.apk
+          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-armeabi-v7a.${{ steps.short-sha.outputs.short_sha }}.apk
           asset_content_type: application/apk
 
       # Upload app-x86_64-release APK artifact asset
@@ -163,7 +167,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: ./app-x86_64-release-unsigned-signed.apk
-          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-x86_64.${{ github.sha.substring(0, 7) }}.apk
+          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-x86_64.${{ steps.short-sha.outputs.short_sha }}.apk
           asset_content_type: application/apk
 
       # Upload macOS desktop artifact asset
@@ -181,7 +185,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: Robosats-darwin-x64.zip
-          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.${{ github.sha.substring(0, 7) }}.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.${{ steps.short-sha.outputs.short_sha }}.zip
           asset_content_type: application/zip
 
       # Upload linux desktop artifact asset
@@ -199,7 +203,7 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: Robosats-linux-x64.zip
-          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.${{ github.sha.substring(0, 7) }}.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.${{ steps.short-sha.outputs.short_sha }}.zip
           asset_content_type: application/zip
 
       # Upload Windows desktop artifact asset
@@ -217,5 +221,5 @@ jobs:
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
           asset_path: Robosats-win32-ia32.zip
-          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.${{ github.sha.substring(0, 7) }}.zip
+          asset_name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.${{ steps.short-sha.outputs.short_sha }}.zip
           asset_content_type: application/zip
