@@ -439,7 +439,6 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
             {value.length > 0 && !props.multiple ? null : (
               <input
                 ref={filterInputRef}
-                autoFocus={true}
                 style={
                   props.isFilter
                     ? {

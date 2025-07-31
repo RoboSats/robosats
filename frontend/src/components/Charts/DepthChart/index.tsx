@@ -102,7 +102,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       const prices: number[] = enrichedOrders.map((order) => order?.base_price ?? 0);
 
       const medianValue = ~~matchMedian(prices);
-      const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] ?? 1500;
+      const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] ?? 0;
       const maxRange = maxValue - medianValue;
       const rangeSteps = maxRange / 10;
 
@@ -261,11 +261,21 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   const formatAxisX = (value: number): string => {
     if (xType === 'base_price') {
-      return value.toString();
+      let formatted = value;
+      if (value > 1000000) {
+        formatted = formatted / 1000000;
+        return `${formatted}M`;
+      } else if (value > 1000) {
+        formatted = formatted / 1000;
+        return `${formatted}K`;
+      } else {
+        return value.toString();
+      }
+    } else {
+      return `${value}%`;
     }
-    return `${value}%`;
   };
-  const formatAxisY = (value: number): string => `${value}BTC`;
+  const formatAxisY = (value: number): string => `${value}₿`;
   const handleOnClick: PointMouseHandler = (point: Point) => {
     onOrderClicked(point.data?.order?.id, point.data?.order?.coordinatorShortAlias);
   };
@@ -361,10 +371,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              container
-              style={{ height: `${height * 0.825}em`, width: '100%', padding: '1em' }}
-            >
+            <Grid container style={{ height: `${height * 0.9}em`, width: '100%', padding: '1em' }}>
               <ResponsiveLine
                 data={series}
                 enableArea={true}
@@ -384,7 +391,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   format: formatAxisX,
                 }}
                 margin={{
-                  left: 4.64 * em,
+                  left: 3 * em,
                   right: 0.714 * em,
                   bottom:
                     xType === 'base_price'
