@@ -86,9 +86,11 @@ const EncryptedChat: React.FC<Props> = ({
 
       const wrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, recipient, content);
 
-      const oneMonth = 2419200;
+      const fourteenDays = 14 * 24 * 60 * 60;
+      const randomSeconds = Math.floor(Math.random() * fourteenDays);
+      const expirationTime = Math.floor(Date.now() / 1000) + fourteenDays + randomSeconds;
 
-      wrappedEvent.tags.push(['expiration', (wrappedEvent.created_at + oneMonth).toString()]);
+      wrappedEvent.tags.push(['expiration', expirationTime.toString()]);
 
       federation.roboPool.sendEvent(wrappedEvent);
     } catch (error) {
