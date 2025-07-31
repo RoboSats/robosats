@@ -19,6 +19,7 @@ import {
   useTheme,
   Collapse,
   IconButton,
+  Skeleton,
 } from '@mui/material';
 
 import { type LimitList, defaultMaker, type Order } from '../../models';
@@ -1082,19 +1083,31 @@ const MakerForm = ({
           </Typography>
         </Grid>
 
-        <Collapse in={!(Object.keys(limits).length === 0)}>
-          <Tooltip
-            placement='top'
-            enterTouchDelay={0}
-            enterDelay={1000}
-            enterNextDelay={2000}
-            title={t("Your order's current exchange rate. Rate will move with the market.")}
-          >
+        <Tooltip
+          placement='top'
+          enterTouchDelay={0}
+          enterDelay={1000}
+          enterNextDelay={2000}
+          title={t("Your order's current exchange rate. Rate will move with the market.")}
+        >
+          {currentPrice ? (
             <Typography align='center' variant='caption' color='text.secondary'>
               {`${t('Order current rate:')} ${currentPrice ? currencyFormatter.format(currentPrice) : '-'} ${currencyCode}/BTC`}
             </Typography>
-          </Tooltip>
-        </Collapse>
+          ) : (
+            <Typography
+              align='center'
+              variant='caption'
+              color='text.secondary'
+              display='flex'
+              flexDirection='row'
+            >
+              {t('Order current rate:')}
+              <Skeleton width='4.5em' />
+              {`${currencyCode}/BTC`}
+            </Typography>
+          )}
+        </Tooltip>
       </Grid>
       <AddNewPaymentMethodDialog
         open={addNewPaymentMethodOpen}

@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import type PublicOrder from '../../../models';
+import { type PublicOrder } from '../../../models';
 import { matchMedian } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import getNivoScheme from '../NivoScheme';
