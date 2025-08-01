@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.errors import new_error
 from api.logics import Logics
 from api.tasks import cache_market
 from api.models import (
@@ -82,10 +83,7 @@ class MakerView(CreateAPIView):
         serializer = self.serializer_class(data=request.data)
 
         if not request.user.is_authenticated:
-            return Response(
-                {"bad_request": "Woops! It seems you do not have a robot avatar"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1036), status.HTTP_400_BAD_REQUEST)
 
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -95,9 +93,10 @@ class MakerView(CreateAPIView):
             config("MAX_PUBLIC_ORDERS")
         ):
             return Response(
-                {
-                    "bad_request": f"The RoboSats {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} coordinator book is at full capacity! Current limit is {config('MAX_PUBLIC_ORDERS', cast=str)} orders"
-                },
+                new_error(1037, {
+                    "coordinator_alias": config('COORDINATOR_ALIAS', cast=str, default='NoAlias'),
+                    "max_public_orders": config('MAX_PUBLIC_ORDERS', cast=str),
+                }),
                 status.HTTP_400_BAD_REQUEST,
             )
         # Only allow users who are not already engaged in an order
@@ -141,17 +140,9 @@ class MakerView(CreateAPIView):
 
         # Either amount or min_max has to be specified.
         if has_range and (min_amount is None or max_amount is None):
-            return Response(
-                {
-                    "bad_request": "You must specify min_amount and max_amount for a range order"
-                },
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1038), status.HTTP_400_BAD_REQUEST)
         elif not has_range and amount is None:
-            return Response(
-                {"bad_request": "You must specify an order amount"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1039), status.HTTP_400_BAD_REQUEST)
 
         if len(Currency.objects.all()) == 0:
             cache_market()
@@ -209,26 +200,16 @@ class OrderView(viewsets.ViewSet):
         order_id = request.GET.get(self.lookup_url_kwarg)
 
         if not request.user.is_authenticated:
-            return Response(
-                {
-                    "bad_request": "You must have a robot avatar to see the order details"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1040), status=status.HTTP_400_BAD_REQUEST)
 
         if order_id is None:
-            return Response(
-                {"bad_request": "Order ID parameter not found in request"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1041), status=status.HTTP_400_BAD_REQUEST)
 
         order = Order.objects.filter(id=order_id)
 
         # check if exactly one order is found in the db
         if len(order) != 1:
-            return Response(
-                {"bad_request": "Invalid Order Id"}, status.HTTP_404_NOT_FOUND
-            )
+            return Response(new_error(1042), status.HTTP_404_NOT_FOUND)
 
         # This is our order.
         order = order[0]
@@ -246,10 +227,7 @@ class OrderView(viewsets.ViewSet):
 
         # 2) If order has been cancelled
         if order.status == Order.Status.UCA or order.status == Order.Status.CCA:
-            return Response(
-                {"bad_request": "This order has been cancelled"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1043), status.HTTP_400_BAD_REQUEST)
 
         data["total_secs_exp"] = order.t_to_expire(order.status)
 
@@ -264,10 +242,7 @@ class OrderView(viewsets.ViewSet):
             and order.taker != request.user
             and order.status != Order.Status.PUB
         ):
-            return Response(
-                {"bad_request": "This order is not available"},
-                status.HTTP_403_FORBIDDEN,
-            )
+            return Response(new_error(1044), status.HTTP_403_FORBIDDEN)
 
         data["maker_nick"] = str(order.maker)
         data["maker_hash_id"] = str(order.maker.robot.hash_id)
@@ -561,10 +536,7 @@ class OrderView(viewsets.ViewSet):
 
                 if order.password is not None:
                     if password is None or not compare_digest(order.password, password):
-                        return Response(
-                            {"bad_request": "Wrong password"},
-                            status=status.HTTP_403_FORBIDDEN,
-                        )
+                        return Response(new_error(1045), status=status.HTTP_403_FORBIDDEN)
 
                 # For order with amount range, set the amount now.
                 if order.has_range:
@@ -582,10 +554,7 @@ class OrderView(viewsets.ViewSet):
                 return self.get(request)
 
             else:
-                Response(
-                    {"bad_request": "This order is not public anymore."},
-                    status.HTTP_400_BAD_REQUEST,
-                )
+                Response(new_error(1046), status.HTTP_400_BAD_REQUEST)
 
         # 2) If action is cancel
         elif action == "cancel":
@@ -595,10 +564,7 @@ class OrderView(viewsets.ViewSet):
 
         # Any other action is only allowed if the user is a participant
         elif not (order.maker == request.user or order.taker == request.user):
-            return Response(
-                {"bad_request": "You are not a participant in this order"},
-                status.HTTP_403_FORBIDDEN,
-            )
+            return Response(new_error(1047), status.HTTP_403_FORBIDDEN)
 
         # 3) If action is 'update invoice'
         elif action == "update_invoice":
@@ -608,10 +574,7 @@ class OrderView(viewsets.ViewSet):
             )
 
             if not valid_signature:
-                return Response(
-                    {"bad_request": "The PGP signed cleartext message is not valid."},
-                    status.HTTP_400_BAD_REQUEST,
-                )
+                return Response(new_error(1048), status.HTTP_400_BAD_REQUEST)
 
             valid, context = Logics.update_invoice(
                 order, request.user, invoice, routing_budget_ppm
@@ -626,10 +589,7 @@ class OrderView(viewsets.ViewSet):
             )
 
             if not valid_signature:
-                return Response(
-                    {"bad_request": "The PGP signed cleartext message is not valid."},
-                    status.HTTP_400_BAD_REQUEST,
-                )
+                return Response(new_error(1048), status.HTTP_400_BAD_REQUEST)
 
             valid, context = Logics.update_address(
                 order, request.user, address, mining_fee_rate
@@ -679,13 +639,7 @@ class OrderView(viewsets.ViewSet):
 
         # If nothing of the above... something else is going on. Probably not allowed!
         else:
-            return Response(
-                {
-                    "bad_request": "The Robotic Satoshis working in the warehouse did not understand you. "
-                    + "Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues"
-                },
-                status.HTTP_501_NOT_IMPLEMENTED,
-            )
+            return Response(new_error(1049), status.HTTP_501_NOT_IMPLEMENTED)
 
         return self.get(request)
 
@@ -913,10 +867,7 @@ class RewardView(CreateAPIView):
         )
 
         if not valid_signature:
-            return Response(
-                {"bad_request": "The PGP signed cleartext message is not valid."},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1048), status.HTTP_400_BAD_REQUEST)
 
         valid, context = Logics.withdraw_rewards(request.user, invoice, routing_budget_ppm)
 
@@ -977,19 +928,11 @@ class TickView(ListAPIView):
                 )
                 self.queryset = self.queryset.filter(timestamp__lte=aware_end_date)
         except ValueError:
-            return Response(
-                {"bad_request": "Invalid date format"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1050), status=status.HTTP_400_BAD_REQUEST)
 
         # Check if the number of ticks exceeds the limit
         if self.queryset.count() > 5000:
-            return Response(
-                {
-                    "bad_request": "More than 5000 market ticks have been found. Please, narrow the date range"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1051), status=status.HTTP_400_BAD_REQUEST)
 
         data = self.serializer_class(self.queryset, many=True, read_only=True).data
         return Response(data, status=status.HTTP_200_OK)
@@ -1077,19 +1020,13 @@ class ReviewView(APIView):
             Order.Status.MLD,
             Order.Status.TLD,
         ]:
-            return Response(
-                {"bad_request": "Robot has no finished order"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1052), status.HTTP_400_BAD_REQUEST)
         if not request.user.robot.nostr_pubkey:
             request.user.robot.nostr_pubkey = pubkey
             request.user.robot.save(update_fields=["nostr_pubkey"])
 
         if request.user.robot.nostr_pubkey != pubkey:
-            return Response(
-                {"bad_request": "Wrong hex pubkey"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(1052), status.HTTP_400_BAD_REQUEST)
 
         token = Nostr.sign_message(f"{pubkey}{last_order.id}")
 

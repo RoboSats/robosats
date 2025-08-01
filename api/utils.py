@@ -9,6 +9,7 @@ import ring
 from base91 import decode, encode
 from decouple import config
 
+from api.errors import new_error
 from api.models import Order
 
 logger = logging.getLogger("api.utils")
@@ -399,14 +400,13 @@ def validate_pgp_keys(pub_key, enc_priv_key):
         if "Not actually changed" not in import_pub_result.results[0]["text"]:
             return (
                 False,
-                {
-                    "bad_request": "Your PGP public key does not seem valid.\n"
-                    + f"Stderr: {str(import_pub_result.stderr)}\n"
-                    + f"ReturnCode: {str(import_pub_result.returncode)}\n"
-                    + f"Summary: {str(import_pub_result.summary)}\n"
-                    + f"Results: {str(import_pub_result.results)}\n"
-                    + f"Imported: {str(import_pub_result.imported)}\n"
-                },
+                new_error(1034, {
+                    "import_pub_result_stderr": str(import_pub_result.stderr),
+                    "import_pub_result_returncode": str(import_pub_result.returncode),
+                    "import_pub_result_summary": str(import_pub_result.summary),
+                    "import_pub_result_results": str(import_pub_result.results),
+                    "import_pub_result_imported": str(import_pub_result.imported)
+                }),
                 None,
                 None,
             )
@@ -419,14 +419,13 @@ def validate_pgp_keys(pub_key, enc_priv_key):
         if "Not actually changed" not in import_priv_result.results[0]["text"]:
             return (
                 False,
-                {
-                    "bad_request": "Your PGP encrypted private key does not seem valid.\n"
-                    + f"Stderr: {str(import_priv_result.stderr)}\n"
-                    + f"ReturnCode: {str(import_priv_result.returncode)}\n"
-                    + f"Summary: {str(import_priv_result.summary)}\n"
-                    + f"Results: {str(import_priv_result.results)}\n"
-                    + f"Sec Imported: {str(import_priv_result.sec_imported)}\n"
-                },
+                new_error(1034, {
+                    "import_priv_result_stderr": str(import_priv_result.stderr),
+                    "import_priv_result_returncode": str(import_priv_result.returncode),
+                    "import_priv_result_summary": str(import_priv_result.summary),
+                    "import_priv_result_results": str(import_priv_result.results),
+                    "import_priv_result_imported": str(import_priv_result.imported)
+                }),
                 None,
                 None,
             )
