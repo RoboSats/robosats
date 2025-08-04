@@ -86,6 +86,7 @@ class Order {
   latitude: number = 0;
   longitude: number = 0;
   password: string | undefined = undefined;
+  description: string | undefined = undefined;
   premium_now: number | undefined = undefined;
   premium_percentile: number = 0;
   num_similar_orders: number = 0;
@@ -203,6 +204,7 @@ class Order {
       latitude: this.latitude,
       longitude: this.longitude,
       password: this.password,
+      description: this.description,
     };
 
     if (slot) {
