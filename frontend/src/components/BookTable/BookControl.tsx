@@ -90,10 +90,10 @@ const BookControl = ({
       component = <SendReceiveIcon color='primary' />;
       text = t('Buy');
     } else if (value === 'swapin') {
-      component = <SwapCalls color='secondary' />;
+      component = <SwapCalls color='primary' />;
       text = t('Swap In');
     } else if (value === 'swapout') {
-      component = <SwapCalls color='primary' />;
+      component = <SwapCalls color='secondary' />;
       text = t('Swap Out');
     }
 
@@ -159,14 +159,6 @@ const BookControl = ({
                 </Typography>
               </div>
             </MenuItem>
-            <MenuItem value='sell' style={{ width: '8em' }}>
-              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <SendReceiveIcon color='secondary' sx={{ transform: 'scaleX(-1)' }} />
-                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
-                  {' ' + t('Sell')}
-                </Typography>
-              </div>
-            </MenuItem>
             <MenuItem value='buy' style={{ width: '8em' }}>
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                 <SendReceiveIcon color='primary' />
@@ -175,9 +167,17 @@ const BookControl = ({
                 </Typography>
               </div>
             </MenuItem>
+            <MenuItem value='sell' style={{ width: '8em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <SendReceiveIcon color='secondary' sx={{ transform: 'scaleX(-1)' }} />
+                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                  {' ' + t('Sell')}
+                </Typography>
+              </div>
+            </MenuItem>
             <MenuItem value='swapin' style={{ width: '8em' }}>
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <SwapCalls color='secondary' />
+                <SwapCalls color='primary' />
                 <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
                   {' ' + t('Swap In')}
                 </Typography>
@@ -185,7 +185,7 @@ const BookControl = ({
             </MenuItem>
             <MenuItem value='swapout' style={{ width: '8em' }}>
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <SwapCalls color='primary' />
+                <SwapCalls color='secondary' />
                 <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
                   {' ' + t('Swap Out')}
                 </Typography>

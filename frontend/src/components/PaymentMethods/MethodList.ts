@@ -60,6 +60,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Monero', icon: 'monero', reversible: false },
   { name: 'USDT', icon: 'usdt', reversible: false },
   { name: 'L-USDt', icon: 'usdtliquid', reversible: false },
+  { name: 'USDC', icon: 'usdc', reversible: false },
   { name: 'Airtel Money', icon: 'airtel', reversible: false },
   { name: 'MTN Money', icon: 'mtn', reversible: false },
   { name: 'M-Pesa', icon: 'mpesa', reversible: false },
