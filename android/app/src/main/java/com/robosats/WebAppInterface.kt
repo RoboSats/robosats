@@ -383,6 +383,29 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         resolvePromise(uuid, key)
     }
 
+    @JavascriptInterface
+    fun restart() {
+        try {
+            Log.d(TAG, "Restarting app...")
+
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            intent?.let {
+                it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                context.startActivity(it)
+                context.finish()
+            } ?: run {
+                Log.e(TAG, "Could not get launch intent for app restart")
+                Toast.makeText(context, "Failed to restart app", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error restarting app", e)
+            Toast.makeText(context, "Failed to restart app", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun onWsMessage(path: String?, message: String?) {
         val encodedMessage = encodeForJavaScript(message)
         safeEvaluateJavascript("javascript:window.AndroidRobosats.onWSMessage('$path', '$encodedMessage')")
