@@ -151,6 +151,7 @@ export const LightningPayoutForm = ({
   // filter lnproxies when the network settings are updated
   let bitcoinNetwork: string = 'mainnet';
   let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
+
   useEffect(() => {
     bitcoinNetwork = settings?.network ?? 'mainnet';
     if (settings.host?.includes('.i2p') === true) {

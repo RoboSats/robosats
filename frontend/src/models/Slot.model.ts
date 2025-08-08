@@ -58,6 +58,7 @@ class Slot {
   lastOrder: Order | null = null;
   nostrSecKey?: Uint8Array;
   nostrPubKey?: string;
+  availableRewards: string | null = null;
 
   onSlotUpdate: () => void;
 
@@ -99,6 +100,14 @@ class Slot {
         shortAlias: robot.shortAlias,
       });
     }
+
+    this.availableRewards =
+      robot.earnedRewards != undefined && robot.earnedRewards > 0
+        ? robot.shortAlias
+        : this.availableRewards === robot.shortAlias
+          ? null
+          : this.availableRewards;
+
     this.onSlotUpdate();
   };
 

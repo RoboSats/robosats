@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -31,10 +31,6 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const [audit, setAudit] = useState<boolean>(false);
-
-  useEffect(() => {
-    loadRobot(garage.currentSlot ?? '');
-  }, []);
 
   const loadRobot = (token: string) => {
     garage.setCurrentSlot(token);

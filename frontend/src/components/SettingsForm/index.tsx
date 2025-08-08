@@ -29,12 +29,14 @@ import {
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import Tor from '../Icons/Tor';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface SettingsFormProps {
   dense?: boolean;
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element => {
+  const { updateConnection } = useContext<UseFederationStoreType>(FederationContext);
   const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
@@ -227,6 +229,8 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                 exclusive={true}
                 value={settings.network}
                 onChange={(_e, network) => {
+                  const newSetting = { ...settings, network };
+                  updateConnection(newSetting);
                   setSettings({ ...settings, network });
                   systemClient.setItem('settings_network', network);
                 }}

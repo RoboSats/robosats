@@ -52,6 +52,7 @@
   "Active order #{{orderID}}": "Активный ордер #{{orderID}}",
   "Add Robot": "Добавить робота",
   "Building...": "Строим...",
+  "Claim Rewards": "Claim Rewards",
   "Delete Robot": "Удалить робота",
   "Last order #{{orderID}}": "Последний ордер #{{orderID}}",
   "Looking for orders!": "В поисках ордеров!",

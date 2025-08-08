@@ -52,6 +52,7 @@
   "Active order #{{orderID}}": "公開中の注文 #{{orderID}}",
   "Add Robot": "ロボットを追加",
   "Building...": "生成中...",
+  "Claim Rewards": "Claim Rewards",
   "Delete Robot": "ロボットを削除",
   "Last order #{{orderID}}": "直前の注文 #{{orderID}}",
   "Looking for orders!": "注文を探しています！",

@@ -52,6 +52,7 @@
   "Active order #{{orderID}}": "活跃订单 #{{orderID}}",
   "Add Robot": "添加机器人",
   "Building...": "正在建造...",
+  "Claim Rewards": "Claim Rewards",
   "Delete Robot": "删除机器人",
   "Last order #{{orderID}}": "上一张订单 #{{orderID}}",
   "Looking for orders!": "查找订单！",

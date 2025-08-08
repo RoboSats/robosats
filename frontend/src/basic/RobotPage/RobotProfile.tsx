@@ -202,22 +202,38 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {!slot?.activeOrder && slot?.lastOrder ? (
-          <Grid item container direction='column' alignItems='center'>
-            <Grid item>
-              <Button
-                onClick={() => {
-                  navigateToPage(
-                    `order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
-                    navigate,
-                  );
-                }}
-              >
-                {t('Last order #{{orderID}}', { orderID: slot?.lastOrder?.id })}
-              </Button>
+        <Grid item container direction='row' alignItems='center'>
+          {!slot?.activeOrder && slot?.lastOrder ? (
+            <Grid item container direction='column' alignItems='center'>
+              <Grid item>
+                <Button
+                  onClick={() => {
+                    navigateToPage(
+                      `order/${String(slot?.lastOrder?.shortAlias)}/${String(slot?.lastOrder?.id)}`,
+                      navigate,
+                    );
+                  }}
+                >
+                  {t('Last order #{{orderID}}', { orderID: slot?.lastOrder?.id })}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        ) : null}
+          ) : null}
+
+          {slot?.availableRewards !== null && (
+            <Grid item container direction='column' alignItems='center'>
+              <Grid item>
+                <Button
+                  onClick={() => {
+                    setOpen({ ...closeAll, profile: !open.profile });
+                  }}
+                >
+                  {t('Claim Rewards')}
+                </Button>
+              </Grid>
+            </Grid>
+          )}
+        </Grid>
 
         {!slot?.activeOrder && !slot?.lastOrder && !federation.loading ? (
           <Grid item>{t('No existing orders found')}</Grid>
