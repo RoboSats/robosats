@@ -90,6 +90,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'SBP', icon: 'sbp', reversible: false },
   { name: 'Qiwi', icon: 'qiwi', reversible: false },
   { name: 'Nomad', icon: 'nomad', reversible: false },
+  { name: 'Paysend', icon: 'paysend', reversible: false },
 ];
 
 export const swapMethods: PaymentMethod[] = [

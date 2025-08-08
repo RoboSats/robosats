@@ -264,17 +264,15 @@ const RobotProfile = ({
             <Grid item sx={{ width: '100%' }}>
               <Grid container direction='row' justifyContent='space-between'>
                 <Typography variant='caption'>{t('Robot Garage')}</Typography>
-                {client !== 'mobile' && (
-                  <Button
-                    size='small'
-                    color='primary'
-                    onClick={() => {
-                      garage.download();
-                    }}
-                  >
-                    <Download style={{ width: '0.6em', height: '0.6em' }} />
-                  </Button>
-                )}
+                <Button
+                  size='small'
+                  color='primary'
+                  onClick={() => {
+                    garage.download(client);
+                  }}
+                >
+                  <Download style={{ width: '0.6em', height: '0.6em' }} />
+                </Button>
               </Grid>
               <Select
                 error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}

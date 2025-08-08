@@ -47,7 +47,6 @@ class Slot {
       return acc;
     }, {});
 
-    this.copiedToken = false;
     this.onSlotUpdate();
   }
 
@@ -57,15 +56,10 @@ class Slot {
   robots: Record<string, Robot>;
   activeOrder: Order | null = null;
   lastOrder: Order | null = null;
-  copiedToken: boolean;
   nostrSecKey?: Uint8Array;
   nostrPubKey?: string;
 
   onSlotUpdate: () => void;
-
-  setCopiedToken = (copied: boolean): void => {
-    this.copiedToken = copied;
-  };
 
   // Robots
   getRobot = (shortAlias?: string): Robot | null => {
