@@ -103,7 +103,7 @@ jobs:
 
       # Upload app-universal-release APK artifact asset
       - name: 'Download universal APK Artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: app-universal-release.apk
           path: .
@@ -121,7 +121,7 @@ jobs:
 
       # Upload app-arm64-v8a-release APK artifact asset
       - name: 'Download arm64-v8a APK Artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: app-arm64-v8a-release.apk
           path: .
@@ -138,7 +138,7 @@ jobs:
 
       # Upload app-armeabi-v7a-release APK artifact asset
       - name: 'Download armeabi-v7a APK Artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: app-armeabi-v7a-release.apk
           path: .
@@ -155,7 +155,7 @@ jobs:
 
       # Upload app-x86_64-release APK artifact asset
       - name: 'Download x86_64 APK Artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: app-x86_64-release.apk
           path: .
@@ -172,7 +172,7 @@ jobs:
 
       # Upload macOS desktop artifact asset
       - name: 'Download macOS Build Artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
@@ -190,7 +190,7 @@ jobs:
 
       # Upload linux desktop artifact asset
       - name: 'Download linux Build Artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
@@ -208,7 +208,7 @@ jobs:
 
       # Upload Windows desktop artifact asset
       - name: 'Download Windows Build Artifact'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip

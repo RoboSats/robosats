@@ -32,7 +32,7 @@ jobs:
 
     - name: 'Download Basic main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: nodeapp-main-static
         path: nodeapp
