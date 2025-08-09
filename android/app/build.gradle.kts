@@ -80,7 +80,7 @@ androidComponents {
 
         variant.outputs.forEach { output ->
             val abiName = output.filters.find { it.filterType.name == "ABI" }?.identifier
-            val abiVersionCode = abiCodes[abiName] ?: 9 // Universal APK gets 9
+            val abiVersionCode = abiCodes[abiName] ?: 0 // Universal APK gets 0
             output.versionCode.set(baseVersionCode * 1000 + abiVersionCode)
         }
     }
