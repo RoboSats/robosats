@@ -795,6 +795,11 @@ const BookTable = ({
           />
         )}
         <ClickThroughDataGrid
+          initialState={{
+            sorting: {
+              sortModel: [{ field: 'premium', sort: 'asc' }],
+            },
+          }
           sx={headerStyleFix}
           localeText={localeText}
           rows={filteredOrders}
@@ -833,6 +838,11 @@ const BookTable = ({
             />
           )}
           <ClickThroughDataGrid
+            initialState={{
+              sorting: {
+                sortModel: [{ field: 'premium', sort: 'asc' }],
+              },
+            }
             sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
