@@ -41,10 +41,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
     // Security patterns for input validation
     private val UUID_PATTERN = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE)
-    private val SAFE_STRING_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s_\\-.,:;!?()\\[\\]{}]*$")
-
-    // Maximum length for input strings
-    private val MAX_INPUT_LENGTH = 1000
+    private val SAFE_STRING_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s_\\-.,:;!?()\\[\\]{}\"]*$")
 
     init {
         // Check if libraries are loaded and show a toast notification if there's an issue
@@ -108,6 +105,13 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
     @JavascriptInterface
     fun copyToClipboard(message: String) {
+        // Validate input
+        if (!isValidInput(message)) {
+            Log.e(TAG, "Invalid input for copyToClipboard")
+            Toast.makeText(context, "Invalid content for clipboard", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         try {
             // Copy to clipboard
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
@@ -441,8 +445,8 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         safeEvaluateJavascript("javascript:window.AndroidRobosats.onRejectPromise('$uuid', '$encodedError')")
     }
 
-    private fun isValidInput(input: String?, maxLength: Int = MAX_INPUT_LENGTH): Boolean {
-        if (input == null || input.isEmpty() || input.length > maxLength) {
+    private fun isValidInput(input: String?): Boolean {
+        if (input == null || input.isEmpty()) {
             return false
         }
         return SAFE_STRING_PATTERN.matcher(input).matches()
