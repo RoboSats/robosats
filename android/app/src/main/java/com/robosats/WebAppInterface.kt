@@ -41,8 +41,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
     // Security patterns for input validation
     private val UUID_PATTERN = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE)
-    private val SAFE_STRING_PATTERN = Pattern.compile("^[a-zA-Z0-9\s_\-.,:;!?()\[\]{}\"]*$")
-
+    private val SAFE_STRING_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s_\\-.,:;!?()\\[\\]{}\\"]*$")
     // Maximum length for input strings
     private val MAX_INPUT_LENGTH = 1000
 
@@ -108,17 +107,31 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
     @JavascriptInterface
     fun copyToClipboard(message: String) {
+        // Validate input
+        if (!isValidInput(message, 10000)) { // Allow longer text for clipboard
+            Log.e(TAG, "Invalid input for copyToClipboard")
+            Toast.makeText(context, "Invalid content for clipboard", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         try {
+            // Limit clipboard content size for security
+            val truncatedMessage = if (message.length > 10000) {
+                message.substring(0, 10000) + "... (content truncated for security)"
+            } else {
+                message
+            }
+
             // Copy to clipboard
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val clip = android.content.ClipData.newPlainText("RoboSats Data", message)
+            val clip = android.content.ClipData.newPlainText("RoboSats Data", truncatedMessage)
             clipboard.setPrimaryClip(clip)
 
             // Show a toast notification
             Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
 
             // Log the action (don't log the content for privacy)
-            Log.d(TAG, "Text copied to clipboard")
+            Log.d(TAG, "Text copied to clipboard (${truncatedMessage.length} chars)")
         } catch (e: Exception) {
             Log.e(TAG, "Error copying to clipboard", e)
             Toast.makeText(context, "Failed to copy to clipboard", Toast.LENGTH_SHORT).show()
@@ -381,29 +394,6 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
         // Safely encode and return the result
         resolvePromise(uuid, key)
-    }
-
-    @JavascriptInterface
-    fun restart() {
-        try {
-            Log.d(TAG, "Restarting app...")
-
-            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            intent?.let {
-                it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                context.startActivity(it)
-                context.finish()
-            } ?: run {
-                Log.e(TAG, "Could not get launch intent for app restart")
-                Toast.makeText(context, "Failed to restart app", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error restarting app", e)
-            Toast.makeText(context, "Failed to restart app", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun onWsMessage(path: String?, message: String?) {

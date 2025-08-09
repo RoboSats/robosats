@@ -17,10 +17,10 @@ on:
         required: true
   push:
     branches: [ "main" ]
-    paths: [ "mobile", "frontend" ]
+    paths: [ "android", "frontend" ]
   pull_request:
     branches: [ "main" ]
-    paths: [ "mobile", "frontend" ]
+    paths: [ "android", "frontend" ]
 
 jobs:
   build-android:
