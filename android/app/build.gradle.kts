@@ -1,5 +1,7 @@
 import com.android.build.api.dsl.Packaging
 
+val baseVersionCode = 81
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -13,7 +15,7 @@ android {
         applicationId = "com.robosats"
         minSdk = 26
         targetSdk = 36
-        versionCode = 15
+        versionCode = baseVersionCode
         versionName = "0.8.1-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -62,6 +64,24 @@ android {
 
     packaging {
         jniLibs.useLegacyPackaging = true
+    }
+}
+
+// Configure unique version codes for ABI splits to prevent downgrade issues
+androidComponents {
+    onVariants { variant ->
+        val abiCodes = mapOf(
+            "armeabi-v7a" to 1,
+            "arm64-v8a" to 2,
+            "x86" to 3,
+            "x86_64" to 4
+        )
+
+        variant.outputs.forEach { output ->
+            val abiName = output.filters.find { it.filterType.name == "ABI" }?.identifier
+            val abiVersionCode = abiCodes[abiName] ?: 0 // Universal APK gets 0
+            output.versionCode.set(baseVersionCode * 1000 + abiVersionCode)
+        }
     }
 }
 
