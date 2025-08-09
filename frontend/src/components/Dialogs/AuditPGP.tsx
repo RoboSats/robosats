@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -26,7 +26,7 @@ import ForumIcon from '@mui/icons-material/Forum';
 import { ExportIcon, NewTabIcon } from '../Icons';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
-import { Order } from '../../models';
+import { Order, Slot } from '../../models';
 import { nip19 } from 'nostr-tools';
 import { EncryptedChatMessage } from '../TradeBox/EncryptedChat';
 
@@ -79,16 +79,23 @@ const AuditPGPDialog = ({
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { client } = useContext<UseAppStoreType>(AppContext);
-  const [tab, setTab] = useState<'nostr' | 'pgp'>('nostr');
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const [tab, setTab] = useState<'nostr' | 'pgp'>('nostr');
+  const [slot, setSlot] = useState<Slot | null>();
+  // PGP
+  const [ownPubKey, setOwnPubKey] = useState<string>();
+  const [ownEncPrivKey, setOwnEncPrivKey] = useState<string>();
+  const [passphrase, setPassphrase] = useState<string>();
 
-  const slot = order
-    ? garage.getSlotByOrder(order?.shortAlias ?? '', order?.id ?? 0)
-    : garage.getSlot();
-
-  const ownPubKey = slot?.getRobot()?.pubKey ?? '';
-  const ownEncPrivKey = slot?.getRobot()?.encPrivKey ?? '';
-  const passphrase = slot?.token ?? '';
+  useEffect(() => {
+    const slot = order
+      ? garage.getSlotByOrder(order?.shortAlias ?? '', order?.id ?? 0)
+      : garage.getSlot();
+    setSlot(slot);
+    setOwnPubKey(slot?.getRobot()?.pubKey ?? '');
+    setOwnEncPrivKey(slot?.getRobot()?.encPrivKey ?? '');
+    setPassphrase(slot?.token ?? '');
+  }, [garage.currentSlot, order?.id]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -177,7 +184,7 @@ const AuditPGPDialog = ({
 
                       return client === 'mobile'
                         ? systemClient.copyToClipboard(JSON.stringify(object))
-                        : saveAsJson(`pgp_keys_${order?.id ?? ''}.json`, object);
+                        : saveAsJson(`pgp_keys_${order?.id ?? ''}.json`, object, client);
                     }}
                   >
                     <div style={{ width: 26, height: 18 }}>
@@ -207,7 +214,7 @@ const AuditPGPDialog = ({
                       onClick={() => {
                         return client === 'mobile'
                           ? systemClient.copyToClipboard(JSON.stringify(messages))
-                          : saveAsJson(`pgp_messages_${order?.id ?? ''}.json`, messages);
+                          : saveAsJson(`pgp_messages_${order?.id ?? ''}.json`, messages, client);
                       }}
                     >
                       <div style={{ width: 28, height: 20 }}>
@@ -290,7 +297,7 @@ const AuditPGPDialog = ({
 
                       return client === 'mobile'
                         ? systemClient.copyToClipboard(JSON.stringify(object))
-                        : saveAsJson(`nostr_keys_${order?.id ?? ''}.json`, object);
+                        : saveAsJson(`nostr_keys_${order?.id ?? ''}.json`, object, client);
                     }}
                   >
                     <div style={{ width: 26, height: 18 }}>
@@ -320,7 +327,7 @@ const AuditPGPDialog = ({
                       onClick={() => {
                         return client === 'mobile'
                           ? systemClient.copyToClipboard(JSON.stringify(messages))
-                          : saveAsJson(`nostr_messages_${order?.id ?? ''}.json`, messages);
+                          : saveAsJson(`nostr_messages_${order?.id ?? ''}.json`, messages, client);
                       }}
                     >
                       <div style={{ width: 28, height: 20 }}>

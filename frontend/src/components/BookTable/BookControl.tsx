@@ -119,7 +119,7 @@ const BookControl = ({
         direction='row'
         justifyContent='center'
         spacing={0.8}
-        sx={{ height: '3.4em', padding: '0.2em', alignContent: 'center' }}
+        sx={{ padding: '0.2em', alignContent: 'center' }}
       >
         {width > large ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>

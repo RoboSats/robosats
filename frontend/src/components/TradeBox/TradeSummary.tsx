@@ -34,7 +34,6 @@ import {
   FlagWithProps,
 } from '../Icons';
 import { type TradeCoordinatorSummary, type TradeRobotSummary } from '../../models/Order.model';
-import { systemClient } from '../../services/System';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface Props {
@@ -80,11 +79,7 @@ const TradeSummary = ({
       taker: takerSummary,
       platform: platformSummary,
     };
-    if (client !== 'mobile') {
-      saveAsJson(`order${orderId}-summary.json`, summary);
-    } else {
-      systemClient.copyToClipboard(JSON.stringify(summary));
-    }
+    saveAsJson(`order${orderId}-summary.json`, summary, client);
   };
 
   return (

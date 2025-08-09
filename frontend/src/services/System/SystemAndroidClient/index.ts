@@ -39,6 +39,10 @@ class SystemAndroidClient implements SystemClient {
     const uuid: string = uuidv4();
     window.AndroidAppRobosats?.deleteEncryptedStorage(uuid, key);
   };
+
+  public restart: () => void = () => {
+    window.AndroidAppRobosats?.restart();
+  };
 }
 
 export default SystemAndroidClient;

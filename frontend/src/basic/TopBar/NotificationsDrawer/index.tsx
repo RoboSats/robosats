@@ -95,8 +95,6 @@ const NotificationsDrawer = ({
     const sound = audio[soundType];
 
     void sound.play();
-    void sound.play();
-    void sound.play();
   };
 
   const loadNotifciationsNostr = (): void => {

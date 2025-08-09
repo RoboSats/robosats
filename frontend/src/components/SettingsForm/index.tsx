@@ -28,12 +28,15 @@ import {
   NotificationsActive,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
+import Tor from '../Icons/Tor';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface SettingsFormProps {
   dense?: boolean;
 }
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element => {
+  const { updateConnection } = useContext<UseFederationStoreType>(FederationContext);
   const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
@@ -226,6 +229,8 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                 exclusive={true}
                 value={settings.network}
                 onChange={(_e, network) => {
+                  const newSetting = { ...settings, network };
+                  updateConnection(newSetting);
                   setSettings({ ...settings, network });
                   systemClient.setItem('settings_network', network);
                 }}
@@ -258,6 +263,31 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                   </ToggleButton>
                   <ToggleButton value={false} color='secondary' sx={{ flexGrow: 1 }}>
                     {t('Off')}
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </ListItem>
+            )}
+
+            {client == 'mobile' && (
+              <ListItem>
+                <ListItemIcon>
+                  <Tor />
+                </ListItemIcon>
+                <ToggleButtonGroup
+                  exclusive={true}
+                  sx={{ width: '100%' }}
+                  value={settings.useProxy}
+                  onChange={(_e, useProxy) => {
+                    setSettings({ ...settings, useProxy });
+                    systemClient.setItem('settings_use_proxy', String(useProxy));
+                    systemClient.restart();
+                  }}
+                >
+                  <ToggleButton value={true} color='primary' sx={{ flexGrow: 1 }}>
+                    {t('Orbot')}
+                  </ToggleButton>
+                  <ToggleButton value={false} color='secondary' sx={{ flexGrow: 1 }}>
+                    {t('Build-in')}
                   </ToggleButton>
                 </ToggleButtonGroup>
               </ListItem>

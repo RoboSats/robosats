@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { MemoryRouter, HashRouter, BrowserRouter, BrowserRouterProps } from 'react-router-dom';
 import { Box, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext } from '../contexts/AppContext';
@@ -43,10 +43,13 @@ const MainBox = styled(Box)<MainBoxProps>((props) => ({
 const Main: React.FC = () => {
   const { t } = useTranslation();
   const { settings, navbarHeight } = useContext<UseAppStoreType>(AppContext);
+  const [show, setShow] = useState<boolean>(false);
+
+  useEffect(() => setShow(settings.network === 'testnet'), [settings.network]);
 
   return (
     <Router>
-      {settings.network === 'testnet' ? (
+      {show ? (
         <TestnetTypography color='secondary' align='center'>
           <i>{t('Using Testnet Bitcoin')}</i>
         </TestnetTypography>

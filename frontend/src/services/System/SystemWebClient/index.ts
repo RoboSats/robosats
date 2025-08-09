@@ -45,6 +45,8 @@ class SystemWebClient implements SystemClient {
   public deleteItem: (key: string) => void = (key) => {
     window.localStorage.removeItem(key);
   };
+
+  public restart: () => void = () => {};
 }
 
 export default SystemWebClient;

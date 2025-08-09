@@ -9,6 +9,7 @@ export interface SystemClient {
   getItem: (key: string) => Promise<string | undefined>;
   setItem: (key: string, value: string) => void;
   deleteItem: (key: string) => void;
+  restart: () => void;
 }
 
 function getSystemClient(): SystemClient {

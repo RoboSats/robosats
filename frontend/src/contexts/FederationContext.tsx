@@ -18,14 +18,14 @@ export interface UseFederationStoreType {
   federation: Federation;
   federationUpdatedAt: string;
   setFederationUpdatedAt: (federationUpdatedAt: string) => void;
+  updateConnection: (settings: Settings) => void;
 }
 
-const initialFederation = new Federation('onion', new Settings(), '');
-
 export const initialFederationContext: UseFederationStoreType = {
-  federation: initialFederation,
+  federation: new Federation('onion', new Settings(), ''),
   federationUpdatedAt: '',
   setFederationUpdatedAt: () => {},
+  updateConnection: () => {},
 };
 
 export const FederationContext = createContext<UseFederationStoreType>(initialFederationContext);
@@ -36,8 +36,12 @@ export const FederationContextProvider = ({
   const { settings, page, origin, hostUrl, torStatus, client, fav } =
     useContext<UseAppStoreType>(AppContext);
   const { setMaker } = useContext<UseGarageStoreType>(GarageContext);
-  const [federation] = useState(initialFederationContext.federation);
+  const [federation] = useState(new Federation(origin, settings, hostUrl));
   const [federationUpdatedAt, setFederationUpdatedAt] = useState<string>(new Date().toISOString());
+
+  const updateConnection = (settings: Settings) => {
+    federation.setConnection(origin, settings, hostUrl, fav.coordinator);
+  };
 
   useEffect(() => {
     setMaker((maker) => {
@@ -49,9 +53,7 @@ export const FederationContextProvider = ({
   }, []);
 
   useEffect(() => {
-    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
-      federation.setConnection(origin, settings, hostUrl, fav.coordinator);
-    }
+    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) updateConnection(settings);
   }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export const FederationContextProvider = ({
         federation,
         federationUpdatedAt,
         setFederationUpdatedAt,
+        updateConnection,
       }}
     >
       {children}

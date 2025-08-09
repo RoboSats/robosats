@@ -36,8 +36,9 @@ class Garage {
   };
 
   // Storage
-  download = (): void => {
-    saveAsJson(`garage_slots_${new Date().toISOString()}.json`, this.slots);
+  download = (client: 'mobile' | 'web' | 'desktop' | string): void => {
+    const keys = Object.keys(this.slots);
+    saveAsJson(`garage_slots_${new Date().toISOString()}.json`, keys, client);
   };
 
   save = (): void => {
@@ -99,19 +100,6 @@ class Garage {
       this.save();
       this.triggerHook('onSlotUpdate');
     }
-  };
-
-  updateSlot: (attributes: { copiedToken?: boolean }, token?: string) => Slot | null = (
-    attributes,
-    token,
-  ) => {
-    const slot = this.getSlot(token);
-    if (attributes) {
-      if (attributes.copiedToken !== undefined) slot?.setCopiedToken(attributes.copiedToken);
-      this.save();
-      this.triggerHook('onSlotUpdate');
-    }
-    return slot;
   };
 
   setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {

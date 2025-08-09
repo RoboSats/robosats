@@ -20,7 +20,6 @@ import { type UseGarageStoreType, GarageContext } from '../../../contexts/Garage
 import { MoreHoriz, Key, Handshake, Balance } from '@mui/icons-material';
 import AuditPGPDialog from '../../Dialogs/AuditPGP';
 import { ExportIcon } from '../../Icons';
-import { systemClient } from '../../../services/System';
 import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 
 interface ChatPromptProps {
@@ -262,11 +261,9 @@ export const ChatPrompt = ({
               <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
                 <Button
                   fullWidth
-                  onClick={() => {
-                    return client === 'mobile'
-                      ? systemClient.copyToClipboard(JSON.stringify(createJsonFile()))
-                      : saveAsJson(`complete_log_chat_${order.id}.json`, createJsonFile());
-                  }}
+                  onClick={() =>
+                    saveAsJson(`complete_log_chat_${order.id}.json`, createJsonFile(), client)
+                  }
                   variant='contained'
                   color='primary'
                   size='large'
