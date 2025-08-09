@@ -7,6 +7,7 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 
 from api.lightning.node import LNNode
+from api.errors import new_error
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, TakeOrder
 from api.tasks import send_devfund_donation, send_notification, nostr_send_order_event
 from api.utils import get_minning_fee, validate_onchain_address, location_country
@@ -57,7 +58,7 @@ class Logics:
         if queryset_maker.exists():
             return (
                 False,
-                {"bad_request": "You are already maker of an active order"},
+                new_error(1000),
                 queryset_maker[0],
             )
 
@@ -70,13 +71,13 @@ class Logics:
         if queryset_taker.exists():
             return (
                 False,
-                {"bad_request": "You are already taker of an active order"},
+                new_error(1001),
                 queryset_taker[0],
             )
         elif queryset_pretaker.exists():
             return (
                 False,
-                {"bad_request": "You are already taking an active order"},
+                new_error(1002),
                 queryset_pretaker[0].order,
             )
 
@@ -90,9 +91,7 @@ class Logics:
             if cls.is_buyer(order, user):
                 return (
                     False,
-                    {
-                        "bad_request": "You are still pending a payment from a recent order"
-                    },
+                    new_error(1003),
                     order,
                 )
 
@@ -103,21 +102,13 @@ class Logics:
         """Validates if order size in Sats is within limits at t0"""
         if not order.has_range:
             if order.t0_satoshis > MAX_ORDER_SIZE:
-                return False, {
-                    "bad_request": "Your order is too big. It is worth "
-                    + "{:,}".format(order.t0_satoshis)
-                    + " Sats now, but the limit is "
-                    + "{:,}".format(MAX_ORDER_SIZE)
-                    + " Sats"
-                }
+                return False, new_error(1004,
+                    {"order_amount": order.t0_satoshis, "max_order_size": MAX_ORDER_SIZE}
+                )
             if order.t0_satoshis < MIN_ORDER_SIZE:
-                return False, {
-                    "bad_request": "Your order is too small. It is worth "
-                    + "{:,}".format(order.t0_satoshis)
-                    + " Sats now, but the limit is "
-                    + "{:,}".format(MIN_ORDER_SIZE)
-                    + " Sats"
-                }
+                return False, new_error(1005,
+                    {"order_amount": order.t0_satoshis, "min_order_size": MIN_ORDER_SIZE}
+                )
         elif order.has_range:
             min_sats = cls.calc_sats(
                 order.min_amount, order.currency.exchange_rate, order.premium
@@ -126,29 +117,17 @@ class Logics:
                 order.max_amount, order.currency.exchange_rate, order.premium
             )
             if min_sats > max_sats / 1.5:
-                return False, {
-                    "bad_request": "Maximum range amount must be at least 50 percent higher than the minimum amount"
-                }
+                return False, new_error(1006)
             elif max_sats > MAX_ORDER_SIZE:
-                return False, {
-                    "bad_request": "Your order maximum amount is too big. It is worth "
-                    + "{:,}".format(int(max_sats))
-                    + " Sats now, but the limit is "
-                    + "{:,}".format(MAX_ORDER_SIZE)
-                    + " Sats"
-                }
+                return False, new_error(1007,
+                    {"max_sats": int(max_sats), "max_order_size": MAX_ORDER_SIZE}
+                )
             elif min_sats < MIN_ORDER_SIZE:
-                return False, {
-                    "bad_request": "Your order minimum amount is too small. It is worth "
-                    + "{:,}".format(int(min_sats))
-                    + " Sats now, but the limit is "
-                    + "{:,}".format(MIN_ORDER_SIZE)
-                    + " Sats"
-                }
+                return False, new_error(1008,
+                    {"min_sats": int(min_sats), "min_order_size": MIN_ORDER_SIZE}
+                )
             elif min_sats < max_sats / 15:
-                return False, {
-                    "bad_request": "Your order amount range is too large. Max amount can only be 15 times bigger than min amount"
-                }
+                return False, new_error(1009)
 
         return True, None
 
@@ -159,17 +138,13 @@ class Logics:
 
         country = location_country(order.longitude, order.latitude)
         if country in GEOBLOCKED_COUNTRIES:
-            return False, {
-                "bad_request": f"The coordinator does not support orders in {country}"
-            }
+            return False, new_error(1010, {"country": country})
         else:
             return True, None
 
     def validate_amount_within_range(order, amount):
         if amount > float(order.max_amount) or amount < float(order.min_amount):
-            return False, {
-                "bad_request": "The amount specified is outside the range specified by the maker"
-            }
+            return False, new_error(1011)
 
         return True, None
 
@@ -188,10 +163,7 @@ class Logics:
             taker=user, order=order, expires_at__gt=timezone.now()
         )
         if is_penalized:
-            return False, {
-                "bad_request",
-                f"You need to wait {time_out} seconds to take an order",
-            }
+            return False, new_error(1012, {"time_out": time_out})
         elif take_order.exists():
             order.log(
                 f"Order already Pre-Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"
@@ -553,9 +525,7 @@ class Logics:
         ]
 
         if order.status not in valid_status_open_dispute:
-            return False, {
-                "bad_request": "You cannot open a dispute of this order at this stage"
-            }
+            return False, new_error(1013)
 
         automatically_solved = cls.automatic_dispute_resolution(order)
 
@@ -599,19 +569,13 @@ class Logics:
         """Updates the dispute statements"""
 
         if not order.status == Order.Status.DIS:
-            return False, {
-                "bad_request": "Only orders in dispute accept dispute statements"
-            }
+            return False, new_error(1014)
 
         if len(statement) > 50_000:
-            return False, {
-                "bad_statement": "The statement and chat logs are longer than 50,000 characters"
-            }
+            return False, new_error(2000)
 
         if len(statement) < 100:
-            return False, {
-                "bad_statement": "The statement is too short. Make sure to be thorough."
-            }
+            return False, new_error(2001)
 
         if order.maker == user:
             order.maker_statement = statement
@@ -819,12 +783,10 @@ class Logics:
     def update_address(cls, order, user, address, mining_fee_rate):
         # Empty address?
         if not address:
-            return False, {"bad_address": "You submitted an empty address"}
+            return False, new_error(4000)
         # only the buyer can post a buyer address
         if not cls.is_buyer(order, user):
-            return False, {
-                "bad_request": "Only the buyer of this order can provide a payout address."
-            }
+            return False, new_error(1015)
         # not the right time to submit
         if not (
             order.taker_bond.status
@@ -835,7 +797,7 @@ class Logics:
                 f"Robot({user.robot.id},{user.username}) attempted to submit an address while the order was in status {order.status}",
                 level="ERROR",
             )
-            return False, {"bad_request": "You cannot submit an address now."}
+            return False, new_error(1016)
         # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
@@ -854,17 +816,13 @@ class Logics:
                     f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by Robot({user.robot.id},{user.username}) is less than the current minimum mining fee {min_mining_fee_rate} Sats",
                     level="WARN",
                 )
-                return False, {
-                    "bad_address": f"The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte"
-                }
+                return False, new_error(4001, {"min_mining_fee_rate": min_mining_fee_rate})
             elif float(mining_fee_rate) > 500:
                 order.log(
                     f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by Robot({user.robot.id},{user.username}) is higher than the absolute maximum mining fee 500 Sats",
                     level="WARN",
                 )
-                return False, {
-                    "bad_address": "The mining fee is too high, must be less than 500 Sats/vbyte"
-                }
+                return False, new_error(4002)
             order.payout_tx.mining_fee_rate = float(mining_fee_rate)
         # If not mining fee provider use backend's suggested fee rate
         else:
@@ -885,9 +843,7 @@ class Logics:
                 f"The onchain Sats to be sent ({float(tx.sent_satoshis)}) are below the dust limit of 20,000 Sats",
                 level="WARN",
             )
-            return False, {
-                "bad_address": "The amount remaining after subtracting mining fee is close to dust limit."
-            }
+            return False, new_error(4003)
         tx.status = OnchainPayment.Status.VALID
         tx.save()
 
@@ -909,14 +865,12 @@ class Logics:
                 f"Robot({user.robot.id},{user.username}) submitted an empty invoice",
                 level="WARN",
             )
-            return False, {"bad_invoice": "You submitted an empty invoice"}
+            return False, new_error(3000)
         # only the buyer can post a buyer invoice
         if not cls.is_buyer(order, user):
-            return False, {
-                "bad_request": "Only the buyer of this order can provide a buyer invoice."
-            }
+            return False, new_error(1017)
         if not order.taker_bond:
-            return False, {"bad_request": "Wait for your order to be taken."}
+            return False, new_error(1018)
         if (
             not (
                 order.taker_bond.status
@@ -925,14 +879,10 @@ class Logics:
             )
             and not order.status == Order.Status.FAI
         ):
-            return False, {
-                "bad_request": "You cannot submit an invoice while bonds are not locked."
-            }
+            return False, new_error(1019)
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
-                return False, {
-                    "bad_invoice": "You can only submit an invoice after expiration or 3 failed attempts"
-                }
+                return False, new_error(3001)
 
         # cancel onchain_payout if existing
         cls.cancel_onchain_payment(order)
@@ -949,7 +899,7 @@ class Logics:
 
         if order.payout:
             if order.payout.payment_hash == payout["payment_hash"]:
-                return False, {"bad_invoice": "You must submit a NEW invoice"}
+                return False, new_error(3002)
 
         order.payout = LNPayment.objects.create(
             concept=LNPayment.Concepts.PAYBUYER,
@@ -1036,9 +986,7 @@ class Logics:
         # recently changed status.
         if cancel_status is not None:
             if order.status != cancel_status:
-                return False, {
-                    "bad_request": f"Current order status is {order.status}, not {cancel_status}."
-                }
+                return False, new_error(1020, {"order_status": order.status, "cancel_status": cancel_status})
 
         # Do not change order status if an is in order
         # any of these status
@@ -1055,7 +1003,7 @@ class Logics:
         ]
 
         if order.status in do_not_cancel:
-            return False, {"bad_request": "You cannot cancel this order"}
+            return False, new_error(1021)
 
         # 1) When maker cancels before bond
         # The order never shows up on the book and order
@@ -1216,7 +1164,7 @@ class Logics:
         order.log(
             f"Cancel request was sent by Robot({user.robot.id},{user.username}) on an invalid status {order.status}: <i>{Order.Status(order.status).label}</i>"
         )
-        return False, {"bad_request": "You cannot cancel this order"}
+        return False, new_error(1021)
 
     @classmethod
     def collaborative_cancel(cls, order):
@@ -1291,9 +1239,7 @@ class Logics:
         # Do not gen and cancel if order is older than expiry time
         if order.expires_at < timezone.now():
             cls.order_expires(order)
-            return False, {
-                "bad_request": "Invoice expired. You did not confirm publishing the order in time. Make a new order."
-            }
+            return False, new_error(1022)
 
         # Return the previous invoice if there was one and is still unpaid
         if order.maker_bond:
@@ -1326,13 +1272,9 @@ class Logics:
         except Exception as e:
             print(str(e))
             if "failed to connect to all addresses" in str(e):
-                return False, {
-                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
-                }
+                return False, new_error(1023)
             elif "wallet locked" in str(e):
-                return False, {
-                    "bad_request": "This is weird, RoboSats' lightning wallet is locked. Check in the Telegram group, maybe the staff has died."
-                }
+                return False, new_error(1024)
 
         order.maker_bond = LNPayment.objects.create(
             concept=LNPayment.Concepts.MAKEBOND,
@@ -1432,9 +1374,7 @@ class Logics:
         # Do not gen and kick out the taker if order is older than expiry time
         if order.expires_at < timezone.now():
             cls.order_expires(order)
-            return False, {
-                "bad_request": "Order expired. You did not confirm taking the order in time."
-            }
+            return False, new_error(1025)
 
         # Do not gen if a taker invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if take_order.taker_bond:
@@ -1471,9 +1411,7 @@ class Logics:
 
         except Exception as e:
             if "status = StatusCode.UNAVAILABLE" in str(e):
-                return False, {
-                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
-                }
+                return False, new_error(1023)
 
         take_order.taker_bond = LNPayment.objects.create(
             concept=LNPayment.Concepts.TAKEBOND,
@@ -1533,9 +1471,7 @@ class Logics:
         # Do not generate if escrow deposit time has expired
         if order.expires_at < timezone.now():
             cls.order_expires(order)
-            return False, {
-                "bad_request": "Invoice expired. You did not send the escrow in time."
-            }
+            return False, new_error(1026)
 
         # Do not gen if an escrow invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.trade_escrow:
@@ -1571,9 +1507,7 @@ class Logics:
 
         except Exception as e:
             if "status = StatusCode.UNAVAILABLE" in str(e):
-                return False, {
-                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
-                }
+                return False, new_error(1023)
 
         order.trade_escrow = LNPayment.objects.create(
             concept=LNPayment.Concepts.TRESCROW,
@@ -1738,9 +1672,7 @@ class Logics:
             # If seller and fiat was sent, SETTLE ESCROW AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
                 if not order.is_fiat_sent:
-                    return False, {
-                        "bad_request": "You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer."
-                    }
+                    return False, new_error(1027)
 
                 # Make sure the trade escrow is at least as big as the buyer invoice
                 num_satoshis = (
@@ -1749,9 +1681,7 @@ class Logics:
                     else order.payout.num_satoshis
                 )
                 if order.trade_escrow.num_satoshis <= num_satoshis:
-                    return False, {
-                        "bad_request": "Woah, something broke badly. Report in the public channels, or open a Github Issue."
-                    }
+                    return False, new_error(1028)
 
                 # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
                 if cls.settle_escrow(order):
@@ -1774,9 +1704,7 @@ class Logics:
                     return True, None
 
         else:
-            return False, {
-                "bad_request": "You cannot confirm the fiat payment at this stage"
-            }
+            return False, new_error(1029)
 
         return True, None
 
@@ -1786,14 +1714,10 @@ class Logics:
         If user is buyer: fiat_sent goes to true.
         """
         if not cls.is_buyer(order, user):
-            return False, {
-                "bad_request": "Only the buyer can undo the fiat sent confirmation."
-            }
+            return False, new_error(1030)
 
         if order.status != Order.Status.FSE:
-            return False, {
-                "bad_request": "Only orders in Chat and with fiat sent confirmed can be reverted."
-            }
+            return False, new_error(1031)
         order.update_status(Order.Status.CHA)
         order.is_fiat_sent = False
         order.reverted_fiat_sent = True
@@ -1807,9 +1731,7 @@ class Logics:
 
     def pause_unpause_public_order(order, user):
         if not order.maker == user:
-            return False, {
-                "bad_request": "You cannot pause or unpause an order you did not make"
-            }
+            return False, new_error(1032)
         else:
             if order.status == Order.Status.PUB:
                 order.update_status(Order.Status.PAU)
@@ -1830,9 +1752,7 @@ class Logics:
                     f"Robot({user.robot.id},{user.username}) tried to pause/unpause an order that was not public or paused",
                     level="WARN",
                 )
-                return False, {
-                    "bad_request": "You can only pause/unpause an order that is either public or paused"
-                }
+                return False, new_error(1033)
 
         return True, None
 
@@ -1890,7 +1810,7 @@ class Logics:
         # only a user with positive withdraw balance can use this
 
         if user.robot.earned_rewards < 1:
-            return False, {"bad_invoice": "You have not earned rewards"}
+            return False, new_error(3003)
 
         num_satoshis = user.robot.earned_rewards
 
@@ -1933,7 +1853,7 @@ class Logics:
             )
         # Might fail if payment_hash already exists in DB
         except Exception:
-            return False, {"bad_invoice": "Give me a new invoice"}
+            return False, new_error(3004)
 
         user.robot.earned_rewards = 0
         user.robot.save(update_fields=["earned_rewards"])
@@ -1950,9 +1870,7 @@ class Logics:
         else:
             user.robot.earned_rewards = num_satoshis
             user.robot.save(update_fields=["earned_rewards"])
-            context = {}
-            context["bad_invoice"] = failure_reason
-            return False, context
+            return False, new_error(3005, {"failure_reason": failure_reason})
 
     @classmethod
     def compute_proceeds(cls, order):
@@ -1985,7 +1903,7 @@ class Logics:
         amounts, fees, costs, etc, for buyer and seller.
         """
         if order.status not in [Order.Status.SUC, Order.Status.PAY, Order.Status.FAI]:
-            return False, {"bad_summary": "Order has not finished yet"}
+            return False, new_error(5000)
 
         context = {}
 
