@@ -58,7 +58,7 @@ class BaseSettings {
     });
 
     systemClient.getItem('settings_notifications').then((result) => {
-      this.androidNotifications = result === 'true';
+      this.androidNotifications = !result ? client === 'mobile' : result === 'true';
     });
 
     systemClient.getItem('settings_use_proxy').then((result) => {

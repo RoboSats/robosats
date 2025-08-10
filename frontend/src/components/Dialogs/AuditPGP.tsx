@@ -88,9 +88,7 @@ const AuditPGPDialog = ({
   const [passphrase, setPassphrase] = useState<string>();
 
   useEffect(() => {
-    const slot = order
-      ? garage.getSlotByOrder(order?.shortAlias ?? '', order?.id ?? 0)
-      : garage.getSlot();
+    const slot = garage.getSlot();
     setSlot(slot);
     setOwnPubKey(slot?.getRobot()?.pubKey ?? '');
     setOwnEncPrivKey(slot?.getRobot()?.encPrivKey ?? '');
