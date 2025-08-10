@@ -105,13 +105,6 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
     @JavascriptInterface
     fun copyToClipboard(message: String) {
-        // Validate input
-        if (!isValidInput(message)) {
-            Log.e(TAG, "Invalid input for copyToClipboard")
-            Toast.makeText(context, "Invalid content for clipboard", Toast.LENGTH_SHORT).show()
-            return
-        }
-
         try {
             // Copy to clipboard
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
