@@ -33,9 +33,9 @@ const StringAsIcons: React.FC<StringAsIconsProps> = ({
 
     // Adds icons for each PaymentMethod that matches
     methods.forEach((method, i) => {
-      const regex = new RegExp(`\\b${method.name.toLowerCase()}\\b`, 'g');
+      const regex = new RegExp(`\\b${method.name}\\b`, 'g');
 
-      if (regex.test(customMethods.toLowerCase())) {
+      if (regex.test(customMethods)) {
         customMethods = customMethods.replace(regex, '');
         rows.push(
           <Tooltip
