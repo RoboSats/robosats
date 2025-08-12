@@ -65,7 +65,7 @@ jobs:
         path: |
           desktopApp/static
           desktopApp/*.html
-    - name: 'Archive Django Static Build Results'
+    - name: 'Archive Web Static Build Results'
       uses: actions/upload-artifact@v4
       with:
         name: web-main-static

@@ -91,14 +91,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         robosatsSettings: 'selfhosted-pro',
         basePath: '/',
       }),
-      new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../nodeapp/static'),
-          },
-        ],
-      }),
+
       // Desktop App
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -111,14 +104,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         robosatsSettings: 'desktop-basic',
         basePath: '/',
       }),
-      new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../desktopApp/static'),
-          },
-        ],
-      }),
+
       // Web App
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -142,11 +128,23 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         robosatsSettings: 'web-pro',
         basePath: '/',
       }),
+
       new CopyWebpackPlugin({
         patterns: [
+          // Copy to nodeapp
           {
             from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../web/static'),
+            to: path.resolve(__dirname, '../../../nodeapp/static'),
+          },
+          // Copy to desktopApp
+          {
+            from: path.resolve(__dirname, 'static'),
+            to: path.resolve(__dirname, '../../../desktopApp/static'),
+          },
+          // Copy to web
+          {
+            from: path.resolve(__dirname, 'static'),
+            to: path.resolve(__dirname, '../../../web/static'),
           },
         ],
       }),
