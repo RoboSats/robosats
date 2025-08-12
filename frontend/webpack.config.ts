@@ -134,17 +134,17 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
           // Copy to nodeapp
           {
             from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../../../nodeapp/static'),
+            to: path.resolve(__dirname, '../nodeapp/static'),
           },
           // Copy to desktopApp
           {
             from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../../../desktopApp/static'),
+            to: path.resolve(__dirname, '../desktopApp/static'),
           },
           // Copy to web
           {
             from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../../../web/static'),
+            to: path.resolve(__dirname, '../web/static'),
           },
         ],
       }),
