@@ -139,7 +139,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
 
       {
         apply: (compiler: Compiler) => {
-          compiler.hooks.afterEmit.tapAsync('CopyFilesPlugin', (compilation, callback) => {
+          compiler.hooks.afterEmit.tapAsync('CopyFilesPlugin', (_compilation, callback) => {
             Promise.all(
               outputPaths.map((outputPath) => {
                 const sourceDir = path.resolve(__dirname, sourceBuild);
