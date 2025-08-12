@@ -42,6 +42,7 @@ jobs:
         npm install
     - name:  'Build'
       run: |
+        export NODE_OPTIONS="--max-old-space-size=4096"
         cd frontend
         npm run build
     - name: 'Archive Django Static Build Results'
@@ -65,7 +66,7 @@ jobs:
         path: |
           desktopApp/static
           desktopApp/*.html
-    - name: 'Archive Django Static Build Results'
+    - name: 'Archive Web Static Build Results'
       uses: actions/upload-artifact@v4
       with:
         name: web-main-static

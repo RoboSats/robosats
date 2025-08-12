@@ -1,12 +1,20 @@
 import path from 'path';
-import { Configuration } from 'webpack';
+import { Compiler, Configuration } from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { version } from './package.json';
 import { Buffer } from 'buffer';
+import fs from 'fs-extra';
 
 // Declare __dirname for TypeScript
 declare const __dirname: string;
+
+const sourceBuild = 'static/frontend';
+const outputPaths: string[] = [
+  path.resolve(__dirname, '../nodeapp/static'),
+  path.resolve(__dirname, '../desktopApp/static'),
+  path.resolve(__dirname, '../web/static'),
+];
 
 const config: Configuration = {
   entry: './src/index.js',
@@ -38,11 +46,11 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
   return {
     ...config,
     output: {
-      path: path.resolve(__dirname, 'static/frontend'),
+      path: path.resolve(__dirname, sourceBuild),
       filename:
         argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
       clean: true,
-      publicPath: '/static/frontend/',
+      publicPath: '/' + sourceBuild,
     },
     plugins: [
       // Django
@@ -91,14 +99,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         robosatsSettings: 'selfhosted-pro',
         basePath: '/',
       }),
-      new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../nodeapp/static'),
-          },
-        ],
-      }),
+
       // Desktop App
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -111,14 +112,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         robosatsSettings: 'desktop-basic',
         basePath: '/',
       }),
-      new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../desktopApp/static'),
-          },
-        ],
-      }),
+
       // Web App
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
@@ -142,14 +136,30 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         robosatsSettings: 'web-pro',
         basePath: '/',
       }),
-      new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: path.resolve(__dirname, 'static'),
-            to: path.resolve(__dirname, '../web/static'),
-          },
-        ],
-      }),
+
+      {
+        apply: (compiler: Compiler) => {
+          compiler.hooks.afterEmit.tapAsync('CopyFilesPlugin', (_compilation, callback) => {
+            Promise.all(
+              outputPaths.map((outputPath) => {
+                const sourceDir = path.resolve(__dirname, sourceBuild);
+                return fs
+                  .copy(sourceDir, outputPath)
+                  .then(() => {
+                    console.log(`Files copied to ${outputPath}`);
+                  })
+                  .catch((err) => {
+                    console.error(`Error copying files to ${outputPath}:`, err);
+                  });
+              }),
+            )
+              .then(() => {
+                callback();
+              })
+              .catch(callback);
+          });
+        },
+      },
     ],
   };
 };
