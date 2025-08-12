@@ -2,8 +2,24 @@ RoboSats v0.8.1-alpha is now out! :rocket:
 
 # Changes
 ## What's new
+
+**TL;DR**
+
 ### For Users
 -
+
+**Payment methods marked as reversible**
+
+-
+
+**New payment methods**
+
+-
+
+**Bugs**
+
+-
+
 ### For Coordinators
 -
 
