@@ -9,7 +9,6 @@ import fs from 'fs-extra';
 // Declare __dirname for TypeScript
 declare const __dirname: string;
 
-const sourceBuild = 'static/frontend';
 const outputPaths: string[] = [
   path.resolve(__dirname, '../nodeapp/static'),
   path.resolve(__dirname, '../desktopApp/static'),
@@ -46,11 +45,11 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
   return {
     ...config,
     output: {
-      path: path.resolve(__dirname, sourceBuild),
+      path: path.resolve(__dirname, 'static/frontend'),
       filename:
         argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
       clean: true,
-      publicPath: '/' + sourceBuild,
+      publicPath: '/static/frontend/',
     },
     plugins: [
       // Django
@@ -142,7 +141,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
           compiler.hooks.afterEmit.tapAsync('CopyFilesPlugin', (_compilation, callback) => {
             Promise.all(
               outputPaths.map((outputPath) => {
-                const sourceDir = path.resolve(__dirname, sourceBuild);
+                const sourceDir = path.resolve(__dirname, 'static');
                 return fs
                   .copy(sourceDir, outputPath)
                   .then(() => {
