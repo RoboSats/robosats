@@ -283,10 +283,10 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
                     systemClient.restart();
                   }}
                 >
-                  <ToggleButton value={true} color='primary' sx={{ flexGrow: 1 }}>
+                  <ToggleButton value={false} color='primary' sx={{ flexGrow: 1 }}>
                     {t('Orbot')}
                   </ToggleButton>
-                  <ToggleButton value={false} color='secondary' sx={{ flexGrow: 1 }}>
+                  <ToggleButton value={true} color='secondary' sx={{ flexGrow: 1 }}>
                     {t('Build-in')}
                   </ToggleButton>
                 </ToggleButtonGroup>
