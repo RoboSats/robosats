@@ -9,6 +9,7 @@ import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { Grid } from '@mui/system';
 import { GarageContext, UseGarageStoreType } from '../../../../contexts/GarageContext';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Props {
   event: Event;
@@ -75,7 +76,7 @@ const NotificationCard: React.FC<Props> = ({ event, robotHashId, coordinator, se
             enterNextDelay={2000}
             title={
               <>
-                {new Date(event.created_at).toLocaleString()}
+                {formatDistanceToNow(new Date(event.created_at * 1000), { addSuffix: true })}
                 <br />
                 {coordinator?.longAlias}
               </>

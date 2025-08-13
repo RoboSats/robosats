@@ -60,8 +60,8 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
         >
           {!coordinator?.loadingInfo
             ? coordinator?.info?.swap_enabled
-              ? t('Supports on-chain swaps.')
-              : t('Does not support on-chain swaps.')
+              ? t('On-chain swaps.')
+              : t('Not on-chain swaps.')
             : t('Loading coordinator info...')}
         </Alert>
       </Grid>

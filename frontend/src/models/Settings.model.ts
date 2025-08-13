@@ -54,11 +54,11 @@ class BaseSettings {
     });
 
     systemClient.getItem('settings_network').then((result) => {
-      this.network = result && result !== '' ? (result as 'mainnet' | 'testnet') : this.network;
+      this.network = result && result !== '' ? (result as 'mainnet' | 'testnet') : 'mainnet';
     });
 
     systemClient.getItem('settings_notifications').then((result) => {
-      this.androidNotifications = result === 'true';
+      this.androidNotifications = !result ? client === 'mobile' : result === 'true';
     });
 
     systemClient.getItem('settings_use_proxy').then((result) => {
@@ -80,7 +80,7 @@ class BaseSettings {
   public lightQRs: boolean = false;
   public language?: Language;
   public freezeViewports: boolean = false;
-  public network: 'mainnet' | 'testnet' = 'mainnet';
+  public network?: 'mainnet' | 'testnet';
   public connection: 'api' | 'nostr' = 'nostr';
   public host?: string;
   public unsafeClient: boolean = false;

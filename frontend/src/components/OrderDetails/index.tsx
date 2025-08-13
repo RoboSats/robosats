@@ -27,7 +27,15 @@ import {
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
 import currencies from '../../../static/assets/currencies.json';
-import { AccessTime, PriceChange, Payments, HourglassTop, Map, Warning } from '@mui/icons-material';
+import {
+  AccessTime,
+  PriceChange,
+  Payments,
+  HourglassTop,
+  Map,
+  Warning,
+  Tag,
+} from '@mui/icons-material';
 import { fiatMethods, PaymentStringAsIcons, swapMethods } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
@@ -188,7 +196,9 @@ const OrderDetails = ({
     const rate = Number(order.max_amount ?? order.amount) / btc_now;
 
     if (isBuyer) {
-      if (order.amount && order.amount > 0) {
+      if (order.invoice_amount) {
+        sats = pn(order.invoice_amount);
+      } else if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: -tradeFee,
@@ -218,7 +228,9 @@ const OrderDetails = ({
         amount: sats,
       });
     } else {
-      if (order.amount && order.amount > 0) {
+      if (order.escrow_satoshis) {
+        sats = pn(order.escrow_satoshis);
+      } else if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: tradeFee,
@@ -282,7 +294,7 @@ const OrderDetails = ({
           }}
         >
           <Grid container direction='row' justifyContent='center' alignItems='center'>
-            <Grid item sx={{ width: '64px' }}>
+            <Grid item sx={{ width: '20%' }}>
               <RobotAvatar
                 shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
                 hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
@@ -294,9 +306,15 @@ const OrderDetails = ({
                 }}
               />
             </Grid>
-            <Grid item>
+            <Grid item sx={{ width: '50%' }}>
               <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
             </Grid>
+            <ListItem style={{ width: '30%' }}>
+              <ListItemIcon>
+                <Tag />
+              </ListItemIcon>
+              <ListItemText primary={currentOrder?.id} secondary={t('ID')} />
+            </ListItem>
           </Grid>
         </ListItemButton>
         <ListItem>
@@ -313,8 +331,8 @@ const OrderDetails = ({
             >
               {!coordinator?.loadingInfo
                 ? coordinator?.info?.swap_enabled
-                  ? t('Supports on-chain swaps.')
-                  : t('Does not support on-chain swaps.')
+                  ? t('On-chain swaps.')
+                  : t('Not on-chain swaps.')
                 : t('Loading coordinator info...')}
             </Alert>
           </Grid>

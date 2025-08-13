@@ -1,9 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton, LinearProgress, TextField, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
-import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { validateTokenEntropy } from '../../utils';
 
 interface TokenInputProps {
@@ -36,7 +35,6 @@ const TokenInput = ({
   error,
 }: TokenInputProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [showCopied, setShowCopied] = useState<boolean>(false);
   const [badToken, setBadToken] = useState<string>('');
 
@@ -92,14 +90,13 @@ const TokenInput = ({
             <Tooltip open={showCopied} title={t('Copied!')}>
               <IconButton
                 autoFocus={autoFocusTarget === 'copyButton'}
-                color={garage.getSlot()?.copiedToken ? 'inherit' : 'primary'}
+                color='inherit'
                 onClick={() => {
                   systemClient.copyToClipboard(inputToken);
                   setShowCopied(true);
                   setTimeout(() => {
                     setShowCopied(false);
                   }, 1000);
-                  garage.updateSlot({ copiedToken: true }, inputToken);
                 }}
               >
                 <ContentCopy sx={{ width: '1em', height: '1em' }} />

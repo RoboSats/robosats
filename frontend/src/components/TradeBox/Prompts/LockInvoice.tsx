@@ -85,31 +85,29 @@ export const LockInvoicePrompt = ({
       )}
 
       <Grid item xs={12}>
-        <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-          <Box
-            sx={{
-              display: 'flex',
-              backgroundColor: settings.lightQRs ? '#fff' : theme.palette.background.paper,
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0.5em',
-              borderRadius: '0.3em',
-              border: '1px solid',
-              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-              '&:hover': {
-                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-              },
-            }}
-          >
-            <QRCode
-              bgColor={'rgba(255, 255, 255, 0)'}
-              fgColor={settings.lightQRs ? '#000000' : theme.palette.text.primary}
-              value={invoice?.toUpperCase() ?? 'Undefined: BOLT11 invoice not received'}
-              size={theme.typography.fontSize * 21.8}
-              onClick={handleClickQR}
-            />
-          </Box>
-        </Tooltip>
+        <Box
+          sx={{
+            display: 'flex',
+            backgroundColor: settings.lightQRs ? '#fff' : theme.palette.background.paper,
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.5em',
+            borderRadius: '0.3em',
+            border: '1px solid',
+            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+            '&:hover': {
+              borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+            },
+          }}
+        >
+          <QRCode
+            bgColor={'rgba(255, 255, 255, 0)'}
+            fgColor={settings.lightQRs ? '#000000' : theme.palette.text.primary}
+            value={invoice?.toUpperCase() ?? 'Undefined: BOLT11 invoice not received'}
+            size={theme.typography.fontSize * 21.8}
+            onClick={handleClickQR}
+          />
+        </Box>
       </Grid>
       <Grid item xs={12}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>

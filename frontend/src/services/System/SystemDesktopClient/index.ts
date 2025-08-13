@@ -39,6 +39,8 @@ class SystemDesktopClient implements SystemClient {
   public deleteItem: (key: string) => void = (key) => {
     window.sessionStorage.removeItem(key);
   };
+
+  public restart: () => void = () => {};
 }
 
 export default SystemDesktopClient;

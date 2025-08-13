@@ -28,6 +28,7 @@ interface AndroidAppRobosats {
     headers: string,
     body: string,
   ) => void;
+  restart: () => void;
 }
 
 class AndroidRobosats {

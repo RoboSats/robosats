@@ -20,7 +20,6 @@ import { type UseGarageStoreType, GarageContext } from '../../../contexts/Garage
 import { MoreHoriz, Key, Handshake, Balance } from '@mui/icons-material';
 import AuditPGPDialog from '../../Dialogs/AuditPGP';
 import { ExportIcon } from '../../Icons';
-import { systemClient } from '../../../services/System';
 import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 
 interface ChatPromptProps {
@@ -61,6 +60,7 @@ export const ChatPrompt = ({
   const [undoSentButton, setUndoSentButton] = useState<boolean>(false);
   const [audit, setAudit] = useState<boolean>(false);
   const [peerPubKey, setPeerPubKey] = useState<string>();
+  const [enableCollaborativeButton, setEnableCollaborativeButton] = useState<boolean>(false);
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
@@ -93,6 +93,8 @@ export const ChatPrompt = ({
 
     if (order.status === 9) {
       // No fiat sent yet
+      setEnableCollaborativeButton(true);
+
       if (order.is_buyer) {
         setSentButton(true);
         setReceivedButton(false);
@@ -118,6 +120,8 @@ export const ChatPrompt = ({
       }
     } else if (order.status === 10) {
       // Fiat has been sent already
+      setEnableCollaborativeButton(false);
+
       if (order.is_buyer) {
         setSentButton(false);
         setUndoSentButton(true);
@@ -262,11 +266,9 @@ export const ChatPrompt = ({
               <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
                 <Button
                   fullWidth
-                  onClick={() => {
-                    return client === 'mobile'
-                      ? systemClient.copyToClipboard(JSON.stringify(createJsonFile()))
-                      : saveAsJson(`complete_log_chat_${order.id}.json`, createJsonFile());
-                  }}
+                  onClick={() =>
+                    saveAsJson(`complete_log_chat_${order.id}.json`, createJsonFile(), client)
+                  }
                   variant='contained'
                   color='primary'
                   size='large'
@@ -304,21 +306,28 @@ export const ChatPrompt = ({
                 </Grid>
               </Tooltip>
 
-              <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
-                <Button
-                  fullWidth
-                  onClick={() => {
-                    setOpenOrderOptions(false);
-                    onClickCollabCancel();
-                  }}
-                  size='large'
-                  variant='contained'
-                  color='secondary'
-                  startIcon={<Handshake />}
-                >
-                  {t('Collaborative Cancel')}
-                </Button>
-              </Grid>
+              <Tooltip
+                placement='top'
+                enterTouchDelay={0}
+                title={t("Orders can't be cancelled if fiat has been sent.")}
+              >
+                <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                  <Button
+                    fullWidth
+                    onClick={() => {
+                      setOpenOrderOptions(false);
+                      onClickCollabCancel();
+                    }}
+                    size='large'
+                    variant='contained'
+                    color='secondary'
+                    startIcon={<Handshake />}
+                    disabled={!enableCollaborativeButton}
+                  >
+                    {t('Collaborative Cancel')}
+                  </Button>
+                </Grid>
+              </Tooltip>
             </Grid>
           </DialogContent>
         </DialogContent>

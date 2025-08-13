@@ -117,6 +117,11 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
             )
           }
         />
+        {(robot?.earnedRewards ?? 0) > 0 && (
+          <ListItemIcon>
+            <EmojiEvents />
+          </ListItemIcon>
+        )}
       </ListItemButton>
       <Dialog open={openOptions} key={coordinator.shortAlias} onClose={() => setOpenOptions(false)}>
         <DialogContent>

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, ClipboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -151,6 +151,7 @@ export const LightningPayoutForm = ({
   // filter lnproxies when the network settings are updated
   let bitcoinNetwork: string = 'mainnet';
   let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
+
   useEffect(() => {
     bitcoinNetwork = settings?.network ?? 'mainnet';
     if (settings.host?.includes('.i2p') === true) {
@@ -281,6 +282,28 @@ export const LightningPayoutForm = ({
       text = 'Too high! (That is more than 1%)';
     }
     return text;
+  };
+
+  const handlePasteProxy = (e: ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text');
+    setLightning({ ...lightning, lnproxyInvoice: pastedData ?? '' });
+
+    setTimeout(() => {
+      const input = document.getElementById('proxy-textfield') as HTMLInputElement;
+      input.setSelectionRange(0, 0);
+    }, 0);
+  };
+
+  const handlePasteInvoice = (e: ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text');
+    setLightning({ ...lightning, invoice: pastedData ?? '' });
+
+    setTimeout(() => {
+      const input = document.getElementById('invoice-textfield') as HTMLInputElement;
+      input.setSelectionRange(0, 0);
+    }, 0);
   };
 
   return (
@@ -520,6 +543,7 @@ export const LightningPayoutForm = ({
             <Grid item>
               {lightning.useLnproxy ? (
                 <TextField
+                  id='proxy-textfield'
                   fullWidth
                   disabled={!lightning.useLnproxy}
                   error={lightning.badLnproxy !== ''}
@@ -532,11 +556,13 @@ export const LightningPayoutForm = ({
                   onChange={(e) => {
                     setLightning({ ...lightning, lnproxyInvoice: e.target.value ?? '' });
                   }}
+                  onPaste={(e) => handlePasteProxy(e)}
                 />
               ) : (
                 <></>
               )}
               <TextField
+                id='invoice-textfield'
                 fullWidth
                 sx={lightning.useLnproxy ? { borderRadius: 0 } : {}}
                 disabled={lightning.useLnproxy}
@@ -551,6 +577,7 @@ export const LightningPayoutForm = ({
                 onChange={(e) => {
                   setLightning({ ...lightning, invoice: e.target.value ?? '' });
                 }}
+                onPaste={(e) => handlePasteInvoice(e, false)}
               />
             </Grid>
 

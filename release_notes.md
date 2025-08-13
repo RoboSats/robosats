@@ -2,19 +2,35 @@ RoboSats v0.8.1-alpha is now out! :rocket:
 
 # Changes
 ## What's new
+
+**TL;DR**
+
 ### For Users
 -
+
+**Payment methods marked as reversible**
+
+-
+
+**New payment methods**
+
+-
+
+**Bugs**
+
+-
+
 ### For Coordinators
 -
 
 # Android
 
-**[Click to download universal RoboSats APK for Android](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-v0.8.1.alpha-universal.apk)**
+**[Click to download universal RoboSats APK for Android](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-v0.8.1.alpha-universal.short_sha.apk)**
 Smaller bundles for each CPU architecture available in the attachments.
 
 ### Verify the app using GPG:
 
-1. [Download the ascii armored signature](https://github.com/Reckless-Satoshi/robosats/releases/download/v0.8.1-alpha/robosats-v0.8.1.alpha-universal.apk.asc)
+1. [Download the ascii armored signature](https://github.com/Reckless-Satoshi/robosats/releases/download/v0.8.1-alpha/robosats-v0.8.1.alpha-universal.short_sha.apk.asc)
 
 2. Run this command on a directory that contains the apk file and and the ascii armored signature.
 `gpg --verify robosats-v0.8.1.alpha-universal.apk.asc`
@@ -28,17 +44,17 @@ Additionally, you can download it from [Izzysoft repository](https://apt.izzysof
 **Download the Desktop App zip file**
 Find the zip file that suits with your operative system:
 
-- [Windows](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-win32-ia32.zip)
-- [Mac](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-mac-darwin-x64.zip)
-- [Linux](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-linux-x64.zip)
+- [Windows](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-win32-ia32.short_sha.zip)
+- [Mac](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-mac-darwin-x64.short_sha.zip)
+- [Linux](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-linux-x64.short_sha.zip)
 
 ### Verify the app using GPG:
 
 1. Download the ascii armored signature:
 
-- [Windows](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-win32-ia32.zip.asc)
-- [Mac](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-mac-darwin-x64.zip.asc)
-- [Linux](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-linux-x64.zip.asc)
+- [Windows](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-win32-ia32.short_sha.zip.asc)
+- [Mac](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-mac-darwin-x64.short_sha.zip.asc)
+- [Linux](https://github.com/RoboSats/robosats/releases/download/v0.8.1-alpha/robosats-desktop-v0.8.1.alpha-linux-x64.short_sha.zip.asc)
 
 3. Run this command on a directory that contains the apk file and and the ascii armored signature.
 `gpg --verify robosats-v0.8.1.alpha-....asc`

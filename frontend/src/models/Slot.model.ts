@@ -47,7 +47,6 @@ class Slot {
       return acc;
     }, {});
 
-    this.copiedToken = false;
     this.onSlotUpdate();
   }
 
@@ -57,15 +56,11 @@ class Slot {
   robots: Record<string, Robot>;
   activeOrder: Order | null = null;
   lastOrder: Order | null = null;
-  copiedToken: boolean;
   nostrSecKey?: Uint8Array;
   nostrPubKey?: string;
+  availableRewards: string | null = null;
 
   onSlotUpdate: () => void;
-
-  setCopiedToken = (copied: boolean): void => {
-    this.copiedToken = copied;
-  };
 
   // Robots
   getRobot = (shortAlias?: string): Robot | null => {
@@ -105,6 +100,14 @@ class Slot {
         shortAlias: robot.shortAlias,
       });
     }
+
+    this.availableRewards =
+      robot.earnedRewards != undefined && robot.earnedRewards > 0
+        ? robot.shortAlias
+        : this.availableRewards === robot.shortAlias
+          ? null
+          : this.availableRewards;
+
     this.onSlotUpdate();
   };
 
