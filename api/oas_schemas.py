@@ -37,6 +37,10 @@ class MakerViewSchema:
             400: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",
@@ -46,6 +50,10 @@ class MakerViewSchema:
             409: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",
@@ -138,6 +146,10 @@ class OrderViewSchema:
             400: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",
@@ -147,6 +159,10 @@ class OrderViewSchema:
             403: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",
@@ -157,6 +173,10 @@ class OrderViewSchema:
             404: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",
@@ -168,22 +188,18 @@ class OrderViewSchema:
         "examples": [
             OpenApiExample(
                 "Order cancelled",
-                value={"bad_request": "This order has been cancelled"},
+                value={"error_code": 1043, "bad_request": "This order has been cancelled"},
                 status_codes=[400],
             ),
             OpenApiExample(
                 "When the order is not public and you neither the taker nor maker",
-                value={"bad_request": "This order is not available"},
-                status_codes=[400],
-            ),
-            OpenApiExample(
-                "Order cancelled",
-                value={"bad_request": "This order has been cancelled"},
+                value={"error_code": 1044, "bad_request": "This order is not available"},
                 status_codes=[400],
             ),
             OpenApiExample(
                 "When maker bond expires (as maker)",
                 value={
+                    "error_code": 1022,
                     "bad_request": "Invoice expired. You did not confirm publishing the order in time. Make a new order."
                 },
                 status_codes=[400],
@@ -191,6 +207,7 @@ class OrderViewSchema:
             OpenApiExample(
                 "When Robosats node is down",
                 value={
+                    "error_code": 1023,
                     "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
                 },
                 status_codes=[400],
@@ -333,6 +350,10 @@ class OrderViewSchema:
             400: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",
@@ -344,6 +365,7 @@ class OrderViewSchema:
             OpenApiExample(
                 "User not authenticated",
                 value={
+                    "error_code": 1036,
                     "bad_request": "Woops! It seems you do not have a robot avatar",
                 },
                 status_codes=[400],
@@ -587,6 +609,10 @@ class RewardViewSchema:
                                 "type": "boolean",
                                 "default": False,
                             },
+                            "error_code": {
+                                "type": "integer",
+                                "description": "Error code",
+                            },
                             "bad_request": {
                                 "type": "string",
                                 "description": "More context for the reason of the failure",
@@ -600,6 +626,7 @@ class RewardViewSchema:
             OpenApiExample(
                 "User not authenticated",
                 value={
+                    "error_code": 1036,
                     "bad_request": "Woops! It seems you do not have a robot avatar",
                 },
                 status_codes=[400],
@@ -685,6 +712,7 @@ class TickViewSchema:
             OpenApiExample(
                 "Too many ticks",
                 value={
+                    "error_code": 1051,
                     "bad_request": "More than 5000 market ticks have been found. Try narrowing the date range."
                 },
                 status_codes=[400],
@@ -783,6 +811,10 @@ class StealthViewSchema:
             400: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",
@@ -802,6 +834,10 @@ class ReviewViewSchema:
             400: {
                 "type": "object",
                 "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "Error code",
+                    },
                     "bad_request": {
                         "type": "string",
                         "description": "Reason for the failure",

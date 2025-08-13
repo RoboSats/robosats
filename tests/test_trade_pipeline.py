@@ -278,6 +278,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         self.assertResponse(trade.response)
 
+        self.assertEqual(data["error_code"], 1010)
         self.assertEqual(
             data["bad_request"], "The coordinator does not support orders in AGO"
         )
@@ -515,12 +516,14 @@ class TradeTest(BaseAPITestCase):
         trade.take_order()
         data = trade.response.json()
         self.assertEqual(trade.response.status_code, 403)
+        self.assertEqual(data["error_code"], 1045)
         self.assertEqual(data["bad_request"], "Wrong password")
 
         # Take with wrong password
         trade.take_password_order("test")
         data = trade.response.json()
         self.assertEqual(trade.response.status_code, 403)
+        self.assertEqual(data["error_code"], 1045)
         self.assertEqual(data["bad_request"], "Wrong password")
 
         # Take with right password
@@ -759,6 +762,7 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
 
         self.assertEqual(trade.response.status_code, 403)
+        self.assertEqual(data["error_code"], 1044)
         self.assertEqual(data["bad_request"], "This order is not available")
 
         # Maker cancels order to avoid leaving pending HTLCs after a successful test
@@ -1074,6 +1078,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         self.assertResponse(trade.response)
 
+        self.assertEqual(data["error_code"], 1043)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
@@ -1182,14 +1187,17 @@ class TradeTest(BaseAPITestCase):
 
         trade.cancel_order(trade.maker_index)
         data = trade.response.json()
+        self.assertEqual(data["error_code"], 1043)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         trade.get_order(trade.taker_index)
         data = trade.response.json()
+        self.assertEqual(data["error_code"], 1043)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         trade.get_order(trade.third_index)
         data = trade.response.json()
+        self.assertEqual(data["error_code"], 1043)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
     def test_cancel_order_cancel_status(self):
@@ -1211,10 +1219,9 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         self.assertResponse(trade.response)
 
-        self.assertEqual(
-            trade.response.json()["bad_request"],
-            "This order has been cancelled",
-        )
+        data = trade.response.json()
+        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
     def test_cancel_order_different_cancel_status(self):
         """
@@ -1237,8 +1244,10 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         self.assertResponse(trade.response)
 
+        data = trade.response.json()
+        self.assertEqual(data["error_code"], 1020)
         self.assertEqual(
-            trade.response.json()["bad_request"],
+            data["bad_request"],
             f"Current order status is {Order.Status.PAU}, not {Order.Status.PUB}.",
         )
 
@@ -1273,10 +1282,9 @@ class TradeTest(BaseAPITestCase):
         trade.cancel_order(trade.taker_index)
         self.assertEqual(trade.response.status_code, 400)
         self.assertResponse(trade.response)
-        self.assertEqual(
-            trade.response.json()["bad_request"],
-            "This order has been cancelled",
-        )
+        data = trade.response.json()
+        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
         maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")

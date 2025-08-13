@@ -10,6 +10,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from api.errors import new_error
 from api.models import Order
 from api.tasks import send_notification
 from chat.models import ChatRoom, Message
@@ -45,24 +46,15 @@ class ChatView(viewsets.ViewSet):
         offset = request.GET.get("offset", 0)
 
         if order_id is None:
-            return Response(
-                {"bad_request": "Order ID does not exist"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)
 
         order = Order.objects.get(id=order_id)
 
         if not (request.user == order.maker or request.user == order.taker):
-            return Response(
-                {"bad_request": "You are not participant in this order"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(6001), status.HTTP_400_BAD_REQUEST)
 
         if order.status not in [Order.Status.CHA, Order.Status.FSE]:
-            return Response(
-                {"bad_request": "Order is not in chat status"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(6002), status.HTTP_400_BAD_REQUEST)
 
         queryset = Message.objects.filter(order=order, index__gt=offset)
         chatroom, created = ChatRoom.objects.get_or_create(
@@ -124,30 +116,20 @@ class ChatView(viewsets.ViewSet):
         serializer = PostMessageSerializer(data=request.data)
         # Return bad request if serializer is not valid
         if not serializer.is_valid():
-            context = {"bad_request": "Invalid serializer"}
-            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+            return Response(new_error(6003), status=status.HTTP_400_BAD_REQUEST)
 
         order_id = serializer.data.get("order_id")
 
         if order_id is None:
-            return Response(
-                {"bad_request": "Order ID does not exist"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)
 
         order = Order.objects.get(id=order_id)
 
         if not (request.user == order.maker or request.user == order.taker):
-            return Response(
-                {"bad_request": "You are not participant in this order"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(6001), status.HTTP_400_BAD_REQUEST)
 
         if order.status not in [Order.Status.CHA, Order.Status.FSE]:
-            return Response(
-                {"bad_request": "Order is not in chat status"},
-                status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(new_error(6002), status.HTTP_400_BAD_REQUEST)
 
         if order.maker == request.user:
             sender = order.maker
