@@ -87,8 +87,6 @@ class Order {
   longitude: number = 0;
   password: string | undefined = undefined;
   premium_now: number | undefined = undefined;
-  premium_percentile: number = 0;
-  num_similar_orders: number = 0;
   tg_enabled: boolean = false; // deprecated
   tg_token: string = '';
   tg_bot_name: string = '';

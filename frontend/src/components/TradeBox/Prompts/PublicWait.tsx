@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   List,
@@ -15,6 +15,7 @@ import { LoadingButton } from '@mui/lab';
 import currencies from '../../../../static/assets/currencies.json';
 
 import { type Order } from '../../../models';
+import { FederationContext, type UseFederationStoreType } from '../../../contexts/FederationContext';
 import { PauseCircle, Storefront, Percent } from '@mui/icons-material';
 
 interface PublicWaitPrompProps {
@@ -29,6 +30,8 @@ export const PublicWaitPrompt = ({
   onClickPauseOrder,
 }: PublicWaitPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
+
   const currencyCode = currencies[order.currency.toString()];
 
   const depositHoursMinutes = function (): {
@@ -40,6 +43,32 @@ export const PublicWaitPrompt = ({
     const dict = { deposit_timer_hours: hours, deposit_timer_minutes: minutes };
     return dict;
   };
+
+  const numSimilarOrders = useMemo((): number => {
+    const orders = Object.values(federation.book) ?? [];
+    const similarOrders = orders.filter(bookOrder =>
+      // Public -> 1
+      bookOrder?.currency == order.currency && order.status == 1
+    );
+    return similarOrders.length;
+  }, [federationUpdatedAt]);
+
+  const premiumPercentile = useMemo((): number => {
+    const orders = Object.values(federation.book) ?? [];
+    const querySet = orders.filter(bookOrder =>
+      bookOrder?.currency == order.currency && order.status == 1 && bookOrder.type == order.type
+    );
+
+    if (querySet.length <= 1) {
+      return 0.5;
+    }
+
+    const premiums = querySet.map(similarOrder => parseFloat(similarOrder?.premium ?? '0'));
+    const sumPremium = premiums.reduce((sum, rate) => sum + (rate < order.premium ? 1 : 0), 0);
+    const percentile = (sumPremium / premiums.length) * 100;
+    
+    return Math.floor(parseFloat(percentile.toFixed(2)));
+  }, [federationUpdatedAt]);
 
   return (
     <List dense={true}>
@@ -69,7 +98,7 @@ export const PublicWaitPrompt = ({
               <Storefront />
             </ListItemIcon>
             <ListItemText
-              primary={order.num_similar_orders}
+              primary={numSimilarOrders}
               secondary={t('Public orders for {{currencyCode}}', {
                 currencyCode,
               })}
@@ -102,7 +131,7 @@ export const PublicWaitPrompt = ({
           <Percent />
         </ListItemIcon>
         <ListItemText
-          primary={`${t('Premium rank')} ${Math.floor(order.premium_percentile * 100)}%`}
+          primary={`${t('Premium rank')} ${premiumPercentile}%`}
           secondary={t('Among public {{currencyCode}} orders (higher is cheaper)', {
             currencyCode,
           })}

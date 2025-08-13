@@ -59,7 +59,6 @@ from api.serializers import (
 )
 from api.utils import (
     compute_avg_premium,
-    compute_premium_percentile,
     get_cln_version,
     get_lnd_version,
     get_robosats_commit,
@@ -268,19 +267,6 @@ class OrderView(viewsets.ViewSet):
                 )
             else:
                 data["satoshis_now"] = Logics.satoshis_now(order)
-
-            # 4. a) If maker and Public/Paused, add premium percentile
-            # num similar orders, and maker information to enable telegram notifications.
-            if data["is_maker"] and order.status in [
-                Order.Status.PUB,
-                Order.Status.PAU,
-            ]:
-                data["premium_percentile"] = compute_premium_percentile(order)
-                data["num_similar_orders"] = len(
-                    Order.objects.filter(
-                        currency=order.currency, status=Order.Status.PUB
-                    )
-                )
 
         # For participants add positions, nicks and status as a message and hold invoices status
         data["is_buyer"] = Logics.is_buyer(order, request.user)
@@ -568,7 +554,6 @@ class OrderView(viewsets.ViewSet):
 
         # 3) If action is 'update invoice'
         elif action == "update_invoice":
-            # DEPRECATE post v0.5.1.
             valid_signature, invoice = verify_signed_message(
                 request.user.robot.public_key, pgp_invoice
             )
@@ -620,7 +605,7 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 7) If action is rate
+        # 7) If action is rate_user
         elif action == "rate_user" and rating:
             """No user rating"""
             pass
@@ -631,7 +616,7 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 9) If action is rate_platform
+        # 9) If action is pause
         elif action == "pause":
             valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:
@@ -820,7 +805,6 @@ class InfoView(viewsets.ViewSet):
         context["node_alias"] = config("NODE_ALIAS")
         context["node_id"] = config("NODE_ID")
         context["network"] = config("NETWORK", cast=str, default="mainnet")
-        context["maker_fee"] = float(config("FEE")) * float(config("MAKER_FEE_SPLIT"))
         context["maker_fee"] = float(config("FEE")) * float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE")) * (
             1 - float(config("MAKER_FEE_SPLIT"))

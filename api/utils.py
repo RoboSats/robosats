@@ -304,33 +304,6 @@ def get_robosats_commit():
     return commit_hash
 
 
-premium_percentile = {}
-
-
-@ring.dict(premium_percentile, expire=300)
-def compute_premium_percentile(order):
-    queryset = Order.objects.filter(
-        currency=order.currency, status=Order.Status.PUB, type=order.type
-    ).exclude(id=order.id)
-
-    if len(queryset) <= 1:
-        return 0.5
-
-    amount = order.amount if not order.has_range else order.max_amount
-    order_rate = float(order.last_satoshis) / float(amount)
-    rates = []
-    for similar_order in queryset:
-        similar_order_amount = (
-            similar_order.amount
-            if not similar_order.has_range
-            else similar_order.max_amount
-        )
-        rates.append(float(similar_order.last_satoshis) / float(similar_order_amount))
-
-    rates = np.array(rates)
-    return round(np.sum(rates < order_rate) / len(rates), 2)
-
-
 def weighted_median(values, sample_weight=None, quantiles=0.5, values_sorted=False):
     """Very close to numpy.percentile, but it supports weights.
     NOTE: quantiles should be in [0, 1]!

@@ -237,14 +237,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     premium_now = serializers.FloatField(
         required=False, help_text="Premium over the CEX price at the current time"
     )
-    premium_percentile = serializers.FloatField(
-        required=False,
-        help_text="(Only if `is_maker`) Premium percentile of your order compared to other public orders in the same currency currently in the order book",
-    )
-    num_similar_orders = serializers.IntegerField(
-        required=False,
-        help_text="(Only if `is_maker`) The number of public orders of the same currency currently in the order book",
-    )
     tg_enabled = serializers.BooleanField(
         required=False,
         help_text="(Only if `is_maker`) Whether Telegram notification is enabled or not",
@@ -446,8 +438,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "maker_status",
             "taker_status",
             "price_now",
-            "premium_percentile",
-            "num_similar_orders",
             "tg_enabled",
             "tg_token",
             "tg_bot_name",

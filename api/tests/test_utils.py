@@ -8,7 +8,6 @@ from api.models import Order
 from api.utils import (
     base91_to_hex,
     bitcoind_rpc,
-    compute_premium_percentile,
     get_cln_version,
     get_exchange_rates,
     get_lnd_version,
@@ -122,43 +121,6 @@ class TestUtils(TestCase):
 
         # Assert that the read method of the file object was called
         mock_file().read.assert_called_once()
-
-    @patch("api.utils.Order.objects.filter")
-    def test_compute_premium_percentile(self, mock_filter):
-        # Mock the filter method to return a mock queryset
-        mock_queryset = MagicMock()
-        mock_filter.return_value = mock_queryset
-
-        # Mock the exclude method of the queryset to return the same mock queryset
-        mock_queryset.exclude.return_value = mock_queryset
-
-        # Mock the count method of the queryset to return a specific number
-        mock_queryset.count.return_value = 2
-
-        # Mock the order object
-        order = MagicMock()
-        order.currency = "USD"
-        order.status = Order.Status.PUB
-        order.type = "type"
-        order.id = 1
-        order.amount = 1000
-        order.has_range = False
-        order.max_amount = 2000
-        order.last_satoshis = 10000
-
-        # Call the compute_premium_percentile function with the mock order object
-        percentile = compute_premium_percentile(order)
-
-        # Assert that the function returns a float
-        self.assertIsInstance(percentile, float)
-
-        # Assert that the filter method of the queryset was called with the correct arguments
-        mock_filter.assert_called_once_with(
-            currency=order.currency, status=Order.Status.PUB, type=order.type
-        )
-
-        # Assert that the exclude method of the queryset was called with the correct arguments
-        mock_queryset.exclude.assert_called_once_with(id=order.id)
 
     def test_weighted_median(self):
         values = [1, 2, 3, 4, 5]
