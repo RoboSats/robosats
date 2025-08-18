@@ -34,7 +34,11 @@ import { systemClient } from '../../../services/System';
 
 import lnproxies from '../../../../static/lnproxies.json';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+
 let filteredProxies: Array<Record<string, object>> = [];
+
+const lightningPrefix: string = 'lightning:';
+
 export interface LightningForm {
   invoice: string;
   amount: number;
@@ -132,18 +136,26 @@ export const LightningPayoutForm = ({
 
   useEffect(() => {
     if (lightning.invoice !== '') {
+      const invoice = lightning.invoice.startsWith(lightningPrefix) ? 
+        lightning.invoice.slice(lightningPrefix.length) : lightning.invoice;
+
       setLightning({
         ...lightning,
-        badInvoice: validateInvoice(lightning.invoice, lightning.amount),
+        invoice: invoice,
+        badInvoice: validateInvoice(invoice, lightning.amount),
       });
     }
   }, [lightning.invoice, lightning.amount]);
 
   useEffect(() => {
     if (lightning.lnproxyInvoice !== '') {
+      const invoice = lightning.lnproxyInvoice.startsWith(lightningPrefix) ? 
+        lightning.lnproxyInvoice.slice(lightningPrefix.length) : lightning.lnproxyInvoice;
+
       setLightning({
         ...lightning,
-        badLnproxy: validateInvoice(lightning.lnproxyInvoice, lightning.lnproxyAmount),
+        lnproxyInvoice: invoice,
+        badLnproxy: validateInvoice(invoice, lightning.lnproxyAmount),
       });
     }
   }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
