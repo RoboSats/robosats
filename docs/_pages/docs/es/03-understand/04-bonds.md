@@ -53,23 +53,21 @@ Básicamente, hay cinco condiciones que provocan que un usuario pierda su fianza
 
 Las condiciones anteriores se detallan más a continuación.
 
-Si el límite de tiempo para presentar la factura (comprador) o bloquear el fide
+Si el límite de tiempo para presentar la factura (comprador) o bloquear el fideicomiso (vendedor) se agota, la orden caducará y el robot que no cumplió con su parte del trato perderá la fianza. La mitad de la fianza perdida va al robot honesto como compensación por el tiempo perdido. Ganar como recompensa la fianza de tu contraparte es algo que solo ocurre en casos excepcionales y mayormente depende del criterio de tu coordinador para tu caso concreto. Las únicas situaciones en las que la mitad de la fianza de la contraparte se gana como recompensa es en aquellos casos en los que no se completa el depósito del intercambio (paso 2 para el vendedor), no se aporta una factura lightning para recibirlos (paso 2 para el comprador) o no se escribe absolutamente nada una vez abierto el chat. Por norma general, en RoboSats no se podrá ganar la fianza de la contraparte y siempre será criterio del coordinador hacer una excepción. En casos de negligencia clara o intento activo de estafa, cada coordinador investigará el caso concreto y podrá estimar el porcentaje de la fianza con la que recompensa a la contraparte. 
 
-icomiso (vendedor) se agota, la orden caducará y el robot que no cumplió con su parte del trato perderá la fianza. La mitad de la fianza perdida va al robot honesto como compensación por el tiempo perdido.
+Ten presente tu orden porque una vez que un robot la toma y bloquea su fianza de fidelidad, podrías perder tu fianza si el tiempo se agota. ¡Asegúrate de recordar tu orden y respalda el token de tu robot!
 
-Por lo tanto, no olvides tu orden porque una vez que un robot la toma y bloquea su fianza de fidelidad, podrías perder tu fianza si caduca el temporizador. ¡Asegúrate de recordar tu orden y respalda el token único de tu robot!
-
-Si recibiste fiat pero no haces clic en "Confirmar recepción de fiat" en tu extremo, corres el riesgo de perder tu fianza, ya que se abre automáticamente una disputa y el personal de RoboSats encontrará que no seguiste las reglas del contrato.
+Si recibiste fiat pero no haces clic en "Confirmar recepción de fiat" en tu extremo, corres el riesgo de perder tu fianza, ya que se abre automáticamente una disputa y el personal de RoboSats entenderá que no has seguido las reglas del contrato.
 
 Debido a los límites de tiempo involucrados en el proceso de orden, se recomienda utilizar métodos de pago instantáneo en fiat que ayuden a reducir las posibilidades de perder tu fianza. Consulta [Mejores prácticas > Métodos de pago](/docs/es/payment-methods/) para obtener información adicional.
 
-No se recomienda abrir una disputa solo para cancelar una orden porque uno de los dos comerciantes perderá su fianza de fidelidad, salvo casos excepcionales que quedan a discreción del personal de RoboSats.
+No se recomienda abrir una disputa solo para cancelar una orden porque uno de los dos comerciantes perderá su fianza de fidelidad, el otro no ganará nada y todos perderéis más tiempo. Únicamente abre disputa en casos de sospecha de estafa o si la otra parte no sigue las reglas. En casos excepcionales, podría ser que ninguno perdiera la fianza o que ambos lo hicieran. Esto quedan a discreción del personal de RoboSats.
 
 Como nota al margen, si RoboSats desaparece repentinamente o se cierra, las fianzas se desbloquean automáticamente ya que técnicamente nunca salieron de tu billetera.
 
 ## **¿No tienes bitcoin para las fianzas?**
 
-Debido a que las fianzas requieren una factura bloqueada de Lightning, ¿qué puedes hacer si no tienes bitcoin desde el principio? Aunque la fianza suele ser solo del 3% de tu monto total de transacción, esto presenta una barrera real para usar RoboSats por primera vez si tu pila de satoshis no existe.
+Debido a que las fianzas requieren una factura bloqueada de Lightning, ¿qué puedes hacer si no tienes bitcoin desde el principio? Aunque la fianza suele ser solo del 3% de tu monto total de transacción, esto presenta una barrera real para usar RoboSats por primera vez si no tienes satoshis acumulados .
 
 Actualmente, los tomadores sin fianza no están disponibles; sin embargo, ¡ten en cuenta que esto está en desarrollo! Los tomadores sin fianza presentan un mayor riesgo para el creador de la orden, ya que el tomador no tiene nada en juego. Puede ser razonable esperar primas más altas en órdenes que permiten tomadores sin fianza.
 
