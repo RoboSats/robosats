@@ -1,4 +1,4 @@
-FROM python:3.13.6-slim-bookworm
+FROM python:3.13.7-slim-bookworm
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEVELOPMENT=False
 
