@@ -14,9 +14,8 @@ services:
     container_name: dev-nginx
     restart: always
     volumes:
-      - ./:/usr/src/frontend
       - ../web:/usr/src/web
+      - ./static/frontend:/usr/src/web/static/frontend
       - ../web/nginx.conf:/etc/nginx/nginx.conf
-      - ../web/coordinators/:/etc/nginx/conf.d/
     ports:
       - 8888:80
