@@ -15,7 +15,7 @@ jobs:
       semver: ${{ steps.validate.outputs.semver }}
     steps:
     - name: 'Checkout'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: 'Validate versions match (tag, backend, frontend, Android)'
       id: validate
       shell: bash
@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get short SHA
         id: short-sha

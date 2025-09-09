@@ -19,7 +19,7 @@ jobs:
     name: 'Push Docker image to Docker Hub'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: 'Download Basic main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
