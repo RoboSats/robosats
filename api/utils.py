@@ -10,7 +10,6 @@ from base91 import decode, encode
 from decouple import config
 
 from api.errors import new_error
-from api.models import Order
 
 logger = logging.getLogger("api.utils")
 

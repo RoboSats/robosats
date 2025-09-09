@@ -21,7 +21,7 @@ import Countdown from 'react-countdown';
 import currencies from '../../../static/assets/currencies.json';
 
 import { type Order, type Info } from '../../models';
-import { ConfirmationDialog } from '../Dialogs';
+import { ConfirmationDialog, OrderDescriptionDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
@@ -40,9 +40,10 @@ interface TakeButtonProps {
 
 interface OpenDialogsProps {
   inactiveMaker: boolean;
+  description: boolean;
   confirmation: boolean;
 }
-const closeAll = { inactiveMaker: false, confirmation: false };
+const closeAll = { inactiveMaker: false, description: false, confirmation: false };
 
 const TakeButton = ({
   password,
@@ -117,7 +118,7 @@ const TakeButton = ({
           </Button>
           <Button
             onClick={() => {
-              setOpen({ inactiveMaker: false, confirmation: true });
+              setOpen({ inactiveMaker: false, description: true, confirmation: false });
             }}
           >
             {t('Sounds fine')}
@@ -181,9 +182,11 @@ const TakeButton = ({
 
   const onTakeOrderClicked = function (): void {
     if (currentOrder?.maker_status === 'Inactive') {
-      setOpen({ inactiveMaker: true, confirmation: false });
+      setOpen({ inactiveMaker: true, description: false, confirmation: false });
+    } else if (currentOrder?.description) {
+      setOpen({ inactiveMaker: false, description: true, confirmation: false });
     } else {
-      setOpen({ inactiveMaker: false, confirmation: true });
+      setOpen({ inactiveMaker: false, description: false, confirmation: true });
     }
   };
 
@@ -367,6 +370,14 @@ const TakeButton = ({
       ) : (
         <></>
       )}
+
+      <OrderDescriptionDialog
+        open={open.description}
+        onClose={() => setOpen({ ...open, description: false })}
+        onClickBack={() => setOpen({ ...open, description: false })}
+        onClickDone={() => setOpen({ ...open, description: false, confirmation: true })}
+        order={currentOrder}
+      />
 
       <ConfirmationDialog
         open={open.confirmation}
