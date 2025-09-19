@@ -1,19 +1,19 @@
 [versions]
-agp = "8.11.1"
-kotlin = "2.0.21"
-coreKtx = "1.16.0"
-securityCryptoKtx = "1.1.0-beta01"
+agp = "8.13.0"
+kotlin = "2.2.20"
+coreKtx = "1.17.0"
+securityCryptoKtx = "1.1.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
 appcompat = "1.7.1"
-material = "1.12.0"
-activity = "1.10.1"
+material = "1.13.0"
+activity = "1.11.0"
 constraintlayout = "2.2.1"
 kmpTor= "4.8.10-0-1.4.5"
 kmpTorBinary= "4.8.10-0"
-jna = "5.14.0"
-okhttp = "5.0.0-alpha.14"
+jna = "5.17.0"
+okhttp = "5.1.0"
 quartz = "0.92.7"
 
 [libraries]
@@ -28,8 +28,8 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 kmp-tor = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor", version.ref = "kmpTor" }
 kmp-tor-binary = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor-binary-extract-android", version.ref = "kmpTorBinary" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
-quartz = { module = "com.github.vitorpamplona.amethyst:quartz", version.ref = "quartz" }
-ammolite = { module = "com.github.vitorpamplona.amethyst:ammolite", version.ref = "quartz" }
+quartz = { module = "com.github.koalasat.amethyst:quartz", version.ref = "quartz" }
+ammolite = { module = "com.github.koalasat.amethyst:ammolite", version.ref = "quartz" }
 security-crypto-ktx = { module = "androidx.security:security-crypto-ktx", version.ref = "securityCryptoKtx" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 
