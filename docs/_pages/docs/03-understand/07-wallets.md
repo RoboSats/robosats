@@ -41,6 +41,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
 |[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
+|[Valet](#valet-mobile)|[4.4.4](https://valet.finance/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -108,6 +109,11 @@ Similar to Blixt or LND, Muun plays nicely with hold invoices. You can be a sell
 ### OBW (Mobile)
 One of the simplest and one of the best. The hodl invoice shows as "on fly", it is not custodial and can create your own channels. Buy one from a liquidity provider or use Hosted Channels. It is maintained by the great Fiatjaf and it is a fork of the abandoned SBW.
 *Update 26-10-23: At this moment it has no development or support
+
+### Valet (Mobile)
+Overall the wallet works exceptionally well with RoboSats. This self-custodial wallet offers one of the most straightforward and beginner-friendly user interfaces. Hold invoices are clearly displayed as "Pending" payments, making it easy to track transaction status. The wallet works seamlessly for both bonds and payouts.
+
+Valet is a fork of SBW wallet with a unique feature for its support for "Hosted Channels technology", which allows users to receive Sats without having to open traditional lightning channels. However, users can also choose to manage their own channels by connecting to any Lightning node of their choice. Available for Android mobile devices.
 
 ### Phoenix (Mobile)
 This wallet does not support invoice lock.
