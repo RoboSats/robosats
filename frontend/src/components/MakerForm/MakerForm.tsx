@@ -253,6 +253,7 @@ const MakerForm = ({
         longitude: maker.longitude,
         shortAlias: maker.coordinator,
         password: maker.password ? sha256(maker.password) : null,
+        description: maker.description ? maker.description : null,
       };
 
       void slot
@@ -291,6 +292,14 @@ const MakerForm = ({
     setMaker({
       ...maker,
       password: event.target.value,
+    });
+  };
+
+  const handleDescriptionChange = function (event: React.ChangeEvent<HTMLInputElement>): void {
+    setMaker({
+      ...maker,
+      description: event.target.value,
+      badDescription: event.target.value.length > 240,
     });
   };
 
@@ -395,7 +404,8 @@ const MakerForm = ({
       maker.badPremiumText !== '' ||
       federation.getCoordinator(maker.coordinator)?.limits === undefined ||
       typeof maker.premium !== 'number' ||
-      maker.paymentMethods.length === 0
+      maker.paymentMethods.length === 0 ||
+      maker.badDescription
     );
   }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
 
@@ -866,6 +876,30 @@ const MakerForm = ({
             />
           </Grid>
           <Collapse in={maker.advancedOptions} sx={{ width: '100%' }}>
+            <Grid item sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                label={`${t('Description')}`}
+                type='description'
+                value={maker.description}
+                style={{ marginBottom: 8 }}
+                inputProps={{
+                  style: {
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: 4,
+                  },
+                }}
+                onChange={handleDescriptionChange}
+              />
+            </Grid>
+
+            {maker.badDescription && (
+              <FormHelperText error={true}>
+                {t('Must be equal to or shorter than 240 characters')}
+              </FormHelperText>
+            )}
+
             <Grid item sx={{ width: '100%' }}>
               <TextField
                 fullWidth

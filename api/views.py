@@ -119,6 +119,7 @@ class MakerView(CreateAPIView):
         latitude = serializer.data.get("latitude")
         longitude = serializer.data.get("longitude")
         password = serializer.data.get("password")
+        description = serializer.data.get("description")
 
         # Optional params
         if public_duration is None:
@@ -166,6 +167,7 @@ class MakerView(CreateAPIView):
             latitude=latitude,
             longitude=longitude,
             password=password,
+            description=description,
         )
 
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
@@ -282,6 +284,7 @@ class OrderView(viewsets.ViewSet):
         data["is_disputed"] = order.is_disputed
         data["ur_nick"] = request.user.username
         data["satoshis_now"] = order.last_satoshis
+        data["description"] = order.description
 
         # Add whether hold invoices are LOCKED (ACCEPTED)
         # Is there a maker bond? If so, True if locked, False otherwise

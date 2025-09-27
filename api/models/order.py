@@ -173,6 +173,14 @@ class Order(models.Model):
         blank=True,
     )
 
+    # optionally makers can set a description to give more details about the contract terms
+    description = models.TextField(
+        max_length=240,
+        null=True,
+        default=None,
+        blank=True,
+    )
+
     # how many sats at creation and at last check (relevant for marked to market)
     t0_satoshis = models.PositiveBigIntegerField(
         null=True,

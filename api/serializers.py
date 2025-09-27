@@ -406,6 +406,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="The index of the last message sent in the trade chatroom",
     )
+    description = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="Order description",
+    )
 
     class Meta:
         model = Order
@@ -491,6 +496,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "chat_last_index",
+            "description",
         )
 
 
@@ -590,6 +596,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "password",
+            "description",
         )
 
 

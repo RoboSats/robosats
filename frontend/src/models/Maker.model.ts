@@ -22,6 +22,8 @@ export interface Maker {
   latitude: number | null;
   longitude: number | null;
   password: string | null;
+  description: string | null;
+  badDescription: boolean;
 }
 
 export const defaultMaker: Maker = {
@@ -49,6 +51,8 @@ export const defaultMaker: Maker = {
   latitude: 0,
   longitude: 0,
   password: null,
+  description: null,
+  badDescription: false,
 };
 
 export default Maker;

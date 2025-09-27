@@ -479,6 +479,32 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
+    
+    def test_make_and_take_description_order(self):
+        """
+        Tests a trade with a description from order creation to taken.
+        """
+        description = "Test"
+        description_maker_form = maker_form_buy_with_range.copy()
+        description_maker_form["description"] = description
+
+        trade = Trade(
+            self.client,
+            # Add description to order
+            maker_form=description_maker_form,
+        )
+        trade.publish_order()
+        trade.take_order()
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
+        self.assertEqual(data["description"], description)
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order()
 
     def test_make_and_take_password_order(self):
         """
