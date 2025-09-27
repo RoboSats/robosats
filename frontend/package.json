@@ -71,7 +71,7 @@
     "@nivo/core": "^0.99.0",
     "@nivo/line": "^0.99.0",
     "base-ex": "^0.8.1",
-    "country-flag-icons": "^1.5.19",
+    "country-flag-icons": "^1.5.21",
     "date-fns": "^4.1.0",
     "file-replace-loader": "^1.4.2",
     "fs-extra": "^11.3.1",
