@@ -317,16 +317,13 @@ class MainActivity : AppCompatActivity() {
                                 Log.d("ExternalLink", "Attempting to open: $url")
 
                                 val intent = Intent(Intent.ACTION_VIEW, uri)
-                                if (intent.resolveActivity(packageManager) != null) {
-                                    startActivity(intent)
-                                    Log.d("ExternalLink", "Successfully opened link in external app")
+                                if (url.startsWith("http://") || url.startsWith("https://")) {
+                                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    startActivity(browserIntent)
+                                    Log.d("ExternalLink", "Opened http/https link in browser")
                                 } else {
-                                    Log.w("ExternalLink", "No app found to handle: $url")
-                                    if (url.startsWith("http://") || url.startsWith("https://")) {
-                                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                        startActivity(browserIntent)
-                                        Log.d("ExternalLink", "Opened http/https link in browser")
-                                    }
+                                    startActivity(intent)
+                                    Log.d("ExternalLink", "Trying to open link in external app")
                                 }
 
                                 return true

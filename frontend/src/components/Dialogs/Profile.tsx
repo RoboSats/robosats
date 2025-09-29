@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -11,6 +11,7 @@ import {
   MenuItem,
   SelectChangeEvent,
   Button,
+  LinearProgress,
 } from '@mui/material';
 import { Key } from '@mui/icons-material';
 
@@ -28,9 +29,10 @@ interface Props {
 
 const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const [audit, setAudit] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const loadRobot = (token: string) => {
     garage.setCurrentSlot(token);
@@ -38,8 +40,19 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
-    if (e?.target?.value) loadRobot(e.target.value as string);
+    if (e?.target?.value) {
+      setLoading(true)
+      loadRobot(e.target.value as string);
+    }
   };
+
+  useEffect(() => {
+    if (open) garage.fetchRobot(federation, garage.getSlot()?.token ?? '');
+  }, [open])
+
+  useEffect(() => {
+    setLoading(Boolean(garage.getSlot()?.loading))
+  }, [slotUpdatedAt])
 
   return (
     <>
@@ -90,6 +103,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
               );
             })}
           </Select>
+          {loading && <LinearProgress />}
 
           <Grid
             item

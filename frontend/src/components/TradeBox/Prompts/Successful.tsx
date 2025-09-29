@@ -26,11 +26,11 @@ import {
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import { useTheme } from '@mui/system';
+import { useNavigate } from 'react-router-dom';
 
 interface SuccessfulPromptProps {
   order: Order;
   rateUserPlatform: (rating: number) => void;
-  onClickStartAgain: () => void;
   onClickRenew: () => void;
   loadingRenew: boolean;
 }
@@ -38,14 +38,14 @@ interface SuccessfulPromptProps {
 export const SuccessfulPrompt = ({
   order,
   rateUserPlatform,
-  onClickStartAgain,
   onClickRenew,
   loadingRenew,
 }: SuccessfulPromptProps): React.JSX.Element => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const theme = useTheme();
   const currencyCode: string = currencies[`${order.currency}`];
-  const { settings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -86,6 +86,10 @@ export const SuccessfulPrompt = ({
     const signedEvent = finalizeEvent(eventTemplate, slot.nostrSecKey);
     federation.roboPool.sendEvent(signedEvent);
   };
+
+  const onClickStartAgain = () => {
+    navigateToPage('create', navigate);
+  }
 
   useEffect(() => {
     const slot = garage.getSlot();

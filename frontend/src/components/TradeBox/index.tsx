@@ -94,7 +94,6 @@ const closeAll: OpenDialogProps = {
 
 interface TradeBoxProps {
   currentOrder: Order;
-  onStartAgain: () => void;
 }
 
 interface Contract {
@@ -106,7 +105,7 @@ interface Contract {
   titleIcon: () => React.JSX.Element;
 }
 
-const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Element => {
+const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -614,7 +613,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
               <SuccessfulPrompt
                 order={order}
                 rateUserPlatform={rateUserPlatform}
-                onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
                   renewOrder();
@@ -638,7 +636,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
             <SuccessfulPrompt
               order={order}
               rateUserPlatform={rateUserPlatform}
-              onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
                 renewOrder();
@@ -677,7 +674,6 @@ const TradeBox = ({ currentOrder, onStartAgain }: TradeBoxProps): React.JSX.Elem
               <SuccessfulPrompt
                 order={order}
                 rateUserPlatform={rateUserPlatform}
-                onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
                   renewOrder();

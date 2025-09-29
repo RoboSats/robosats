@@ -105,10 +105,6 @@ const OrderPage = (): React.JSX.Element => {
     }
   };
 
-  const startAgain = (): void => {
-    navigateToPage('order', navigate);
-  };
-
   const orderDetailsSpace = currentOrder ? (
     <OrderDetails
       shortAlias={String(currentOrder.shortAlias)}
@@ -121,7 +117,7 @@ const OrderPage = (): React.JSX.Element => {
   );
 
   const tradeBoxSpace = currentOrder ? (
-    <TradeBox onStartAgain={startAgain} currentOrder={currentOrder} />
+    <TradeBox currentOrder={currentOrder} />
   ) : (
     <></>
   );
