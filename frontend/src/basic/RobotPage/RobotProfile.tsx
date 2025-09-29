@@ -235,7 +235,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {!slot?.activeOrder && !slot?.lastOrder && !federation.loading ? (
+        {!slot?.activeOrder && !slot?.lastOrder && !slot?.loading ? (
           <Grid item>{t('No existing orders found')}</Grid>
         ) : null}
 

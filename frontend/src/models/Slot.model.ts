@@ -47,6 +47,8 @@ class Slot {
       return acc;
     }, {});
 
+    this.loading = true
+
     this.onSlotUpdate();
   }
 
@@ -59,6 +61,7 @@ class Slot {
   nostrSecKey?: Uint8Array;
   nostrPubKey?: string;
   availableRewards: string | null = null;
+  loading: boolean
 
   onSlotUpdate: () => void;
 
@@ -80,6 +83,7 @@ class Slot {
     Object.values(this.robots).forEach((robot) => {
       void robot.fetch(federation).then((robot) => {
         this.updateSlotFromRobot(robot);
+        this.loading = Object.values(this.robots).some((r) => r.loading)
       });
     });
   };

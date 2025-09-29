@@ -20,6 +20,7 @@ import {
   Collapse,
   IconButton,
   Skeleton,
+  CircularProgress,
 } from '@mui/material';
 
 import { type LimitList, defaultMaker, type Order } from '../../models';
@@ -57,8 +58,8 @@ interface MakerFormProps {
 const MakerForm = ({
   disableRequest = false,
   collapseAll = false,
-  onSubmit = () => {},
-  onReset = () => {},
+  onSubmit = () => { },
+  onReset = () => { },
   submitButtonLabel = 'Create Order',
 }: MakerFormProps): React.JSX.Element => {
   const { fav, setFav, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
@@ -97,6 +98,9 @@ const MakerForm = ({
 
   const updateCoordinatorInfo = (): void => {
     if (maker.coordinator != null) {
+      const slot = garage.getSlot();
+      slot?.fetchActiveOrder(federation)
+
       const coordinator = federation.getCoordinator(maker.coordinator);
       coordinator.loadInfo();
       coordinator.loadLimits(() => {
@@ -459,11 +463,11 @@ const MakerForm = ({
         {fav.mode === 'fiat'
           ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
           : amountToString(
-              maker.amount * 100000000,
-              makerHasAmountRange,
-              maker.minAmount * 100000000,
-              maker.maxAmount * 100000000,
-            )}
+            maker.amount * 100000000,
+            makerHasAmountRange,
+            maker.minAmount * 100000000,
+            maker.maxAmount * 100000000,
+          )}
         {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
         {maker.premium === 0
           ? fav.mode === 'fiat'
@@ -553,7 +557,11 @@ const MakerForm = ({
                   checked={maker.advancedOptions}
                   onChange={handleClickAdvanced}
                 />
-                <SelfImprovement sx={{ color: 'text.secondary' }} />
+                {Object.keys(limits).length === 0 ? (
+                  <CircularProgress size={15} style={{ marginLeft: 7 }}/>
+                ) : (
+                  <SelfImprovement sx={{ color: 'text.secondary' }} />
+                )}
               </div>
             </Tooltip>
           </Grid>
@@ -712,12 +720,12 @@ const MakerForm = ({
                       helperText={
                         maker.amount && maker.amount < amountLimits[0]
                           ? t('Must be more than {{minAmount}}', {
-                              minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
-                            })
+                            minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
+                          })
                           : maker.amount && maker.amount > amountLimits[1]
                             ? t('Must be less than {{maxAmount}}', {
-                                maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
-                              })
+                              maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
+                            })
                             : null
                       }
                       label={amountLabel.label}
