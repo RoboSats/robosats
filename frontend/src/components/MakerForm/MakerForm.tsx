@@ -232,11 +232,6 @@ const MakerForm = ({
   const handleCreateOrder = function (): void {
     const slot = garage.getSlot();
 
-    if (slot?.activeOrder?.id) {
-      setBadRequest(t('You are already maker of an active order'));
-      return;
-    }
-
     if (!disableRequest && maker.coordinator && slot) {
       setSubmittingRequest(true);
       const orderAttributes = {

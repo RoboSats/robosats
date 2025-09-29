@@ -56,6 +56,11 @@ const RobotProfile = ({
 
   useEffect(() => {
     const slot = garage.getSlot();
+    slot?.fetchActiveOrder(federation)
+  }, [])
+
+  useEffect(() => {
+    const slot = garage.getSlot();
     if (slot?.hashId) {
       setLoading(false);
     }
@@ -180,7 +185,7 @@ const RobotProfile = ({
           />
         </Grid>
 
-        {federation.loading && !slot?.activeOrder && !slot?.lastOrder ? (
+        {slot?.loading && !slot?.activeOrder ? (
           <Grid>
             <b>{t('Looking for orders!')}</b>
             <LinearProgress />

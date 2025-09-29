@@ -82,8 +82,8 @@ class Slot {
   fetchRobot = async (federation: Federation): Promise<void> => {
     Object.values(this.robots).forEach((robot) => {
       void robot.fetch(federation).then((robot) => {
-        this.updateSlotFromRobot(robot);
         this.loading = Object.values(this.robots).some((r) => r.loading)
+        this.updateSlotFromRobot(robot);
       });
     });
   };
