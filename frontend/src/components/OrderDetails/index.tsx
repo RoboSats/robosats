@@ -198,6 +198,8 @@ const OrderDetails = ({
     if (isBuyer) {
       if (order.invoice_amount) {
         sats = pn(order.invoice_amount);
+      } else if (order.trade_satoshis) {
+        sats = pn(order.trade_satoshis)
       } else if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
@@ -228,7 +230,9 @@ const OrderDetails = ({
         amount: sats,
       });
     } else {
-      if (order.escrow_satoshis) {
+      if (order.trade_satoshis) {
+        sats = pn(order.trade_satoshis);
+      } else if (order.escrow_satoshis) {
         sats = pn(order.escrow_satoshis);
       } else if (order.amount && order.amount > 0) {
         sats = computeSats({

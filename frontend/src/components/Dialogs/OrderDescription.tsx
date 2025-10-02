@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -27,6 +27,12 @@ const OrderDescriptionDialog = ({
   order,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (open && !Boolean(order.description)) {
+      onClickDone()
+    }
+  }, [open])
 
   return (
     <Dialog open={open} onClose={onClose}>
