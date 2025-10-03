@@ -62,7 +62,7 @@ jobs:
       - name: 'Check for non-FOSS libraries'
         run: |
           wget https://github.com/iBotPeaches/Apktool/releases/download/v2.7.0/apktool_2.7.0.jar
-          wget https://github.com/iBotPeaches/Apktool/raw/master/scripts/linux/apktool
+          wget https://raw.githubusercontent.com/iBotPeaches/Apktool/refs/tags/v2.7.0/scripts/linux/apktool
           # clone the repo
           git clone https://gitlab.com/IzzyOnDroid/repo.git
           # create a directory for Apktool and move the apktool* files there
