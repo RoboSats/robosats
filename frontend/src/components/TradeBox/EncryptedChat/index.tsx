@@ -54,6 +54,7 @@ const EncryptedChat: React.FC<Props> = ({
     // const since = new Date(order.created_at);
     // since.setDate(since.getDate() - 2);
     // federation.roboPool.subscribeChat(
+    //   `${order.id}`,
     //   [order.maker_nostr_pubkey, order.taker_nostr_pubkey],
     //   Math.floor((since.getTime() / 1000)),
     //   {
@@ -74,19 +75,26 @@ const EncryptedChat: React.FC<Props> = ({
   const sendToNostr = (content: string): void => {
     const slot = garage.getSlot();
     const coordinator = federation.getCoordinator(order.shortAlias);
-    const publicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
+    const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
+    const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
 
-    if (!slot?.nostrSecKey || !publicKey) return;
+    if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey) return;
 
     try {
-      const recipient = {
-        publicKey,
+      const ownWappedEvent = nip17.wrapEvent(slot?.nostrSecKey, {
+        publicKey: ownPublicKey,
         relayUrl: coordinator.getRelayUrl(),
-      };
+      }, content);
 
-      const wrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, recipient, content);
+      federation.roboPool.sendEvent(ownWappedEvent);
 
-      federation.roboPool.sendEvent(wrappedEvent);
+      const peerWrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, {
+        publicKey: peerPublicKey,
+        relayUrl: coordinator.getRelayUrl(),
+      }, content);
+
+      federation.roboPool.sendEvent(peerWrappedEvent);
+
     } catch (error) {
       console.error('Nostr nip17 error:', error);
     }

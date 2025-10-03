@@ -162,24 +162,47 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestRatings));
   };
 
+  subscribeChat = (orderId: string, pubkeys: string[], since: number, events: RoboPoolEvents): void => {
+    const subscribeChatTag = `subscribeChat#${orderId}`;
+    const requestChat = [
+      'REQ',
+      subscribeChatTag,
+      { kinds: [1059], '#p': pubkeys, since },
+    ];
+
+    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+      const jsonMessage = JSON.parse(messageEvent.data);
+
+      if (subscribeChatTag !== jsonMessage[1]) return;
+      
+      if (jsonMessage[0] === 'EVENT') {
+        events.onevent(jsonMessage[2]);
+      } else if (jsonMessage[0] === 'EOSE') {
+        events.oneose();
+      }
+    });
+    this.sendMessage(JSON.stringify(requestChat));
+  };
+
   subscribeNotifications = (
     garage: Garage,
     federation: Federation,
     events: RoboPoolEvents,
   ): void => {
-    const subscribeChat = 'subscribeChat';
-    this.sendMessage(JSON.stringify(['CLOSE', subscribeChat]));
+    const subscribeNotification = `subscribeNotification${Math.random() ?? ''}`;
 
     const hexPubKeys = Object.values(garage.slots).map((s) => s.nostrPubKey);
 
     if (hexPubKeys.length === 0) return;
 
-    const requestNotifications = ['REQ', subscribeChat, { kinds: [1059], '#p': hexPubKeys }];
+    this.sendMessage(JSON.stringify(['CLOSE', subscribeNotification]));
+
+    const requestNotifications = ['REQ', subscribeNotification, { kinds: [1059], '#p': hexPubKeys }];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
 
-      if (subscribeChat !== jsonMessage[1]) return;
+      if (subscribeNotification !== jsonMessage[1]) return;
 
       if (jsonMessage[0] === 'EVENT') {
         const wrappedEvent: Event = jsonMessage[2];
