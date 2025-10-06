@@ -118,11 +118,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             ).replace("Private ", "")
             nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace("Nostr ", "")
 
-            # Some legacy (pre-federation) clients will still send keys as cookies
-            if public_key == "" or encrypted_private_key == "":
-                public_key = request.COOKIES.get("public_key")
-                encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
-
             if not public_key or not encrypted_private_key or not nostr_pubkey:
                 return JsonResponse(new_error(7001), status=status.HTTP_400_BAD_REQUEST)
 
