@@ -140,8 +140,8 @@ export const DisputePrompt = ({
               control={
                 <Checkbox
                   checked={dispute.attachLogs}
-                  onChange={() => {
-                    setDispute({ ...dispute, attachLogs: !dispute.attachLogs });
+                  onChange={(_e, attachLogs) => {
+                    setDispute({ ...dispute, attachLogs });
                   }}
                 />
               }

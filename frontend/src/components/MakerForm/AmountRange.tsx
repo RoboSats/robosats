@@ -16,6 +16,7 @@ import RangeSlider from './RangeSlider';
 import currencyDict from '../../../static/assets/currencies.json';
 import { pn } from '../../utils';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 const RangeThumbComponent: React.FC<React.PropsWithChildren> = (props) => {
   const { children, ...other } = props;
@@ -46,6 +47,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
   setHasRangeError,
   amountLimits,
 }) => {
+  const { fav } = useContext<UseAppStoreType>(AppContext);
   const { setMaker, maker } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
   const { t } = useTranslation();
@@ -205,6 +207,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
               inputProps={{
                 style: { textAlign: 'center' },
               }}
+              disabled={fav.mode !== 'fiat'}
               value={currency === 0 ? 1 : currency}
               renderValue={() => currencyCode}
               onChange={(e) => {

@@ -122,7 +122,7 @@ const Map = ({
     <MapContainer
       maxZoom={15}
       center={center ?? [0, 0]}
-      zoom={zoom ?? 2}
+      zoom={zoom ?? 1}
       attributionControl={false}
       style={{ height: '100%', width: '100%', backgroundColor: theme.palette.background.paper }}
     >
