@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { type Order, type Robot } from '../../../models';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import EncryptedTurtleChat from './EncryptedTurtleChat';
-import { nip17 } from 'nostr-tools';
+import { EventTemplate, nip59, nip17 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
   FederationContext,
@@ -50,12 +50,13 @@ const EncryptedChat: React.FC<Props> = ({
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   useEffect(() => {
+    // const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
     // const slot = garage.getSlot();
     // const since = new Date(order.created_at);
     // since.setDate(since.getDate() - 2);
     // federation.roboPool.subscribeChat(
     //   `${order.id}`,
-    //   [order.maker_nostr_pubkey, order.taker_nostr_pubkey],
+    //   [ownPublicKey],
     //   Math.floor((since.getTime() / 1000)),
     //   {
     //     oneose: () => {},
@@ -81,19 +82,22 @@ const EncryptedChat: React.FC<Props> = ({
     if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey) return;
 
     try {
-      const ownWappedEvent = nip17.wrapEvent(slot?.nostrSecKey, {
-        publicKey: ownPublicKey,
-        relayUrl: coordinator.getRelayUrl(),
-      }, content);
+      const messageEvent: EventTemplate = {
+        created_at: Math.ceil(Date.now() / 1000),
+        kind: 14,
+        tags: [
+          ['order_id', `${order.shortAlias}/${order.id}`],
+          ['p', peerPublicKey, coordinator.getRelayUrl()],
+          ['p', ownPublicKey, coordinator.getRelayUrl()]
+        ],
+        content,
+      }
 
-      federation.roboPool.sendEvent(ownWappedEvent);
-
-      const peerWrappedEvent = nip17.wrapEvent(slot?.nostrSecKey, {
-        publicKey: peerPublicKey,
-        relayUrl: coordinator.getRelayUrl(),
-      }, content);
-
+      const peerWrappedEvent = nip59.wrapEvent(messageEvent, slot?.nostrSecKey, peerPublicKey)
       federation.roboPool.sendEvent(peerWrappedEvent);
+
+      const ownWrappedEvent = nip59.wrapEvent(messageEvent, slot?.nostrSecKey, ownPublicKey)
+      federation.roboPool.sendEvent(ownWrappedEvent);
 
     } catch (error) {
       console.error('Nostr nip17 error:', error);

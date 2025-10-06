@@ -56,11 +56,6 @@ const RobotProfile = ({
 
   useEffect(() => {
     const slot = garage.getSlot();
-    slot?.fetchActiveOrder(federation)
-  }, [])
-
-  useEffect(() => {
-    const slot = garage.getSlot();
     if (slot?.hashId) {
       setLoading(false);
     }

@@ -97,12 +97,16 @@ export const GarageContextProvider = ({
 
   useEffect(() => {
     const token = garage.getSlot()?.token;
-    if (token) void garage.fetchRobot(federation, token);
-  }, [settings.network, settings.useProxy, torStatus]);
 
-  useEffect(() => {
-    pageRef.current = page;
-  }, [page]);
+    if (pageRef.current !== page) {
+      pageRef.current = page;
+      if (token && page === 'garage') {
+        void garage.fetchRobot(federation, token);
+      }
+    } else if (token) {
+      void garage.fetchRobot(federation, token);
+    }
+  }, [settings.network, settings.useProxy, torStatus, page]);
 
   const fetchSlotActiveOrder: () => void = () => {
     const slot = garage?.getSlot();
