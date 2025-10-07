@@ -101,7 +101,7 @@ class RoboPool {
     const authors = scope.map((f) => f.nostrHexPubkey).filter((item) => item !== undefined);
 
     const subscribeBookPending = 'subscribeBookPending';
-    const subscribeBookSuccess = 'subscribeBookPending';
+    const subscribeBookSuccess = 'subscribeBookSuccess';
 
     const requestPending = [
       'REQ',

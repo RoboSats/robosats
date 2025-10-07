@@ -25,7 +25,7 @@ interface Props {
   useTiles: boolean;
   position?: [number, number] | undefined;
   setPosition?: (position: [number, number]) => void;
-  orders?: PublicOrder[];
+  orders?:  Record<string, PublicOrder | undefined>;
   onOrderClicked?: (id: number, shortAlias: string) => void;
   zoom?: number;
   center?: [number, number];
@@ -36,7 +36,7 @@ const Map = ({
   orderType,
   position,
   zoom,
-  orders = [],
+  orders = {},
   setPosition = () => {},
   useTiles = false,
   onOrderClicked = () => null,
@@ -81,7 +81,7 @@ const Map = ({
         }
         eventHandlers={{
           click: () => {
-            if (order?.id != null) onOrderClicked(order.id, order.coordinatorShortAlias);
+            if (order?.id != null) onOrderClicked(order.id, order.coordinatorShortAlias ?? '');
           },
         }}
       >
@@ -107,10 +107,10 @@ const Map = ({
   };
 
   const getOrderMarkers = (): React.JSX.Element => {
-    if (orders.length < 1) return <></>;
+    if (Object.values(orders).length < 1) return <></>;
     return (
       <MarkerClusterGroup showCoverageOnHover={true} disableClusteringAtZoom={14}>
-        {orders.map((order) => {
+        {Object.values(orders).map((order) => {
           if (!(order?.latitude != null) || !(order?.longitude != null)) return <></>;
           return RobotMarker(order.id, [order.latitude, order.longitude], order.type ?? 0, order);
         })}

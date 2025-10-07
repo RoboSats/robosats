@@ -39,11 +39,10 @@ interface TakeButtonProps {
 }
 
 interface OpenDialogsProps {
-  inactiveMaker: boolean;
   description: boolean;
   confirmation: boolean;
 }
-const closeAll = { inactiveMaker: false, description: false, confirmation: false };
+const closeAll = { description: false, confirmation: false };
 
 const TakeButton = ({
   password,
@@ -90,43 +89,6 @@ const TakeButton = ({
 
   const currencyCode: string =
     currentOrder?.currency === 1000 ? 'Sats' : currencies[`${Number(currentOrder?.currency)}`];
-
-  const InactiveMakerDialog = function (): React.JSX.Element {
-    return (
-      <Dialog
-        open={open.inactiveMaker}
-        onClose={() => {
-          setOpen({ ...open, inactiveMaker: false });
-        }}
-      >
-        <DialogTitle>{t('The maker is away')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t(
-              'By taking this order you risk wasting your time. If the maker does not proceed in time, you will be compensated in satoshis for 50% of the maker bond.',
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setOpen(closeAll);
-            }}
-            autoFocus
-          >
-            {t('Go back')}
-          </Button>
-          <Button
-            onClick={() => {
-              setOpen({ inactiveMaker: false, description: true, confirmation: false });
-            }}
-          >
-            {t('Sounds fine')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
 
   interface countdownTakeOrderRendererProps {
     seconds: number;
@@ -181,12 +143,10 @@ const TakeButton = ({
   }, [slotUpdatedAt, takeAmount]);
 
   const onTakeOrderClicked = function (): void {
-    if (currentOrder?.maker_status === 'Inactive') {
-      setOpen({ inactiveMaker: true, description: false, confirmation: false });
-    } else if (currentOrder?.description) {
-      setOpen({ inactiveMaker: false, description: true, confirmation: false });
+    if (currentOrder?.description && currentOrder?.description !== '') {
+      setOpen({ description: true, confirmation: false });
     } else {
-      setOpen({ inactiveMaker: false, description: false, confirmation: true });
+      setOpen({ description: false, confirmation: true });
     }
   };
 
@@ -392,7 +352,6 @@ const TakeButton = ({
         hasRobot={Boolean(garage.getSlot()?.hashId)}
         onClickGenerateRobot={onClickGenerateRobot}
       />
-      <InactiveMakerDialog />
     </Box>
   );
 };

@@ -553,7 +553,7 @@ const MakerForm = ({
                   onChange={handleClickAdvanced}
                 />
                 {Object.keys(limits).length === 0 ? (
-                  <CircularProgress size={15} style={{ marginLeft: 7 }}/>
+                  <CircularProgress size={15} style={{ marginLeft: 7 }} />
                 ) : (
                   <SelfImprovement sx={{ color: 'text.secondary' }} />
                 )}
@@ -880,21 +880,29 @@ const MakerForm = ({
           </Grid>
           <Collapse in={maker.advancedOptions} sx={{ width: '100%' }}>
             <Grid item sx={{ width: '100%' }}>
-              <TextField
-                fullWidth
-                label={`${t('Description')}`}
-                type='description'
-                value={maker.description}
-                style={{ marginBottom: 8 }}
-                inputProps={{
-                  style: {
-                    textAlign: 'center',
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 4,
-                  },
-                }}
-                onChange={handleDescriptionChange}
-              />
+              <Tooltip
+                placement='top'
+                enterTouchDelay={300}
+                enterDelay={700}
+                enterNextDelay={2000}
+                title={t('You can add a more details about your order.')}
+              >
+                <TextField
+                  fullWidth
+                  label={`${t('Description')}`}
+                  type='description'
+                  value={maker.description}
+                  style={{ marginBottom: 8 }}
+                  inputProps={{
+                    style: {
+                      textAlign: 'center',
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 4,
+                    },
+                  }}
+                  onChange={handleDescriptionChange}
+                />
+              </Tooltip>
             </Grid>
 
             {maker.badDescription && (
@@ -904,21 +912,29 @@ const MakerForm = ({
             )}
 
             <Grid item sx={{ width: '100%' }}>
-              <TextField
-                fullWidth
-                label={`${t('Password')}`}
-                type='password'
-                value={maker.password}
-                style={{ marginBottom: 8 }}
-                inputProps={{
-                  style: {
-                    textAlign: 'center',
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 4,
-                  },
-                }}
-                onChange={handlePasswordChange}
-              />
+              <Tooltip
+                placement='top'
+                enterTouchDelay={300}
+                enterDelay={700}
+                enterNextDelay={2000}
+                title={t('You can optionally set a password so that only the robots you share it with can take this order.')}
+              >
+                <TextField
+                  fullWidth
+                  label={`${t('Password')}`}
+                  type='password'
+                  value={maker.password}
+                  style={{ marginBottom: 8 }}
+                  inputProps={{
+                    style: {
+                      textAlign: 'center',
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: 4,
+                    },
+                  }}
+                  onChange={handlePasswordChange}
+                />
+              </Tooltip>
             </Grid>
 
             <Grid item sx={{ width: '100%' }}>

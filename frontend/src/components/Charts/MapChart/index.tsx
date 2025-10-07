@@ -133,7 +133,7 @@ const MapChart: React.FC<MapChartProps> = ({
             <div style={{ height: `${height - 3.2}em` }}>
               <Map
                 useTiles={useTiles}
-                orders={Object.values(federation.book)}
+                orders={federation.book}
                 onOrderClicked={onOrderClicked}
               />
             </div>
