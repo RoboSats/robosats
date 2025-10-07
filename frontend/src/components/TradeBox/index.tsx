@@ -53,7 +53,6 @@ interface loadingButtonsProps {
   undoFiatSent: boolean;
   submitInvoice: boolean;
   submitAddress: boolean;
-  submitStatement: boolean;
   openDispute: boolean;
   pauseOrder: boolean;
   renewOrder: boolean;
@@ -66,7 +65,6 @@ const noLoadingButtons: loadingButtonsProps = {
   undoFiatSent: false,
   submitInvoice: false,
   submitAddress: false,
-  submitStatement: false,
   openDispute: false,
   pauseOrder: false,
   renewOrder: false,
@@ -105,6 +103,26 @@ interface Contract {
   titleIcon: () => React.JSX.Element;
 }
 
+export interface SubmitActionProps {
+  action:
+  | 'cancel'
+  | 'dispute'
+  | 'pause'
+  | 'confirm'
+  | 'undo_confirm'
+  | 'update_invoice'
+  | 'update_address'
+  | 'submit_statement'
+  | 'rate_platform';
+  invoice?: string;
+  routing_budget_ppm?: number;
+  address?: string;
+  mining_fee_rate?: number;
+  statement?: string;
+  rating?: number;
+  cancel_status?: number;
+}
+
 const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
@@ -124,26 +142,6 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
 
   // Chat
   const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
-
-  interface SubmitActionProps {
-    action:
-      | 'cancel'
-      | 'dispute'
-      | 'pause'
-      | 'confirm'
-      | 'undo_confirm'
-      | 'update_invoice'
-      | 'update_address'
-      | 'submit_statement'
-      | 'rate_platform';
-    invoice?: string;
-    routing_budget_ppm?: number;
-    address?: string;
-    mining_fee_rate?: number;
-    statement?: string;
-    rating?: number;
-    cancel_status?: number;
-  }
 
   const renewOrder = function (password?: string): void {
     const slot = garage.getSlot();
@@ -288,28 +286,6 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
   const pauseOrder = function (): void {
     setLoadingButtons({ ...noLoadingButtons, pauseOrder: true });
     submitAction({ action: 'pause' });
-  };
-
-  const submitStatement = function (): void {
-    let statement = dispute.statement;
-    if (!statement || statement.trim() === '' || statement.length < 100) {
-      setDispute({
-        ...dispute,
-        badStatement: t('The statement is too short. Make sure to be thorough.'),
-      });
-    } else if (!dispute.contact || dispute.contact.trim() === '') {
-      setDispute({ ...dispute, badContact: t('A contact method is required') });
-    } else {
-      const { contactMethod, contact } = dispute;
-      statement = `${contactMethod ?? ''}: ${contact ?? ''} \n\n ${statement}`;
-      if (dispute.attachLogs) {
-        const payload = { statement, messages };
-        statement = JSON.stringify(payload, null, 2);
-      }
-
-      setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
-      submitAction({ action: 'submit_statement', statement });
-    }
   };
 
   const rateUserPlatform = function (rating: number): void {
@@ -583,10 +559,10 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
           baseContract.prompt = function () {
             return (
               <DisputePrompt
-                loading={loadingButtons.submitStatement}
+                submitAction={submitAction}
+                order={order}
                 dispute={dispute}
                 setDispute={setDispute}
-                onClickSubmit={submitStatement}
                 shortAlias={currentOrder.shortAlias}
               />
             );

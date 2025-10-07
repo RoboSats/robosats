@@ -29,13 +29,13 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
   const baseUrl = coordinator?.[network]?.[origin] ?? '';
 
   return order ? (
-    <Paper elevation={12} style={{ padding: 10, width: 250 }}>
+    <Paper elevation={12} style={{ padding: 10, width: 150 }}>
       <Grid container justifyContent='space-between'>
         <Grid item xs={3}>
           <Grid container justifyContent='center' alignItems='center'>
             <RobotAvatar
               orderType={order.type}
-              statusColor={statusBadgeColor(order.maker_status)}
+              statusColor={settings.connection === 'api' ? statusBadgeColor(order.maker_status) : undefined}
               tooltip={t(order.maker_status)}
               baseUrl={baseUrl}
               small={true}
@@ -49,7 +49,6 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
         </Grid>
         <Grid item xs={8}>
           <Grid container direction='column' justifyContent='center' alignItems='flex-start'>
-            <Box>{order.maker_nick}</Box>
             <Box>
               <Grid
                 container
