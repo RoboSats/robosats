@@ -3,7 +3,7 @@ description: Become a RoboSats Coordinator
 title: "[federation]: coordinator 'Alias'"
 labels: ["Federation"]
 assignees:
-  - reckless-satoshi
+  - KoalaSat
 body:
   - type: markdown
     attributes:

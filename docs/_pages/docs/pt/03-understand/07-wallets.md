@@ -23,7 +23,7 @@ thumbsdown: "<i style='color:#9c27b0' class='fa-solid fa-thumbs-down fa-2xl'></i
 unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
 bitcoin: "<i class='fa-solid fa-bitcoin-sign'></i>"
 ---
-Esta é uma compilação não exaustiva baseada na experiência anterior dos usuários. Não testamos todas as carteiras, se você tentar uma carteira que ainda não está coberta, [informe aqui](https://github.com/Reckless-Satoshi/robosats/issues/44).
+Esta é uma compilação não exaustiva baseada na experiência anterior dos usuários. Não testamos todas as carteiras, se você tentar uma carteira que ainda não está coberta, [informe aqui](https://github.com/Robosats/robosats/issues/44).
 
 | Carteira | Versão | Dispositivo | UX<sup>1</sup> | Bonds<sup>2</sup> | Pagamentos<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
@@ -108,7 +108,7 @@ A partir da versão 2.5, não suporta Lightning.
 
 
 ## <i class="fa-solid fa-code-pull-request"></i> Ajude a manter esta página atualizada
-Há muitas carteiras e todas continuam melhorando à velocidade da lightning. Você pode contribuir para o projeto de código aberto RoboSats testando as carteiras, editando [o conteúdo desta página](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{{page.src}}) e abrindo um [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
+Há muitas carteiras e todas continuam melhorando à velocidade da lightning. Você pode contribuir para o projeto de código aberto RoboSats testando as carteiras, editando [o conteúdo desta página](https://github.com/Robosats/robosats/tree/main/docs/{{page.src}}) e abrindo um [Pull Request](https://github.com/Robosats/robosats/pulls)
 
 
 ## Informações adicionais

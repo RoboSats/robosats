@@ -23,7 +23,7 @@ thumbsdown: "<i style='color:#9c27b0' class='fa-solid fa-thumbs-down fa-2xl'></i
 unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
 bitcoin: "<i class='fa-solid fa-bitcoin-sign'></i>"
 ---
-Esta es una compilación no exhaustiva basada en la experiencia pasada de los usuarios. No hemos probado todas las wallets, si pruebas una wallet que aún no está cubierta, [informa aquí](https://github.com/Reckless-Satoshi/robosats/issues/44).
+Esta es una compilación no exhaustiva basada en la experiencia pasada de los usuarios. No hemos probado todas las wallets, si pruebas una wallet que aún no está cubierta, [informa aquí](https://github.com/Robosats/robosats/issues/44).
 
 | Wallet | Versión | Dispositivo | UX<sup>1</sup> | Fianzas<sup>2</sup> | Pagos<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
@@ -100,7 +100,7 @@ Desde la version 2.5 no soporta lightning
 Es una interfaz para LND, CLN y Eclair. Funciona como es esperado. Es extremadamente engañoso con una pantalla roja completa "TIME OUT" unos segundos después de enviar el HTLC. Sin embargo, si el usuario consulta en el sitio web, el invoice se bloquea correctamente.
 
 ## <i class="fa-solid fa-code-pull-request"></i> Ayuda a mantener actualizada esta página
-Hay muchas wallets y todas siguen mejorando a la velocidad de la luz. Puedes contribuir al proyecto de código abierto RoboSats probando wallets, editando [el contenido de esta página](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{{page.src}}) y abriendo un [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
+Hay muchas wallets y todas siguen mejorando a la velocidad de la luz. Puedes contribuir al proyecto de código abierto RoboSats probando wallets, editando [el contenido de esta página](https://github.com/Robosats/robosats/tree/main/docs/{{page.src}}) y abriendo un [Pull Request](https://github.com/Robosats/robosats/pulls)
 
 ## Información adicional
 

@@ -20,7 +20,7 @@ Nota: Este guia é uma modificação das regras de negociação da <a href="http
 
 ### Para comprador e vendedor de bitcoin
 
-1. Não deixe de conferir a seção <a href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/_pages/tutorials/read/how-to-use_es.md">Como usar </a >antes de começar a negociar.<br>
+1. Não deixe de conferir a seção <a href="https://github.com/Robosats/robosats/blob/main/docs/_pages/tutorials/read/how-to-use_es.md">Como usar </a >antes de começar a negociar.<br>
 2. Declare o acordo claramente para evitar mal-entendidos.<br>
 3. O método de pagamento fiduciário deve poder enviar e receber instantaneamente porque a fatura retida tem prazo de validade de 24 horas.<br>
    Se o cronômetro expirar, isso poderá desencadear uma disputa e levar à perda do depósito.<br>

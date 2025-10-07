@@ -157,7 +157,7 @@ SPECTACULAR_SETTINGS = {
     },
     "EXTENSIONS_INFO": {
         "x-logo": {
-            "url": "https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png",
+            "url": "https://raw.githubusercontent.com/Robosats/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png",
             "backgroundColor": "#FFFFFF",
             "altText": "RoboSats logo",
         }

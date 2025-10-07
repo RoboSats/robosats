@@ -20,7 +20,7 @@ Nota: Esta guía es una modificación de las reglas de intercambio de   <a href=
 
 ### Para ambos comprador y vendedor de bitcoin
 
-  1. Asegúrate de revisar la seccion <a href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/_pages/tutorials/read/how-to-use_es.md">Cómo usar </a>antes de empezar a intercambiar.<br>
+  1. Asegúrate de revisar la seccion <a href="https://github.com/Robosats/robosats/blob/main/docs/_pages/tutorials/read/how-to-use_es.md">Cómo usar </a>antes de empezar a intercambiar.<br>
   2. Indica el acuerdo claramente para evitar malentendidos.<br>
   3. El método de pago fiat debería poder enviar y recibir instantáneamente porque la factura retenida tiene un tiempo de expiración de 24 horas.<br>
 Si el temporizador llega al vencimiento, podría desencadenar una disputa y podría conducir a una pérdida de la fianza.<br>

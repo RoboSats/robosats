@@ -62,7 +62,7 @@ At the moment, RoboSats is a young and unfunded project, but has shown the abili
 4. The review takes place. Once maintainers give the OK for the merge...
 5. The developer submits an LN invoice (with a long expiration time). The invoice is paid at merge.
 
-Every step (negotiation, code submission, review and invoice submission) must take place publicly in GitHub (i.e., no private messaging and the like). Please contact the team lead for development (@reckless-satoshi) upfront if you have doubts whether your contribution is suitable for compensation. Currently, only contributions to the frontend or backend core functionality and maintainence are eligible for compensations (for the time being, that excludes: art, translations, etc.).
+Every step (negotiation, code submission, review and invoice submission) must take place publicly in GitHub (i.e., no private messaging and the like). Please contact the team lead for development upfront if you have doubts whether your contribution is suitable for compensation. Currently, only contributions to the frontend or backend core functionality and maintainence are eligible for compensations (for the time being, that excludes: art, translations, etc.).
 
 ## Style and Coding Conventions
 
