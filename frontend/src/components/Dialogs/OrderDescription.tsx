@@ -15,7 +15,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onClickBack: () => void;
-  onClickDone: () => void;
+  onClickDone?: () => void;
   order: Order;
 }
 
@@ -29,7 +29,7 @@ const OrderDescriptionDialog = ({
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (open && !Boolean(order.description)) {
+    if (onClickDone && open && !Boolean(order.description)) {
       onClickDone()
     }
   }, [open])
@@ -46,7 +46,7 @@ const OrderDescriptionDialog = ({
 
       <DialogActions>
         <Button onClick={onClickBack} autoFocus>{t('Go back')}</Button>
-        <Button onClick={onClickDone}>{t('Continue')}</Button>
+        {onClickDone && <Button onClick={onClickDone}>{t('Continue')}</Button>}
       </DialogActions>
     </Dialog>
   );

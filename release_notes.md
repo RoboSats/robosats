@@ -59,7 +59,7 @@ Find the zip file that suits with your operative system:
 3. Run this command on a directory that contains the apk file and and the ascii armored signature.
 `gpg --verify robosats-v0.8.2.alpha-....asc`
 
-4. Verify the signer is actually ~~Reckless-Satoshi (fingerprints match): [B4AB5F19113D4125DDF217739C4585B561315571](https://keys.openpgp.org/vks/v1/by-fingerprint/B4AB5F19113D4125DDF217739C4585B561315571)~~ KoalaSat [8FCDBF574CCFD73DB68B00CC2F7F61C6146AB157](https://keys.openpgp.org/vks/v1/by-fingerprint/8FCDBF574CCFD73DB68B00CC2F7F61C6146AB157)
+4. Verify the signer is actually KoalaSat [8FCDBF574CCFD73DB68B00CC2F7F61C6146AB157](https://keys.openpgp.org/vks/v1/by-fingerprint/8FCDBF574CCFD73DB68B00CC2F7F61C6146AB157)
 
 # Docker Images
 

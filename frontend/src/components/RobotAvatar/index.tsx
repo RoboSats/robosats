@@ -49,7 +49,7 @@ const RobotAvatar: React.FC<Props> = ({
   const backgroundFadeTime = 3000;
   const [backgroundData] = useState<BackgroundData>(placeholder.loading);
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
-  const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
+  const { hostUrl, client, settings } = useContext<UseAppStoreType>(AppContext);
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
 

@@ -35,17 +35,19 @@ import {
   Map,
   Warning,
   Tag,
+  Description,
 } from '@mui/icons-material';
 import { fiatMethods, PaymentStringAsIcons, swapMethods } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { pn, amountToString, computeSats } from '../../utils';
+import { pn, amountToString, computeSats, statusBadgeColor } from '../../utils';
 import TakeButton from './TakeButton';
-import { F2fMapDialog } from '../Dialogs';
+import { F2fMapDialog, OrderDescriptionDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { Coordinator, type Order } from '../../models';
 import { Box } from '@mui/system';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface OrderDetailsProps {
   shortAlias: string;
@@ -72,6 +74,7 @@ const OrderDetails = ({
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
   const [password, setPassword] = useState<string>();
+  const [openDescription, setOpenDescription] = useState<boolean>(false);
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias));
@@ -367,6 +370,14 @@ const OrderDetails = ({
                 primary={amountString}
                 secondary={(currentOrder?.amount ?? 0) > 0 ? 'Amount' : 'Amount Range'}
               />
+              <ListItemIcon>
+                <RobotAvatar
+                  flipHorizontally
+                  hashId={currentOrder.maker_hash_id}
+                  statusColor={statusBadgeColor(currentOrder.maker_status)}
+                  tooltip={t(currentOrder.maker_status)}
+                />
+              </ListItemIcon>
             </ListItem>
 
             <List dense={true} sx={{ position: 'relative', bottom: '0.5em' }}>
@@ -393,25 +404,19 @@ const OrderDetails = ({
 
             <Divider />
 
-            <ListItem
-              onClick={() => orderReversiblePaymentMethods.length > 0 && setOpenWarningDialog(true)}
-            >
+            <ListItem sx={{ paddingBottom: 0 }}>
               <ListItemIcon>
                 <Payments />
               </ListItemIcon>
               <ListItemText
+                onClick={() => orderReversiblePaymentMethods.length > 0 && setOpenWarningDialog(true)}
                 primary={
                   <PaymentStringAsIcons
-                    size={1.42 * theme.typography.fontSize}
+                    size={1.86 * theme.typography.fontSize}
                     othersText={t('Others')}
                     verbose={true}
                     text={currentOrder?.payment_method}
                   />
-                }
-                secondary={
-                  currentOrder?.currency === 1000
-                    ? t('Swap destination')
-                    : t('Accepted payment methods')
                 }
               />
               {currentOrder?.payment_method.includes('Cash F2F') && (
@@ -429,12 +434,41 @@ const OrderDetails = ({
                   </Tooltip>
                 </ListItemIcon>
               )}
+              {currentOrder.description && currentOrder.description !== '' && (
+                <ListItemIcon>
+                  <IconButton
+                    onClick={() => {
+                      setOpenDescription(true);
+                    }}
+                  >
+                    <Description />
+                  </IconButton>
+                </ListItemIcon>
+              )}
               {orderReversiblePaymentMethods.length > 0 && (
                 <ListItemIcon>
-                  <Warning color='warning' />
+                  <IconButton
+                    onClick={() => {
+                      setOpenWarningDialog(true);
+                    }}
+                  >
+                    <Warning color='warning' />
+                  </IconButton>
                 </ListItemIcon>
               )}
             </ListItem>
+            <ListItem sx={{ paddingTop: 0 }}>
+              <ListItemIcon />
+              <ListItemText
+                sx={{ marginTop: 0 }}
+                secondary={
+                  currentOrder?.currency === 1000
+                    ? t('Swap destination')
+                    : t('Accepted payment methods')
+                }
+              />
+            </ListItem>
+
             <Divider />
 
             {/* If there is live Price and Premium data, show it. Otherwise show the order maker settings */}
@@ -551,6 +585,14 @@ const OrderDetails = ({
       ) : (
         <></>
       )}
+
+      <OrderDescriptionDialog
+        open={openDescription}
+        onClose={() => setOpenDescription(false)}
+        onClickBack={() => setOpenDescription(false)}
+        order={currentOrder}
+      />
+      
       <Dialog
         open={openWarningDialog}
         onClose={() => {

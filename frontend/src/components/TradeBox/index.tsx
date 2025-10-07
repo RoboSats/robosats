@@ -145,7 +145,7 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
     cancel_status?: number;
   }
 
-  const renewOrder = function (): void {
+  const renewOrder = function (password?: string): void {
     const slot = garage.getSlot();
     const newOrder = currentOrder;
     if (newOrder && slot) {
@@ -166,7 +166,10 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         latitude: newOrder.latitude,
         longitude: newOrder.longitude,
         shortAlias: newOrder.shortAlias,
+        description: newOrder.description,
+        password: password && password !== '' ? password : undefined
       };
+
       void slot.makeOrder(federation, orderAttributes).then((order: Order) => {
         if (order?.id)
           navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
@@ -441,8 +444,8 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
             <ExpiredPrompt
               loadingRenew={loadingButtons.renewOrder}
               order={order}
-              onClickRenew={() => {
-                renewOrder();
+              onClickRenew={(password?: string) => {
+                renewOrder(password);
                 setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
               }}
             />
