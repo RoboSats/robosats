@@ -35,7 +35,9 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
           <Grid container justifyContent='center' alignItems='center'>
             <RobotAvatar
               orderType={order.type}
-              statusColor={settings.connection === 'api' ? statusBadgeColor(order.maker_status) : undefined}
+              statusColor={
+                settings.connection === 'api' ? statusBadgeColor(order.maker_status) : undefined
+              }
               tooltip={t(order.maker_status)}
               baseUrl={baseUrl}
               small={true}

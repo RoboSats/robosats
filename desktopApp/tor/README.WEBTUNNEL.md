@@ -115,7 +115,7 @@ And then configure HTTP Upgrade forwarding at /etc/nginx/nginx.conf.
 --- a/before.conf
 +++ b/after.conf
 @@ -60,6 +60,13 @@ http {
- 
+
         include /etc/nginx/conf.d/*.conf;
         include /etc/nginx/sites-enabled/*;
 +
@@ -155,7 +155,7 @@ server {
     ssl_session_tickets off;
 
     add_header Strict-Transport-Security "max-age=63072000" always;
-    
+
     location /$PATH {
         proxy_pass http://127.0.0.1:11000;
         proxy_http_version 1.1;
@@ -197,7 +197,7 @@ If you haven't already, configure websocket forwarding support in nginx by confi
 --- a/before.conf
 +++ b/after.conf
 @@ -60,6 +60,13 @@ http {
- 
+
         include /etc/nginx/conf.d/*.conf;
         include /etc/nginx/sites-enabled/*;
 +
@@ -229,7 +229,7 @@ location /$PATH {
 
         proxy_redirect     off;
 }
-``` 
+```
 
 ### Install Docker Runtime(if necessary)
 ```

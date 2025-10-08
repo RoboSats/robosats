@@ -131,11 +131,7 @@ const MapChart: React.FC<MapChartProps> = ({
               </Tooltip>
             </Grid>
             <div style={{ height: `${height - 3.2}em` }}>
-              <Map
-                useTiles={useTiles}
-                orders={federation.book}
-                onOrderClicked={onOrderClicked}
-              />
+              <Map useTiles={useTiles} orders={federation.book} onOrderClicked={onOrderClicked} />
             </div>
           </>
         )}

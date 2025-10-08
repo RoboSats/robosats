@@ -28,7 +28,7 @@ export interface OpenDialogs {
   recovery: boolean;
   confirmCollabCancel: boolean;
   thirdParty: string;
-  search: boolean; 
+  search: boolean;
 }
 
 const MainDialogs = (): React.JSX.Element => {

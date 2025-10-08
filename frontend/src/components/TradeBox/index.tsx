@@ -43,7 +43,6 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { DisputeForm, defaultDispute } from './Prompts/Dispute';
 
 interface loadingButtonsProps {
@@ -105,15 +104,15 @@ interface Contract {
 
 export interface SubmitActionProps {
   action:
-  | 'cancel'
-  | 'dispute'
-  | 'pause'
-  | 'confirm'
-  | 'undo_confirm'
-  | 'update_invoice'
-  | 'update_address'
-  | 'submit_statement'
-  | 'rate_platform';
+    | 'cancel'
+    | 'dispute'
+    | 'pause'
+    | 'confirm'
+    | 'undo_confirm'
+    | 'update_invoice'
+    | 'update_address'
+    | 'submit_statement'
+    | 'rate_platform';
   invoice?: string;
   routing_budget_ppm?: number;
   address?: string;
@@ -127,7 +126,6 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
   const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Buttons and Dialogs
@@ -165,7 +163,7 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         longitude: newOrder.longitude,
         shortAlias: newOrder.shortAlias,
         description: newOrder.description,
-        password: password && password !== '' ? password : undefined
+        password: password && password !== '' ? password : undefined,
       };
 
       void slot.makeOrder(federation, orderAttributes).then((order: Order) => {

@@ -22,7 +22,7 @@ QnA's guide explains the importance of noKYC Bitcoin, breaks down some RoboSats 
 
 ![image2](https://i0.wp.com/satoshisjournal.com/wp-content/uploads/2023/03/robosats.jpg)
 ### <a href="https://satoshisjournal.com/welcome-to-my-robo-garage/" target="_blank">Welcome to my Robo Garage</a>
-Will Schoellkopf's guide published in Satoshi's Journal is a real-world RoboSats example that isn’t edited to exclude missteps or bumps in the road on his quest to privately buy bitcoin. If you make it to the end, you will bear witness to the game theory of truly trading Bitcoin peer-to-peer. Join him on his journey down the RoboSats rabbit hole as he welcomes you to his new Robo Garage! 
+Will Schoellkopf's guide published in Satoshi's Journal is a real-world RoboSats example that isn’t edited to exclude missteps or bumps in the road on his quest to privately buy bitcoin. If you make it to the end, you will bear witness to the game theory of truly trading Bitcoin peer-to-peer. Join him on his journey down the RoboSats rabbit hole as he welcomes you to his new Robo Garage!
 
 ## How to Use (v0.1.0)
 Full tutorial in tweets by @simplestBTCbook

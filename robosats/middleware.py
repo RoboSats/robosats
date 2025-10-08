@@ -133,7 +133,10 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 encrypted_private_key,
             ) = validate_pgp_keys(public_key, encrypted_private_key)
             if not valid:
-                return JsonResponse(new_error(7002, {"bad_keys_context": bad_keys_context}), status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(
+                    new_error(7002, {"bad_keys_context": bad_keys_context}),
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             # Hash the token_sha256, only 1 iteration.
             # This is the second SHA256 of the user token, aka RoboSats ID
@@ -167,7 +170,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
         response = self.get_response(request)
         return response
-    
+
     def process_template_response(self, request, response):
         if response.status_code == status.HTTP_401_UNAUTHORIZED:
             response.data = new_error(7003)

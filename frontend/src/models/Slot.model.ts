@@ -47,7 +47,7 @@ class Slot {
       return acc;
     }, {});
 
-    this.loading = true
+    this.loading = true;
 
     this.onSlotUpdate();
   }
@@ -61,7 +61,7 @@ class Slot {
   nostrSecKey?: Uint8Array;
   nostrPubKey?: string;
   availableRewards: string | null = null;
-  loading: boolean
+  loading: boolean;
 
   onSlotUpdate: () => void;
 
@@ -82,7 +82,7 @@ class Slot {
   fetchRobot = async (federation: Federation): Promise<void> => {
     Object.values(this.robots).forEach((robot) => {
       void robot.fetch(federation).then((robot) => {
-        this.loading = Object.values(this.robots).some((r) => r.loading)
+        this.loading = Object.values(this.robots).some((r) => r.loading);
         this.updateSlotFromRobot(robot);
       });
     });

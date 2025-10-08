@@ -13,7 +13,12 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     def allow_in_chatroom(self):
         order = Order.objects.get(id=self.order_id)
 
-        if order.status not in [Order.Status.CHA, Order.Status.FSE, Order.Status.DIS, Order.Status.WFR]:
+        if order.status not in [
+            Order.Status.CHA,
+            Order.Status.FSE,
+            Order.Status.DIS,
+            Order.Status.WFR,
+        ]:
             print("Order is not in chat status")
             return False
 

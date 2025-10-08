@@ -47,7 +47,6 @@ import { F2fMapDialog, OrderDescriptionDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { Coordinator, type Order } from '../../models';
 import { Box } from '@mui/system';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface OrderDetailsProps {
   shortAlias: string;
@@ -202,7 +201,7 @@ const OrderDetails = ({
       if (order.invoice_amount) {
         sats = pn(order.invoice_amount);
       } else if (order.trade_satoshis) {
-        sats = pn(order.trade_satoshis)
+        sats = pn(order.trade_satoshis);
       } else if (order.amount && order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
@@ -409,7 +408,9 @@ const OrderDetails = ({
                 <Payments />
               </ListItemIcon>
               <ListItemText
-                onClick={() => orderReversiblePaymentMethods.length > 0 && setOpenWarningDialog(true)}
+                onClick={() =>
+                  orderReversiblePaymentMethods.length > 0 && setOpenWarningDialog(true)
+                }
                 primary={
                   <PaymentStringAsIcons
                     size={1.86 * theme.typography.fontSize}
@@ -592,7 +593,7 @@ const OrderDetails = ({
         onClickBack={() => setOpenDescription(false)}
         order={currentOrder}
       />
-      
+
       <Dialog
         open={openWarningDialog}
         onClose={() => {

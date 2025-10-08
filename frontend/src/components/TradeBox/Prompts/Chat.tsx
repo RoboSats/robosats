@@ -159,8 +159,7 @@ export const ChatPrompt = ({
     >
       <Grid item style={{ mb: 1 }}>
         <Typography variant='body2' align='center'>
-          {text}{' '}
-          <br />
+          {text} <br />
           <>
             {'⚠️ '}
             <a

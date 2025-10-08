@@ -45,6 +45,7 @@ all_phrases.update(phrases)
 # Load existing locale dics and replace keys
 locales = [f for f in os.listdir(".") if f.endswith(".json")]
 for locale in locales:
+    print(locale)
     new_phrases = OrderedDict()
     with open(locale, "r", encoding="utf-8") as f:
         old_phrases = json.load(f, object_pairs_hook=OrderedDict)
@@ -59,6 +60,3 @@ for locale in locales:
     if new_phrases != old_phrases:
         with open(locale, "w", encoding="utf-8") as f:
             json.dump(new_phrases, f, ensure_ascii=False)
-
-with open("./collected_phrases.json", "w", encoding="utf-8") as f:
-    json.dump(all_phrases, f, ensure_ascii=False)

@@ -7,12 +7,16 @@ on:
     branches:
       - main
     paths:
-      - frontend
+      - '**/*.js'
+      - '**/*.ts'
+      - '**/*.tsx'
   pull_request_target:
     branches:
       - main
     paths:
-      - frontend
+      - '**/*.js'
+      - '**/*.ts'
+      - '**/*.tsx'
 
 jobs:
   run-linters:

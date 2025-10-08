@@ -102,12 +102,20 @@ class Logics:
         """Validates if order size in Sats is within limits at t0"""
         if not order.has_range:
             if order.t0_satoshis > MAX_ORDER_SIZE:
-                return False, new_error(1004,
-                    {"order_amount": order.t0_satoshis, "max_order_size": MAX_ORDER_SIZE}
+                return False, new_error(
+                    1004,
+                    {
+                        "order_amount": order.t0_satoshis,
+                        "max_order_size": MAX_ORDER_SIZE,
+                    },
                 )
             if order.t0_satoshis < MIN_ORDER_SIZE:
-                return False, new_error(1005,
-                    {"order_amount": order.t0_satoshis, "min_order_size": MIN_ORDER_SIZE}
+                return False, new_error(
+                    1005,
+                    {
+                        "order_amount": order.t0_satoshis,
+                        "min_order_size": MIN_ORDER_SIZE,
+                    },
                 )
         elif order.has_range:
             min_sats = cls.calc_sats(
@@ -119,12 +127,12 @@ class Logics:
             if min_sats > max_sats / 1.5:
                 return False, new_error(1006)
             elif max_sats > MAX_ORDER_SIZE:
-                return False, new_error(1007,
-                    {"max_sats": int(max_sats), "max_order_size": MAX_ORDER_SIZE}
+                return False, new_error(
+                    1007, {"max_sats": int(max_sats), "max_order_size": MAX_ORDER_SIZE}
                 )
             elif min_sats < MIN_ORDER_SIZE:
-                return False, new_error(1008,
-                    {"min_sats": int(min_sats), "min_order_size": MIN_ORDER_SIZE}
+                return False, new_error(
+                    1008, {"min_sats": int(min_sats), "min_order_size": MIN_ORDER_SIZE}
                 )
             elif min_sats < max_sats / 15:
                 return False, new_error(1009)
@@ -816,7 +824,9 @@ class Logics:
                     f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by Robot({user.robot.id},{user.username}) is less than the current minimum mining fee {min_mining_fee_rate} Sats",
                     level="WARN",
                 )
-                return False, new_error(4001, {"min_mining_fee_rate": min_mining_fee_rate})
+                return False, new_error(
+                    4001, {"min_mining_fee_rate": min_mining_fee_rate}
+                )
             elif float(mining_fee_rate) > 500:
                 order.log(
                     f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by Robot({user.robot.id},{user.username}) is higher than the absolute maximum mining fee 500 Sats",
@@ -986,7 +996,9 @@ class Logics:
         # recently changed status.
         if cancel_status is not None:
             if order.status != cancel_status:
-                return False, new_error(1020, {"order_status": order.status, "cancel_status": cancel_status})
+                return False, new_error(
+                    1020, {"order_status": order.status, "cancel_status": cancel_status}
+                )
 
         # Do not change order status if an is in order
         # any of these status
@@ -1254,9 +1266,9 @@ class Logics:
         bond_satoshis = int(order.last_satoshis * order.bond_size / 100)
 
         if user.robot.wants_stealth:
-            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config('NODE_ALIAS')} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
-            description = f"{config("NODE_ALIAS")} - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config('NODE_ALIAS')} - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
 
         # Gen hold Invoice
         try:
@@ -1390,10 +1402,10 @@ class Logics:
         bond_satoshis = int(take_order.last_satoshis * order.bond_size / 100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
         if user.robot.wants_stealth:
-            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config('NODE_ALIAS')} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
             description = (
-                f"{config("NODE_ALIAS")} - Taking 'Order {order.id}' {pos_text} BTC for {str(float(take_order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
+                f"{config('NODE_ALIAS')} - Taking 'Order {order.id}' {pos_text} BTC for {str(float(take_order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
                 + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
             )
 
@@ -1487,9 +1499,9 @@ class Logics:
         order.log(f"Escrow invoice amount is calculated as {escrow_satoshis} Sats")
 
         if user.robot.wants_stealth:
-            description = f"{config("NODE_ALIAS")} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
+            description = f"{config('NODE_ALIAS')} - Payment reference: {order.reference}. This payment WILL FREEZE IN YOUR WALLET, check on the trading platform if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
         else:
-            description = f"{config("NODE_ALIAS")} - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
+            description = f"{config('NODE_ALIAS')} - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
         try:

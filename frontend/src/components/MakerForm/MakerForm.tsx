@@ -58,8 +58,8 @@ interface MakerFormProps {
 const MakerForm = ({
   disableRequest = false,
   collapseAll = false,
-  onSubmit = () => { },
-  onReset = () => { },
+  onSubmit = () => {},
+  onReset = () => {},
   submitButtonLabel = 'Create Order',
 }: MakerFormProps): React.JSX.Element => {
   const { fav, setFav, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
@@ -99,7 +99,7 @@ const MakerForm = ({
   const updateCoordinatorInfo = (): void => {
     if (maker.coordinator != null) {
       const slot = garage.getSlot();
-      slot?.fetchActiveOrder(federation)
+      slot?.fetchActiveOrder(federation);
 
       const coordinator = federation.getCoordinator(maker.coordinator);
       coordinator.loadInfo();
@@ -458,11 +458,11 @@ const MakerForm = ({
         {fav.mode === 'fiat'
           ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
           : amountToString(
-            maker.amount * 100000000,
-            makerHasAmountRange,
-            maker.minAmount * 100000000,
-            maker.maxAmount * 100000000,
-          )}
+              maker.amount * 100000000,
+              makerHasAmountRange,
+              maker.minAmount * 100000000,
+              maker.maxAmount * 100000000,
+            )}
         {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
         {maker.premium === 0
           ? fav.mode === 'fiat'
@@ -715,12 +715,12 @@ const MakerForm = ({
                       helperText={
                         maker.amount && maker.amount < amountLimits[0]
                           ? t('Must be more than {{minAmount}}', {
-                            minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
-                          })
+                              minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
+                            })
                           : maker.amount && maker.amount > amountLimits[1]
                             ? t('Must be less than {{maxAmount}}', {
-                              maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
-                            })
+                                maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
+                              })
                             : null
                       }
                       label={amountLabel.label}
@@ -917,7 +917,9 @@ const MakerForm = ({
                 enterTouchDelay={300}
                 enterDelay={700}
                 enterNextDelay={2000}
-                title={t('You can optionally set a password so that only the robots you share it with can take this order.')}
+                title={t(
+                  'You can optionally set a password so that only the robots you share it with can take this order.',
+                )}
               >
                 <TextField
                   fullWidth

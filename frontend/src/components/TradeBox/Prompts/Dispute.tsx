@@ -91,10 +91,10 @@ export const DisputePrompt = ({
       })
       .then((results: object) => {
         if (results != null) {
-          void decryptMessages(results.messages, results.peer_pubkey.split('\\').join('\n'))
+          void decryptMessages(results.messages, results.peer_pubkey.split('\\').join('\n'));
         }
-      })
-  }, [])
+      });
+  }, []);
 
   const decryptMessages = async (serverMessages: ServerMessage[], peerPubKey: string) => {
     const slot = garage.getSlot();
@@ -108,7 +108,7 @@ export const DisputePrompt = ({
             dataFromServer.nick === slot.nickname ? robot.pubKey : peerPubKey,
             robot.encPrivKey,
             slot.token,
-          )
+          );
           setMessages((prev: EncryptedChatMessage[]) => {
             const x: EncryptedChatMessage = {
               index: dataFromServer.index,
@@ -122,9 +122,9 @@ export const DisputePrompt = ({
           });
         }
       }
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Grid container direction='column' style={{ width: '100%', padding: 16 }}>

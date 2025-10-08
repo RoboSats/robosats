@@ -54,7 +54,9 @@ export const ExpiredPrompt = ({
                       borderRadius: 4,
                     },
                   }}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    setPassword(event.target.value)
+                  }
                 />
               </Tooltip>
             </Grid>
@@ -70,15 +72,14 @@ export const ExpiredPrompt = ({
               onClick={() => {
                 if (order.has_password) {
                   if (password && password !== '') {
-                    setError(false)
-                    onClickRenew(password)
+                    setError(false);
+                    onClickRenew(password);
                   } else {
-                    setError(true)
+                    setError(true);
                   }
                 } else {
-                  onClickRenew()
+                  onClickRenew();
                 }
-                
               }}
             >
               {t('Renew Order')}
