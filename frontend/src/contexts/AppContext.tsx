@@ -36,6 +36,7 @@ export const closeAll: OpenDialogs = {
   profile: false,
   recovery: false,
   confirmCollabCancel: false,
+  search: false,
   thirdParty: '',
 };
 

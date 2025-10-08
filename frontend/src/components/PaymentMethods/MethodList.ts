@@ -5,7 +5,7 @@ export interface PaymentMethod {
 }
 
 export const fiatMethods: PaymentMethod[] = [
-  { name: 'Revolut', icon: 'revolut', reversible: false },
+  { name: 'Revolut', icon: 'revolut', reversible: true },
   { name: 'CashApp', icon: 'cashapp', reversible: false },
   { name: 'Zelle', icon: 'zelle', reversible: false },
   { name: 'Strike', icon: 'strike', reversible: false },
