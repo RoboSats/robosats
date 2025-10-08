@@ -16,7 +16,7 @@ import {
   AccordionDetails,
 } from '@mui/material';
 import { type Robot } from '../../models';
-import { Casino, Bolt, Check, Storefront, AddBox, School } from '@mui/icons-material';
+import { Casino, Bolt, Check, Storefront, AddBox, School, Search } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
@@ -38,7 +38,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { navigateToPage, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -242,11 +242,13 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                 <Button
                   color='primary'
                   onClick={() => {
-                    navigateToPage('offers', navigate);
+                    setOpen((open) => {
+                      return { ...open, search: true };
+                    });
                   }}
                 >
-                  <Storefront /> <div style={{ width: '0.5em' }} />
-                  {t('Offers')}
+                  <Search /> <div style={{ width: '0.5em' }} />
+                  {t('Search')}
                 </Button>
                 <Button
                   color='secondary'
