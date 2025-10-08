@@ -68,6 +68,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                 {'...'}
               </Typography>
             </AccordionSummary>
+            
             <AccordionDetails>
               <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
                 <Grid item>
