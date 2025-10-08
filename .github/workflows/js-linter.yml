@@ -40,10 +40,12 @@ jobs:
           cd frontend
           npm install
 
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          prettier: true
-          prettier_dir: frontend
-          eslint: true
-          eslint_dir: frontend
+      - name: 'Run EsLint'
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: 'Run Prettier'
+        run: |
+          cd frontend
+          npm run format
