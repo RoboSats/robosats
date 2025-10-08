@@ -494,6 +494,10 @@ class TradeTest(BaseAPITestCase):
             maker_form=description_maker_form,
         )
         trade.publish_order()
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertEqual(data["description"], description)
+
         trade.take_order()
         data = trade.response.json()
 
