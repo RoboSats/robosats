@@ -253,6 +253,7 @@ class OrderView(viewsets.ViewSet):
         data["maker_nick"] = str(order.maker)
         data["maker_hash_id"] = str(order.maker.robot.hash_id)
         data["maker_nostr_pubkey"] = str(order.maker.robot.nostr_pubkey)
+        data["description"] = order.description
 
         # Add activity status of participants based on last_seen
         data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
@@ -289,7 +290,6 @@ class OrderView(viewsets.ViewSet):
         data["is_disputed"] = order.is_disputed
         data["ur_nick"] = request.user.username
         data["satoshis_now"] = order.last_satoshis
-        data["description"] = order.description
 
         # Add whether hold invoices are LOCKED (ACCEPTED)
         # Is there a maker bond? If so, True if locked, False otherwise
