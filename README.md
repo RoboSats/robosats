@@ -42,6 +42,14 @@ Robosats is also available for Android devices
     </a>
 </div>
 
+and desktop
+
+<div align="center">
+    <a href="https://github.com/RoboSats/robosats/releases" target="_blank">
+        <img src="https://github.com/machiav3lli/oandbackupx/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="70">
+    </a>
+</div>
+
 ## How to use it
 https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-b93f-250f80bc5bca.mp4
 
