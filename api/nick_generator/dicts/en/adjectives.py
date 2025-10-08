@@ -4824,7 +4824,6 @@ adjectives = [
     "Chatting",
     "Nightmarish",
     "Niggardly",
-    "Hated",
     "Satiric",
     "Shattering",
     "Fabled",

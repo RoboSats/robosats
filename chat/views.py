@@ -53,7 +53,12 @@ class ChatView(viewsets.ViewSet):
         if not (request.user == order.maker or request.user == order.taker):
             return Response(new_error(6001), status.HTTP_400_BAD_REQUEST)
 
-        if order.status not in [Order.Status.CHA, Order.Status.FSE]:
+        if order.status not in [
+            Order.Status.CHA,
+            Order.Status.FSE,
+            Order.Status.DIS,
+            Order.Status.WFR,
+        ]:
             return Response(new_error(6002), status.HTTP_400_BAD_REQUEST)
 
         queryset = Message.objects.filter(order=order, index__gt=offset)
