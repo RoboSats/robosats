@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.8.0
+  version: 0.8.2
   x-logo:
     url: https://raw.githubusercontent.com/Robosats/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
@@ -270,6 +270,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
@@ -280,6 +283,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
@@ -343,6 +349,7 @@ paths:
         - `maker_status`
         - `taker_status`
         - `price_now`
+        - `description`
 
         ### Order Status
 
@@ -399,26 +406,33 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
               examples:
                 OrderCancelled:
                   value:
+                    error_code: 1043
                     bad_request: This order has been cancelled
                   summary: Order cancelled
                 WhenTheOrderIsNotPublicAndYouNeitherTheTakerNorMaker:
                   value:
+                    error_code: 1044
                     bad_request: This order is not available
                   summary: When the order is not public and you neither the taker
                     nor maker
                 WhenMakerBondExpires(asMaker):
                   value:
+                    error_code: 1022
                     bad_request: Invoice expired. You did not confirm publishing the
                       order in time. Make a new order.
                   summary: When maker bond expires (as maker)
                 WhenRobosatsNodeIsDown:
                   value:
+                    error_code: 1023
                     bad_request: The lightning node is down. Write in the Telegram
                       group to make sure the staff is aware.
                   summary: When Robosats node is down
@@ -429,6 +443,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
@@ -440,6 +457,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
@@ -582,6 +602,7 @@ paths:
             examples:
               UserNotAuthenticated:
                 value:
+                  error_code: 1036
                   bad_request: Woops! It seems you do not have a robot avatar
                 summary: User not authenticated
           application/x-www-form-urlencoded:
@@ -606,12 +627,16 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
               examples:
                 UserNotAuthenticated:
                   value:
+                    error_code: 1036
                     bad_request: Woops! It seems you do not have a robot avatar
                   summary: User not authenticated
           description: ''
@@ -690,6 +715,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
@@ -710,6 +738,7 @@ paths:
             examples:
               UserNotAuthenticated:
                 value:
+                  error_code: 1036
                   bad_request: Woops! It seems you do not have a robot avatar
                 summary: User not authenticated
               WhenNoRewardsEarned:
@@ -759,12 +788,16 @@ paths:
                     successful_withdrawal:
                       type: boolean
                       default: false
+                    error_code:
+                      type: integer
+                      description: Error code
                     bad_request:
                       type: string
                       description: More context for the reason of the failure
               examples:
                 UserNotAuthenticated:
                   value:
+                    error_code: 1036
                     bad_request: Woops! It seems you do not have a robot avatar
                   summary: User not authenticated
                 WhenNoRewardsEarned:
@@ -931,6 +964,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  error_code:
+                    type: integer
+                    description: Error code
                   bad_request:
                     type: string
                     description: Reason for the failure
@@ -1022,6 +1058,13 @@ components:
           nullable: true
           description: A valid LN invoice with the reward amount to withdraw
           maxLength: 2000
+        routing_budget_ppm:
+          type: integer
+          maximum: 100001
+          minimum: 0
+          nullable: true
+          default: 0
+          description: Max budget to allocate for routing in PPM
     ExpiryReasonEnum:
       enum:
       - 0
@@ -1332,6 +1375,10 @@ components:
           type: string
           nullable: true
           maxLength: 2000
+        description:
+          type: string
+          nullable: true
+          maxLength: 240
       required:
       - currency
       - type
@@ -1470,15 +1517,6 @@ components:
           format: double
           description: Price of the order in the order's currency at the time of request
             (upto 5 significant digits)
-        premium_percentile:
-          type: number
-          format: double
-          description: (Only if `is_maker`) Premium percentile of your order compared
-            to other public orders in the same currency currently in the order book
-        num_similar_orders:
-          type: integer
-          description: (Only if `is_maker`) The number of public orders of the same
-            currency currently in the order book
         tg_enabled:
           type: boolean
           description: (Only if `is_maker`) Whether Telegram notification is enabled
@@ -1658,6 +1696,10 @@ components:
         chat_last_index:
           type: integer
           description: The index of the last message sent in the trade chatroom
+        description:
+          type: string
+          nullable: true
+          description: Order description
       required:
       - expires_at
       - id
