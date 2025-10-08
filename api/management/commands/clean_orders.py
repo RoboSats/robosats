@@ -17,8 +17,8 @@ def invoice_lookup_error(exc_string: str) -> bool:
             return True
     elif LNVENDOR == "CLN":
         if (
-            "empty result for listdatastore_state" in exc_string or
-            "Invoice dropped from internal state unexpectedly" in exc_string
+            "empty result for listdatastore_state" in exc_string
+            or "Invoice dropped from internal state unexpectedly" in exc_string
         ):
             return True
 

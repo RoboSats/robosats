@@ -53,7 +53,7 @@ class Nostr:
             Tag.parse(
                 [
                     "order_id",
-                    f"{config("COORDINATOR_ALIAS", cast=str).lower()}/{order.id}",
+                    f"{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
                 ]
             ),
             Tag.parse(["status", str(order.status)]),
@@ -89,7 +89,7 @@ class Nostr:
 
     def generate_tags(self, order, robot_name, robot_hash_id, currency):
         hashed_id = hashlib.md5(
-            f"{config("COORDINATOR_ALIAS", cast=str)}{order.id}".encode("utf-8")
+            f"{config('COORDINATOR_ALIAS', cast=str)}{order.id}".encode("utf-8")
         ).hexdigest()
 
         tags = [
@@ -112,7 +112,7 @@ class Nostr:
             Tag.parse(
                 [
                     "source",
-                    f"http://{config("HOST_NAME")}/order/{config("COORDINATOR_ALIAS", cast=str).lower()}/{order.id}",
+                    f"http://{config('HOST_NAME')}/order/{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
                 ]
             ),
             Tag.parse(

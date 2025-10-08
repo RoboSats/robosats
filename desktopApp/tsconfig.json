@@ -1,4 +1,4 @@
-{ 
+{
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
@@ -10,5 +10,7 @@
     "noImplicitAny": false,
     "outDir": "."
   },
-  "exclude": [ "node_modules" ] 
+  "exclude": [
+    "node_modules"
+  ]
 }

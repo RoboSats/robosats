@@ -16,7 +16,7 @@ import {
   AccordionDetails,
 } from '@mui/material';
 import { type Robot } from '../../models';
-import { Casino, Bolt, Check, Storefront, AddBox, School, Search } from '@mui/icons-material';
+import { Casino, Bolt, Check, AddBox, School, Search } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';

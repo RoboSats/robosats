@@ -10,7 +10,7 @@ sidebar:
 src: "_pages/docs/03-understand/14-on-chain-payouts.md"
 ---
 
-Although RoboSats is an exchange built on top of the Lightning Network, there is an option for the buyer to receive their Sats to an on-chain bitcoin address. This is referred to as an on-chain payout or, sometimes, an on-chain swap (not to be confused with [P2P Swaps](/docs/swaps)). 
+Although RoboSats is an exchange built on top of the Lightning Network, there is an option for the buyer to receive their Sats to an on-chain bitcoin address. This is referred to as an on-chain payout or, sometimes, an on-chain swap (not to be confused with [P2P Swaps](/docs/swaps)).
 
 In the UI, this option is available after the taker has locked their bond. When the order status is on "Waiting for buyer invoice", you should see two options: "Lightning" and "Onchain"
 

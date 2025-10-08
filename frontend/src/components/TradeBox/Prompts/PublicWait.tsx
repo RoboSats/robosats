@@ -15,7 +15,10 @@ import { LoadingButton } from '@mui/lab';
 import currencies from '../../../../static/assets/currencies.json';
 
 import { type Order } from '../../../models';
-import { FederationContext, type UseFederationStoreType } from '../../../contexts/FederationContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
 import { PauseCircle, Storefront, Percent } from '@mui/icons-material';
 
 interface PublicWaitPrompProps {
@@ -46,27 +49,29 @@ export const PublicWaitPrompt = ({
 
   const numSimilarOrders = useMemo((): number => {
     const orders = Object.values(federation.book) ?? [];
-    const similarOrders = orders.filter(bookOrder =>
-      // Public -> 1
-      bookOrder?.currency == order.currency && order.status == 1
+    const similarOrders = orders.filter(
+      (bookOrder) =>
+        // Public -> 1
+        bookOrder?.currency == order.currency && order.status == 1,
     );
     return similarOrders.length;
   }, [federationUpdatedAt]);
 
   const premiumPercentile = useMemo((): number => {
     const orders = Object.values(federation.book) ?? [];
-    const querySet = orders.filter(bookOrder =>
-      bookOrder?.currency == order.currency && order.status == 1 && bookOrder.type == order.type
+    const querySet = orders.filter(
+      (bookOrder) =>
+        bookOrder?.currency == order.currency && order.status == 1 && bookOrder.type == order.type,
     );
 
     if (querySet.length <= 1) {
       return 0.5;
     }
 
-    const premiums = querySet.map(similarOrder => parseFloat(similarOrder?.premium ?? '0'));
+    const premiums = querySet.map((similarOrder) => parseFloat(similarOrder?.premium ?? '0'));
     const sumPremium = premiums.reduce((sum, rate) => sum + (rate < order.premium ? 1 : 0), 0);
     const percentile = (sumPremium / premiums.length) * 100;
-    
+
     return Math.floor(parseFloat(percentile.toFixed(2)));
   }, [federationUpdatedAt]);
 

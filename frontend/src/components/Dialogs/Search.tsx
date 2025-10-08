@@ -37,21 +37,21 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
 
   useEffect(() => {
     if (open) {
-      setStep('1')
-      setFav(initialAppContext.fav)
+      setStep('1');
+      setFav(initialAppContext.fav);
     }
   }, [open]);
 
   useEffect(() => {
     if (step === '3') {
-      navigateToPage('offers', navigate)
+      navigateToPage('offers', navigate);
     }
   }, [step]);
 
   const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
     const currency = Number(e.target.value);
     setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
-    setStep('3')
+    setStep('3');
   };
 
   return (
@@ -68,15 +68,11 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                 {'...'}
               </Typography>
             </AccordionSummary>
-            
+
             <AccordionDetails>
               <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
                 <Grid item>
-                  <Typography>
-                    {t(
-                      'Are you looking to sell your Bitcoins or buy some?',
-                    )}
-                  </Typography>
+                  <Typography>{t('Are you looking to sell your Bitcoins or buy some?')}</Typography>
                 </Grid>
                 <Grid item>
                   <Grid container direction='column' alignItems='center' spacing={1}>
@@ -86,17 +82,18 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                           color='secondary'
                           onClick={() => {
                             setFav({ ...fav, mode: 'fiat', type: 0 });
-                            setStep('2')
+                            setStep('2');
                           }}
                         >
-                          <SendReceiveIcon sx={{ transform: 'scaleX(-1)' }} /> <div style={{ width: '0.5em' }} />
+                          <SendReceiveIcon sx={{ transform: 'scaleX(-1)' }} />{' '}
+                          <div style={{ width: '0.5em' }} />
                           {t('Sell')}
                         </Button>
                         <Button
                           color='primary'
                           onClick={() => {
                             setFav({ ...fav, mode: 'fiat', type: 1 });
-                            setStep('2')
+                            setStep('2');
                           }}
                         >
                           <SendReceiveIcon /> <div style={{ width: '0.5em' }} />
@@ -108,9 +105,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                 </Grid>
                 <Grid item>
                   <Typography>
-                    {t(
-                      'Do you want to swap from on-chain into Lightning or vice versa?',
-                    )}
+                    {t('Do you want to swap from on-chain into Lightning or vice versa?')}
                   </Typography>
                 </Grid>
                 <Grid item>
@@ -121,7 +116,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                           color='primary'
                           onClick={() => {
                             setFav({ ...fav, mode: 'swap', type: 1 });
-                            setStep('3')
+                            setStep('3');
                           }}
                         >
                           <SwapCalls /> <div style={{ width: '0.5em' }} />
@@ -131,7 +126,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                           color='secondary'
                           onClick={() => {
                             setFav({ ...fav, mode: 'swap', type: 0 });
-                            setStep('3')
+                            setStep('3');
                           }}
                         >
                           <SwapCalls /> <div style={{ width: '0.5em' }} />

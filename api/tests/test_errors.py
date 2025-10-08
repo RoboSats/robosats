@@ -31,7 +31,7 @@ class TestErrors(TestCase):
 
         self.assertEqual(error["error_code"], error_code)
         self.assertEqual(error["bad_address"], ERRORS[error_code])
-    
+
     def test_new_error_bad_summary(self):
         error_code = 5000
         error = new_error(error_code)
@@ -45,7 +45,7 @@ class TestErrors(TestCase):
 
         self.assertEqual(error["error_code"], error_code)
         self.assertEqual(error["bad_request"], ERRORS[error_code])
-    
+
     def test_new_error_middleware(self):
         error_code = 7000
         error = new_error(error_code)
@@ -59,4 +59,7 @@ class TestErrors(TestCase):
         error = new_error(error_code, {"min_mining_fee_rate": 5})
 
         self.assertEqual(error["error_code"], error_code)
-        self.assertEqual(error["bad_address"], f"The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte")
+        self.assertEqual(
+            error["bad_address"],
+            f"The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte",
+        )

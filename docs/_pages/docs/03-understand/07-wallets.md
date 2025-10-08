@@ -70,7 +70,7 @@ Overall the wallet works as expected.
 Self-custodial Lightning wallet.
 
 ### Blink (Mobile, former Bitcoin Beach Wallet)
-Overall the wallet works as expected. 
+Overall the wallet works as expected.
 Offers the option to swap in and out of synthetic USD. Custodial wallet developed by Galoy, El Salvador. Originated from the Bitcoin Beach project.
 
 ### Blixt (Android/iOS, LND light backend on device)
@@ -92,7 +92,7 @@ Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transac
 Works as expected. The `lightning-cli pay <invoice>` command does not conclude while the payment is pending, but can use `lightning-cli paystatus <invoice>` to monitor the state.
 
 ### Electrum (Mobile & Desktop)
-This wallet used to work fine with channels created to ACINQ. 
+This wallet used to work fine with channels created to ACINQ.
 Recent versions can't create this channel successfully.
 
 ### LND (CLI Interface)
@@ -103,7 +103,7 @@ Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not
 Overall the [Mash](https://mash.com/consumer-experience/) wallet works end2end with Robosats on both selling & buying over lightning. Majority of relevant invoice details in the mash wallet are shown and clear to users throughout the process. When the transactions are complete, they open in the mobile app on both sender/receiver sides to highlight that the transactions are completed.The one UX hick-up is that the pending invoices list doesn't explicitly show HOLD invoices and there is a "spinning" screen on first HOLD invoice payment. The team has a bug open to fix this issue shortly (this note is from Aug 21st 2023).
 
 ### Muun (Mobile)
-Self-custodial wallet with a minimalist interface. 
+Self-custodial wallet with a minimalist interface.
 Similar to Blixt or LND, Muun plays nicely with hold invoices. You can be a seller in RoboSats using Muun and the user experience will be great. However, in order to be a buyer when using Muun, you need to submit an on-chain address for the payout as a Lightning invoice won't work. Muun is _fee siphoning attacking_ any sender to Muun wallet. There is a mandatory hop through a private channel with a fee of +1500ppm. RoboSats will strictly not route a buyer payout for a net loss. Given that RoboSats trading fees are {{site.robosats.total_fee}}% and it needs to cover the routing fees, **RoboSats will never find a suitable route to a Muun wallet user**. At the moment, RoboSats will scan your invoice for routing hints that can potentially encode a _fee siphoning attack_. If this trick is found, then the invoice will be rejected: submit an on-chain address instead for an on-the-fly swap. Refer to [Understand > On-Chain Payouts](/docs/on-chain-payouts/) for more information about on-the-fly swaps. Important to note that Muun has issues during times of high on chain fee spikes. Regardless, the workaround to receive to Muun is: either submit an on chain address or choose a higher routing budget after enabling the "Advanced Options" switch.
 
 ### OBW (Mobile)

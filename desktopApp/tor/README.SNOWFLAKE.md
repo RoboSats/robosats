@@ -39,7 +39,7 @@ To use the Snowflake client with Tor, you will need to add the appropriate `Brid
 
 #### Running a Snowflake Proxy
 
-You can contribute to Snowflake by running a Snowflake proxy. We have the option to run a proxy in your browser or as a standalone Go program. See our [community documentation](https://community.torproject.org/relay/setup/snowflake/) for more details. 
+You can contribute to Snowflake by running a Snowflake proxy. We have the option to run a proxy in your browser or as a standalone Go program. See our [community documentation](https://community.torproject.org/relay/setup/snowflake/) for more details.
 
 #### Using the Snowflake Library with Other Applications
 

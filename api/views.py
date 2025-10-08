@@ -92,10 +92,15 @@ class MakerView(CreateAPIView):
             config("MAX_PUBLIC_ORDERS")
         ):
             return Response(
-                new_error(1037, {
-                    "coordinator_alias": config('COORDINATOR_ALIAS', cast=str, default='NoAlias'),
-                    "max_public_orders": config('MAX_PUBLIC_ORDERS', cast=str),
-                }),
+                new_error(
+                    1037,
+                    {
+                        "coordinator_alias": config(
+                            "COORDINATOR_ALIAS", cast=str, default="NoAlias"
+                        ),
+                        "max_public_orders": config("MAX_PUBLIC_ORDERS", cast=str),
+                    },
+                ),
                 status.HTTP_400_BAD_REQUEST,
             )
         # Only allow users who are not already engaged in an order
@@ -525,7 +530,9 @@ class OrderView(viewsets.ViewSet):
 
                 if order.password is not None:
                     if password is None or not compare_digest(order.password, password):
-                        return Response(new_error(1045), status=status.HTTP_403_FORBIDDEN)
+                        return Response(
+                            new_error(1045), status=status.HTTP_403_FORBIDDEN
+                        )
 
                 # For order with amount range, set the amount now.
                 if order.has_range:
@@ -856,7 +863,9 @@ class RewardView(CreateAPIView):
         if not valid_signature:
             return Response(new_error(1048), status.HTTP_400_BAD_REQUEST)
 
-        valid, context = Logics.withdraw_rewards(request.user, invoice, routing_budget_ppm)
+        valid, context = Logics.withdraw_rewards(
+            request.user, invoice, routing_budget_ppm
+        )
 
         if not valid:
             context["successful_withdrawal"] = False

@@ -89,7 +89,7 @@ export const SuccessfulPrompt = ({
 
   const onClickStartAgain = () => {
     navigateToPage('create', navigate);
-  }
+  };
 
   useEffect(() => {
     const slot = garage.getSlot();

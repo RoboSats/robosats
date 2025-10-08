@@ -25,7 +25,7 @@ interface Props {
   useTiles: boolean;
   position?: [number, number] | undefined;
   setPosition?: (position: [number, number]) => void;
-  orders?:  Record<string, PublicOrder | undefined>;
+  orders?: Record<string, PublicOrder | undefined>;
   onOrderClicked?: (id: number, shortAlias: string) => void;
   zoom?: number;
   center?: [number, number];

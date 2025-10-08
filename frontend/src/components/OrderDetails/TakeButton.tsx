@@ -1,20 +1,6 @@
 import React, { useState, useMemo, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContentText,
-  DialogActions,
-  DialogContent,
-  Box,
-  Button,
-  Tooltip,
-  Grid,
-  TextField,
-  useTheme,
-  Typography,
-  FormHelperText,
-} from '@mui/material';
+import { Box, Tooltip, Grid, TextField, useTheme, Typography, FormHelperText } from '@mui/material';
 
 import Countdown from 'react-countdown';
 

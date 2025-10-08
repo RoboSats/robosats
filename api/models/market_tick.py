@@ -42,10 +42,7 @@ class MarketTick(models.Model):
         decimal_places=2,
         default=None,
         null=True,
-        validators=[
-            MinValueValidator(Decimal(-100)),
-            MaxValueValidator(Decimal(999))
-        ],
+        validators=[MinValueValidator(Decimal(-100)), MaxValueValidator(Decimal(999))],
         blank=True,
     )
     currency = models.ForeignKey("api.Currency", null=True, on_delete=models.SET_NULL)
@@ -56,10 +53,7 @@ class MarketTick(models.Model):
         max_digits=4,
         decimal_places=4,
         default=0,
-        validators=[
-            MinValueValidator(Decimal(0)),
-            MaxValueValidator(Decimal(1))
-        ],
+        validators=[MinValueValidator(Decimal(0)), MaxValueValidator(Decimal(1))],
     )
 
     def log_a_tick(order):

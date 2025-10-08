@@ -165,7 +165,7 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
     "ENUM_NAME_OVERRIDES": {
         "StatusEnum": "api.models.order.Order.Status",
-    }
+    },
 }
 
 

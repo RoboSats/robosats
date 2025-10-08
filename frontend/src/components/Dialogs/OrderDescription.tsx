@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogContentText,
   Button,
-  Grid,
 } from '@mui/material';
 import { Order } from '../../models';
 
@@ -29,10 +28,10 @@ const OrderDescriptionDialog = ({
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (onClickDone && open && !Boolean(order.description)) {
-      onClickDone()
+    if (onClickDone && open && !order.description) {
+      onClickDone();
     }
-  }, [open])
+  }, [open]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -45,7 +44,9 @@ const OrderDescriptionDialog = ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClickBack} autoFocus>{t('Go back')}</Button>
+        <Button onClick={onClickBack} autoFocus>
+          {t('Go back')}
+        </Button>
         {onClickDone && <Button onClick={onClickDone}>{t('Continue')}</Button>}
       </DialogActions>
     </Dialog>

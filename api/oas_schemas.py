@@ -189,19 +189,25 @@ class OrderViewSchema:
         "examples": [
             OpenApiExample(
                 "Order cancelled",
-                value={"error_code": 1043, "bad_request": "This order has been cancelled"},
+                value={
+                    "error_code": 1043,
+                    "bad_request": "This order has been cancelled",
+                },
                 status_codes=[400],
             ),
             OpenApiExample(
                 "When the order is not public and you neither the taker nor maker",
-                value={"error_code": 1044, "bad_request": "This order is not available"},
+                value={
+                    "error_code": 1044,
+                    "bad_request": "This order is not available",
+                },
                 status_codes=[400],
             ),
             OpenApiExample(
                 "When maker bond expires (as maker)",
                 value={
                     "error_code": 1022,
-                    "bad_request": "Invoice expired. You did not confirm publishing the order in time. Make a new order."
+                    "bad_request": "Invoice expired. You did not confirm publishing the order in time. Make a new order.",
                 },
                 status_codes=[400],
             ),
@@ -209,7 +215,7 @@ class OrderViewSchema:
                 "When Robosats node is down",
                 value={
                     "error_code": 1023,
-                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware."
+                    "bad_request": "The lightning node is down. Write in the Telegram group to make sure the staff is aware.",
                 },
                 status_codes=[400],
             ),
@@ -394,10 +400,7 @@ class BookViewSchema:
                 name="type",
                 location=OpenApiParameter.QUERY,
                 description=(
-                    "Order type to filter by\n"
-                    "- `0` - BUY\n"
-                    "- `1` - SELL\n"
-                    "- `2` - ALL"
+                    "Order type to filter by\n- `0` - BUY\n- `1` - SELL\n- `2` - ALL"
                 ),
                 type=int,
                 enum=[0, 1, 2],
@@ -714,7 +717,7 @@ class TickViewSchema:
                 "Too many ticks",
                 value={
                     "error_code": 1051,
-                    "bad_request": "More than 5000 market ticks have been found. Try narrowing the date range."
+                    "bad_request": "More than 5000 market ticks have been found. Try narrowing the date range.",
                 },
                 status_codes=[400],
             )

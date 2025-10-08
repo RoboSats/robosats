@@ -41,18 +41,18 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
     if (e?.target?.value) {
-      setLoading(true)
+      setLoading(true);
       loadRobot(e.target.value as string);
     }
   };
 
   useEffect(() => {
     if (open) garage.fetchRobot(federation, garage.getSlot()?.token ?? '');
-  }, [open])
+  }, [open]);
 
   useEffect(() => {
-    setLoading(Boolean(garage.getSlot()?.loading))
-  }, [slotUpdatedAt])
+    setLoading(Boolean(garage.getSlot()?.loading));
+  }, [slotUpdatedAt]);
 
   return (
     <>
