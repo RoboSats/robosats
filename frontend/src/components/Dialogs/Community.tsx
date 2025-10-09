@@ -11,7 +11,6 @@ import {
   Typography,
 } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import RedditIcon from '@mui/icons-material/Reddit';
 import { NostrIcon, SimplexIcon } from '../Icons';
 
 interface Props {
@@ -98,24 +97,6 @@ const CommunityDialog = ({ open = false, onClose }: Props): React.JSX.Element =>
             <ListItemText
               primary={t('Tell us about a new feature or a bug')}
               secondary={t('Github Issues - The Robotic Satoshis Open Source Project')}
-            />
-          </ListItemButton>
-
-          <Divider />
-
-          <ListItemButton
-            component='a'
-            target='_blank'
-            href='https://reddit.com/r/robosats'
-            rel='noreferrer'
-          >
-            <ListItemIcon>
-              <RedditIcon color='primary' sx={{ height: 35, width: 35 }} />
-            </ListItemIcon>
-
-            <ListItemText
-              primary={t("Join RoboSats' Subreddit")}
-              secondary={t('RoboSats in Reddit')}
             />
           </ListItemButton>
         </List>
