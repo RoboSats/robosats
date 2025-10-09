@@ -845,7 +845,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                     <ListItemText secondary={t('Coordinator commit hash')}>
                       <Link
                         target='_blank'
-                        href={`https://github.com/Reckless-Satoshi/robosats/tree/${coordinator?.info?.robosats_running_commit_hash}`}
+                        href={`https://github.com/Robosats/robosats/tree/${coordinator?.info?.robosats_running_commit_hash}`}
                         rel='noreferrer'
                       >
                         {`${coordinator?.info?.robosats_running_commit_hash.slice(0, 12)}...`}

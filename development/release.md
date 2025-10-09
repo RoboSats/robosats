@@ -8,7 +8,7 @@ Every new version always follows:
 6. Usually, Coordinators are prompted to upgrade before publishing the new release.
 7. Mark the release as the latest and publish.
 8. Every day at 19:00 GMT IzzyDroid checks automatically for new releases and download it to their repositories.
-9. Announce the new version to Zapstore from `/mobile/android` by running `zapstore publish robosats`
+9. Announce the new version to Zapstore from `/android` by running `zapstore publish robosats`
 9. SSH into the main server
 10. Go to `/docs` and run `docker compose build && docker compose up -d`
 11. Go to `/frontend` and run `npm run build`, that will generate 2 main files (`basic.html` and `pro.html`) and the `/static` folder in 2 different folders: `/nodeapp` and `/web`
