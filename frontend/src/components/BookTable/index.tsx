@@ -776,6 +776,19 @@ const BookTable = ({
       : orders;
   }, [showControls, orders, fav, paymentMethods]);
 
+  const sortModel = useMemo(() => {
+    if (fav.type === 1) {
+      // buyer - sort ascending to show best deals first (lowest premium)
+      return [{ field: 'premium', sort: 'asc' as const }];
+    } else if (fav.type === 0) {
+      // seller - sort descending to show best deals first (highest premium)
+      return [{ field: 'premium', sort: 'desc' as const }];
+    } else {
+      // no filter selected
+      return [];
+    }
+  }, [fav.type]);
+
   if (!fullscreen) {
     return (
       <Paper
@@ -800,6 +813,7 @@ const BookTable = ({
           sx={headerStyleFix}
           localeText={localeText}
           rows={filteredOrders}
+          sortModel={sortModel}
           getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
           loading={federation.loading}
           columns={columns}
@@ -840,6 +854,7 @@ const BookTable = ({
             rowHeight={3.714 * theme.typography.fontSize}
             headerHeight={3.25 * theme.typography.fontSize}
             rows={filteredOrders}
+            sortModel={sortModel}
             loading={federation.loading}
             columns={columns}
             hideFooter={!showFooter}
