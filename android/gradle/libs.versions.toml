@@ -12,7 +12,7 @@ activity = "1.11.0"
 constraintlayout = "2.2.1"
 kmpTor= "4.8.10-0-1.4.5"
 kmpTorBinary= "4.8.10-0"
-jna = "5.17.0"
+jna = "5.18.1"
 okhttp = "5.1.0"
 quartz = "0.92.7"
 
