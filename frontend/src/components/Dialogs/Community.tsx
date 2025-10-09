@@ -4,19 +4,14 @@ import {
   Dialog,
   DialogContent,
   Divider,
-  IconButton,
   List,
   ListItemText,
-  ListItem,
   ListItemIcon,
   ListItemButton,
-  Tooltip,
   Typography,
 } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import RedditIcon from '@mui/icons-material/Reddit';
-import Flags from 'country-flag-icons/react/3x2';
 import { NostrIcon, SimplexIcon } from '../Icons';
 
 interface Props {
@@ -26,15 +21,6 @@ interface Props {
 
 const CommunityDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
-
-  const flagProps = {
-    width: 30,
-    height: 30,
-    opacity: 0.85,
-    style: {
-      filter: 'drop-shadow(2px 2px 2px #444444)',
-    },
-  };
 
   return (
     <Dialog
@@ -132,38 +118,6 @@ const CommunityDialog = ({ open = false, onClose }: Props): React.JSX.Element =>
               secondary={t('RoboSats in Reddit')}
             />
           </ListItemButton>
-
-          <Divider />
-
-          <ListItem>
-            <ListItemIcon>
-              <SendIcon color='primary' sx={{ height: 32, width: 32 }} />
-            </ListItemIcon>
-
-            <ListItemText secondary={t('We are abandoning Telegram! Our old TG groups')}>
-              <Tooltip title={t('Join RoboSats Spanish speaking community!')}>
-                <IconButton
-                  component='a'
-                  target='_blank'
-                  href='https://t.me/robosats_es'
-                  rel='noreferrer'
-                >
-                  <Flags.ES {...flagProps} />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title={t('Join RoboSats English speaking community!')}>
-                <IconButton
-                  component='a'
-                  target='_blank'
-                  href='https://t.me/robosats'
-                  rel='noreferrer'
-                >
-                  <Flags.US {...flagProps} />
-                </IconButton>
-              </Tooltip>
-            </ListItemText>
-          </ListItem>
         </List>
       </DialogContent>
     </Dialog>

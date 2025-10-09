@@ -193,8 +193,11 @@ export const SuccessfulPrompt = ({
             <Typography variant='body2' align='center'>
               <Trans i18nKey='let_us_know_hot_to_improve'>
                 Let us know how the platform could improve (
-                <Link target='_blank' href='https://t.me/robosats'>
-                  Telegram
+                <Link
+                  target='_blank'
+                  href='https://simplex.chat/contact/#/?v=1-2&smp=smp%3A%2F%2F0YuTwO05YJWS8rkjn9eLJDjQhFKvIYd8d4xG8X1blIU%3D%40smp8.simplex.im%2FyEX_vdhWew_FkovCQC3mRYRWZB1j_cBq%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAnrf9Jw3Ajdp4EQw71kqA64VgsIIzw8YNn68WjF09jFY%253D%26srv%3Dbeccx4yfxxbvyhqypaavemqurytl6hozr47wfc7uuecacjqdvwpw2xid.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22hWnMVPnJl-KT3-virDk0JA%3D%3D%22%7D'
+                >
+                  SimpleX
                 </Link>
                 {' / '}
                 <Link target='_blank' href='https://github.com/RoboSats/robosats/issues'>
