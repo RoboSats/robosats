@@ -1,19 +1,19 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/mobile"
-    schedule:
-      interval: "weekly"
-      day: "saturday"
-    versioning-strategy: increase
-  - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
-      day: "friday"
+      day: "monday"
+    versioning-strategy: increase
+  - package-ecosystem: "npm"
+    directory: "/desktopApp"
+    schedule:
+      interval: "weekly"
+      day: "monday"
     versioning-strategy: increase
   - package-ecosystem: "gradle"
-    directory: "/mobile/android"
+    directory: "/android"
     schedule:
       interval: "weekly"
       day: "monday"
