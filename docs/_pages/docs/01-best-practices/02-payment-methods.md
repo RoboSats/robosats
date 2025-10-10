@@ -104,6 +104,8 @@ Sellers are encouraged to share a link to this guide with their buyers when requ
 
 ### Revolut via payment links
 
+  **To mitigate chargeback scams use Instant SEPA instead of any other Revolut's payment methods.**
+  
   Exchange of @revtag: When making a payment through Revolut, it is essential for both the buyer and the seller to exchange their @revtag in the chat. This @revtag can be verified in the payment history of the app, making it easy to confirm payments.
 
   Payment Link Format: Revolut payment links follow this format: https://revolut.me/p/XXXXX. Please note that these links do not contain recipient address information.
