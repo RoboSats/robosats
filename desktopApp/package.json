@@ -16,7 +16,7 @@
   "devDependencies": {
     "@electron/packager": "^18.3.2",
     "electron": "^30.0.3",
-    "typescript": "^5.4.5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "cors": "^2.8.5",
