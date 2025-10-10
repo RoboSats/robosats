@@ -74,7 +74,7 @@
     "country-flag-icons": "^1.5.21",
     "date-fns": "^4.1.0",
     "file-replace-loader": "^1.4.2",
-    "fs-extra": "^11.3.1",
+    "fs-extra": "^11.3.2",
     "i18next": "^25.2.2",
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
