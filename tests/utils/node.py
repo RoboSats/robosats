@@ -17,22 +17,23 @@ def get_node(name="robot"):
     """
     if name == "robot":
         admin_macaroon_file = config(
-            "LND_TEST_USER_MACAROON_PATH", cast=str,
-            default="/lndrobot/data/chain/bitcoin/regtest/admin.macaroon"
+            "LND_TEST_USER_MACAROON_PATH",
+            cast=str,
+            default="/lndrobot/data/chain/bitcoin/regtest/admin.macaroon",
         )
         macaroon = codecs.encode(
-            open(admin_macaroon_file, "rb").read(), "hex",
+            open(admin_macaroon_file, "rb").read(),
+            "hex",
         )
         port = config("LND_TEST_USER_REST_PORT", cast=int, default=8080)
 
     elif name == "coordinator":
         admin_macaroon_file = config(
-            "LND_TEST_COORD_MACAROON_PATH", cast=str,
-            default="/lnd/data/chain/bitcoin/regtest/admin.macaroon"
+            "LND_TEST_COORD_MACAROON_PATH",
+            cast=str,
+            default="/lnd/data/chain/bitcoin/regtest/admin.macaroon",
         )
-        macaroon = codecs.encode(
-            open(admin_macaroon_file, "rb").read(), "hex"
-        )
+        macaroon = codecs.encode(open(admin_macaroon_file, "rb").read(), "hex")
         port = config("LND_TEST_COORD_REST_PORT", cast=int, default=8081)
 
     return {"port": port, "headers": {"Grpc-Metadata-macaroon": macaroon}}
@@ -41,7 +42,7 @@ def get_node(name="robot"):
 def get_lnd_node_id(node_name):
     node = get_node(node_name)
     response = requests.get(
-        f'http://localhost:{node["port"]}/v1/getinfo', headers=node["headers"]
+        f"http://localhost:{node['port']}/v1/getinfo", headers=node["headers"]
     )
     data = response.json()
     return data["identity_pubkey"]
@@ -59,7 +60,7 @@ def wait_for_lnd_node_sync(node_name):
     waited = 0
     while True:
         response = requests.get(
-            f'http://localhost:{node["port"]}/v1/getinfo', headers=node["headers"]
+            f"http://localhost:{node['port']}/v1/getinfo", headers=node["headers"]
         )
         if response.json()["synced_to_chain"]:
             return
@@ -75,7 +76,7 @@ def wait_for_lnd_node_sync(node_name):
 def LND_has_active_channels(node_name):
     node = get_node(node_name)
     response = requests.get(
-        f'http://localhost:{node["port"]}/v1/getinfo', headers=node["headers"]
+        f"http://localhost:{node['port']}/v1/getinfo", headers=node["headers"]
     )
     return True if response.json()["num_active_channels"] > 0 else False
 
@@ -207,7 +208,7 @@ def connect_to_node(node_name, node_id, ip_port):
     data = {"addr": {"pubkey": node_id, "host": ip_port}}
     while True:
         response = requests.post(
-            f'http://localhost:{node["port"]}/v1/peers',
+            f"http://localhost:{node['port']}/v1/peers",
             json=data,
             headers=node["headers"],
         )
@@ -229,7 +230,7 @@ def open_channel(node_name, node_id, local_funding_amount, push_sat):
         "push_sat": push_sat,
     }
     response = requests.post(
-        f'http://localhost:{node["port"]}/v1/channels',
+        f"http://localhost:{node['port']}/v1/channels",
         json=data,
         headers=node["headers"],
     )
@@ -239,7 +240,7 @@ def open_channel(node_name, node_id, local_funding_amount, push_sat):
 def create_address_LND(node_name):
     node = get_node(node_name)
     response = requests.get(
-        f'http://localhost:{node["port"]}/v1/newaddress', headers=node["headers"]
+        f"http://localhost:{node['port']}/v1/newaddress", headers=node["headers"]
     )
     return response.json()["address"]
 
@@ -269,9 +270,7 @@ def generate_blocks(address, num_blocks):
     rpc_url = config("BITCOIND_RPCURL", cast=str, default="http://localhost:18443")
     rpc_user = config("BITCOIND_RPCUSER", cast=str, default="test")
     rpc_pass = config("BITCOIND_RPCPASSWORD", cast=str, default="test")
-    response = requests.post(
-        rpc_url, json=data, auth=HTTPBasicAuth(rpc_user, rpc_pass)
-    )
+    response = requests.post(rpc_url, json=data, auth=HTTPBasicAuth(rpc_user, rpc_pass))
     return response.json()
 
 
@@ -281,7 +280,7 @@ def pay_invoice(node_name, invoice):
     data = {"payment_request": invoice}
     try:
         requests.post(
-            f'http://localhost:{node["port"]}/v1/channels/transactions',
+            f"http://localhost:{node['port']}/v1/channels/transactions",
             json=data,
             headers=node["headers"],
             # 0.15s is enough for LND to LND hodl ACCEPT
@@ -296,7 +295,7 @@ def pay_invoice(node_name, invoice):
 def reset_mission_control(node_name):
     node = get_node(node_name)
     requests.post(
-        f'http://localhost:{node["port"]}//v2/router/resetmissioncontrol',
+        f"http://localhost:{node['port']}//v2/router/resetmissioncontrol",
         headers=node["headers"],
     )
 
@@ -305,7 +304,7 @@ def add_invoice(node_name, amount):
     node = get_node(node_name)
     data = {"value": amount}
     response = requests.post(
-        f'http://localhost:{node["port"]}/v1/invoices',
+        f"http://localhost:{node['port']}/v1/invoices",
         json=data,
         headers=node["headers"],
     )

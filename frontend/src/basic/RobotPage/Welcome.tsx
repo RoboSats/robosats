@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
-import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
+import { FastForward, RocketLaunch, Key, Search } from '@mui/icons-material';
 import { genBase62Token } from '../../utils';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
@@ -113,6 +113,20 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
             </Grid>
           </Grid>
         </Box>
+      </Grid>
+      <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
+        <Button
+          size='large'
+          color='primary'
+          onClick={() => {
+            setOpen((open) => {
+              return { ...open, search: true };
+            });
+          }}
+        >
+          <Search /> <div style={{ width: '0.5em' }} />
+          {t('Search for Orders')}
+        </Button>
       </Grid>
       <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
         <Button

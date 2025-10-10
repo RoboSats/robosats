@@ -35,11 +35,11 @@ ERRORS = {
     1032: "You cannot pause or unpause an order you did not make",
     1033: "You can only pause/unpause an order that is either public or paused",
     1034: "Your PGP public key does not seem valid.\nStderr: {import_pub_result_stderr}\n"
-        + "ReturnCode: {import_pub_result_returncode}\nSummary: {import_pub_result_summary}\n"
-        + "Results: {import_pub_result_results}\nImported: {import_pub_result_imported}\n",
+    + "ReturnCode: {import_pub_result_returncode}\nSummary: {import_pub_result_summary}\n"
+    + "Results: {import_pub_result_results}\nImported: {import_pub_result_imported}\n",
     1035: "Your PGP encrypted private key does not seem valid.\nStderr: {import_priv_result_stderr}\n"
-        + "ReturnCode: {import_priv_result_returncode}\nSummary: {import_priv_result_summary}\n"
-        + "Results: {import_priv_result.results}\nSec Imported: {import_priv_result_sec_imported}\n",
+    + "ReturnCode: {import_priv_result_returncode}\nSummary: {import_priv_result_summary}\n"
+    + "Results: {import_priv_result.results}\nSec Imported: {import_priv_result_sec_imported}\n",
     1036: "Woops! It seems you do not have a robot avatar",
     1037: "The RoboSats {coordinator_alias} coordinator book is at full capacity! Current limit is {max_public_orders} orders",
     1038: "You must specify min_amount and max_amount for a range order",
@@ -54,16 +54,14 @@ ERRORS = {
     1047: "You are not a participant in this order",
     1048: "The PGP signed cleartext message is not valid.",
     1049: "The Robotic Satoshis working in the warehouse did not understand you. "
-        + "Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues",
+    + "Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues",
     1050: "Invalid date format",
     1051: "More than 5000 market ticks have been found. Please, narrow the date range",
     1052: "Robot has no finished order",
     1053: "Wrong hex pubkey",
-
     # 2000 - Bad statement
     2000: "The statement and chat logs are longer than 50,000 characters",
     2001: "The statement is too short. Make sure to be thorough.",
-
     # 3000 - Bad invoice
     3000: "You submitted an empty invoice",
     3001: "You can only submit an invoice after expiration or 3 failed attempts",
@@ -71,7 +69,6 @@ ERRORS = {
     3003: "You have not earned rewards",
     3004: "Give me a new invoice",
     3005: "Invoice payment failure: {failure_reason}",
-
     # 4000 - Bad address
     4000: "You submitted an empty address",
     4001: "The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte",
@@ -79,16 +76,13 @@ ERRORS = {
     4003: "The amount remaining after subtracting mining fee is close to dust limit.",
     4004: "Invalid address",
     4005: "Unable to validate address, check bitcoind backend",
-
     # 5000 - Bad summary
     5000: "Order has not finished yet",
-
     # 6000 - Chat bad request
     6000: "Order ID does not exist",
     6001: "You are not participant in this order",
     6002: "Order is not in chat status",
     6003: "Invalid serializer",
-
     # 7000 - Middlewares bad request
     7000: "Robot token SHA256 was provided in the header. However it is not a valid 39 or 40 characters Base91 string.",
     7001: "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys and a nostr pubkey",
@@ -96,11 +90,12 @@ ERRORS = {
     7003: "Authentication credentials were not provided.",
 }
 
+
 def new_error(code: int, parameters: dict = None) -> dict:
     message = ERRORS[code]
     if parameters is not None:
         message = message.format(**parameters)
-    
+
     message_field_name = "bad_request"
     if 2000 <= code < 3000:
         message_field_name = "bad_statement"

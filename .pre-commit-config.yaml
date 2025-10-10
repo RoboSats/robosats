@@ -47,24 +47,24 @@ repos:
         files: ^frontend/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
         entry: bash -c 'cd frontend && npm run lint'
-      - id: prettier-mobile
-        name: prettier-mobile
+      - id: lintern-android
+        name: lintern-android
         stages:
           - pre-commit
           - pre-merge-commit
         language: system
-        files: ^mobile/
-        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
-        entry: bash -c 'cd mobile && npm run format'
-      - id: lintern-mobile
-        name: lintern-mobile
+        files: ^android/
+        types_or: [kotlin]
+        entry: bash -c 'cd android && ./gradlew lint'
+      - id: check-android
+        name: check-android
         stages:
           - pre-commit
           - pre-merge-commit
         language: system
-        files: ^mobile/
-        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
-        entry: bash -c 'cd mobile && npm run lint'
+        files: ^android/
+        types_or: [kotlin]
+        entry: bash -c 'cd android && ./gradlew check'
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.13
     hooks:

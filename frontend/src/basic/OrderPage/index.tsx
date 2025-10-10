@@ -12,7 +12,7 @@ import {
   Step,
   StepLabel,
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
@@ -25,18 +25,11 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { genBase62Token } from '../../utils';
 
 const OrderPage = (): React.JSX.Element => {
-  const {
-    windowSize,
-    setOpen,
-    acknowledgedWarning,
-    setAcknowledgedWarning,
-    navbarHeight,
-    navigateToPage,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, setOpen, acknowledgedWarning, setAcknowledgedWarning, navbarHeight } =
+    useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const params = useParams();
   const paramsRef = useRef(params);
 
@@ -116,11 +109,7 @@ const OrderPage = (): React.JSX.Element => {
     <></>
   );
 
-  const tradeBoxSpace = currentOrder ? (
-    <TradeBox currentOrder={currentOrder} />
-  ) : (
-    <></>
-  );
+  const tradeBoxSpace = currentOrder ? <TradeBox currentOrder={currentOrder} /> : <></>;
 
   const steps = currentOrder?.is_taker
     ? [t('Take'), t('Setup'), t('Trade'), t('Finish')]

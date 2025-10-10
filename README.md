@@ -17,7 +17,8 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 Check our tutorials and many more at https://learn.robosats.org
 
 ## Try it out!
-- **TOR URL:** [**RoboSats**y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://RoboSatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
+- **MAIN TOR URL:** [**RoboSats**y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://RoboSatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
+- Coordinators TOR URLs: [Clients hosted by coordinators](https://github.com/RoboSats/robosats/discussions/2216 )
 - Clearnet URL: [unsafe.robosats.org](https://unsafe.robosats.org) (not recommended!)
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best privacy. The Clearnet URL redirects to a third party Tor2web service. Your privacy cannot be guaranteed to be respected. Use clearnet only to check around the app, never use for trading!*
@@ -36,6 +37,14 @@ Robosats is also available for Android devices
     <a href="https://github.com/zapstore/zapstore/releases" target="_blank">
         <img src="./docs/zapstore.svg" alt="Get it on Zap.Store" height="70" />
     </a>
+    <a href="https://github.com/RoboSats/robosats/releases" target="_blank">
+        <img src="https://github.com/machiav3lli/oandbackupx/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="70">
+    </a>
+</div>
+
+and desktop
+
+<div align="center">
     <a href="https://github.com/RoboSats/robosats/releases" target="_blank">
         <img src="https://github.com/machiav3lli/oandbackupx/raw/034b226cea5c1b30eb4f6a6f313e4dadcbb0ece4/badge_github.png" alt="Get it on GitHub" height="70">
     </a>

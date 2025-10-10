@@ -12,6 +12,7 @@ import {
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import ThirdPartyDialog from '../../components/Dialogs/ThirdParty';
+import SearchDialog from '../../components/Dialogs/Search';
 
 export interface OpenDialogs {
   more: boolean;
@@ -27,6 +28,7 @@ export interface OpenDialogs {
   recovery: boolean;
   confirmCollabCancel: boolean;
   thirdParty: string;
+  search: boolean;
 }
 
 const MainDialogs = (): React.JSX.Element => {
@@ -104,6 +106,12 @@ const MainDialogs = (): React.JSX.Element => {
           setOpen(closeAll);
         }}
         shortAlias={open.thirdParty}
+      />
+      <SearchDialog
+        open={Boolean(open.search)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
       />
     </>
   );

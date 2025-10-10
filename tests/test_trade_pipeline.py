@@ -479,7 +479,7 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
-    
+
     def test_make_and_take_description_order(self):
         """
         Tests a trade with a description from order creation to taken.
@@ -494,6 +494,10 @@ class TradeTest(BaseAPITestCase):
             maker_form=description_maker_form,
         )
         trade.publish_order()
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertEqual(data["description"], description)
+
         trade.take_order()
         data = trade.response.json()
 
@@ -1774,9 +1778,7 @@ class TradeTest(BaseAPITestCase):
             passphrase_path=f"tests/robots/{trade.taker_index}/token",
             private_key_path=f"tests/robots/{trade.taker_index}/enc_priv_key",
         )
-        body = {
-            "invoice": signed_payout_invoice
-        }
+        body = {"invoice": signed_payout_invoice}
 
         response = self.client.post(path, body, **taker_headers)
 
@@ -1813,10 +1815,7 @@ class TradeTest(BaseAPITestCase):
             passphrase_path=f"tests/robots/{trade.taker_index}/token",
             private_key_path=f"tests/robots/{trade.taker_index}/enc_priv_key",
         )
-        body = {
-            "invoice": signed_payout_invoice,
-            "routing_budget_ppm": 0
-        }
+        body = {"invoice": signed_payout_invoice, "routing_budget_ppm": 0}
 
         response = self.client.post(path, body, **taker_headers)
 

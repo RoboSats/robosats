@@ -4823,7 +4823,7 @@ adjectives = [
     "Vindictive",
     "Chatting",
     "Nightmarish",
-    "Niggardly" "Hated",
+    "Niggardly",
     "Satiric",
     "Shattering",
     "Fabled",

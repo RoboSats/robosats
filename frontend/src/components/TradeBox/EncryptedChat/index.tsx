@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { type Order, type Robot } from '../../../models';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import EncryptedTurtleChat from './EncryptedTurtleChat';
-import { EventTemplate, nip59, nip17 } from 'nostr-tools';
+import { EventTemplate, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
   FederationContext,
@@ -88,17 +88,16 @@ const EncryptedChat: React.FC<Props> = ({
         tags: [
           ['order_id', `${order.shortAlias}/${order.id}`],
           ['p', peerPublicKey, coordinator.getRelayUrl()],
-          ['p', ownPublicKey, coordinator.getRelayUrl()]
+          ['p', ownPublicKey, coordinator.getRelayUrl()],
         ],
         content,
-      }
+      };
 
-      const peerWrappedEvent = nip59.wrapEvent(messageEvent, slot?.nostrSecKey, peerPublicKey)
+      const peerWrappedEvent = nip59.wrapEvent(messageEvent, slot?.nostrSecKey, peerPublicKey);
       federation.roboPool.sendEvent(peerWrappedEvent);
 
-      const ownWrappedEvent = nip59.wrapEvent(messageEvent, slot?.nostrSecKey, ownPublicKey)
+      const ownWrappedEvent = nip59.wrapEvent(messageEvent, slot?.nostrSecKey, ownPublicKey);
       federation.roboPool.sendEvent(ownWrappedEvent);
-
     } catch (error) {
       console.error('Nostr nip17 error:', error);
     }

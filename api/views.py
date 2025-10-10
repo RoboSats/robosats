@@ -92,10 +92,15 @@ class MakerView(CreateAPIView):
             config("MAX_PUBLIC_ORDERS")
         ):
             return Response(
-                new_error(1037, {
-                    "coordinator_alias": config('COORDINATOR_ALIAS', cast=str, default='NoAlias'),
-                    "max_public_orders": config('MAX_PUBLIC_ORDERS', cast=str),
-                }),
+                new_error(
+                    1037,
+                    {
+                        "coordinator_alias": config(
+                            "COORDINATOR_ALIAS", cast=str, default="NoAlias"
+                        ),
+                        "max_public_orders": config("MAX_PUBLIC_ORDERS", cast=str),
+                    },
+                ),
                 status.HTTP_400_BAD_REQUEST,
             )
         # Only allow users who are not already engaged in an order
@@ -248,6 +253,7 @@ class OrderView(viewsets.ViewSet):
         data["maker_nick"] = str(order.maker)
         data["maker_hash_id"] = str(order.maker.robot.hash_id)
         data["maker_nostr_pubkey"] = str(order.maker.robot.nostr_pubkey)
+        data["description"] = order.description
 
         # Add activity status of participants based on last_seen
         data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
@@ -284,7 +290,6 @@ class OrderView(viewsets.ViewSet):
         data["is_disputed"] = order.is_disputed
         data["ur_nick"] = request.user.username
         data["satoshis_now"] = order.last_satoshis
-        data["description"] = order.description
 
         # Add whether hold invoices are LOCKED (ACCEPTED)
         # Is there a maker bond? If so, True if locked, False otherwise
@@ -525,7 +530,9 @@ class OrderView(viewsets.ViewSet):
 
                 if order.password is not None:
                     if password is None or not compare_digest(order.password, password):
-                        return Response(new_error(1045), status=status.HTTP_403_FORBIDDEN)
+                        return Response(
+                            new_error(1045), status=status.HTTP_403_FORBIDDEN
+                        )
 
                 # For order with amount range, set the amount now.
                 if order.has_range:
@@ -856,7 +863,9 @@ class RewardView(CreateAPIView):
         if not valid_signature:
             return Response(new_error(1048), status.HTTP_400_BAD_REQUEST)
 
-        valid, context = Logics.withdraw_rewards(request.user, invoice, routing_budget_ppm)
+        valid, context = Logics.withdraw_rewards(
+            request.user, invoice, routing_budget_ppm
+        )
 
         if not valid:
             context["successful_withdrawal"] = False

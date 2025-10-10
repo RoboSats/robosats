@@ -136,8 +136,9 @@ export const LightningPayoutForm = ({
 
   useEffect(() => {
     if (lightning.invoice !== '') {
-      const invoice = lightning.invoice.startsWith(lightningPrefix) ? 
-        lightning.invoice.slice(lightningPrefix.length) : lightning.invoice;
+      const invoice = lightning.invoice.startsWith(lightningPrefix)
+        ? lightning.invoice.slice(lightningPrefix.length)
+        : lightning.invoice;
 
       setLightning({
         ...lightning,
@@ -149,8 +150,9 @@ export const LightningPayoutForm = ({
 
   useEffect(() => {
     if (lightning.lnproxyInvoice !== '') {
-      const invoice = lightning.lnproxyInvoice.startsWith(lightningPrefix) ? 
-        lightning.lnproxyInvoice.slice(lightningPrefix.length) : lightning.lnproxyInvoice;
+      const invoice = lightning.lnproxyInvoice.startsWith(lightningPrefix)
+        ? lightning.lnproxyInvoice.slice(lightningPrefix.length)
+        : lightning.lnproxyInvoice;
 
       setLightning({
         ...lightning,

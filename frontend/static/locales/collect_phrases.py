@@ -59,6 +59,3 @@ for locale in locales:
     if new_phrases != old_phrases:
         with open(locale, "w", encoding="utf-8") as f:
             json.dump(new_phrases, f, ensure_ascii=False)
-
-with open("./collected_phrases.json", "w", encoding="utf-8") as f:
-    json.dump(all_phrases, f, ensure_ascii=False)
