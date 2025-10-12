@@ -29,19 +29,19 @@ description: >-
   You can join other cool Robots and get community support at https://learn.robosats.org.
 repository: https://github.com/RoboSats/robosats
 images:
-  - ../../fastlane/metadata/en-US/images/phoneScreenshots/01.png
-  - ../../fastlane/metadata/en-US/images/phoneScreenshots/02.png
-  - ../../fastlane/metadata/en-US/images/phoneScreenshots/03.png
-  - ../../fastlane/metadata/en-US/images/phoneScreenshots/04.png
-  - ../../fastlane/metadata/en-US/images/phoneScreenshots/05.png
-  - ../../fastlane/metadata/en-US/images/phoneScreenshots/06.png
-icon: ../../fastlane/metadata/en-US/images/icon.png
+  - ../fastlane/metadata/en-US/images/phoneScreenshots/01.png
+  - ../fastlane/metadata/en-US/images/phoneScreenshots/02.png
+  - ../fastlane/metadata/en-US/images/phoneScreenshots/03.png
+  - ../fastlane/metadata/en-US/images/phoneScreenshots/04.png
+  - ../fastlane/metadata/en-US/images/phoneScreenshots/05.png
+  - ../fastlane/metadata/en-US/images/phoneScreenshots/06.png
+icon: ../fastlane/metadata/en-US/images/icon.png
 tags: privacy lightning bitcoin p2p tor exchange foss
 license: AGPL-3.0
 remote_metadata:
   - github
 assets: # for github
-  - robosats-v\d+\.\d+\.\d+.\w+-universal\.\w+.apk
   - robosats-v\d+\.\d+\.\d+.\w+-arm64-v8a\.\w+.apk
   - robosats-v\d+\.\d+\.\d+.\w+-armeabi-v7a\.\w+.apk
+  - robosats-v\d+\.\d+\.\d+.\w+-universal\.\w+.apk
   - robosats-v\d+\.\d+\.\d+.\w+-x86_64\.\w+.apk

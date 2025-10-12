@@ -31,8 +31,10 @@ class Nostr:
         robot_hash_id = await self.get_robot_hash_id(order)
         currency = await self.get_robot_currency(order)
 
+        content = order.description if order.description is not None else ""
+
         event = (
-            EventBuilder(Kind(38383), "")
+            EventBuilder(Kind(38383), content)
             .tags(self.generate_tags(order, robot_name, robot_hash_id, currency))
             .sign_with_keys(keys)
         )
