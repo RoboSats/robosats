@@ -83,6 +83,9 @@ En Canadá, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq
 En esta sección se analiza la mejor práctica para los usuarios que intentan realizar transacciones con un método de pago con un alto riesgo de perder fondos.
 
 ### Revolut
+
+**Para evitar riesgos de estafa se recomienda encarecidamente utilizar la opcion de SEPA instant en lugar de cualquier otro método de pago disponible en Revolut**
+
 **Intercambio de @revtag:** Al realizar un pago a través de Revolut, es esencial que tanto el comprador como el vendedor intercambien su @revtag en el chat. Este @revtag se puede verificar en el historial de pagos de la aplicación, lo que facilita la confirmación de los pagos.
 
 **Formato del enlace de pago:** Los enlaces de pago de Revolut siguen este formato: https://revolut.me/p/XXXXX. Tenga en cuenta que estos enlaces no contienen información de dirección del destinatario.
