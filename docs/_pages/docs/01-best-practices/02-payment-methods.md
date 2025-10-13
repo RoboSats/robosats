@@ -62,6 +62,14 @@ Some strategies that may be useful to you:
 
 ## Medium-low risk payment method
 
+### Instant SEPA Payment Guidelines
+
+Instant SEPA is a widely adopted payment method across Europe, offering fast and efficient cashless transactions. However, it comes with a significant risk for sellers, including the potential for chargebacks. To mitigate these risks, it is advisable for sellers to request the buyer's information before sharing their SEPA details. This information could include the buyer's country, full name, and bank account number. By obtaining this information, sellers can reduce the risk of fraudulent transactions, such as triangle attacks, while buyers, sharing this information does not decrease their privacy, as they are not exposing any additional information that the seller would not have access to anyway after the SEPA transfer.
+
+For buyers, it is crucial to comply with sellers' if they request personal information when they are initiating SEPA transactions. Failure to provide this information can lead to the seller raising an immediate dispute, which sellers are likely to win (the seller will also earn the buyer's bond in this specific case). Therefore, it is in the best interest of buyers to cooperate with sellers' requests for information.
+
+Sellers are encouraged to share a link to this guide with their buyers when requesting information. This ensures that both parties are informed and understand the importance of this step when using Instant SEPA.
+
 ### Amazon eGift Cards
 Amazon eGift Cards are one of the more private payment methods on RoboSats. They tend to be quick and convenient, but funds must be spent on Amazon.
 
@@ -94,15 +102,8 @@ That can be easier and it means no sensitive data is shared as well.
 
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
 
-### Instant SEPA Payment Guidelines
 
-Instant SEPA is a widely adopted payment method across Europe, offering fast and efficient cashless transactions. However, it comes with a significant risk for sellers, including the potential for chargebacks. To mitigate these risks, it is advisable for sellers to request the buyer's information before sharing their SEPA details. This information could include the buyer's country, full name, and bank account number. By obtaining this information, sellers can reduce the risk of fraudulent transactions, such as triangle attacks, while buyers, sharing this information does not decrease their privacy, as they are not exposing any additional information that the seller would not have access to anyway after the SEPA transfer.
-
-For buyers, it is crucial to comply with sellers' if they request personal information when they are initiating SEPA transactions. Failure to provide this information can lead to the seller raising an immediate dispute, which sellers are likely to win (the seller will also earn the buyer's bond in this specific case). Therefore, it is in the best interest of buyers to cooperate with sellers' requests for information.
-
-Sellers are encouraged to share a link to this guide with their buyers when requesting information. This ensures that both parties are informed and understand the importance of this step when using Instant SEPA.
-
-### Revolut via payment links
+### Revolut via payment links or revtags
 
   **To mitigate chargeback scams use Instant SEPA instead of any other Revolut's payment methods.**
   
