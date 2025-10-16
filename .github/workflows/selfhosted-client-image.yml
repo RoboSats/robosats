@@ -1,4 +1,6 @@
 name: 'Docker: Selfhosted Client'
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:

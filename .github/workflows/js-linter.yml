@@ -1,4 +1,6 @@
 name: "Lint: Javascript Client"
+permissions:
+  contents: read
 
 on:
   # Trigger the workflow on push or pull request,
