@@ -1,4 +1,6 @@
 name: "Docker: Coordinator"
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:
