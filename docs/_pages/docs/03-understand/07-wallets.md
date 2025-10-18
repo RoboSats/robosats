@@ -37,7 +37,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Breez](#breez-mobile)|[0.16](https://breez.technology/mobile/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Cash App](#cash-app-mobile)|[4.7](https://cash.app/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
-|[Electrum](#electrum-mobile--desktop)|[4.5.8](https://github.com/spesmilo/electrum)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.unclear}}||
+|[Electrum](#electrum-mobile--desktop)|[4.6.2](https://electrum.org/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
 |[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
@@ -91,9 +91,8 @@ Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transac
 ### Core Lightning / CLN (CLI Interface)
 Works as expected. The `lightning-cli pay <invoice>` command does not conclude while the payment is pending, but can use `lightning-cli paystatus <invoice>` to monitor the state.
 
-### Electrum (Mobile & Desktop)
-This wallet used to work fine with channels created to ACINQ.
-Recent versions can't create this channel successfully.
+### Electrum (Android & Desktop)
+The self-custodial [Electrum](https://electrum.org/) wallet works well with RoboSats. Users can get inbound liquidity and move on-chain easily through the open, built-in Swap marketplace. The minimum channel size is 200,000 Satoshi (0.002 BTC), so users already need some on-chain funds to open their first lightning channel.
 
 ### LND (CLI Interface)
 Raw; it shows exactly what is happening and what it knows "IN_FLIGHT". It is not user friendly and therefore not recommended to interact with RoboSats by beginners. However, everything works just fine. If you are using LNCLI regularly, then you will find no issue using it with RoboSats.
