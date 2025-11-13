@@ -74,7 +74,6 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     if (robot?.token && robot.encPrivKey != null) {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot?.token).then(
         (signedInvoice) => {
-          console.log('Signed message:', signedInvoice);
           void robot.fetchReward(federation, signedInvoice).then((data) => {
             setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
