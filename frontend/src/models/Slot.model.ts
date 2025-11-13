@@ -36,6 +36,7 @@ class Slot {
     this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
       acc[shortAlias] = new Robot({
         ...robotAttributes,
+        token,
         shortAlias,
         hasEnoughEntropy,
         bitsEntropy,
