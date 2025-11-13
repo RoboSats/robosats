@@ -63,6 +63,9 @@
                 color: #c0392b;
                 text-decoration: underline;
               }
+              .js-enabled-content, .noscript-error {
+                display: none;
+              }
             </style>
 </head>
 
@@ -80,7 +83,20 @@
     </div>
   </noscript>
 
-  <div id="main">
+  <!-- This block is only rendered if JavaScript is disabled -->
+  <div class="noscript-error">
+    <div class="noscript-container">
+      <h2>JavaScript is Disabled</h2>
+      <p>This website requires JavaScript for full functionality. Please enable JavaScript in your browser settings to
+        proceed.</p>
+      <p>If you’re using Tor Browser, ensure your "Security Level" is set to "Standard". If the issue persists, try
+        clearing your cache and storage.</p>
+      <p>Need more help? Visit our support channel on Telegram: <a href="https://t.me/robosats" target="_blank"
+          rel="noopener">t.me/robosats</a>.</p>
+    </div>
+  </div>
+
+  <div id="main" class="js-enabled-content">
     <div id="app">
       <div class="loaderCenter">
         <div class="loaderSpinner"></div>
@@ -112,7 +128,15 @@
   </div>
 
   <script>
-    window.RobosatsSettings = '<%= htmlWebpackPlugin.options.robosatsSettings %>';
+    // If JavaScript is enabled this will reveal the content
+    if (window.WebAssembly) {
+        // WebAssembly is supported, so hide the warning and load your app
+        document.querySelector('.js-enabled-content').style.display = 'block';
+        window.RobosatsSettings = '<%= htmlWebpackPlugin.options.robosatsSettings %>';
+    } else {
+         // this is exectued in to safer mode because js is not disabled but wsm is blocked yet required
+         document.querySelector('.noscript-error').style.display = 'block';
+    }
   </script>
 </body>
 
