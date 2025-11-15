@@ -447,7 +447,7 @@
   "Swap out of LN ": "Swap out of LN ",
   "Swap?": "Intercanviar?",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "Per protegir la teva privacitat, la ubicació exacta que fixis serà lleugerament aleatòria.",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "Has d'omplir el formulari correctament",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Reps aprox. {{swapSats}} LN Sats (les taxes poden variar)",

@@ -447,7 +447,7 @@
   "Swap out of LN ": "從 LN 換出 ",
   "Swap?": "交換？",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "為了保護您的隱私，您釘的確切位置將會被稍微隨機化。",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "您必須正確填寫表單",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "您將收到大約{{swapSats}} 閃電聰（費用可能有所不同）",

@@ -447,7 +447,7 @@
   "Swap out of LN ": "ライトニングからスワップアウト ",
   "Swap?": "スワップ？",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "プライバシーを保護するために、ピンをした正確な位置が多少ランダム化されます。",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "フォームに正しく入力する必要があります。",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "約{{swapSats}} ライトニングSatsを受け取ります（手数料は異なる場合があります）",

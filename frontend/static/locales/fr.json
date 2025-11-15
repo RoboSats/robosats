@@ -447,7 +447,7 @@
   "Swap out of LN ": "Échanger hors de LN ",
   "Swap?": "Échange?",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "Pour protéger votre vie privée, l'emplacement exact que vous épinglez sera légèrement randomisé.",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "Vous devez remplir le formulaire correctement",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Vous recevez environ {{swapSats}} LN Sats (les frais peuvent varier).",
