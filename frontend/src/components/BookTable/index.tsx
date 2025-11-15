@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -780,6 +780,22 @@ const BookTable = ({
       : orders;
   }, [showControls, orders, fav, paymentMethods]);
 
+  const currentSortModel = useMemo(() => {
+    if (fav.type === 1) {
+      // buyer
+      return [{field: 'premium', sort: 'asc'}];
+    } else if (fav.type === 0) {
+      // seller
+      return [{field: 'premium', sort: 'desc'}];
+    } else {
+      return undefined;
+    }
+  }, [fav]);
+
+  const prevSortModel = useRef<number | undefined>();
+  const sortModel = prevSortModel.current !== fav.type ? currentSortModel : undefined;
+  prevSortModel.current = fav.type;
+
   if (!fullscreen) {
     return (
       <Paper
@@ -804,6 +820,7 @@ const BookTable = ({
           sx={headerStyleFix}
           localeText={localeText}
           rows={filteredOrders}
+          sortModel={sortModel}
           getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
           loading={federation.loading}
           columns={columns}
@@ -846,6 +863,7 @@ const BookTable = ({
             rows={filteredOrders}
             loading={federation.loading}
             columns={columns}
+            sortModel={sortModel}
             hideFooter={!showFooter}
             slots={gridComponents}
             page={page}
