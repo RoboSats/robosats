@@ -436,6 +436,50 @@ const MakerForm = ({
 
   const currencyFormatter = new Intl.NumberFormat(settings.language);
 
+  const getDisabledMessage = () => {
+    if (currentPrice === undefined) {
+      return t('The Bitcoin price is not synchronized.');
+    }
+    if (fav.type == null) {
+      return t('Please select if you want to buy or sell.');
+    }
+    if (
+      !makerHasAmountRange &&
+      maker.amount &&
+      (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
+    ) {
+      return t('The amount is outside the allowed limits.');
+    }
+    if (maker.badPaymentMethod) {
+      return t('The payment method is not valid.');
+    }
+    if ((maker.amount == null && (!makerHasAmountRange || (Object.keys(limits)?.length ?? 0) < 1))) {
+      return t('Please enter an amount.');
+    }
+    if (makerHasAmountRange && hasRangeError) {
+      return t('The amount range is not valid.');
+    }
+    if (!makerHasAmountRange && maker.amount && maker.amount <= 0) {
+      return t('The amount must be greater than 0.');
+    }
+    if (maker.badPremiumText !== '') {
+      return t('The premium is not valid.');
+    }
+    if (federation.getCoordinator(maker.coordinator)?.limits === undefined) {
+      return t('The coordinator is not available.');
+    }
+    if (typeof maker.premium !== 'number') {
+      return t('The premium must be a number.');
+    }
+    if (maker.paymentMethods.length === 0) {
+      return t('Please select a payment method.');
+    }
+    if (maker.badDescription) {
+      return t('The description is not valid.');
+    }
+    return t('You must fill the form correctly');
+  };
+
   const SummaryText = (): React.JSX.Element => {
     return (
       <Typography
@@ -1093,7 +1137,7 @@ const MakerForm = ({
             <Grid item>
               {/* conditions to disable the make button */}
               {disableSubmit ? (
-                <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
+                <Tooltip enterTouchDelay={0} title={getDisabledMessage()}>
                   <div>
                     <Button disabled color='primary' variant='contained' size='large'>
                       {t(submitButtonLabel)}
