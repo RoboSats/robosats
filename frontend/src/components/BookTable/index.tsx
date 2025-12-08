@@ -20,6 +20,7 @@ import {
   type GridColDef,
   type GridValidRowModel,
   type GridSlotsComponent,
+  type GridSortModel,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -95,7 +96,16 @@ const BookTable = ({
   });
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'premium', sort: 'asc' }]);
   const [page, setPage] = useState<number>(0);
+
+  useEffect(() => {
+    if (fav.type === 0) {
+      setSortModel([{ field: 'premium', sort: 'desc' }]);
+    } else {
+      setSortModel([{ field: 'premium', sort: 'asc' }]);
+    }
+  }, [fav.type]);
 
   // all sizes in 'em'
   const [fontSize, defaultPageSize, height] = useMemo(() => {
@@ -816,6 +826,8 @@ const BookTable = ({
           onPaginationModelChange={(newPaginationModel) => {
             setPaginationModel(newPaginationModel);
           }}
+          sortModel={sortModel}
+          onSortModelChange={setSortModel}
         />
       </Paper>
     );
@@ -855,6 +867,8 @@ const BookTable = ({
             onPaginationModelChange={(newPaginationModel) => {
               setPaginationModel(newPaginationModel);
             }}
+            sortModel={sortModel}
+            onSortModelChange={setSortModel}
           />
         </Paper>
       </Dialog>
