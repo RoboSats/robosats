@@ -325,5 +325,51 @@
     "mainnetNodesPubkeys": ["025da46e8521fbe14c1d60d23d74b2b6d0dcc740ff600232314ef65751346e940e"],
     "testnetNodesPubkeys": [],
     "federated": true
+  },
+  "alice": {
+    "longAlias": "Alice",
+    "shortAlias": "alice",
+    "identifier": "alice",
+    "description": "Alice is here to empower Bitcoin enthusiasts by providing a decentralized, non-KYC, peer-to-peer exchange platform. With a focus on privacy, security, and ease of use, Alice is committed to ensuring that all users can participate in the Bitcoin economy with autonomy and integrity.",
+    "motto": "Privacy is not a crime",
+    "color": "#9932cc",
+    "established": "2025-11-27",
+    "nostrHexPubkey": "40d33962fdf26e0910805f36a3a96b239cf93b95d4a3e6dd779f1ea3ff9b0866",
+    "contact": {
+      "email": "alice7b@proton.me",
+      "telegram": "",
+      "simplex": "https://smp12.simplex.im/a#peg1Oqqy55zhLXugHUmlZqXGkd31Fcr3HXXhvsZLQt0",
+      "pgp": "/static/federation/pgp/349137316F89DAF6D7E66A40D0B7C7C3C3744DBA.asc",
+      "nostr": "npub1grfnjcha7fhqjyyqtum282ttyww0jwu46j37dhthnu028lumppnqtenl5y",
+      "website": null,
+      "fingerprint": "349137316F89DAF6D7E66A40D0B7C7C3C3744DBA"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1 — Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2 — short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR and SIMPLEX are advised.",
+      "Data Policy 1 — No Third-Party Sharing": "Under no circumstances will user information be shared with third parties. Also because it is impossible to do so by design of Robosats architecture. Due to the decentralized and privacy-centric structure of RoboSats built on the Tor network, we are unable to collect or store user information, including but not limited to, the location of users. This design ensures maximum privacy and anonymity for our users.",
+      "Data Policy 2 — Short-term Storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
+      "Rule 1:": " Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["02580496598cf3e7bfe41c9b0721d1c90693d31d308364456dc30f0a22bf58ddd7"],
+    "testnetNodesPubkeys": [],
+    "federated": true
   }
 }
