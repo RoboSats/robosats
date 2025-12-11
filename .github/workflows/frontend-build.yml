@@ -86,15 +86,21 @@ jobs:
     - name: 'Invoke Coodinator Image CI'
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         workflow: 'Docker: Coordinator'
     - name: 'Invoke Selfhosted Client App Build CI/CD workflow'
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         workflow: 'Docker: Selfhosted Client'
     - name: 'Invoke Web Client App Build CI/CD workflow'
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         workflow: 'Docker: Web Client'
