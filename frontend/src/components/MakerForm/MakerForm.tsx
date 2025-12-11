@@ -453,7 +453,7 @@ const MakerForm = ({
     if (maker.badPaymentMethod) {
       return t('The payment method is not valid.');
     }
-    if ((maker.amount == null && (!makerHasAmountRange || (Object.keys(limits)?.length ?? 0) < 1))) {
+    if (maker.amount == null && (!makerHasAmountRange || (Object.keys(limits)?.length ?? 0) < 1)) {
       return t('Please enter an amount.');
     }
     if (makerHasAmountRange && hasRangeError) {
