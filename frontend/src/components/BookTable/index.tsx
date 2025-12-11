@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -96,15 +96,34 @@ const BookTable = ({
   });
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
-  const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'premium', sort: 'asc' }]);
+  const [sortModel, setSortModel] = useState<GridSortModel>([
+    { field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' },
+  ]);
   const [page, setPage] = useState<number>(0);
+  const prevFavTypeRef = useRef<number>();
 
   useEffect(() => {
-    if (fav.type === 0) {
-      setSortModel([{ field: 'premium', sort: 'desc' }]);
-    } else {
-      setSortModel([{ field: 'premium', sort: 'asc' }]);
+    const prevFavType = prevFavTypeRef.current;
+
+    // Only run the logic if fav.type has actually changed
+    if (typeof prevFavType !== 'undefined' && prevFavType !== fav.type) {
+      setSortModel((currentSortModel) => {
+        const prevDefaultSort = [{ field: 'premium', sort: prevFavType === 0 ? 'desc' : 'asc' }];
+
+        const isCurrentSortDefault =
+          currentSortModel.length === 1 &&
+          currentSortModel[0].field === prevDefaultSort[0].field &&
+          currentSortModel[0].sort === prevDefaultSort[0].sort;
+
+        if (isCurrentSortDefault) {
+          return [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }];
+        } else {
+          return currentSortModel;
+        }
+      });
     }
+
+    prevFavTypeRef.current = fav.type;
   }, [fav.type]);
 
   // all sizes in 'em'
