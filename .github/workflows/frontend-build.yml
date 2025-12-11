@@ -88,16 +88,13 @@ jobs:
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Docker: Coordinator'
-        token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Selfhosted Client App Build CI/CD workflow'
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Docker: Selfhosted Client'
-        token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Web Client App Build CI/CD workflow'
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Docker: Web Client'
-        token: ${{ secrets.PERSONAL_TOKEN }}
