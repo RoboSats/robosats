@@ -148,10 +148,12 @@ const MakerForm = ({
   const handleCurrencyChange = function (newCurrency: number): void {
     const currencyCode: string = currencyDict[newCurrency];
     setCurrencyCode(currencyCode);
-    setFav({
-      ...fav,
-      currency: newCurrency,
-      mode: newCurrency === 1000 ? 'swap' : 'fiat',
+    setFav((prev) => {
+      return {
+        ...prev,
+        currency: newCurrency,
+        mode: newCurrency === 1000 ? 'swap' : 'fiat',
+      };
     });
     updateAmountLimits(limits, newCurrency, maker.premium);
     updateCurrentPrice(limits, newCurrency, maker.premium);
@@ -410,9 +412,11 @@ const MakerForm = ({
   }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
 
   const clearMaker = function (): void {
-    setFav({ ...fav, type: null, mode: 'fiat' });
+    setFav((prev) => {
+      return { ...prev, type: null, currency: 0, mode: 'fiat' };
+    });
     setMaker(defaultMaker);
-    handleCurrencyChange(1);
+    handleCurrencyChange(0);
     handlePaymentMethodChange([]);
   };
 
@@ -648,9 +652,11 @@ const MakerForm = ({
                           size={maker.advancedOptions ? 'small' : 'large'}
                           variant='contained'
                           onClick={() => {
-                            setFav({
-                              ...fav,
-                              type: 1,
+                            setFav((prev) => {
+                              return {
+                                ...prev,
+                                type: 1,
+                              };
                             });
                           }}
                           disableElevation={fav.type === 1}
@@ -680,9 +686,11 @@ const MakerForm = ({
                           size={maker.advancedOptions ? 'small' : 'large'}
                           variant='contained'
                           onClick={() => {
-                            setFav({
-                              ...fav,
-                              type: 0,
+                            setFav((prev) => {
+                              return {
+                                ...prev,
+                                type: 0,
+                              };
                             });
                           }}
                           color='secondary'
