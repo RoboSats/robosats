@@ -17,8 +17,8 @@ mainnet_temple_port=102
 testnet_temple_onion=jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion
 testnet_temple_port=1002
 # socat cmd
-mainnet_temple_socat="socat tcp4-LISTEN:${mainnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_temple_socat="socat tcp4-LISTEN:${testnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_temple_socat="socat tcp4-LISTEN:${mainnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_temple_socat="socat tcp4-LISTEN:${testnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
 # TheBigLake
@@ -29,8 +29,8 @@ mainnet_lake_port=104
 testnet_lake_onion=ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion
 testnet_lake_port=1004
 # socat cmd
-mainnet_lake_socat="socat tcp4-LISTEN:${mainnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_lake_socat="socat tcp4-LISTEN:${testnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_lake_socat="socat tcp4-LISTEN:${mainnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_lake_socat="socat tcp4-LISTEN:${testnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
 # BitcoinVeneto
@@ -41,8 +41,8 @@ mainnet_veneto_port=105
 testnet_veneto_onion=wsjyhbashc4zrrex6vijpryujggbka5plry2o62dxqoz3pxinblnj4ad.onion
 testnet_veneto_port=1005
 # socat cmd
-mainnet_veneto_socat="socat tcp4-LISTEN:${mainnet_veneto_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_veneto_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_veneto_socat="socat tcp4-LISTEN:${testnet_veneto_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_veneto_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_veneto_socat="socat tcp4-LISTEN:${mainnet_veneto_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_veneto_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_veneto_socat="socat tcp4-LISTEN:${testnet_veneto_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_veneto_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
 # Over the Moon
@@ -53,8 +53,8 @@ mainnet_moon_port=106
 testnet_moon_onion=otmtestgbj3kqo3nre6oksusuqfb4ids5zg2y5z2qza2jogeu67stwid.onion
 testnet_moon_port=1006
 # socat cmd
-mainnet_moon_socat="socat tcp4-LISTEN:${mainnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_moon_socat="socat tcp4-LISTEN:${testnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_moon_socat="socat tcp4-LISTEN:${mainnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_moon_socat="socat tcp4-LISTEN:${testnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
 # Libre Bazaar
@@ -65,8 +65,8 @@ mainnet_bazaar_port=107
 testnet_bazaar_onion=librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion
 testnet_bazaar_port=1007
 # socat cmd
-mainnet_bazaar_socat="socat tcp4-LISTEN:${mainnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_bazaar_socat="socat tcp4-LISTEN:${testnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_bazaar_socat="socat tcp4-LISTEN:${mainnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_bazaar_socat="socat tcp4-LISTEN:${testnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 
 ################################
@@ -78,8 +78,8 @@ mainnet_freedomsats_port=108
 testnet_freedomsats_onion=dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion
 testnet_freedomsats_port=1008
 # socat cmd
-mainnet_freedomsats_socat="socat tcp4-LISTEN:${mainnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_freedomsats_socat="socat tcp4-LISTEN:${testnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_freedomsats_socat="socat tcp4-LISTEN:${mainnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_freedomsats_socat="socat tcp4-LISTEN:${testnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 
 # RUN!
