@@ -260,6 +260,7 @@ const MakerForm = ({
         .then((order: Order) => {
           if (order.id) {
             navigateToPage(`order/${order.shortAlias}/${order.id}`, navigate);
+            clearMaker();
           } else if (order?.bad_request) {
             setBadRequest(order?.bad_request);
           }
@@ -409,8 +410,10 @@ const MakerForm = ({
   }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
 
   const clearMaker = function (): void {
-    setFav({ ...fav, type: null });
+    setFav({ ...fav, type: null, mode: 'fiat' });
     setMaker(defaultMaker);
+    handleCurrencyChange(1);
+    handlePaymentMethodChange([]);
   };
 
   const handleAddLocation = (pos: [number, number]): void => {
@@ -769,7 +772,7 @@ const MakerForm = ({
                       }
                       label={amountLabel.label}
                       required={true}
-                      value={maker.amount}
+                      value={maker.amount ?? ''}
                       type='number'
                       onChange={(e) => {
                         setMaker({ ...maker, amount: Number(e.target.value) });
@@ -909,7 +912,7 @@ const MakerForm = ({
               helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
               label={`${t('Premium over Market (%)')} *`}
               type='number'
-              value={maker.premium}
+              value={maker.premium ?? ''}
               inputProps={{
                 min: -100,
                 max: 999,
@@ -935,7 +938,7 @@ const MakerForm = ({
                   fullWidth
                   label={`${t('Description')}`}
                   type='description'
-                  value={maker.description}
+                  value={maker.description ?? ''}
                   style={{ marginBottom: 8 }}
                   inputProps={{
                     style: {
@@ -969,7 +972,7 @@ const MakerForm = ({
                   fullWidth
                   label={`${t('Password')}`}
                   type='password'
-                  value={maker.password}
+                  value={maker.password ?? ''}
                   style={{ marginBottom: 8 }}
                   inputProps={{
                     style: {
