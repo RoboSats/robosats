@@ -43,8 +43,9 @@ const RobotProfile = ({
 }: RobotProfileProps): React.JSX.Element => {
   const { windowSize, setOpen, open, navigateToPage, client } =
     useContext<UseAppStoreType>(AppContext);
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -62,10 +63,10 @@ const RobotProfile = ({
   }, [slotUpdatedAt, loading]);
 
   const handleAddRobot = (): void => {
+    setLoading(true);
     const token = genBase62Token(36);
     void garage.createRobot(federation, token);
     setInputToken(token);
-    setLoading(true);
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
@@ -318,7 +319,7 @@ const RobotProfile = ({
                         >
                           <Grid item>
                             <RobotAvatar
-                              hashId={slot?.hashId}
+                              hashId={slot.hashId}
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
