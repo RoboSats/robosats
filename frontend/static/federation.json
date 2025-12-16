@@ -288,13 +288,13 @@
     "motto": "“Build your digital freedom, one sat at a time.” ✅",
     "color": "#D5E4F2",
     "established": "2025-11-20",
-    "nostrHexPubkey": "5dd5af0c0fbdd785af6bfe2ea1461f4bda4062391fe396661ef4dc4028d64d60",
+    "nostrHexPubkey": "e185c2ad0b87b3207ac2b96d6b8fb1ff10fbf25f93eef4d04fb6dbb9039f19fb",
     "contact": {
       "email": "whiteyes@tutamail.com",
       "telegram": "@asyscom",
       "simplex": "https://smp17.simplex.im/a#wSybGAOR98kvBMcYiaFN0QYzoaGpZ2MC-QbaUk_AJ_8",
       "pgp": "/static/federation/pgp/8B99A9F344AD4BDF158EE1ADA9765943E23958EC.asc",
-      "nostr": "npub1mmfacq4p4xmpeevaz86fv5uuk073tuqry6sk73l9lrtkh2azf0dsykwxuj",
+      "nostr": "npub1uxzu9tgts7ejq7kzh9kkhra3lug0hujlj0h0f5z0kmdmjqulr8as6t6vmm",
       "website": null,
       "fingerprint": "8B99A9F344AD4BDF158EE1ADA9765943E23958EC"
     },
