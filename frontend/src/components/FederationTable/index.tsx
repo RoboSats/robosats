@@ -153,7 +153,7 @@ const FederationTable = ({
   const aliasObj = useCallback(() => {
     return {
       field: 'longAlias',
-      headerName: mobile ? '' : t('Rating'),
+      headerName: mobile ? '' : t('Alias'),
       width: mobile ? 60 : 190,
       renderCell: (params: { row: Coordinator }) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
