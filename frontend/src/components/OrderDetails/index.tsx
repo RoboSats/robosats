@@ -630,11 +630,11 @@ const OrderDetails = ({
                 )}
               </Typography>
               <Typography component='li' variant='body2'>
-                {t('Robosats and their coordinators have no control over the legacy fiat system.')}
+                {t('Robosats and their coordinators have no control over the fiat system.')}
               </Typography>
               <Typography component='li' variant='body2'>
                 {t(
-                  'Scammers can exploit this vulnerability in the legacy fiat system to take away both your bitcoin and your fiat.',
+                  'Scammers can exploit this vulnerability in the fiat system to take away both your bitcoin and your fiat.',
                 )}
               </Typography>
             </Box>
