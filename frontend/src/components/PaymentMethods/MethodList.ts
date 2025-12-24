@@ -26,8 +26,6 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Advcash', icon: 'advcash', reversible: false },
   { name: 'BLIK', icon: 'blik', reversible: false },
   { name: 'MBWay', icon: 'mbway', reversible: false },
-  { name: 'W1TTY', icon: 'w1tty', reversible: false },
-  { name: 'Verse', icon: 'verse', reversible: false },
   { name: 'Paysera', icon: 'paysera', reversible: false },
   { name: 'Amazon GiftCard', icon: 'amazon', reversible: false },
   { name: 'Ozon GiftCard', icon: 'ozon', reversible: false },
@@ -93,6 +91,8 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Nomad', icon: 'nomad', reversible: false },
   { name: 'Paysend', icon: 'paysend', reversible: false },
   { name: 'Zeam', icon: 'zeam', reversible: false },
+  { name: 'DANA', icon: 'dana', reversible: false },
+  { name: 'Binance Pay', icon: 'binance', reversible: false },
 ];
 
 export const swapMethods: PaymentMethod[] = [
