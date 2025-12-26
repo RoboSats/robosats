@@ -420,6 +420,7 @@
   "Enter the destination of the Lightning swap": "Введите пункт назначения обмена Lightning",
   "Escrow/Invoice Timer (HH:mm)": "Таймер эскроу/инвойса (ЧЧ:мм)",
   "Escrow/invoice step length": "Длина шага эскроу/инвойса",
+  "Estimated Bond": "Расчетный залог",
   "Exact Amount": "Точное количество",
   "Face to Face Location": "Место встречи лицом к лицу",
   "Fiat Payment Method(s)": "Способ(ы) оплаты",

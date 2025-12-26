@@ -34,6 +34,7 @@ import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
+import { calculateBondAmount } from '../../utils/bondCalculator';
 
 import { SelfImprovement, Lock, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
@@ -487,42 +488,76 @@ const MakerForm = ({
     return t('You must fill the form correctly');
   };
 
+  const bondAmount = useMemo(() => {
+    const coordinatorInfo = federation.getCoordinator(maker.coordinator)?.info;
+    const bondPercentage = maker.bondSize ?? coordinatorInfo?.bond_size ?? 3;
+
+    return calculateBondAmount({
+      amount: maker.amount,
+      minAmount: maker.minAmount,
+      maxAmount: maker.maxAmount,
+      isRange: makerHasAmountRange,
+      bondSize: bondPercentage,
+      mode: fav.mode as 'fiat' | 'swap',
+      price: currentPrice ?? 0,
+      premium: maker.premium ?? 0,
+    });
+  }, [
+    maker.amount,
+    maker.minAmount,
+    maker.maxAmount,
+    makerHasAmountRange,
+    maker.bondSize,
+    maker.premium,
+    currentPrice,
+    fav.mode,
+    maker.coordinator,
+    federationUpdatedAt,
+  ]);
+
   const SummaryText = (): React.JSX.Element => {
     return (
-      <Typography
-        component='h2'
-        variant='subtitle2'
-        align='center'
-        color={disableSubmit ? 'text.secondary' : 'text.primary'}
-      >
-        {fav.type == null
-          ? fav.mode === 'fiat'
-            ? t('Order for ')
-            : t('Swap of ')
-          : fav.type === 1
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography
+          component='h2'
+          variant='subtitle2'
+          align='center'
+          color={disableSubmit ? 'text.secondary' : 'text.primary'}
+        >
+          {fav.type == null
             ? fav.mode === 'fiat'
-              ? t('Buy BTC for ')
-              : t('Swap into LN ')
-            : fav.mode === 'fiat'
-              ? t('Sell BTC for ')
-              : t('Swap out of LN ')}
-        {fav.mode === 'fiat'
-          ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
-          : amountToString(
-              maker.amount * 100000000,
-              makerHasAmountRange,
-              maker.minAmount * 100000000,
-              maker.maxAmount * 100000000,
-            )}
-        {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
-        {maker.premium === 0
-          ? fav.mode === 'fiat'
-            ? t(' at market price')
-            : ''
-          : maker.premium > 0
-            ? t(' at a {{premium}}% premium', { premium: maker.premium })
-            : t(' at a {{discount}}% discount', { discount: -maker.premium })}
-      </Typography>
+              ? t('Order for ')
+              : t('Swap of ')
+            : fav.type === 1
+              ? fav.mode === 'fiat'
+                ? t('Buy BTC for ')
+                : t('Swap into LN ')
+              : fav.mode === 'fiat'
+                ? t('Sell BTC for ')
+                : t('Swap out of LN ')}
+          {fav.mode === 'fiat'
+            ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
+            : amountToString(
+                maker.amount * 100000000,
+                makerHasAmountRange,
+                maker.minAmount * 100000000,
+                maker.maxAmount * 100000000,
+              )}
+          {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
+          {maker.premium === 0
+            ? fav.mode === 'fiat'
+              ? t(' at market price')
+              : ''
+            : maker.premium > 0
+              ? t(' at a {{premium}}% premium', { premium: maker.premium })
+              : t(' at a {{discount}}% discount', { discount: -maker.premium })}
+        </Typography>
+        {bondAmount !== null && (
+          <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5 }}>
+            {t('Estimated Bond')}: {pn(Number(bondAmount))} Sats
+          </Typography>
+        )}
+      </Box>
     );
   };
 

@@ -420,6 +420,7 @@
   "Enter the destination of the Lightning swap": "Introduïu l'adreça destí de l'intercanvi Lightning",
   "Escrow/Invoice Timer (HH:mm)": "Temporitzador Dipòsit/Factura(HH:mm)",
   "Escrow/invoice step length": "Longitud passos Dipòsit/Factura",
+  "Estimated Bond": "Fiança estimada",
   "Exact Amount": "Quantitat Exacte",
   "Face to Face Location": "Ubicació del cara cara",
   "Fiat Payment Method(s)": "Mètode(s) de Pagament Fiat",
