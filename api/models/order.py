@@ -125,7 +125,7 @@ class Order(models.Model):
         null=False,
         validators=[
             MinValueValidator(60 * 30),  # Min is 30 minutes
-            MaxValueValidator(60 * 60 * 8),  # Max is 8 Hours
+            MaxValueValidator(60 * 60 * 10),  # Max is 10 Hours
         ],
         blank=False,
     )

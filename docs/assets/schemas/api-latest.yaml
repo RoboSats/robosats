@@ -1272,7 +1272,7 @@ components:
           nullable: true
         escrow_duration:
           type: integer
-          maximum: 28800
+          maximum: 36000
           minimum: 1800
         bond_size:
           type: string
@@ -1355,7 +1355,7 @@ components:
           minimum: 597.6
         escrow_duration:
           type: integer
-          maximum: 28800
+          maximum: 36000
           minimum: 1800
         bond_size:
           type: string
@@ -1469,7 +1469,7 @@ components:
           nullable: true
         escrow_duration:
           type: integer
-          maximum: 28800
+          maximum: 36000
           minimum: 1800
         total_secs_exp:
           type: integer
@@ -1772,7 +1772,7 @@ components:
           description: Price in order's fiat currency
         escrow_duration:
           type: integer
-          maximum: 28800
+          maximum: 36000
           minimum: 1800
         satoshis_now:
           type: integer
