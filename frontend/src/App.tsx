@@ -57,18 +57,22 @@ const App = (): React.JSX.Element => {
                   <Main />
 
                   {/* --- Global Error Snackbar --- */}
-                  <Snackbar 
-                    open={errorOpen} 
-                    autoHideDuration={6000} 
+                  <Snackbar
+                    open={errorOpen}
+                    autoHideDuration={6000}
                     onClose={handleClose}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                   >
-                    <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }} variant="filled">
+                    <Alert
+                      onClose={handleClose}
+                      severity='error'
+                      sx={{ width: '100%' }}
+                      variant='filled'
+                    >
                       {errorMessage}
                     </Alert>
                   </Snackbar>
                   {/* ---------------------------------- */}
-
                 </GarageContextProvider>
               </FederationContextProvider>
             </AppContextProvider>

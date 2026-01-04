@@ -34,20 +34,20 @@ class ApiWebClient implements ApiClient {
   };
 
   // Helper to handle the fetch request with error catching
-  private async request(url: string, options: RequestInit): Promise<any> {
+  private async request(url: string, options: RequestInit): Promise<object> {
     try {
       const response = await fetch(url, options);
-      
-      // Check for HTTP errors 
+
+      // Check for HTTP errors
       if (!response.ok) {
         dispatchError(`Request failed: ${response.status} ${response.statusText}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       // Check for Network errors
-      console.error("API Error:", error);
-      dispatchError("Coordinator unreachable! Please check your connection.");
+      console.error('API Error:', error);
+      dispatchError('Coordinator unreachable! Please check your connection.');
       throw error; // Re-throw so the app logic still knows it failed
     }
   }
