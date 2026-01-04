@@ -106,4 +106,4 @@ You will need these commands also often or eventually:
 
 ## Traditional environment without docker
 
-See [scripts/traditional/README.md](scripts/traditional/README.md)
+See [scripts/traditional/README.md](../scripts/traditional/README.md)
