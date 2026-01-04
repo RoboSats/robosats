@@ -627,6 +627,7 @@ const MakerForm = ({
                       checked={fav.mode === 'swap'}
                       onClick={() => {
                         handleCurrencyChange(fav.mode === 'swap' ? 1 : 1000);
+                        handlePaymentMethodChange([]);
                       }}
                     />
                   </FormControl>
