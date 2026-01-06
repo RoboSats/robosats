@@ -16,11 +16,9 @@ import { FederationContextProvider } from './contexts/FederationContext';
 const App = (): React.JSX.Element => {
   const [client] = window.RobosatsSettings.split('-');
 
-  // --- Global Error State ---
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // --- Event Listener for API Errors ---
   useEffect(() => {
     const handleApiError = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -30,7 +28,6 @@ const App = (): React.JSX.Element => {
 
     window.addEventListener('ROBOSATS_API_ERROR', handleApiError);
 
-    // Cleanup listener when app unmounts
     return () => {
       window.removeEventListener('ROBOSATS_API_ERROR', handleApiError);
     };
@@ -42,7 +39,6 @@ const App = (): React.JSX.Element => {
     }
     setErrorOpen(false);
   };
-  // -------------------------------
 
   return (
     <StrictMode>
@@ -56,7 +52,6 @@ const App = (): React.JSX.Element => {
                   {client !== 'mobile' && <HostAlert />}
                   <Main />
 
-                  {/* --- Global Error Snackbar --- */}
                   <Snackbar
                     open={errorOpen}
                     autoHideDuration={6000}
@@ -72,7 +67,6 @@ const App = (): React.JSX.Element => {
                       {errorMessage}
                     </Alert>
                   </Snackbar>
-                  {/* ---------------------------------- */}
                 </GarageContextProvider>
               </FederationContextProvider>
             </AppContextProvider>
@@ -84,7 +78,6 @@ const App = (): React.JSX.Element => {
 };
 
 const loadApp = (): void => {
-  // waits until the environment is ready for the Android WebView app
   if (systemClient.loading) {
     setTimeout(loadApp, 200);
   } else {

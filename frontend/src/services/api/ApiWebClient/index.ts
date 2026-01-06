@@ -1,6 +1,5 @@
 import { type ApiClient, type Auth } from '..';
 
-// helper to broadcast errors to the UI
 const dispatchError = (message: string) => {
   if (typeof window !== 'undefined') {
     const event = new CustomEvent('ROBOSATS_API_ERROR', { detail: message });
@@ -33,22 +32,19 @@ class ApiWebClient implements ApiClient {
     return headers;
   };
 
-  // Helper to handle the fetch request with error catching
   private async request(url: string, options: RequestInit): Promise<object> {
     try {
       const response = await fetch(url, options);
 
-      // Check for HTTP errors
       if (!response.ok) {
         dispatchError(`Request failed: ${response.status} ${response.statusText}`);
       }
 
       return await response.json();
     } catch (error) {
-      // Check for Network errors
       console.error('API Error:', error);
       dispatchError('Coordinator unreachable! Please check your connection.');
-      throw error; // Re-throw so the app logic still knows it failed
+      throw error;
     }
   }
 

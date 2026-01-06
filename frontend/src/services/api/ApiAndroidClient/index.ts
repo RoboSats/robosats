@@ -1,7 +1,6 @@
 import { type ApiClient, type Auth } from '..';
 import { v4 as uuidv4 } from 'uuid';
 
-//helper to broadcast errors (Same as ApiWebClient)
 const dispatchError = (message: string) => {
   if (typeof window !== 'undefined') {
     const event = new CustomEvent('ROBOSATS_API_ERROR', { detail: message });
@@ -38,7 +37,6 @@ class ApiAndroidClient implements ApiClient {
     return JSON.parse(response).json;
   };
 
-  //central wrapper to handle errors consistently
   private async request(
     method: 'GET' | 'POST' | 'DELETE',
     baseUrl: string,
@@ -75,7 +73,6 @@ class ApiAndroidClient implements ApiClient {
     async (baseUrl, path, auth) => {
       const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
-      //safe request wrapper
       return await this.request('DELETE', baseUrl, path, jsonHeaders);
     };
 
@@ -88,7 +85,6 @@ class ApiAndroidClient implements ApiClient {
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
     const jsonBody = JSON.stringify(body);
 
-    //safe request wrapper
     return await this.request('POST', baseUrl, path, jsonHeaders, jsonBody);
   };
 
@@ -99,7 +95,6 @@ class ApiAndroidClient implements ApiClient {
   ) => {
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
-    //safe request wrapper
     return await this.request('GET', baseUrl, path, jsonHeaders);
   };
 }
