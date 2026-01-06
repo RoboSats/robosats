@@ -40,7 +40,7 @@ class ApiAndroidClient implements ApiClient {
 
   //central wrapper to handle errors consistently
   private async request(
-    method: string,
+    method: 'GET' | 'POST' | 'DELETE',
     baseUrl: string,
     path: string,
     headers: string,
