@@ -196,7 +196,7 @@ const OrderDetails = ({
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
     const rate =
-      (order.has_range && order.max_amount ? Number(order.max_amount) : Number(order.amount)) /
+      (order.amount && order.amount > 0 ? Number(order.amount) : Number(order.max_amount)) /
       btc_now;
 
     if (isBuyer) {
