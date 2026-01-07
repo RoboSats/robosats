@@ -79,7 +79,6 @@ const Main = (): React.JSX.Element => {
 
   const layoutRef = useRef<Layout>(layout);
 
-  // Only update state when drag/resize stops (not during movement)
   const handleDragStop = useCallback(
     (newLayout: Layout) => {
       layoutRef.current = newLayout;

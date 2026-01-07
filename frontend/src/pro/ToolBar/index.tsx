@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import type { Settings, Maker } from '../../models';
 import { type Layout } from 'react-grid-layout';
 
-// Workspace export structure
 interface WorkspaceExport {
   version: number;
   exportedAt: string;
@@ -34,7 +33,6 @@ const ToolBar = ({
   const { maker, setMaker } = useContext<UseGarageStoreType>(GarageContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Export full workspace (layout + settings + maker)
   const handleExport = () => {
     const workspace: WorkspaceExport = {
       version: 1,
@@ -42,7 +40,6 @@ const ToolBar = ({
       layout,
       settings,
       maker: {
-        // Only export user-configurable maker settings
         advancedOptions: maker.advancedOptions,
         coordinator: maker.coordinator,
         isExplicit: maker.isExplicit,
@@ -82,22 +79,18 @@ const ToolBar = ({
         if (typeof result === 'string') {
           const json = JSON.parse(result) as WorkspaceExport;
 
-          // Validate workspace structure
           if (!json.version || !json.layout || !json.settings) {
             throw new Error('Invalid workspace file structure');
           }
 
-          // Import layout
           if (json.layout && Array.isArray(json.layout)) {
             setLayout(json.layout);
           }
 
-          // Import settings
           if (json.settings) {
             setSettings((prev: Settings) => ({ ...prev, ...json.settings }));
           }
 
-          // Import maker settings
           if (json.maker) {
             setMaker((prev: Maker) => ({ ...prev, ...json.maker }));
           }
@@ -113,7 +106,6 @@ const ToolBar = ({
     event.target.value = '';
   };
 
-  // Reset layout to default
   const handleResetLayout = () => {
     if (confirm(t('Reset layout to default? This cannot be undone.'))) {
       setLayout(defaultLayout);
