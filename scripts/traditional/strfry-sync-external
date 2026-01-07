@@ -28,7 +28,7 @@ STRFRY_GIT_DIR="$(_get_env_var_path "STRFRY_GIT_DIR")" || return "$?"
 strfry_bin="$STRFRY_GIT_DIR/strfry"
 
 onion_url_list=$(cat << EOF
-wss://nostr.satstralia.com
+wss://nostr.robosats.org
 wss://relay.damus.io
 wss://freelay.sovbit.host
 EOF

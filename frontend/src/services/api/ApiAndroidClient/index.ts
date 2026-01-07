@@ -1,6 +1,13 @@
 import { type ApiClient, type Auth } from '..';
 import { v4 as uuidv4 } from 'uuid';
 
+const dispatchError = (message: string) => {
+  if (typeof window !== 'undefined') {
+    const event = new CustomEvent('ROBOSATS_API_ERROR', { detail: message });
+    window.dispatchEvent(event);
+  }
+};
+
 class ApiAndroidClient implements ApiClient {
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
@@ -30,6 +37,28 @@ class ApiAndroidClient implements ApiClient {
     return JSON.parse(response).json;
   };
 
+  private async request(
+    method: 'GET' | 'POST' | 'DELETE',
+    baseUrl: string,
+    path: string,
+    headers: string,
+    body: string = '',
+  ): Promise<object> {
+    try {
+      const result = await new Promise<string>((resolve, reject) => {
+        const uuid: string = uuidv4();
+        window.AndroidAppRobosats?.sendRequest(uuid, method, baseUrl + path, headers, body);
+        window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+      });
+
+      return this.parseResponse(result);
+    } catch (error) {
+      console.error('API Error:', error);
+      dispatchError('Coordinator unreachable! Please check your connection.');
+      throw error;
+    }
+  }
+
   public put: (baseUrl: string, path: string, body: object) => Promise<object | undefined> = async (
     _baseUrl,
     _path,
@@ -44,13 +73,7 @@ class ApiAndroidClient implements ApiClient {
     async (baseUrl, path, auth) => {
       const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
-      const result = await new Promise<string>((resolve, reject) => {
-        const uuid: string = uuidv4();
-        window.AndroidAppRobosats?.sendRequest(uuid, 'DELETE', baseUrl + path, jsonHeaders, '');
-        window.AndroidRobosats?.storePromise(uuid, resolve, reject);
-      });
-
-      return this.parseResponse(result);
+      return await this.request('DELETE', baseUrl, path, jsonHeaders);
     };
 
   public post: (
@@ -62,13 +85,7 @@ class ApiAndroidClient implements ApiClient {
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
     const jsonBody = JSON.stringify(body);
 
-    const result = await new Promise<string>((resolve, reject) => {
-      const uuid: string = uuidv4();
-      window.AndroidAppRobosats?.sendRequest(uuid, 'POST', baseUrl + path, jsonHeaders, jsonBody);
-      window.AndroidRobosats?.storePromise(uuid, resolve, reject);
-    });
-
-    return this.parseResponse(result);
+    return await this.request('POST', baseUrl, path, jsonHeaders, jsonBody);
   };
 
   public get: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> = async (
@@ -78,13 +95,7 @@ class ApiAndroidClient implements ApiClient {
   ) => {
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
-    const result = await new Promise<string>((resolve, reject) => {
-      const uuid: string = uuidv4();
-      window.AndroidAppRobosats?.sendRequest(uuid, 'GET', baseUrl + path, jsonHeaders, '');
-      window.AndroidRobosats?.storePromise(uuid, resolve, reject);
-    });
-
-    return this.parseResponse(result);
+    return await this.request('GET', baseUrl, path, jsonHeaders);
   };
 }
 

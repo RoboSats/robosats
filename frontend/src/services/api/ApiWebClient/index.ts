@@ -1,5 +1,12 @@
 import { type ApiClient, type Auth } from '..';
 
+const dispatchError = (message: string) => {
+  if (typeof window !== 'undefined') {
+    const event = new CustomEvent('ROBOSATS_API_ERROR', { detail: message });
+    window.dispatchEvent(event);
+  }
+};
+
 class ApiWebClient implements ApiClient {
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
@@ -25,6 +32,22 @@ class ApiWebClient implements ApiClient {
     return headers;
   };
 
+  private async request(url: string, options: RequestInit): Promise<object> {
+    try {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        dispatchError(`Request failed: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      dispatchError('Coordinator unreachable! Please check your connection.');
+      throw error;
+    }
+  }
+
   public post: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object> =
     async (baseUrl, path, body, auth) => {
       const requestOptions = {
@@ -32,10 +55,7 @@ class ApiWebClient implements ApiClient {
         headers: this.getHeaders(auth),
         body: JSON.stringify(body),
       };
-
-      return await fetch(baseUrl + path, requestOptions).then(
-        async (response) => await response.json(),
-      );
+      return await this.request(baseUrl + path, requestOptions);
     };
 
   public put: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object> =
@@ -45,9 +65,7 @@ class ApiWebClient implements ApiClient {
         headers: this.getHeaders(auth),
         body: JSON.stringify(body),
       };
-      return await fetch(baseUrl + path, requestOptions).then(
-        async (response) => await response.json(),
-      );
+      return await this.request(baseUrl + path, requestOptions);
     };
 
   public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object> = async (
@@ -59,9 +77,7 @@ class ApiWebClient implements ApiClient {
       method: 'DELETE',
       headers: this.getHeaders(auth),
     };
-    return await fetch(baseUrl + path, requestOptions).then(
-      async (response) => await response.json(),
-    );
+    return await this.request(baseUrl + path, requestOptions);
   };
 
   public get: (baseUrl: string, path: string, auth?: Auth) => Promise<object> = async (
@@ -69,9 +85,7 @@ class ApiWebClient implements ApiClient {
     path,
     auth,
   ) => {
-    return await fetch(baseUrl + path, { headers: this.getHeaders(auth) }).then(
-      async (response) => await response.json(),
-    );
+    return await this.request(baseUrl + path, { headers: this.getHeaders(auth) });
   };
 }
 
