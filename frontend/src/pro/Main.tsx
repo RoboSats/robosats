@@ -110,7 +110,12 @@ const Main = (): React.JSX.Element => {
     <Router>
       <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
         <Grid item>
-          <ToolBar height={`${toolbarHeight}em`} />
+          <ToolBar
+            height={`${toolbarHeight}em`}
+            layout={layout}
+            setLayout={setLayout}
+            defaultLayout={defaultLayout}
+          />
           <LandingDialog
             open={openLanding}
             onClose={() => {
