@@ -1,6 +1,7 @@
 import React, { StrictMode, Suspense, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import Main from './basic/Main';
+import BasicMain from './basic/Main';
+import ProMain from './pro/Main';
 import { CssBaseline, Snackbar, Alert } from '@mui/material';
 import HostAlert from './components/HostAlert';
 
@@ -14,7 +15,8 @@ import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
 
 const App = (): React.JSX.Element => {
-  const [client] = window.RobosatsSettings.split('-');
+  const [client, view] = window.RobosatsSettings.split('-');
+  const isPro = view === 'pro';
 
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -50,7 +52,7 @@ const App = (): React.JSX.Element => {
                 <GarageContextProvider>
                   <CssBaseline />
                   {client !== 'mobile' && <HostAlert />}
-                  <Main />
+                  {isPro ? <ProMain /> : <BasicMain />}
 
                   <Snackbar
                     open={errorOpen}
