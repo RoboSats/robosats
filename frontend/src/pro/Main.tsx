@@ -1,7 +1,6 @@
 import React, { useContext, useState, useCallback, useRef } from 'react';
 import GridLayout, { type Layout } from 'react-grid-layout';
 import { Grid, styled, useTheme } from '@mui/material';
-import { MemoryRouter, HashRouter, BrowserRouter, BrowserRouterProps } from 'react-router-dom';
 
 import {
   PlaceholderWidget,
@@ -15,21 +14,8 @@ import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
 
 import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
+import { getRouter } from '../utils';
 
-const getRouter = (): (({
-  basename,
-  children,
-  window,
-}: BrowserRouterProps) => React.JSX.Element) => {
-  const [client] = window.RobosatsSettings.split('-');
-  if (client === 'web') {
-    return BrowserRouter;
-  } else if (client === 'desktop') {
-    return HashRouter;
-  } else {
-    return MemoryRouter;
-  }
-};
 const Router = getRouter();
 
 // To Do. Add dotted grid when layout is not frozen
