@@ -1,4 +1,4 @@
-import React, { StrictMode, Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import BasicMain from './basic/Main';
 import ProMain from './pro/Main';
@@ -43,39 +43,37 @@ const App = (): React.JSX.Element => {
   };
 
   return (
-    <StrictMode>
-      <ErrorBoundary>
-        <Suspense fallback='loading'>
-          <I18nextProvider i18n={i18n}>
-            <AppContextProvider>
-              <FederationContextProvider>
-                <GarageContextProvider>
-                  <CssBaseline />
-                  {client !== 'mobile' && <HostAlert />}
-                  {isPro ? <ProMain /> : <BasicMain />}
+    <ErrorBoundary>
+      <Suspense fallback='loading'>
+        <I18nextProvider i18n={i18n}>
+          <AppContextProvider>
+            <FederationContextProvider>
+              <GarageContextProvider>
+                <CssBaseline />
+                {client !== 'mobile' && <HostAlert />}
+                {isPro ? <ProMain /> : <BasicMain />}
 
-                  <Snackbar
-                    open={errorOpen}
-                    autoHideDuration={6000}
+                <Snackbar
+                  open={errorOpen}
+                  autoHideDuration={6000}
+                  onClose={handleClose}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                  <Alert
                     onClose={handleClose}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    severity='error'
+                    sx={{ width: '100%' }}
+                    variant='filled'
                   >
-                    <Alert
-                      onClose={handleClose}
-                      severity='error'
-                      sx={{ width: '100%' }}
-                      variant='filled'
-                    >
-                      {errorMessage}
-                    </Alert>
-                  </Snackbar>
-                </GarageContextProvider>
-              </FederationContextProvider>
-            </AppContextProvider>
-          </I18nextProvider>
-        </Suspense>
-      </ErrorBoundary>
-    </StrictMode>
+                    {errorMessage}
+                  </Alert>
+                </Snackbar>
+              </GarageContextProvider>
+            </FederationContextProvider>
+          </AppContextProvider>
+        </I18nextProvider>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

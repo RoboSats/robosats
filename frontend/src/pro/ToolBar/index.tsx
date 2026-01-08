@@ -1,8 +1,8 @@
 import React, { useContext, useRef } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { Paper, Grid, IconButton, Tooltip, Typography } from '@mui/material';
-import { Lock, LockOpen, FileDownload, FileUpload, RestartAlt } from '@mui/icons-material';
+import { Paper, Box, IconButton, Tooltip, Typography, useTheme, alpha } from '@mui/material';
+import { Lock, LockOpen, FileDownload, FileUpload, RestartAlt, Widgets } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import type { Settings, Maker } from '../../models';
 import { type Layout } from 'react-grid-layout';
@@ -20,6 +20,9 @@ interface ToolBarProps {
   layout: Layout;
   setLayout: React.Dispatch<React.SetStateAction<Layout>>;
   defaultLayout: Layout;
+  isLocked: boolean;
+  onToggleLock: () => void;
+  onToggleDrawer: () => void;
 }
 
 const ToolBar = ({
@@ -27,8 +30,12 @@ const ToolBar = ({
   layout,
   setLayout,
   defaultLayout,
+  isLocked,
+  onToggleLock,
+  onToggleDrawer,
 }: ToolBarProps): React.JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { settings, setSettings } = useContext<UseAppStoreType>(AppContext);
   const { maker, setMaker } = useContext<UseGarageStoreType>(GarageContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -117,11 +124,14 @@ const ToolBar = ({
       elevation={6}
       sx={{
         width: '100%',
+        maxWidth: '100vw',
         height,
         display: 'flex',
         alignItems: 'center',
         padding: '0 1em',
         borderRadius: 0,
+        boxSizing: 'border-box',
+        overflowX: 'hidden',
       }}
     >
       <input
@@ -131,11 +141,34 @@ const ToolBar = ({
         onChange={handleFileChange}
         accept='.json'
       />
-      <Grid container alignItems='center' justifyContent='space-between'>
-        <Grid item>
-          <Typography variant='h6'>PRO Toolbar</Typography>
-        </Grid>
-        <Grid item sx={{ display: 'flex', gap: 1 }}>
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Tooltip title={t('Widgets')}>
+            <IconButton
+              onClick={onToggleDrawer}
+              sx={{
+                background: alpha(theme.palette.primary.main, 0.1),
+                '&:hover': {
+                  background: alpha(theme.palette.primary.main, 0.2),
+                },
+              }}
+            >
+              <Widgets color='primary' />
+            </IconButton>
+          </Tooltip>
+          <Typography variant='h6' sx={{ ml: 1 }}>
+            PRO
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={t('Import Workspace')}>
             <IconButton onClick={handleImportClick} color='primary'>
               <FileUpload />
@@ -154,21 +187,13 @@ const ToolBar = ({
             </IconButton>
           </Tooltip>
 
-          <Tooltip title={settings.freezeViewports ? t('Unlock Layout') : t('Lock Layout')}>
-            <IconButton
-              onClick={() => {
-                setSettings((prev: Settings) => ({
-                  ...prev,
-                  freezeViewports: !prev.freezeViewports,
-                }));
-              }}
-              color={settings.freezeViewports ? 'primary' : 'default'}
-            >
-              {settings.freezeViewports ? <Lock /> : <LockOpen />}
+          <Tooltip title={isLocked ? t('Unlock Layout') : t('Lock Layout')}>
+            <IconButton onClick={onToggleLock} color={isLocked ? 'primary' : 'default'}>
+              {isLocked ? <Lock /> : <LockOpen />}
             </IconButton>
           </Tooltip>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Paper>
   );
 };
