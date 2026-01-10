@@ -20,19 +20,9 @@ export const calculateBondAmount = ({
 }: BondCalculatorProps): number | null => {
   if (mode === 'fiat' && !price) return null;
 
-  let amountToCalc: number | null = null;
+  const amountToCalc = isRange ? maxAmount : amount;
 
-  if (isRange) {
-    if (maxAmount) {
-      amountToCalc = maxAmount;
-    }
-  } else {
-    if (amount) {
-      amountToCalc = amount;
-    }
-  }
-
-  if (amountToCalc === null) return null;
+  if (!amountToCalc) return null;
 
   let tradeAmountSats = 0;
 
