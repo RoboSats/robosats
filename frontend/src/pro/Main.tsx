@@ -23,15 +23,29 @@ const Router = getRouter();
 interface StyledRGLProps {
   gridHeight: number;
   isDragging?: boolean;
+  isLocked?: boolean;
 }
 
 const StyledRGL = styled(GridLayout, {
-  shouldForwardProp: (prop) => prop !== 'gridHeight' && prop !== 'isDragging',
+  shouldForwardProp: (prop) =>
+    prop !== 'gridHeight' && prop !== 'isDragging' && prop !== 'isLocked',
 })<StyledRGLProps>(
-  ({ gridHeight, width, isDragging }) => `
+  ({ theme, gridHeight, width, isDragging, isLocked }) => `
   min-height: ${gridHeight}em;
   width: ${Number(width)}px;
   ${isDragging ? 'pointer-events: auto; user-select: none;' : ''}
+  ${
+    !isLocked
+      ? `
+    background-image: radial-gradient(circle, ${theme.palette.primary.main}26 1.5px, transparent 1.5px);
+    background-size: 30px 30px;
+    transition: background-image 0.3s ease;
+  `
+      : `
+    background-image: none;
+    transition: background-image 0.3s ease;
+  `
+  }
   `,
 );
 
@@ -217,6 +231,7 @@ const Main = (): React.JSX.Element => {
             isDraggable={!isLocked}
             isResizable={!isLocked}
             isDragging={isDragging}
+            isLocked={isLocked}
             rowHeight={gridCellSize * em}
             autoSize={true}
             onDragStart={handleDragStart}
