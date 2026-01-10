@@ -96,30 +96,39 @@ const BookTable = ({
   });
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    { field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' },
-  ]);
+  const [sortModel, setSortModel] = useState<GridSortModel>(
+    fav.type === 0 || fav.type === 1
+      ? [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }]
+      : [],
+  );
   const [page, setPage] = useState<number>(0);
   const prevFavTypeRef = useRef<number>();
 
   useEffect(() => {
     const prevFavType = prevFavTypeRef.current;
 
-    // Only run the logic if fav.type has actually changed
     if (typeof prevFavType !== 'undefined' && prevFavType !== fav.type) {
       setSortModel((currentSortModel) => {
-        const prevDefaultSort = [{ field: 'premium', sort: prevFavType === 0 ? 'desc' : 'asc' }];
+        let isCurrentSortDefault = false;
 
-        const isCurrentSortDefault =
-          currentSortModel.length === 1 &&
-          currentSortModel[0].field === prevDefaultSort[0].field &&
-          currentSortModel[0].sort === prevDefaultSort[0].sort;
+        if (prevFavType === null) {
+          isCurrentSortDefault = currentSortModel.length === 0;
+        } else {
+          const prevDefaultSortDirection = prevFavType === 0 ? 'desc' : 'asc';
+          isCurrentSortDefault =
+            currentSortModel.length === 0 ||
+            (currentSortModel.length === 1 &&
+              currentSortModel[0].field === 'premium' &&
+              currentSortModel[0].sort === prevDefaultSortDirection);
+        }
 
         if (isCurrentSortDefault) {
-          return [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }];
-        } else {
-          return currentSortModel;
+          if (fav.type === 0 || fav.type === 1) {
+            return [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }];
+          }
+          return [];
         }
+        return currentSortModel;
       });
     }
 
