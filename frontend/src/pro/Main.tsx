@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import GridLayout, { type Layout } from 'react-grid-layout';
 import { Grid, styled, useTheme } from '@mui/material';
 
@@ -10,39 +10,49 @@ import {
   SettingsWidget,
   FederationWidget,
 } from '../pro/Widgets';
-import ToolBar from '../pro/ToolBar';
+import ToolBar, { type WidgetInfo } from '../pro/ToolBar';
+import WidgetDrawer from '../pro/ToolBar/WidgetDrawer';
 import LandingDialog from '../pro/LandingDialog';
 
 import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
+import { type Settings } from '../models';
+import { getRouter } from '../utils';
 
-// To Do. Add dotted grid when layout is not frozen
-// ${freeze ?
-//   `background: radial-gradient(${theme.palette.text.disabled} 1px, transparent 0px);
-//   background-size: ${gridCellSize}em ${gridCellSize}em;
-//   background-position: left 1em bottom 1.5em;`
-// :''}
+const Router = getRouter();
 
-const StyledRGL = styled(GridLayout)(
-  ({ height, width }) => `
-  height: ${Number(height)}em;
+interface StyledRGLProps {
+  gridHeight: number;
+  isDragging?: boolean;
+  isLocked?: boolean;
+}
+
+const StyledRGL = styled(GridLayout, {
+  shouldForwardProp: (prop) =>
+    prop !== 'gridHeight' && prop !== 'isDragging' && prop !== 'isLocked',
+})<StyledRGLProps>(
+  ({ theme, gridHeight, width, isDragging, isLocked }) => `
+  min-height: ${gridHeight}em;
   width: ${Number(width)}px;
-  max-height: ${Number(height)}em;
+  ${isDragging ? 'pointer-events: auto; user-select: none;' : ''}
+  ${
+    !isLocked
+      ? `
+    background-image: radial-gradient(circle, ${theme.palette.primary.main}26 1.5px, transparent 1.5px);
+    background-size: 30px 30px;
+    transition: background-image 0.3s ease;
+  `
+      : `
+    background-image: none;
+    transition: background-image 0.3s ease;
+  `
+  }
   `,
 );
 
-const defaultLayout: Layout = [
-  { i: 'Maker', w: 10, h: 16, x: 67, y: 0, minW: 8, maxW: 22, minH: 10, maxH: 28 },
-  { i: 'Book', w: 43, h: 15, x: 34, y: 16, minW: 6, maxW: 70, minH: 9, maxH: 25 },
-  { i: 'DepthChart', w: 15, h: 10, x: 19, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
-  { i: 'Garage', w: 52, h: 16, x: 0, y: 0, minW: 15, maxW: 78, minH: 8, maxH: 30 },
-  { i: 'History', w: 8, h: 10, x: 11, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
-  { i: 'Trade', w: 15, h: 16, x: 52, y: 0, minW: 6, maxW: 22, minH: 9, maxH: 25 },
-  { i: 'Settings', w: 11, h: 15, x: 0, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
-  { i: 'Other', w: 23, h: 5, x: 11, y: 26, minW: 2, maxW: 50, minH: 4, maxH: 25 },
-];
+const defaultLayout: Layout = [];
 
 const Main = (): React.JSX.Element => {
-  const { settings, windowSize } = useContext<UseAppStoreType>(AppContext);
+  const { settings, setSettings, windowSize } = useContext<UseAppStoreType>(AppContext);
 
   const theme = useTheme();
   const em: number = theme.typography.fontSize;
@@ -51,65 +61,190 @@ const Main = (): React.JSX.Element => {
 
   const [openLanding, setOpenLanding] = useState<boolean>(true);
   const [layout, setLayout] = useState<Layout>(defaultLayout);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isLocked, setIsLocked] = useState<boolean>(settings.freezeViewports);
+
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsLocked(settings.freezeViewports);
+  }, [settings.freezeViewports]);
+
+  const handleToggleLock = useCallback(() => {
+    setIsLocked((prevLocked) => {
+      const newLocked = !prevLocked;
+      setSettings((prev: Settings) => ({
+        ...prev,
+        freezeViewports: newLocked,
+      }));
+      setLayout((prevLayout) =>
+        prevLayout.map((item) => ({
+          ...item,
+          static: newLocked,
+          isDraggable: !newLocked,
+          isResizable: !newLocked,
+        })),
+      );
+
+      return newLocked;
+    });
+  }, [setSettings]);
+
+  const handleToggleDrawer = useCallback(() => {
+    setDrawerOpen((prev) => !prev);
+  }, []);
+
+  const handleDragStop = useCallback(
+    (newLayout: Layout) => {
+      setLayout(newLayout);
+      setIsDragging(false);
+    },
+    [setLayout],
+  );
+
+  const handleResizeStop = useCallback(
+    (newLayout: Layout) => {
+      setLayout(newLayout);
+      setIsDragging(false);
+    },
+    [setLayout],
+  );
+
+  const handleDragStart = useCallback(() => {
+    setIsDragging(true);
+  }, []);
+
+  const handleResizeStart = useCallback(() => {
+    setIsDragging(true);
+  }, []);
+
+  const findNextPosition = useCallback(
+    (_w: number, _h: number): { x: number; y: number } => {
+      let y = 0;
+
+      layout.forEach((item) => {
+        const itemBottom = item.y + item.h;
+        if (itemBottom > y) y = itemBottom;
+      });
+
+      return { x: 0, y };
+    },
+    [layout, windowSize.width, gridCellSize],
+  );
+
+  const handleAddWidget = useCallback(
+    (widget: WidgetInfo) => {
+      if (layout.some((item) => item.i === widget.id)) return;
+
+      const pos = findNextPosition(widget.defaultSize.w, widget.defaultSize.h);
+      const newItem = {
+        i: widget.id,
+        x: pos.x,
+        y: pos.y,
+        w: widget.defaultSize.w,
+        h: widget.defaultSize.h,
+        minW: widget.defaultSize.minW,
+        minH: widget.defaultSize.minH,
+        maxW: widget.defaultSize.maxW,
+        maxH: widget.defaultSize.maxH,
+        static: isLocked,
+        isDraggable: !isLocked,
+        isResizable: !isLocked,
+      };
+
+      setLayout((prev) => [...prev, newItem]);
+    },
+    [layout, findNextPosition, isLocked],
+  );
+
+  const handleRemoveWidget = useCallback((widgetId: string) => {
+    setLayout((prev) => prev.filter((item) => item.i !== widgetId));
+  }, []);
+
+  const renderedWidgets = useMemo(() => {
+    const widgetMap: Record<string, React.ReactNode> = {
+      Maker: <MakerWidget />,
+      Book: <BookWidget layout={layout.find((l) => l.i === 'Book')} gridCellSize={gridCellSize} />,
+      DepthChart: (
+        <DepthChartWidget
+          gridCellSize={gridCellSize}
+          layout={layout.find((l) => l.i === 'DepthChart')}
+        />
+      ),
+      Settings: <SettingsWidget />,
+      Garage: <PlaceholderWidget label='Robot Garage' />,
+      History: <PlaceholderWidget label='Garage History' />,
+      Trade: <PlaceholderWidget label='Trade Box' />,
+      Federation: (
+        <FederationWidget
+          layout={layout.find((l) => l.i === 'Federation')}
+          gridCellSize={gridCellSize}
+        />
+      ),
+    };
+
+    return layout.map((item) => (
+      <div key={item.i}>{widgetMap[item.i] ?? <PlaceholderWidget label={item.i} />}</div>
+    ));
+  }, [layout, gridCellSize]);
+
+  const currentWidgets = useMemo(() => layout.map((item) => item.i), [layout]);
 
   return (
-    <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
-      <Grid item>
-        <ToolBar height={`${toolbarHeight}em`} />
-        <LandingDialog
-          open={openLanding}
-          onClose={() => {
-            setOpenLanding(!openLanding);
-          }}
+    <Router>
+      <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
+        <WidgetDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          currentWidgets={currentWidgets}
+          onAddWidget={handleAddWidget}
+          onRemoveWidget={handleRemoveWidget}
         />
-      </Grid>
+        <Grid item>
+          <ToolBar
+            height={`${toolbarHeight}em`}
+            layout={layout}
+            setLayout={setLayout}
+            defaultLayout={defaultLayout}
+            isLocked={isLocked}
+            onToggleLock={handleToggleLock}
+            onToggleDrawer={handleToggleDrawer}
+          />
+          <LandingDialog
+            open={openLanding}
+            onClose={() => {
+              setOpenLanding(!openLanding);
+            }}
+          />
+        </Grid>
 
-      <Grid item>
-        <StyledRGL
-          height={windowSize.height - toolbarHeight}
-          width={Number((windowSize.width / gridCellSize).toFixed()) * gridCellSize * em}
-          theme={theme}
-          freeze={!settings.freezeViewports}
-          gridCellSize={gridCellSize}
-          className='layout'
-          layout={layout}
-          cols={Number((windowSize.width / gridCellSize).toFixed())} // cols are 2em wide
-          margin={[0.5 * em, 0.5 * em]}
-          isDraggable={!settings.freezeViewports}
-          isResizable={!settings.freezeViewports}
-          rowHeight={gridCellSize * em} // rows are 2em high
-          autoSize={true}
-          onLayoutChange={(layout: Layout) => {
-            setLayout(layout);
-          }}
-        >
-          <div key='Maker'>
-            <MakerWidget />
-          </div>
-          <div key='Book'>
-            <BookWidget layout={layout[1]} gridCellSize={gridCellSize} />
-          </div>
-          <div key='DepthChart'>
-            <DepthChartWidget gridCellSize={gridCellSize} layout={layout[2]} />
-          </div>
-          <div key='Settings'>
-            <SettingsWidget />
-          </div>
-          <div key='Garage'>
-            <PlaceholderWidget label='Robot Garage' />
-          </div>
-          <div key='History'>
-            <PlaceholderWidget label='Garage History' />
-          </div>
-          <div key='Trade'>
-            <PlaceholderWidget label='Trade Box' />
-          </div>
-          <div key='Federation'>
-            <FederationWidget layout={layout[7]} gridCellSize={gridCellSize} />
-          </div>
-        </StyledRGL>
+        <Grid item>
+          <StyledRGL
+            gridHeight={windowSize.height - toolbarHeight}
+            width={Number((windowSize.width / gridCellSize).toFixed()) * gridCellSize * em}
+            className='layout'
+            useCSSTransforms={true}
+            transformScale={1}
+            layout={layout}
+            cols={Number((windowSize.width / gridCellSize).toFixed())}
+            margin={[0.5 * em, 0.5 * em]}
+            isDraggable={!isLocked}
+            isResizable={!isLocked}
+            isDragging={isDragging}
+            isLocked={isLocked}
+            rowHeight={gridCellSize * em}
+            autoSize={true}
+            onDragStart={handleDragStart}
+            onDragStop={handleDragStop}
+            onResizeStart={handleResizeStart}
+            onResizeStop={handleResizeStop}
+            draggableCancel='.noDrag'
+          >
+            {renderedWidgets}
+          </StyledRGL>
+        </Grid>
       </Grid>
-    </Grid>
+    </Router>
   );
 };
 

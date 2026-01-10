@@ -5,6 +5,8 @@
 .react-grid-item {
   transition: all 200ms ease;
   transition-property: left, top;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 .react-grid-item img {
   pointer-events: none;
@@ -16,12 +18,18 @@
 .react-grid-item.resizing {
   z-index: 1;
   will-change: width, height;
+  transition: none !important;
 }
 
 .react-grid-item.react-draggable-dragging {
   transition: none;
   z-index: 3;
   will-change: transform;
+  pointer-events: auto;
+}
+
+.react-grid-item.react-draggable-dragging > * {
+  pointer-events: none;
 }
 
 .react-grid-item.dropping {
