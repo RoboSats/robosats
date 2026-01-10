@@ -132,7 +132,7 @@ const WidgetDrawer: React.FC<WidgetDrawerProps> = ({
 
   return (
     <Drawer
-      anchor='left'
+      anchor='right'
       open={open}
       onClose={onClose}
       PaperProps={{
@@ -140,7 +140,7 @@ const WidgetDrawer: React.FC<WidgetDrawerProps> = ({
           width: 320,
           background: `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`,
           backdropFilter: 'blur(10px)',
-          borderRight: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+          borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
         },
       }}
     >

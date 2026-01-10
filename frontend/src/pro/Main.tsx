@@ -50,7 +50,7 @@ const Main = (): React.JSX.Element => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isLocked, setIsLocked] = useState<boolean>(settings.freezeViewports);
 
-  const [drawerOpen, setDrawerOpen] = useState<boolean>(true);
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setIsLocked(settings.freezeViewports);

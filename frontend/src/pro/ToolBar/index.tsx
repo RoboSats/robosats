@@ -1,11 +1,12 @@
 import React, { useContext, useRef } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { Paper, Box, IconButton, Tooltip, Typography, useTheme, alpha } from '@mui/material';
+import { Paper, Box, IconButton, Tooltip, useTheme, alpha } from '@mui/material';
 import { Lock, LockOpen, FileDownload, FileUpload, RestartAlt, Widgets } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import type { Settings, Maker } from '../../models';
 import { type Layout } from 'react-grid-layout';
+import { RoboSatsTextIcon } from '../../components/Icons';
 
 interface WorkspaceExport {
   version: number;
@@ -150,6 +151,22 @@ const ToolBar = ({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <svg width={0} height={0}>
+            <linearGradient id='logoGradient' x1={1} y1={0} x2={1} y2={1}>
+              <stop offset={0} stopColor={theme.palette.primary.main} />
+              <stop offset={1} stopColor={theme.palette.secondary.main} />
+            </linearGradient>
+          </svg>
+          <RoboSatsTextIcon
+            sx={{
+              height: '2em',
+              width: 'auto',
+              fill: 'url(#logoGradient)',
+            }}
+          />
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={t('Widgets')}>
             <IconButton
               onClick={onToggleDrawer}
@@ -163,12 +180,7 @@ const ToolBar = ({
               <Widgets color='primary' />
             </IconButton>
           </Tooltip>
-          <Typography variant='h6' sx={{ ml: 1 }}>
-            PRO
-          </Typography>
-        </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={t('Import Workspace')}>
             <IconButton onClick={handleImportClick} color='primary'>
               <FileUpload />
