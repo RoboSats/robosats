@@ -420,6 +420,7 @@
   "Enter the destination of the Lightning swap": "ป้อนปลายทางของ Lightning swap",
   "Escrow/Invoice Timer (HH:mm)": "เครื่องจับเวลา Escrow/ใบแจ้งหนี้ (HH:mm)",
   "Escrow/invoice step length": "ความยาวขั้นตอน Escrow/ใบแจ้งหนี้",
+  "Estimated Bond": "เงินประกันโดยประมาณ",
   "Exact Amount": "จำนวนที่แน่นอน",
   "Face to Face Location": "ตำแหน่งที่ตั้งพบกัน",
   "Fiat Payment Method(s)": "วิธีการชำระเงินเฟียต",

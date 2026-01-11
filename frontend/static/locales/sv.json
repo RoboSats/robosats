@@ -420,6 +420,7 @@
   "Enter the destination of the Lightning swap": "Ange destinationen för Lightning-bytet",
   "Escrow/Invoice Timer (HH:mm)": "Deposition/Faktura Timer (HH:mm)",
   "Escrow/invoice step length": "Deposition/faktura steg längd",
+  "Estimated Bond": "Uppskattad deposition",
   "Exact Amount": "Exakt belopp",
   "Face to Face Location": "Plats ansikte mot ansikte",
   "Fiat Payment Method(s)": "Betalningsmetod(er) med fiat",

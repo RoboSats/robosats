@@ -420,6 +420,7 @@
   "Enter the destination of the Lightning swap": "Saisir la destination de l'échange Lightning",
   "Escrow/Invoice Timer (HH:mm)": "Minuterie de dépôt de garantie/facture (HH:mm)",
   "Escrow/invoice step length": "Longueur de l'étape de dépôt fiduciaire/facture",
+  "Estimated Bond": "Caution estimée",
   "Exact Amount": "Montant exact",
   "Face to Face Location": "Emplacement face à face",
   "Fiat Payment Method(s)": "Mode(s) de paiement Fiat",
