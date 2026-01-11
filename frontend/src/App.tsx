@@ -1,7 +1,7 @@
-import React, { StrictMode, Suspense } from 'react';
+import React, { StrictMode, Suspense, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, Snackbar, Alert } from '@mui/material';
 import HostAlert from './components/HostAlert';
 
 import { I18nextProvider } from 'react-i18next';
@@ -15,6 +15,31 @@ import { FederationContextProvider } from './contexts/FederationContext';
 
 const App = (): React.JSX.Element => {
   const [client] = window.RobosatsSettings.split('-');
+
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    const handleApiError = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setErrorMessage(customEvent.detail);
+      setErrorOpen(true);
+    };
+
+    window.addEventListener('ROBOSATS_API_ERROR', handleApiError);
+
+    return () => {
+      window.removeEventListener('ROBOSATS_API_ERROR', handleApiError);
+    };
+  }, []);
+
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setErrorOpen(false);
+  };
+
   return (
     <StrictMode>
       <ErrorBoundary>
@@ -26,6 +51,22 @@ const App = (): React.JSX.Element => {
                   <CssBaseline />
                   {client !== 'mobile' && <HostAlert />}
                   <Main />
+
+                  <Snackbar
+                    open={errorOpen}
+                    autoHideDuration={6000}
+                    onClose={handleClose}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                  >
+                    <Alert
+                      onClose={handleClose}
+                      severity='error'
+                      sx={{ width: '100%' }}
+                      variant='filled'
+                    >
+                      {errorMessage}
+                    </Alert>
+                  </Snackbar>
                 </GarageContextProvider>
               </FederationContextProvider>
             </AppContextProvider>
@@ -37,7 +78,6 @@ const App = (): React.JSX.Element => {
 };
 
 const loadApp = (): void => {
-  // waits until the environment is ready for the Android WebView app
   if (systemClient.loading) {
     setTimeout(loadApp, 200);
   } else {
