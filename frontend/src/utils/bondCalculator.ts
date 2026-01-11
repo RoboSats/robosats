@@ -37,5 +37,5 @@ export const calculateBondAmount = ({
     }
   }
 
-  return Math.round(tradeAmountSats * (bondSize / 100));
+  return Math.floor(tradeAmountSats * (bondSize / 100));
 };
