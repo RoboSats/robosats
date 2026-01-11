@@ -410,14 +410,51 @@ const BookTable = ({
             title={`${pn(params.row.price)} ${currencyCode}/BTC`}
           >
             <div
-              style={{ cursor: 'pointer' }}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-end',
+                height: '100%',
+                width: '100%',
+                lineHeight: 1,
+              }}
               onClick={() => {
                 onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
               }}
             >
-              <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
+              <Typography
+                variant='inherit'
+                color={fontColor}
+                sx={{
+                  fontWeight,
+                  lineHeight: '1.2',
+                  fontSize: { xs: '0.9rem', md: 'inherit' },
+                  textAlign: 'right',
+                }}
+              >
                 {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
               </Typography>
+              <Box
+                sx={{
+                  display: { xs: 'block', lg: 'none' },
+                  lineHeight: '1',
+                  marginTop: '2px',
+                }}
+              >
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{
+                    fontSize: '0.70rem',
+                    lineHeight: '1',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {params.row.bond_size ? `Bond: ${Number(params.row.bond_size)}%` : 'Bond: -'}
+                </Typography>
+              </Box>
             </div>
           </Tooltip>
         );
