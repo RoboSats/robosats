@@ -460,7 +460,7 @@
   "The premium is not valid.": "Ziada si sahihi.",
   "The premium must be a number.": "Ziada lazima iwe namba.",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "Ili kulinda faragha yako, eneo halisi unaloweka litabadilishwa kuwa la nasibu.",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "Lazima ujaze fomu kwa usahihi",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Unapokea takribani {{swapSats}} LN Sats (ada inaweza kutofautiana)",

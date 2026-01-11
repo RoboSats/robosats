@@ -460,7 +460,7 @@
   "The premium is not valid.": "Prémie není platná.",
   "The premium must be a number.": "Prémie musí být číslo.",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "K ochraně vašeho soukromí bude přesná poloha, kterou umístíte, mírně náhodně upravena.",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "Musíte formulář správně vyplnit",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Obdržíte přibližně {{swapSats}} LN Sats (poplatky se mohou lišit)",

@@ -460,7 +460,7 @@
   "The premium is not valid.": "溢价无效。",
   "The premium must be a number.": "溢价必须是一个数字。",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "为了保护您的隐私，您固定的确切位置将会稍微随机化。",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "您必须正确填写表格",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "你将接收大约{{swapSats}}闪电聪（费用会造成差异）",

@@ -460,7 +460,7 @@
   "The premium is not valid.": "ค่าพรีเมียมไม่ถูกต้อง",
   "The premium must be a number.": "ค่าพรีเมียมต้องเป็นตัวเลข",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "เพื่อปกป้องความเป็นส่วนตัวของคุณ ตำแหน่งที่คุณปักจะถูกสุ่มใหม่",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "คุณต้องกรอกแบบฟอร์มอย่างถูกต้อง",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "คุณจะได้รับประมาณ {{swapSats}} LN Sats (ค่าธรรมเนียมอาจแตกต่างกัน)",
