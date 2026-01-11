@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -20,6 +20,7 @@ import {
   type GridColDef,
   type GridValidRowModel,
   type GridSlotsComponent,
+  type GridSortModel,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -95,7 +96,44 @@ const BookTable = ({
   });
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [sortModel, setSortModel] = useState<GridSortModel>(
+    fav.type === 0 || fav.type === 1
+      ? [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }]
+      : [],
+  );
   const [page, setPage] = useState<number>(0);
+  const prevFavTypeRef = useRef<number>();
+
+  useEffect(() => {
+    const prevFavType = prevFavTypeRef.current;
+
+    if (typeof prevFavType !== 'undefined' && prevFavType !== fav.type) {
+      setSortModel((currentSortModel) => {
+        let isCurrentSortDefault = false;
+
+        if (prevFavType === null) {
+          isCurrentSortDefault = currentSortModel.length === 0;
+        } else {
+          const prevDefaultSortDirection = prevFavType === 0 ? 'desc' : 'asc';
+          isCurrentSortDefault =
+            currentSortModel.length === 0 ||
+            (currentSortModel.length === 1 &&
+              currentSortModel[0].field === 'premium' &&
+              currentSortModel[0].sort === prevDefaultSortDirection);
+        }
+
+        if (isCurrentSortDefault) {
+          if (fav.type === 0 || fav.type === 1) {
+            return [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }];
+          }
+          return [];
+        }
+        return currentSortModel;
+      });
+    }
+
+    prevFavTypeRef.current = fav.type;
+  }, [fav.type]);
 
   // all sizes in 'em'
   const [fontSize, defaultPageSize, height] = useMemo(() => {
@@ -853,6 +891,8 @@ const BookTable = ({
           onPaginationModelChange={(newPaginationModel) => {
             setPaginationModel(newPaginationModel);
           }}
+          sortModel={sortModel}
+          onSortModelChange={setSortModel}
         />
       </Paper>
     );
@@ -892,6 +932,8 @@ const BookTable = ({
             onPaginationModelChange={(newPaginationModel) => {
               setPaginationModel(newPaginationModel);
             }}
+            sortModel={sortModel}
+            onSortModelChange={setSortModel}
           />
         </Paper>
       </Dialog>
