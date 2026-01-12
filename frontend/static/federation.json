@@ -318,7 +318,7 @@
       "i2p": null
     },
     "testnet": {
-      "onion": null,
+      "onion": "http://hlcr225x36bfhxcn4nhnokzfqjr54trnoyckuedbmzxev5m47ne4kgyd.onion",
       "clearnet": null,
       "i2p": null
     },
