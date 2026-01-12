@@ -87,18 +87,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 if token.user.last_login < timezone.now() - timedelta(minutes=2):
                     update_last_login(None, token.user)
 
-                    # START deprecate after v0.8.0
-                    # Add the nostr_pubkey to robots created before nostr_pubkey were introduced
-                    nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace(
-                        "Nostr ", ""
-                    )
-
-                    if token.user.robot.nostr_pubkey != nostr_pubkey:
-                        token.user.robot.nostr_pubkey = nostr_pubkey
-
-                        token.user.robot.save(update_fields=["nostr_pubkey"])
-                    # END deprecate after v0.8.0
-
             except Exception:
                 update_last_login(None, token.user)
 
@@ -117,11 +105,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 "ENCRYPTED_PRIVATE_KEY", ""
             ).replace("Private ", "")
             nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace("Nostr ", "")
-
-            # Some legacy (pre-federation) clients will still send keys as cookies
-            if public_key == "" or encrypted_private_key == "":
-                public_key = request.COOKIES.get("public_key")
-                encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
 
             if not public_key or not encrypted_private_key or not nostr_pubkey:
                 return JsonResponse(new_error(7001), status=status.HTTP_400_BAD_REQUEST)
@@ -160,7 +143,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 user.robot.public_key = public_key
             if not user.robot.encrypted_private_key:
                 user.robot.encrypted_private_key = encrypted_private_key
-
             # Add nostr key to the new user
             if not user.robot.nostr_pubkey:
                 user.robot.nostr_pubkey = nostr_pubkey
