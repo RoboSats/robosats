@@ -14,7 +14,7 @@ class ApiAndroidClient implements ApiClient {
       'Content-Type': 'application/json',
     };
 
-    if (auth != null && auth.keys === undefined) {
+    if (auth != null && !auth.keys && !auth.nostrPubkey) {
       headers = {
         ...headers,
         ...{
