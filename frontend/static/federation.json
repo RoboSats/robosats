@@ -318,12 +318,12 @@
       "i2p": null
     },
     "testnet": {
-      "onion": null,
+      "onion": "http://hlcr225x36bfhxcn4nhnokzfqjr54trnoyckuedbmzxev5m47ne4kgyd.onion",
       "clearnet": null,
       "i2p": null
     },
     "mainnetNodesPubkeys": ["025da46e8521fbe14c1d60d23d74b2b6d0dcc740ff600232314ef65751346e940e"],
-    "testnetNodesPubkeys": [],
+    "testnetNodesPubkeys": ["0298d9d5ddacae4757152036988b40a8d042eb12ed99f69ad878e45c76da5c294e"],
     "federated": true
   },
   "alice": {
