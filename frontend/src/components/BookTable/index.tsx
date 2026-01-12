@@ -22,6 +22,7 @@ import {
   type GridValidRowModel,
   type GridSlotsComponent,
   type GridSortModel,
+  type GridRenderCellParams,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -68,6 +69,7 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
+  fillContainer?: boolean;
   onOrderClicked?: (id: number, shortAlias: string) => void;
 }
 
@@ -82,6 +84,7 @@ const BookTable = ({
   showControls = true,
   showFooter = true,
   showNoResults = true,
+  fillContainer = false,
   onOrderClicked = () => null,
 }: BookTableProps): React.JSX.Element => {
   const { fav, settings } = useContext<UseAppStoreType>(AppContext);
@@ -423,7 +426,7 @@ const BookTable = ({
       headerName: t('Premium'),
       type: 'number',
       flex: 1,
-      renderCell: (params: { row: PublicOrder }) => {
+      renderCell: (params: GridRenderCellParams<PublicOrder>) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         let fontColor = `rgb(0,0,0)`;
         let premiumPoint = 0;
@@ -470,6 +473,8 @@ const BookTable = ({
           </span>
         );
 
+        const hasBondCol = !!params.api.getColumn('bond_size');
+
         return (
           <Tooltip placement='left' enterTouchDelay={0} title={tooltipTitle}>
             <div
@@ -501,7 +506,7 @@ const BookTable = ({
               </Typography>
               <Box
                 sx={{
-                  display: { xs: 'block', lg: 'none' },
+                  display: hasBondCol ? 'none' : 'block',
                   lineHeight: '1',
                   marginTop: '2px',
                 }}
@@ -939,14 +944,24 @@ const BookTable = ({
     return (
       <Paper
         elevation={elevation}
-        style={{
-          minWidth: `23em`,
-          width: `${width}em`,
-          height: `${height}em`,
-          overflow: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        style={
+          fillContainer
+            ? {
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+              }
+            : {
+                minWidth: `23em`,
+                width: `${width}em`,
+                height: `${height}em`,
+                overflow: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+              }
+        }
       >
         {showControls && (
           <BookControl
