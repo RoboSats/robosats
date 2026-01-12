@@ -120,6 +120,7 @@
   "Hide all": "Tout cacher",
   "Is": "Est",
   "Logic operator": "Opérateur logique",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "Gérer les colonnes",
   "Menu": "Menu",
   "No orders found to buy BTC for {{currencyCode}}": "Aucun ordre trouvé pour acheter des BTC pour {{currencyCode}}",

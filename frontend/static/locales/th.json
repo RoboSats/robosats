@@ -120,6 +120,7 @@
   "Hide all": "ซ่อนทั้งหมด",
   "Is": "เป็น",
   "Logic operator": "ตัวดำเนินการทางตรรกศาสตร์",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "จัดการคอลัมน์",
   "Menu": "เมนู",
   "No orders found to buy BTC for {{currencyCode}}": "ไม่พบคำสั่งซื้อ BTC เป็น {{currencyCode}}",

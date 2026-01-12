@@ -120,6 +120,7 @@
   "Hide all": "すべて非表示",
   "Is": "〜である",
   "Logic operator": "ロジックオペレーター",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "列の管理",
   "Menu": "メニュー",
   "No orders found to buy BTC for {{currencyCode}}": "{{currencyCode}}でBTCを買う注文は見つかりませんでした",

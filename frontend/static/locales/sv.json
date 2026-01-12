@@ -120,6 +120,7 @@
   "Hide all": "Göm alla",
   "Is": "Är",
   "Logic operator": "Logisk operator",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "Hantera kolumner",
   "Menu": "Meny",
   "No orders found to buy BTC for {{currencyCode}}": "Inga ordrar hittades för att köpa BTC för {{currencyCode}}",

@@ -120,6 +120,7 @@
   "Hide all": "隐藏全部",
   "Is": "是",
   "Logic operator": "逻辑运算符",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "管理列",
   "Menu": "菜单",
   "No orders found to buy BTC for {{currencyCode}}": "未找到以 {{currencyCode}} 购买比特币的订单",

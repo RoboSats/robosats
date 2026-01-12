@@ -120,6 +120,7 @@
   "Hide all": "Schovat vše",
   "Is": "Je",
   "Logic operator": "Logický operátor",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "Spravovat sloupce",
   "Menu": "Menu",
   "No orders found to buy BTC for {{currencyCode}}": "Žádné nabídky na koupi BTC za {{currencyCode}}",

@@ -120,6 +120,7 @@
   "Hide all": "Скрыть все",
   "Is": "Кто",
   "Logic operator": "Логический оператор",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "Управление столбцами",
   "Menu": "Меню",
   "No orders found to buy BTC for {{currencyCode}}": "Не найдено ордеров на покупку BTC за {{currencyCode}}",

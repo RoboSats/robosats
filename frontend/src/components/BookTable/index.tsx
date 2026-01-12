@@ -481,17 +481,58 @@ const BookTable = ({
                   marginTop: '2px',
                 }}
               >
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
-                  sx={{
-                    fontSize: '0.70rem',
-                    lineHeight: '1',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {params.row.bond_size ? `Bond: ${Number(params.row.bond_size)}%` : 'Bond: -'}
-                </Typography>
+                {(() => {
+                  const bondSize = Number(params.row.bond_size);
+                  const isLowBond = bondSize > 0 && bondSize < defaultBondSize;
+
+                  const bondElement = (
+                    <Typography
+                      component='span'
+                      variant='caption'
+                      sx={{
+                        fontSize: '0.70rem',
+                        lineHeight: '1',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <Typography
+                        component='span'
+                        variant='caption'
+                        sx={{ fontSize: '0.70rem', color: 'text.secondary' }}
+                      >
+                        {'Bond: '}
+                      </Typography>
+                      <Typography
+                        component='span'
+                        variant='caption'
+                        sx={{
+                          fontSize: '0.70rem',
+                          color: isLowBond ? theme.palette.warning.main : 'text.secondary',
+                          fontWeight: isLowBond ? 600 : 'normal',
+                        }}
+                      >
+                        {params.row.bond_size ? `${bondSize}%` : '-'}
+                      </Typography>
+                    </Typography>
+                  );
+
+                  if (isLowBond) {
+                    return (
+                      <Tooltip
+                        placement='top'
+                        enterTouchDelay={0}
+                        title={t(
+                          'Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.',
+                          { defaultBond: defaultBondSize },
+                        )}
+                      >
+                        {bondElement}
+                      </Tooltip>
+                    );
+                  }
+
+                  return bondElement;
+                })()}
               </Box>
             </div>
           </Tooltip>
@@ -603,26 +644,60 @@ const BookTable = ({
     };
   }, []);
 
-  const bondObj = useCallback((width: number) => {
-    return {
-      field: 'bond_size',
-      headerName: t('Bond'),
-      type: 'number',
-      width: width * fontSize,
-      renderCell: (params: { row: PublicOrder }) => {
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            {params.row.bond_size ? `${Number(params.row.bond_size)}%` : '-'}
-          </div>
-        );
-      },
-    };
-  }, []);
+  const defaultBondSize = 3;
+
+  const bondObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'bond_size',
+        headerName: t('Bond'),
+        type: 'number',
+        width: width * fontSize,
+        renderCell: (params: { row: PublicOrder }) => {
+          const bondSize = Number(params.row.bond_size);
+          const isLowBond = bondSize > 0 && bondSize < defaultBondSize;
+          const warningIntensity = isLowBond ? 1 - bondSize / defaultBondSize : 0;
+
+          const bondContent = (
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              }}
+            >
+              <Typography
+                variant='inherit'
+                sx={{
+                  color: isLowBond ? theme.palette.warning.main : 'inherit',
+                  fontWeight: isLowBond ? 600 + Math.round(warningIntensity * 300) : 'inherit',
+                }}
+              >
+                {params.row.bond_size ? `${bondSize}%` : '-'}
+              </Typography>
+            </div>
+          );
+
+          if (isLowBond) {
+            return (
+              <Tooltip
+                placement='left'
+                enterTouchDelay={0}
+                title={t(
+                  'Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.',
+                  { defaultBond: defaultBondSize },
+                )}
+              >
+                {bondContent}
+              </Tooltip>
+            );
+          }
+
+          return bondContent;
+        },
+      };
+    },
+    [theme],
+  );
 
   const columnSpecs = useMemo(() => {
     return {
