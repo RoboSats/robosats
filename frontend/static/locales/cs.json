@@ -420,6 +420,7 @@
   "Enter the destination of the Lightning swap": "Zadejte cíl Lightning výměny",
   "Escrow/Invoice Timer (HH:mm)": "Časovač úschovy faktury (HH:mm)",
   "Escrow/invoice step length": "Délka kroku úschovy faktury",
+  "Estimated Bond": "Odhadovaná kauce",
   "Exact Amount": "Přesná Částka",
   "Face to Face Location": "Místo setkání tváří v tvář",
   "Fiat Payment Method(s)": "Způsob(y) Fiat Platby",

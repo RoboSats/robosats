@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -20,6 +20,7 @@ import {
   type GridColDef,
   type GridValidRowModel,
   type GridSlotsComponent,
+  type GridSortModel,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -95,7 +96,44 @@ const BookTable = ({
   });
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [sortModel, setSortModel] = useState<GridSortModel>(
+    fav.type === 0 || fav.type === 1
+      ? [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }]
+      : [],
+  );
   const [page, setPage] = useState<number>(0);
+  const prevFavTypeRef = useRef<number>();
+
+  useEffect(() => {
+    const prevFavType = prevFavTypeRef.current;
+
+    if (typeof prevFavType !== 'undefined' && prevFavType !== fav.type) {
+      setSortModel((currentSortModel) => {
+        let isCurrentSortDefault = false;
+
+        if (prevFavType === null) {
+          isCurrentSortDefault = currentSortModel.length === 0;
+        } else {
+          const prevDefaultSortDirection = prevFavType === 0 ? 'desc' : 'asc';
+          isCurrentSortDefault =
+            currentSortModel.length === 0 ||
+            (currentSortModel.length === 1 &&
+              currentSortModel[0].field === 'premium' &&
+              currentSortModel[0].sort === prevDefaultSortDirection);
+        }
+
+        if (isCurrentSortDefault) {
+          if (fav.type === 0 || fav.type === 1) {
+            return [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }];
+          }
+          return [];
+        }
+        return currentSortModel;
+      });
+    }
+
+    prevFavTypeRef.current = fav.type;
+  }, [fav.type]);
 
   // all sizes in 'em'
   const [fontSize, defaultPageSize, height] = useMemo(() => {
@@ -410,14 +448,51 @@ const BookTable = ({
             title={`${pn(params.row.price)} ${currencyCode}/BTC`}
           >
             <div
-              style={{ cursor: 'pointer' }}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-end',
+                height: '100%',
+                width: '100%',
+                lineHeight: 1,
+              }}
               onClick={() => {
                 onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
               }}
             >
-              <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
+              <Typography
+                variant='inherit'
+                color={fontColor}
+                sx={{
+                  fontWeight,
+                  lineHeight: '1.2',
+                  fontSize: { xs: '0.9rem', md: 'inherit' },
+                  textAlign: 'right',
+                }}
+              >
                 {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
               </Typography>
+              <Box
+                sx={{
+                  display: { xs: 'block', lg: 'none' },
+                  lineHeight: '1',
+                  marginTop: '2px',
+                }}
+              >
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{
+                    fontSize: '0.70rem',
+                    lineHeight: '1',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {params.row.bond_size ? `Bond: ${Number(params.row.bond_size)}%` : 'Bond: -'}
+                </Typography>
+              </Box>
             </div>
           </Tooltip>
         );
@@ -816,6 +891,8 @@ const BookTable = ({
           onPaginationModelChange={(newPaginationModel) => {
             setPaginationModel(newPaginationModel);
           }}
+          sortModel={sortModel}
+          onSortModelChange={setSortModel}
         />
       </Paper>
     );
@@ -855,6 +932,8 @@ const BookTable = ({
             onPaginationModelChange={(newPaginationModel) => {
               setPaginationModel(newPaginationModel);
             }}
+            sortModel={sortModel}
+            onSortModelChange={setSortModel}
           />
         </Paper>
       </Dialog>
