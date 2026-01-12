@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react';
 import { type Order } from '../../../models';
-import EncryptedNostrChat from './EncryptedNostrChat';
 import EncryptedApiChat from './EncryptedApiChat';
 import { EventTemplate, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
@@ -11,6 +10,7 @@ import {
 import { encryptMessage } from '../../../pgp';
 import { apiClient } from '../../../services/api';
 import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import EncryptedSocketChat from './EncryptedSocketChat';
 
 interface Props {
   order: Order;
@@ -135,22 +135,36 @@ const EncryptedChat: React.FC<Props> = ({
       setLastIndex={setLastIndex}
     />
   ) : (
-    <EncryptedNostrChat
+    // WIP
+    // <EncryptedNostrChat
+    //   messages={messages}
+    //   setMessages={setMessages}
+    //   onSendMessage={onSendMessage}
+    //   order={order}
+    //   takerNick={order.taker_nick}
+    //   takerHashId={order.taker_hash_id}
+    //   makerHashId={order.maker_hash_id}
+    //   userNick={order.ur_nick}
+    //   chatOffset={chatOffset}
+    //   peerPubKey={peerPubKey}
+    //   setPeerPubKey={setPeerPubKey}
+    //   error={error}
+    //   setError={setError}
+    //   lastIndex={lastIndex}
+    //   setLastIndex={setLastIndex}
+    // />
+    <EncryptedSocketChat
       messages={messages}
       setMessages={setMessages}
-      onSendMessage={onSendMessage}
+      onSendMessage={(content) => sendToNostr(content)}
       order={order}
       takerNick={order.taker_nick}
       takerHashId={order.taker_hash_id}
       makerHashId={order.maker_hash_id}
       userNick={order.ur_nick}
-      chatOffset={chatOffset}
       peerPubKey={peerPubKey}
       setPeerPubKey={setPeerPubKey}
-      error={error}
-      setError={setError}
-      lastIndex={lastIndex}
-      setLastIndex={setLastIndex}
+      status={order.status}
     />
   );
 };
