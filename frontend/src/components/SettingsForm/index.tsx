@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import {
   Grid,
@@ -14,6 +15,15 @@ import {
   Typography,
   ToggleButtonGroup,
   ToggleButton,
+  Stack,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  Alert,
 } from '@mui/material';
 import SelectLanguage from './SelectLanguage';
 import {
@@ -26,10 +36,14 @@ import {
   QrCode,
   SettingsInputAntenna,
   NotificationsActive,
+  VpnKey,
+  SmartToy,
+  Garage,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import Tor from '../Icons/Tor';
 import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -37,9 +51,14 @@ interface SettingsFormProps {
 
 const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element => {
   const { updateConnection } = useContext<UseFederationStoreType>(FederationContext);
-  const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
+  const { settings, setSettings, client, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const [showModeChangeDialog, setShowModeChangeDialog] = useState<boolean>(false);
+  const [pendingMode, setPendingMode] = useState<'legacy' | 'garageKey' | null>(null);
   const fontSizes = [
     { label: 'XS', value: { basic: 12, pro: 10 } },
     { label: 'S', value: { basic: 13, pro: 11 } },
@@ -47,6 +66,40 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
     { label: 'L', value: { basic: 15, pro: 13 } },
     { label: 'XL', value: { basic: 16, pro: 14 } },
   ];
+
+  const hasActiveData = (): boolean => {
+    return Object.keys(garage.slots).length > 0 || garage.getGarageKey() !== null;
+  };
+
+  const handleModeChange = (newMode: 'legacy' | 'garageKey' | null): void => {
+    if (newMode !== null && newMode !== settings.garageMode) {
+      setPendingMode(newMode);
+      setShowModeChangeDialog(true);
+    }
+  };
+
+  const confirmModeChange = (): void => {
+    if (pendingMode !== null) {
+      const newSettings = { ...settings, garageMode: pendingMode };
+      setSettings(newSettings);
+      systemClient.setItem('settings_garage_mode', pendingMode);
+
+      garage.deleteGarageKey();
+      garage.delete();
+
+      garage.setMode(pendingMode);
+
+      setShowModeChangeDialog(false);
+      setPendingMode(null);
+
+      navigateToPage('garage', navigate);
+    }
+  };
+
+  const cancelModeChange = (): void => {
+    setShowModeChangeDialog(false);
+    setPendingMode(null);
+  };
 
   return (
     <Grid item xs={12}>
@@ -244,6 +297,39 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
               </ToggleButtonGroup>
             </ListItem>
 
+            <ListItem>
+              <ListItemIcon>
+                <Garage />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('Robot Generation Mode')}
+                secondary={t('Choose how robots are generated and managed')}
+              />
+            </ListItem>
+            <ListItem>
+              <ToggleButtonGroup
+                sx={{ width: '100%' }}
+                exclusive={true}
+                value={settings.garageMode}
+                onChange={(_e, garageMode) => {
+                  handleModeChange(garageMode);
+                }}
+              >
+                <ToggleButton value='garageKey' color='primary' sx={{ flexGrow: 1 }}>
+                  <Stack direction='row' spacing={1} alignItems='center'>
+                    <VpnKey />
+                    <span>{t('Garage Key')}</span>
+                  </Stack>
+                </ToggleButton>
+                <ToggleButton value='legacy' color='secondary' sx={{ flexGrow: 1 }}>
+                  <Stack direction='row' spacing={1} alignItems='center'>
+                    <SmartToy />
+                    <span>{t('Legacy')}</span>
+                  </Stack>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </ListItem>
+
             {client == 'mobile' && (
               <ListItem>
                 <ListItemIcon>
@@ -295,6 +381,40 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
           </List>
         </Grid>
       </Grid>
+
+      <Dialog
+        open={showModeChangeDialog}
+        onClose={cancelModeChange}
+        maxWidth='sm'
+        fullWidth
+      >
+        <DialogTitle>
+          {t('Change Robot Generation Mode?')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('Changing the robot generation mode will restart the application and clear all current robot data.')}
+          </DialogContentText>
+          {hasActiveData() && (
+            <Alert severity='warning' sx={{ mt: 2 }}>
+              {settings.garageMode === 'garageKey' && garage.getGarageKey()
+                ? t('You have an active Garage Key. Make sure you have saved it before continuing!')
+                : t('You have active robots. Make sure you have saved your tokens before continuing!')}
+            </Alert>
+          )}
+          <DialogContentText sx={{ mt: 2 }}>
+            {t('Do you want to continue?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelModeChange} color='primary'>
+            {t('Cancel')}
+          </Button>
+          <Button onClick={confirmModeChange} color='secondary' variant='contained'>
+            {t('Confirm and Restart')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 };
