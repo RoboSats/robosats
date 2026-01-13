@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, TextField, Tooltip, Typography, useTheme } from '@mui/material';
+import { Grid, TextField, Tooltip, Typography, useTheme, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
 import { type Order } from '../../../models';
@@ -9,12 +9,14 @@ interface ExpiredPromptProps {
   order: Order;
   loadingRenew: boolean;
   onClickRenew: (password?: string) => void;
+  badRequest?: string | null;
 }
 
 export const ExpiredPrompt = ({
   loadingRenew,
   order,
   onClickRenew,
+  badRequest,
 }: ExpiredPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -28,6 +30,11 @@ export const ExpiredPrompt = ({
           {t(order.expiry_message)}
         </Typography>
       </Grid>
+      {badRequest && (
+        <Grid item style={{ width: '100%', marginTop: '8px' }}>
+          <Alert severity='error'>{badRequest}</Alert>
+        </Grid>
+      )}
       {order.is_maker ? (
         <>
           {order.has_password && (
