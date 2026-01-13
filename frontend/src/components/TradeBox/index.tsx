@@ -128,6 +128,8 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
 
+  const [badRequest, setBadRequest] = useState<string | null>(null);
+
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
@@ -145,6 +147,16 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
     const slot = garage.getSlot();
     const newOrder = currentOrder;
     if (newOrder && slot) {
+      if (garage.garageKey && !slot.isReusable()) {
+        setBadRequest(
+          'This robot has completed a trade. Please navigate to a new account to create orders.',
+        );
+        setLoadingButtons(noLoadingButtons);
+        return;
+      }
+
+      setBadRequest(null);
+
       const orderAttributes = {
         type: newOrder.type,
         currency: newOrder.currency,
@@ -170,8 +182,10 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         .makeOrder(federation, orderAttributes)
         .then((order: Order) => {
           if (order?.id) {
+            setBadRequest(null);
             navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
           } else if (order?.bad_request) {
+            setBadRequest(order?.bad_request);
             currentOrder.bad_request = order.bad_request;
             slot.updateSlotFromOrder(currentOrder);
           }
@@ -428,9 +442,10 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
             <ExpiredPrompt
               loadingRenew={loadingButtons.renewOrder}
               order={order}
+              badRequest={badRequest}
               onClickRenew={(password?: string) => {
-                renewOrder(password);
                 setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
+                renewOrder(password);
               }}
             />
           );
