@@ -36,7 +36,7 @@ class ApiWebClient implements ApiClient {
     try {
       const response = await fetch(url, options);
 
-      if (!response.ok && response.status !== 400) {
+      if (!response.ok && ![400, 404].includes(response.status)) {
         dispatchError(`Request failed: ${response.status} ${response.statusText}`);
       }
 
