@@ -86,7 +86,7 @@ const AVAILABLE_WIDGETS: WidgetInfo[] = [
     label: 'Federation',
     description: 'Coordinator network',
     icon: <Groups />,
-    defaultSize: { w: 23, h: 5, minW: 2, maxW: 50, minH: 4, maxH: 25 },
+    defaultSize: { w: 23, h: 10, minW: 12, maxW: 50, minH: 8, maxH: 25 },
   },
 ];
 

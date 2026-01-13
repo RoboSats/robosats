@@ -29,12 +29,14 @@ interface FederationTableProps {
   maxWidth?: number;
   maxHeight?: number;
   fillContainer?: boolean;
+  showTitle?: boolean;
 }
 
 const FederationTable = ({
   maxWidth = 90,
   maxHeight = 50,
   fillContainer = false,
+  showTitle = true,
 }: FederationTableProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -397,40 +399,59 @@ const FederationTable = ({
     <Box
       sx={
         fillContainer
-          ? { width: '100%', height: '100%' }
-          : { width: `${width}em`, height: `${height}em`, overflow: 'auto' }
+          ? { width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }
+          : { width: `${width}em`, height: `${height}em`, overflow: 'auto', padding: '0 0.25em' }
       }
     >
-      <DataGrid
-        sx={headerStyleFix}
-        localeText={localeText}
-        style={{ maxHeight: `${height / 2}em` }}
-        rowHeight={3.714 * theme.typography.fontSize}
-        headerHeight={3.25 * theme.typography.fontSize}
-        rows={federation.getCoordinators()}
-        getRowId={(params: Coordinator) => params.shortAlias}
-        columns={columns}
-        checkboxSelection={false}
-        pageSize={pageSize}
-        rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
-        onPageSizeChange={(newPageSize) => {
-          setPageSize(newPageSize);
-          setUseDefaultPageSize(false);
-        }}
-        hideFooter={true}
-      />
+      {showTitle && (
+        <Box sx={{ p: 0.5, pb: 0.5 }}>
+          <Typography variant='h6' align='center'>
+            {t('Coordinators')}
+          </Typography>
+        </Box>
+      )}
+
+      <Box sx={{ flexGrow: 1, overflow: 'auto', width: '100%' }}>
+        <DataGrid
+          sx={{
+            ...headerStyleFix,
+            border: 0,
+            '& .MuiDataGrid-cell': {
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            },
+          }}
+          localeText={localeText}
+          style={{ maxHeight: fillContainer ? undefined : `${height / 2}em` }}
+          autoHeight={fillContainer}
+          rowHeight={3.714 * theme.typography.fontSize}
+          headerHeight={3.25 * theme.typography.fontSize}
+          rows={federation.getCoordinators()}
+          getRowId={(params: Coordinator) => params.shortAlias}
+          columns={columns}
+          checkboxSelection={false}
+          pageSize={fillContainer ? 100 : pageSize}
+          rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
+          onPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize);
+            setUseDefaultPageSize(false);
+          }}
+          hideFooter={true}
+        />
+      </Box>
 
       <Grid
-        item
+        container
         style={{
           display: 'flex',
           flexDirection: 'row',
           width: '100%',
           justifyContent: 'space-between',
+          padding: '0 0.25em 0.5em 0.25em',
+          flexShrink: 0,
         }}
       >
         <Button
-          sx={{ mt: '1em', width: '49%' }}
+          sx={{ mt: '0.5em', width: '49%' }}
           disabled={false}
           onClick={() => setOpenAddCoordinator(true)}
           variant='contained'
@@ -441,7 +462,7 @@ const FederationTable = ({
           {t('Add Coordinator')}
         </Button>
         <Button
-          sx={{ mt: '1em', width: '49%' }}
+          sx={{ mt: '0.5em', width: '49%' }}
           disabled={false}
           onClick={() => setVerifyRatings(true)}
           variant='contained'
@@ -452,11 +473,11 @@ const FederationTable = ({
           {t('Verify ratings')}
         </Button>
       </Grid>
-      <Grid item>
+      <Grid item sx={{ px: 0.5, pb: 1 }}>
         <Typography
           variant='body2'
           color={verifcationText ? 'success.main' : 'warning.main'}
-          sx={{ mt: 2, fontWeight: 'bold' }}
+          sx={{ mt: 0, fontWeight: 'bold' }}
         >
           {verifcationText
             ? verifcationText
