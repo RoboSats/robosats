@@ -3,7 +3,7 @@ import { Routes as DomRoutes, Route, useNavigate } from 'react-router-dom';
 import { Fade } from '@mui/material';
 import { type UseAppStoreType, AppContext, Page } from '../contexts/AppContext';
 
-import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage } from '.';
+import { RobotPage, GaragePage, MakerPage, BookPage, OrderPage, SettingsPage } from '.';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
 const Routes: React.FC = () => {
@@ -34,6 +34,8 @@ const Routes: React.FC = () => {
     }
   }, [location]);
 
+  const GarageComponent = garage.mode === 'garageKey' ? GaragePage : RobotPage;
+
   return (
     <DomRoutes>
       {['/garage/:token?', '/garage', '/', ''].map((path, index) => {
@@ -43,7 +45,7 @@ const Routes: React.FC = () => {
             element={
               <Fade in={page === 'garage'} appear>
                 <div>
-                  <RobotPage />
+                  <GarageComponent />
                 </div>
               </Fade>
             }

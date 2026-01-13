@@ -81,8 +81,12 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
   }, [torStatus]);
 
   const handleAddRobot = (): void => {
-    const token = genBase62Token(36);
-    void garage.createRobot(federation, token, Object.keys(garage.slots).length > 0);
+    if (garage.getMode() === 'garageKey') {
+      void garage.createRobotFromGarageKey(federation, undefined, true);
+    } else {
+      const token = genBase62Token(36);
+      void garage.createRobot(federation, token, Object.keys(garage.slots).length > 0);
+    }
   };
 
   const changePage = (newPage: Page) => {
