@@ -181,6 +181,16 @@ class Slot {
       this.updateSlotFromRobot(this.robots[shortAlias]);
     }
   };
+
+  isReusable = (): boolean => {
+    if (!this.lastOrder) {
+      return true;
+    }
+
+    const reusableStatuses = [0, 1, 2, 4, 5];
+
+    return reusableStatuses.includes(this.lastOrder.status);
+  };
 }
 
 export default Slot;
