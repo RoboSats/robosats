@@ -34,6 +34,10 @@ const RobotPage = (): React.JSX.Element => {
     if (Object.keys(garage.slots).length > 0 && view === 'welcome') setView('profile');
   }, [garage.currentSlot]);
 
+  useEffect(() => {
+    if (Object.keys(garage.slots).length === 0 && view !== 'welcome') setView('welcome');
+  }, [slotUpdatedAt]);
+
   return (
     <Paper
       elevation={12}

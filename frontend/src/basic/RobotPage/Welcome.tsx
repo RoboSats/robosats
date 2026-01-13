@@ -9,6 +9,8 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { useNavigate } from 'react-router-dom';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
+import GarageKey from '../../models/GarageKey.model';
+
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   width: number;
@@ -133,10 +135,24 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
           size='large'
           color='primary'
           onClick={() => {
-            const token = genBase62Token(36);
-            void garage.createRobot(federation, token);
-            setInputToken(token);
-            navigateToPage('create', navigate);
+            if (garage.getMode() === 'garageKey') {
+              if (!garage.getGarageKey()) {
+                const newKey = new GarageKey('generate');
+                garage.setGarageKey(newKey);
+              }
+              void garage.createRobotFromGarageKey(federation, undefined, true).then(() => {
+                const garageKey = garage.getGarageKey();
+                if (garageKey) {
+                  setInputToken(garageKey.encodedKey);
+                }
+                navigateToPage('create', navigate);
+              });
+            } else {
+              const token = genBase62Token(36);
+              void garage.createRobot(federation, token);
+              setInputToken(token);
+              navigateToPage('create', navigate);
+            }
           }}
         >
           <FastForward /> <div style={{ width: '0.5em' }} />
