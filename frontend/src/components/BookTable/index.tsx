@@ -7,6 +7,7 @@ import {
   Typography,
   Paper,
   useTheme,
+  useMediaQuery,
   CircularProgress,
   IconButton,
   Tooltip,
@@ -88,6 +89,7 @@ const BookTable = ({
 
   const { t } = useTranslation();
   const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const orders = orderList ?? Object.values(federation.book) ?? [];
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -408,6 +410,8 @@ const BookTable = ({
     };
   }, []);
 
+  const defaultBondSize = 3;
+
   const premiumObj = useCallback(() => {
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
@@ -441,12 +445,33 @@ const BookTable = ({
           );
         }
         const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
+        const bondSize = Number(params.row.bond_size);
+        const isLowBond = bondSize > 0 && bondSize < defaultBondSize;
+
+        const limits = federation.getLimits(params.row.coordinatorShortAlias);
+        const premium = parseFloat(params.row.premium);
+        const limitPrice = limits[params.row.currency.toString()]?.price;
+        const calculatedPrice = limitPrice
+          ? Math.round((limitPrice ?? 1) * (1 + premium / 100))
+          : null;
+
+        const tooltipTitle = (
+          <span>
+            {calculatedPrice ? `${pn(calculatedPrice)} ${currencyCode}/BTC` : ''}
+            {!isLargeScreen && isLowBond && (
+              <>
+                {calculatedPrice && <br />}
+                {t(
+                  'Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.',
+                  { defaultBond: defaultBondSize },
+                )}
+              </>
+            )}
+          </span>
+        );
+
         return (
-          <Tooltip
-            placement='left'
-            enterTouchDelay={0}
-            title={`${pn(params.row.price)} ${currencyCode}/BTC`}
-          >
+          <Tooltip placement='left' enterTouchDelay={0} title={tooltipTitle}>
             <div
               style={{
                 cursor: 'pointer',
@@ -482,9 +507,6 @@ const BookTable = ({
                 }}
               >
                 {(() => {
-                  const bondSize = Number(params.row.bond_size);
-                  const isLowBond = bondSize > 0 && bondSize < defaultBondSize;
-
                   const bondElement = (
                     <Typography
                       component='span'
@@ -515,21 +537,6 @@ const BookTable = ({
                       </Typography>
                     </Typography>
                   );
-
-                  if (isLowBond) {
-                    return (
-                      <Tooltip
-                        placement='top'
-                        enterTouchDelay={0}
-                        title={t(
-                          'Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.',
-                          { defaultBond: defaultBondSize },
-                        )}
-                      >
-                        {bondElement}
-                      </Tooltip>
-                    );
-                  }
 
                   return bondElement;
                 })()}
@@ -643,8 +650,6 @@ const BookTable = ({
       },
     };
   }, []);
-
-  const defaultBondSize = 3;
 
   const bondObj = useCallback(
     (width: number) => {
