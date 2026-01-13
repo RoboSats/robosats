@@ -49,6 +49,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const theme = useTheme();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
+  const [routingBudgetPPM, setRoutingBudgetPPM] = useState<number>(1000);
   const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
   const [withdrawn, setWithdrawn] = useState<boolean>(false);
   const [badInvoice, setBadInvoice] = useState<string>('');
@@ -74,7 +75,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     if (robot?.token && robot.encPrivKey != null) {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot?.token).then(
         (signedInvoice) => {
-          void robot.fetchReward(federation, signedInvoice).then((data) => {
+          void robot.fetchReward(federation, signedInvoice, routingBudgetPPM).then((data) => {
             setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
             setWithdrawn(data.successful_withdrawal);
@@ -292,12 +293,32 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
               ) : (
                 <form noValidate style={{ maxWidth: 270 }}>
                   <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                    <Grid item style={{ display: 'flex', maxWidth: 160 }}>
+                    <Grid item style={{ display: 'flex', flexDirection: 'column', maxWidth: 160 }}>
+                      <Tooltip
+                        placement='top'
+                        enterTouchDelay={0}
+                        title={t(
+                          'Routing budget for the reward payment. Higher values may help if payment fails.',
+                        )}
+                      >
+                        <TextField
+                          label={t('Routing Budget (PPM)')}
+                          type='number'
+                          size='small'
+                          value={routingBudgetPPM}
+                          onChange={(e) => setRoutingBudgetPPM(Number(e.target.value))}
+                          style={{ marginBottom: 8, width: '100%' }}
+                          inputProps={{ min: 0, max: 10000 }}
+                        />
+                      </Tooltip>
                       <TextField
                         error={Boolean(badInvoice)}
                         helperText={badInvoice ?? ''}
                         label={t('Invoice for {{amountSats}} Sats', {
-                          amountSats: robot?.earnedRewards,
+                          amountSats: Math.floor(
+                            (robot?.earnedRewards ?? 0) -
+                              ((robot?.earnedRewards ?? 0) * routingBudgetPPM) / 1000000,
+                          ),
                         })}
                         size='small'
                         value={rewardInvoice}

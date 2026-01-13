@@ -521,6 +521,8 @@
   "No active orders": "No hi ha ordres actives",
   "No orders found": "No orders found",
   "One active order #{{orderID}}": "Anar a ordre activa #{{orderID}}",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "Enviar",
   "Telegram enabled": "Telegram activat",
   "There it goes!": "Aquí va!",

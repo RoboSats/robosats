@@ -521,6 +521,8 @@
   "No active orders": "Žádné aktivní objednávky",
   "No orders found": "Nenalezeny žádné objednávky",
   "One active order #{{orderID}}": "Jedna aktivní objednávka #{{orderID}}",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "Odeslat",
   "Telegram enabled": "Telegram povolen",
   "There it goes!": "A je to!",

@@ -521,6 +521,8 @@
   "No active orders": "Brak aktywnych zamówień",
   "No orders found": "No orders found",
   "One active order #{{orderID}}": "Jedno aktywne zamówienie #{{orderID}}",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "Prześlij",
   "Telegram enabled": "Telegram włączony",
   "There it goes!": "Oto idzie!",

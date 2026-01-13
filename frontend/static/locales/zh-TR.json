@@ -521,6 +521,8 @@
   "No active orders": "沒有活躍的訂單",
   "No orders found": "No orders found",
   "One active order #{{orderID}}": "一個活躍的訂單 #{{orderID}}",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "提交",
   "Telegram enabled": "Telegram 已啟用",
   "There it goes!": "這就行了！",

@@ -521,6 +521,8 @@
   "No active orders": "Inga aktiva ordrar",
   "No orders found": "No orders found",
   "One active order #{{orderID}}": "En aktiv order #{{orderID}}",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "Skicka",
   "Telegram enabled": "Telegram aktiverat",
   "There it goes!": "Där går det!",

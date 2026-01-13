@@ -521,6 +521,8 @@
   "No active orders": "ไม่มีคำสั่งซื้อที่ใช้งานอยู่",
   "No orders found": "No orders found",
   "One active order #{{orderID}}": "มี 1 คำสั่งซื้อที่กำลังดำเนินการอยู่ #{{orderID}}",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "ส่งข้อมูล",
   "Telegram enabled": "เปิดใช้ Telegram แล้ว",
   "There it goes!": "นั่นไง!",

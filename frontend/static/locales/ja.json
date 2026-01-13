@@ -521,6 +521,8 @@
   "No active orders": "アクティブなオーダーはありません",
   "No orders found": "No orders found",
   "One active order #{{orderID}}": "アクティブなオーダー #{{orderID}} に進む",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "送信",
   "Telegram enabled": "Telegramが有効になりました",
   "There it goes!": "そこにあります！",

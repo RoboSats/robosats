@@ -521,6 +521,8 @@
   "No active orders": "Hakuna maagizo yanayofanya kazi",
   "No orders found": "No orders found",
   "One active order #{{orderID}}": "Agizo moja la kazi #{{orderID}}",
+  "Routing Budget (PPM)": "Routing Budget (PPM)",
+  "Routing budget for the reward payment. Higher values may help if payment fails.": "Routing budget for the reward payment. Higher values may help if payment fails.",
   "Submit": "Wasilisha",
   "Telegram enabled": "Telegram imewezeshwa",
   "There it goes!": "Hapo mwenda!",
