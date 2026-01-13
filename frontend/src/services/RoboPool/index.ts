@@ -1,8 +1,9 @@
-import { type Event } from 'nostr-tools';
+import { nip59, type Event } from 'nostr-tools';
 import { Garage, type Coordinator, type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
+import { parseAccountRecoveryEvent } from '../../utils/accountRecovery';
 
 // Live coordinator pubkeys injected by Federation.model via setFederationPubkeys().
 // Starts from the bundled seed; updated after every successful federation vote.
@@ -209,6 +210,55 @@ class RoboPool {
     const message = ['EVENT', event];
 
     this.sendMessage(JSON.stringify(message));
+  };
+
+  subscribeAccountRecovery = (
+    nostrPubKey: string,
+    nostrSecKey: Uint8Array,
+    onAccountFound: (accountIndex: number, createdAt: number) => void,
+    onComplete: () => void,
+  ): void => {
+    const subscriptionId = `accountRecovery_${Math.random().toString(36).substring(7)}`;
+
+    const request = [
+      'REQ',
+      subscriptionId,
+      {
+        kinds: [1059],
+        '#p': [nostrPubKey],
+      },
+    ];
+
+    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+      try {
+        const jsonMessage = JSON.parse(messageEvent.data);
+
+        if (jsonMessage[1] !== subscriptionId) return;
+
+        if (jsonMessage[0] === 'EVENT') {
+          const wrappedEvent: Event = jsonMessage[2];
+
+          try {
+            const unwrappedEvent = nip59.unwrapEvent(wrappedEvent, nostrSecKey);
+
+            const recoveryData = parseAccountRecoveryEvent(unwrappedEvent as Event);
+
+            if (recoveryData) {
+              onAccountFound(recoveryData.accountIndex, unwrappedEvent.created_at);
+            }
+          } catch {
+            // Ignore events we can't unwrap (might be for other purposes)
+          }
+        } else if (jsonMessage[0] === 'EOSE') {
+          this.sendMessage(JSON.stringify(['CLOSE', subscriptionId]));
+          onComplete();
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    });
+
+    this.sendMessage(JSON.stringify(request));
   };
 }
 
