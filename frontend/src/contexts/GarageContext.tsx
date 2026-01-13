@@ -23,14 +23,18 @@ export interface UseGarageStoreType {
   setMaker: Dispatch<SetStateAction<Maker>>;
   setDelay: Dispatch<SetStateAction<number>>;
   fetchSlotActiveOrder: () => void;
+  garageKeyUpdatedAt: string;
+  recoverAccountFromRelays: () => void;
 }
 
 export const initialGarageContext: UseGarageStoreType = {
   garage: new Garage(),
   maker: defaultMaker,
-  setMaker: () => {},
-  setDelay: () => {},
-  fetchSlotActiveOrder: () => {},
+  setMaker: () => { },
+  setDelay: () => { },
+  fetchSlotActiveOrder: () => { },
+  garageKeyUpdatedAt: '',
+  recoverAccountFromRelays: () => { },
 };
 
 const defaultDelay = 5000;
@@ -68,6 +72,7 @@ export const GarageContextProvider = ({
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [garage] = useState<Garage>(initialGarageContext.garage);
   const [maker, setMaker] = useState<Maker>(initialGarageContext.maker);
+  const [garageKeyUpdatedAt, setGarageKeyUpdatedAt] = useState<string>(new Date().toISOString());
   const [lastOrderCheckAt] = useState<number>(+new Date());
   const lastOrderCheckAtRef = useRef(lastOrderCheckAt);
   const [delay, setDelay] = useState<number>(defaultDelay);
@@ -79,13 +84,45 @@ export const GarageContextProvider = ({
     setSlotUpdatedAt(new Date().toISOString());
   };
 
+  const onGarageKeyUpdated = (): void => {
+    setGarageKeyUpdatedAt(new Date().toISOString());
+  };
+
+  const recoverAccountFromRelays = (): void => {
+    const garageKey = garage.getGarageKey();
+    if (!garageKey || !federation.roboPool) return;
+
+    let latestAccountIndex = 0;
+    let latestCreatedAt = 0;
+
+    federation.roboPool.subscribeAccountRecovery(
+      garageKey.nostrPubKey,
+      garageKey.nostrSecKey,
+      (accountIndex, createdAt) => {
+        if (createdAt > latestCreatedAt) {
+          latestCreatedAt = createdAt;
+          latestAccountIndex = accountIndex;
+        }
+      },
+      () => {
+        if (latestAccountIndex > 0 && latestAccountIndex !== garageKey.currentAccountIndex) {
+          garageKey.setAccountIndex(latestAccountIndex);
+          console.log(`Recovered account index: ${latestAccountIndex}`);
+        }
+      },
+    );
+  };
+
   useEffect(() => {
     setMaker((maker) => {
       return { ...maker, coordinator: federation.getCoordinatorsAlias()[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     garage.registerHook('onSlotUpdate', onSlotUpdated);
+    garage.registerHook('onGarageKeyUpdate', onGarageKeyUpdated);
     clearInterval(timer);
     fetchSlotActiveOrder();
+
+    void garage.loadGarageKey();
 
     return () => {
       clearTimeout(timer);
@@ -104,6 +141,12 @@ export const GarageContextProvider = ({
       void garage.fetchRobot(federation, token);
     }
   }, [settings.network, settings.useProxy, torStatus, page]);
+
+  useEffect(() => {
+    if (settings.garageMode && garage.getMode() !== settings.garageMode) {
+      garage.setMode(settings.garageMode);
+    }
+  }, [settings.garageMode]);
 
   const fetchSlotActiveOrder: () => void = () => {
     const slot = garage?.getSlot();
@@ -144,6 +187,8 @@ export const GarageContextProvider = ({
         setMaker,
         setDelay,
         fetchSlotActiveOrder,
+        garageKeyUpdatedAt,
+        recoverAccountFromRelays,
       }}
     >
       {children}

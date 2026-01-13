@@ -1,25 +1,34 @@
 import { type Federation, Order } from '.';
 import { genKey } from '../pgp';
 import { systemClient } from '../services/System';
-import { saveAsJson } from '../utils';
+import { saveAsJson, createAccountRecoveryEvent, publishAccountRecoveryEvent } from '../utils';
 import Slot from './Slot.model';
+import GarageKey, { type GarageMode } from './GarageKey.model';
 
-type GarageHooks = 'onSlotUpdate';
+type GarageHooks = 'onSlotUpdate' | 'onGarageKeyUpdate';
+
+const STORAGE_MODE_KEY = 'garage_mode';
 
 class Garage {
   constructor() {
     this.slots = {};
     this.currentSlot = null;
+    this.garageKey = null;
+    this.mode = 'garageKey'; // default mode
 
     this.hooks = {
       onSlotUpdate: [],
+      onGarageKeyUpdate: [],
     };
 
+    this.loadMode();
     this.loadSlots();
   }
 
   slots: Record<string, Slot>;
   currentSlot: string | null;
+  garageKey: GarageKey | null;
+  mode: GarageMode;
 
   hooks: Record<GarageHooks, Array<() => void>>;
 
@@ -179,6 +188,170 @@ class Garage {
       slot.syncCoordinator(federation, shortAlias);
     });
     this.save();
+  };
+
+  loadMode = async (): Promise<void> => {
+    const savedMode = await systemClient.getItem(STORAGE_MODE_KEY);
+    if (savedMode === 'legacy' || savedMode === 'garageKey') {
+      this.mode = savedMode;
+    }
+  };
+
+  setMode = (mode: GarageMode): void => {
+    this.mode = mode;
+    systemClient.setItem(STORAGE_MODE_KEY, mode);
+    this.triggerHook('onGarageKeyUpdate');
+  };
+
+  getMode = (): GarageMode => {
+    return this.mode;
+  };
+
+  setGarageKey = (garageKey: GarageKey): void => {
+    this.garageKey = garageKey;
+    this.garageKey.save();
+    this.triggerHook('onGarageKeyUpdate');
+  };
+
+  getGarageKey = (): GarageKey | null => {
+    return this.garageKey;
+  };
+
+  loadGarageKey = async (): Promise<void> => {
+    this.garageKey = await GarageKey.load(() => {
+      this.triggerHook('onGarageKeyUpdate');
+    });
+    if (this.garageKey) {
+      console.log('Garage Key was loaded from local storage');
+      this.triggerHook('onGarageKeyUpdate');
+    }
+  };
+
+  deleteGarageKey = (): void => {
+    if (this.garageKey) {
+      this.garageKey.delete();
+      this.garageKey = null;
+      this.triggerHook('onGarageKeyUpdate');
+    }
+  };
+
+  createRobotFromGarageKey = async (
+    federation: Federation,
+    accountIndex?: number,
+    autoFindUnused: boolean = false,
+  ): Promise<void> => {
+    if (!this.garageKey) {
+      throw new Error('No garage key set');
+    }
+
+    let index = accountIndex ?? this.garageKey.currentAccountIndex;
+
+    if (autoFindUnused) {
+      index = await this.findNextUnusedAccount(federation, 0);
+      this.garageKey.setAccountIndex(index);
+    }
+
+    const token = this.garageKey.deriveRobotToken(index);
+
+    await this.createRobot(federation, token);
+
+    this.setCurrentSlot(token);
+  };
+
+  nextAccount = async (federation: Federation): Promise<void> => {
+    if (!this.garageKey) {
+      throw new Error('No garage key set');
+    }
+
+    this.garageKey.incrementAccount();
+    await this.createRobotFromGarageKey(federation);
+  };
+
+  previousAccount = async (federation: Federation): Promise<void> => {
+    if (!this.garageKey) {
+      throw new Error('No garage key set');
+    }
+
+    this.garageKey.decrementAccount();
+    await this.createRobotFromGarageKey(federation);
+  };
+
+  getCurrentAccountIndex = (): number => {
+    return this.garageKey?.currentAccountIndex ?? 0;
+  };
+
+  setAccountIndex = async (federation: Federation, index: number): Promise<void> => {
+    if (!this.garageKey) {
+      throw new Error('No garage key set');
+    }
+
+    this.garageKey.setAccountIndex(index);
+    await this.createRobotFromGarageKey(federation);
+  };
+
+  publishAccountRecovery = (federation: Federation): void => {
+    if (!this.garageKey || !federation.roboPool) {
+      return;
+    }
+
+    try {
+      const event = createAccountRecoveryEvent(
+        this.garageKey.nostrSecKey,
+        this.garageKey.currentAccountIndex,
+      );
+      publishAccountRecoveryEvent(event, federation.roboPool);
+      console.log(
+        `Published account recovery event for account ${this.garageKey.currentAccountIndex}`,
+      );
+    } catch (error) {
+      console.error('Failed to publish account recovery event:', error);
+    }
+  };
+
+  makeOrderWithRecovery = async (
+    federation: Federation,
+    attributes: object,
+  ): Promise<Order | null> => {
+    const slot = this.getSlot();
+    if (!slot) {
+      console.error('No slot available');
+      return null;
+    }
+
+    const order = await slot.makeOrder(federation, attributes);
+
+    if (!order?.bad_request && this.garageKey) {
+      this.publishAccountRecovery(federation);
+    }
+
+    return order;
+  };
+
+  findNextUnusedAccount = async (
+    federation: Federation,
+    startIndex: number = 0,
+  ): Promise<number> => {
+    if (!this.garageKey) {
+      throw new Error('No garage key set');
+    }
+
+    const maxSearch = 100;
+    for (let i = startIndex; i < startIndex + maxSearch; i++) {
+      const token = this.garageKey.deriveRobotToken(i);
+      const existingSlot = this.getSlot(token);
+
+      if (!existingSlot || existingSlot.isReusable()) {
+        return i;
+      }
+    }
+
+    console.warn(`No unused account found in range ${startIndex}-${startIndex + maxSearch}`);
+    return startIndex + maxSearch;
+  };
+
+  isCurrentSlotUsed = (): boolean => {
+    const slot = this.getSlot();
+    return slot ? slot.lastOrder !== null : false;
   };
 }
 
