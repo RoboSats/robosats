@@ -25,7 +25,7 @@ maker_form_buy_with_range = {
     "is_explicit": False,
     "premium": 3.34,
     "public_duration": 69360,
-    "escrow_duration": 8700,
+    "escrow_duration": 36000,
     "bond_size": 3.5,
     "latitude": 34.7455,
     "longitude": 135.503,

@@ -267,7 +267,7 @@ class TradeTest(BaseAPITestCase):
                 "is_explicit": False,
                 "premium": 3.34,
                 "public_duration": 69360,
-                "escrow_duration": 8700,
+                "escrow_duration": 36000,
                 "bond_size": 3.5,
                 "latitude": -11.8014,  # Angola AGO
                 "longitude": 17.3575,
