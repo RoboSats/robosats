@@ -49,11 +49,12 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
       filename:
         argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
       clean: true,
-      publicPath: '/static/frontend/',
+      publicPath: 'auto',
     },
     plugins: [
       // Django
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
@@ -65,6 +66,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         basePath: '/',
       }),
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: true,
@@ -77,6 +79,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
       }),
       // Node App
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
@@ -88,6 +91,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         basePath: '/',
       }),
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: true,
@@ -101,6 +105,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
 
       // Desktop App
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
@@ -114,6 +119,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
 
       // Web App
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
@@ -125,6 +131,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         basePath: '/',
       }),
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: true,
@@ -216,10 +223,11 @@ const configAndroid = (env: any, argv: { mode: string }): Configuration => {
       filename:
         argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
       clean: true,
-      publicPath: './static/frontend/',
+      publicPath: 'auto',
     },
     plugins: [
       new HtmlWebpackPlugin({
+        publicPath: './static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
