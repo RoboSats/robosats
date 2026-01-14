@@ -34,6 +34,7 @@ import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
+import { useBondEstimate } from '../../hooks/useBondEstimate';
 
 import { SelfImprovement, Lock, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
@@ -148,10 +149,12 @@ const MakerForm = ({
   const handleCurrencyChange = function (newCurrency: number): void {
     const currencyCode: string = currencyDict[newCurrency];
     setCurrencyCode(currencyCode);
-    setFav({
-      ...fav,
-      currency: newCurrency,
-      mode: newCurrency === 1000 ? 'swap' : 'fiat',
+    setFav((prev) => {
+      return {
+        ...prev,
+        currency: newCurrency,
+        mode: newCurrency === 1000 ? 'swap' : 'fiat',
+      };
     });
     updateAmountLimits(limits, newCurrency, maker.premium);
     updateCurrentPrice(limits, newCurrency, maker.premium);
@@ -260,6 +263,7 @@ const MakerForm = ({
         .then((order: Order) => {
           if (order.id) {
             navigateToPage(`order/${order.shortAlias}/${order.id}`, navigate);
+            clearMaker();
           } else if (order?.bad_request) {
             setBadRequest(order?.bad_request);
           }
@@ -409,8 +413,12 @@ const MakerForm = ({
   }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
 
   const clearMaker = function (): void {
-    setFav({ ...fav, type: null });
+    setFav((prev) => {
+      return { ...prev, type: null, currency: 0, mode: 'fiat' };
+    });
     setMaker(defaultMaker);
+    handleCurrencyChange(0);
+    handlePaymentMethodChange([]);
   };
 
   const handleAddLocation = (pos: [number, number]): void => {
@@ -436,42 +444,102 @@ const MakerForm = ({
 
   const currencyFormatter = new Intl.NumberFormat(settings.language);
 
+  const getDisabledMessage = () => {
+    if (currentPrice === undefined) {
+      return t('The Bitcoin price is not synchronized.');
+    }
+    if (fav.type == null) {
+      return t('Please select if you want to buy or sell.');
+    }
+    if (
+      !makerHasAmountRange &&
+      maker.amount &&
+      (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
+    ) {
+      return t('The amount is outside the allowed limits.');
+    }
+    if (maker.badPaymentMethod) {
+      return t('The payment method is not valid.');
+    }
+    if (maker.amount == null && (!makerHasAmountRange || (Object.keys(limits)?.length ?? 0) < 1)) {
+      return t('Please enter an amount.');
+    }
+    if (makerHasAmountRange && hasRangeError) {
+      return t('The amount range is not valid.');
+    }
+    if (!makerHasAmountRange && maker.amount && maker.amount <= 0) {
+      return t('The amount must be greater than 0.');
+    }
+    if (maker.badPremiumText !== '') {
+      return t('The premium is not valid.');
+    }
+    if (federation.getCoordinator(maker.coordinator)?.limits === undefined) {
+      return t('The coordinator is not available.');
+    }
+    if (typeof maker.premium !== 'number') {
+      return t('The premium must be a number.');
+    }
+    if (maker.paymentMethods.length === 0) {
+      return t('Please select a payment method.');
+    }
+    if (maker.badDescription) {
+      return t('The description is not valid.');
+    }
+    return t('You must fill the form correctly');
+  };
+
+  const bondAmount = useBondEstimate({
+    maker,
+    fav,
+    federation,
+    currentPrice,
+    federationUpdatedAt,
+    amountRangeEnabled,
+  });
+
   const SummaryText = (): React.JSX.Element => {
     return (
-      <Typography
-        component='h2'
-        variant='subtitle2'
-        align='center'
-        color={disableSubmit ? 'text.secondary' : 'text.primary'}
-      >
-        {fav.type == null
-          ? fav.mode === 'fiat'
-            ? t('Order for ')
-            : t('Swap of ')
-          : fav.type === 1
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography
+          component='h2'
+          variant='subtitle2'
+          align='center'
+          color={disableSubmit ? 'text.secondary' : 'text.primary'}
+        >
+          {fav.type == null
             ? fav.mode === 'fiat'
-              ? t('Buy BTC for ')
-              : t('Swap into LN ')
-            : fav.mode === 'fiat'
-              ? t('Sell BTC for ')
-              : t('Swap out of LN ')}
-        {fav.mode === 'fiat'
-          ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
-          : amountToString(
-              maker.amount * 100000000,
-              makerHasAmountRange,
-              maker.minAmount * 100000000,
-              maker.maxAmount * 100000000,
-            )}
-        {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
-        {maker.premium === 0
-          ? fav.mode === 'fiat'
-            ? t(' at market price')
-            : ''
-          : maker.premium > 0
-            ? t(' at a {{premium}}% premium', { premium: maker.premium })
-            : t(' at a {{discount}}% discount', { discount: -maker.premium })}
-      </Typography>
+              ? t('Order for ')
+              : t('Swap of ')
+            : fav.type === 1
+              ? fav.mode === 'fiat'
+                ? t('Buy BTC for ')
+                : t('Swap into LN ')
+              : fav.mode === 'fiat'
+                ? t('Sell BTC for ')
+                : t('Swap out of LN ')}
+          {fav.mode === 'fiat'
+            ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
+            : amountToString(
+                maker.amount * 100000000,
+                makerHasAmountRange,
+                maker.minAmount * 100000000,
+                maker.maxAmount * 100000000,
+              )}
+          {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
+          {maker.premium === 0
+            ? fav.mode === 'fiat'
+              ? t(' at market price')
+              : ''
+            : maker.premium > 0
+              ? t(' at a {{premium}}% premium', { premium: maker.premium })
+              : t(' at a {{discount}}% discount', { discount: -maker.premium })}
+        </Typography>
+        {bondAmount !== null && (
+          <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5 }}>
+            {t('Estimated Bond')}: {pn(Number(bondAmount))} Sats
+          </Typography>
+        )}
+      </Box>
     );
   };
 
@@ -576,6 +644,7 @@ const MakerForm = ({
                       checked={fav.mode === 'swap'}
                       onClick={() => {
                         handleCurrencyChange(fav.mode === 'swap' ? 1 : 1000);
+                        handlePaymentMethodChange([]);
                       }}
                     />
                   </FormControl>
@@ -601,9 +670,11 @@ const MakerForm = ({
                           size={maker.advancedOptions ? 'small' : 'large'}
                           variant='contained'
                           onClick={() => {
-                            setFav({
-                              ...fav,
-                              type: 1,
+                            setFav((prev) => {
+                              return {
+                                ...prev,
+                                type: 1,
+                              };
                             });
                           }}
                           disableElevation={fav.type === 1}
@@ -633,9 +704,11 @@ const MakerForm = ({
                           size={maker.advancedOptions ? 'small' : 'large'}
                           variant='contained'
                           onClick={() => {
-                            setFav({
-                              ...fav,
-                              type: 0,
+                            setFav((prev) => {
+                              return {
+                                ...prev,
+                                type: 0,
+                              };
                             });
                           }}
                           color='secondary'
@@ -725,7 +798,7 @@ const MakerForm = ({
                       }
                       label={amountLabel.label}
                       required={true}
-                      value={maker.amount}
+                      value={maker.amount ?? ''}
                       type='number'
                       onChange={(e) => {
                         setMaker({ ...maker, amount: Number(e.target.value) });
@@ -865,7 +938,7 @@ const MakerForm = ({
               helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
               label={`${t('Premium over Market (%)')} *`}
               type='number'
-              value={maker.premium}
+              value={maker.premium ?? ''}
               inputProps={{
                 min: -100,
                 max: 999,
@@ -891,7 +964,7 @@ const MakerForm = ({
                   fullWidth
                   label={`${t('Description')}`}
                   type='description'
-                  value={maker.description}
+                  value={maker.description ?? ''}
                   style={{ marginBottom: 8 }}
                   inputProps={{
                     style: {
@@ -925,7 +998,7 @@ const MakerForm = ({
                   fullWidth
                   label={`${t('Password')}`}
                   type='password'
-                  value={maker.password}
+                  value={maker.password ?? ''}
                   style={{ marginBottom: 8 }}
                   inputProps={{
                     style: {
@@ -1093,7 +1166,7 @@ const MakerForm = ({
             <Grid item>
               {/* conditions to disable the make button */}
               {disableSubmit ? (
-                <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
+                <Tooltip enterTouchDelay={0} title={getDisabledMessage()}>
                   <div>
                     <Button disabled color='primary' variant='contained' size='large'>
                       {t(submitButtonLabel)}

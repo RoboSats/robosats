@@ -23,8 +23,8 @@ def get_session():
     # Tor uses the 9050 port as the default socks port
     if USE_TOR:
         session.proxies = {
-            "http": "socks5://" + TOR_PROXY,
-            "https": "socks5://" + TOR_PROXY,
+            "http": "socks5h://" + TOR_PROXY,
+            "https": "socks5h://" + TOR_PROXY,
         }
     return session
 
