@@ -460,7 +460,7 @@
   "The premium is not valid.": "Premia jest nieprawidłowa.",
   "The premium must be a number.": "Premia musi być liczbą.",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "Aby chronić swoją prywatność, dokładna lokalizacja, którą zaznaczasz, będzie lekko zrandomizowana.",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "Musisz poprawnie wypełnić formularz",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Otrzymujesz około {{swapSats}} LN Sats (opłaty mogą się różnić)",

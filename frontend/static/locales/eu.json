@@ -460,7 +460,7 @@
   "The premium is not valid.": "Prima ez da baliozkoa.",
   "The premium must be a number.": "Primak zenbakia izan behar du.",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "Zure pribatutasuna babesteko, aukeratutako kokapen zehatza apur bat ausaz desbideratuta egongo da.",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "Inprimakia behar bezala bete behar duzu",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Gutxi gorabehera jasoko duzu {{swapSats}} LN Sats (komisioak aldatu daitezke)",
