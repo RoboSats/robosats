@@ -40,8 +40,8 @@ interface Props {
 }
 
 const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { setOpen, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { setOpen, navigateToPage, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
