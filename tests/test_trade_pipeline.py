@@ -1110,6 +1110,7 @@ class TradeTest(BaseAPITestCase):
 
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.UCA)
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
         maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
@@ -1220,6 +1221,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.UCA)
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         trade.get_order(trade.taker_index)
         data = trade.response.json()
@@ -1253,6 +1255,7 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.UCA)
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
     def test_cancel_order_different_cancel_status(self):
         """
@@ -1316,6 +1319,7 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.CCA)
+        self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
         maker_nick = read_file(f"tests/robots/{trade.maker_index}/nickname")
