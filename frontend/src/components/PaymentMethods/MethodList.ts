@@ -93,6 +93,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Zeam', icon: 'zeam', reversible: false },
   { name: 'DANA', icon: 'dana', reversible: false },
   { name: 'Binance Pay', icon: 'binance', reversible: false },
+  { name: 'Wero', icon: 'wero', reversible: false },
 ];
 
 export const swapMethods: PaymentMethod[] = [
