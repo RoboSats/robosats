@@ -1,5 +1,5 @@
-import { nip17, type Event } from 'nostr-tools';
-import { Federation, Garage, type Coordinator, type Settings } from '../../models';
+import { type Event } from 'nostr-tools';
+import { Garage, type Coordinator, type Settings } from '../../models';
 import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
@@ -100,29 +100,22 @@ class RoboPool {
     }
     const authors = scope.map((f) => f.nostrHexPubkey).filter((item) => item !== undefined);
 
-    const subscribeBookPending = 'subscribeBookPending';
-    const subscribeBookSuccess = 'subscribeBookSuccess';
+    const subscribeBook = 'subscribeBook';
 
-    const requestPending = [
+    const requestBook = [
       'REQ',
-      subscribeBookPending,
-      { authors, kinds: [38383], '#s': ['pending'] },
-    ];
-    const requestSuccess = [
-      'REQ',
-      subscribeBookSuccess,
+      subscribeBook,
       {
         authors,
         kinds: [38383],
-        '#s': ['success', 'canceled', 'in-progress'],
-        since: Math.floor(new Date().getTime() / 1000),
+        since: Math.floor(new Date().getTime() / 1000) - 108000,
       },
     ];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
 
-      if (![subscribeBookPending, subscribeBookSuccess].includes(jsonMessage[1])) return;
+      if (subscribeBook !== jsonMessage[1]) return;
 
       if (jsonMessage[0] === 'EVENT') {
         const event: Event = jsonMessage[2];
@@ -132,8 +125,8 @@ class RoboPool {
         events.oneose();
       }
     });
-    this.sendMessage(JSON.stringify(requestPending));
-    this.sendMessage(JSON.stringify(requestSuccess));
+
+    this.sendMessage(JSON.stringify(requestBook));
   };
 
   subscribeRatings = (events: RoboPoolEvents, pubkeys?: string[], id?: string): void => {
@@ -162,41 +155,12 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestRatings));
   };
 
-  subscribeChat = (
-    orderId: string,
-    pubkeys: string[],
-    since: number,
-    events: RoboPoolEvents,
-  ): void => {
-    const subscribeChatTag = `subscribeChat#${orderId}`;
-    const requestChat = ['REQ', subscribeChatTag, { kinds: [1059], '#p': pubkeys, since }];
-
-    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
-      const jsonMessage = JSON.parse(messageEvent.data);
-
-      if (subscribeChatTag !== jsonMessage[1]) return;
-
-      if (jsonMessage[0] === 'EVENT') {
-        events.onevent(jsonMessage[2]);
-      } else if (jsonMessage[0] === 'EOSE') {
-        events.oneose();
-      }
-    });
-    this.sendMessage(JSON.stringify(requestChat));
-  };
-
-  subscribeNotifications = (
-    garage: Garage,
-    federation: Federation,
-    events: RoboPoolEvents,
-  ): void => {
-    const subscribeNotification = `subscribeNotification${Math.random() ?? ''}`;
-
+  subscribeNotifications = (garage: Garage, events: RoboPoolEvents): void => {
     const hexPubKeys = Object.values(garage.slots).map((s) => s.nostrPubKey);
 
     if (hexPubKeys.length === 0) return;
 
-    this.sendMessage(JSON.stringify(['CLOSE', subscribeNotification]));
+    const subscribeNotification = 'subscribeNotification';
 
     const requestNotifications = [
       'REQ',
@@ -210,22 +174,8 @@ class RoboPool {
       if (subscribeNotification !== jsonMessage[1]) return;
 
       if (jsonMessage[0] === 'EVENT') {
-        const wrappedEvent: Event = jsonMessage[2];
-
-        const hexPubKey = wrappedEvent.tags.find((t) => t[0] == 'p')?.[1];
-
-        const slot = Object.values(garage.slots).find((s) => s.nostrPubKey == hexPubKey);
-
-        if (slot?.nostrSecKey) {
-          const unwrappedEvent = nip17.unwrapEvent(wrappedEvent, slot.nostrSecKey);
-          const federationPubKeys = Object.values(federation.getCoordinators()).map(
-            (c) => c.nostrHexPubkey,
-          );
-
-          if (federationPubKeys.includes(unwrappedEvent.pubkey)) {
-            events.onevent(unwrappedEvent as Event);
-          }
-        }
+        const event: Event = jsonMessage[2];
+        events.onevent(event);
       } else if (jsonMessage[0] === 'EOSE') {
         events.oneose();
       }

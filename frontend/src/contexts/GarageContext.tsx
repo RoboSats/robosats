@@ -23,7 +23,6 @@ export interface UseGarageStoreType {
   setMaker: Dispatch<SetStateAction<Maker>>;
   setDelay: Dispatch<SetStateAction<number>>;
   fetchSlotActiveOrder: () => void;
-  slotUpdatedAt: string;
 }
 
 export const initialGarageContext: UseGarageStoreType = {
@@ -32,7 +31,6 @@ export const initialGarageContext: UseGarageStoreType = {
   setMaker: () => {},
   setDelay: () => {},
   fetchSlotActiveOrder: () => {},
-  slotUpdatedAt: '',
 };
 
 const defaultDelay = 5000;
@@ -65,12 +63,11 @@ export const GarageContextProvider = ({
   children,
 }: GarageContextProviderProps): React.JSX.Element => {
   // All garage data structured
-  const { settings, torStatus, page } = useContext<UseAppStoreType>(AppContext);
+  const { settings, torStatus, page, setSlotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const pageRef = useRef(page);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [garage] = useState<Garage>(initialGarageContext.garage);
   const [maker, setMaker] = useState<Maker>(initialGarageContext.maker);
-  const [slotUpdatedAt, setSlotUpdatedAt] = useState<string>(new Date().toISOString());
   const [lastOrderCheckAt] = useState<number>(+new Date());
   const lastOrderCheckAtRef = useRef(lastOrderCheckAt);
   const [delay, setDelay] = useState<number>(defaultDelay);
@@ -147,7 +144,6 @@ export const GarageContextProvider = ({
         setMaker,
         setDelay,
         fetchSlotActiveOrder,
-        slotUpdatedAt,
       }}
     >
       {children}

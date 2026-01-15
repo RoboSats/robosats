@@ -78,9 +78,9 @@ const AuditPGPDialog = ({
   onClickBack,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
-  const { client } = useContext<UseAppStoreType>(AppContext);
+  const { client, settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const [tab, setTab] = useState<'nostr' | 'pgp'>('nostr');
+  const [tab, setTab] = useState<'nostr' | 'api'>(settings.connection);
   const [slot, setSlot] = useState<Slot | null>();
   // PGP
   const [ownPubKey, setOwnPubKey] = useState<string>();
@@ -99,11 +99,14 @@ const AuditPGPDialog = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t("Don't trust, verify")}</DialogTitle>
       <DialogContent>
-        <Tabs value={tab} onChange={(_event, newValue) => setTab(newValue)}>
-          <Tab label={t('nostr')} value='nostr' style={{ width: '50%' }} />
-          <Tab label={t('PGP')} value='pgp' style={{ width: '50%' }} />
+        <Tabs value={settings.connection} onChange={(_event, newValue) => setTab(newValue)}>
+          {settings.connection === 'nostr' ? (
+            <Tab label={t('nostr')} value='nostr' style={{ width: '100%' }} />
+          ) : (
+            <Tab label={t('PGP')} value='api' style={{ width: '100%' }} />
+          )}
         </Tabs>
-        <div style={{ display: tab === 'pgp' ? '' : 'none', marginTop: 16 }}>
+        <div style={{ display: tab === 'api' ? '' : 'none', marginTop: 16 }}>
           <DialogContentText>
             {t(
               'Your communication is end-to-end encrypted with OpenPGP. You can verify the privacy of this chat using any tool based on the OpenPGP standard.',
