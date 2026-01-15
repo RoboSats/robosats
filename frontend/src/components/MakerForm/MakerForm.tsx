@@ -1072,7 +1072,7 @@ const MakerForm = ({
                   value={maker.escrowExpiryTime}
                   onChange={handleChangeEscrowDuration}
                   minTime={new Date(0, 0, 0, 1, 0)}
-                  maxTime={new Date(0, 0, 0, 8, 0)}
+                  maxTime={new Date(0, 0, 0, 10, 0)}
                 />
               </LocalizationProvider>
             </Grid>
