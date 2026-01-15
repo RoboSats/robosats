@@ -24,11 +24,23 @@ const DepthChartWidget = React.forwardRef(function Component({
 
   return React.useMemo(() => {
     return (
-      <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
+      <Paper
+        elevation={3}
+        style={{
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+        }}
+      >
         <DepthChart
           elevation={0}
-          maxWidth={layout.w * gridCellSize} // EM units
-          maxHeight={layout.h * gridCellSize} // EM units
+          maxWidth={layout.w * gridCellSize}
+          maxHeight={layout.h * gridCellSize}
+          fillContainer={true}
         />
       </Paper>
     );

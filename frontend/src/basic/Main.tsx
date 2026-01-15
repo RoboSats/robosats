@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { MemoryRouter, HashRouter, BrowserRouter, BrowserRouterProps } from 'react-router-dom';
 import { Box, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext } from '../contexts/AppContext';
 
@@ -8,21 +7,8 @@ import { NavBar, MainDialogs } from './';
 import { useTranslation } from 'react-i18next';
 import Routes from './Routes';
 import TopBar from './TopBar';
+import { getRouter } from '../utils';
 
-const getRouter = (): (({
-  basename,
-  children,
-  window,
-}: BrowserRouterProps) => React.JSX.Element) => {
-  const [client] = window.RobosatsSettings.split('-');
-  if (client === 'web') {
-    return BrowserRouter;
-  } else if (client === 'desktop') {
-    return HashRouter;
-  } else {
-    return MemoryRouter;
-  }
-};
 const Router = getRouter();
 
 const TestnetTypography = styled(Typography)({
