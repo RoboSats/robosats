@@ -6,14 +6,15 @@ import NotificationsDrawer from './NotificationsDrawer';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
 import { LoadingButton } from '@mui/lab';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 const TopBar = (): React.JSX.Element => {
   const { t } = useTranslation();
   const { windowSize, settings } = useContext<UseAppStoreType>(AppContext);
+  const { loadingNotifications } = useContext<UseFederationStoreType>(FederationContext);
 
   const [showMenuDrawer, setShowMenuDrawer] = useState<boolean>(false);
   const [showNotificationsDrawer, setShowNotificationsDrawer] = useState<boolean>(false);
-  const [loadingNotifications, setLoadingNotifications] = useState<boolean>(true);
 
   const mobileView = windowSize?.width < 50;
 
@@ -49,11 +50,7 @@ const TopBar = (): React.JSX.Element => {
         </Grid>
       </Tooltip>
       <MenuDrawer show={showMenuDrawer} setShow={setShowMenuDrawer} />
-      <NotificationsDrawer
-        show={showNotificationsDrawer}
-        setShow={setShowNotificationsDrawer}
-        setLoading={setLoadingNotifications}
-      />
+      <NotificationsDrawer show={showNotificationsDrawer} setShow={setShowNotificationsDrawer} />
     </Grid>
   );
 };

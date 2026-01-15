@@ -1,16 +1,13 @@
 import React from 'react';
-import { Grid, Paper, Tooltip, IconButton, Typography, useTheme } from '@mui/material';
+import { Grid, Paper, Typography, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { WifiTetheringError } from '@mui/icons-material';
 
 interface Props {
   connected: boolean;
   peerConnected: boolean;
-  turtleMode: boolean;
-  setTurtleMode: (state: boolean) => void;
 }
 
-const ChatHeader: React.FC<Props> = ({ connected, peerConnected, turtleMode, setTurtleMode }) => {
+const ChatHeader: React.FC<Props> = ({ connected, peerConnected }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const connectedColor = theme.palette.mode === 'light' ? '#b5e3b7' : '#153717';
@@ -41,25 +38,6 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected, turtleMode, set
             {connected ? t('connected') : t('disconnected')}
           </Typography>
         </Paper>
-      </Grid>
-      <Grid item>
-        <Grid item>
-          <Tooltip
-            enterTouchDelay={0}
-            placement='top'
-            title={t('Activate slow mode (use it when the connection is slow)')}
-          >
-            <IconButton
-              size='small'
-              color={turtleMode ? 'primary' : 'inherit'}
-              onClick={() => {
-                setTurtleMode(!turtleMode);
-              }}
-            >
-              <WifiTetheringError />
-            </IconButton>
-          </Tooltip>
-        </Grid>
       </Grid>
       <Grid item>
         <Paper

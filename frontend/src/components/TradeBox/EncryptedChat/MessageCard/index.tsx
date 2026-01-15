@@ -17,7 +17,7 @@ interface Props {
   takerHashId: string;
   makerHashId: string;
   isTaker: boolean;
-  userConnected: boolean;
+  userConnected?: boolean;
 }
 
 const MessageCard: React.FC<Props> = ({
@@ -42,7 +42,9 @@ const MessageCard: React.FC<Props> = ({
         sx={{ color: theme.palette.text.secondary }}
         avatar={
           <RobotAvatar
-            statusColor={userConnected ? 'success' : 'error'}
+            statusColor={
+              userConnected === undefined ? undefined : userConnected ? 'success' : 'error'
+            }
             hashId={message.userNick === takerNick ? takerHashId : makerHashId}
             small={true}
           />

@@ -1,17 +1,19 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { type Order, type Robot } from '../../../models';
-import EncryptedSocketChat from './EncryptedSocketChat';
-import EncryptedTurtleChat from './EncryptedTurtleChat';
+import React, { useContext, useState } from 'react';
+import { type Order } from '../../../models';
+import EncryptedApiChat from './EncryptedApiChat';
 import { EventTemplate, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../contexts/FederationContext';
+import { encryptMessage } from '../../../pgp';
+import { apiClient } from '../../../services/api';
+import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import EncryptedSocketChat from './EncryptedSocketChat';
 
 interface Props {
   order: Order;
-  status: number;
   chatOffset: number;
   messages: EncryptedChatMessage[];
   setMessages: (state: EncryptedChatMessage[]) => void;
@@ -21,7 +23,6 @@ interface Props {
 
 export interface EncryptedChatMessage {
   userNick: string;
-  robot: Robot;
   validSignature: boolean;
   plainTextMessage: string;
   encryptedMessage: string;
@@ -41,36 +42,19 @@ const EncryptedChat: React.FC<Props> = ({
   chatOffset,
   setMessages,
   messages,
-  status,
   peerPubKey,
   setPeerPubKey,
 }: Props): React.JSX.Element => {
-  const [turtleMode, setTurtleMode] = useState<boolean>(false);
+  const { settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
-  useEffect(() => {
-    // const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
-    // const slot = garage.getSlot();
-    // const since = new Date(order.created_at);
-    // since.setDate(since.getDate() - 2);
-    // federation.roboPool.subscribeChat(
-    //   `${order.id}`,
-    //   [ownPublicKey],
-    //   Math.floor((since.getTime() / 1000)),
-    //   {
-    //     oneose: () => {},
-    //     onevent(event) {
-    //       if (slot?.nostrSecKey) {
-    //         console.log(nip17.unwrapEvent(event, slot.nostrSecKey))
-    //       }
-    //     },
-    //   }
-    // )
-  }, []);
+  const [error, setError] = useState<string>('');
+  const [lastIndex, setLastIndex] = useState<number>(0);
 
-  const onSendMessage = (content: string): void => {
+  const onSendMessage = async (content: string): Promise<object | void> => {
     sendToNostr(content);
+    return sendToCoordinator(content);
   };
 
   const sendToNostr = (content: string): void => {
@@ -103,8 +87,37 @@ const EncryptedChat: React.FC<Props> = ({
     }
   };
 
-  return turtleMode ? (
-    <EncryptedTurtleChat
+  const sendToCoordinator = async (content: string): Promise<object | void> => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+    const url = federation.getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '').url;
+
+    const encryptedMessage = await encryptMessage(
+      content,
+      robot?.pubKey ?? '',
+      peerPubKey ?? '',
+      robot?.encPrivKey ?? '',
+      slot?.token ?? '',
+    ).catch((error) => {
+      setError(error.toString());
+    });
+
+    if (!encryptedMessage) return;
+
+    return apiClient.post(
+      url,
+      `/api/chat/`,
+      {
+        PGP_message: String(encryptedMessage).split('\n').join('\\'),
+        order_id: order.id,
+        offset: lastIndex,
+      },
+      { tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '' },
+    );
+  };
+
+  return settings.connection === 'api' ? (
+    <EncryptedApiChat
       messages={messages}
       setMessages={setMessages}
       onSendMessage={onSendMessage}
@@ -114,26 +127,44 @@ const EncryptedChat: React.FC<Props> = ({
       makerHashId={order.maker_hash_id}
       userNick={order.ur_nick}
       chatOffset={chatOffset}
-      turtleMode={turtleMode}
-      setTurtleMode={setTurtleMode}
       peerPubKey={peerPubKey}
       setPeerPubKey={setPeerPubKey}
+      error={error}
+      setError={setError}
+      lastIndex={lastIndex}
+      setLastIndex={setLastIndex}
     />
   ) : (
+    // WIP
+    // <EncryptedNostrChat
+    //   messages={messages}
+    //   setMessages={setMessages}
+    //   onSendMessage={onSendMessage}
+    //   order={order}
+    //   takerNick={order.taker_nick}
+    //   takerHashId={order.taker_hash_id}
+    //   makerHashId={order.maker_hash_id}
+    //   userNick={order.ur_nick}
+    //   chatOffset={chatOffset}
+    //   peerPubKey={peerPubKey}
+    //   setPeerPubKey={setPeerPubKey}
+    //   error={error}
+    //   setError={setError}
+    //   lastIndex={lastIndex}
+    //   setLastIndex={setLastIndex}
+    // />
     <EncryptedSocketChat
-      status={status}
       messages={messages}
       setMessages={setMessages}
-      onSendMessage={onSendMessage}
+      onSendMessage={(content) => sendToNostr(content)}
       order={order}
       takerNick={order.taker_nick}
       takerHashId={order.taker_hash_id}
       makerHashId={order.maker_hash_id}
       userNick={order.ur_nick}
-      turtleMode={turtleMode}
-      setTurtleMode={setTurtleMode}
       peerPubKey={peerPubKey}
       setPeerPubKey={setPeerPubKey}
+      status={order.status}
     />
   );
 };

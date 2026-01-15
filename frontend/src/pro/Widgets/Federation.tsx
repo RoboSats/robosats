@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import { type GridItem } from 'react-grid-layout';
 import FederationTable from '../../components/FederationTable';
@@ -18,7 +19,8 @@ const FederationWidget = React.forwardRef(function Component({
   layout,
   gridCellSize,
 }: FederationWidgetProps) {
-  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
 
   return React.useMemo(() => {
     return (

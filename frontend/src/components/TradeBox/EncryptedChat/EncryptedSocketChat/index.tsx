@@ -18,6 +18,7 @@ import {
 } from '../../../../contexts/FederationContext';
 import getSettings from '../../../../utils/settings';
 import { Send } from '@mui/icons-material';
+import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 
 const audioPath =
   getSettings().client == 'mobile'
@@ -33,8 +34,6 @@ interface Props {
   makerHashId: string;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
-  turtleMode: boolean;
-  setTurtleMode: (state: boolean) => void;
   onSendMessage: (content: string) => void;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
@@ -49,15 +48,14 @@ const EncryptedSocketChat: React.FC<Props> = ({
   takerHashId,
   messages,
   setMessages,
-  turtleMode,
-  setTurtleMode,
   onSendMessage,
   peerPubKey,
   setPeerPubKey,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
@@ -280,12 +278,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       spacing={0.5}
     >
       <Grid item>
-        <ChatHeader
-          connected={connected && Boolean(peerPubKey)}
-          peerConnected={peerConnected}
-          turtleMode={turtleMode}
-          setTurtleMode={setTurtleMode}
-        />
+        <ChatHeader connected={connected && Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
           style={{
