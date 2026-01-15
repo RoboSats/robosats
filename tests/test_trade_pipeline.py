@@ -1142,10 +1142,11 @@ class TradeTest(BaseAPITestCase):
 
         data = trade.response.json()
 
-        self.assertEqual(trade.response.status_code, 400)
+        self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.UCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
@@ -1254,7 +1255,9 @@ class TradeTest(BaseAPITestCase):
 
         trade.cancel_order(trade.maker_index)
         data = trade.response.json()
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.UCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         trade.get_order(trade.taker_index)
@@ -1283,11 +1286,12 @@ class TradeTest(BaseAPITestCase):
         # Cancel order if the order status is public
         trade.cancel_order(cancel_status=Order.Status.PUB)
 
-        self.assertEqual(trade.response.status_code, 400)
+        self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
         data = trade.response.json()
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.UCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
     def test_cancel_order_different_cancel_status(self):
@@ -1347,10 +1351,11 @@ class TradeTest(BaseAPITestCase):
 
         # Taker accepts (ask) the cancellation
         trade.cancel_order(trade.taker_index)
-        self.assertEqual(trade.response.status_code, 400)
+        self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
         data = trade.response.json()
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.CCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)

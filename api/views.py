@@ -558,6 +558,17 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
+            order.refresh_from_db()
+            if order.status in [Order.Status.UCA, Order.Status.CCA]:
+                return Response(
+                    {
+                        "id": order.id,
+                        "status": order.status,
+                        "bad_request": "This order has been cancelled",
+                    },
+                    status.HTTP_200_OK,
+                )
+
         # Any other action is only allowed if the user is a participant
         elif not (order.maker == request.user or order.taker == request.user):
             return Response(new_error(1047), status.HTTP_403_FORBIDDEN)
