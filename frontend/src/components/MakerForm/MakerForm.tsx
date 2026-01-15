@@ -959,7 +959,7 @@ const MakerForm = ({
                 enterTouchDelay={300}
                 enterDelay={700}
                 enterNextDelay={2000}
-                title={t('You can add a more details about your order.')}
+                title={t('You can add more details about your order.')}
               >
                 <TextField
                   fullWidth

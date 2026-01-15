@@ -460,7 +460,7 @@
   "The premium is not valid.": "Премия недействительна.",
   "The premium must be a number.": "Премия должна быть числом.",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "Чтобы защитить вашу конфиденциальность, точное местоположение, которое вы закрепите, будет слегка рандомизировано.",
-  "You can add a more details about your order.": "You can add a more details about your order.",
+  "You can add more details about your order.": "You can add more details about your order.",
   "You can optionally set a password so that only the robots you share it with can take this order.": "You can optionally set a password so that only the robots you share it with can take this order.",
   "You must fill the form correctly": "Вы должны правильно заполнить форму",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Вы получаете примерно {{swapSats}} LN Сатоши (комиссия может различаться)",
