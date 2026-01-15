@@ -559,13 +559,14 @@ class OrderView(viewsets.ViewSet):
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
             order.refresh_from_db()
-            return Response(
-                {
-                    "id": order.id,
-                    "status": order.status,
-                },
-                status.HTTP_200_OK,
-            )
+            if order.status in [Order.Status.UCA, Order.Status.CCA]:
+                return Response(
+                    {
+                        "id": order.id,
+                        "status": order.status,
+                    },
+                    status.HTTP_200_OK,
+                )
 
         # Any other action is only allowed if the user is a participant
         elif not (order.maker == request.user or order.taker == request.user):
