@@ -283,6 +283,43 @@ class TradeTest(BaseAPITestCase):
             data["bad_request"], "The coordinator does not support orders in AGO"
         )
 
+    def test_escrow_duration_min_max(self):
+        good_form = {
+            "type": 0,
+            "currency": 1,
+            "has_range": True,
+            "min_amount": 84,
+            "max_amount": 201.7,
+            "payment_method": "Advcash Cash F2F",
+            "is_explicit": False,
+            "premium": 3.34,
+            "public_duration": 69360,
+            "escrow_duration": 60 * 30, # allowed duration
+            "bond_size": 3.5,
+            "latitude": 0,
+            "longitude": 0,
+        }
+
+        good_trade = Trade(self.client, maker_form=good_form)
+        self.assertEqual(good_trade.response.status_code, 201)
+        self.assertResponse(good_trade.response)
+
+        # escrow duration too low
+        bad_form_too_low_escrow_duration = good_form.copy()
+        bad_form_too_low_escrow_duration["escrow_duration"] = 60 * 30 -1
+
+        bad_trade_too_low = Trade(self.client, maker_form=bad_form_too_low_escrow_duration)
+        self.assertEqual(bad_trade_too_low.response.status_code, 400)
+        self.assertResponse(bad_trade_too_low.response)
+
+        # escrow duration too high
+        bad_form_too_high_escrow_duration = good_form.copy()
+        bad_form_too_high_escrow_duration["escrow_duration"] = 60 * 60 * 10 + 1
+
+        bad_trade_too_high = Trade(self.client, maker_form=bad_form_too_high_escrow_duration)
+        self.assertEqual(bad_trade_too_high.response.status_code, 400)
+        self.assertResponse(bad_trade_too_high.response)
+
     def test_get_order_created(self):
         """
         Tests the creation of an order and the first request to see details,

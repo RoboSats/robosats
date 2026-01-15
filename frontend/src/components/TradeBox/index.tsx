@@ -123,8 +123,8 @@ export interface SubmitActionProps {
 }
 
 const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { settings, navigateToPage, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
 

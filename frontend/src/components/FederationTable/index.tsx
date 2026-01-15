@@ -37,8 +37,8 @@ const FederationTable = ({
   fillContainer = false,
 }: FederationTableProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { federation, federationUpdatedAt, setFederationUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federationUpdatedAt, setFederationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { setOpen, windowSize, settings, origin, hostUrl } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
