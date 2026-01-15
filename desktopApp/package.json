@@ -13,9 +13,13 @@
   },
   "author": "",
   "license": "ISC",
+  "_comment": "Temporary override of @types/node to work around Electron v39 Node 22 typing issues (see electron#49213) , this may need to be removed once Electron fixes its Node 22 typings.",
+  "overrides": {
+    "@types/node": "22.7.7"
+  },
   "devDependencies": {
     "@electron/packager": "^18.3.2",
-    "electron": "^30.0.3",
+    "electron": "^39.2.7",
     "typescript": "^5.4.5"
   },
   "dependencies": {
