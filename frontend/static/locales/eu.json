@@ -120,6 +120,7 @@
   "Hide all": "Ezkutatu dena",
   "Is": "Da",
   "Logic operator": "Operadore logikoa",
+  "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.": "Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.",
   "Manage columns": "Kudeatu zutabeak",
   "Menu": "Menua",
   "No orders found to buy BTC for {{currencyCode}}": "Eskaerarik ez BTC {{currencyCode}}gatik erosteko",
