@@ -8,6 +8,7 @@ import {
   ListItemIcon,
   ListItemText,
   Grid,
+  Box,
   useTheme,
   Divider,
   Typography,
@@ -123,7 +124,16 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
           </ListItemIcon>
         )}
       </ListItemButton>
-      <Dialog open={openOptions} key={coordinator.shortAlias} onClose={() => setOpenOptions(false)}>
+      <Dialog
+        open={openOptions}
+        key={coordinator.shortAlias}
+        onClose={() => {
+          setOpenOptions(false);
+          setOpenClaimRewards(false);
+          setRewardInvoice('');
+          setBadInvoice('');
+        }}
+      >
         <DialogContent>
           <List dense disablePadding={true}>
             <ListItemButton
@@ -264,94 +274,102 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
               </ListItemText>
             </ListItem>
 
-            <ListItem>
-              <ListItemIcon>
-                <EmojiEvents />
-              </ListItemIcon>
-
-              {!openClaimRewards ? (
-                <ListItemText secondary={t('Your compensations')}>
-                  <Grid container justifyContent='space-between'>
-                    <Grid item xs={9}>
-                      <Typography>{`${String(robot?.earnedRewards)} Sats`}</Typography>
-                    </Grid>
-
-                    <Grid item xs={3}>
+            <ListItem
+              secondaryAction={
+                !openClaimRewards && (
+                  <Tooltip
+                    placement='left'
+                    enterTouchDelay={0}
+                    title={
+                      (robot?.earnedRewards ?? 0) === 0
+                        ? t('Nothing to claim yet')
+                        : t('Claim your rewards')
+                    }
+                  >
+                    <span>
                       <Button
-                        disabled={robot?.earnedRewards === 0}
+                        disabled={(robot?.earnedRewards ?? 0) === 0}
                         onClick={() => {
                           setOpenClaimRewards(true);
                         }}
-                        variant='contained'
+                        variant='outlined'
+                        color='primary'
                         size='small'
                       >
                         {t('Claim')}
                       </Button>
-                    </Grid>
-                  </Grid>
-                </ListItemText>
+                    </span>
+                  </Tooltip>
+                )
+              }
+            >
+              {!openClaimRewards && (
+                <ListItemIcon>
+                  <EmojiEvents />
+                </ListItemIcon>
+              )}
+
+              {!openClaimRewards ? (
+                <ListItemText
+                  primary={`${String(robot?.earnedRewards ?? 0)} Sats`}
+                  secondary={t('Your compensations')}
+                />
               ) : (
-                <form noValidate style={{ maxWidth: 270 }}>
-                  <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                    <Grid item style={{ display: 'flex', flexDirection: 'column', maxWidth: 160 }}>
-                      <Tooltip
-                        placement='top'
-                        enterTouchDelay={0}
-                        title={t(
-                          'Routing budget for the reward payment. Higher values may help if payment fails.',
-                        )}
-                      >
-                        <TextField
-                          label={t('Routing Budget (PPM)')}
-                          type='number'
-                          size='small'
-                          value={routingBudgetPPM}
-                          onChange={(e) => setRoutingBudgetPPM(Number(e.target.value))}
-                          style={{ marginBottom: 8, width: '100%' }}
-                          inputProps={{ min: 0, max: 10000 }}
-                        />
-                      </Tooltip>
+                <form noValidate style={{ width: '100%' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Tooltip
+                      placement='top'
+                      enterTouchDelay={0}
+                      title={t(
+                        'Routing budget for the reward payment. Higher values may help if payment fails.',
+                      )}
+                    >
                       <TextField
-                        error={Boolean(badInvoice)}
-                        helperText={badInvoice ?? ''}
-                        label={t('Invoice for {{amountSats}} Sats', {
-                          amountSats: Math.floor(
-                            (robot?.earnedRewards ?? 0) -
-                              ((robot?.earnedRewards ?? 0) * routingBudgetPPM) / 1000000,
-                          ),
-                        })}
+                        label={t('Routing Budget (PPM)')}
+                        type='number'
                         size='small'
-                        value={rewardInvoice}
-                        onChange={(e) => {
-                          setRewardInvoice(e.target.value);
-                        }}
+                        fullWidth
+                        value={routingBudgetPPM}
+                        onChange={(e) => setRoutingBudgetPPM(Number(e.target.value))}
+                        inputProps={{ min: 0, max: 10000 }}
                       />
-                    </Grid>
-                    <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 80 }}>
-                      <Button
-                        sx={{ maxHeight: 38 }}
-                        disabled={rewardInvoice === ''}
-                        onClick={(e) => {
-                          handleSubmitInvoiceClicked(e, rewardInvoice);
-                        }}
-                        variant='contained'
-                        color='primary'
-                        size='small'
-                        type='submit'
-                      >
-                        {t('Submit')}
-                      </Button>
-                    </Grid>
-                  </Grid>
+                    </Tooltip>
+                    <TextField
+                      error={Boolean(badInvoice)}
+                      helperText={badInvoice ?? ''}
+                      label={t('Invoice for {{amountSats}} Sats', {
+                        amountSats: Math.floor(
+                          (robot?.earnedRewards ?? 0) -
+                            ((robot?.earnedRewards ?? 0) * routingBudgetPPM) / 1000000,
+                        ),
+                      })}
+                      size='small'
+                      fullWidth
+                      value={rewardInvoice}
+                      onChange={(e) => {
+                        setRewardInvoice(e.target.value);
+                      }}
+                    />
+                    <Button
+                      disabled={rewardInvoice === '' || showRewardsSpinner}
+                      onClick={(e) => {
+                        handleSubmitInvoiceClicked(e, rewardInvoice);
+                      }}
+                      variant='contained'
+                      color='primary'
+                      fullWidth
+                      type='submit'
+                    >
+                      {showRewardsSpinner ? (
+                        <CircularProgress size={24} color='inherit' />
+                      ) : (
+                        t('Submit')
+                      )}
+                    </Button>
+                  </Box>
                 </form>
               )}
             </ListItem>
-
-            {showRewardsSpinner && (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <CircularProgress />
-              </div>
-            )}
 
             {withdrawn && (
               <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -363,7 +381,15 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenOptions(false)} size='large'>
+          <Button
+            onClick={() => {
+              setOpenOptions(false);
+              setOpenClaimRewards(false);
+              setRewardInvoice('');
+              setBadInvoice('');
+            }}
+            size='large'
+          >
             {t('Back')}
           </Button>
         </DialogActions>
