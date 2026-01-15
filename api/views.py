@@ -564,6 +564,7 @@ class OrderView(viewsets.ViewSet):
                     {
                         "id": order.id,
                         "status": order.status,
+                        "bad_request": "This order has been cancelled",
                     },
                     status.HTTP_200_OK,
                 )
