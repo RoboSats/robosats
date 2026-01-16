@@ -70,9 +70,9 @@ class Nostr:
         client = Client(signer)
 
         # Add relays and connect
-        await client.add_relay("ws://localhost:7777")
+        strfry_host = config("STRFRY_HOST", cast=str, default="localhost")
         strfry_port = config("STRFRY_PORT", cast=str, default="7778")
-        await client.add_relay(f"ws://localhost:{strfry_port}")
+        await client.add_relay(f"ws://{strfry_host}:{strfry_port}")
         await client.connect()
 
         return client
