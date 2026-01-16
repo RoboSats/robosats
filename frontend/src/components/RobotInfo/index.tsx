@@ -303,11 +303,9 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                 )
               }
             >
-              {!openClaimRewards && (
-                <ListItemIcon>
-                  <EmojiEvents />
-                </ListItemIcon>
-              )}
+              <ListItemIcon>
+                <EmojiEvents />
+              </ListItemIcon>
 
               {!openClaimRewards ? (
                 <ListItemText
