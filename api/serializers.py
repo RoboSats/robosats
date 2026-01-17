@@ -411,6 +411,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="Order description",
     )
+    bad_request = serializers.CharField(
+        required=False,
+        help_text="Message indicating the order has been cancelled",
+    )
 
     class Meta:
         model = Order
@@ -497,7 +501,15 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "longitude",
             "chat_last_index",
             "description",
+            "bad_request",
         )
+
+    def to_representation(self, instance):
+        """Add bad_request field only when order is cancelled"""
+        ret = super().to_representation(instance)
+        if instance.status in [Order.Status.UCA, Order.Status.CCA]:
+            ret["bad_request"] = "This order has been cancelled"
+        return ret
 
 
 class ListNotificationSerializer(serializers.ModelSerializer):

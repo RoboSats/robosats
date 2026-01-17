@@ -1700,6 +1700,9 @@ components:
           type: string
           nullable: true
           description: Order description
+        bad_request:
+          type: string
+          description: Message indicating the order has been cancelled
       required:
       - expires_at
       - id
