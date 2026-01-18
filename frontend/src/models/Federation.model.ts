@@ -96,7 +96,7 @@ export class Federation {
         this.ratings[coord.nostrHexPubkey] = {};
       }
     });
-  }
+  };
 
   setConnection = (
     origin: Origin,

@@ -108,8 +108,6 @@ const FederationTable = ({
     }
   }, [federationUpdatedAt]);
 
-
-
   const localeText = {
     noResultsOverlayLabel: t('No coordinators found.'),
   };
@@ -431,8 +429,8 @@ const FederationTable = ({
           {verifcationText
             ? verifcationText
             : t(
-              'Verifying all ratings might take some time; this window may freeze for a few seconds while the cryptographic certification is in progress.',
-            )}
+                'Verifying all ratings might take some time; this window may freeze for a few seconds while the cryptographic certification is in progress.',
+              )}
         </Typography>
       </Grid>
       <Dialog

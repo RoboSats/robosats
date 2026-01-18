@@ -307,8 +307,8 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
           <Typography align='center' variant='body2'>
             {badges?.hasGoodOpSec === true
               ? t(
-                'Good OpSec: the coordinator follows best practices to protect his and your privacy.',
-              )
+                  'Good OpSec: the coordinator follows best practices to protect his and your privacy.',
+                )
               : t('The privacy practices of this coordinator could improve')}
           </Typography>
         }
@@ -341,7 +341,6 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
   const { clientVersion, page, settings, origin } = useContext(AppContext);
   const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
 
-  
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
   const [coordinator, setCoordinator] = useState<Coordinator>(
     federation.getCoordinator(shortAlias ?? ''),
@@ -354,12 +353,12 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
   const rating = coordinatorRating;
 
   const listItemProps = { sx: { maxHeight: '3em', width: '100%' } };
-  const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${coordinator?.info?.version?.minor ?? '?'
-    }.${coordinator?.info?.version?.patch ?? '?'}`;
+  const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${
+    coordinator?.info?.version?.minor ?? '?'
+  }.${coordinator?.info?.version?.patch ?? '?'}`;
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias ?? ''));
-    
   }, [shortAlias]);
 
   useEffect(() => {
