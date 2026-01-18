@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { type Order } from '../../../models';
 import EncryptedApiChat from './EncryptedApiChat';
-import { EventTemplate, nip59 } from 'nostr-tools';
+import { type EventTemplate, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
   FederationContext,
@@ -11,6 +11,9 @@ import { encryptMessage } from '../../../pgp';
 import { apiClient } from '../../../services/api';
 import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import EncryptedSocketChat from './EncryptedSocketChat';
+import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
+import { uploadToBlossom } from '../../../utils/blossom';
+import { createFileMessage } from '../../../utils/nip17File';
 
 interface Props {
   order: Order;
@@ -116,11 +119,48 @@ const EncryptedChat: React.FC<Props> = ({
     );
   };
 
+  const sendFileToNostr = async (file: File): Promise<void> => {
+    const slot = garage.getSlot();
+    const coordinator = federation.getCoordinator(order.shortAlias);
+    const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
+    const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
+
+    if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey || !coordinator) return;
+
+    try {
+      const key = generateKey();
+      const { ciphertext, nonce } = await encryptFile(await file.arrayBuffer(), key);
+      const { url, sha256 } = await uploadToBlossom(ciphertext, coordinator.url, slot.nostrSecKey);
+
+      const fileEvent = createFileMessage({
+        url,
+        mimeType: file.type,
+        key,
+        nonce,
+        sha256,
+        orderId: order.id,
+        coordinatorShortAlias: order.shortAlias,
+        peerPubKey: peerPublicKey,
+        ownPubKey: ownPublicKey,
+        relayUrl: coordinator.getRelayUrl(),
+      });
+
+      const peerWrappedEvent = nip59.wrapEvent(fileEvent, slot.nostrSecKey, peerPublicKey);
+      federation.roboPool.sendEvent(peerWrappedEvent);
+
+      const ownWrappedEvent = nip59.wrapEvent(fileEvent, slot.nostrSecKey, ownPublicKey);
+      federation.roboPool.sendEvent(ownWrappedEvent);
+    } catch (error) {
+      console.error('File upload error:', error);
+    }
+  };
+
   return settings.connection === 'api' ? (
     <EncryptedApiChat
       messages={messages}
       setMessages={setMessages}
       onSendMessage={onSendMessage}
+      onSendFile={sendFileToNostr}
       order={order}
       takerNick={order.taker_nick}
       takerHashId={order.taker_hash_id}
@@ -135,28 +175,11 @@ const EncryptedChat: React.FC<Props> = ({
       setLastIndex={setLastIndex}
     />
   ) : (
-    // WIP
-    // <EncryptedNostrChat
-    //   messages={messages}
-    //   setMessages={setMessages}
-    //   onSendMessage={onSendMessage}
-    //   order={order}
-    //   takerNick={order.taker_nick}
-    //   takerHashId={order.taker_hash_id}
-    //   makerHashId={order.maker_hash_id}
-    //   userNick={order.ur_nick}
-    //   chatOffset={chatOffset}
-    //   peerPubKey={peerPubKey}
-    //   setPeerPubKey={setPeerPubKey}
-    //   error={error}
-    //   setError={setError}
-    //   lastIndex={lastIndex}
-    //   setLastIndex={setLastIndex}
-    // />
     <EncryptedSocketChat
       messages={messages}
       setMessages={setMessages}
       onSendMessage={(content) => sendToNostr(content)}
+      onSendFile={sendFileToNostr}
       order={order}
       takerNick={order.taker_nick}
       takerHashId={order.taker_hash_id}

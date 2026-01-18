@@ -1,6 +1,6 @@
-import React, { useEffect, useLayoutEffect, useState, useContext } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography, IconButton } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
@@ -17,7 +17,7 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import getSettings from '../../../../utils/settings';
-import { Send } from '@mui/icons-material';
+import { Send, AttachFile } from '@mui/icons-material';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 
 const audioPath =
@@ -35,6 +35,7 @@ interface Props {
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
   onSendMessage: (content: string) => void;
+  onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
 }
@@ -49,6 +50,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   messages,
   setMessages,
   onSendMessage,
+  onSendFile,
   peerPubKey,
   setPeerPubKey,
 }: Props): React.JSX.Element => {
@@ -69,6 +71,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [messageCount, setMessageCount] = useState<number>(0);
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
+  const [uploading, setUploading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!connected && Boolean(garage.getSlot()?.hashId)) {
@@ -332,6 +336,31 @@ const EncryptedSocketChat: React.FC<Props> = ({
               }}
               fullWidth
             />
+            <input
+              type='file'
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept='image/*'
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setUploading(true);
+                  onSendFile(file)
+                    .catch((err) => setError(String(err)))
+                    .finally(() => {
+                      setUploading(false);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    });
+                }
+              }}
+            />
+            <IconButton
+              disabled={!connected || uploading || peerPubKey === undefined}
+              onClick={() => fileInputRef.current?.click()}
+              color='primary'
+            >
+              <AttachFile />
+            </IconButton>
             <Button
               disabled={!connected || waitingEcho || peerPubKey === undefined}
               type='submit'

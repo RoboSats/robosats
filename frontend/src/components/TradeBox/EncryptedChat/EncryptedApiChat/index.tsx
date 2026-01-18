@@ -31,6 +31,7 @@ interface Props {
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
   onSendMessage: (content: string) => Promise<object | void>;
+  onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
@@ -56,6 +57,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   setPeerPubKey,
   setMessages,
   onSendMessage,
+  onSendFile: _onSendFile,
   setError,
   setLastIndex,
 }: Props): React.JSX.Element => {

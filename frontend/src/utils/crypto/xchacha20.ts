@@ -1,4 +1,4 @@
-import { xchacha20poly1305 } from '@noble/ciphers/chacha';
+import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 
 const KEY_LENGTH = 32;
 const NONCE_LENGTH = 24;
@@ -42,7 +42,7 @@ export async function decryptFile(
   const cipher = xchacha20poly1305(key, nonce);
   const plaintext = cipher.decrypt(ciphertext);
 
-  return plaintext.buffer;
+  return plaintext.slice().buffer;
 }
 
 export function generateKey(): Uint8Array {
