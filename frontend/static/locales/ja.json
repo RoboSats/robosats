@@ -387,7 +387,6 @@
   "Alias already exists": "エイリアスはすでに存在します",
   "Enabled": "有効",
   "Invalid Onion URL": "無効なOnion URL",
-  "Invalid ratings have been filtered.": "無効な評価がフィルタリングされました。",
   "No coordinators found.": "コーディネーターが見つかりませんでした。",
   "Rating": "評価",
   "Reloading. Invalid ratings will be filtered.": "再読み込み中。無効な評価はフィルタリングされます。",

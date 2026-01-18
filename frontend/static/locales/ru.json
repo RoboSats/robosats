@@ -387,7 +387,6 @@
   "Alias already exists": "Псевдоним уже существует",
   "Enabled": "Включено",
   "Invalid Onion URL": "Недействительный URL Onion",
-  "Invalid ratings have been filtered.": "Недопустимые рейтинги были отфильтрованы.",
   "No coordinators found.": "Координаторы не найдены.",
   "Rating": "Рейтинг",
   "Reloading. Invalid ratings will be filtered.": "Перезагрузка. Недопустимые рейтинги будут отфильтрованы.",
