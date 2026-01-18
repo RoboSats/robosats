@@ -1,11 +1,12 @@
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography, IconButton } from '@mui/material';
 import { decryptMessage } from '../../../../pgp';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
+import { AttachFile } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
@@ -57,7 +58,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   setPeerPubKey,
   setMessages,
   onSendMessage,
-  onSendFile: _onSendFile,
+  onSendFile,
   setError,
   setLastIndex,
 }: Props): React.JSX.Element => {
@@ -72,6 +73,8 @@ const EncryptedApiChat: React.FC<Props> = ({
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [messageCount, setMessageCount] = useState<number>(0);
   const [serverMessages, setServerMessages] = useState<ServerMessage[]>([]);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (messages.length > messageCount) {
@@ -243,6 +246,31 @@ const EncryptedApiChat: React.FC<Props> = ({
               }}
               fullWidth={true}
             />
+            <input
+              type='file'
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept='image/*'
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setUploading(true);
+                  onSendFile(file)
+                    .catch((err) => setError(String(err)))
+                    .finally(() => {
+                      setUploading(false);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    });
+                }
+              }}
+            />
+            <IconButton
+              disabled={uploading || peerPubKey === undefined}
+              onClick={() => fileInputRef.current?.click()}
+              color='primary'
+            >
+              <AttachFile />
+            </IconButton>
             <Button
               disabled={waitingEcho || peerPubKey === undefined}
               type='submit'

@@ -13,7 +13,7 @@ import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
 import { uploadToBlossom } from '../../../utils/blossom';
-import { createFileMessage } from '../../../utils/nip17File';
+import { createFileMessage, type ParsedFileMessage } from '../../../utils/nip17File';
 
 interface Props {
   order: Order;
@@ -28,6 +28,7 @@ export interface EncryptedChatMessage {
   userNick: string;
   validSignature: boolean;
   plainTextMessage: string;
+  fileMetadata?: ParsedFileMessage;
   encryptedMessage: string;
   time: string;
   index: number;

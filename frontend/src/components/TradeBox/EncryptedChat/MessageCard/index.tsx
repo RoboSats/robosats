@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IconButton, Tooltip, Card, CardHeader, useTheme } from '@mui/material';
 import RobotAvatar from '../../../RobotAvatar';
 import { systemClient } from '../../../../services/System';
 import { useTranslation } from 'react-i18next';
+import { isImageMimeType } from '../../../../utils/nip17File';
+import { downloadFromBlossom, verifyBlobHash } from '../../../../utils/blossom';
+import { decryptFile } from '../../../../utils/crypto/xchacha20';
 
-// Icons
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
@@ -29,12 +31,95 @@ const MessageCard: React.FC<Props> = ({
   makerHashId,
 }) => {
   const [showPGP, setShowPGP] = useState<boolean>(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const { t } = useTranslation();
   const theme = useTheme();
 
   const takerCardColor = theme.palette.mode === 'light' ? '#d1e6fa' : '#082745';
   const makerCardColor = theme.palette.mode === 'light' ? '#f2d5f6' : '#380d3f';
   const cardColor = isTaker ? takerCardColor : makerCardColor;
+
+  useEffect(() => {
+    // Cleanup blob URL on unmount
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [imageUrl]);
+
+  const handleImageLoad = async () => {
+    if (!message.fileMetadata || imageUrl || imageError) return;
+
+    try {
+      const fileData = message.fileMetadata;
+
+      if (!isImageMimeType(fileData.mimeType)) {
+        return;
+      }
+
+      const ciphertext = await downloadFromBlossom(fileData.url);
+      const isValid = await verifyBlobHash(ciphertext, fileData.sha256);
+
+      if (!isValid) {
+        setImageError('Image hash verification failed');
+        return;
+      }
+
+      const plaintext = await decryptFile(ciphertext, fileData.key, fileData.nonce);
+      const blob = new Blob([plaintext], { type: fileData.mimeType });
+      const url = URL.createObjectURL(blob);
+      setImageUrl(url);
+    } catch (error) {
+      console.error('Failed to load image:', error);
+      setImageError('Failed to decrypt image');
+    }
+  };
+
+  useEffect(() => {
+    if (message.fileMetadata && isImageMimeType(message.fileMetadata.mimeType)) {
+      void handleImageLoad();
+    }
+  }, [message.fileMetadata]);
+
+  const renderMessageContent = () => {
+    if (showPGP) {
+      return (
+        <a>
+          {' '}
+          {message.time} <br /> {`Valid signature:  ${String(message.validSignature)}`} <br />{' '}
+          {message.encryptedMessage}{' '}
+        </a>
+      );
+    }
+
+    if (imageUrl) {
+      return (
+        <img
+          src={imageUrl}
+          alt='Encrypted image'
+          style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '4px' }}
+          onError={() => setImageError('Failed to display image')}
+        />
+      );
+    }
+
+    if (imageError) {
+      return <span style={{ color: 'red' }}>{imageError}</span>;
+    }
+
+    return (
+      <>
+        {message.plainTextMessage.split('\n').map((messageLine, idx) => (
+          <span key={idx}>
+            {messageLine}
+            <br />
+          </span>
+        ))}
+      </>
+    );
+  };
 
   return (
     <Card elevation={5}>
@@ -128,24 +213,7 @@ const MessageCard: React.FC<Props> = ({
             </div>
           </Tooltip>
         }
-        subheader={
-          showPGP ? (
-            <a>
-              {' '}
-              {message.time} <br /> {`Valid signature:  ${String(message.validSignature)}`} <br />{' '}
-              {message.encryptedMessage}{' '}
-            </a>
-          ) : (
-            <>
-              {message.plainTextMessage.split('\n').map((messageLine, idx) => (
-                <span key={idx}>
-                  {messageLine}
-                  <br />
-                </span>
-              ))}
-            </>
-          )
-        }
+        subheader={renderMessageContent()}
         subheaderTypographyProps={{
           sx: {
             wordWrap: 'break-word',
