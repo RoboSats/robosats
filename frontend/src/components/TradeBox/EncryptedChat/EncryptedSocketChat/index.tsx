@@ -1,6 +1,15 @@
 import React, { useEffect, useLayoutEffect, useState, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography, IconButton } from '@mui/material';
+import {
+  Button,
+  TextField,
+  Grid,
+  Paper,
+  Typography,
+  IconButton,
+  CircularProgress,
+  Tooltip,
+} from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
@@ -231,7 +240,9 @@ const EncryptedSocketChat: React.FC<Props> = ({
     const robot = slot?.getRobot();
     if (slot?.token !== undefined && value.includes(slot.token)) {
       alert(
-        `Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
+        t(
+          "Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.",
+        ),
       );
       setValue('');
     }
@@ -344,6 +355,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
+                  const maxSize = 10 * 1024 * 1024; // 10MB
+                  if (file.size > maxSize) {
+                    setError(t('File too large. Maximum size is 10MB.'));
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    return;
+                  }
                   setUploading(true);
                   onSendFile(file)
                     .catch((err) => setError(String(err)))
@@ -354,13 +371,17 @@ const EncryptedSocketChat: React.FC<Props> = ({
                 }
               }}
             />
-            <IconButton
-              disabled={!connected || uploading || peerPubKey === undefined}
-              onClick={() => fileInputRef.current?.click()}
-              color='primary'
-            >
-              <AttachFile />
-            </IconButton>
+            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+              <span>
+                <IconButton
+                  disabled={!connected || uploading || peerPubKey === undefined}
+                  onClick={() => fileInputRef.current?.click()}
+                  color='primary'
+                >
+                  {uploading ? <CircularProgress size={24} /> : <AttachFile />}
+                </IconButton>
+              </span>
+            </Tooltip>
             <Button
               disabled={!connected || waitingEcho || peerPubKey === undefined}
               type='submit'

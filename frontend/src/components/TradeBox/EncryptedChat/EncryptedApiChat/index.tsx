@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography, IconButton } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography, IconButton, Tooltip } from '@mui/material';
 import { decryptMessage } from '../../../../pgp';
 
 // Icons
@@ -161,7 +161,9 @@ const EncryptedApiChat: React.FC<Props> = ({
 
     if (slot?.token && value.includes(slot.token)) {
       alert(
-        `Aye! You just sent your own robot robot.token  to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
+        t(
+          "Aye! You just sent your own robot robot.token  to your peer in chat, that's a catastrophic idea! So bad your message was blocked.",
+        ),
       );
       setValue('');
     } else {
@@ -254,6 +256,12 @@ const EncryptedApiChat: React.FC<Props> = ({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
+                  const maxSize = 10 * 1024 * 1024; // 10MB
+                  if (file.size > maxSize) {
+                    setError(t('File too large. Maximum size is 10MB.'));
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    return;
+                  }
                   setUploading(true);
                   onSendFile(file)
                     .catch((err) => setError(String(err)))
@@ -264,13 +272,17 @@ const EncryptedApiChat: React.FC<Props> = ({
                 }
               }}
             />
-            <IconButton
-              disabled={uploading || peerPubKey === undefined}
-              onClick={() => fileInputRef.current?.click()}
-              color='primary'
-            >
-              <AttachFile />
-            </IconButton>
+            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+              <span>
+                <IconButton
+                  disabled={uploading || peerPubKey === undefined}
+                  onClick={() => fileInputRef.current?.click()}
+                  color='primary'
+                >
+                  {uploading ? <CircularProgress size={24} /> : <AttachFile />}
+                </IconButton>
+              </span>
+            </Tooltip>
             <Button
               disabled={waitingEcho || peerPubKey === undefined}
               type='submit'

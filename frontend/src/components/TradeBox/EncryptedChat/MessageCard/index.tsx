@@ -63,7 +63,7 @@ const MessageCard: React.FC<Props> = ({
       const isValid = await verifyBlobHash(ciphertext, fileData.sha256);
 
       if (!isValid) {
-        setImageError('Image hash verification failed');
+        setImageError(t('Image hash verification failed'));
         return;
       }
 
@@ -73,7 +73,7 @@ const MessageCard: React.FC<Props> = ({
       setImageUrl(url);
     } catch (error) {
       console.error('Failed to load image:', error);
-      setImageError('Failed to decrypt image');
+      setImageError(t('Failed to decrypt image'));
     }
   };
 
@@ -98,9 +98,9 @@ const MessageCard: React.FC<Props> = ({
       return (
         <img
           src={imageUrl}
-          alt='Encrypted image'
+          alt={t('Encrypted image')}
           style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '4px' }}
-          onError={() => setImageError('Failed to display image')}
+          onError={() => setImageError(t('Failed to display image'))}
         />
       );
     }

@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type Order } from '../../../models';
 import EncryptedApiChat from './EncryptedApiChat';
 import { type EventTemplate, type Event, nip59 } from 'nostr-tools';
@@ -58,6 +59,7 @@ const EncryptedChat: React.FC<Props> = ({
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { t } = useTranslation();
 
   const [error, setError] = useState<string>('');
   const [lastIndex, setLastIndex] = useState<number>(0);
@@ -97,7 +99,7 @@ const EncryptedChat: React.FC<Props> = ({
               index: unwrapped.created_at + Math.random() * 0.001,
               userNick: senderNick,
               validSignature: true,
-              plainTextMessage: `[Encrypted Image]`,
+              plainTextMessage: t('[Encrypted Image]'),
               fileMetadata: fileData,
               encryptedMessage: JSON.stringify(unwrapped),
               time: new Date(unwrapped.created_at * 1000).toLocaleTimeString(),
