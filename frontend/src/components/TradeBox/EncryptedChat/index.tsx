@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { type Order } from '../../../models';
 import EncryptedApiChat from './EncryptedApiChat';
-import { type EventTemplate, nip59 } from 'nostr-tools';
+import { type EventTemplate, type Event, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
   FederationContext,
@@ -13,13 +13,19 @@ import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
 import { uploadToBlossom } from '../../../utils/blossom';
-import { createFileMessage, type ParsedFileMessage } from '../../../utils/nip17File';
+import {
+  createFileMessage,
+  parseFileMessage,
+  type ParsedFileMessage,
+} from '../../../utils/nip17File';
 
 interface Props {
   order: Order;
   chatOffset: number;
   messages: EncryptedChatMessage[];
-  setMessages: (state: EncryptedChatMessage[]) => void;
+  setMessages: (
+    state: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
+  ) => void;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
 }
@@ -55,6 +61,96 @@ const EncryptedChat: React.FC<Props> = ({
 
   const [error, setError] = useState<string>('');
   const [lastIndex, setLastIndex] = useState<number>(0);
+  const [receivedEventIds, setReceivedEventIds] = useState<Set<string>>(new Set());
+
+  // for incoming Nostr events
+  const handleNostrEvent = useCallback(
+    (event: Event) => {
+      const slot = garage.getSlot();
+      if (!slot?.nostrSecKey) return;
+
+      if (receivedEventIds.has(event.id)) return;
+
+      try {
+        const unwrapped = nip59.unwrapEvent(event, slot.nostrSecKey);
+        if (!unwrapped) return;
+
+        const orderIdTag = unwrapped.tags.find((t) => t[0] === 'order_id');
+        const expectedOrderId = `${order.shortAlias}/${order.id}`;
+        if (orderIdTag?.[1] !== expectedOrderId) return;
+
+        setReceivedEventIds((prev) => new Set(prev).add(event.id));
+
+        const senderPubKey = unwrapped.pubkey;
+        const isSelf =
+          senderPubKey === (order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey);
+        const senderNick = isSelf
+          ? order.ur_nick
+          : order.is_maker
+            ? order.taker_nick
+            : order.maker_nick;
+
+        if (unwrapped.kind === 15) {
+          const fileData = parseFileMessage(unwrapped);
+          if (fileData) {
+            const newMessage: EncryptedChatMessage = {
+              index: unwrapped.created_at + Math.random() * 0.001,
+              userNick: senderNick,
+              validSignature: true,
+              plainTextMessage: `[Encrypted Image]`,
+              fileMetadata: fileData,
+              encryptedMessage: JSON.stringify(unwrapped),
+              time: new Date(unwrapped.created_at * 1000).toLocaleTimeString(),
+            };
+
+            setMessages((prev: EncryptedChatMessage[]) => {
+              const exists = prev.some(
+                (m) => m.fileMetadata?.sha256 === fileData.sha256 && m.userNick === senderNick,
+              );
+              if (exists) return prev;
+              return [...prev, newMessage].sort((a, b) => a.index - b.index);
+            });
+          }
+        }
+
+        // handle Kind 14 - for future use
+        if (unwrapped.kind === 14) {
+          const newMessage: EncryptedChatMessage = {
+            index: unwrapped.created_at + Math.random() * 0.001,
+            userNick: senderNick,
+            validSignature: true,
+            plainTextMessage: unwrapped.content,
+            encryptedMessage: JSON.stringify(unwrapped),
+            time: new Date(unwrapped.created_at * 1000).toLocaleTimeString(),
+          };
+
+          setMessages((prev: EncryptedChatMessage[]) => {
+            const exists = prev.some(
+              (m) =>
+                m.plainTextMessage === unwrapped.content &&
+                Math.abs(m.index - newMessage.index) < 1,
+            );
+            if (exists) return prev;
+            return [...prev, newMessage].sort((a, b) => a.index - b.index);
+          });
+        }
+      } catch (err) {
+        console.error('Failed to process Nostr event:', err);
+      }
+    },
+    [garage, order, receivedEventIds, setMessages],
+  );
+
+  // subscribe to Nostr notifs for incoming file msgs
+  useEffect(() => {
+    const slot = garage.getSlot();
+    if (!slot?.nostrSecKey) return;
+
+    federation.roboPool.subscribeNotifications(garage, {
+      onevent: handleNostrEvent,
+      oneose: () => {},
+    });
+  }, [federation.roboPool, garage, handleNostrEvent]);
 
   const onSendMessage = async (content: string): Promise<object | void> => {
     sendToNostr(content);
