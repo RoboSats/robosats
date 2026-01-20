@@ -412,7 +412,7 @@ const BookTable = ({
 
   const defaultBondSize = 3;
 
-  const premiumObj = useCallback(() => {
+  const premiumObj = () => {
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
     // Hardcoded: a buy order at 10% is an outstanding premium
@@ -499,54 +499,55 @@ const BookTable = ({
               >
                 {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
               </Typography>
-              <Box
-                sx={{
-                  display: { xs: 'block', lg: 'none' },
-                  lineHeight: '1',
-                  marginTop: '2px',
-                }}
-              >
-                {(() => {
-                  const bondElement = (
-                    <Typography
-                      component='span'
-                      variant='caption'
-                      sx={{
-                        fontSize: '0.70rem',
-                        lineHeight: '1',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      <Typography
-                        component='span'
-                        variant='caption'
-                        sx={{ fontSize: '0.70rem', color: 'text.secondary' }}
-                      >
-                        {'Bond: '}
-                      </Typography>
+              {!visibleColumnKeys.has('bond_size') && (
+                <Box
+                  sx={{
+                    lineHeight: '1',
+                    marginTop: '2px',
+                  }}
+                >
+                  {(() => {
+                    const bondElement = (
                       <Typography
                         component='span'
                         variant='caption'
                         sx={{
                           fontSize: '0.70rem',
-                          color: isLowBond ? theme.palette.warning.main : 'text.secondary',
-                          fontWeight: isLowBond ? 600 : 'normal',
+                          lineHeight: '1',
+                          whiteSpace: 'nowrap',
                         }}
                       >
-                        {params.row.bond_size ? `${bondSize}%` : '-'}
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          sx={{ fontSize: '0.70rem', color: 'text.secondary' }}
+                        >
+                          {'Bond: '}
+                        </Typography>
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          sx={{
+                            fontSize: '0.70rem',
+                            color: isLowBond ? theme.palette.warning.main : 'text.secondary',
+                            fontWeight: isLowBond ? 600 : 'normal',
+                          }}
+                        >
+                          {params.row.bond_size ? `${bondSize}%` : '-'}
+                        </Typography>
                       </Typography>
-                    </Typography>
-                  );
+                    );
 
-                  return bondElement;
-                })()}
-              </Box>
+                    return bondElement;
+                  })()}
+                </Box>
+              )}
             </div>
           </Tooltip>
         );
       },
     };
-  }, [theme]);
+  };
 
   const timerObj = useCallback(() => {
     return {
@@ -808,9 +809,11 @@ const BookTable = ({
   const filteredColumns = function (maxWidth: number): {
     columns: Array<GridColDef<GridValidRowModel>>;
     width: number;
+    visibleColumnKeys: Set<string>;
   } {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
+    const visibleColumnKeys = new Set<string>();
     let width: number = -4;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
@@ -827,6 +830,7 @@ const BookTable = ({
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
         selectedColumns.push([colObject(colWidth), value.order]);
+        visibleColumnKeys.add(key);
       }
     }
 
@@ -839,10 +843,10 @@ const BookTable = ({
         return item[0];
       });
 
-    return { columns, width: maxWidth };
+    return { columns, width: maxWidth, visibleColumnKeys };
   };
 
-  const { columns, width } = useMemo(() => {
+  const { columns, width, visibleColumnKeys } = useMemo(() => {
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
