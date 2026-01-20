@@ -1,4 +1,5 @@
 import hashlib
+import re
 from datetime import timedelta
 
 from channels.db import database_sync_to_async
@@ -104,7 +105,9 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             encrypted_private_key = request.META.get(
                 "ENCRYPTED_PRIVATE_KEY", ""
             ).replace("Private ", "")
-            nostr_pubkey = request.META.get("NOSTR_PUBKEY", "").replace("Nostr ", "")
+            match = re.search(r"(?:Nostr\s+)?(?P<pubkey>[0-9a-fA-F]{64})", request.META.get("NOSTR_PUBKEY", ""))
+            if match:
+                nostr_pubkey = match.group("pubkey").lower()
 
             if not public_key or not encrypted_private_key or not nostr_pubkey:
                 return JsonResponse(new_error(7001), status=status.HTTP_400_BAD_REQUEST)
