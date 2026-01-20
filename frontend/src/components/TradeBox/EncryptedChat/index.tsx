@@ -13,7 +13,7 @@ import { apiClient } from '../../../services/api';
 import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
-import { uploadToBlossom } from '../../../utils/blossom';
+import { uploadToBlossom, computeSha256 } from '../../../utils/blossom';
 import {
   createFileMessage,
   parseFileMessage,
@@ -228,7 +228,11 @@ const EncryptedChat: React.FC<Props> = ({
 
     try {
       const key = generateKey();
-      const { ciphertext, nonce } = await encryptFile(await file.arrayBuffer(), key);
+      const fileBuffer = await file.arrayBuffer();
+      const fileUint8 = new Uint8Array(fileBuffer);
+      const originalSha256 = await computeSha256(fileUint8);
+
+      const { ciphertext, nonce } = await encryptFile(fileBuffer, key);
       const { url, sha256 } = await uploadToBlossom(ciphertext, coordinator.url, slot.nostrSecKey);
 
       const fileEvent = createFileMessage({
@@ -242,6 +246,8 @@ const EncryptedChat: React.FC<Props> = ({
         peerPubKey: peerPublicKey,
         ownPubKey: ownPublicKey,
         relayUrl: coordinator.getRelayUrl(),
+        originalSha256,
+        encryptedSize: ciphertext.length,
       });
 
       const peerWrappedEvent = nip59.wrapEvent(fileEvent, slot.nostrSecKey, peerPublicKey);
@@ -251,6 +257,7 @@ const EncryptedChat: React.FC<Props> = ({
       federation.roboPool.sendEvent(ownWrappedEvent);
     } catch (error) {
       console.error('File upload error:', error);
+      setError(error instanceof Error ? error.message : 'File upload failed');
     }
   };
 

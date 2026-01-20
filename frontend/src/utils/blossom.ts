@@ -1,18 +1,13 @@
 import { finalizeEvent, type EventTemplate } from 'nostr-tools';
 
-async function computeSha256(data: Uint8Array): Promise<string> {
+export async function computeSha256(data: Uint8Array): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', data.slice().buffer);
   return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 }
 
-function createAuthEvent(
-  sha256hex: string,
-  method: string,
-  url: string,
-  secretKey: Uint8Array,
-): string {
+function createAuthEvent(sha256hex: string, secretKey: Uint8Array): string {
   const expiration = Math.floor(Date.now() / 1000) + 300;
 
   const eventTemplate: EventTemplate = {
@@ -21,11 +16,9 @@ function createAuthEvent(
     tags: [
       ['t', 'upload'],
       ['x', sha256hex],
-      ['method', method],
-      ['u', url],
       ['expiration', String(expiration)],
     ],
-    content: '',
+    content: 'Upload encrypted image',
   };
 
   const signedEvent = finalizeEvent(eventTemplate, secretKey);
@@ -44,7 +37,7 @@ export async function uploadToBlossom(
 ): Promise<BlossomUploadResult> {
   const sha256 = await computeSha256(ciphertext);
   const uploadUrl = `${coordinatorUrl}/blossom/upload`;
-  const authToken = createAuthEvent(sha256, 'PUT', uploadUrl, nostrSecKey);
+  const authToken = createAuthEvent(sha256, nostrSecKey);
 
   const response = await fetch(uploadUrl, {
     method: 'PUT',
