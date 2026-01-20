@@ -130,15 +130,18 @@ class RoboPool {
   };
 
   subscribeRatings = (events: RoboPoolEvents, pubkeys?: string[], id?: string): void => {
-    const defaultPubkeys = Object.values(defaultFederation)
-      .map((f) => f.nostrHexPubkey)
-      .filter((item) => item !== undefined);
+    const pubkeysFilter =
+      pubkeys ??
+      Object.values(defaultFederation)
+        .map((f) => f.nostrHexPubkey)
+        .filter((item) => item !== undefined);
 
     const subscribeRatings = `subscribeRatings${id ?? ''}`;
+    const sixMonthsAgo = Math.floor(new Date().getTime() / 1000) - 6 * 30 * 24 * 60 * 60;
     const requestRatings = [
       'REQ',
       subscribeRatings,
-      { kinds: [31986], '#p': pubkeys ?? defaultPubkeys, since: 1746316800 },
+      { kinds: [31986], '#p': pubkeysFilter, since: sixMonthsAgo },
     ];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
