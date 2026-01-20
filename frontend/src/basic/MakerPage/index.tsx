@@ -2,7 +2,8 @@ import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-import { filterOrders, genBase62Token } from '../../utils';
+import filterOrders from '../../utils/filterOrders';
+import { genBase62Token } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
@@ -42,9 +43,9 @@ const MakerPage = (): React.JSX.Element => {
       premium: maker.premium ?? null,
       paymentMethods: maker.paymentMethods,
       amountFilter: {
-        amount: maker.amount,
-        minAmount: maker.minAmount,
-        maxAmount: maker.maxAmount,
+        amount: maker.amount?.toString() ?? '',
+        minAmount: maker.minAmount?.toString() ?? '',
+        maxAmount: maker.maxAmount?.toString() ?? '',
         threshold: 0.7,
       },
     });

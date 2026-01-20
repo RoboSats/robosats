@@ -39,6 +39,8 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import headerStyleFix from '../DataGrid/HeaderFix';
 import thirdParties from '../../../static/thirdparties.json';
 
+const BOOK_VIEW_FILTERS_KEY = 'bookViewFilters_v1';
+
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
     pointerEvents: 'none',
@@ -894,13 +896,13 @@ const BookTable = ({
           <Typography align='center' component='h5' variant='h5'>
             {fav.type === 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
-                  currencyCode:
-                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
-                })
+                currencyCode:
+                  fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+              })
               : t('No orders found to buy BTC for {{currencyCode}}', {
-                  currencyCode:
-                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
-                })}
+                currencyCode:
+                  fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+              })}
           </Typography>
         </Grid>
         <Grid item>
@@ -928,10 +930,10 @@ const BookTable = ({
   const filteredOrders = useMemo(() => {
     return showControls
       ? filterOrders({
-          federation,
-          baseFilter: fav,
-          paymentMethods,
-        })
+        federation,
+        baseFilter: fav,
+        paymentMethods,
+      })
       : orders;
   }, [showControls, orders, fav, paymentMethods]);
 
