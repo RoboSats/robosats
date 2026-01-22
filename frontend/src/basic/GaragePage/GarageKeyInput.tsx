@@ -27,7 +27,6 @@ const GarageKeyInput = ({
   loading = false,
   onPressEnter,
   autoFocusTarget = 'textField',
-  label,
 }: GarageKeyInputProps): React.JSX.Element => {
   const { t } = useTranslation();
 
