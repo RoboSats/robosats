@@ -32,23 +32,29 @@ import {
 } from '../../../contexts/FederationContext';
 
 interface DepthChartProps {
-  maxWidth: number;
-  maxHeight: number;
+  maxWidth?: number;
+  maxHeight?: number;
   elevation?: number;
   onOrderClicked?: (id: number, shortAlias: string) => void;
+  fillContainer?: boolean;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
-  maxWidth,
-  maxHeight,
+  maxWidth = 10,
+  maxHeight = 10,
   elevation = 6,
   onOrderClicked = () => null,
+  fillContainer = false,
 }) => {
   const { fav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
+
+  const height = maxHeight < 10 ? 10 : maxHeight;
+  const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
+
   const [enrichedOrders, setEnrichedOrders] = useState<PublicOrder[]>([]);
   const [series, setSeries] = useState<Serie[]>([]);
   const [rangeSteps, setRangeSteps] = useState<number>(8);
@@ -57,9 +63,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [currencyCode, setCurrencyCode] = useState<number>(0);
   const [coordinatorFilter, setCoordinatorFilter] = useState<string>('all');
   const [center, setCenter] = useState<number>();
-
-  const height = maxHeight < 10 ? 10 : maxHeight;
-  const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
     setCurrencyCode(fav.currency); // as selected in BookControl
@@ -282,17 +285,24 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const em = theme.typography.fontSize;
-  return (
-    <Paper
-      elevation={elevation}
-      style={{
+  const containerStyle = fillContainer
+    ? ({
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      } as const)
+    : ({
         width: `${width}em`,
         height: `${height}em`,
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
-      }}
-    >
+      } as const);
+
+  return (
+    <Paper elevation={elevation} style={containerStyle}>
       <Paper
         variant='outlined'
         style={{
@@ -306,19 +316,24 @@ const DepthChart: React.FC<DepthChartProps> = ({
             style={{
               display: 'flex',
               justifyContent: 'center',
-              paddingTop: `${height / 2}em`,
+              paddingTop: fillContainer ? '20%' : `${height / 2}em`,
             }}
           >
             <CircularProgress />
           </div>
         ) : (
-          <Grid container alignItems='center' direction='column'>
+          <Grid
+            container
+            alignItems='center'
+            direction='column'
+            sx={{ height: '100%', flexWrap: 'nowrap' }}
+          >
             <Grid
               container
               direction='row'
               justifyContent='space-between'
               alignItems='center'
-              style={{ width: '100%' }}
+              style={{ width: '100%', flexShrink: 0 }}
             >
               <Grid container style={{ paddingLeft: '1em', paddingTop: 3 }}>
                 <b>{t('Chart')}</b>
@@ -372,7 +387,16 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid container style={{ height: `${height * 0.9}em`, width: '100%', padding: '1em' }}>
+            <Grid
+              container
+              style={{
+                height: fillContainer ? '100%' : `${height * 0.9}em`,
+                width: '100%',
+                padding: '1em',
+                flexGrow: 1,
+                minHeight: 0,
+              }}
+            >
               <ResponsiveLine
                 data={series}
                 enableArea={true}
