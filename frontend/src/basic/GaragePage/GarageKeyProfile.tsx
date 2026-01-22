@@ -11,7 +11,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import { Bolt, Download, Settings, DeleteSweep } from '@mui/icons-material';
+import { Bolt, Settings, DeleteSweep } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import GarageKeyInput from './GarageKeyInput';
 import AccountNavigator from './AccountNavigator';
@@ -32,7 +32,7 @@ const GarageKeyProfile = ({
   width,
   setInputGarageKey,
 }: GarageKeyProfileProps) => {
-  const { setOpen, open, navigateToPage, client, slotUpdatedAt } =
+  const { setOpen, open, navigateToPage, slotUpdatedAt } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -249,23 +249,12 @@ const GarageKeyProfile = ({
           >
             <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
               <Grid item sx={{ width: '100%' }}>
-                <Grid container direction='row' justifyContent='space-between'>
-                  <Typography variant='caption'>{t('Garage Key')}</Typography>
-                  <Button
-                    size='small'
-                    color='primary'
-                    onClick={() => {
-                      garage.download(client);
-                    }}
-                  >
-                    <Download style={{ width: '0.6em', height: '0.6em' }} />
-                  </Button>
-                </Grid>
+                <Typography variant='caption'>{t('Garage Key')}</Typography>
                 <GarageKeyInput
                   garageKey={garageKey?.encodedKey ?? ''}
                   setGarageKey={setInputGarageKey}
                   editable={false}
-                  label={t('Store your Garage Key safely')}
+                  label={t('Garage Key')}
                 />
               </Grid>
 
