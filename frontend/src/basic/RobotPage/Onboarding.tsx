@@ -14,6 +14,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tooltip,
 } from '@mui/material';
 import { type Robot } from '../../models';
 import { Casino, Bolt, Check, AddBox, School, Search } from '@mui/icons-material';
@@ -24,6 +25,7 @@ import { NewTabIcon } from '../../components/Icons';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import useLegacyMode from '../../hooks/useLegacyMode';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
@@ -41,6 +43,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
   const { navigateToPage, setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { isLegacyMode, legacyDisabledTooltip } = useLegacyMode();
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -238,28 +241,34 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
             </Grid>
 
             <Grid item>
-              <ButtonGroup variant='contained'>
-                <Button
-                  color='primary'
-                  onClick={() => {
-                    setOpen((open) => {
-                      return { ...open, search: true };
-                    });
-                  }}
-                >
-                  <Search /> <div style={{ width: '0.5em' }} />
-                  {t('Search')}
-                </Button>
-                <Button
-                  color='secondary'
-                  onClick={() => {
-                    navigateToPage('create', navigate);
-                  }}
-                >
-                  <AddBox /> <div style={{ width: '0.5em' }} />
-                  {t('Create')}
-                </Button>
-              </ButtonGroup>
+              <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
+                <span>
+                  <ButtonGroup variant='contained'>
+                    <Button
+                      color='primary'
+                      disabled={isLegacyMode}
+                      onClick={() => {
+                        setOpen((open) => {
+                          return { ...open, search: true };
+                        });
+                      }}
+                    >
+                      <Search /> <div style={{ width: '0.5em' }} />
+                      {t('Search')}
+                    </Button>
+                    <Button
+                      color='secondary'
+                      disabled={isLegacyMode}
+                      onClick={() => {
+                        navigateToPage('create', navigate);
+                      }}
+                    >
+                      <AddBox /> <div style={{ width: '0.5em' }} />
+                      {t('Create')}
+                    </Button>
+                  </ButtonGroup>
+                </span>
+              </Tooltip>
             </Grid>
 
             <Grid item>
