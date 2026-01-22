@@ -32,6 +32,7 @@ const BookWidget = React.forwardRef(function Component({
           fullWidth={windowSize.width} // EM units
           fullHeight={windowSize.height} // EM units
           defaultFullscreen={false}
+          fillContainer={true}
         />
       </Paper>
     );
