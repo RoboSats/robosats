@@ -16,6 +16,8 @@ jobs:
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v5
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
     - name: 'Validate versions match (tag, backend, frontend, Android)'
       id: validate
       shell: bash
@@ -88,6 +90,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Get short SHA
         id: short-sha
