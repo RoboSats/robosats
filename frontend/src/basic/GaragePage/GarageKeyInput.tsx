@@ -74,12 +74,11 @@ const GarageKeyInput = ({
     <TextField
       fullWidth
       disabled={!editable || loading}
-      label={label ?? t('Garage Key')}
       value={garageKey}
       onChange={handleChange}
       onKeyPress={handleKeyPress}
       error={!!error && garageKey.length > 0}
-      helperText={error && garageKey.length > 0 ? error : t('Format: robo1...')}
+      helperText={error && garageKey.length > 0 ? error : t('Store your Garage Key safely')}
       autoFocus={autoFocusTarget === 'textField'}
       InputProps={{
         endAdornment: (

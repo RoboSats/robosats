@@ -26,6 +26,7 @@ const DesktopBar = ({ changePage }: DesktopBarProps): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
+  const isLegacyMode = settings.garageMode === 'legacy';
 
   const tabSx = { position: 'relative', bottom: '1em', minWidth: '2em' };
 
@@ -85,10 +86,18 @@ const DesktopBar = ({ changePage }: DesktopBarProps): React.JSX.Element => {
           sx={tabSx}
           label={t('Offers')}
           value='offers'
+          disabled={isLegacyMode}
           icon={<Storefront />}
           iconPosition='start'
         />
-        <Tab sx={tabSx} label={t('Create')} value='create' icon={<AddBox />} iconPosition='start' />
+        <Tab
+          sx={tabSx}
+          label={t('Create')}
+          value='create'
+          disabled={isLegacyMode}
+          icon={<AddBox />}
+          iconPosition='start'
+        />
         <Tab
           sx={tabSx}
           label={t('Order')}

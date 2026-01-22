@@ -35,6 +35,7 @@ import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 import { useBondEstimate } from '../../hooks/useBondEstimate';
+import useLegacyMode from '../../hooks/useLegacyMode';
 
 import { SelfImprovement, Lock, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
@@ -404,8 +405,11 @@ const MakerForm = ({
     return { label, helper, swapSats };
   }, [fav, maker.amount, maker.premium, federationUpdatedAt]);
 
+  const { isLegacyMode, legacyDisabledTooltip } = useLegacyMode();
+
   const disableSubmit = useMemo(() => {
     return (
+      isLegacyMode ||
       fav.type == null ||
       (!makerHasAmountRange &&
         maker.amount &&
@@ -420,7 +424,7 @@ const MakerForm = ({
       maker.paymentMethods.length === 0 ||
       maker.badDescription
     );
-  }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
+  }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange, isLegacyMode]);
 
   const clearMaker = function (): void {
     setFav((prev) => {
@@ -455,6 +459,9 @@ const MakerForm = ({
   const currencyFormatter = new Intl.NumberFormat(settings.language);
 
   const getDisabledMessage = () => {
+    if (isLegacyMode) {
+      return legacyDisabledTooltip;
+    }
     if (currentPrice === undefined) {
       return t('The Bitcoin price is not synchronized.');
     }
