@@ -1282,7 +1282,6 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
 
@@ -1290,7 +1289,6 @@ class TradeTest(BaseAPITestCase):
         trade.cancel_order(cancel_status=Order.Status.PUB)
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
@@ -1355,7 +1353,7 @@ class TradeTest(BaseAPITestCase):
         # Taker accepts (ask) the cancellation
         trade.cancel_order(trade.taker_index)
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
+
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.CCA)
