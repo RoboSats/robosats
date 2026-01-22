@@ -3,7 +3,6 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 import MakerForm from '../../components/MakerForm';
 import { Paper, Box } from '@mui/material';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const BASE_WIDTH = 380;
