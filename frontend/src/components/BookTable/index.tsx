@@ -473,8 +473,6 @@ const BookTable = ({
           </span>
         );
 
-        const hasBondCol = !!params.api.getColumn('bond_size');
-
         return (
           <Tooltip placement='left' enterTouchDelay={0} title={tooltipTitle}>
             <div
