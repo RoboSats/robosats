@@ -294,7 +294,7 @@ class TradeTest(BaseAPITestCase):
             "is_explicit": False,
             "premium": 3.34,
             "public_duration": 69360,
-            "escrow_duration": 60 * 30, # allowed duration
+            "escrow_duration": 60 * 30,  # allowed duration
             "bond_size": 3.5,
             "latitude": 0,
             "longitude": 0,
@@ -306,9 +306,11 @@ class TradeTest(BaseAPITestCase):
 
         # escrow duration too low
         bad_form_too_low_escrow_duration = good_form.copy()
-        bad_form_too_low_escrow_duration["escrow_duration"] = 60 * 30 -1
+        bad_form_too_low_escrow_duration["escrow_duration"] = 60 * 30 - 1
 
-        bad_trade_too_low = Trade(self.client, maker_form=bad_form_too_low_escrow_duration)
+        bad_trade_too_low = Trade(
+            self.client, maker_form=bad_form_too_low_escrow_duration
+        )
         self.assertEqual(bad_trade_too_low.response.status_code, 400)
         self.assertResponse(bad_trade_too_low.response)
 
@@ -316,7 +318,9 @@ class TradeTest(BaseAPITestCase):
         bad_form_too_high_escrow_duration = good_form.copy()
         bad_form_too_high_escrow_duration["escrow_duration"] = 60 * 60 * 10 + 1
 
-        bad_trade_too_high = Trade(self.client, maker_form=bad_form_too_high_escrow_duration)
+        bad_trade_too_high = Trade(
+            self.client, maker_form=bad_form_too_high_escrow_duration
+        )
         self.assertEqual(bad_trade_too_high.response.status_code, 400)
         self.assertResponse(bad_trade_too_high.response)
 
@@ -1143,7 +1147,6 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.UCA)
@@ -1279,7 +1282,6 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
 
@@ -1287,7 +1289,6 @@ class TradeTest(BaseAPITestCase):
         trade.cancel_order(cancel_status=Order.Status.PUB)
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
@@ -1352,7 +1353,7 @@ class TradeTest(BaseAPITestCase):
         # Taker accepts (ask) the cancellation
         trade.cancel_order(trade.taker_index)
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
+
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.CCA)

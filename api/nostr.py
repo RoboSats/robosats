@@ -126,7 +126,7 @@ class Nostr:
             ),
             Tag.parse(["y", "robosats", config("COORDINATOR_ALIAS", cast=str).lower()]),
             Tag.parse(["network", str(config("NETWORK"))]),
-            Tag.parse(["layer"] + self.get_layer_tag(order)),
+            Tag.parse(["layer", "lightning"]),
             Tag.parse(["bond", str(order.bond_size)]),
             Tag.parse(["z", "order"]),
         ]
@@ -143,15 +143,6 @@ class Nostr:
             return "pending"
         else:
             return "success"
-
-    def get_layer_tag(self, order):
-        if order.type == Order.Types.SELL and not config(
-            "DISABLE_ONCHAIN", cast=bool, default=True
-        ):
-            return ["onchain", "lightning"]
-        else:
-            return ["lightning"]
-            return False
 
     def sign_message(text: str) -> str:
         try:
