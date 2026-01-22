@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
     - name: 'Download Basic main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
