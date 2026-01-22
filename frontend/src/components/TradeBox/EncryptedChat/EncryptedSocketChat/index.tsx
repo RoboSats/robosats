@@ -361,6 +361,11 @@ const EncryptedSocketChat: React.FC<Props> = ({
                     if (fileInputRef.current) fileInputRef.current.value = '';
                     return;
                   }
+                  if (!file.type.startsWith('image/')) {
+                    setError(t('Only image files are allowed.'));
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    return;
+                  }
                   setUploading(true);
                   onSendFile(file)
                     .catch((err) => setError(String(err)))
