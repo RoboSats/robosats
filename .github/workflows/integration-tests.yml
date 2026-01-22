@@ -34,6 +34,8 @@ jobs:
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v5
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
     - name: 'Download static files Artifact'
       uses: dawidd6/action-download-artifact@v11

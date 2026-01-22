@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: 'Setup node'
         uses: actions/setup-node@v5
