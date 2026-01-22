@@ -58,7 +58,7 @@ const EncryptedChat: React.FC<Props> = ({
 }: Props): React.JSX.Element => {
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, notifications } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
 
   const [error, setError] = useState<string>('');
@@ -143,16 +143,13 @@ const EncryptedChat: React.FC<Props> = ({
     [garage, order, receivedEventIds, setMessages],
   );
 
-  // subscribe to Nostr notifs for incoming file msgs
   useEffect(() => {
-    const slot = garage.getSlot();
-    if (!slot?.nostrSecKey) return;
-
-    federation.roboPool.subscribeNotifications(garage, {
-      onevent: handleNostrEvent,
-      oneose: () => {},
+    Object.values(notifications).forEach((robotNotifications) => {
+      robotNotifications.forEach(([wrappedEvent]) => {
+        handleNostrEvent(wrappedEvent);
+      });
     });
-  }, [federation.roboPool, garage, handleNostrEvent]);
+  }, [notifications, handleNostrEvent]);
 
   const onSendMessage = async (content: string): Promise<object | void> => {
     sendToNostr(content);
