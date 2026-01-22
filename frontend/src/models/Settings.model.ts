@@ -93,7 +93,7 @@ class BaseSettings {
   public selfhostedClient: boolean = false;
   public useProxy: boolean = false;
   public androidNotifications: boolean = false;
-  public garageMode: 'legacy' | 'garageKey' = 'garageKey';
+  public garageMode: 'legacy' | 'garageKey' = 'legacy';
 }
 
 export default BaseSettings;
