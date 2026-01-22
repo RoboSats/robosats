@@ -96,52 +96,6 @@
     "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"],
     "federated": true
   },
-  "veneto": {
-    "longAlias": "BitcoinVeneto",
-    "shortAlias": "veneto",
-    "identifier": "bitcoinveneto",
-    "description": "Born as a group of computer scientists with different experiences, we discovered bitcoin at the end of 2013, we became enthusiastic and dedicated to bitcoin, blockchain and cryptocurrencies in general, we are committed to guaranteeing maximum privacy for robosats users.",
-    "motto": "Your NON-Virtual Guides on Bitcoin, Blockchain and Crypto.",
-    "color": "#000D27",
-    "established": "2024-02-24",
-    "nostrHexPubkey": "c8dc40a80bbb41fe7430fca9d0451b37a2341486ab65f890955528e4732da34a",
-    "contact": {
-      "email": "bitcoinveneto@proton.me",
-      "telegram": "BitcoinVeneto",
-      "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FSkIkI6EPd2D63F4xFKfHk7I1UGZVNn6k1QWZ5rcyr6w%3D%40smp9.simplex.im%2FczgLjsXvJhUg2w8fefNYP9yyqCBAcmuv%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJaunNKTLjskkHsZ3xdt8KPlnr9FrZgNNohn1d4a3Igs%253D%26srv%3Djssqzccmrcws6bhmn77vgmhfjmhwlyr3u7puw4erkyoosywgl67slqqd.onion",
-      "pgp": "/static/federation/pgp/498E269DDDF63969A215FED32A2C489EAF23D549.asc",
-      "nostr": "npub1098av3sr5788gydhstmcxrccwch86m48qq3fjx78ec2xhlpl8kjqxcpkd7",
-      "website": "https://bitcoinveneto.org",
-      "fingerprint": "498E269DDDF63969A215FED32A2C489EAF23D549"
-    },
-    "badges": {
-      "isFounder": false,
-      "donatesToDevFund": 20,
-      "hasGoodOpSec": true,
-      "hasLargeLimits": false
-    },
-    "policies": {
-      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
-      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
-      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
-      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
-      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
-    },
-    "mainnet": {
-      "onion": "http://mmhaqzuirth5rx7gl24d4773lknltjhik57k7ahec5iefktezv4b3uid.onion",
-      "clearnet": "https://unsafe.bitcoinveneto.org",
-      "i2p": ""
-    },
-    "testnet": {
-      "onion": "http://wsjyhbashc4zrrex6vijpryujggbka5plry2o62dxqoz3pxinblnj4ad.onion",
-      "clearnet": "",
-      "i2p": ""
-    },
-    "mainnetNodesPubkeys": ["02c5b5972b05fba2cd2c2d9269a47bc478f73fae0f248a85cb1e5af60a07c1919d"],
-    "testnetNodesPubkeys": ["032b698c8143f293d138c0926594f11d119194ddedb513f63a944d14c094d0e54a"],
-    "federated": true
-  },
   "moon": {
     "longAlias": "Over the moon",
     "shortAlias": "moon",
@@ -278,52 +232,6 @@
     },
     "mainnetNodesPubkeys": ["028059662c65626f3002290dd3151186bc1952726c03f56012406f3ceadb81cacc"],
     "testnetNodesPubkeys": [],
-    "federated": true
-  },
-  "whiteyesats": {
-    "longAlias": "WhitEyeSats",
-    "shortAlias": "whiteyesats",
-    "identifier": "whiteyesats",
-    "description": "WhitEyeSats is a Robosat Coordinator designed to empower users with full digital freedom. No KYC, no censorship — just a secure, decentralized way to acquire and manage your sats. Connect, coordinate, and grow your Bitcoin without compromising privacy.",
-    "motto": "“Build your digital freedom, one sat at a time.” ✅",
-    "color": "#D5E4F2",
-    "established": "2025-11-20",
-    "nostrHexPubkey": "e185c2ad0b87b3207ac2b96d6b8fb1ff10fbf25f93eef4d04fb6dbb9039f19fb",
-    "contact": {
-      "email": "whiteyes@tutamail.com",
-      "telegram": "@asyscom",
-      "simplex": "https://smp17.simplex.im/a#wSybGAOR98kvBMcYiaFN0QYzoaGpZ2MC-QbaUk_AJ_8",
-      "pgp": "/static/federation/pgp/8B99A9F344AD4BDF158EE1ADA9765943E23958EC.asc",
-      "nostr": "npub1uxzu9tgts7ejq7kzh9kkhra3lug0hujlj0h0f5z0kmdmjqulr8as6t6vmm",
-      "website": null,
-      "fingerprint": "8B99A9F344AD4BDF158EE1ADA9765943E23958EC"
-    },
-    "badges": {
-      "isFounder": false,
-      "donatesToDevFund": 20,
-      "hasGoodOpSec": true,
-      "hasLargeLimits": false
-    },
-    "policies": {
-      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
-      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
-      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
-      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
-      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
-    },
-    "mainnet": {
-      "onion": "http://s4usqbcf2pk2xwghdzaggrxd3paiqpvnl4lm2dxp6dec3wbclgbdyiyd.onion",
-      "clearnet": null,
-      "i2p": null
-    },
-    "testnet": {
-      "onion": "http://hlcr225x36bfhxcn4nhnokzfqjr54trnoyckuedbmzxev5m47ne4kgyd.onion",
-      "clearnet": null,
-      "i2p": null
-    },
-    "mainnetNodesPubkeys": ["025da46e8521fbe14c1d60d23d74b2b6d0dcc740ff600232314ef65751346e940e"],
-    "testnetNodesPubkeys": ["0298d9d5ddacae4757152036988b40a8d042eb12ed99f69ad878e45c76da5c294e"],
     "federated": true
   },
   "alice": {
