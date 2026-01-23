@@ -26,7 +26,7 @@ const DesktopBar = ({ changePage }: DesktopBarProps): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
-  const isLegacyMode = settings.garageMode === 'legacy';
+  const isLegacyMode = garage.getMode() === 'legacy';
 
   const tabSx = { position: 'relative', bottom: '1em', minWidth: '2em' };
 
