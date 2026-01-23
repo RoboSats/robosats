@@ -13,8 +13,6 @@ import { systemClient } from '../services/System';
 const STORAGE_KEY = 'garage_key';
 const STORAGE_ACCOUNT_KEY = 'garage_key_account';
 
-export type GarageMode = 'legacy' | 'garageKey';
-
 interface GarageKeyData {
   encodedKey: string;
   currentAccountIndex: number;

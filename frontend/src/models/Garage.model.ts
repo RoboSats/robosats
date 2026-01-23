@@ -3,7 +3,9 @@ import { genKey } from '../pgp';
 import { systemClient } from '../services/System';
 import { saveAsJson, createAccountRecoveryEvent, publishAccountRecoveryEvent } from '../utils';
 import Slot from './Slot.model';
-import GarageKey, { type GarageMode } from './GarageKey.model';
+import GarageKey from './GarageKey.model';
+
+export type GarageMode = 'legacy' | 'garageKey';
 
 type GarageHooks = 'onSlotUpdate';
 
