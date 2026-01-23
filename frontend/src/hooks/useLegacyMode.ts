@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
+import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
 interface UseLegacyModeReturn {
   isLegacyMode: boolean;
@@ -8,10 +8,10 @@ interface UseLegacyModeReturn {
 }
 
 const useLegacyMode = (): UseLegacyModeReturn => {
-  const { settings } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
 
-  const isLegacyMode = settings.garageMode === 'legacy';
+  const isLegacyMode = garage.getMode() === 'legacy';
   const legacyDisabledTooltip = t('Switch to Garage Key mode to use this feature');
 
   return { isLegacyMode, legacyDisabledTooltip };
