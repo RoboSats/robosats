@@ -65,11 +65,6 @@ class BaseSettings {
       this.useProxy = client === 'mobile' && result !== 'false';
     });
 
-    systemClient.getItem('settings_garage_mode').then((result) => {
-      if (result && result !== '') {
-        this.garageMode = result as 'legacy' | 'garageKey';
-      }
-    });
   }
 
   getMode = (): 'light' | 'dark' => {
@@ -93,7 +88,6 @@ class BaseSettings {
   public selfhostedClient: boolean = false;
   public useProxy: boolean = false;
   public androidNotifications: boolean = false;
-  public garageMode: 'legacy' | 'garageKey' = 'legacy';
 }
 
 export default BaseSettings;

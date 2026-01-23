@@ -16,7 +16,7 @@ class Garage {
     this.slots = {};
     this.currentSlot = null;
     this.garageKey = null;
-    this.mode = 'garageKey'; // default mode
+    this.mode = 'legacy'; // default mode
 
     this.hooks = {
       onSlotUpdate: [],
