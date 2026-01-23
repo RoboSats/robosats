@@ -29,7 +29,7 @@ const GaragePage = (): React.JSX.Element => {
   const navigate = useNavigate();
   const { windowSize, slotUpdatedAt, settings, setSettings, navigateToPage } =
     useContext<UseAppStoreType>(AppContext);
-  const { garage, garageKeyUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
 
@@ -86,7 +86,7 @@ const GaragePage = (): React.JSX.Element => {
         setView('welcome');
       }
     }
-  }, [garageKeyUpdatedAt, slotUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   useEffect(() => {
     if (Object.keys(garage.slots).length > 0 && view === 'welcome') {
