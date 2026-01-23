@@ -134,11 +134,6 @@ export const GarageContextProvider = ({
     }
   }, [settings.network, settings.useProxy, torStatus, page]);
 
-  useEffect(() => {
-    if (settings.garageMode && garage.getMode() !== settings.garageMode) {
-      garage.setMode(settings.garageMode);
-    }
-  }, [settings.garageMode]);
 
   const fetchSlotActiveOrder: () => void = () => {
     const slot = garage?.getSlot();
