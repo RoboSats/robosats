@@ -15,7 +15,7 @@ export type { Book, PublicOrder } from './Book.model';
 export type { Language } from './Settings.model';
 export type { Favorites } from './Favorites.model';
 export type { Contact, Info, Version, Origin } from './Coordinator.model';
-export type { GarageMode } from './GarageKey.model';
+export type { GarageMode } from './Garage.model';
 
 export { defaultMaker } from './Maker.model';
 export { defaultExchange } from './Exchange.model';
