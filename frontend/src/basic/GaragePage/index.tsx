@@ -22,12 +22,11 @@ import Welcome from '../RobotPage/Welcome';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import RecoveryDialog from '../../components/Dialogs/Recovery';
-import { systemClient } from '../../services/System';
 
 const GaragePage = (): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { windowSize, slotUpdatedAt, settings, setSettings, navigateToPage } =
+  const { windowSize, slotUpdatedAt, navigateToPage } =
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const width = Math.min(windowSize.width * 0.8, 28);
@@ -43,7 +42,7 @@ const GaragePage = (): React.JSX.Element => {
   };
 
   const handleModeChange = (newMode: 'legacy' | 'garageKey' | null): void => {
-    if (newMode !== null && newMode !== settings.garageMode) {
+    if (newMode !== null && newMode !== garage.getMode()) {
       setPendingMode(newMode);
       setShowModeChangeDialog(true);
     }
@@ -51,10 +50,6 @@ const GaragePage = (): React.JSX.Element => {
 
   const confirmModeChange = (): void => {
     if (pendingMode !== null) {
-      const newSettings = { ...settings, garageMode: pendingMode };
-      setSettings(newSettings);
-      systemClient.setItem('settings_garage_mode', pendingMode);
-
       garage.deleteGarageKey();
       garage.delete();
 
@@ -121,7 +116,7 @@ const GaragePage = (): React.JSX.Element => {
         <ToggleButtonGroup
           sx={{ width: '100%' }}
           exclusive={true}
-          value={settings.garageMode}
+          value={garage.getMode()}
           onChange={(_e, garageMode) => {
             handleModeChange(garageMode);
           }}
@@ -151,7 +146,7 @@ const GaragePage = (): React.JSX.Element => {
           </DialogContentText>
           {hasActiveData() && (
             <Alert severity='warning' sx={{ mt: 2 }}>
-              {settings.garageMode === 'garageKey' && garage.getGarageKey()
+              {garage.getMode() === 'garageKey' && garage.getGarageKey()
                 ? t(
                     'You have an active Garage Key. Make sure you have saved it before continuing!',
                   )
