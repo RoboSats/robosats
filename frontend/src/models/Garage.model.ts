@@ -5,7 +5,7 @@ import { saveAsJson, createAccountRecoveryEvent, publishAccountRecoveryEvent } f
 import Slot from './Slot.model';
 import GarageKey, { type GarageMode } from './GarageKey.model';
 
-type GarageHooks = 'onSlotUpdate' | 'onGarageKeyUpdate';
+type GarageHooks = 'onSlotUpdate';
 
 const STORAGE_MODE_KEY = 'garage_mode';
 
@@ -18,7 +18,6 @@ class Garage {
 
     this.hooks = {
       onSlotUpdate: [],
-      onGarageKeyUpdate: [],
     };
 
     this.loadMode();
@@ -212,7 +211,7 @@ class Garage {
   setMode = (mode: GarageMode): void => {
     this.mode = mode;
     systemClient.setItem(STORAGE_MODE_KEY, mode);
-    this.triggerHook('onGarageKeyUpdate');
+    this.triggerHook('onSlotUpdate');
   };
 
   getMode = (): GarageMode => {
@@ -222,7 +221,7 @@ class Garage {
   setGarageKey = (garageKey: GarageKey): void => {
     this.garageKey = garageKey;
     this.garageKey.save();
-    this.triggerHook('onGarageKeyUpdate');
+    this.triggerHook('onSlotUpdate');
   };
 
   getGarageKey = (): GarageKey | null => {
@@ -231,11 +230,11 @@ class Garage {
 
   loadGarageKey = async (): Promise<void> => {
     this.garageKey = await GarageKey.load(() => {
-      this.triggerHook('onGarageKeyUpdate');
+      this.triggerHook('onSlotUpdate');
     });
     if (this.garageKey) {
       console.log('Garage Key was loaded from local storage');
-      this.triggerHook('onGarageKeyUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
@@ -243,7 +242,7 @@ class Garage {
     if (this.garageKey) {
       this.garageKey.delete();
       this.garageKey = null;
-      this.triggerHook('onGarageKeyUpdate');
+      this.triggerHook('onSlotUpdate');
     }
   };
 
