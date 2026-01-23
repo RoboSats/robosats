@@ -23,7 +23,6 @@ export interface UseGarageStoreType {
   setMaker: Dispatch<SetStateAction<Maker>>;
   setDelay: Dispatch<SetStateAction<number>>;
   fetchSlotActiveOrder: () => void;
-  garageKeyUpdatedAt: string;
   recoverAccountFromRelays: () => void;
 }
 
@@ -33,7 +32,6 @@ export const initialGarageContext: UseGarageStoreType = {
   setMaker: () => { },
   setDelay: () => { },
   fetchSlotActiveOrder: () => { },
-  garageKeyUpdatedAt: '',
   recoverAccountFromRelays: () => { },
 };
 
@@ -72,7 +70,6 @@ export const GarageContextProvider = ({
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [garage] = useState<Garage>(initialGarageContext.garage);
   const [maker, setMaker] = useState<Maker>(initialGarageContext.maker);
-  const [garageKeyUpdatedAt, setGarageKeyUpdatedAt] = useState<string>(new Date().toISOString());
   const [lastOrderCheckAt] = useState<number>(+new Date());
   const lastOrderCheckAtRef = useRef(lastOrderCheckAt);
   const [delay, setDelay] = useState<number>(defaultDelay);
@@ -82,10 +79,6 @@ export const GarageContextProvider = ({
 
   const onSlotUpdated = (): void => {
     setSlotUpdatedAt(new Date().toISOString());
-  };
-
-  const onGarageKeyUpdated = (): void => {
-    setGarageKeyUpdatedAt(new Date().toISOString());
   };
 
   const recoverAccountFromRelays = (): void => {
@@ -118,7 +111,6 @@ export const GarageContextProvider = ({
       return { ...maker, coordinator: federation.getCoordinatorsAlias()[0] };
     }); // default MakerForm coordinator is decided via sorted lottery
     garage.registerHook('onSlotUpdate', onSlotUpdated);
-    garage.registerHook('onGarageKeyUpdate', onGarageKeyUpdated);
     clearInterval(timer);
     fetchSlotActiveOrder();
 
@@ -187,7 +179,6 @@ export const GarageContextProvider = ({
         setMaker,
         setDelay,
         fetchSlotActiveOrder,
-        garageKeyUpdatedAt,
         recoverAccountFromRelays,
       }}
     >
