@@ -174,9 +174,7 @@ const RobotProfile = ({
             }}
             tooltip={
               !slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)
-                ? t(
-                    'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
-                  )
+                ? t('Reusing trading identity degrades your privacy against other users, coordinators and observers.',)
                 : t('This is your trading avatar')
             }
             tooltipPosition='top'
