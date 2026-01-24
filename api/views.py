@@ -334,9 +334,7 @@ class OrderView(viewsets.ViewSet):
                     ]["escrow_amount"]
                 # Buyer sees the amount he receives
                 elif data["is_buyer"]:
-                    data["trade_satoshis"] = Logics.payout_amount(order, request.user)[
-                        1
-                    ]["invoice_amount"]
+                    data["trade_satoshis"] = Logics.payout_amount(order)
 
         # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER hold invoice.
         if order.status == Order.Status.WFB and data["is_maker"]:
@@ -389,11 +387,8 @@ class OrderView(viewsets.ViewSet):
                 == order.taker_bond.status
                 == LNPayment.Status.LOCKED
             ):
-                valid, context = Logics.payout_amount(order, request.user)
-                if valid:
-                    data = {**data, **context}
-                else:
-                    return Response(context, status.HTTP_400_BAD_REQUEST)
+                context = Logics.compute_buyer_payout_context(order)
+                data = {**data, **context}
 
         # 8) If status is 'CHA' or 'FSE' and all HTLCS are in LOCKED
         elif order.status in [Order.Status.WFI, Order.Status.CHA, Order.Status.FSE]:
@@ -451,9 +446,7 @@ class OrderView(viewsets.ViewSet):
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
                 # Add invoice amount once again if invoice was expired.
-                data["trade_satoshis"] = Logics.payout_amount(order, request.user)[1][
-                    "invoice_amount"
-                ]
+                data["trade_satoshis"] = Logics.payout_amount(order)
 
         # 10) If status is 'Expired', "Sending", "Finished" or "failed routing", add info for renewal:
         elif order.status in [
