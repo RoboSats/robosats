@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback } from 'react';
+import React, { useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Order } from '../../../models';
 import EncryptedApiChat from './EncryptedApiChat';
@@ -18,6 +18,7 @@ import {
   createFileMessage,
   parseFileMessage,
   type ParsedFileMessage,
+  parseImageMetadataJson,
 } from '../../../utils/nip17File';
 
 interface Props {
@@ -48,6 +49,12 @@ export interface ServerMessage {
   nick: string;
 }
 
+export interface ChatApiResponse {
+  peer_connected?: boolean;
+  peer_pubkey?: string;
+  messages?: ServerMessage[];
+}
+
 const EncryptedChat: React.FC<Props> = ({
   order,
   chatOffset,
@@ -63,15 +70,19 @@ const EncryptedChat: React.FC<Props> = ({
 
   const [error, setError] = useState<string>('');
   const [lastIndex, setLastIndex] = useState<number>(0);
-  const [receivedEventIds, setReceivedEventIds] = useState<Set<string>>(new Set());
+  const receivedEventIds = useRef<Set<string>>(new Set());
 
-  // for incoming Nostr events
+  // for incoming Nostr events - only in Nostr mode
   const handleNostrEvent = useCallback(
     (event: Event) => {
+      if (settings.connection === 'api') {
+        return;
+      }
+
       const slot = garage.getSlot();
       if (!slot?.nostrSecKey) return;
 
-      if (receivedEventIds.has(event.id)) return;
+      if (receivedEventIds.current.has(event.id)) return;
 
       try {
         const unwrapped = nip59.unwrapEvent(event, slot.nostrSecKey);
@@ -81,7 +92,7 @@ const EncryptedChat: React.FC<Props> = ({
         const expectedOrderId = `${order.shortAlias}/${order.id}`;
         if (orderIdTag?.[1] !== expectedOrderId) return;
 
-        setReceivedEventIds((prev) => new Set(prev).add(event.id));
+        receivedEventIds.current.add(event.id);
 
         const senderPubKey = unwrapped.pubkey;
         const isSelf =
@@ -115,24 +126,36 @@ const EncryptedChat: React.FC<Props> = ({
           }
         }
 
-        // handle Kind 14 - for future use
         if (unwrapped.kind === 14) {
+          let fileMetadata: ParsedFileMessage | undefined;
+          let displayText = unwrapped.content;
+
+          const imgMeta = parseImageMetadataJson(unwrapped.content);
+          if (imgMeta) {
+            fileMetadata = imgMeta;
+            displayText = t('[Encrypted Image]');
+          }
+
           const newMessage: EncryptedChatMessage = {
             index: unwrapped.created_at + Math.random() * 0.001,
             userNick: senderNick,
             validSignature: true,
-            plainTextMessage: unwrapped.content,
+            plainTextMessage: displayText,
+            fileMetadata: fileMetadata,
             encryptedMessage: JSON.stringify(unwrapped),
             time: new Date(unwrapped.created_at * 1000).toLocaleTimeString(),
           };
 
           setMessages((prev: EncryptedChatMessage[]) => {
-            const exists = prev.some(
-              (m) =>
-                m.plainTextMessage === unwrapped.content &&
-                Math.abs(m.index - newMessage.index) < 1,
-            );
-            if (exists) return prev;
+            if (fileMetadata) {
+              const exists = prev.some(
+                (m) => m.fileMetadata?.sha256 === fileMetadata!.sha256 && m.userNick === senderNick,
+              );
+              if (exists) return prev;
+            } else {
+              const exists = prev.some((m) => m.encryptedMessage === JSON.stringify(unwrapped));
+              if (exists) return prev;
+            }
             return [...prev, newMessage].sort((a, b) => a.index - b.index);
           });
         }
@@ -140,20 +163,28 @@ const EncryptedChat: React.FC<Props> = ({
         console.error('Failed to process Nostr event:', err);
       }
     },
-    [garage, order, receivedEventIds, setMessages],
+    [garage, order, setMessages, settings.connection, t],
   );
+
+  const handleNostrEventRef = useRef(handleNostrEvent);
+  handleNostrEventRef.current = handleNostrEvent;
 
   useEffect(() => {
     Object.values(notifications).forEach((robotNotifications) => {
       robotNotifications.forEach(([wrappedEvent]) => {
-        handleNostrEvent(wrappedEvent);
+        handleNostrEventRef.current(wrappedEvent);
       });
     });
-  }, [notifications, handleNostrEvent]);
+  }, [notifications]);
 
-  const onSendMessage = async (content: string): Promise<object | void> => {
+  const onSendMessage = async (
+    content: string,
+    options: { skipCoordinator?: boolean } = {},
+  ): Promise<object | void> => {
     sendToNostr(content);
-    return sendToCoordinator(content);
+    if (!options.skipCoordinator) {
+      return sendToCoordinator(content);
+    }
   };
 
   const sendToNostr = (content: string): void => {
@@ -252,6 +283,74 @@ const EncryptedChat: React.FC<Props> = ({
 
       const ownWrappedEvent = nip59.wrapEvent(fileEvent, slot.nostrSecKey, ownPublicKey);
       federation.roboPool.sendEvent(ownWrappedEvent);
+
+      const imageMetadata = JSON.stringify({
+        type: 'image',
+        url,
+        key: btoa(String.fromCharCode(...key)),
+        nonce: btoa(String.fromCharCode(...nonce)),
+        sha256,
+        originalSha256,
+        mimeType: file.type,
+      });
+      await sendToCoordinator(imageMetadata);
+    } catch (error) {
+      console.error('File upload error:', error);
+      setError(error instanceof Error ? error.message : 'File upload failed');
+    }
+  };
+
+  const sendFileViaApi = async (file: File): Promise<void> => {
+    const slot = garage.getSlot();
+    const coordinator = federation.getCoordinator(order.shortAlias);
+    const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
+    const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
+
+    if (!slot?.nostrSecKey || !coordinator) return;
+
+    try {
+      const key = generateKey();
+      const fileBuffer = await file.arrayBuffer();
+      const fileUint8 = new Uint8Array(fileBuffer);
+      const originalSha256 = await computeSha256(fileUint8);
+
+      const { ciphertext, nonce } = await encryptFile(fileBuffer, key);
+      const { url, sha256 } = await uploadToBlossom(ciphertext, coordinator.url, slot.nostrSecKey);
+
+      const imageMetadata = JSON.stringify({
+        type: 'image',
+        url,
+        key: btoa(String.fromCharCode(...key)),
+        nonce: btoa(String.fromCharCode(...nonce)),
+        sha256,
+        originalSha256,
+        mimeType: file.type,
+      });
+
+      await sendToCoordinator(imageMetadata);
+
+      if (peerPublicKey && ownPublicKey) {
+        const fileEvent = createFileMessage({
+          url,
+          mimeType: file.type,
+          key,
+          nonce,
+          sha256,
+          orderId: order.id,
+          coordinatorShortAlias: order.shortAlias,
+          peerPubKey: peerPublicKey,
+          ownPubKey: ownPublicKey,
+          relayUrl: coordinator.getRelayUrl(),
+          originalSha256,
+          encryptedSize: ciphertext.length,
+        });
+
+        const peerWrappedEvent = nip59.wrapEvent(fileEvent, slot.nostrSecKey, peerPublicKey);
+        federation.roboPool.sendEvent(peerWrappedEvent);
+
+        const ownWrappedEvent = nip59.wrapEvent(fileEvent, slot.nostrSecKey, ownPublicKey);
+        federation.roboPool.sendEvent(ownWrappedEvent);
+      }
     } catch (error) {
       console.error('File upload error:', error);
       setError(error instanceof Error ? error.message : 'File upload failed');
@@ -263,7 +362,7 @@ const EncryptedChat: React.FC<Props> = ({
       messages={messages}
       setMessages={setMessages}
       onSendMessage={onSendMessage}
-      onSendFile={sendFileToNostr}
+      onSendFile={sendFileViaApi}
       order={order}
       takerNick={order.taker_nick}
       takerHashId={order.taker_hash_id}
@@ -281,7 +380,7 @@ const EncryptedChat: React.FC<Props> = ({
     <EncryptedSocketChat
       messages={messages}
       setMessages={setMessages}
-      onSendMessage={(content) => sendToNostr(content)}
+      onSendMessage={onSendMessage}
       onSendFile={sendFileToNostr}
       order={order}
       takerNick={order.taker_nick}

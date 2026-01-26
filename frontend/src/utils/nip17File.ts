@@ -108,3 +108,21 @@ export function isFileMessage(event: { kind: number; tags: string[][] }): boolea
 export function isImageMimeType(mimeType: string): boolean {
   return mimeType.startsWith('image/');
 }
+
+export function parseImageMetadataJson(jsonStr: string): ParsedFileMessage | null {
+  if (!jsonStr.startsWith('{"type":"image"')) return null;
+  try {
+    const imgMeta = JSON.parse(jsonStr);
+    return {
+      url: imgMeta.url,
+      mimeType: imgMeta.mimeType,
+      key: fromBase64(imgMeta.key),
+      nonce: fromBase64(imgMeta.nonce),
+      sha256: imgMeta.sha256,
+      originalSha256: imgMeta.originalSha256,
+      encryptionAlgorithm: 'xchacha20-poly1305',
+    };
+  } catch {
+    return null;
+  }
+}
