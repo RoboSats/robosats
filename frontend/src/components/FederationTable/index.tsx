@@ -21,7 +21,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { Origin, type Coordinator } from '../../models';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import RobotAvatar from '../RobotAvatar';
-import { verifyCoordinatorToken } from '../../utils/nostr';
+
 import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { Origins } from '../../models/Coordinator.model';
 
@@ -46,12 +46,7 @@ const FederationTable = ({
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
-  const [ratings, setRatings] = useState<Record<string, Record<string, number>>>(
-    federation.getCoordinators().reduce((acc, coord) => {
-      if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
-      return acc;
-    }, {}),
-  );
+
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
   const [error, setError] = useState<string>();
@@ -99,12 +94,12 @@ const FederationTable = ({
 
   useEffect(() => {
     federation.loadInfo();
-    loadRatings();
+    federation.loadRatings();
   }, []);
 
   useEffect(() => {
     if (verifyRatings) {
-      loadRatings();
+      federation.loadRatings(true);
       setVerificationText(t('Reloading. Invalid ratings will be filtered.'));
     }
   }, [verifyRatings]);
@@ -114,33 +109,6 @@ const FederationTable = ({
       setPageSize(defaultPageSize);
     }
   }, [federationUpdatedAt]);
-
-  const loadRatings: () => void = () => {
-    setRatings(
-      federation.getCoordinators().reduce((acc, coord) => {
-        if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
-        return acc;
-      }, {}),
-    );
-    federation.roboPool.subscribeRatings({
-      onevent: (event) => {
-        const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
-        const verified = verifyRatings ? verifyCoordinatorToken(event) : true;
-        if (verified && coordinatorPubKey) {
-          const rating = event.tags.find((t) => t[0] === 'rating')?.[1];
-          if (rating) {
-            setRatings((prev) => {
-              prev[coordinatorPubKey][event.pubkey] = parseFloat(rating);
-              return prev;
-            });
-          }
-        }
-      },
-      oneose: () => {
-        if (verifyRatings) setVerificationText(t('Invalid ratings have been filtered.'));
-      },
-    });
-  };
 
   const localeText = {
     noResultsOverlayLabel: t('No coordinators found.'),
@@ -206,7 +174,7 @@ const FederationTable = ({
       width: mobile ? 60 : 180,
       renderCell: (params: { row: Coordinator }) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
-        const coordinatorRating = ratings[coordinator.nostrHexPubkey];
+        const coordinatorRating = federation.ratings[coordinator.nostrHexPubkey];
 
         if (!coordinatorRating) return <></>;
 
