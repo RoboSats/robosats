@@ -105,6 +105,7 @@ LNVENDOR_USER = "LND"
 DAPHNE_PORT = 9000
 GUNICORN_PORT = 8080
 RUNSERVER_PORT = 8000
+STRFRY_HOST = localhost
 STRFRY_PORT = 7778
 
 BITCOIND_BIN = "traditional/programs/bitcoin/bin/bitcoind"

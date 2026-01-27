@@ -2,9 +2,14 @@ import textwrap
 
 from decouple import config
 from django.conf import settings
-from drf_spectacular.utils import OpenApiExample, OpenApiParameter
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    PolymorphicProxySerializer,
+)
 
 from api.serializers import (
+    CancelledOrderResponseSerializer,
     InfoSerializer,
     ListOrderSerializer,
     OrderDetailSerializer,
@@ -353,7 +358,15 @@ class OrderViewSchema:
             ),
         ],
         "responses": {
-            200: OrderDetailSerializer,
+            200: PolymorphicProxySerializer(
+                component_name="UpdateOrderResponse",
+                serializers=[
+                    CancelledOrderResponseSerializer,
+                    OrderDetailSerializer,
+                ],
+                resource_type_field_name=None,
+                many=False,
+            ),
             400: {
                 "type": "object",
                 "properties": {

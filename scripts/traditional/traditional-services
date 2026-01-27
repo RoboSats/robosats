@@ -80,6 +80,7 @@ _services_environment_set() {
     DAPHNE_PORT="$(_get_env_var "DAPHNE_PORT")" || return "$?"
     GUNICORN_PORT="$(_get_env_var "GUNICORN_PORT")" || return "$?"
     RUNSERVER_PORT="$(_get_env_var "RUNSERVER_PORT")" || return "$?"
+    STRFRY_HOST="$(_get_env_var "STRFRY_HOST")" || return "$?"
     STRFRY_PORT="$(_get_env_var "STRFRY_PORT")" || return "$?"
 
     if [ "$POSTGRES_DB" = "postgres" ]; then
@@ -146,6 +147,7 @@ nginx_setup() {
     sed -i "s/\$GUNICORN_PORT/$GUNICORN_PORT/g" "$NGINX_CONF"
     sed -i "s/\$DAPHNE_PORT/$DAPHNE_PORT/g" "$NGINX_CONF"
     sed -i "s/\$RUNSERVER_PORT/$RUNSERVER_PORT/g" "$NGINX_CONF"
+    sed -i "s/\$STRFRY_HOST/$STRFRY_HOST/g" "$NGINX_CONF"
     sed -i "s/\$STRFRY_PORT/$STRFRY_PORT/g" "$NGINX_CONF"
 
     cp "$TRADITIONAL_DIR/templates/index.html" "$NGINX_DIR/root"

@@ -619,7 +619,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrderDetail'
+                $ref: '#/components/schemas/UpdateOrderResponse'
           description: ''
         '400':
           content:
@@ -1032,6 +1032,22 @@ components:
     BlankEnum:
       enum:
       - ''
+    CancelledOrderResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Order id
+        status:
+          type: integer
+          description: Order status
+        bad_request:
+          type: string
+          description: Reason for the failure
+      required:
+      - bad_request
+      - id
+      - status
     Chat:
       type: object
       properties:
@@ -2117,6 +2133,10 @@ components:
           - $ref: '#/components/schemas/NullEnum'
       required:
       - action
+    UpdateOrderResponse:
+      oneOf:
+      - $ref: '#/components/schemas/CancelledOrderResponse'
+      - $ref: '#/components/schemas/OrderDetail'
     Version:
       type: object
       properties:
