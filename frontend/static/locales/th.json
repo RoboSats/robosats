@@ -387,7 +387,6 @@
   "Alias already exists": "มีนามแฝงอยู่แล้ว",
   "Enabled": "เปิดการใช้งาน",
   "Invalid Onion URL": "URL ของ Onion ไม่ถูกต้อง",
-  "Invalid ratings have been filtered.": "การจัดอันดับที่ไม่ถูกต้องได้รับการกรอง",
   "No coordinators found.": "ไม่พบผู้ประสานงาน",
   "Rating": "การจัดอันดับ",
   "Reloading. Invalid ratings will be filtered.": "กำลังโหลดใหม่ การจัดอันดับที่ไม่ถูกต้องจะได้รับการกรอง",
