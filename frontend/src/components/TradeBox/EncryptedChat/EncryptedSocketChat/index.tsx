@@ -20,6 +20,7 @@ import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage, type ChatApiResponse } from '..';
+import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { type ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
 import { sha256 } from 'js-sha256';
 import { type Order } from '../../../../models';
@@ -88,6 +89,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
   const [uploading, setUploading] = useState<boolean>(false);
+  const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const processedMsgIndices = useRef<Set<number>>(new Set());
 
@@ -359,6 +361,23 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
   };
 
+  const clearFileInput = (): void => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAttachClick = (): void => {
+    setPrivacyWarningOpen(true);
+  };
+
+  const handlePrivacyDialogClose = (confirmed: boolean): void => {
+    setPrivacyWarningOpen(false);
+    if (confirmed) {
+      fileInputRef.current?.click();
+    }
+  };
+
   const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
@@ -500,12 +519,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   const maxSize = 10 * 1024 * 1024; // 10MB
                   if (file.size > maxSize) {
                     setError(t('File too large. Maximum size is 10MB.'));
-                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    clearFileInput();
                     return;
                   }
                   if (!file.type.startsWith('image/')) {
                     setError(t('Only image files are allowed.'));
-                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    clearFileInput();
                     return;
                   }
                   setUploading(true);
@@ -513,7 +532,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
                     .catch((err) => setError(String(err)))
                     .finally(() => {
                       setUploading(false);
-                      if (fileInputRef.current) fileInputRef.current.value = '';
+                      clearFileInput();
                     });
                 }
               }}
@@ -522,7 +541,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               <span>
                 <IconButton
                   disabled={!connected || uploading || peerPubKey === undefined}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handleAttachClick}
                   color='primary'
                 >
                   {uploading ? <CircularProgress size={24} /> : <AttachFile />}
@@ -544,6 +563,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
           </Typography>
         </form>
       </Grid>
+      <PrivacyWarningDialog open={privacyWarningOpen} onClose={handlePrivacyDialogClose} />
     </Grid>
   );
 };

@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect, useCallback, useRef } from 'rea
 import { useTranslation } from 'react-i18next';
 import { type Order } from '../../../models';
 import EncryptedApiChat from './EncryptedApiChat';
+import EncryptedNostrChat from './EncryptedNostrChat';
 import { type EventTemplate, type Event, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
@@ -356,6 +357,27 @@ const EncryptedChat: React.FC<Props> = ({
       setError(error instanceof Error ? error.message : 'File upload failed');
     }
   };
+
+  if (settings.connection === 'nostr') {
+    return (
+      <EncryptedNostrChat
+        messages={messages}
+        setMessages={setMessages}
+        onSendMessage={onSendMessage}
+        onSendFile={sendFileToNostr}
+        order={order}
+        takerNick={order.taker_nick}
+        takerHashId={order.taker_hash_id}
+        makerHashId={order.maker_hash_id}
+        peerPubKey={peerPubKey}
+        setPeerPubKey={setPeerPubKey}
+        error={error}
+        setError={setError}
+        lastIndex={lastIndex}
+        setLastIndex={setLastIndex}
+      />
+    );
+  }
 
   return settings.connection === 'api' ? (
     <EncryptedApiChat
