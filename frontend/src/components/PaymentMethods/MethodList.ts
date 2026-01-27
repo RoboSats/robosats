@@ -95,6 +95,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Binance Pay', icon: 'binance', reversible: false },
   { name: 'Wero', icon: 'wero', reversible: false },
   { name: 'SIPAP', icon: 'sipap', reversible: false },
+  { name: 'Doordash USA GiftCard', icon: 'doordashus', reversible: false },
 ];
 
 export const swapMethods: PaymentMethod[] = [
