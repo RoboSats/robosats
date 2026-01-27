@@ -12,6 +12,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { type EncryptedChatMessage } from '..';
+import ImageLightbox from '../ImageLightbox';
 
 interface Props {
   message: EncryptedChatMessage;
@@ -33,6 +34,7 @@ const MessageCard: React.FC<Props> = ({
   const [showPGP, setShowPGP] = useState<boolean>(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [openLightbox, setOpenLightbox] = useState<boolean>(false);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -96,12 +98,25 @@ const MessageCard: React.FC<Props> = ({
 
     if (imageUrl) {
       return (
-        <img
-          src={imageUrl}
-          alt={t('Encrypted image')}
-          style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '4px' }}
-          onError={() => setImageError(t('Failed to display image'))}
-        />
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <img
+            src={imageUrl}
+            alt={t('Encrypted image')}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '200px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+            onClick={() => setOpenLightbox(true)}
+            onError={() => setImageError(t('Failed to display image'))}
+          />
+          <ImageLightbox
+            open={openLightbox}
+            onClose={() => setOpenLightbox(false)}
+            imageUrl={imageUrl}
+          />
+        </div>
       );
     }
 
