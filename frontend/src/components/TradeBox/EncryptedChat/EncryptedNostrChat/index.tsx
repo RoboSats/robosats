@@ -11,6 +11,7 @@ import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ChatApiResponse } from '..';
+// import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import {
   type UseFederationStoreType,
   FederationContext,
@@ -26,7 +27,7 @@ interface Props {
   takerHashId: string;
   makerHashId: string;
   error: string;
-  lastIndex: number;
+  lastIndex?: number;
   messages: EncryptedChatMessage[];
   setMessages: Dispatch<SetStateAction<EncryptedChatMessage[]>>;
   onSendMessage: (content: string) => Promise<object | void>;
@@ -34,7 +35,7 @@ interface Props {
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
-  setLastIndex: Dispatch<SetStateAction<number>>;
+  setLastIndex?: Dispatch<SetStateAction<number>>;
 }
 
 const audioPath =
@@ -52,12 +53,15 @@ const EncryptedNostrChat: React.FC<Props> = ({
   error,
   lastIndex,
   setPeerPubKey,
+  // setMessages,
   onSendMessage,
   onSendFile,
   setError,
+  // setLastIndex,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  // const { notificationsUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -81,13 +85,56 @@ const EncryptedNostrChat: React.FC<Props> = ({
     }
   }, [messages, messageCount]);
 
+  // useEffect(() => {
+  //   const slot = garage.getSlot();
+  //   const nostrSecKey = slot?.nostrSecKey;
+  //   const nostrPubKey = slot?.getRobot()?.nostrPubKey;
+
+  //   if (nostrPubKey && nostrSecKey) {
+  //     setMessages(() => {
+  //       const robotNotifications = notifications[nostrPubKey] ?? [];
+  //       const chatMessages = robotNotifications
+  //         .values()
+  //         .filter(([_wrapedEvent, event]) => {
+  //           const pubKeysRefs = event.tags.filter((t) => t[0] === 'p');
+  //           const isChatMessage =
+  //             [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(event.pubkey) &&
+  //             pubKeysRefs.every((tag) =>
+  //               [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(tag[1]),
+  //             );
+
+  //           return isChatMessage;
+  //         })
+  //         .map(([wrapedEvent, event]) => {
+  //           const userNick =
+  //             event.pubkey === order.maker_nostr_pubkey ? order.maker_nick : order.taker_nick;
+  //           return {
+  //             index: event.created_at,
+  //             encryptedMessage: JSON.stringify(wrapedEvent),
+  //             plainTextMessage: event.content,
+  //             validSignature: true,
+  //             userNick: userNick,
+  //             time: new Date(event.created_at * 1000).toISOString(),
+  //           };
+  //         })
+  //         .toArray();
+
+  //       const sortedMessages = chatMessages.sort((a, b) => b.index - a.index);
+
+  //       setLastIndex(sortedMessages[0]?.index ?? 0);
+
+  //       return sortedMessages;
+  //     });
+  //   }
+  // }, [notificationsUpdatedAt]);
+
   const loadPeerPubKey: () => void = () => {
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
     if (!shortAlias) return;
 
     const url = federation.getCoordinator(shortAlias).url;
     apiClient
-      .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
+      .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex ?? 0}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
       .then((data: unknown) => {

@@ -373,8 +373,8 @@ const EncryptedChat: React.FC<Props> = ({
         setPeerPubKey={setPeerPubKey}
         error={error}
         setError={setError}
-        lastIndex={lastIndex}
-        setLastIndex={setLastIndex}
+        // lastIndex={lastIndex}
+        // setLastIndex={setLastIndex}
       />
     );
   }
