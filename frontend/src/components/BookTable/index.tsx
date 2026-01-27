@@ -117,6 +117,10 @@ const BookTable = ({
     });
   }, [defaultPageSize]);
 
+  useEffect(() => {
+    setPaymentMethods([]);
+  }, [fav.mode]);
+
   const localeText = useMemo(() => {
     return {
       noResultsOverlayLabel: t('No results found.'),
