@@ -89,6 +89,7 @@ class Robot {
   fetchReward = async (
     federation: Federation,
     signedInvoice: string,
+    routingBudgetPPM?: number,
   ): Promise<null | {
     bad_invoice?: string;
     successful_withdrawal?: boolean;
@@ -96,15 +97,14 @@ class Robot {
     if (!federation) return null;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    const body: { invoice: string; routing_budget_ppm?: number } = {
+      invoice: signedInvoice,
+    };
+    if (routingBudgetPPM !== undefined) {
+      body.routing_budget_ppm = routingBudgetPPM;
+    }
     const data = await apiClient
-      .post(
-        coordinator.url,
-        '/api/reward/',
-        {
-          invoice: signedInvoice,
-        },
-        { tokenSHA256: this.tokenSHA256 },
-      )
+      .post(coordinator.url, '/api/reward/', body, { tokenSHA256: this.tokenSHA256 })
       .catch((e) => {
         console.log(e);
       });
