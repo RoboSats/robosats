@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useCallback, useRef } from 'rea
 import { useTranslation } from 'react-i18next';
 import { type Order } from '../../../models';
 import EncryptedApiChat from './EncryptedApiChat';
-import EncryptedNostrChat from './EncryptedNostrChat';
+// import EncryptedNostrChat from './EncryptedNostrChat';
 import { type EventTemplate, type Event, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
@@ -73,9 +73,9 @@ const EncryptedChat: React.FC<Props> = ({
   const [lastIndex, setLastIndex] = useState<number>(0);
   const receivedEventIds = useRef<Set<string>>(new Set());
 
-  // for incoming Nostr events - only in Nostr mode
+  // for incoming Nostr events - receives already unwrapped events from FederationContext
   const handleNostrEvent = useCallback(
-    (event: Event) => {
+    (wrappedEventId: string, unwrappedEvent: Event) => {
       if (settings.connection === 'api') {
         return;
       }
@@ -83,19 +83,17 @@ const EncryptedChat: React.FC<Props> = ({
       const slot = garage.getSlot();
       if (!slot?.nostrSecKey) return;
 
-      if (receivedEventIds.current.has(event.id)) return;
+      if (receivedEventIds.current.has(wrappedEventId)) return;
 
       try {
-        const unwrapped = nip59.unwrapEvent(event, slot.nostrSecKey);
-        if (!unwrapped) return;
-
-        const orderIdTag = unwrapped.tags.find((t) => t[0] === 'order_id');
+        // Events already unwrapped by FederationContext
+        const orderIdTag = unwrappedEvent.tags.find((t) => t[0] === 'order_id');
         const expectedOrderId = `${order.shortAlias}/${order.id}`;
         if (orderIdTag?.[1] !== expectedOrderId) return;
 
-        receivedEventIds.current.add(event.id);
+        receivedEventIds.current.add(wrappedEventId);
 
-        const senderPubKey = unwrapped.pubkey;
+        const senderPubKey = unwrappedEvent.pubkey;
         const isSelf =
           senderPubKey === (order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey);
         const senderNick = isSelf
@@ -104,17 +102,17 @@ const EncryptedChat: React.FC<Props> = ({
             ? order.taker_nick
             : order.maker_nick;
 
-        if (unwrapped.kind === 15) {
-          const fileData = parseFileMessage(unwrapped);
+        if (unwrappedEvent.kind === 15) {
+          const fileData = parseFileMessage(unwrappedEvent);
           if (fileData) {
             const newMessage: EncryptedChatMessage = {
-              index: unwrapped.created_at + Math.random() * 0.001,
+              index: unwrappedEvent.created_at + Math.random() * 0.001,
               userNick: senderNick,
               validSignature: true,
               plainTextMessage: t('[Encrypted Image]'),
               fileMetadata: fileData,
-              encryptedMessage: JSON.stringify(unwrapped),
-              time: new Date(unwrapped.created_at * 1000).toLocaleTimeString(),
+              encryptedMessage: JSON.stringify(unwrappedEvent),
+              time: new Date(unwrappedEvent.created_at * 1000).toLocaleTimeString(),
             };
 
             setMessages((prev: EncryptedChatMessage[]) => {
@@ -127,24 +125,24 @@ const EncryptedChat: React.FC<Props> = ({
           }
         }
 
-        if (unwrapped.kind === 14) {
+        if (unwrappedEvent.kind === 14) {
           let fileMetadata: ParsedFileMessage | undefined;
-          let displayText = unwrapped.content;
+          let displayText = unwrappedEvent.content;
 
-          const imgMeta = parseImageMetadataJson(unwrapped.content);
+          const imgMeta = parseImageMetadataJson(unwrappedEvent.content);
           if (imgMeta) {
             fileMetadata = imgMeta;
             displayText = t('[Encrypted Image]');
           }
 
           const newMessage: EncryptedChatMessage = {
-            index: unwrapped.created_at + Math.random() * 0.001,
+            index: unwrappedEvent.created_at + Math.random() * 0.001,
             userNick: senderNick,
             validSignature: true,
             plainTextMessage: displayText,
             fileMetadata: fileMetadata,
-            encryptedMessage: JSON.stringify(unwrapped),
-            time: new Date(unwrapped.created_at * 1000).toLocaleTimeString(),
+            encryptedMessage: JSON.stringify(unwrappedEvent),
+            time: new Date(unwrappedEvent.created_at * 1000).toLocaleTimeString(),
           };
 
           setMessages((prev: EncryptedChatMessage[]) => {
@@ -154,7 +152,9 @@ const EncryptedChat: React.FC<Props> = ({
               );
               if (exists) return prev;
             } else {
-              const exists = prev.some((m) => m.encryptedMessage === JSON.stringify(unwrapped));
+              const exists = prev.some(
+                (m) => m.encryptedMessage === JSON.stringify(unwrappedEvent),
+              );
               if (exists) return prev;
             }
             return [...prev, newMessage].sort((a, b) => a.index - b.index);
@@ -171,12 +171,18 @@ const EncryptedChat: React.FC<Props> = ({
   handleNostrEventRef.current = handleNostrEvent;
 
   useEffect(() => {
-    Object.values(notifications).forEach((robotNotifications) => {
-      robotNotifications.forEach(([wrappedEvent]) => {
-        handleNostrEventRef.current(wrappedEvent);
-      });
+    // Filter by active robot's nostr pubkey
+    const slot = garage.getSlot();
+    const nostrPubKey = slot?.getRobot()?.nostrPubKey;
+    if (!nostrPubKey) return;
+
+    const robotNotifications = notifications[nostrPubKey];
+    if (!robotNotifications) return;
+
+    robotNotifications.forEach(([wrappedEvent, unwrappedEvent]) => {
+      handleNostrEventRef.current(wrappedEvent.id, unwrappedEvent);
     });
-  }, [notifications]);
+  }, [notifications, garage]);
 
   const onSendMessage = async (
     content: string,
@@ -358,26 +364,27 @@ const EncryptedChat: React.FC<Props> = ({
     }
   };
 
-  if (settings.connection === 'nostr') {
-    return (
-      <EncryptedNostrChat
-        messages={messages}
-        setMessages={setMessages}
-        onSendMessage={onSendMessage}
-        onSendFile={sendFileToNostr}
-        order={order}
-        takerNick={order.taker_nick}
-        takerHashId={order.taker_hash_id}
-        makerHashId={order.maker_hash_id}
-        peerPubKey={peerPubKey}
-        setPeerPubKey={setPeerPubKey}
-        error={error}
-        setError={setError}
-        // lastIndex={lastIndex}
-        // setLastIndex={setLastIndex}
-      />
-    );
-  }
+  // Disabled: Using EncryptedSocketChat for all non-API modes
+  // if (settings.connection === 'nostr') {
+  //   return (
+  //     <EncryptedNostrChat
+  //       messages={messages}
+  //       setMessages={setMessages}
+  //       onSendMessage={onSendMessage}
+  //       onSendFile={sendFileToNostr}
+  //       order={order}
+  //       takerNick={order.taker_nick}
+  //       takerHashId={order.taker_hash_id}
+  //       makerHashId={order.maker_hash_id}
+  //       peerPubKey={peerPubKey}
+  //       setPeerPubKey={setPeerPubKey}
+  //       error={error}
+  //       setError={setError}
+  //       // lastIndex={lastIndex}
+  //       // setLastIndex={setLastIndex}
+  //     />
+  //   );
+  // }
 
   return settings.connection === 'api' ? (
     <EncryptedApiChat
