@@ -64,7 +64,8 @@ const EncryptedChat: React.FC<Props> = ({
   peerPubKey,
   setPeerPubKey,
 }: Props): React.JSX.Element => {
-  const { settings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, slotUpdatedAt, notificationsUpdatedAt } =
+    useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation, notifications } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
@@ -182,7 +183,7 @@ const EncryptedChat: React.FC<Props> = ({
     robotNotifications.forEach(([wrappedEvent, unwrappedEvent]) => {
       handleNostrEventRef.current(wrappedEvent.id, unwrappedEvent);
     });
-  }, [notifications, garage]);
+  }, [notificationsUpdatedAt, slotUpdatedAt]);
 
   const onSendMessage = async (
     content: string,

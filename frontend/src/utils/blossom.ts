@@ -1,4 +1,5 @@
 import { finalizeEvent, type EventTemplate } from 'nostr-tools';
+import { apiClient } from '../services/api';
 
 export async function computeSha256(data: Uint8Array): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', data.slice().buffer);
@@ -36,21 +37,9 @@ export async function uploadToBlossom(
   nostrSecKey: Uint8Array,
 ): Promise<BlossomUploadResult> {
   const sha256 = await computeSha256(ciphertext);
-  const uploadUrl = `${coordinatorUrl}/blossom/upload`;
   const authToken = createAuthEvent(sha256, nostrSecKey);
 
-  const response = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Nostr ${authToken}`,
-      'Content-Type': 'application/octet-stream',
-    },
-    body: ciphertext.slice().buffer,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Blossom upload failed: ${response.status} ${response.statusText}`);
-  }
+  await apiClient.putBinary(coordinatorUrl, '/blossom/upload', ciphertext, `Nostr ${authToken}`);
 
   return {
     url: `${coordinatorUrl}/blossom/${sha256}`,
@@ -59,14 +48,16 @@ export async function uploadToBlossom(
 }
 
 export async function downloadFromBlossom(url: string): Promise<Uint8Array> {
-  const response = await fetch(url);
+  // Parse URL to get baseUrl and path
+  const urlObj = new URL(url);
+  const baseUrl = urlObj.origin;
+  const path = urlObj.pathname;
 
-  if (!response.ok) {
-    throw new Error(`Blossom download failed: ${response.status} ${response.statusText}`);
+  const data = await apiClient.getBinary(baseUrl, path);
+  if (!data) {
+    throw new Error('Blossom download failed');
   }
-
-  const buffer = await response.arrayBuffer();
-  return new Uint8Array(buffer);
+  return data;
 }
 
 export async function verifyBlobHash(data: Uint8Array, expectedSha256: string): Promise<boolean> {

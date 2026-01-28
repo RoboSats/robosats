@@ -38,7 +38,7 @@ class ApiAndroidClient implements ApiClient {
   };
 
   private async request(
-    method: 'GET' | 'POST' | 'DELETE',
+    method: 'GET' | 'POST' | 'DELETE' | 'PUT',
     baseUrl: string,
     path: string,
     headers: string,
@@ -96,6 +96,69 @@ class ApiAndroidClient implements ApiClient {
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
     return await this.request('GET', baseUrl, path, jsonHeaders);
+  };
+
+  public putBinary: (
+    baseUrl: string,
+    path: string,
+    data: Uint8Array,
+    authHeader?: string,
+  ) => Promise<object | undefined> = async (baseUrl, path, data, authHeader) => {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/octet-stream',
+      };
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+
+      // binary to base64 for Android bridge
+      const base64Data = btoa(String.fromCharCode.apply(null, Array.from(data)));
+
+      const result = await new Promise<string>((resolve, reject) => {
+        const uuid: string = uuidv4();
+        window.AndroidAppRobosats?.sendRequest(
+          uuid,
+          'PUT',
+          baseUrl + path,
+          JSON.stringify(headers),
+          base64Data,
+        );
+        window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+      });
+
+      return this.parseResponse(result);
+    } catch (error) {
+      console.error('Binary upload error:', error);
+      dispatchError('Binary upload failed! Please check your connection.');
+      throw error;
+    }
+  };
+
+  public getBinary: (baseUrl: string, path: string) => Promise<Uint8Array | undefined> = async (
+    baseUrl,
+    path,
+  ) => {
+    try {
+      const result = await new Promise<string>((resolve, reject) => {
+        const uuid: string = uuidv4();
+        window.AndroidAppRobosats?.sendRequest(uuid, 'GET', baseUrl + path, '{}', '');
+        window.AndroidRobosats?.storePromise(uuid, resolve, reject);
+      });
+
+      // Parse base64 response from Android bridge
+      const parsed = JSON.parse(result);
+      if (parsed.base64) {
+        return Uint8Array.from(atob(parsed.base64), (c) => c.charCodeAt(0));
+      }
+
+      const buffer = await (await fetch(baseUrl + path)).arrayBuffer();
+      return new Uint8Array(buffer);
+    } catch (error) {
+      console.error('Binary download error:', error);
+      dispatchError('Binary download failed! Please check your connection.');
+      throw error;
+    }
   };
 }
 

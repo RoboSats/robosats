@@ -87,6 +87,57 @@ class ApiWebClient implements ApiClient {
   ) => {
     return await this.request(baseUrl + path, { headers: this.getHeaders(auth) });
   };
-}
 
+  public putBinary: (
+    baseUrl: string,
+    path: string,
+    data: Uint8Array,
+    authHeader?: string,
+  ) => Promise<object> = async (baseUrl, path, data, authHeader) => {
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/octet-stream',
+      };
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+
+      const response = await fetch(baseUrl + path, {
+        method: 'PUT',
+        headers,
+        body: data.slice().buffer,
+      });
+
+      if (!response.ok) {
+        dispatchError(`Binary upload failed: ${response.status} ${response.statusText}`);
+        throw new Error(`Binary upload failed: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Binary upload error:', error);
+      throw error;
+    }
+  };
+
+  public getBinary: (baseUrl: string, path: string) => Promise<Uint8Array> = async (
+    baseUrl,
+    path,
+  ) => {
+    try {
+      const response = await fetch(baseUrl + path);
+
+      if (!response.ok) {
+        dispatchError(`Binary download failed: ${response.status} ${response.statusText}`);
+        throw new Error(`Binary download failed: ${response.status} ${response.statusText}`);
+      }
+
+      const buffer = await response.arrayBuffer();
+      return new Uint8Array(buffer);
+    } catch (error) {
+      console.error('Binary download error:', error);
+      throw error;
+    }
+  };
+}
 export default ApiWebClient;

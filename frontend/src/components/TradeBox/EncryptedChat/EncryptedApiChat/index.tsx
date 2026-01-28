@@ -5,8 +5,7 @@ import { decryptMessage } from '../../../../pgp';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
-import KeyIcon from '@mui/icons-material/Key';
-import { AttachFile } from '@mui/icons-material';
+import { AttachFile, Send } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
@@ -362,30 +361,9 @@ const EncryptedApiChat: React.FC<Props> = ({
               type='submit'
               variant='contained'
               color='primary'
-              fullWidth={true}
+              loading={waitingEcho}
             >
-              {waitingEcho ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    minWidth: '4.68em',
-                    width: '4.68em',
-                    position: 'relative',
-                    left: '1em',
-                  }}
-                >
-                  <div style={{ width: '1.2em' }}>
-                    <KeyIcon sx={{ width: '1em' }} />
-                  </div>
-                  <div style={{ width: '1em', position: 'relative', left: '0.5em' }}>
-                    <CircularProgress size={1.1 * theme.typography.fontSize} thickness={5} />
-                  </div>
-                </div>
-              ) : (
-                t('Send')
-              )}
+              <Send />
             </Button>
           </Grid>
           <Typography color='error' variant='caption'>
