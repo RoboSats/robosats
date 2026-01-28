@@ -23,7 +23,7 @@ interface AndroidAppRobosats {
   sendWsMessage: (uuid: string, path: string, message: string) => void;
   sendRequest: (
     uuid: string,
-    action: 'GET' | 'POST' | 'DELETE',
+    action: 'GET' | 'POST' | 'DELETE' | 'PUT',
     url: string,
     headers: string,
     body: string,
