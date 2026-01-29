@@ -144,7 +144,7 @@ const EncryptedApiChat: React.FC<Props> = ({
               const imgMeta = parseImageMetadataJson(displayText);
               if (imgMeta) {
                 fileMetadata = imgMeta;
-                displayText = t('[Encrypted Image]');
+                displayText = t('[Loading Encrypted Image]');
               }
 
               const message: EncryptedChatMessage = {

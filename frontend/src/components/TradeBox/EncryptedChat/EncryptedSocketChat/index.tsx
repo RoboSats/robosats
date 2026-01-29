@@ -45,7 +45,7 @@ interface Props {
   makerHashId: string;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, options: { skipCoordinator?: boolean }) => void;
   onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
@@ -207,7 +207,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               const imgMeta = parseImageMetadataJson(plainText);
               if (imgMeta) {
                 fileMetadata = imgMeta;
-                displayText = t('[Encrypted Image]');
+                displayText = t('[Loading Encrypted Image]');
               }
 
               const x: EncryptedChatMessage = {
@@ -224,39 +224,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
           });
         });
       }
-      // We allow plaintext communication. The user must write # to start
-      // If we receive an plaintext message
-      else if (dataFromServer.message.substring(0, 1) === '#') {
-        setMessages((prev: EncryptedChatMessage[]) => {
-          const existingMessage = prev.find(
-            (item) => item.plainTextMessage === dataFromServer.message,
-          );
-          if (existingMessage != null) {
-            return prev;
-          } else {
-            const plainText = dataFromServer.message;
-            let fileMetadata: ParsedFileMessage | undefined;
-            let displayText = plainText;
-
-            const imgMeta = parseImageMetadataJson(plainText);
-            if (imgMeta) {
-              fileMetadata = imgMeta;
-              displayText = t('[Encrypted Image]');
-            }
-
-            const x: EncryptedChatMessage = {
-              index: prev.length + 0.001,
-              encryptedMessage: dataFromServer.message,
-              plainTextMessage: displayText,
-              validSignature: false,
-              userNick: dataFromServer.user_nick,
-              time: new Date().toString(),
-              fileMetadata,
-            };
-            return [...prev, x].sort((a, b) => a.index - b.index);
-          }
-        });
-      }
     }
   };
 
@@ -269,25 +236,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
       );
       setValue('');
     }
-    // If input string contains '#' send unencrypted and unlogged message
-    else if (connection != null && value.substring(0, 1) === '#') {
-      onSendMessage(value);
-      connection.send(
-        JSON.stringify({
-          type: 'message',
-          message: value,
-          nick: userNick,
-        }),
-      );
-      setValue('');
-    }
-
     // Else if message is not empty send message
     else if (value !== '') {
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
-      onSendMessage(value);
+      onSendMessage(value, { skipCoordinator: true });
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
         .then((encryptedMessage) => {
           if (connection != null) {
