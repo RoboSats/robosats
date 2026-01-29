@@ -1,17 +1,14 @@
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState, useRef } from 'react';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography, IconButton, Tooltip } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography, Tooltip, IconButton } from '@mui/material';
 import { decryptMessage } from '../../../../pgp';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
-import { AttachFile, Send } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
-import { type EncryptedChatMessage, type ServerMessage, type ChatApiResponse } from '..';
-import PrivacyWarningDialog from '../PrivacyWarningDialog';
-import { type ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
+import { type EncryptedChatMessage, type ServerMessage } from '..';
 import { apiClient } from '../../../../services/api';
 import {
   type UseFederationStoreType,
@@ -20,6 +17,9 @@ import {
 import { type UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
 import { type Order } from '../../../../models';
 import getSettings from '../../../../utils/settings';
+import { AttachFile, Send } from '@mui/icons-material';
+import PrivacyWarningDialog from '../PrivacyWarningDialog';
+import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
 
 interface Props {
   order: Order;
@@ -31,13 +31,8 @@ interface Props {
   error: string;
   lastIndex: number;
   messages: EncryptedChatMessage[];
-  setMessages: (
-    state: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
-  ) => void;
-  onSendMessage: (
-    content: string,
-    options?: { skipCoordinator?: boolean },
-  ) => Promise<object | void>;
+  setMessages: (messages: EncryptedChatMessage[]) => void;
+  onSendMessage: (content: string) => Promise<object | void>;
   onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
@@ -82,11 +77,6 @@ const EncryptedApiChat: React.FC<Props> = ({
   const [uploading, setUploading] = useState<boolean>(false);
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const processedIndices = useRef<Set<number>>(new Set());
-
-  useEffect(() => {
-    messages.forEach((m) => processedIndices.current.add(m.index));
-  }, [messages]);
 
   useEffect(() => {
     if (messages.length > messageCount) {
@@ -96,12 +86,18 @@ const EncryptedApiChat: React.FC<Props> = ({
   }, [messages, messageCount]);
 
   useEffect(() => {
+    if (serverMessages.length > 0 && peerPubKey !== undefined) {
+      serverMessages.forEach(onMessage);
+    }
+  }, [serverMessages, peerPubKey]);
+
+  useEffect(() => {
     if (chatOffset === 0 || chatOffset > lastIndex) {
       loadMessages();
     }
   }, [chatOffset]);
 
-  const loadMessages = (): void => {
+  const loadMessages: () => void = () => {
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
 
     if (!shortAlias) return;
@@ -111,16 +107,11 @@ const EncryptedApiChat: React.FC<Props> = ({
       .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
-      .then((data: unknown) => {
-        const results = data as ChatApiResponse;
+      .then((results: object) => {
         if (results != null) {
-          if (results.peer_connected !== undefined) {
-            setPeerConnected(results.peer_connected);
-          }
-          if (results.peer_pubkey) {
-            setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
-          }
-          setServerMessages(results.messages ?? []);
+          setPeerConnected(results.peer_connected);
+          setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
+          setServerMessages(results.messages);
         }
       })
       .catch((error) => {
@@ -128,78 +119,80 @@ const EncryptedApiChat: React.FC<Props> = ({
       });
   };
 
-  useEffect(() => {
-    if (serverMessages.length === 0 || !peerPubKey) return;
-
+  const onMessage = (dataFromServer: ServerMessage): void => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
-    if (!slot || !robot) return;
-
-    const processBatch = async () => {
-      const newMessages: EncryptedChatMessage[] = [];
-      let maxIndex = lastIndex;
-      const tasks: Promise<void>[] = [];
-
-      for (const msg of serverMessages) {
-        if (processedIndices.current.has(msg.index)) continue;
-
-        processedIndices.current.add(msg.index);
-
-        if (typeof msg.message !== 'string') continue;
-        if (msg.message.substring(0, 27) !== `-----BEGIN PGP MESSAGE-----`) continue;
-
-        const task = decryptMessage(
-          msg.message.split('\\').join('\n'),
-          msg.nick === userNick ? robot.pubKey : peerPubKey,
+    if (slot && robot && dataFromServer != null) {
+      // If we receive an encrypted message
+      if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        void decryptMessage(
+          dataFromServer.message.split('\\').join('\n'),
+          dataFromServer.nick === userNick ? robot.pubKey : peerPubKey,
           robot.encPrivKey,
           slot.token,
-        )
-          .then((decryptedData) => {
-            maxIndex = Math.max(maxIndex, msg.index);
-
-            const plainText = decryptedData.decryptedMessage;
-            let fileMetadata: ParsedFileMessage | undefined;
-            let displayText = plainText;
-
-            const imgMeta = parseImageMetadataJson(plainText);
-            if (imgMeta) {
-              fileMetadata = imgMeta;
-              displayText = t('[Encrypted Image]');
-            }
-
-            newMessages.push({
-              index: msg.index,
-              encryptedMessage: msg.message.split('\\').join('\n'),
-              plainTextMessage: displayText,
-              fileMetadata,
-              validSignature: decryptedData.validSignature,
-              userNick: msg.nick,
-              time: msg.time,
-            });
-          })
-          .catch((err) => {
-            console.error('Failed to decrypt message', msg.index, err);
+        ).then((decryptedData) => {
+          setLastIndex((prev) => {
+            return prev < dataFromServer.index ? dataFromServer.index : prev;
           });
+          setMessages((prev: EncryptedChatMessage[]) => {
+            const existingMessage = prev.find((item) => item.index === dataFromServer.index);
+            if (existingMessage != null) {
+              return prev;
+            } else {
+              let fileMetadata: ParsedFileMessage | undefined;
+              let displayText = decryptedData.decryptedMessage;
+              const imgMeta = parseImageMetadataJson(displayText);
+              if (imgMeta) {
+                fileMetadata = imgMeta;
+                displayText = t('[Encrypted Image]');
+              }
 
-        tasks.push(task);
-      }
-
-      if (tasks.length === 0) return;
-
-      await Promise.all(tasks);
-
-      if (newMessages.length > 0) {
-        setMessages((prev: EncryptedChatMessage[]) => {
-          const uniqueNew = newMessages.filter((nm) => !prev.some((pm) => pm.index === nm.index));
-          if (uniqueNew.length === 0) return prev;
-          return [...prev, ...uniqueNew].sort((a, b) => a.index - b.index);
+              const message: EncryptedChatMessage = {
+                index: dataFromServer.index,
+                encryptedMessage: dataFromServer.message.split('\\').join('\n'),
+                plainTextMessage: displayText,
+                validSignature: decryptedData.validSignature,
+                userNick: dataFromServer.nick,
+                time: dataFromServer.time,
+                fileMetadata,
+              };
+              return [...prev, message].sort((a, b) => a.index - b.index);
+            }
+          });
         });
-        setLastIndex((prev) => Math.max(prev, maxIndex));
       }
-    };
+    }
+  };
 
-    void processBatch();
-  }, [serverMessages, peerPubKey]);
+  const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+
+    if (!robot) return;
+
+    if (slot?.token && value.includes(slot.token)) {
+      alert(
+        `Aye! You just sent your own robot robot.token  to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
+      );
+      setValue('');
+    } else {
+      setWaitingEcho(true);
+      onSendMessage(value)
+        .then((response) => {
+          if (response) {
+            setPeerConnected(response.peer_connected);
+            if (response.messages != null) {
+              setServerMessages(response.messages);
+            }
+          }
+        })
+        .finally(() => {
+          setWaitingEcho(false);
+          setValue('');
+        });
+    }
+    e.preventDefault();
+  };
 
   const clearFileInput = (): void => {
     if (fileInputRef.current) {
@@ -216,41 +209,6 @@ const EncryptedApiChat: React.FC<Props> = ({
     if (confirmed) {
       fileInputRef.current?.click();
     }
-  };
-
-  const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
-    const slot = garage.getSlot();
-    const robot = slot?.getRobot();
-
-    if (!robot) return;
-
-    if (slot?.token && value.includes(slot.token)) {
-      alert(
-        t(
-          "Aye! You just sent your own robot robot.token  to your peer in chat, that's a catastrophic idea! So bad your message was blocked.",
-        ),
-      );
-      setValue('');
-    } else {
-      setWaitingEcho(true);
-      onSendMessage(value)
-        .then((response) => {
-          if (response) {
-            const res = response as ChatApiResponse;
-            if (res.peer_connected !== undefined) {
-              setPeerConnected(res.peer_connected);
-            }
-            if (res.messages != null) {
-              setServerMessages(res.messages);
-            }
-          }
-        })
-        .finally(() => {
-          setWaitingEcho(false);
-          setValue('');
-        });
-    }
-    e.preventDefault();
   };
 
   return (
