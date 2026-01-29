@@ -88,7 +88,7 @@ class ApiWebClient implements ApiClient {
     return await this.request(baseUrl + path, { headers: this.getHeaders(auth) });
   };
 
-  public putBinary: (
+  public sendBinary: (
     baseUrl: string,
     path: string,
     data: Uint8Array,

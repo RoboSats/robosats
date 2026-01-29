@@ -478,8 +478,6 @@ class MainActivity : AppCompatActivity() {
 
         WebStorage.getInstance().deleteAllData()
 
-        stopNotifications()
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             CookieManager.getInstance().removeSessionCookies(null)
         }

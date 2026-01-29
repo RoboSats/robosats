@@ -20,6 +20,12 @@ import { type UseGarageStoreType, GarageContext } from '../../../../contexts/Gar
 import { type Order } from '../../../../models';
 import getSettings from '../../../../utils/settings';
 import { apiClient } from '../../../../services/api';
+import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import {
+  ParsedFileMessage,
+  parseFileMessage,
+  parseImageMetadataJson,
+} from '../../../../utils/nip17File';
 
 interface Props {
   order: Order;
@@ -35,7 +41,7 @@ interface Props {
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
-  setLastIndex?: Dispatch<SetStateAction<number>>;
+  setLastIndex: Dispatch<SetStateAction<number>>;
 }
 
 const audioPath =
@@ -53,16 +59,16 @@ const EncryptedNostrChat: React.FC<Props> = ({
   error,
   lastIndex,
   setPeerPubKey,
-  // setMessages,
+  setMessages,
   onSendMessage,
   onSendFile,
   setError,
-  // setLastIndex,
+  setLastIndex,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  // const { notificationsUpdatedAt } = useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { notificationsUpdatedAt, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
+  const { federation, notifications } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
@@ -85,48 +91,74 @@ const EncryptedNostrChat: React.FC<Props> = ({
     }
   }, [messages, messageCount]);
 
-  // useEffect(() => {
-  //   const slot = garage.getSlot();
-  //   const nostrSecKey = slot?.nostrSecKey;
-  //   const nostrPubKey = slot?.getRobot()?.nostrPubKey;
+  useEffect(() => {
+    const slot = garage.getSlot();
+    const nostrSecKey = slot?.nostrSecKey;
+    const nostrPubKey = slot?.getRobot()?.nostrPubKey;
 
-  //   if (nostrPubKey && nostrSecKey) {
-  //     setMessages(() => {
-  //       const robotNotifications = notifications[nostrPubKey] ?? [];
-  //       const chatMessages = robotNotifications
-  //         .values()
-  //         .filter(([_wrapedEvent, event]) => {
-  //           const pubKeysRefs = event.tags.filter((t) => t[0] === 'p');
-  //           const isChatMessage =
-  //             [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(event.pubkey) &&
-  //             pubKeysRefs.every((tag) =>
-  //               [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(tag[1]),
-  //             );
+    if (nostrPubKey && nostrSecKey) {
+      setMessages(() => {
+        const robotNotifications = notifications[nostrPubKey] ?? [];
+        const chatMessages = robotNotifications
+          .values()
+          .filter(([_wrapedEvent, event]) => {
+            const orderIdTag = event.tags.find((t) => t[0] === 'order_id');
+            const expectedOrderId = `${order.shortAlias}/${order.id}`;
+            const pubKeysRefs = event.tags.filter((t) => t[0] === 'p');
+            const isChatMessage =
+              [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(event.pubkey) &&
+              pubKeysRefs.every((tag) =>
+                [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(tag[1]),
+              ) &&
+              orderIdTag?.[1] !== expectedOrderId;
 
-  //           return isChatMessage;
-  //         })
-  //         .map(([wrapedEvent, event]) => {
-  //           const userNick =
-  //             event.pubkey === order.maker_nostr_pubkey ? order.maker_nick : order.taker_nick;
-  //           return {
-  //             index: event.created_at,
-  //             encryptedMessage: JSON.stringify(wrapedEvent),
-  //             plainTextMessage: event.content,
-  //             validSignature: true,
-  //             userNick: userNick,
-  //             time: new Date(event.created_at * 1000).toISOString(),
-  //           };
-  //         })
-  //         .toArray();
+            return isChatMessage;
+          })
+          .map(([wrapedEvent, event]) => {
+            const userNick =
+              event.pubkey === order.maker_nostr_pubkey ? order.maker_nick : order.taker_nick;
 
-  //       const sortedMessages = chatMessages.sort((a, b) => b.index - a.index);
+            let fileMetadata: ParsedFileMessage | undefined;
+            let displayText = event.content;
 
-  //       setLastIndex(sortedMessages[0]?.index ?? 0);
+            if (event.kind === 15) {
+              const fileData = parseFileMessage(event);
+              if (fileData) {
+                fileMetadata = fileData;
+                displayText = t('[Loading Encrypted Image]');
+              } else {
+                displayText = t('[Corrupted Image File]');
+              }
+            } else {
+              const imgMeta = parseImageMetadataJson(event.content);
+              if (imgMeta) {
+                fileMetadata = imgMeta;
+                displayText = t('[Loading Encrypted Image]');
+              } else {
+                displayText = t('[Corrupted Image File]');
+              }
+            }
 
-  //       return sortedMessages;
-  //     });
-  //   }
-  // }, [notificationsUpdatedAt]);
+            return {
+              index: event.created_at + Math.random() * 0.001,
+              encryptedMessage: JSON.stringify(wrapedEvent),
+              plainTextMessage: displayText,
+              validSignature: true,
+              fileMetadata: fileMetadata,
+              userNick: userNick,
+              time: new Date(event.created_at * 1000).toISOString(),
+            };
+          })
+          .toArray();
+
+        const sortedMessages = chatMessages.sort((a, b) => b.index - a.index);
+
+        setLastIndex(sortedMessages[0]?.index ?? 0);
+
+        return sortedMessages;
+      });
+    }
+  }, [notificationsUpdatedAt, slotUpdatedAt]);
 
   const loadPeerPubKey: () => void = () => {
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;

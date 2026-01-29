@@ -315,6 +315,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
           if (imgMeta) {
             fileMetadata = imgMeta;
             displayText = t('[Encrypted Image]');
+          } else {
+            displayText = t('[Corrupted Image File]');
           }
 
           setMessages((prev) => {

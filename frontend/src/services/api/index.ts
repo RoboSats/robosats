@@ -12,7 +12,7 @@ export interface ApiClient {
   put: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object | undefined>;
   get: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined>;
   delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined>;
-  putBinary: (
+  sendBinary: (
     baseUrl: string,
     path: string,
     data: Uint8Array,

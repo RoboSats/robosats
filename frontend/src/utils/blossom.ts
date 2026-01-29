@@ -39,7 +39,7 @@ export async function uploadToBlossom(
   const sha256 = await computeSha256(ciphertext);
   const authToken = createAuthEvent(sha256, nostrSecKey);
 
-  await apiClient.putBinary(coordinatorUrl, '/blossom/upload', ciphertext, `Nostr ${authToken}`);
+  await apiClient.sendBinary(coordinatorUrl, '/blossom/upload', ciphertext, `Nostr ${authToken}`);
 
   return {
     url: `${coordinatorUrl}/blossom/${sha256}`,
