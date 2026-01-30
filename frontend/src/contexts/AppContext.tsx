@@ -22,6 +22,8 @@ import makeTheme, { getWindowSize } from '../utils/theme';
 import getSettings from '../utils/settings';
 
 export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
+const BOOK_VIEW_FILTERS_KEY = "bookViewFilters_v1";
+
 
 export const closeAll: OpenDialogs = {
   more: false,
@@ -94,33 +96,48 @@ export interface UseAppStoreType {
   setNotificationsUpdatedAt: Dispatch<SetStateAction<string>>;
 }
 
+const defaultFav: Favorites = {
+  type: null,
+  currency: 0,
+  mode: 'fiat',
+  coordinator: 'robosats',
+};
+
 export const initialAppContext: UseAppStoreType = {
   theme: undefined,
   torStatus: 'ON',
   settings: getSettings(),
-  setSettings: () => {},
+  setSettings: () => { },
   page: entryPage,
-  navigateToPage: () => {},
+  navigateToPage: () => { },
   navbarHeight: 2.5,
   open: closeAll,
-  setOpen: () => {},
+  setOpen: () => { },
   windowSize: { width: 0, height: 0 },
   origin: getOrigin(),
   hostUrl: getHostUrl(),
   clientVersion: getClientVersion(),
-  setAcknowledgedWarning: () => {},
+  setAcknowledgedWarning: () => { },
   acknowledgedWarning: false,
-  fav: { type: null, currency: 0, mode: 'fiat', coordinator: 'robosats' },
-  setFav: () => {},
+  fav: (() => {
+    try {
+      const saved = localStorage.getItem(BOOK_VIEW_FILTERS_KEY);
+      return saved ? JSON.parse(saved) : defaultFav;
+    } catch {
+      return defaultFav;
+    }
+  })(),
+  setFav: () => { },
   client: 'web',
   view: 'basic',
   slotUpdatedAt: '',
-  setSlotUpdatedAt: () => {},
+  setSlotUpdatedAt: () => { },
   federationUpdatedAt: '',
-  setFederationUpdatedAt: () => {},
+  setFederationUpdatedAt: () => { },
   notificationsUpdatedAt: '',
-  setNotificationsUpdatedAt: () => {},
+  setNotificationsUpdatedAt: () => { },
 };
+
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
 
@@ -166,6 +183,14 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
       navigate(`/${newPage}`);
     }
   };
+
+  useEffect(() => {
+    localStorage.setItem(
+      BOOK_VIEW_FILTERS_KEY,
+      JSON.stringify(fav),
+    );
+  }, [fav]);
+
 
   useEffect(() => {
     setTheme(makeTheme(settings));
