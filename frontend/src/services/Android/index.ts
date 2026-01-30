@@ -28,6 +28,8 @@ interface AndroidAppRobosats {
     headers: string,
     body: string,
   ) => void;
+  sendBinary: (uuid: string, url: string, headers: string, base64Data: string) => void;
+  getBinary: (uuid: string, url: string) => void;
   restart: () => void;
 }
 

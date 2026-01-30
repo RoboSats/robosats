@@ -88,12 +88,12 @@ class ApiWebClient implements ApiClient {
     return await this.request(baseUrl + path, { headers: this.getHeaders(auth) });
   };
 
-  public putBinary: (
+  public sendBinary: (
     baseUrl: string,
     path: string,
     data: Uint8Array,
     authHeader?: string,
-  ) => Promise<object> = async (baseUrl, path, data, authHeader) => {
+  ) => Promise<string> = async (baseUrl, path, data, authHeader) => {
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/octet-stream',

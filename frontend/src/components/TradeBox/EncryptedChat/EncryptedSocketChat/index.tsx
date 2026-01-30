@@ -6,22 +6,19 @@ import {
   Grid,
   Paper,
   Typography,
+  Tooltip,
   IconButton,
   CircularProgress,
-  Tooltip,
 } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
-import { apiClient } from '../../../../services/api';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
-import { type EncryptedChatMessage, type ServerMessage, type ChatApiResponse } from '..';
-import PrivacyWarningDialog from '../PrivacyWarningDialog';
-import { type ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
+import { type EncryptedChatMessage, type ServerMessage } from '..';
 import { sha256 } from 'js-sha256';
 import { type Order } from '../../../../models';
 import {
@@ -29,8 +26,10 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import getSettings from '../../../../utils/settings';
-import { Send, AttachFile } from '@mui/icons-material';
+import { AttachFile, Send } from '@mui/icons-material';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import PrivacyWarningDialog from '../PrivacyWarningDialog';
+import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
 
 const audioPath =
   getSettings().client == 'mobile'
@@ -45,13 +44,8 @@ interface Props {
   takerHashId: string;
   makerHashId: string;
   messages: EncryptedChatMessage[];
-  setMessages: (
-    state: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
-  ) => void;
-  onSendMessage: (
-    content: string,
-    options?: { skipCoordinator?: boolean },
-  ) => Promise<object | void>;
+  setMessages: (messages: EncryptedChatMessage[]) => void;
+  onSendMessage: (content: string, options: { skipCoordinator?: boolean }) => void;
   onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
@@ -73,7 +67,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { slotUpdatedAt, settings } = useContext<UseAppStoreType>(AppContext);
+  const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -88,10 +82,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [messageCount, setMessageCount] = useState<number>(0);
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
+  const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState<boolean>(false);
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const processedMsgIndices = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     if (!connected && Boolean(garage.getSlot()?.hashId)) {
@@ -106,10 +100,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
       setConnection(undefined);
     }
   }, [status]);
-
-  useEffect(() => {
-    loadHistoryFromApi();
-  }, []);
 
   useLayoutEffect(() => {
     // On component unmount close reconnecting-websockets
@@ -127,22 +117,9 @@ const EncryptedSocketChat: React.FC<Props> = ({
   }, [messages, messageCount]);
 
   useEffect(() => {
-    if (serverMessages.length === 0) return;
-
-    const newMessages = serverMessages.filter((msg) => !processedMsgIndices.current.has(msg.index));
-
-    if (newMessages.length === 0) {
-      setServerMessages([]);
-      return;
+    if (serverMessages.length > 0) {
+      serverMessages.forEach(onMessage);
     }
-
-    newMessages.forEach((msg) => processedMsgIndices.current.add(msg.index));
-
-    newMessages.forEach((msg) => {
-      onMessage({ data: JSON.stringify(msg) });
-    });
-
-    setServerMessages([]);
   }, [serverMessages]);
 
   const connectWebsocket = (): void => {
@@ -187,97 +164,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
       });
   };
 
-  const loadHistoryFromApi = (): void => {
-    const slot = garage.getSlot();
-    const robot = slot?.getRobot();
-    const coordinator = federation.getCoordinator(order.shortAlias);
-
-    if (!slot?.token || !robot || !coordinator) return;
-
-    apiClient
-      .get(coordinator.url, `/api/chat/?order_id=${order.id}&offset=0`, {
-        tokenSHA256: robot?.tokenSHA256 ?? '',
-      })
-      .then((data: unknown) => {
-        const results = data as ChatApiResponse;
-        if (results != null) {
-          if (results.peer_pubkey) {
-            setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
-          }
-          if (results.peer_connected !== undefined) {
-            setPeerConnected(results.peer_connected);
-          }
-
-          if (results.messages && Array.isArray(results.messages)) {
-            results.messages.forEach((msg: ServerMessage) => {
-              if (receivedIndexes.includes(msg.index)) return;
-              if (typeof msg.message !== 'string') return;
-
-              if (msg.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
-                setReceivedIndexes((prev) => [...prev, msg.index]);
-
-                const effectivePeerPubKey =
-                  peerPubKey ||
-                  (results.peer_pubkey ? results.peer_pubkey.split('\\').join('\n') : undefined);
-                if (!effectivePeerPubKey) {
-                  console.warn('Cannot decrypt message: peerPubKey not available');
-                  return;
-                }
-
-                void decryptMessage(
-                  msg.message.split('\\').join('\n'),
-                  msg.nick === userNick ? robot.pubKey : effectivePeerPubKey,
-                  robot.encPrivKey,
-                  slot.token,
-                ).then((decryptedData) => {
-                  let fileMetadata: ParsedFileMessage | undefined;
-                  let displayText = String(decryptedData.decryptedMessage);
-
-                  const imgMeta = parseImageMetadataJson(displayText);
-                  if (imgMeta) {
-                    fileMetadata = imgMeta;
-                    displayText = t('[Encrypted Image]');
-                  }
-
-                  setMessages((prev: EncryptedChatMessage[]) => {
-                    const existingMessage = prev.find(
-                      (item: EncryptedChatMessage) => item.index === msg.index,
-                    );
-                    if (existingMessage != null) return prev;
-
-                    const x: EncryptedChatMessage = {
-                      index: msg.index,
-                      encryptedMessage: msg.message.split('\\').join('\n'),
-                      plainTextMessage: displayText,
-                      fileMetadata,
-                      validSignature: decryptedData.validSignature,
-                      userNick: msg.nick,
-                      time: msg.time,
-                    };
-                    return [...prev, x].sort((a, b) => a.index - b.index);
-                  });
-                });
-              }
-            });
-          }
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to load history from API:', err);
-      });
-  };
-
-  const onMessage = (message: { data: string }): void => {
+  const onMessage: (message: object) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
-    if (!robot) return;
     if (dataFromServer != null && !receivedIndexes.includes(dataFromServer.index)) {
       setReceivedIndexes((prev) => [...prev, dataFromServer.index]);
       setPeerConnected(dataFromServer.peer_connected);
-
-      if (typeof dataFromServer.message !== 'string') return;
-
       // If we receive a public key other than ours (our peer key!)
       if (
         connection != null &&
@@ -295,10 +188,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
       }
       // If we receive an encrypted message
       else if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
-        if (settings.connection === 'nostr') {
-          return;
-        }
-        if (!slot || !peerPubKey) return;
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
           dataFromServer.user_nick === userNick ? robot.pubKey : peerPubKey,
@@ -307,58 +196,73 @@ const EncryptedSocketChat: React.FC<Props> = ({
         ).then((decryptedData) => {
           setWaitingEcho(waitingEcho ? decryptedData.decryptedMessage !== lastSent : false);
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
-
-          let fileMetadata: ParsedFileMessage | undefined;
-          let displayText = String(decryptedData.decryptedMessage);
-
-          const imgMeta = parseImageMetadataJson(displayText);
-          if (imgMeta) {
-            fileMetadata = imgMeta;
-            displayText = t('[Encrypted Image]');
-          }
-
           setMessages((prev) => {
             const existingMessage = prev.find((item) => item.index === dataFromServer.index);
             if (existingMessage != null) {
               return prev;
             } else {
-              const x: EncryptedChatMessage = {
+              const plainText = String(decryptedData.decryptedMessage);
+              let fileMetadata: ParsedFileMessage | undefined;
+
+              let x: EncryptedChatMessage = {
                 index: dataFromServer.index,
                 encryptedMessage: dataFromServer.message.split('\\').join('\n'),
-                plainTextMessage: displayText,
-                fileMetadata,
+                plainTextMessage: plainText,
                 validSignature: decryptedData.validSignature,
                 userNick: dataFromServer.user_nick,
                 time: dataFromServer.time,
+                fileMetadata,
               };
+
+              const imgMeta = parseImageMetadataJson(plainText);
+              if (imgMeta) {
+                x = {
+                  ...x,
+                  plainTextMessage: t('[Loading Encrypted Image]'),
+                  fileMetadata: imgMeta,
+                };
+              }
+
               return [...prev, x].sort((a, b) => a.index - b.index);
             }
           });
         });
       }
-      // We allow plaintext communication. The user must write # to start
-      // If we receive an plaintext message
-      else if (dataFromServer.message.substring(0, 1) === '#') {
-        setMessages((prev: EncryptedChatMessage[]) => {
-          const existingMessage = prev.find(
-            (item: EncryptedChatMessage) => item.plainTextMessage === dataFromServer.message,
-          );
-          if (existingMessage != null) {
-            return prev;
-          } else {
-            const x: EncryptedChatMessage = {
-              index: prev.length + 0.001,
-              encryptedMessage: dataFromServer.message,
-              plainTextMessage: dataFromServer.message,
-              validSignature: false,
-              userNick: dataFromServer.user_nick,
-              time: new Date().toString(),
-            };
-            return [...prev, x].sort((a, b) => a.index - b.index);
-          }
-        });
-      }
     }
+  };
+
+  const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
+    if (slot?.token !== undefined && value.includes(slot.token)) {
+      alert(
+        `Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
+      );
+      setValue('');
+    }
+    // Else if message is not empty send message
+    else if (value !== '') {
+      setValue('');
+      setWaitingEcho(true);
+      setLastSent(value);
+      onSendMessage(value, { skipCoordinator: true });
+      encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
+        .then((encryptedMessage) => {
+          if (connection != null) {
+            connection.send(
+              JSON.stringify({
+                type: 'message',
+                message: String(encryptedMessage).split('\n').join('\\'),
+                nick: userNick,
+              }),
+            );
+          }
+        })
+        .catch((error) => {
+          setError(error.toString());
+        });
+    }
+    e.preventDefault();
   };
 
   const clearFileInput = (): void => {
@@ -368,81 +272,55 @@ const EncryptedSocketChat: React.FC<Props> = ({
   };
 
   const handleAttachClick = (): void => {
+    // Clear any previous errors
+    setError('');
     setPrivacyWarningOpen(true);
   };
 
   const handlePrivacyDialogClose = (confirmed: boolean): void => {
     setPrivacyWarningOpen(false);
     if (confirmed) {
+      // Trigger file input click - works on both web and Android (with native implementation)
       fileInputRef.current?.click();
     }
   };
 
-  const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
-    const slot = garage.getSlot();
-    const robot = slot?.getRobot();
-    if (slot?.token !== undefined && value.includes(slot.token)) {
-      alert(
-        t(
-          "Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.",
-        ),
-      );
-      setValue('');
-    }
-    // If input string contains '#' send unencrypted and unlogged message
-    else if (connection != null && value.substring(0, 1) === '#') {
-      onSendMessage(value);
-      connection.send(
-        JSON.stringify({
-          type: 'message',
-          message: value,
-          nick: userNick,
-        }),
-      );
-      setValue('');
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      // User cancelled file selection
+      clearFileInput();
+      return;
     }
 
-    // Else if message is not empty send message
-    else if (value !== '') {
-      setValue('');
-
-      if (settings.connection === 'nostr') {
-        setWaitingEcho(true);
-        onSendMessage(value)
-          .then(() => {
-            setTimeout(() => setWaitingEcho(false), 300);
-          })
-          .catch((error) => {
-            setWaitingEcho(false);
-            setError(error?.toString() || 'Failed to send message');
-          });
-      } else {
-        if (!robot || !peerPubKey || !slot?.token) {
-          setError('Missing required data for encryption');
-          return;
-        }
-        setWaitingEcho(true);
-        setLastSent(value);
-        onSendMessage(value, { skipCoordinator: true });
-        encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
-          .then((encryptedMessage) => {
-            if (connection != null) {
-              connection.send(
-                JSON.stringify({
-                  type: 'message',
-                  message: String(encryptedMessage).split('\n').join('\\'),
-                  nick: userNick,
-                }),
-              );
-            }
-          })
-          .catch((error) => {
-            setWaitingEcho(false);
-            setError(error.toString());
-          });
-      }
+    // Validate file size
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      setError(t('File too large. Maximum size is 10MB.'));
+      clearFileInput();
+      return;
     }
-    e.preventDefault();
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError(t('Only image files are allowed.'));
+      clearFileInput();
+      return;
+    }
+
+    // File is valid, proceed with upload
+    setError(''); // Clear any previous errors
+    setUploading(true);
+    onSendFile(file)
+      .catch((err) => {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setError(errorMessage);
+        console.error('File upload error:', err);
+      })
+      .finally(() => {
+        setUploading(false);
+        clearFileInput();
+      });
   };
 
   return (
@@ -478,6 +356,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   takerNick={takerNick}
                   takerHashId={takerHashId}
                   makerHashId={makerHashId}
+                  imageUrls={imageUrls}
+                  setImageUrls={setImageUrls}
                 />
               </li>
             );
@@ -513,34 +393,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
               ref={fileInputRef}
               style={{ display: 'none' }}
               accept='image/*'
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const maxSize = 10 * 1024 * 1024; // 10MB
-                  if (file.size > maxSize) {
-                    setError(t('File too large. Maximum size is 10MB.'));
-                    clearFileInput();
-                    return;
-                  }
-                  if (!file.type.startsWith('image/')) {
-                    setError(t('Only image files are allowed.'));
-                    clearFileInput();
-                    return;
-                  }
-                  setUploading(true);
-                  onSendFile(file)
-                    .catch((err) => setError(String(err)))
-                    .finally(() => {
-                      setUploading(false);
-                      clearFileInput();
-                    });
-                }
-              }}
+              onChange={handleFileChange}
             />
             <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
               <span>
                 <IconButton
-                  disabled={!connected || uploading || peerPubKey === undefined}
+                  disabled={uploading || peerPubKey === undefined}
                   onClick={handleAttachClick}
                   color='primary'
                 >

@@ -10,7 +10,6 @@ import { decryptFile } from '../../../../utils/crypto/xchacha20';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import { type EncryptedChatMessage } from '..';
 import ImageLightbox from '../ImageLightbox';
 
@@ -21,6 +20,8 @@ interface Props {
   makerHashId: string;
   isTaker: boolean;
   userConnected?: boolean;
+  imageUrls: Record<number, string>;
+  setImageUrls: (imageUrls: Record<number, string>) => Record<number, string>;
 }
 
 const MessageCard: React.FC<Props> = ({
@@ -30,9 +31,9 @@ const MessageCard: React.FC<Props> = ({
   takerNick,
   takerHashId,
   makerHashId,
+  imageUrls,
+  setImageUrls,
 }) => {
-  const [showPGP, setShowPGP] = useState<boolean>(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [openLightbox, setOpenLightbox] = useState<boolean>(false);
   const { t } = useTranslation();
@@ -45,14 +46,14 @@ const MessageCard: React.FC<Props> = ({
   useEffect(() => {
     // Cleanup blob URL on unmount
     return () => {
-      if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
+      if (imageUrls[message.index]) {
+        URL.revokeObjectURL(imageUrls[message.index]);
       }
     };
-  }, [imageUrl]);
+  }, [imageUrls[message.index]]);
 
   const handleImageLoad = async () => {
-    if (!message.fileMetadata || imageUrl || imageError) return;
+    if (imageUrls[message.index] || !message.fileMetadata || imageError) return;
 
     try {
       const fileData = message.fileMetadata;
@@ -72,7 +73,11 @@ const MessageCard: React.FC<Props> = ({
       const plaintext = await decryptFile(ciphertext, fileData.key, fileData.nonce);
       const blob = new Blob([plaintext], { type: fileData.mimeType });
       const url = URL.createObjectURL(blob);
-      setImageUrl(url);
+
+      setImageUrls((urls) => {
+        urls[message.index] = url;
+        return urls;
+      });
     } catch (error) {
       console.error('Failed to load image:', error);
       setImageError(t('Failed to decrypt image'));
@@ -86,21 +91,11 @@ const MessageCard: React.FC<Props> = ({
   }, [message.fileMetadata]);
 
   const renderMessageContent = () => {
-    if (showPGP) {
-      return (
-        <a>
-          {' '}
-          {message.time} <br /> {`Valid signature:  ${String(message.validSignature)}`} <br />{' '}
-          {message.encryptedMessage}{' '}
-        </a>
-      );
-    }
-
-    if (imageUrl) {
+    if (imageUrls[message.index]) {
       return (
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <img
-            src={imageUrl}
+            src={imageUrls[message.index]}
             alt={t('Encrypted image')}
             style={{
               maxWidth: '100%',
@@ -114,7 +109,7 @@ const MessageCard: React.FC<Props> = ({
           <ImageLightbox
             open={openLightbox}
             onClose={() => setOpenLightbox(false)}
-            imageUrl={imageUrl}
+            imageUrl={imageUrls[message.index]}
           />
         </div>
       );
@@ -188,43 +183,26 @@ const MessageCard: React.FC<Props> = ({
                   <CloseIcon sx={{ height: '0.8em' }} color='error' />
                 )}
               </div>
-              <div style={{ width: '1.4em' }}>
-                <IconButton
-                  sx={{ height: '1.2em', width: '1.2em', position: 'relative', right: '0.15em' }}
-                  onClick={() => {
-                    setShowPGP(!showPGP);
-                  }}
-                >
-                  <VisibilityIcon
-                    color={showPGP ? 'primary' : 'inherit'}
-                    sx={{
-                      height: '0.6em',
-                      width: '0.6em',
-                      color: showPGP ? 'primary' : theme.palette.text.secondary,
-                    }}
-                  />
-                </IconButton>
-              </div>
-              <div style={{ width: '1.4em' }}>
-                <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-                  <IconButton
-                    sx={{ height: '0.8em', width: '0.8em' }}
-                    onClick={() => {
-                      systemClient.copyToClipboard(
-                        showPGP ? message.encryptedMessage : message.plainTextMessage,
-                      );
-                    }}
-                  >
-                    <ContentCopy
-                      sx={{
-                        height: '0.7em',
-                        width: '0.7em',
-                        color: theme.palette.text.secondary,
+              {!imageUrls[message.index] && (
+                <div style={{ width: '1.4em' }}>
+                  <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+                    <IconButton
+                      sx={{ height: '0.8em', width: '0.8em' }}
+                      onClick={() => {
+                        systemClient.copyToClipboard(message.plainTextMessage);
                       }}
-                    />
-                  </IconButton>
-                </Tooltip>
-              </div>
+                    >
+                      <ContentCopy
+                        sx={{
+                          height: '0.7em',
+                          width: '0.7em',
+                          color: theme.palette.text.secondary,
+                        }}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              )}
             </div>
           </Tooltip>
         }
@@ -234,7 +212,6 @@ const MessageCard: React.FC<Props> = ({
             wordWrap: 'break-word',
             width: '13em',
             textAlign: 'left',
-            fontSize: showPGP ? theme.typography.fontSize * 0.78 : null,
           },
         }}
       />

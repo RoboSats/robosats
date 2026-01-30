@@ -41,7 +41,7 @@ class ApiAndroidClient implements ApiClient {
     method: 'GET' | 'POST' | 'DELETE' | 'PUT',
     baseUrl: string,
     path: string,
-    headers: string,
+    headers: string = '{}',
     body: string = '',
   ): Promise<object> {
     try {
@@ -98,28 +98,28 @@ class ApiAndroidClient implements ApiClient {
     return await this.request('GET', baseUrl, path, jsonHeaders);
   };
 
-  public putBinary: (
+  public sendBinary: (
     baseUrl: string,
     path: string,
     data: Uint8Array,
-    authHeader?: string,
-  ) => Promise<object | undefined> = async (baseUrl, path, data, authHeader) => {
+    nostrAuthHeader?: string,
+  ) => Promise<string | undefined> = async (baseUrl, path, data, nostrAuthHeader) => {
     try {
       const headers: Record<string, string> = {
         'Content-Type': 'application/octet-stream',
       };
-      if (authHeader) {
-        headers['Authorization'] = authHeader;
+      if (nostrAuthHeader) {
+        headers['Authorization'] = nostrAuthHeader;
       }
 
       // binary to base64 for Android bridge
       const base64Data = btoa(String.fromCharCode.apply(null, Array.from(data)));
 
+      // Use dedicated sendBinary method for binary uploads
       const result = await new Promise<string>((resolve, reject) => {
         const uuid: string = uuidv4();
-        window.AndroidAppRobosats?.sendRequest(
+        window.AndroidAppRobosats?.sendBinary(
           uuid,
-          'PUT',
           baseUrl + path,
           JSON.stringify(headers),
           base64Data,
@@ -127,7 +127,7 @@ class ApiAndroidClient implements ApiClient {
         window.AndroidRobosats?.storePromise(uuid, resolve, reject);
       });
 
-      return this.parseResponse(result);
+      return result;
     } catch (error) {
       console.error('Binary upload error:', error);
       dispatchError('Binary upload failed! Please check your connection.');
@@ -140,20 +140,19 @@ class ApiAndroidClient implements ApiClient {
     path,
   ) => {
     try {
-      const result = await new Promise<string>((resolve, reject) => {
+      const response = await new Promise<string>((resolve, reject) => {
         const uuid: string = uuidv4();
-        window.AndroidAppRobosats?.sendRequest(uuid, 'GET', baseUrl + path, '{}', '');
+        window.AndroidAppRobosats?.getBinary(uuid, baseUrl + path);
         window.AndroidRobosats?.storePromise(uuid, resolve, reject);
       });
 
-      // Parse base64 response from Android bridge
-      const parsed = JSON.parse(result);
-      if (parsed.base64) {
-        return Uint8Array.from(atob(parsed.base64), (c) => c.charCodeAt(0));
+      // Decode base64 string to Uint8Array
+      const binaryString = atob(response);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
-
-      const buffer = await (await fetch(baseUrl + path)).arrayBuffer();
-      return new Uint8Array(buffer);
+      return bytes;
     } catch (error) {
       console.error('Binary download error:', error);
       dispatchError('Binary download failed! Please check your connection.');

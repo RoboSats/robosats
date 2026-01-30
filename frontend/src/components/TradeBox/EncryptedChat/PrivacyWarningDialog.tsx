@@ -24,7 +24,7 @@ const PrivacyWarningDialog: React.FC<Props> = ({ open, onClose }) => {
       aria-labelledby='privacy-dialog-title'
       aria-describedby='privacy-dialog-description'
     >
-      <DialogTitle id='privacy-dialog-title'>{t('Warning: Sensitive Data')}</DialogTitle>
+      <DialogTitle id='privacy-dialog-title'>{t('Sensitive Data')}</DialogTitle>
       <DialogContent>
         <DialogContentText id='privacy-dialog-description'>
           {t(
@@ -37,7 +37,7 @@ const PrivacyWarningDialog: React.FC<Props> = ({ open, onClose }) => {
           {t('Cancel')}
         </Button>
         <Button onClick={() => onClose(true)} color='primary' autoFocus>
-          {t('I Understand')}
+          {t('Acknowledged')}
         </Button>
       </DialogActions>
     </Dialog>
