@@ -24,6 +24,7 @@ import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { DeleteRobotConfirmationDialog } from '../../components/Dialogs';
+import useLegacyMode from '../../hooks/useLegacyMode';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -46,6 +47,7 @@ const RobotProfile = ({
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
+  const { isLegacyMode, legacyDisabledTooltip } = useLegacyMode();
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -341,15 +343,20 @@ const RobotProfile = ({
 
             <Grid item container direction='row' justifyContent='space-between' width='100%'>
               <Grid item>
-                <LoadingButton
-                  loading={loading}
-                  color='primary'
-                  onClick={handleAddRobot}
-                  size='large'
-                >
-                  <Add />
-                  {!mobileView && t('Add Robot')}
-                </LoadingButton>
+                <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
+                  <span>
+                    <LoadingButton
+                      loading={loading}
+                      color='primary'
+                      disabled={isLegacyMode}
+                      onClick={handleAddRobot}
+                      size='large'
+                    >
+                      <Add />
+                      {!mobileView && t('Add Robot')}
+                    </LoadingButton>
+                  </span>
+                </Tooltip>
               </Grid>
               <Grid item>
                 <Button
