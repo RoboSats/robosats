@@ -17,7 +17,7 @@ export interface ApiClient {
     path: string,
     data: Uint8Array,
     authHeader?: string,
-  ) => Promise<object | undefined>;
+  ) => Promise<string | undefined>;
   getBinary: (baseUrl: string, path: string) => Promise<Uint8Array | undefined>;
 }
 

@@ -298,9 +298,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
                             headersJson.put(name, response.header(name))
                         }
 
-                        // Return response as JSON string
-                        val result = "{\"json\":$responseBody, \"headers\": $headersJson}"
-                        resolvePromise(uuid, result)
+                        resolvePromise(uuid, responseBody)
                     } catch (e: Exception) {
                         Log.e(TAG, "Error processing response", e)
                         rejectPromise(uuid, "Error processing response: ${e.message}")
@@ -310,6 +308,58 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         } catch (e: Exception) {
             Log.e(TAG, "Error in sendBinary", e)
             rejectPromise(uuid, "Error sending binary data: ${e.message}")
+        }
+    }
+
+    @JavascriptInterface
+    fun getBinary(uuid: String, url: String) {
+        // Validate inputs
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for getBinary: $uuid")
+            rejectPromise(uuid, "Invalid UUID")
+            return
+        }
+
+        try {
+            // Create OkHttpClient
+            var builder = Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
+                .readTimeout(120, TimeUnit.SECONDS) // Set read timeout
+
+            if (context.useProxy) {
+                builder = builder.proxy(getTorKmpObject().proxy)
+            }
+
+            val client = builder.build()
+
+            // Build request with URL
+            val request = RequestBuilder().url(url).build()
+
+            // Execute request
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.d("RobosatsError", e.toString())
+                    rejectPromise(uuid, "Binary download failed: ${e.message}")
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        // Get response body as bytes
+                        val binaryData = response.body.bytes()
+
+                        // Encode to base64 for JavaScript bridge
+                        val base64Data = android.util.Base64.encodeToString(binaryData, android.util.Base64.NO_WRAP)
+
+                        resolvePromise(uuid, base64Data)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error processing binary response", e)
+                        rejectPromise(uuid, "Error processing binary response: ${e.message}")
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in getBinary", e)
+            rejectPromise(uuid, "Error downloading binary data: ${e.message}")
         }
     }
 
@@ -381,7 +431,6 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
                             headersJson.put(name, response.header(name))
                         }
 
-                        // Return response as JSON string
                         val result = "{\"json\":$responseBody, \"headers\": $headersJson}"
                         resolvePromise(uuid, result)
                     } catch (e: Exception) {

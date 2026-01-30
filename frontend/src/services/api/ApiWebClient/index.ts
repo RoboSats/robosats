@@ -93,7 +93,7 @@ class ApiWebClient implements ApiClient {
     path: string,
     data: Uint8Array,
     authHeader?: string,
-  ) => Promise<object> = async (baseUrl, path, data, authHeader) => {
+  ) => Promise<string> = async (baseUrl, path, data, authHeader) => {
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/octet-stream',

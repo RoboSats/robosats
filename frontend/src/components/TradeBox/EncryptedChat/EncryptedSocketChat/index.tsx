@@ -82,6 +82,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [messageCount, setMessageCount] = useState<number>(0);
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
+  const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState<boolean>(false);
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -202,23 +203,26 @@ const EncryptedSocketChat: React.FC<Props> = ({
             } else {
               const plainText = String(decryptedData.decryptedMessage);
               let fileMetadata: ParsedFileMessage | undefined;
-              let displayText = plainText;
 
-              const imgMeta = parseImageMetadataJson(plainText);
-              if (imgMeta) {
-                fileMetadata = imgMeta;
-                displayText = t('[Loading Encrypted Image]');
-              }
-
-              const x: EncryptedChatMessage = {
+              let x: EncryptedChatMessage = {
                 index: dataFromServer.index,
                 encryptedMessage: dataFromServer.message.split('\\').join('\n'),
-                plainTextMessage: displayText,
+                plainTextMessage: plainText,
                 validSignature: decryptedData.validSignature,
                 userNick: dataFromServer.user_nick,
                 time: dataFromServer.time,
                 fileMetadata,
               };
+
+              const imgMeta = parseImageMetadataJson(plainText);
+              if (imgMeta) {
+                x = {
+                  ...x,
+                  plainTextMessage: t('[Loading Encrypted Image]'),
+                  fileMetadata: imgMeta,
+                };
+              }
+
               return [...prev, x].sort((a, b) => a.index - b.index);
             }
           });
@@ -268,14 +272,55 @@ const EncryptedSocketChat: React.FC<Props> = ({
   };
 
   const handleAttachClick = (): void => {
+    // Clear any previous errors
+    setError('');
     setPrivacyWarningOpen(true);
   };
 
   const handlePrivacyDialogClose = (confirmed: boolean): void => {
     setPrivacyWarningOpen(false);
     if (confirmed) {
+      // Trigger file input click - works on both web and Android (with native implementation)
       fileInputRef.current?.click();
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      // User cancelled file selection
+      clearFileInput();
+      return;
+    }
+
+    // Validate file size
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      setError(t('File too large. Maximum size is 10MB.'));
+      clearFileInput();
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError(t('Only image files are allowed.'));
+      clearFileInput();
+      return;
+    }
+
+    // File is valid, proceed with upload
+    setError(''); // Clear any previous errors
+    setUploading(true);
+    onSendFile(file)
+      .catch((err) => {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setError(errorMessage);
+        console.error('File upload error:', err);
+      })
+      .finally(() => {
+        setUploading(false);
+        clearFileInput();
+      });
   };
 
   return (
@@ -311,6 +356,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   takerNick={takerNick}
                   takerHashId={takerHashId}
                   makerHashId={makerHashId}
+                  imageUrls={imageUrls}
+                  setImageUrls={setImageUrls}
                 />
               </li>
             );
@@ -346,29 +393,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               ref={fileInputRef}
               style={{ display: 'none' }}
               accept='image/*'
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const maxSize = 10 * 1024 * 1024; // 10MB
-                  if (file.size > maxSize) {
-                    setError(t('File too large. Maximum size is 10MB.'));
-                    clearFileInput();
-                    return;
-                  }
-                  if (!file.type.startsWith('image/')) {
-                    setError(t('Only image files are allowed.'));
-                    clearFileInput();
-                    return;
-                  }
-                  setUploading(true);
-                  onSendFile(file)
-                    .catch((err) => setError(String(err)))
-                    .finally(() => {
-                      setUploading(false);
-                      clearFileInput();
-                    });
-                }
-              }}
+              onChange={handleFileChange}
             />
             <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
               <span>

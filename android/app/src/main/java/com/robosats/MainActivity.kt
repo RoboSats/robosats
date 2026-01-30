@@ -40,6 +40,8 @@ import com.vitorpamplona.ammolite.service.HttpClientManager
 
 class MainActivity : AppCompatActivity() {
     private val requestCodePostNotifications: Int = 1
+    private val requestCodeFileChooser: Int = 2
+    private val requestCodeReadMediaImages: Int = 3
     private lateinit var webView: WebView
     private lateinit var torKmp: TorKmp
     private lateinit var loadingContainer: ConstraintLayout
@@ -47,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var intentData: String
     private lateinit var useOrbotButton: Button
     var useProxy: Boolean = true
+
+    // File chooser callback
+    private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         // Set initial status message
         updateStatus(getString(R.string.init_tor))
 
+        // Request notification permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
                 this,
@@ -351,6 +357,28 @@ class MainActivity : AppCompatActivity() {
                             Log.d("SecurityPolicy", "Denied permission request: ${request.resources.joinToString()}")
                         }
 
+                        // Handle file chooser for image uploads
+                        override fun onShowFileChooser(
+                            webView: WebView?,
+                            filePathCallback: android.webkit.ValueCallback<Array<Uri>>?,
+                            fileChooserParams: FileChooserParams?
+                        ): Boolean {
+                            // Clean up any previous callback
+                            this@MainActivity.filePathCallback?.onReceiveValue(null)
+                            this@MainActivity.filePathCallback = filePathCallback
+
+                            // Check and request permission before opening file chooser
+                            if (!checkStoragePermission()) {
+                                requestStoragePermission()
+                                // Permission result will be handled in onRequestPermissionsResult
+                                return true
+                            }
+
+                            // Permission granted, open file chooser
+                            openFileChooser()
+                            return true
+                        }
+
                         // Control console messages
                         override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
                             Log.d("WebViewConsole", "${consoleMessage.message()} -- From line ${consoleMessage.lineNumber()} of ${consoleMessage.sourceId()}")
@@ -462,6 +490,114 @@ class MainActivity : AppCompatActivity() {
         webSettings.textZoom = 100
     }
 
+
+    /**
+     * Check if storage permission is granted
+     */
+    private fun checkStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_MEDIA_IMAGES
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    /**
+     * Request storage permission
+     */
+    private fun requestStoragePermission() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(permission),
+            requestCodeReadMediaImages
+        )
+    }
+
+    /**
+     * Open the file chooser intent
+     */
+    private fun openFileChooser() {
+        try {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "image/*"
+                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*"))
+            }
+
+            startActivityForResult(
+                Intent.createChooser(intent, "Select Image"),
+                requestCodeFileChooser
+            )
+        } catch (e: Exception) {
+            Log.e("FileChooser", "Error opening file chooser", e)
+            filePathCallback?.onReceiveValue(null)
+            filePathCallback = null
+        }
+    }
+
+    /**
+     * Handle permission request results
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            requestCodeReadMediaImages -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, open file chooser
+                    openFileChooser()
+                } else {
+                    // Permission denied, cancel file selection
+                    Toast.makeText(
+                        this,
+                        "Storage permission is required to select images",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    filePathCallback?.onReceiveValue(null)
+                    filePathCallback = null
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle file chooser result
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == requestCodeFileChooser) {
+            val results = if (resultCode == RESULT_OK && data != null) {
+                val dataUri = data.data
+                if (dataUri != null) {
+                    arrayOf(dataUri)
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+
+            filePathCallback?.onReceiveValue(results)
+            filePathCallback = null
+        }
+    }
 
     /**
      * Clear all WebView data when activity is destroyed
