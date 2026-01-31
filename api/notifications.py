@@ -1,3 +1,8 @@
+import json
+import logging
+import time
+import uuid
+from datetime import datetime, timezone
 from secrets import token_urlsafe
 
 from decouple import config
@@ -7,6 +12,8 @@ from api.models import (
 )
 from api.utils import get_session
 from api.tasks import nostr_send_notification_event
+
+logger = logging.getLogger("api.notifications")
 
 
 class Notifications:
@@ -32,8 +39,10 @@ class Notifications:
 
         return context
 
-    def send_message(self, order, robot, title, description=""):
-        """Save a message for a user and sends it to Telegram and/or Nostr"""
+    def send_message(
+        self, order, robot, title, description="", event_type="notification"
+    ):
+        """Save a message for a user and sends it to Telegram, Nostr, and/or Webhook"""
         self.save_message(order, robot, title, description)
         if robot.nostr_pubkey:
             nostr_send_notification_event.delay(
@@ -41,6 +50,8 @@ class Notifications:
             )
         if robot.telegram_enabled:
             self.send_telegram_message(robot.telegram_chat_id, title, description)
+        if robot.webhook_enabled and robot.webhook_url:
+            self.send_webhook_message(order, robot, title, description, event_type)
 
     def save_message(self, order, robot, title, description=""):
         """Save a message for a user"""
@@ -61,6 +72,83 @@ class Notifications:
                 return
             except Exception:
                 pass
+
+    def is_valid_onion_url(self, url):
+        """Validates that the URL is a .onion address (Tor only)"""
+        if not url:
+            return False
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(url)
+            hostname = parsed.hostname or ""
+            return hostname.endswith(".onion")
+        except Exception:
+            return False
+
+    def send_webhook_message(
+        self, order, robot, title, description="", event_type="notification"
+    ):
+        """Sends a webhook notification to the user's custom HTTP endpoint (Tor .onion only)"""
+
+        webhook_url = robot.webhook_url
+        if not self.is_valid_onion_url(webhook_url):
+            logger.warning(
+                f"Webhook URL rejected: not a .onion address for robot {robot.id}"
+            )
+            return
+        payload = {
+            "event_type": event_type,
+            "event_id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "robot_hash_id": robot.hash_id,
+            "order": {
+                "id": order.id,
+                "type": "BUY" if order.type == Order.Types.BUY else "SELL",
+                "status": order.status,
+            },
+            "message": {
+                "title": title,
+                "description": description,
+            },
+            "metadata": {
+                "coordinator": config("COORDINATOR_ALIAS", cast=str, default="Unknown"),
+                "platform_version": config("VERSION", cast=str, default="Unknown"),
+            },
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        if robot.webhook_api_key:
+            headers["X-API-Key"] = robot.webhook_api_key
+
+        timeout = robot.webhook_timeout or 10
+        max_retries = robot.webhook_retries or 3
+
+        for attempt in range(max_retries):
+            try:
+                response = self.session.post(
+                    webhook_url,
+                    data=json.dumps(payload),
+                    headers=headers,
+                    timeout=timeout,
+                )
+                response.raise_for_status()
+                logger.info(f"Webhook sent successfully to robot {robot.id}")
+                return
+            except Exception as e:
+                wait_time = 2**attempt
+                logger.warning(
+                    f"Webhook attempt {attempt + 1}/{max_retries} failed for robot {robot.id}: {e}. Retrying in {wait_time}s"
+                )
+                if attempt < max_retries - 1:
+                    time.sleep(wait_time)
+
+        logger.error(
+            f"Webhook failed after {max_retries} attempts for robot {robot.id}"
+        )
 
     def welcome(self, user):
         """User enabled Telegram Notifications"""
