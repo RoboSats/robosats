@@ -45,6 +45,12 @@ class Robot(models.Model):
     # nostr
     nostr_pubkey = models.CharField(max_length=64, null=True, blank=True)
 
+    webhook_url = models.URLField(max_length=500, null=True, blank=True)
+    webhook_enabled = models.BooleanField(default=False, null=False)
+    webhook_api_key = models.CharField(max_length=256, null=True, blank=True)
+    webhook_timeout = models.PositiveIntegerField(default=10, null=False)  # seconds
+    webhook_retries = models.PositiveIntegerField(default=3, null=False)
+
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards
