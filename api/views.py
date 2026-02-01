@@ -700,6 +700,7 @@ class RobotView(APIView):
 
         return Response(context, status=status.HTTP_200_OK)
 
+    @extend_schema(**RobotViewSchema.put)
     def put(self, request, format=None):
         """
         Update robot's webhook settings.
