@@ -45,6 +45,9 @@ class Robot(models.Model):
     # nostr
     nostr_pubkey = models.CharField(max_length=64, null=True, blank=True)
 
+    webhook_url = models.URLField(max_length=500, null=True, blank=True)
+    webhook_api_key = models.CharField(max_length=256, null=True, blank=True)
+
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards
@@ -86,6 +89,25 @@ class Robot(models.Model):
     @receiver(post_save, sender=User)
     def save_user_robot(sender, instance, **kwargs):
         instance.robot.save()
+
+    @property
+    def webhook_enabled(self):
+        """Webhook is enabled if a valid .onion URL is set"""
+        return bool(self.webhook_url and self.is_valid_onion_url(self.webhook_url))
+
+    @staticmethod
+    def is_valid_onion_url(url):
+        """Validates that the URL is a .onion address (Tor only)"""
+        if not url:
+            return False
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(url)
+            hostname = parsed.hostname or ""
+            return hostname.endswith(".onion")
+        except Exception:
+            return False
 
     def __str__(self):
         return self.user.username
