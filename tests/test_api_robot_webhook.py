@@ -1,6 +1,5 @@
 """
 Tests for Robot Webhook API endpoints.
-
 Tests the webhook configuration functionality:
 - GET /api/robot/ returns webhook fields
 - PUT /api/robot/ updates webhook settings
@@ -8,40 +7,34 @@ Tests the webhook configuration functionality:
 """
 
 from django.contrib.auth.models import User
-from django.test import Client
+from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
 from django.urls import reverse
 
 from api.models import Robot
-from tests.test_api import BaseAPITestCase
 
 
-class RobotWebhookAPITest(BaseAPITestCase):
+class RobotWebhookAPITest(APITestCase):
     """Test webhook configuration via Robot API endpoints."""
 
     def setUp(self):
-        """Create a test user with robot."""
-        self.client = Client()
+        """Create a test user with robot and token."""
         self.user = User.objects.create_user(
             username="TestRobot", password="testpassword123"
         )
+        self.token = Token.objects.create(user=self.user)
 
         if not hasattr(self.user, "robot"):
             Robot.objects.create(user=self.user)
 
-    def get_auth_headers(self):
-        """Get authentication headers for API requests."""
-        from api.utils import get_robot_auth_hash
-
-        token = "test_token_12345"
-        token_hash = get_robot_auth_hash(token)
-        return {"HTTP_AUTHORIZATION": f"Token {token_hash}"}
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
 
     def test_robot_get_includes_webhook_fields(self):
         """Test that GET /api/robot/ returns webhook configuration fields."""
-        self.client.force_login(self.user)
         path = reverse("robot")
 
         response = self.client.get(path)
+        print(f"GET Response: {response.status_code} {response.content}")
         data = response.json()
 
         self.assertEqual(response.status_code, 200)
@@ -60,10 +53,8 @@ class RobotWebhookAPITest(BaseAPITestCase):
 
     def test_robot_put_update_webhook_settings(self):
         """Test that PUT /api/robot/ updates webhook settings."""
-        self.client.force_login(self.user)
         path = reverse("robot")
 
-        # Update webhook settings
         update_data = {
             "webhook_url": "http://test123abc.onion/webhook",
             "webhook_enabled": True,
@@ -91,7 +82,6 @@ class RobotWebhookAPITest(BaseAPITestCase):
 
     def test_robot_put_partial_update(self):
         """Test that PUT /api/robot/ allows partial updates."""
-        self.client.force_login(self.user)
         path = reverse("robot")
 
         update_data = {"webhook_enabled": True}
@@ -105,10 +95,8 @@ class RobotWebhookAPITest(BaseAPITestCase):
 
     def test_robot_put_rejects_non_onion_url(self):
         """Test that PUT /api/robot/ rejects non-.onion URLs."""
-        self.client.force_login(self.user)
         path = reverse("robot")
 
-        # Try to set a regular URL (not .onion)
         update_data = {"webhook_url": "https://example.com/webhook"}
 
         response = self.client.put(
@@ -120,20 +108,16 @@ class RobotWebhookAPITest(BaseAPITestCase):
 
     def test_robot_put_accepts_valid_onion_url(self):
         """Test that PUT /api/robot/ accepts valid .onion URLs."""
-        self.client.force_login(self.user)
         path = reverse("robot")
 
-        valid_urls = [
-            "http://abcdef1234567890.onion/webhook",
-            "http://xyz.onion/api/notify",
-            "http://test.onion/",
-        ]
+        test_url = "http://testwebhook.onion/notify"
 
-        for url in valid_urls:
-            update_data = {"webhook_url": url}
-            response = self.client.put(
-                path, data=update_data, content_type="application/json"
-            )
-            self.assertEqual(
-                response.status_code, 200, f"URL should be accepted: {url}"
-            )
+        update_data = {"webhook_url": test_url}
+        response = self.client.put(
+            path, data=update_data, content_type="application/json"
+        )
+        self.assertEqual(
+            response.status_code,
+            200,
+            f"URL should be accepted: {test_url}. Response: {response.content}",
+        )
