@@ -32,61 +32,69 @@ class ApiWebClient implements ApiClient {
     return headers;
   };
 
-  private async request(url: string, options: RequestInit): Promise<object> {
+  private async request(
+    url: string,
+    options: RequestInit,
+    silent: boolean = false,
+  ): Promise<object> {
     try {
       const response = await fetch(url, options);
 
       if (!response.ok && ![400, 404].includes(response.status)) {
-        dispatchError(`Request failed: ${response.status} ${response.statusText}`);
+        if (!silent) dispatchError(`Request failed: ${response.status} ${response.statusText}`);
       }
 
       return await response.json();
     } catch (error) {
       console.error('API Error:', error);
-      dispatchError('Coordinator unreachable! Please check your connection.');
+      if (!silent) dispatchError('Coordinator unreachable! Please check your connection.');
       throw error;
     }
   }
 
-  public post: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object> =
-    async (baseUrl, path, body, auth) => {
-      const requestOptions = {
-        method: 'POST',
-        headers: this.getHeaders(auth),
-        body: JSON.stringify(body),
-      };
-      return await this.request(baseUrl + path, requestOptions);
-    };
-
-  public put: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object> =
-    async (baseUrl, path, body, auth) => {
-      const requestOptions = {
-        method: 'PUT',
-        headers: this.getHeaders(auth),
-        body: JSON.stringify(body),
-      };
-      return await this.request(baseUrl + path, requestOptions);
-    };
-
-  public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object> = async (
-    baseUrl,
-    path,
-    auth,
-  ) => {
+  public post: (
+    baseUrl: string,
+    path: string,
+    body: object,
+    auth?: Auth,
+    silent?: boolean,
+  ) => Promise<object> = async (baseUrl, path, body, auth, silent = false) => {
     const requestOptions = {
-      method: 'DELETE',
+      method: 'POST',
       headers: this.getHeaders(auth),
+      body: JSON.stringify(body),
     };
-    return await this.request(baseUrl + path, requestOptions);
+    return await this.request(baseUrl + path, requestOptions, silent);
   };
 
-  public get: (baseUrl: string, path: string, auth?: Auth) => Promise<object> = async (
-    baseUrl,
-    path,
-    auth,
-  ) => {
-    return await this.request(baseUrl + path, { headers: this.getHeaders(auth) });
+  public put: (
+    baseUrl: string,
+    path: string,
+    body: object,
+    auth?: Auth,
+    silent?: boolean,
+  ) => Promise<object> = async (baseUrl, path, body, auth, silent = false) => {
+    const requestOptions = {
+      method: 'PUT',
+      headers: this.getHeaders(auth),
+      body: JSON.stringify(body),
+    };
+    return await this.request(baseUrl + path, requestOptions, silent);
   };
+
+  public delete: (baseUrl: string, path: string, auth?: Auth, silent?: boolean) => Promise<object> =
+    async (baseUrl, path, auth, silent = false) => {
+      const requestOptions = {
+        method: 'DELETE',
+        headers: this.getHeaders(auth),
+      };
+      return await this.request(baseUrl + path, requestOptions, silent);
+    };
+
+  public get: (baseUrl: string, path: string, auth?: Auth, silent?: boolean) => Promise<object> =
+    async (baseUrl, path, auth, silent = false) => {
+      return await this.request(baseUrl + path, { headers: this.getHeaders(auth) }, silent);
+    };
 
   public sendBinary: (
     baseUrl: string,

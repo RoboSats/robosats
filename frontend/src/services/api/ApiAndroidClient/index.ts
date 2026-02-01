@@ -43,6 +43,7 @@ class ApiAndroidClient implements ApiClient {
     path: string,
     headers: string = '{}',
     body: string = '',
+    silent: boolean = false,
   ): Promise<object> {
     try {
       const result = await new Promise<string>((resolve, reject) => {
@@ -54,48 +55,56 @@ class ApiAndroidClient implements ApiClient {
       return this.parseResponse(result);
     } catch (error) {
       console.error('API Error:', error);
-      dispatchError('Coordinator unreachable! Please check your connection.');
+      if (!silent) dispatchError('Coordinator unreachable! Please check your connection.');
       throw error;
     }
   }
 
-  public put: (baseUrl: string, path: string, body: object) => Promise<object | undefined> = async (
-    _baseUrl,
-    _path,
-    _body,
-  ) => {
+  public put: (
+    baseUrl: string,
+    path: string,
+    body: object,
+    auth?: Auth,
+    silent?: boolean,
+  ) => Promise<object | undefined> = async (_baseUrl, _path, _body, _auth, _silent) => {
     return await new Promise<object>((resolve, _reject) => {
       resolve({});
     });
   };
 
-  public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> =
-    async (baseUrl, path, auth) => {
-      const jsonHeaders = JSON.stringify(this.getHeaders(auth));
+  public delete: (
+    baseUrl: string,
+    path: string,
+    auth?: Auth,
+    silent?: boolean,
+  ) => Promise<object | undefined> = async (baseUrl, path, auth, silent = false) => {
+    const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
-      return await this.request('DELETE', baseUrl, path, jsonHeaders);
-    };
+    return await this.request('DELETE', baseUrl, path, jsonHeaders, '', silent);
+  };
 
   public post: (
     baseUrl: string,
     path: string,
     body: object,
     auth?: Auth,
-  ) => Promise<object | undefined> = async (baseUrl, path, body, auth) => {
+    silent?: boolean,
+  ) => Promise<object | undefined> = async (baseUrl, path, body, auth, silent = false) => {
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
     const jsonBody = JSON.stringify(body);
 
-    return await this.request('POST', baseUrl, path, jsonHeaders, jsonBody);
+    return await this.request('POST', baseUrl, path, jsonHeaders, jsonBody, silent);
   };
 
-  public get: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> = async (
-    baseUrl,
-    path,
-    auth,
-  ) => {
+  public get: (
+    baseUrl: string,
+    path: string,
+    auth?: Auth,
+    silent?: boolean,
+  ) => Promise<object | undefined> = async (baseUrl, path, auth, silent = false) => {
     const jsonHeaders = JSON.stringify(this.getHeaders(auth));
 
-    return await this.request('GET', baseUrl, path, jsonHeaders);
+    return await this.request('GET', baseUrl, path, jsonHeaders, '', silent);
   };
 
   public sendBinary: (
