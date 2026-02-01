@@ -411,6 +411,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="Order description",
     )
+    bad_request = serializers.CharField(
+        required=False,
+        help_text="Error message when order is in a terminated state (e.g. cancelled)",
+    )
 
     class Meta:
         model = Order
@@ -497,6 +501,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "longitude",
             "chat_last_index",
             "description",
+            "bad_request",
         )
 
 
@@ -725,22 +730,16 @@ class UpdateRobotSerializer(serializers.ModelSerializer):
             "webhook_url",
             "webhook_enabled",
             "webhook_api_key",
-            "webhook_timeout",
-            "webhook_retries",
         )
         extra_kwargs = {
             "webhook_url": {"required": False, "allow_null": True},
+            "webhook_enabled": {"required": False},
             "webhook_api_key": {"required": False, "allow_null": True},
         }
 
     def validate_webhook_url(self, value):
-        if value:
-            from urllib.parse import urlparse
-
-            parsed = urlparse(value)
-            hostname = parsed.hostname or ""
-            if not hostname.endswith(".onion"):
-                raise serializers.ValidationError(
-                    "Webhook URL must be a Tor .onion address"
-                )
+        if value and not Robot.is_valid_onion_url(value):
+            raise serializers.ValidationError(
+                "Webhook URL must be a Tor .onion address"
+            )
         return value

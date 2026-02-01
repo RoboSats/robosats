@@ -530,6 +530,7 @@
   "Submit": "送信",
   "Telegram enabled": "Telegramが有効になりました",
   "There it goes!": "そこにあります！",
+  "URL must be a valid .onion address": "URL must be a valid .onion address",
   "Use stealth invoices": "ステルス・インボイスを使用する",
   "Webhook Notifications": "Webhook Notifications",
   "Webhook URL (.onion only)": "Webhook URL (.onion only)",

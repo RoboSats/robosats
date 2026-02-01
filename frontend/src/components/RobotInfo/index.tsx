@@ -62,6 +62,17 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const [webhookApiKey, setWebhookApiKey] = useState<string>('');
   const [webhookEnabled, setWebhookEnabled] = useState<boolean>(false);
   const [webhookSaving, setWebhookSaving] = useState<boolean>(false);
+  const [webhookUrlError, setWebhookUrlError] = useState<string>('');
+
+  const isValidOnionUrl = (url: string): boolean => {
+    if (!url) return true;
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname.endsWith('.onion');
+    } catch {
+      return false;
+    }
+  };
 
   useEffect(() => {
     const robot = garage.getSlot()?.getRobot(coordinator.shortAlias) ?? null;
@@ -102,6 +113,13 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
 
   const handleSaveWebhookSettings = async (): Promise<void> => {
     if (!robot) return;
+
+    if (webhookUrl && !isValidOnionUrl(webhookUrl)) {
+      setWebhookUrlError(t('URL must be a valid .onion address'));
+      return;
+    }
+    setWebhookUrlError('');
+
     setWebhookSaving(true);
     await robot.fetchWebhook(federation, {
       webhook_url: webhookUrl || undefined,
@@ -254,37 +272,6 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
               </ListItemText>
             </ListItem>
 
-            <ListItem>
-              <ListItemIcon>
-                <UserNinjaIcon />
-              </ListItemIcon>
-
-              <ListItemText>
-                <Tooltip
-                  placement='bottom'
-                  enterTouchDelay={0}
-                  title={t(
-                    "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",
-                  )}
-                >
-                  <Grid item>
-                    <FormControlLabel
-                      labelPlacement='end'
-                      label={t('Use stealth invoices')}
-                      control={
-                        <Switch
-                          checked={robot?.stealthInvoices}
-                          onChange={() => {
-                            setStealthInvoice();
-                          }}
-                        />
-                      }
-                    />
-                  </Grid>
-                </Tooltip>
-              </ListItemText>
-            </ListItem>
-
             {/* Webhook Settings */}
             <ListItem>
               <ListItemIcon>
@@ -335,8 +322,13 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       label={t('Webhook URL (.onion only)')}
                       placeholder='http://yourserver.onion/webhook'
                       value={webhookUrl}
-                      onChange={(e) => setWebhookUrl(e.target.value)}
+                      onChange={(e) => {
+                        setWebhookUrl(e.target.value);
+                        setWebhookUrlError('');
+                      }}
                       size='small'
+                      error={Boolean(webhookUrlError)}
+                      helperText={webhookUrlError}
                     />
                   </Grid>
                   <Grid item>
@@ -374,6 +366,37 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                 </Button>
               </DialogActions>
             </Dialog>
+
+            <ListItem>
+              <ListItemIcon>
+                <UserNinjaIcon />
+              </ListItemIcon>
+
+              <ListItemText>
+                <Tooltip
+                  placement='bottom'
+                  enterTouchDelay={0}
+                  title={t(
+                    "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",
+                  )}
+                >
+                  <Grid item>
+                    <FormControlLabel
+                      labelPlacement='end'
+                      label={t('Use stealth invoices')}
+                      control={
+                        <Switch
+                          checked={robot?.stealthInvoices}
+                          onChange={() => {
+                            setStealthInvoice();
+                          }}
+                        />
+                      }
+                    />
+                  </Grid>
+                </Tooltip>
+              </ListItemText>
+            </ListItem>
 
             <ListItem>
               <ListItemIcon>

@@ -29,8 +29,6 @@ class Robot {
   public webhookUrl: string = '';
   public webhookEnabled: boolean = false;
   public webhookApiKey: string = '';
-  public webhookTimeout: number = 10;
-  public webhookRetries: number = 3;
 
   update = (attributes: object): void => {
     Object.assign(this, attributes);
@@ -85,8 +83,6 @@ class Robot {
           webhookUrl: data.webhook_url ?? '',
           webhookEnabled: data.webhook_enabled ?? false,
           webhookApiKey: data.webhook_api_key ?? '',
-          webhookTimeout: data.webhook_timeout ?? 10,
-          webhookRetries: data.webhook_retries ?? 3,
         });
       })
       .catch((e) => {
@@ -143,8 +139,6 @@ class Robot {
       webhook_url?: string;
       webhook_enabled?: boolean;
       webhook_api_key?: string;
-      webhook_timeout?: number;
-      webhook_retries?: number;
     },
   ): Promise<void> => {
     if (!federation) return;
@@ -158,8 +152,6 @@ class Robot {
             webhookUrl: data.webhook_url ?? this.webhookUrl,
             webhookEnabled: data.webhook_enabled ?? this.webhookEnabled,
             webhookApiKey: data.webhook_api_key ?? this.webhookApiKey,
-            webhookTimeout: data.webhook_timeout ?? this.webhookTimeout,
-            webhookRetries: data.webhook_retries ?? this.webhookRetries,
           });
         }
       })

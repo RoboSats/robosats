@@ -546,16 +546,6 @@ class RobotViewSchema:
                         "nullable": True,
                         "description": "API key sent in X-API-Key header for webhook authentication",
                     },
-                    "webhook_timeout": {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Timeout in seconds for webhook requests",
-                    },
-                    "webhook_retries": {
-                        "type": "integer",
-                        "default": 3,
-                        "description": "Number of retry attempts for failed webhook requests",
-                    },
                 },
             },
         },
@@ -593,6 +583,9 @@ class RobotViewSchema:
             - `timestamp`: ISO format timestamp
 
             If `webhook_api_key` is set, it will be sent in the `X-API-Key` header.
+
+            **Note:** Webhook is enabled automatically when a valid .onion URL is set.
+            A test notification will be sent when the webhook URL is configured.
             """
         ),
         "responses": {
@@ -602,24 +595,16 @@ class RobotViewSchema:
                     "webhook_url": {
                         "type": "string",
                         "nullable": True,
-                        "description": "Updated webhook URL",
+                        "description": "Webhook URL (.onion only)",
                     },
                     "webhook_enabled": {
                         "type": "boolean",
-                        "description": "Whether webhook is enabled",
+                        "description": "Whether webhook notifications are enabled",
                     },
                     "webhook_api_key": {
                         "type": "string",
                         "nullable": True,
-                        "description": "Updated API key",
-                    },
-                    "webhook_timeout": {
-                        "type": "integer",
-                        "description": "Timeout in seconds",
-                    },
-                    "webhook_retries": {
-                        "type": "integer",
-                        "description": "Number of retries",
+                        "description": "API key sent in X-API-Key header",
                     },
                 },
             },
@@ -641,8 +626,6 @@ class RobotViewSchema:
                     "webhook_url": "http://myserver.onion/webhook",
                     "webhook_enabled": True,
                     "webhook_api_key": "my-secret-key",
-                    "webhook_timeout": 15,
-                    "webhook_retries": 3,
                 },
                 status_codes=[200],
             ),

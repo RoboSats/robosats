@@ -530,6 +530,7 @@
   "Submit": "提交",
   "Telegram enabled": "Telegram 已啟用",
   "There it goes!": "這就行了！",
+  "URL must be a valid .onion address": "URL must be a valid .onion address",
   "Use stealth invoices": "使用隱形發票",
   "Webhook Notifications": "Webhook Notifications",
   "Webhook URL (.onion only)": "Webhook URL (.onion only)",

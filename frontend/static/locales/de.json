@@ -530,6 +530,7 @@
   "Submit": "Bestätigen",
   "Telegram enabled": "Telegram aktiviert",
   "There it goes!": "Da geht es hin!",
+  "URL must be a valid .onion address": "URL must be a valid .onion address",
   "Use stealth invoices": "Verwende Stealth-Rechnungen",
   "Webhook Notifications": "Webhook Notifications",
   "Webhook URL (.onion only)": "Webhook URL (.onion only)",

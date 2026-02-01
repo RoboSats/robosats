@@ -530,6 +530,7 @@
   "Submit": "Skicka",
   "Telegram enabled": "Telegram aktiverat",
   "There it goes!": "Där går det!",
+  "URL must be a valid .onion address": "URL must be a valid .onion address",
   "Use stealth invoices": "Använd stealth-fakturor",
   "Webhook Notifications": "Webhook Notifications",
   "Webhook URL (.onion only)": "Webhook URL (.onion only)",
