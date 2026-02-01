@@ -6,6 +6,8 @@ Tests the webhook configuration functionality:
 - Validation: webhook_url must be .onion
 """
 
+from unittest.mock import patch
+
 from django.urls import reverse
 
 from tests.test_api import BaseAPITestCase
@@ -50,20 +52,18 @@ class RobotWebhookAPITest(BaseAPITestCase):
         self.assertIn("webhook_url", data)
         self.assertIn("webhook_enabled", data)
         self.assertIn("webhook_api_key", data)
-        self.assertIn("webhook_timeout", data)
-        self.assertIn("webhook_retries", data)
 
-    def test_robot_put_update_webhook_settings(self):
+    @patch("api.notifications.Notifications.send_webhook_test")
+    def test_robot_put_update_webhook_settings(self, mock_send_test):
         """Test that PUT /api/robot/ updates webhook settings."""
+        mock_send_test.return_value = True
+
         path = reverse("robot")
         headers = self.get_robot_auth()
 
         update_data = {
             "webhook_url": "http://test123abc.onion/webhook",
-            "webhook_enabled": True,
             "webhook_api_key": "my-secret-key",
-            "webhook_timeout": 15,
-            "webhook_retries": 5,
         }
 
         response = self.client.put(
@@ -75,17 +75,14 @@ class RobotWebhookAPITest(BaseAPITestCase):
         self.assertResponse(response)
 
         self.assertEqual(data["webhook_url"], "http://test123abc.onion/webhook")
-        self.assertTrue(data["webhook_enabled"])
         self.assertEqual(data["webhook_api_key"], "my-secret-key")
-        self.assertEqual(data["webhook_timeout"], 15)
-        self.assertEqual(data["webhook_retries"], 5)
 
     def test_robot_put_partial_update(self):
-        """Test that PUT /api/robot/ allows partial updates."""
+        """Test that PUT /api/robot/ allows partial updates (api_key only)."""
         path = reverse("robot")
         headers = self.get_robot_auth()
 
-        update_data = {"webhook_enabled": True}
+        update_data = {"webhook_api_key": "test-key"}
 
         response = self.client.put(
             path, data=update_data, content_type="application/json", **headers
@@ -93,7 +90,7 @@ class RobotWebhookAPITest(BaseAPITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
-        self.assertTrue(response.json()["webhook_enabled"])
+        self.assertEqual(response.json()["webhook_api_key"], "test-key")
 
     def test_robot_put_rejects_non_onion_url(self):
         """Test that PUT /api/robot/ rejects non-.onion URLs."""
@@ -109,8 +106,11 @@ class RobotWebhookAPITest(BaseAPITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("webhook_url", response.json())
 
-    def test_robot_put_accepts_valid_onion_url(self):
+    @patch("api.notifications.Notifications.send_webhook_test")
+    def test_robot_put_accepts_valid_onion_url(self, mock_send_test):
         """Test that PUT /api/robot/ accepts valid .onion URLs."""
+        mock_send_test.return_value = True
+
         path = reverse("robot")
         headers = self.get_robot_auth()
 

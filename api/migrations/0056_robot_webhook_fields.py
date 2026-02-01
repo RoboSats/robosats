@@ -14,22 +14,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='robot',
-            name='webhook_enabled',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='robot',
             name='webhook_api_key',
             field=models.CharField(blank=True, max_length=256, null=True),
-        ),
-        migrations.AddField(
-            model_name='robot',
-            name='webhook_timeout',
-            field=models.PositiveIntegerField(default=10),
-        ),
-        migrations.AddField(
-            model_name='robot',
-            name='webhook_retries',
-            field=models.PositiveIntegerField(default=3),
         ),
     ]

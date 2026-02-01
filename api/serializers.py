@@ -723,10 +723,7 @@ class UpdateRobotSerializer(serializers.ModelSerializer):
         model = Robot
         fields = (
             "webhook_url",
-            "webhook_enabled",
             "webhook_api_key",
-            "webhook_timeout",
-            "webhook_retries",
         )
         extra_kwargs = {
             "webhook_url": {"required": False, "allow_null": True},
@@ -734,13 +731,8 @@ class UpdateRobotSerializer(serializers.ModelSerializer):
         }
 
     def validate_webhook_url(self, value):
-        if value:
-            from urllib.parse import urlparse
-
-            parsed = urlparse(value)
-            hostname = parsed.hostname or ""
-            if not hostname.endswith(".onion"):
-                raise serializers.ValidationError(
-                    "Webhook URL must be a Tor .onion address"
-                )
+        if value and not Robot.is_valid_onion_url(value):
+            raise serializers.ValidationError(
+                "Webhook URL must be a Tor .onion address"
+            )
         return value

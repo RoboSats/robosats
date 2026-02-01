@@ -565,6 +565,8 @@ class OrderView(viewsets.ViewSet):
                     {
                         "id": order.id,
                         "status": order.status,
+                        "type": order.type,
+                        "expires_at": order.expires_at,
                         "bad_request": "This order has been cancelled",
                     },
                     status.HTTP_200_OK,
@@ -673,8 +675,6 @@ class RobotView(APIView):
         context["webhook_url"] = user.robot.webhook_url
         context["webhook_enabled"] = user.robot.webhook_enabled
         context["webhook_api_key"] = user.robot.webhook_api_key
-        context["webhook_timeout"] = user.robot.webhook_timeout
-        context["webhook_retries"] = user.robot.webhook_retries
 
         context["last_login"] = user.last_login
 
@@ -706,12 +706,20 @@ class RobotView(APIView):
         Update robot's webhook settings.
         """
         robot = request.user.robot
+        old_webhook_url = robot.webhook_url
         serializer = UpdateRobotSerializer(robot, data=request.data, partial=True)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
+
+        new_webhook_url = request.data.get("webhook_url")
+        if new_webhook_url and new_webhook_url != old_webhook_url:
+            from api.notifications import Notifications
+
+            Notifications().send_webhook_test(robot)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
