@@ -56,6 +56,7 @@ from api.serializers import (
     ReviewSerializer,
     UpdateOrderSerializer,
     ListNotificationSerializer,
+    UpdateRobotSerializer,
 )
 from api.utils import (
     compute_avg_premium,
@@ -668,6 +669,13 @@ class RobotView(APIView):
         context["earned_rewards"] = user.robot.earned_rewards
         context["wants_stealth"] = user.robot.wants_stealth
         context["nostr_pubkey"] = user.robot.nostr_pubkey
+
+        context["webhook_url"] = user.robot.webhook_url
+        context["webhook_enabled"] = user.robot.webhook_enabled
+        context["webhook_api_key"] = user.robot.webhook_api_key
+        context["webhook_timeout"] = user.robot.webhook_timeout
+        context["webhook_retries"] = user.robot.webhook_retries
+
         context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
@@ -691,6 +699,19 @@ class RobotView(APIView):
             context["found"] = True
 
         return Response(context, status=status.HTTP_200_OK)
+
+    def put(self, request, format=None):
+        """
+        Update robot's webhook settings.
+        """
+        robot = request.user.robot
+        serializer = UpdateRobotSerializer(robot, data=request.data, partial=True)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class BookView(ListAPIView):

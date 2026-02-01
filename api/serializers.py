@@ -2,7 +2,7 @@ from decouple import config
 from decimal import Decimal
 from rest_framework import serializers
 
-from .models import MarketTick, Order, Notification
+from .models import MarketTick, Order, Notification, Robot
 
 RETRY_TIME = int(config("RETRY_TIME"))
 
@@ -716,3 +716,31 @@ class ReviewSerializer(serializers.Serializer):
 
 class StealthSerializer(serializers.Serializer):
     wantsStealth = serializers.BooleanField()
+
+
+class UpdateRobotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Robot
+        fields = (
+            "webhook_url",
+            "webhook_enabled",
+            "webhook_api_key",
+            "webhook_timeout",
+            "webhook_retries",
+        )
+        extra_kwargs = {
+            "webhook_url": {"required": False, "allow_null": True},
+            "webhook_api_key": {"required": False, "allow_null": True},
+        }
+
+    def validate_webhook_url(self, value):
+        if value:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(value)
+            hostname = parsed.hostname or ""
+            if not hostname.endswith(".onion"):
+                raise serializers.ValidationError(
+                    "Webhook URL must be a Tor .onion address"
+                )
+        return value
