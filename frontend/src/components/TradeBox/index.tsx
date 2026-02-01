@@ -166,10 +166,20 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         password: password && password !== '' ? password : undefined,
       };
 
-      void slot.makeOrder(federation, orderAttributes).then((order: Order) => {
-        if (order?.id)
-          navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
-      });
+      void slot
+        .makeOrder(federation, orderAttributes)
+        .then((order: Order) => {
+          if (order?.id) {
+            navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
+          } else if (order?.bad_request) {
+            currentOrder.bad_request = order.bad_request;
+            slot.updateSlotFromOrder(currentOrder);
+          }
+          setLoadingButtons(noLoadingButtons);
+        })
+        .catch(() => {
+          setLoadingButtons(noLoadingButtons);
+        });
     }
   };
 
