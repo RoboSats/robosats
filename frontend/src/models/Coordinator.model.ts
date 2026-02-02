@@ -194,7 +194,7 @@ export class Coordinator {
     this.book = {};
 
     apiClient
-      .get(this.url, `/api/book/`)
+      .get(this.url, `/api/book/`, undefined, true)
       .then((data) => {
         if (!data?.not_found) {
           this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
@@ -223,7 +223,7 @@ export class Coordinator {
     this.loadingLimits = true;
 
     apiClient
-      .get(this.url, `/api/limits/`)
+      .get(this.url, `/api/limits/`, undefined, true)
       .then((data) => {
         if (data !== null) {
           const newLimits = data as LimitList;
@@ -252,7 +252,7 @@ export class Coordinator {
     this.loadingInfo = true;
 
     apiClient
-      .get(this.url, `/api/info/`)
+      .get(this.url, `/api/info/`, undefined, true)
       .then((data) => {
         if (data !== null) {
           this.info = data as Info;
