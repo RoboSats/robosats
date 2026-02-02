@@ -76,6 +76,8 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "type",
             "currency",
             "amount",
+            "price_limit",
+            "auto_paused",
             "has_range",
             "min_amount",
             "max_amount",
@@ -218,6 +220,18 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         "- **'Seen Recently'** (seen within last 10 min)\n"
         "- **'Inactive'** (seen more than 10 min ago)\n\n"
         "Note: When you make a request to this route, your own status get's updated and can be seen by your counterparty",
+    )
+
+    price_limit = serializers.DecimalField(
+        max_digits=18,
+        decimal_places=8,
+        required=False,
+        allow_null=True,
+        help_text="Price limit for auto-pause. For sellers: lower bound (pause if price falls below). For buyers: upper bound (pause if price rises above).",
+    )
+    auto_paused = serializers.BooleanField(
+        required=False,
+        help_text="True if the order was automatically paused due to price limit",
     )
     taker_status = serializers.CharField(
         required=False,
@@ -497,6 +511,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "longitude",
             "chat_last_index",
             "description",
+            "price_limit",
+            "auto_paused",
         )
 
 
@@ -534,6 +550,17 @@ class OrderPublicSerializer(serializers.ModelSerializer):
         help_text="The amount of sats to be traded at the present moment (not including the fees)",
         required=False,
     )
+    price_limit = serializers.DecimalField(
+        max_digits=18,
+        decimal_places=8,
+        required=False,
+        allow_null=True,
+        help_text="Price limit for auto-pause. For sellers: lower bound (pause if price falls below). For buyers: upper bound (pause if price rises above).",
+    )
+    auto_paused = serializers.BooleanField(
+        default=False,
+        help_text="Whether the order is automatically paused or not."
+    )
 
     class Meta:
         model = Order
@@ -561,6 +588,8 @@ class OrderPublicSerializer(serializers.ModelSerializer):
             "bond_size",
             "latitude",
             "longitude",
+            "price_limit",
+            "auto_paused",
         )
 
 
@@ -604,6 +633,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "longitude",
             "password",
             "description",
+            "price_limit",
         )
 
 

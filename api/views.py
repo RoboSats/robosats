@@ -125,6 +125,7 @@ class MakerView(CreateAPIView):
         longitude = serializer.data.get("longitude")
         password = serializer.data.get("password")
         description = serializer.data.get("description")
+        price_limit = serializer.data.get("price_limit")
 
         # Optional params
         if public_duration is None:
@@ -173,6 +174,7 @@ class MakerView(CreateAPIView):
             longitude=longitude,
             password=password,
             description=description,
+            price_limit=price_limit,
         )
 
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
@@ -185,6 +187,10 @@ class MakerView(CreateAPIView):
         if not valid:
             return Response(context, status.HTTP_400_BAD_REQUEST)
 
+        if price_limit is not None:
+            valid, context = Logics.validate_price_limit(order)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
         order.save()
         order.log(
             f"Order({order.id},{order}) created by Robot({request.user.robot.id},{request.user})"
@@ -254,7 +260,8 @@ class OrderView(viewsets.ViewSet):
         data["maker_hash_id"] = str(order.maker.robot.hash_id)
         data["maker_nostr_pubkey"] = str(order.maker.robot.nostr_pubkey)
         data["description"] = order.description
-
+        data["price_limit"] = str(order.price_limit) if order.price_limit else None
+        data["auto_paused"] = order.auto_paused
         # Add activity status of participants based on last_seen
         data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
         if order.taker is not None:
