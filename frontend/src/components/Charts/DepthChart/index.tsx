@@ -279,7 +279,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       return `${value}%`;
     }
   };
-  const formatAxisY = (value: number): string => `${value}₿`;
+  const formatAxisY = (value: number): string => `${value}`;
   const handleOnClick: PointMouseHandler = (point: Point) => {
     onOrderClicked(point.data?.order?.id, point.data?.order?.coordinatorShortAlias);
   };
@@ -408,6 +408,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 axisLeft={{
                   tickSize: 5,
                   format: formatAxisY,
+                  legend: 'BTC',
+                  legendOffset: -42,
+                  legendPosition: 'middle',
                 }}
                 axisBottom={{
                   tickSize: 5,
@@ -416,7 +419,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   format: formatAxisX,
                 }}
                 margin={{
-                  left: 3 * em,
+                  left: 3.5 * em,
                   right: 0.714 * em,
                   bottom:
                     xType === 'base_price'
