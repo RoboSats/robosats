@@ -49,6 +49,7 @@ from api.serializers import (
     InfoSerializer,
     ListOrderSerializer,
     MakeOrderSerializer,
+    OrderDetailSerializer,
     OrderPublicSerializer,
     PriceSerializer,
     StealthSerializer,
@@ -560,14 +561,8 @@ class OrderView(viewsets.ViewSet):
 
             order.refresh_from_db()
             if order.status in [Order.Status.UCA, Order.Status.CCA]:
-                return Response(
-                    {
-                        "id": order.id,
-                        "status": order.status,
-                        "bad_request": "This order has been cancelled",
-                    },
-                    status.HTTP_200_OK,
-                )
+                data = OrderDetailSerializer(order, context={'request': request}).data
+                return Response(data, status.HTTP_200_OK)
 
         # Any other action is only allowed if the user is a participant
         elif not (order.maker == request.user or order.taker == request.user):
