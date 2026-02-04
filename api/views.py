@@ -289,7 +289,15 @@ class OrderView(viewsets.ViewSet):
         data["longitude"] = order.longitude
         data["is_disputed"] = order.is_disputed
         data["ur_nick"] = request.user.username
-        data["satoshis_now"] = order.last_satoshis
+
+        # Use order.last_satoshis except when there's a take_order with a specific amount
+        # (in that case, satoshis_now was already calculated correctly above using take_order.amount)
+        if not (
+            take_order.exists()
+            and order.status >= Order.Status.PUB
+            and order.status < Order.Status.WF2
+        ):
+            data["satoshis_now"] = order.last_satoshis
 
         # Add whether hold invoices are LOCKED (ACCEPTED)
         # Is there a maker bond? If so, True if locked, False otherwise
