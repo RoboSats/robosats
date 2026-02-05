@@ -26,6 +26,10 @@ class Robot {
   public tokenSHA256: string = '';
   public hasEnoughEntropy: boolean = false;
 
+  public webhookUrl: string = '';
+  public webhookEnabled: boolean = false;
+  public webhookApiKey: string = '';
+
   update = (attributes: object): void => {
     Object.assign(this, attributes);
   };
@@ -76,6 +80,9 @@ class Robot {
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
           nostrPubKey: data.nostr_pubkey,
+          webhookUrl: data.webhook_url ?? '',
+          webhookEnabled: data.webhook_enabled ?? false,
+          webhookApiKey: data.webhook_api_key ?? '',
         });
       })
       .catch((e) => {
@@ -124,6 +131,33 @@ class Robot {
       });
 
     this.stealthInvoices = wantsStealth;
+  };
+
+  fetchWebhook = async (
+    federation: Federation,
+    settings: {
+      webhook_url?: string;
+      webhook_enabled?: boolean;
+      webhook_api_key?: string;
+    },
+  ): Promise<void> => {
+    if (!federation) return;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    await apiClient
+      .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
+      .then((data) => {
+        if (data) {
+          this.update({
+            webhookUrl: data.webhook_url ?? this.webhookUrl,
+            webhookEnabled: data.webhook_enabled ?? this.webhookEnabled,
+            webhookApiKey: data.webhook_api_key ?? this.webhookApiKey,
+          });
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
   loadReviewToken = (

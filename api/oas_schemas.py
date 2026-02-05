@@ -544,6 +544,21 @@ class RobotViewSchema:
                         "nullable": True,
                         "description": "Last time the coordinator saw this robot",
                     },
+                    "webhook_url": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Webhook URL for custom notifications (.onion only)",
+                    },
+                    "webhook_enabled": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Whether webhook notifications are enabled",
+                    },
+                    "webhook_api_key": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "API key sent in X-API-Key header for webhook authentication",
+                    },
                 },
             },
         },
@@ -555,8 +570,84 @@ class RobotViewSchema:
                     "public_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n......\n......",
                     "encrypted_private_key": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n\n......\n......",
                     "wants_stealth": True,
+                    "webhook_enabled": False,
+                    "webhook_url": None,
                 },
                 status_codes=[200],
+            ),
+        ],
+    }
+
+    put = {
+        "summary": "Update robot webhook settings",
+        "description": textwrap.dedent(
+            """
+            Update the robot's webhook notification settings.
+
+            Webhooks allow you to receive HTTP POST notifications to your own server
+            when order events occur. **Only `.onion` URLs are accepted** for privacy.
+
+            The webhook payload contains:
+            - `event`: Type of notification (e.g., "order_taken", "escrow_locked")
+            - `order_id`: The order ID related to the notification
+            - `message`: Human-readable notification message
+            - `robot`: Robot nickname
+            - `coordinator`: Coordinator short alias
+            - `timestamp`: ISO format timestamp
+
+            If `webhook_api_key` is set, it will be sent in the `X-API-Key` header.
+
+            **Note:** Webhook is enabled automatically when a valid .onion URL is set.
+            A test notification will be sent when the webhook URL is configured.
+            """
+        ),
+        "responses": {
+            200: {
+                "type": "object",
+                "properties": {
+                    "webhook_url": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Webhook URL (.onion only)",
+                    },
+                    "webhook_enabled": {
+                        "type": "boolean",
+                        "description": "Whether webhook notifications are enabled",
+                    },
+                    "webhook_api_key": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "API key sent in X-API-Key header",
+                    },
+                },
+            },
+            400: {
+                "type": "object",
+                "properties": {
+                    "webhook_url": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Validation errors for webhook_url field",
+                    },
+                },
+            },
+        },
+        "examples": [
+            OpenApiExample(
+                "Successfully updated webhook settings",
+                value={
+                    "webhook_url": "http://myserver.onion/webhook",
+                    "webhook_enabled": True,
+                    "webhook_api_key": "my-secret-key",
+                },
+                status_codes=[200],
+            ),
+            OpenApiExample(
+                "Invalid URL (not .onion)",
+                value={
+                    "webhook_url": ["Webhook URL must be a Tor .onion address"],
+                },
+                status_codes=[400],
             ),
         ],
     }

@@ -56,6 +56,7 @@ from api.serializers import (
     ReviewSerializer,
     UpdateOrderSerializer,
     ListNotificationSerializer,
+    UpdateRobotSerializer,
 )
 from api.utils import (
     compute_avg_premium,
@@ -564,6 +565,8 @@ class OrderView(viewsets.ViewSet):
                     {
                         "id": order.id,
                         "status": order.status,
+                        "type": order.type,
+                        "expires_at": order.expires_at,
                         "bad_request": "This order has been cancelled",
                     },
                     status.HTTP_200_OK,
@@ -668,6 +671,11 @@ class RobotView(APIView):
         context["earned_rewards"] = user.robot.earned_rewards
         context["wants_stealth"] = user.robot.wants_stealth
         context["nostr_pubkey"] = user.robot.nostr_pubkey
+
+        context["webhook_url"] = user.robot.webhook_url
+        context["webhook_enabled"] = user.robot.webhook_enabled
+        context["webhook_api_key"] = user.robot.webhook_api_key
+
         context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
@@ -691,6 +699,36 @@ class RobotView(APIView):
             context["found"] = True
 
         return Response(context, status=status.HTTP_200_OK)
+
+    @extend_schema(**RobotViewSchema.put)
+    def put(self, request, format=None):
+        """
+        Update robot's webhook settings.
+        """
+        robot = request.user.robot
+        old_webhook_url = robot.webhook_url
+        old_webhook_enabled = robot.webhook_enabled
+        serializer = UpdateRobotSerializer(robot, data=request.data, partial=True)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+        new_webhook_url = request.data.get("webhook_url")
+        new_webhook_enabled = serializer.validated_data.get(
+            "webhook_enabled", old_webhook_enabled
+        )
+
+        url_changed = new_webhook_url and new_webhook_url != old_webhook_url
+        just_enabled = new_webhook_enabled and not old_webhook_enabled
+
+        if url_changed or just_enabled:
+            from api.notifications import Notifications
+
+            Notifications().send_webhook_test(robot)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class BookView(ListAPIView):

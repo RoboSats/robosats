@@ -21,7 +21,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { Numbers, Send, EmojiEvents } from '@mui/icons-material';
+import { Numbers, Send, EmojiEvents, Webhook } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Robot, type Coordinator } from '../../models';
 import { useTranslation } from 'react-i18next';
@@ -57,10 +57,31 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const [openOptions, setOpenOptions] = useState<boolean>(false);
   const [disabled, setDisable] = useState<boolean>(false);
   const [robot, setRobot] = useState<Robot | null>(null);
+  const [openWebhookSettings, setOpenWebhookSettings] = useState<boolean>(false);
+  const [webhookUrl, setWebhookUrl] = useState<string>('');
+  const [webhookApiKey, setWebhookApiKey] = useState<string>('');
+  const [webhookEnabled, setWebhookEnabled] = useState<boolean>(false);
+  const [webhookSaving, setWebhookSaving] = useState<boolean>(false);
+  const [webhookUrlError, setWebhookUrlError] = useState<string>('');
+
+  const isValidOnionUrl = (url: string): boolean => {
+    if (!url) return true;
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname.endsWith('.onion');
+    } catch {
+      return false;
+    }
+  };
 
   useEffect(() => {
     const robot = garage.getSlot()?.getRobot(coordinator.shortAlias) ?? null;
     setRobot(robot);
+    if (robot) {
+      setWebhookUrl(robot.webhookUrl ?? '');
+      setWebhookApiKey(robot.webhookApiKey ?? '');
+      setWebhookEnabled(robot.webhookEnabled ?? false);
+    }
   }, [slotUpdatedAt]);
 
   useEffect(() => {
@@ -88,6 +109,25 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
 
   const setStealthInvoice = (): void => {
     if (robot) void robot.fetchStealth(federation, !robot?.stealthInvoices);
+  };
+
+  const handleSaveWebhookSettings = async (): Promise<void> => {
+    if (!robot) return;
+
+    if (webhookUrl && !isValidOnionUrl(webhookUrl)) {
+      setWebhookUrlError(t('URL must be a valid .onion address'));
+      return;
+    }
+    setWebhookUrlError('');
+
+    setWebhookSaving(true);
+    await robot.fetchWebhook(federation, {
+      webhook_url: webhookUrl || undefined,
+      webhook_enabled: webhookEnabled,
+      webhook_api_key: webhookApiKey || undefined,
+    });
+    setWebhookSaving(false);
+    setOpenWebhookSettings(false);
   };
 
   return (
@@ -231,6 +271,101 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                 )}
               </ListItemText>
             </ListItem>
+
+            {/* Webhook Settings */}
+            <ListItem>
+              <ListItemIcon>
+                <Webhook />
+              </ListItemIcon>
+
+              <ListItemText>
+                {robot?.webhookEnabled ? (
+                  <Typography color={theme.palette.success.main}>
+                    <b>{t('Webhook enabled')}</b>
+                  </Typography>
+                ) : (
+                  <Button
+                    color='primary'
+                    onClick={() => {
+                      setOpenWebhookSettings(true);
+                    }}
+                  >
+                    {t('Configure Webhook')}
+                  </Button>
+                )}
+                {robot?.webhookEnabled && (
+                  <Button
+                    size='small'
+                    onClick={() => {
+                      setOpenWebhookSettings(true);
+                    }}
+                  >
+                    {t('Edit')}
+                  </Button>
+                )}
+              </ListItemText>
+            </ListItem>
+
+            {/* Webhook Settings Dialog */}
+            <Dialog open={openWebhookSettings} onClose={() => setOpenWebhookSettings(false)}>
+              <DialogContent>
+                <Typography variant='h6' gutterBottom>
+                  {t('Webhook Notifications')}
+                </Typography>
+                <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
+                  {t('Receive notifications via HTTP POST to your own .onion server.')}
+                </Typography>
+                <Grid container spacing={2} direction='column'>
+                  <Grid item>
+                    <TextField
+                      fullWidth
+                      label={t('Webhook URL (.onion only)')}
+                      placeholder='http://yourserver.onion/webhook'
+                      value={webhookUrl}
+                      onChange={(e) => {
+                        setWebhookUrl(e.target.value);
+                        setWebhookUrlError('');
+                      }}
+                      size='small'
+                      error={Boolean(webhookUrlError)}
+                      helperText={webhookUrlError}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      fullWidth
+                      label={t('API Key (optional)')}
+                      placeholder='Your secret API key'
+                      value={webhookApiKey}
+                      onChange={(e) => setWebhookApiKey(e.target.value)}
+                      size='small'
+                      type='password'
+                    />
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      label={t('Enable webhook notifications')}
+                      control={
+                        <Switch
+                          checked={webhookEnabled}
+                          onChange={(e) => setWebhookEnabled(e.target.checked)}
+                        />
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setOpenWebhookSettings(false)}>{t('Cancel')}</Button>
+                <Button
+                  variant='contained'
+                  onClick={handleSaveWebhookSettings}
+                  disabled={webhookSaving}
+                >
+                  {webhookSaving ? <CircularProgress size={20} /> : t('Save')}
+                </Button>
+              </DialogActions>
+            </Dialog>
 
             <ListItem>
               <ListItemIcon>
