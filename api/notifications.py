@@ -39,6 +39,10 @@ class Notifications:
         context["webhook_enabled"] = user.robot.webhook_enabled
         context["webhook_url"] = user.robot.webhook_url or ""
 
+        context["nostr_forward_enabled"] = user.robot.nostr_forward_enabled
+        context["nostr_forward_relay"] = user.robot.nostr_forward_relay or ""
+        context["nostr_forward_pubkey"] = user.robot.nostr_forward_pubkey or ""
+
         return context
 
     def send_message(
@@ -172,6 +176,30 @@ class Notifications:
         except Exception as e:
             logger.error(f"Webhook test failed for robot {robot.id}: {e}")
             return False
+
+    def send_nostr_forward_test(self, robot):
+        """Sends a test nostr notification to user's main account via their .onion relay"""
+        from api.models import Robot
+        from api.tasks import nostr_send_forward_test
+
+        relay_url = robot.nostr_forward_relay
+        pubkey = robot.nostr_forward_pubkey
+
+        if not relay_url or not pubkey:
+            logger.warning(
+                f"Nostr forward test rejected: missing relay or pubkey for robot {robot.id}"
+            )
+            return False
+
+        if not Robot.is_valid_onion_url(relay_url):
+            logger.warning(
+                f"Nostr forward test rejected: not a .onion address for robot {robot.id}"
+            )
+            return False
+
+        nostr_send_forward_test.delay(robot_id=robot.id)
+        logger.info(f"Nostr forward test queued for robot {robot.id}")
+        return True
 
     def welcome(self, user):
         """User enabled Telegram Notifications"""

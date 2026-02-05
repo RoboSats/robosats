@@ -282,6 +282,20 @@ def nostr_send_notification_event(robot_id=None, order_id=None, text=None):
     return
 
 
+@shared_task(name="nostr_send_forward_test", ignore_result=True, time_limit=120)
+def nostr_send_forward_test(robot_id=None):
+    """Send a test notification to user's main nostr account via their .onion relay"""
+    if robot_id:
+        from api.models import Robot
+        from api.nostr import Nostr
+
+        robot = Robot.objects.get(id=robot_id)
+        nostr = Nostr()
+        async_to_sync(nostr.send_forward_test)(robot)
+
+    return
+
+
 @shared_task(name="send_notification", ignore_result=True, time_limit=120)
 def send_notification(order_id=None, chat_message_id=None, message=None):
     if order_id:

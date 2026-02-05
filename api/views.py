@@ -676,6 +676,10 @@ class RobotView(APIView):
         context["webhook_enabled"] = user.robot.webhook_enabled
         context["webhook_api_key"] = user.robot.webhook_api_key
 
+        context["nostr_forward_pubkey"] = user.robot.nostr_forward_pubkey
+        context["nostr_forward_relay"] = user.robot.nostr_forward_relay
+        context["nostr_forward_enabled"] = user.robot.nostr_forward_enabled
+
         context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
@@ -703,11 +707,13 @@ class RobotView(APIView):
     @extend_schema(**RobotViewSchema.put)
     def put(self, request, format=None):
         """
-        Update robot's webhook settings.
+        Update robot's webhook and nostr forward settings.
         """
         robot = request.user.robot
         old_webhook_url = robot.webhook_url
         old_webhook_enabled = robot.webhook_enabled
+        old_nostr_forward_relay = robot.nostr_forward_relay
+        old_nostr_forward_enabled = robot.nostr_forward_enabled
         serializer = UpdateRobotSerializer(robot, data=request.data, partial=True)
 
         if not serializer.is_valid():
@@ -715,6 +721,7 @@ class RobotView(APIView):
 
         serializer.save()
 
+        # Handle webhook test notification
         new_webhook_url = request.data.get("webhook_url")
         new_webhook_enabled = serializer.validated_data.get(
             "webhook_enabled", old_webhook_enabled
@@ -727,6 +734,23 @@ class RobotView(APIView):
             from api.notifications import Notifications
 
             Notifications().send_webhook_test(robot)
+
+        # Handle nostr forward test notification
+        new_nostr_forward_relay = request.data.get("nostr_forward_relay")
+        new_nostr_forward_enabled = serializer.validated_data.get(
+            "nostr_forward_enabled", old_nostr_forward_enabled
+        )
+
+        relay_changed = (
+            new_nostr_forward_relay
+            and new_nostr_forward_relay != old_nostr_forward_relay
+        )
+        nostr_just_enabled = new_nostr_forward_enabled and not old_nostr_forward_enabled
+
+        if relay_changed or nostr_just_enabled:
+            from api.notifications import Notifications
+
+            Notifications().send_nostr_forward_test(robot)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 

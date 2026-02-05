@@ -49,6 +49,11 @@ class Robot(models.Model):
     webhook_api_key = models.CharField(max_length=256, null=True, blank=True)
     webhook_enabled = models.BooleanField(default=False, null=False)
 
+    # Nostr forwarding to main account
+    nostr_forward_pubkey = models.CharField(max_length=64, null=True, blank=True)
+    nostr_forward_relay = models.CharField(max_length=500, null=True, blank=True)
+    nostr_forward_enabled = models.BooleanField(default=False, null=False)
+
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards
