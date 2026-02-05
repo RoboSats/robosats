@@ -338,15 +338,21 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
 
 const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.JSX.Element => {
   const { t } = useTranslation();
-  const { clientVersion, page, settings, origin } = useContext(AppContext);
+  const { clientVersion, page, settings, origin, federationUpdatedAt } = useContext(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
-  const [rating, setRating] = useState<Record<string, number>>({});
-  const [averageRating, setAvergeRating] = useState<number>(0);
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
   const [coordinator, setCoordinator] = useState<Coordinator>(
     federation.getCoordinator(shortAlias ?? ''),
   );
+
+  const { ratingCount, averageRating } = React.useMemo(() => {
+    const coordinatorRating = federation.ratings[coordinator?.nostrHexPubkey] || {};
+    const ratingCount = Object.keys(coordinatorRating).length;
+    const ratingSum = Object.values(coordinatorRating).reduce((a, b) => a + b, 0);
+    const averageRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
+    return { ratingCount, averageRating };
+  }, [federationUpdatedAt, coordinator?.nostrHexPubkey, federation.ratings]);
 
   const listItemProps = { sx: { maxHeight: '3em', width: '100%' } };
   const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${
@@ -355,39 +361,12 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias ?? ''));
-    setRating({});
-    setAvergeRating(0);
   }, [shortAlias]);
 
   useEffect(() => {
     if (open) {
       const coordinator = federation.getCoordinator(shortAlias ?? '');
-      if (settings.connection === 'nostr') {
-        federation.roboPool.subscribeRatings(
-          {
-            onevent: (event) => {
-              const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
-              if (coordinatorPubKey === coordinator.nostrHexPubkey) {
-                const eventRating = event.tags.find((t) => t[0] === 'rating')?.[1];
-                if (eventRating) {
-                  setRating((prev) => {
-                    prev[event.pubkey] = parseFloat(eventRating);
-                    const totalRatings = Object.values(prev);
-                    const sum: number = Object.values(prev).reduce((accumulator, currentValue) => {
-                      return accumulator + currentValue;
-                    }, 0);
-                    setAvergeRating(sum / totalRatings.length);
-                    return prev;
-                  });
-                }
-              }
-            },
-            oneose: () => {},
-          },
-          [coordinator.nostrHexPubkey],
-          coordinator.shortAlias,
-        );
-      }
+      federation.loadRatings();
       if (!coordinator.info) coordinator?.loadInfo();
     }
   }, [open]);
@@ -425,7 +404,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                     disabled={settings.connection !== 'nostr'}
                   />
                   <Typography variant='caption' color='text.secondary'>
-                    {`(${Object.keys(rating).length ?? 0})`}
+                    {`(${ratingCount})`}
                   </Typography>
                 </Grid>
               </Grid>

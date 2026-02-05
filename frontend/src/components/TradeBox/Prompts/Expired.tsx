@@ -28,6 +28,13 @@ export const ExpiredPrompt = ({
           {t(order.expiry_message)}
         </Typography>
       </Grid>
+      {order.bad_request && (
+        <Grid item style={{ width: '100%' }}>
+          <Typography variant='body2' align='center' color='error'>
+            {t(order.bad_request)}
+          </Typography>
+        </Grid>
+      )}
       {order.is_maker ? (
         <>
           {order.has_password && (

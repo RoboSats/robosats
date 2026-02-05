@@ -1,13 +1,17 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography, IconButton, Tooltip } from '@mui/material';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
+import { AttachFile } from '@mui/icons-material';
+import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
-import { type EncryptedChatMessage } from '..';
+import ChatHeader from '../ChatHeader';
+import { type EncryptedChatMessage, type ChatApiResponse } from '..';
+// import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import {
   type UseFederationStoreType,
   FederationContext,
@@ -17,6 +21,11 @@ import { type Order } from '../../../../models';
 import getSettings from '../../../../utils/settings';
 import { apiClient } from '../../../../services/api';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import {
+  ParsedFileMessage,
+  parseFileMessage,
+  parseImageMetadataJson,
+} from '../../../../utils/nip17File';
 
 interface Props {
   order: Order;
@@ -24,10 +33,11 @@ interface Props {
   takerHashId: string;
   makerHashId: string;
   error: string;
-  lastIndex: number;
+  lastIndex?: number;
   messages: EncryptedChatMessage[];
   setMessages: Dispatch<SetStateAction<EncryptedChatMessage[]>>;
   onSendMessage: (content: string) => Promise<object | void>;
+  onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
@@ -51,12 +61,13 @@ const EncryptedNostrChat: React.FC<Props> = ({
   setPeerPubKey,
   setMessages,
   onSendMessage,
+  onSendFile,
   setError,
   setLastIndex,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { notificationsUpdatedAt } = useContext<UseAppStoreType>(AppContext);
+  const { notificationsUpdatedAt, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { federation, notifications } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -64,6 +75,11 @@ const EncryptedNostrChat: React.FC<Props> = ({
   const [value, setValue] = useState<string>('');
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [messageCount, setMessageCount] = useState<number>(0);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
+  const [peerConnected, setPeerConnected] = useState<boolean>(false);
+  const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadPeerPubKey();
@@ -87,23 +103,49 @@ const EncryptedNostrChat: React.FC<Props> = ({
         const chatMessages = robotNotifications
           .values()
           .filter(([_wrapedEvent, event]) => {
+            const orderIdTag = event.tags.find((t) => t[0] === 'order_id');
+            const expectedOrderId = `${order.shortAlias}/${order.id}`;
             const pubKeysRefs = event.tags.filter((t) => t[0] === 'p');
             const isChatMessage =
               [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(event.pubkey) &&
               pubKeysRefs.every((tag) =>
                 [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(tag[1]),
-              );
+              ) &&
+              orderIdTag?.[1] !== expectedOrderId;
 
             return isChatMessage;
           })
           .map(([wrapedEvent, event]) => {
             const userNick =
               event.pubkey === order.maker_nostr_pubkey ? order.maker_nick : order.taker_nick;
+
+            let fileMetadata: ParsedFileMessage | undefined;
+            let displayText = event.content;
+
+            if (event.kind === 15) {
+              const fileData = parseFileMessage(event);
+              if (fileData) {
+                fileMetadata = fileData;
+                displayText = t('[Loading Encrypted Image]');
+              } else {
+                displayText = t('[Corrupted Image File]');
+              }
+            } else {
+              const imgMeta = parseImageMetadataJson(event.content);
+              if (imgMeta) {
+                fileMetadata = imgMeta;
+                displayText = t('[Loading Encrypted Image]');
+              } else {
+                displayText = t('[Corrupted Image File]');
+              }
+            }
+
             return {
-              index: event.created_at,
+              index: event.created_at + Math.random() * 0.001,
               encryptedMessage: JSON.stringify(wrapedEvent),
-              plainTextMessage: event.content,
+              plainTextMessage: displayText,
               validSignature: true,
+              fileMetadata: fileMetadata,
               userNick: userNick,
               time: new Date(event.created_at * 1000).toISOString(),
             };
@@ -117,7 +159,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
         return sortedMessages;
       });
     }
-  }, [notificationsUpdatedAt]);
+  }, [notificationsUpdatedAt, slotUpdatedAt]);
 
   const loadPeerPubKey: () => void = () => {
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
@@ -125,16 +167,80 @@ const EncryptedNostrChat: React.FC<Props> = ({
 
     const url = federation.getCoordinator(shortAlias).url;
     apiClient
-      .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
+      .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex ?? 0}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
-      .then((results: object) => {
+      .then((data: unknown) => {
+        const results = data as ChatApiResponse;
         if (results != null) {
-          setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
+          if (results.peer_pubkey) {
+            setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
+          }
+          if (results.peer_connected !== undefined) {
+            setPeerConnected(results.peer_connected);
+          }
         }
       })
       .catch((error) => {
         setError(error.toString());
+      });
+  };
+
+  const clearFileInput = (): void => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAttachClick = (): void => {
+    // Clear any previous errors
+    setError('');
+    setPrivacyWarningOpen(true);
+  };
+
+  const handlePrivacyDialogClose = (confirmed: boolean): void => {
+    setPrivacyWarningOpen(false);
+    if (confirmed) {
+      // Trigger file input click - works on both web and Android (with native implementation)
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      // User cancelled file selection
+      clearFileInput();
+      return;
+    }
+
+    // Validate file size
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      setError(t('File too large. Maximum size is 10MB.'));
+      clearFileInput();
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError(t('Only image files are allowed.'));
+      clearFileInput();
+      return;
+    }
+
+    // File is valid, proceed with upload
+    setError(''); // Clear any previous errors
+    setUploading(true);
+    onSendFile(file)
+      .catch((err) => {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setError(errorMessage);
+        console.error('File upload error:', err);
+      })
+      .finally(() => {
+        setUploading(false);
+        clearFileInput();
       });
   };
 
@@ -166,6 +272,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
       spacing={0.5}
     >
       <Grid item>
+        <ChatHeader connected={Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
           style={{
@@ -187,6 +294,8 @@ const EncryptedNostrChat: React.FC<Props> = ({
                   takerNick={takerNick}
                   takerHashId={takerHashId}
                   makerHashId={makerHashId}
+                  imageUrls={imageUrls}
+                  setImageUrls={setImageUrls}
                 />
               </li>
             );
@@ -217,6 +326,24 @@ const EncryptedNostrChat: React.FC<Props> = ({
               }}
               fullWidth={true}
             />
+            <input
+              type='file'
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept='image/*'
+              onChange={handleFileChange}
+            />
+            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+              <span>
+                <IconButton
+                  disabled={uploading || peerPubKey === undefined}
+                  onClick={handleAttachClick}
+                  color='primary'
+                >
+                  {uploading ? <CircularProgress size={24} /> : <AttachFile />}
+                </IconButton>
+              </span>
+            </Tooltip>
             <Button
               disabled={waitingEcho || !peerPubKey}
               type='submit'
@@ -253,6 +380,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
           </Typography>
         </form>
       </Grid>
+      <PrivacyWarningDialog open={privacyWarningOpen} onClose={handlePrivacyDialogClose} />
     </Grid>
   );
 };

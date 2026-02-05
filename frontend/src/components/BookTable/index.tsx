@@ -22,6 +22,7 @@ import {
   type GridValidRowModel,
   type GridSlotsComponent,
   type GridSortModel,
+  type GridRenderCellParams,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -68,6 +69,7 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
+  fillContainer?: boolean;
   onOrderClicked?: (id: number, shortAlias: string) => void;
 }
 
@@ -82,6 +84,7 @@ const BookTable = ({
   showControls = true,
   showFooter = true,
   showNoResults = true,
+  fillContainer = false,
   onOrderClicked = () => null,
 }: BookTableProps): React.JSX.Element => {
   const { fav, settings } = useContext<UseAppStoreType>(AppContext);
@@ -156,6 +159,10 @@ const BookTable = ({
       page: 0,
     });
   }, [defaultPageSize]);
+
+  useEffect(() => {
+    setPaymentMethods([]);
+  }, [fav.mode]);
 
   const localeText = useMemo(() => {
     return {
@@ -412,7 +419,7 @@ const BookTable = ({
 
   const defaultBondSize = 3;
 
-  const premiumObj = useCallback(() => {
+  const premiumObj = () => {
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
     // Hardcoded: a buy order at 10% is an outstanding premium
@@ -423,7 +430,7 @@ const BookTable = ({
       headerName: t('Premium'),
       type: 'number',
       flex: 1,
-      renderCell: (params: { row: PublicOrder }) => {
+      renderCell: (params: GridRenderCellParams<PublicOrder>) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         let fontColor = `rgb(0,0,0)`;
         let premiumPoint = 0;
@@ -499,54 +506,55 @@ const BookTable = ({
               >
                 {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
               </Typography>
-              <Box
-                sx={{
-                  display: { xs: 'block', lg: 'none' },
-                  lineHeight: '1',
-                  marginTop: '2px',
-                }}
-              >
-                {(() => {
-                  const bondElement = (
-                    <Typography
-                      component='span'
-                      variant='caption'
-                      sx={{
-                        fontSize: '0.70rem',
-                        lineHeight: '1',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      <Typography
-                        component='span'
-                        variant='caption'
-                        sx={{ fontSize: '0.70rem', color: 'text.secondary' }}
-                      >
-                        {'Bond: '}
-                      </Typography>
+              {!visibleColumnKeys.has('bond_size') && (
+                <Box
+                  sx={{
+                    lineHeight: '1',
+                    marginTop: '2px',
+                  }}
+                >
+                  {(() => {
+                    const bondElement = (
                       <Typography
                         component='span'
                         variant='caption'
                         sx={{
                           fontSize: '0.70rem',
-                          color: isLowBond ? theme.palette.warning.main : 'text.secondary',
-                          fontWeight: isLowBond ? 600 : 'normal',
+                          lineHeight: '1',
+                          whiteSpace: 'nowrap',
                         }}
                       >
-                        {params.row.bond_size ? `${bondSize}%` : '-'}
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          sx={{ fontSize: '0.70rem', color: 'text.secondary' }}
+                        >
+                          {'Bond: '}
+                        </Typography>
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          sx={{
+                            fontSize: '0.70rem',
+                            color: isLowBond ? theme.palette.warning.main : 'text.secondary',
+                            fontWeight: isLowBond ? 600 : 'normal',
+                          }}
+                        >
+                          {params.row.bond_size ? `${bondSize}%` : '-'}
+                        </Typography>
                       </Typography>
-                    </Typography>
-                  );
+                    );
 
-                  return bondElement;
-                })()}
-              </Box>
+                    return bondElement;
+                  })()}
+                </Box>
+              )}
             </div>
           </Tooltip>
         );
       },
     };
-  }, [theme]);
+  };
 
   const timerObj = useCallback(() => {
     return {
@@ -808,9 +816,11 @@ const BookTable = ({
   const filteredColumns = function (maxWidth: number): {
     columns: Array<GridColDef<GridValidRowModel>>;
     width: number;
+    visibleColumnKeys: Set<string>;
   } {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
+    const visibleColumnKeys = new Set<string>();
     let width: number = -4;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
@@ -827,6 +837,7 @@ const BookTable = ({
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
         selectedColumns.push([colObject(colWidth), value.order]);
+        visibleColumnKeys.add(key);
       }
     }
 
@@ -839,10 +850,10 @@ const BookTable = ({
         return item[0];
       });
 
-    return { columns, width: maxWidth };
+    return { columns, width: maxWidth, visibleColumnKeys };
   };
 
-  const { columns, width } = useMemo(() => {
+  const { columns, width, visibleColumnKeys } = useMemo(() => {
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
@@ -939,14 +950,24 @@ const BookTable = ({
     return (
       <Paper
         elevation={elevation}
-        style={{
-          minWidth: `23em`,
-          width: `${width}em`,
-          height: `${height}em`,
-          overflow: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        style={
+          fillContainer
+            ? {
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+              }
+            : {
+                minWidth: `23em`,
+                width: `${width}em`,
+                height: `${height}em`,
+                overflow: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+              }
+        }
       >
         {showControls && (
           <BookControl

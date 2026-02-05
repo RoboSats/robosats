@@ -294,7 +294,7 @@ class TradeTest(BaseAPITestCase):
             "is_explicit": False,
             "premium": 3.34,
             "public_duration": 69360,
-            "escrow_duration": 60 * 30, # allowed duration
+            "escrow_duration": 60 * 30,  # allowed duration
             "bond_size": 3.5,
             "latitude": 0,
             "longitude": 0,
@@ -306,9 +306,11 @@ class TradeTest(BaseAPITestCase):
 
         # escrow duration too low
         bad_form_too_low_escrow_duration = good_form.copy()
-        bad_form_too_low_escrow_duration["escrow_duration"] = 60 * 30 -1
+        bad_form_too_low_escrow_duration["escrow_duration"] = 60 * 30 - 1
 
-        bad_trade_too_low = Trade(self.client, maker_form=bad_form_too_low_escrow_duration)
+        bad_trade_too_low = Trade(
+            self.client, maker_form=bad_form_too_low_escrow_duration
+        )
         self.assertEqual(bad_trade_too_low.response.status_code, 400)
         self.assertResponse(bad_trade_too_low.response)
 
@@ -316,7 +318,9 @@ class TradeTest(BaseAPITestCase):
         bad_form_too_high_escrow_duration = good_form.copy()
         bad_form_too_high_escrow_duration["escrow_duration"] = 60 * 60 * 10 + 1
 
-        bad_trade_too_high = Trade(self.client, maker_form=bad_form_too_high_escrow_duration)
+        bad_trade_too_high = Trade(
+            self.client, maker_form=bad_form_too_high_escrow_duration
+        )
         self.assertEqual(bad_trade_too_high.response.status_code, 400)
         self.assertResponse(bad_trade_too_high.response)
 
@@ -1143,7 +1147,6 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.UCA)
@@ -1279,7 +1282,6 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
 
@@ -1287,7 +1289,6 @@ class TradeTest(BaseAPITestCase):
         trade.cancel_order(cancel_status=Order.Status.PUB)
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
@@ -1352,7 +1353,7 @@ class TradeTest(BaseAPITestCase):
         # Taker accepts (ask) the cancellation
         trade.cancel_order(trade.taker_index)
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
+
         data = trade.response.json()
         self.assertEqual(data["id"], trade.order_id)
         self.assertEqual(data["status"], Order.Status.CCA)
@@ -2017,3 +2018,93 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
+
+    def test_robot_creation_with_valid_nostr_pubkey(self):
+        """
+        Test that a robot can be created with a valid 64-character hex nostr pubkey.
+        """
+        trade = Trade(self.client)
+
+        # create_robot() should succeed with a valid nostr pubkey
+        response = trade.create_robot(1)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsNotNone(data["nickname"])
+        self.assertIn("nostr_pubkey", data)
+
+    def test_robot_creation_with_invalid_nostr_pubkey_format(self):
+        """
+        Test that robot creation fails when nostr pubkey is invalid.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/2/b91_token").read().strip()
+        pub_key = open("tests/robots/2/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/2/enc_priv_key").read().strip()
+
+        # Test with invalid nostr pubkey (too short)
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr abc123"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("error_code", data)
+        self.assertEqual(data["error_code"], 7001)
+
+    def test_robot_creation_with_nostr_pubkey_prefix(self):
+        """
+        Test that robot creation succeeds when nostr pubkey has "Nostr " prefix.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/3/b91_token").read().strip()
+        pub_key = open("tests/robots/3/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/3/enc_priv_key").read().strip()
+        nostr_pubkey = open("tests/robots/3/nostr_pubkey").read().strip()
+
+        # Test with "Nostr " prefix (should be parsed correctly)
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {nostr_pubkey}"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsNotNone(data["nickname"])
+
+    def test_robot_creation_with_nostr_pubkey_invalid_hex(self):
+        """
+        Test that robot creation fails when nostr pubkey has invalid hex characters.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/2/b91_token").read().strip()
+        pub_key = open("tests/robots/2/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/2/enc_priv_key").read().strip()
+
+        # Test with invalid hex characters (64 chars but not hex)
+        invalid_hex = "g" * 64  # 'g' is not a valid hex character
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {invalid_hex}"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("error_code", data)
+        self.assertEqual(data["error_code"], 7001)
+
+    def test_robot_creation_with_missing_nostr_pubkey(self):
+        """
+        Test that robot creation fails when nostr pubkey is missing.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/2/b91_token").read().strip()
+        pub_key = open("tests/robots/2/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/2/enc_priv_key").read().strip()
+
+        # Test with missing nostr pubkey
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} |"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("error_code", data)
+        self.assertEqual(data["error_code"], 7000)

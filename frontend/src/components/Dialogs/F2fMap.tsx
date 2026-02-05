@@ -93,7 +93,7 @@ const F2fMapDialog = ({
               setUseTiles(true);
             }}
           >
-            {t('Accept')}
+            {t('Acknowledged')}
           </Button>
         </DialogActions>
       </Dialog>

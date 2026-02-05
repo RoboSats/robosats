@@ -23,11 +23,13 @@ interface AndroidAppRobosats {
   sendWsMessage: (uuid: string, path: string, message: string) => void;
   sendRequest: (
     uuid: string,
-    action: 'GET' | 'POST' | 'DELETE',
+    action: 'GET' | 'POST' | 'DELETE' | 'PUT',
     url: string,
     headers: string,
     body: string,
   ) => void;
+  sendBinary: (uuid: string, url: string, headers: string, base64Data: string) => void;
+  getBinary: (uuid: string, url: string) => void;
   restart: () => void;
 }
 

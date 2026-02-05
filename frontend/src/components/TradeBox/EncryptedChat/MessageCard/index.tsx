@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IconButton, Tooltip, Card, CardHeader, useTheme } from '@mui/material';
 import RobotAvatar from '../../../RobotAvatar';
 import { systemClient } from '../../../../services/System';
 import { useTranslation } from 'react-i18next';
+import { isImageMimeType } from '../../../../utils/nip17File';
+import { downloadFromBlossom, verifyBlobHash } from '../../../../utils/blossom';
+import { decryptFile } from '../../../../utils/crypto/xchacha20';
 
-// Icons
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import { type EncryptedChatMessage } from '..';
+import ImageLightbox from '../ImageLightbox';
 
 interface Props {
   message: EncryptedChatMessage;
@@ -18,6 +20,8 @@ interface Props {
   makerHashId: string;
   isTaker: boolean;
   userConnected?: boolean;
+  imageUrls: Record<number, string>;
+  setImageUrls: (imageUrls: Record<number, string>) => Record<number, string>;
 }
 
 const MessageCard: React.FC<Props> = ({
@@ -27,14 +31,105 @@ const MessageCard: React.FC<Props> = ({
   takerNick,
   takerHashId,
   makerHashId,
+  imageUrls,
+  setImageUrls,
 }) => {
-  const [showPGP, setShowPGP] = useState<boolean>(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [openLightbox, setOpenLightbox] = useState<boolean>(false);
   const { t } = useTranslation();
   const theme = useTheme();
 
   const takerCardColor = theme.palette.mode === 'light' ? '#d1e6fa' : '#082745';
   const makerCardColor = theme.palette.mode === 'light' ? '#f2d5f6' : '#380d3f';
   const cardColor = isTaker ? takerCardColor : makerCardColor;
+
+  useEffect(() => {
+    // Cleanup blob URL on unmount
+    return () => {
+      if (imageUrls[message.index]) {
+        URL.revokeObjectURL(imageUrls[message.index]);
+      }
+    };
+  }, [imageUrls[message.index]]);
+
+  const handleImageLoad = async () => {
+    if (imageUrls[message.index] || !message.fileMetadata || imageError) return;
+
+    try {
+      const fileData = message.fileMetadata;
+
+      if (!isImageMimeType(fileData.mimeType)) {
+        return;
+      }
+
+      const ciphertext = await downloadFromBlossom(fileData.url);
+      const isValid = await verifyBlobHash(ciphertext, fileData.sha256);
+
+      if (!isValid) {
+        setImageError(t('Image hash verification failed'));
+        return;
+      }
+
+      const plaintext = await decryptFile(ciphertext, fileData.key, fileData.nonce);
+      const blob = new Blob([plaintext], { type: fileData.mimeType });
+      const url = URL.createObjectURL(blob);
+
+      setImageUrls((urls) => {
+        urls[message.index] = url;
+        return urls;
+      });
+    } catch (error) {
+      console.error('Failed to load image:', error);
+      setImageError(t('Failed to decrypt image'));
+    }
+  };
+
+  useEffect(() => {
+    if (message.fileMetadata && isImageMimeType(message.fileMetadata.mimeType)) {
+      void handleImageLoad();
+    }
+  }, [message.fileMetadata]);
+
+  const renderMessageContent = () => {
+    if (imageUrls[message.index]) {
+      return (
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <img
+            src={imageUrls[message.index]}
+            alt={t('Encrypted image')}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '200px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+            onClick={() => setOpenLightbox(true)}
+            onError={() => setImageError(t('Failed to display image'))}
+          />
+          <ImageLightbox
+            open={openLightbox}
+            onClose={() => setOpenLightbox(false)}
+            imageUrl={imageUrls[message.index]}
+          />
+        </div>
+      );
+    }
+
+    if (imageError) {
+      return <span style={{ color: 'red' }}>{imageError}</span>;
+    }
+
+    return (
+      <>
+        {message.plainTextMessage.split('\n').map((messageLine, idx) => (
+          <span key={idx}>
+            {messageLine}
+            <br />
+          </span>
+        ))}
+      </>
+    );
+  };
 
   return (
     <Card elevation={5}>
@@ -88,70 +183,35 @@ const MessageCard: React.FC<Props> = ({
                   <CloseIcon sx={{ height: '0.8em' }} color='error' />
                 )}
               </div>
-              <div style={{ width: '1.4em' }}>
-                <IconButton
-                  sx={{ height: '1.2em', width: '1.2em', position: 'relative', right: '0.15em' }}
-                  onClick={() => {
-                    setShowPGP(!showPGP);
-                  }}
-                >
-                  <VisibilityIcon
-                    color={showPGP ? 'primary' : 'inherit'}
-                    sx={{
-                      height: '0.6em',
-                      width: '0.6em',
-                      color: showPGP ? 'primary' : theme.palette.text.secondary,
-                    }}
-                  />
-                </IconButton>
-              </div>
-              <div style={{ width: '1.4em' }}>
-                <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-                  <IconButton
-                    sx={{ height: '0.8em', width: '0.8em' }}
-                    onClick={() => {
-                      systemClient.copyToClipboard(
-                        showPGP ? message.encryptedMessage : message.plainTextMessage,
-                      );
-                    }}
-                  >
-                    <ContentCopy
-                      sx={{
-                        height: '0.7em',
-                        width: '0.7em',
-                        color: theme.palette.text.secondary,
+              {!imageUrls[message.index] && (
+                <div style={{ width: '1.4em' }}>
+                  <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+                    <IconButton
+                      sx={{ height: '0.8em', width: '0.8em' }}
+                      onClick={() => {
+                        systemClient.copyToClipboard(message.plainTextMessage);
                       }}
-                    />
-                  </IconButton>
-                </Tooltip>
-              </div>
+                    >
+                      <ContentCopy
+                        sx={{
+                          height: '0.7em',
+                          width: '0.7em',
+                          color: theme.palette.text.secondary,
+                        }}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              )}
             </div>
           </Tooltip>
         }
-        subheader={
-          showPGP ? (
-            <a>
-              {' '}
-              {message.time} <br /> {`Valid signature:  ${String(message.validSignature)}`} <br />{' '}
-              {message.encryptedMessage}{' '}
-            </a>
-          ) : (
-            <>
-              {message.plainTextMessage.split('\n').map((messageLine, idx) => (
-                <span key={idx}>
-                  {messageLine}
-                  <br />
-                </span>
-              ))}
-            </>
-          )
-        }
+        subheader={renderMessageContent()}
         subheaderTypographyProps={{
           sx: {
             wordWrap: 'break-word',
             width: '13em',
             textAlign: 'left',
-            fontSize: showPGP ? theme.typography.fontSize * 0.78 : null,
           },
         }}
       />

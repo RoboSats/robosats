@@ -505,6 +505,13 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         )
 
 
+# Only used in oas_schemas
+class CancelledOrderResponseSerializer(serializers.Serializer):
+    id = serializers.IntegerField(help_text="Order id")
+    status = serializers.IntegerField(help_text="Order status")
+    bad_request = serializers.CharField(help_text="Reason for the failure")
+
+
 class ListNotificationSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField(
         help_text="The `status` of the order when the notification was trigered",

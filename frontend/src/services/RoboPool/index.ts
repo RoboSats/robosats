@@ -129,22 +129,25 @@ class RoboPool {
     this.sendMessage(JSON.stringify(requestBook));
   };
 
-  subscribeRatings = (events: RoboPoolEvents, pubkeys?: string[], id?: string): void => {
-    const defaultPubkeys = Object.values(defaultFederation)
-      .map((f) => f.nostrHexPubkey)
-      .filter((item) => item !== undefined);
+  subscribeRatings = (events: RoboPoolEvents, pubkeys?: string[], id?: string): string => {
+    const pubkeysFilter =
+      pubkeys ??
+      Object.values(defaultFederation)
+        .map((f) => f.nostrHexPubkey)
+        .filter((item) => item !== undefined);
 
-    const subscribeRatings = `subscribeRatings${id ?? ''}`;
+    const subscriptionId = `subscribeRatings${id ?? ''}`;
+    const sixMonthsAgo = Math.floor(new Date().getTime() / 1000) - 6 * 30 * 24 * 60 * 60;
     const requestRatings = [
       'REQ',
-      subscribeRatings,
-      { kinds: [31986], '#p': pubkeys ?? defaultPubkeys, since: 1746316800 },
+      subscriptionId,
+      { kinds: [31986], '#p': pubkeysFilter, since: sixMonthsAgo },
     ];
 
     this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
       const jsonMessage = JSON.parse(messageEvent.data);
 
-      if (subscribeRatings !== jsonMessage[1]) return;
+      if (subscriptionId !== jsonMessage[1]) return;
 
       if (jsonMessage[0] === 'EVENT') {
         events.onevent(jsonMessage[2]);
@@ -153,6 +156,12 @@ class RoboPool {
       }
     });
     this.sendMessage(JSON.stringify(requestRatings));
+
+    return subscriptionId;
+  };
+
+  closeSubscription = (subscriptionId: string): void => {
+    this.sendMessage(JSON.stringify(['CLOSE', subscriptionId]));
   };
 
   subscribeNotifications = (garage: Garage, events: RoboPoolEvents): void => {

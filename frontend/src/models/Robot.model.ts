@@ -59,7 +59,7 @@ class Robot {
     this.loading = true;
 
     await apiClient
-      .get(coordinator.url, '/api/robot/', authHeaders)
+      .get(coordinator.url, '/api/robot/', authHeaders, true)
       .then((data: object) => {
         if (data?.bad_request) {
           console.error(data?.bad_request);

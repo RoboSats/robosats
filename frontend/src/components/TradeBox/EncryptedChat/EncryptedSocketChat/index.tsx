@@ -1,6 +1,15 @@
-import React, { useEffect, useLayoutEffect, useState, useContext } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
+import {
+  Button,
+  TextField,
+  Grid,
+  Paper,
+  Typography,
+  Tooltip,
+  IconButton,
+  CircularProgress,
+} from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
@@ -17,8 +26,10 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import getSettings from '../../../../utils/settings';
-import { Send } from '@mui/icons-material';
+import { AttachFile, Send } from '@mui/icons-material';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import PrivacyWarningDialog from '../PrivacyWarningDialog';
+import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
 
 const audioPath =
   getSettings().client == 'mobile'
@@ -34,7 +45,8 @@ interface Props {
   makerHashId: string;
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, options: { skipCoordinator?: boolean }) => void;
+  onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
 }
@@ -49,6 +61,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   messages,
   setMessages,
   onSendMessage,
+  onSendFile,
   peerPubKey,
   setPeerPubKey,
 }: Props): React.JSX.Element => {
@@ -69,6 +82,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [messageCount, setMessageCount] = useState<number>(0);
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
+  const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!connected && Boolean(garage.getSlot()?.hashId)) {
@@ -184,39 +201,31 @@ const EncryptedSocketChat: React.FC<Props> = ({
             if (existingMessage != null) {
               return prev;
             } else {
-              const x: EncryptedChatMessage = {
+              const plainText = String(decryptedData.decryptedMessage);
+              let fileMetadata: ParsedFileMessage | undefined;
+
+              let x: EncryptedChatMessage = {
                 index: dataFromServer.index,
                 encryptedMessage: dataFromServer.message.split('\\').join('\n'),
-                plainTextMessage: String(decryptedData.decryptedMessage),
+                plainTextMessage: plainText,
                 validSignature: decryptedData.validSignature,
                 userNick: dataFromServer.user_nick,
                 time: dataFromServer.time,
+                fileMetadata,
               };
+
+              const imgMeta = parseImageMetadataJson(plainText);
+              if (imgMeta) {
+                x = {
+                  ...x,
+                  plainTextMessage: t('[Loading Encrypted Image]'),
+                  fileMetadata: imgMeta,
+                };
+              }
+
               return [...prev, x].sort((a, b) => a.index - b.index);
             }
           });
-        });
-      }
-      // We allow plaintext communication. The user must write # to start
-      // If we receive an plaintext message
-      else if (dataFromServer.message.substring(0, 1) === '#') {
-        setMessages((prev: EncryptedChatMessage[]) => {
-          const existingMessage = prev.find(
-            (item) => item.plainTextMessage === dataFromServer.message,
-          );
-          if (existingMessage != null) {
-            return prev;
-          } else {
-            const x: EncryptedChatMessage = {
-              index: prev.length + 0.001,
-              encryptedMessage: dataFromServer.message,
-              plainTextMessage: dataFromServer.message,
-              validSignature: false,
-              userNick: dataFromServer.user_nick,
-              time: new Date().toString(),
-            };
-            return [...prev, x].sort((a, b) => a.index - b.index);
-          }
         });
       }
     }
@@ -231,25 +240,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
       );
       setValue('');
     }
-    // If input string contains '#' send unencrypted and unlogged message
-    else if (connection != null && value.substring(0, 1) === '#') {
-      onSendMessage(value);
-      connection.send(
-        JSON.stringify({
-          type: 'message',
-          message: value,
-          nick: userNick,
-        }),
-      );
-      setValue('');
-    }
-
     // Else if message is not empty send message
     else if (value !== '') {
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
-      onSendMessage(value);
+      onSendMessage(value, { skipCoordinator: true });
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
         .then((encryptedMessage) => {
           if (connection != null) {
@@ -267,6 +263,64 @@ const EncryptedSocketChat: React.FC<Props> = ({
         });
     }
     e.preventDefault();
+  };
+
+  const clearFileInput = (): void => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAttachClick = (): void => {
+    // Clear any previous errors
+    setError('');
+    setPrivacyWarningOpen(true);
+  };
+
+  const handlePrivacyDialogClose = (confirmed: boolean): void => {
+    setPrivacyWarningOpen(false);
+    if (confirmed) {
+      // Trigger file input click - works on both web and Android (with native implementation)
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      // User cancelled file selection
+      clearFileInput();
+      return;
+    }
+
+    // Validate file size
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      setError(t('File too large. Maximum size is 10MB.'));
+      clearFileInput();
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError(t('Only image files are allowed.'));
+      clearFileInput();
+      return;
+    }
+
+    // File is valid, proceed with upload
+    setError(''); // Clear any previous errors
+    setUploading(true);
+    onSendFile(file)
+      .catch((err) => {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setError(errorMessage);
+        console.error('File upload error:', err);
+      })
+      .finally(() => {
+        setUploading(false);
+        clearFileInput();
+      });
   };
 
   return (
@@ -302,6 +356,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   takerNick={takerNick}
                   takerHashId={takerHashId}
                   makerHashId={makerHashId}
+                  imageUrls={imageUrls}
+                  setImageUrls={setImageUrls}
                 />
               </li>
             );
@@ -332,6 +388,24 @@ const EncryptedSocketChat: React.FC<Props> = ({
               }}
               fullWidth
             />
+            <input
+              type='file'
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept='image/*'
+              onChange={handleFileChange}
+            />
+            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+              <span>
+                <IconButton
+                  disabled={uploading || peerPubKey === undefined}
+                  onClick={handleAttachClick}
+                  color='primary'
+                >
+                  {uploading ? <CircularProgress size={24} /> : <AttachFile />}
+                </IconButton>
+              </span>
+            </Tooltip>
             <Button
               disabled={!connected || waitingEcho || peerPubKey === undefined}
               type='submit'
@@ -347,6 +421,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
           </Typography>
         </form>
       </Grid>
+      <PrivacyWarningDialog open={privacyWarningOpen} onClose={handlePrivacyDialogClose} />
     </Grid>
   );
 };
