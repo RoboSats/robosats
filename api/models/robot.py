@@ -51,7 +51,7 @@ class Robot(models.Model):
 
     # Nostr forwarding to main account
     nostr_forward_pubkey = models.CharField(max_length=64, null=True, blank=True)
-    nostr_forward_relay = models.URLField(max_length=500, null=True, blank=True)
+    nostr_forward_relay = models.CharField(max_length=500, null=True, blank=True)
     nostr_forward_enabled = models.BooleanField(default=False, null=False)
 
     # Claimable rewards
