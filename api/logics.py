@@ -1,5 +1,6 @@
 import math
 from datetime import timedelta
+import typing
 
 from decouple import config, Csv
 from django.contrib.auth.models import User
@@ -687,28 +688,36 @@ class Logics:
         return True
 
     @classmethod
-    def payout_amount(cls, order, user):
+    def payout_amount(cls, order) -> int:
         """Computes buyer invoice amount. Uses order.last_satoshis,
         that is the final trade amount set at Taker Bond time
-        Adds context for onchain swap.
         """
-        if not cls.is_buyer(order, user):
-            return False, None
 
-        if user == order.maker:
+        if order.type == Order.Types.BUY:
             fee_fraction = FEE * MAKER_FEE_SPLIT
-        elif user == order.taker:
+        else:
             fee_fraction = FEE * (1 - MAKER_FEE_SPLIT)
 
         fee_sats = order.last_satoshis * fee_fraction
 
-        context = {}
-        # context necessary for the user to submit a LN invoice
-        context["invoice_amount"] = round(
+        return round(
             order.last_satoshis - fee_sats
         )  # Trading fee to buyer is charged here.
 
+    @classmethod
+    def compute_buyer_payout_context(cls, order) -> typing.Dict[str, typing.Any]:
+        """Computes the context necessary for the buyer to submit
+        either a LN invoice or an onchain address for payout."""
+        context = {}
+        # context necessary for the user to submit a LN invoice
+        context["invoice_amount"] = cls.payout_amount(order)
+
         # context necessary for the user to submit an onchain address
+        if config("DISABLE_ONCHAIN", cast=bool, default=True):
+            context["swap_allowed"] = False
+            context["swap_failure_reason"] = "On-the-fly submarine swaps are disabled"
+            return context
+
         MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=20_000)
         MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
@@ -717,56 +726,37 @@ class Logics:
             context["swap_failure_reason"] = (
                 f"Order amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats"
             )
-            order.log(
-                f"Onchain payment option was not offered: amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats",
-                level="WARN",
-            )
-            return True, context
+            return context
         elif context["invoice_amount"] > MAX_SWAP_AMOUNT:
             context["swap_allowed"] = False
             context["swap_failure_reason"] = (
                 f"Order amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats"
             )
-            order.log(
-                f"Onchain payment option was not offered: amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats",
-                level="WARN",
-            )
-            return True, context
+            return context
 
-        if config("DISABLE_ONCHAIN", cast=bool, default=True):
-            context["swap_allowed"] = False
-            context["swap_failure_reason"] = "On-the-fly submarine swaps are disabled"
-            order.log(
-                "Onchain payment option was not offered: on-the-fly submarine swaps are disabled"
-            )
-            return True, context
-
+        valid = True
         if order.payout_tx is None:
+            buyer = order.maker if cls.is_buyer(order, order.maker) else order.taker
             # Creates the OnchainPayment object and checks node balance
             valid = cls.create_onchain_payment(
-                order, user, preliminary_amount=context["invoice_amount"]
+                order, buyer, preliminary_amount=context["invoice_amount"]
             )
-            order.log(
-                f"Suggested mining fee is {order.payout_tx.suggested_mining_fee_rate} Sats/vbyte, the swap fee rate is {order.payout_tx.swap_fee_rate}%"
-            )
-            if not valid:
-                context["swap_allowed"] = False
-                context["swap_failure_reason"] = (
-                    "Not enough onchain liquidity available to offer a swap"
-                )
-                order.log(
-                    "Onchain payment option was not offered: onchain liquidity available to offer a swap",
-                    level="WARN",
-                )
-                return True, context
 
-        context["swap_allowed"] = True
         context["suggested_mining_fee_rate"] = float(
             order.payout_tx.suggested_mining_fee_rate
         )
         context["swap_fee_rate"] = order.payout_tx.swap_fee_rate
 
-        return True, context
+        if not valid:
+            context["swap_allowed"] = False
+            context["swap_failure_reason"] = (
+                "Not enough onchain liquidity available to offer a swap"
+            )
+            return context
+
+        context["swap_allowed"] = True
+
+        return context
 
     @classmethod
     def escrow_amount(cls, order, user):
@@ -812,7 +802,7 @@ class Logics:
             order.log(f"The address {address} is not valid", level="WARN")
             return False, context
 
-        num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
+        num_satoshis = cls.payout_amount(order)
         if mining_fee_rate:
             # not a valid mining fee
             min_mining_fee_rate = get_minning_fee("minimum", num_satoshis)
@@ -897,7 +887,7 @@ class Logics:
         # cancel onchain_payout if existing
         cls.cancel_onchain_payment(order)
 
-        num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
+        num_satoshis = cls.payout_amount(order)
         routing_budget_sats = float(num_satoshis) * (
             float(routing_budget_ppm) / 1_000_000
         )
@@ -1357,6 +1347,20 @@ class Logics:
         order.taker.robot.total_contracts += 1
         order.maker.robot.save(update_fields=["total_contracts"])
         order.taker.robot.save(update_fields=["total_contracts"])
+
+        context = Logics.compute_buyer_payout_context(order)
+        if "suggested_mining_fee_rate" in context and "swap_fee_rate" in context:
+            order.log(
+                f"Suggested mining fee is {context['suggested_mining_fee_rate']} Sats/vbyte, the swap fee rate is {context['swap_fee_rate']}%"
+            )
+
+        if not context["swap_allowed"]:
+            log_message = f"Onchain payment option was not offered: {context['swap_failure_reason']}"
+
+            if config("DISABLE_ONCHAIN", cast=bool, default=True):
+                order.log(log_message)
+            else:
+                order.log(log_message, level="WARN")
 
         take_order.delete()
 
