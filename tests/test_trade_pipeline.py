@@ -2019,6 +2019,18 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
 
+    def test_book_empty(self):
+        """
+        Tests public book view when there are no public orders.
+        """
+        path = reverse("book")
+
+        response = self.client.get(path)
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data, [])
+
     def test_robot_creation_with_valid_nostr_pubkey(self):
         """
         Test that a robot can be created with a valid 64-character hex nostr pubkey.
