@@ -84,6 +84,9 @@ class Order(models.Model):
     payment_method = models.CharField(
         max_length=70, null=False, default="not specified", blank=True
     )
+    price_limit = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True, default=None)
+    auto_paused = models.BooleanField(default=False, null=False)
+
     # order pricing method. A explicit amount of sats, or a relative premium above/below market.
     is_explicit = models.BooleanField(default=False, null=False)
     # marked to market
