@@ -21,6 +21,41 @@ import { getHostUrl, getOrigin } from '../utils/getHost';
 import makeTheme, { getWindowSize } from '../utils/theme';
 import getSettings from '../utils/settings';
 
+const FAV_STORAGE_KEY = 'robosats.bookFilters.v1';
+
+const defaultFav: Favorites = { type: null, currency: 0, mode: 'fiat', coordinator: 'robosats' };
+
+const loadFavFromStorage = (): Favorites => {
+  try {
+    const stored = window.localStorage.getItem(FAV_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        (parsed.type === null || typeof parsed.type === 'number') &&
+        typeof parsed.currency === 'number' &&
+        (parsed.mode === 'fiat' || parsed.mode === 'swap') &&
+        typeof parsed.coordinator === 'string'
+      ) {
+        return parsed as Favorites;
+      }
+    }
+  } catch {
+    // localStorage unavailable or invalid data
+  }
+  return defaultFav;
+};
+
+const saveFavToStorage = (fav: Favorites): void => {
+  try {
+    window.localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(fav));
+  } catch {
+    // localStorage unavailable
+  }
+};
+
 export type TorStatus = 'ON' | 'STARTING' | 'STOPPING' | 'OFF';
 
 export const closeAll: OpenDialogs = {
@@ -110,7 +145,7 @@ export const initialAppContext: UseAppStoreType = {
   clientVersion: getClientVersion(),
   setAcknowledgedWarning: () => {},
   acknowledgedWarning: false,
-  fav: { type: null, currency: 0, mode: 'fiat', coordinator: 'robosats' },
+  fav: loadFavFromStorage(),
   setFav: () => {},
   client: 'web',
   view: 'basic',
@@ -216,6 +251,11 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   useEffect(() => {
     setOpen(closeAll);
   }, [page, setOpen]);
+
+  // Persist book filters to localStorage whenever they change
+  useEffect(() => {
+    saveFavToStorage(fav);
+  }, [fav]);
 
   return (
     <AppContext.Provider
