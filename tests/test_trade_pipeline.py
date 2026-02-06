@@ -2108,3 +2108,104 @@ class TradeTest(BaseAPITestCase):
         data = response.json()
         self.assertIn("error_code", data)
         self.assertEqual(data["error_code"], 7000)
+
+    def test_satoshis_now_with_range_order_taken(self):
+        """
+        Tests that satoshis_now is correctly calculated when a taker takes
+        a range order with a specific amount. The satoshis_now should reflect
+        the taken amount, not the order's last_satoshis.
+        """
+        trade = Trade(self.client, take_amount=100)
+        trade.publish_order()
+
+        # Get satoshis_now before taking (should be based on max_amount or mid-range)
+        trade.get_order(trade.maker_index)
+
+        # Taker takes the order with a specific amount (100 USD)
+        trade.take_order()
+
+        # Get order as taker - satoshis_now should be calculated for the taken amount
+        trade.get_order(trade.taker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertIn("satoshis_now", data)
+        taker_satoshis_now = data["satoshis_now"]
+
+        # Get order as maker - should see the same satoshis_now (for taken amount)
+        trade.get_order(trade.maker_index)
+        maker_data = trade.response.json()
+        maker_satoshis_now = maker_data["satoshis_now"]
+
+        # Both maker and taker should see the same satoshis_now for the taken amount
+        self.assertEqual(taker_satoshis_now, maker_satoshis_now)
+
+        # The satoshis for 100 USD should be different from the original
+        # (unless 100 happens to match the calculation for the range)
+        self.assertIsInstance(taker_satoshis_now, int)
+        self.assertGreater(taker_satoshis_now, 0)
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order()
+
+    def test_satoshis_now_preserved_after_taker_bond_locked(self):
+        """
+        Tests that satoshis_now is preserved correctly after taker bond is locked
+        (status >= WF2). At this point, satoshis_now should use order.last_satoshis.
+        """
+        trade = Trade(self.client, take_amount=150)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+
+        # After taker bond is locked, status is WF2
+        trade.get_order(trade.taker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertEqual(data["status"], Order.Status.WF2)
+        self.assertIn("satoshis_now", data)
+
+        # satoshis_now should be set and consistent
+        satoshis_now = data["satoshis_now"]
+        self.assertIsInstance(satoshis_now, int)
+        self.assertGreater(satoshis_now, 0)
+
+        # Verify maker sees the same value
+        trade.get_order(trade.maker_index)
+        maker_data = trade.response.json()
+        self.assertEqual(maker_data["satoshis_now"], satoshis_now)
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order()
+
+    def test_satoshis_now_for_different_take_amounts(self):
+        """
+        Tests that different take amounts result in different satoshis_now values
+        for range orders, verifying the fix prevents overwriting with last_satoshis.
+        """
+        # First trade with take_amount=100
+        trade1 = Trade(self.client, take_amount=100, maker_index=1, taker_index=2)
+        trade1.publish_order()
+        trade1.take_order()
+        trade1.get_order(trade1.taker_index)
+        satoshis_100 = trade1.response.json()["satoshis_now"]
+        trade1.cancel_order()
+
+        # Second trade with take_amount=150 (different amount in the range)
+        trade2 = Trade(self.client, take_amount=150, maker_index=1, taker_index=2)
+        trade2.publish_order()
+        trade2.take_order()
+        trade2.get_order(trade2.taker_index)
+        satoshis_150 = trade2.response.json()["satoshis_now"]
+        trade2.cancel_order()
+
+        # Different take amounts should result in different satoshis values
+        # (proportional to the fiat amount taken)
+        self.assertIsInstance(satoshis_100, int)
+        self.assertIsInstance(satoshis_150, int)
+        self.assertGreater(satoshis_100, 0)
+        self.assertGreater(satoshis_150, 0)
+
+        # 150 USD should require more satoshis than 100 USD
+        self.assertGreater(satoshis_150, satoshis_100)
