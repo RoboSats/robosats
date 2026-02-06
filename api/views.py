@@ -269,9 +269,13 @@ class OrderView(viewsets.ViewSet):
         # 4) If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
-            if take_order.exists():
+            # Use the amount from any active take_order if it exists, so both maker and taker see the same satoshis_now
+            active_take_order = TakeOrder.objects.filter(
+                order=order, expires_at__gt=timezone.now()
+            ).first()
+            if active_take_order:
                 data["satoshis_now"] = Logics.satoshis_now(
-                    order, take_order.first().amount
+                    order, active_take_order.amount
                 )
             else:
                 data["satoshis_now"] = Logics.satoshis_now(order)
@@ -292,10 +296,14 @@ class OrderView(viewsets.ViewSet):
 
         # Use order.last_satoshis except when there's a take_order with a specific amount
         # (in that case, satoshis_now was already calculated correctly above using take_order.amount)
-        if not (
-            take_order.exists()
-            and order.status >= Order.Status.PUB
-            and order.status < Order.Status.WF2
+        if (
+            (
+                not TakeOrder.objects.filter(
+                    order=order, expires_at__gt=timezone.now()
+                ).exists()
+            )
+            or order.status < Order.Status.PUB
+            or order.status >= Order.Status.WF2
         ):
             data["satoshis_now"] = order.last_satoshis
 
