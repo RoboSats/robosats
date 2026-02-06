@@ -1,3 +1,7 @@
+import json
+import logging
+import uuid
+from datetime import datetime, timezone
 from secrets import token_urlsafe
 
 from decouple import config
@@ -8,6 +12,8 @@ from api.models import (
 from api.utils import get_session
 from api.tasks import nostr_send_notification_event
 
+logger = logging.getLogger("api.notifications")
+
 
 class Notifications:
     """Simple telegram messages using TG's API"""
@@ -16,7 +22,7 @@ class Notifications:
     site = config("HOST_NAME")
 
     def get_context(user):
-        """returns context needed to enable TG notifications"""
+        """returns context needed to enable TG and webhook notifications"""
         context = {}
         if user.robot.telegram_enabled:
             context["tg_enabled"] = True
@@ -30,10 +36,15 @@ class Notifications:
         context["tg_token"] = user.robot.telegram_token
         context["tg_bot_name"] = config("TELEGRAM_BOT_NAME")
 
+        context["webhook_enabled"] = user.robot.webhook_enabled
+        context["webhook_url"] = user.robot.webhook_url or ""
+
         return context
 
-    def send_message(self, order, robot, title, description=""):
-        """Save a message for a user and sends it to Telegram and/or Nostr"""
+    def send_message(
+        self, order, robot, title, description="", event_type="notification"
+    ):
+        """Save a message for a user and sends it to Telegram, Nostr, and/or Webhook"""
         self.save_message(order, robot, title, description)
         if robot.nostr_pubkey:
             nostr_send_notification_event.delay(
@@ -41,6 +52,8 @@ class Notifications:
             )
         if robot.telegram_enabled:
             self.send_telegram_message(robot.telegram_chat_id, title, description)
+        if robot.webhook_enabled:
+            self.send_webhook_message(order, robot, title, description, event_type)
 
     def save_message(self, order, robot, title, description=""):
         """Save a message for a user"""
@@ -61,6 +74,104 @@ class Notifications:
                 return
             except Exception:
                 pass
+
+    def send_webhook_message(
+        self, order, robot, title, description="", event_type="notification"
+    ):
+        """Sends a webhook notification to the user's custom HTTP endpoint (Tor .onion only)"""
+        from api.models import Robot
+
+        webhook_url = robot.webhook_url
+        if not Robot.is_valid_onion_url(webhook_url):
+            logger.warning(
+                f"Webhook URL rejected: not a .onion address for robot {robot.id}"
+            )
+            return
+        payload = {
+            "event_type": event_type,
+            "event_id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "robot_hash_id": robot.hash_id,
+            "order": {
+                "id": order.id,
+                "type": "BUY" if order.type == Order.Types.BUY else "SELL",
+                "status": order.status,
+            },
+            "message": {
+                "title": title,
+                "description": description,
+            },
+            "metadata": {
+                "coordinator": config("COORDINATOR_ALIAS", cast=str, default="Unknown"),
+                "platform_version": config("VERSION", cast=str, default="Unknown"),
+            },
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        if robot.webhook_api_key:
+            headers["X-API-Key"] = robot.webhook_api_key
+
+        try:
+            response = self.session.post(
+                webhook_url,
+                data=json.dumps(payload),
+                headers=headers,
+                timeout=60,
+            )
+            response.raise_for_status()
+            logger.info(f"Webhook sent successfully to robot {robot.id}")
+        except Exception as e:
+            logger.error(f"Webhook failed for robot {robot.id}: {e}")
+
+    def send_webhook_test(self, robot):
+        """Sends a test webhook notification when webhook is first configured"""
+        from api.models import Robot
+
+        webhook_url = robot.webhook_url
+        if not Robot.is_valid_onion_url(webhook_url):
+            logger.warning(
+                f"Webhook test rejected: not a .onion address for robot {robot.id}"
+            )
+            return False
+
+        payload = {
+            "event_type": "webhook_test",
+            "event_id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "robot_hash_id": robot.hash_id,
+            "message": {
+                "title": f"🔔 Hey {robot.user.username}, your webhook is configured!",
+                "description": "You will receive notifications about your RoboSats orders.",
+            },
+            "metadata": {
+                "coordinator": config("COORDINATOR_ALIAS", cast=str, default="Unknown"),
+                "platform_version": config("VERSION", cast=str, default="Unknown"),
+            },
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        if robot.webhook_api_key:
+            headers["X-API-Key"] = robot.webhook_api_key
+
+        try:
+            response = self.session.post(
+                webhook_url,
+                data=json.dumps(payload),
+                headers=headers,
+                timeout=60,
+            )
+            response.raise_for_status()
+            logger.info(f"Webhook test sent successfully to robot {robot.id}")
+            return True
+        except Exception as e:
+            logger.error(f"Webhook test failed for robot {robot.id}: {e}")
+            return False
 
     def welcome(self, user):
         """User enabled Telegram Notifications"""
