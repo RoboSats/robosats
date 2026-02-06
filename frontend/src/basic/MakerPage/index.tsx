@@ -16,7 +16,7 @@ import VisitThirdParty from '../../components/Dialogs/VisitThirdParty';
 import { type PublicOrder } from '../../models';
 
 const MakerPage = (): React.JSX.Element => {
-  const { fav, windowSize, navbarHeight, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, navbarHeight, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -34,9 +34,9 @@ const MakerPage = (): React.JSX.Element => {
     return filterOrders({
       federation,
       baseFilter: {
-        currency: fav.currency === 0 ? 1 : fav.currency,
-        type: fav.type,
-        mode: fav.mode,
+        currency: maker.currency === 0 ? 1 : maker.currency,
+        type: maker.type,
+        mode: maker.mode,
         coordinator: 'robosats',
       },
       premium: maker.premium ?? null,
@@ -50,7 +50,9 @@ const MakerPage = (): React.JSX.Element => {
     });
   }, [
     federation.book,
-    fav,
+    maker.currency,
+    maker.type,
+    maker.mode,
     maker.premium,
     maker.amount,
     maker.minAmount,

@@ -63,7 +63,7 @@ const MakerForm = ({
   onReset = () => {},
   submitButtonLabel = 'Create Order',
 }: MakerFormProps): React.JSX.Element => {
-  const { fav, setFav, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -91,8 +91,8 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
-  }, [federationUpdatedAt]);
+    setCurrencyCode(currencyDict[maker.currency === 0 ? 1 : maker.currency]);
+  }, [federationUpdatedAt, maker.currency]);
 
   useEffect(() => {
     updateCoordinatorInfo();
@@ -108,8 +108,8 @@ const MakerForm = ({
       coordinator.loadLimits(() => {
         const newLimits = coordinator.limits;
         if (newLimits && Object.keys(newLimits).length !== 0) {
-          updateAmountLimits(newLimits, fav.currency, maker.premium);
-          updateCurrentPrice(newLimits, fav.currency, maker.premium);
+          updateAmountLimits(newLimits, maker.currency, maker.premium);
+          updateCurrentPrice(newLimits, maker.currency, maker.premium);
           setLimits(newLimits);
         }
       });
@@ -150,7 +150,7 @@ const MakerForm = ({
   const handleCurrencyChange = function (newCurrency: number): void {
     const currencyCode: string = currencyDict[newCurrency];
     setCurrencyCode(currencyCode);
-    setFav((prev) => {
+    setMaker((prev) => {
       return {
         ...prev,
         currency: newCurrency,
@@ -212,7 +212,7 @@ const MakerForm = ({
 
   const handlePremiumChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> =
     function ({ target: { value } }): void {
-      const max = fav.mode === 'fiat' ? 999 : 99;
+      const max = maker.mode === 'fiat' ? 999 : 99;
       const min = -100;
       const newPremium = Math.floor(Number(value) * Math.pow(10, 2)) / Math.pow(10, 2);
       let premium: number = isNaN(newPremium) ? 0 : newPremium;
@@ -224,8 +224,8 @@ const MakerForm = ({
         badPremiumText = t('Must be more than {{min}}%', { min });
         premium = -99.99;
       }
-      updateCurrentPrice(limits, fav.currency, premium);
-      updateAmountLimits(limits, fav.currency, premium);
+      updateCurrentPrice(limits, maker.currency, premium);
+      updateAmountLimits(limits, maker.currency, premium);
       setMaker({
         ...maker,
         premium: isNaN(newPremium) || value === '' ? '' : premium,
@@ -239,8 +239,8 @@ const MakerForm = ({
     if (!disableRequest && maker.coordinator && slot) {
       setSubmittingRequest(true);
       const orderAttributes = {
-        type: fav.type === 0 ? 1 : 0,
-        currency: fav.currency === 0 ? 1 : fav.currency,
+        type: maker.type === 0 ? 1 : 0,
+        currency: maker.currency === 0 ? 1 : maker.currency,
         amount: makerHasAmountRange ? null : maker.amount,
         has_range: makerHasAmountRange,
         min_amount: makerHasAmountRange ? maker.minAmount : null,
@@ -335,7 +335,7 @@ const MakerForm = ({
   };
 
   const resetRange = function (advancedOptions: boolean): void {
-    const index = fav.currency === 0 ? 1 : fav.currency;
+    const index = maker.currency === 0 ? 1 : maker.currency;
     const minAmount =
       maker.amount !== null
         ? (maker.amount / 2).toPrecision(2)
@@ -368,8 +368,8 @@ const MakerForm = ({
     let label = t('Amount');
     let helper = '';
     let swapSats = 0;
-    if (fav.mode === 'swap') {
-      if (fav.type === 1) {
+    if (maker.mode === 'swap') {
+      if (maker.type === 1) {
         swapSats = computeSats({
           amount: Number(maker.amount),
           premium: Number(maker.premium),
@@ -380,7 +380,7 @@ const MakerForm = ({
         helper = t('You receive approx {{swapSats}} LN Sats (fees might vary)', {
           swapSats,
         });
-      } else if (fav.type === 0) {
+      } else if (maker.type === 0) {
         swapSats = computeSats({
           amount: Number(maker.amount),
           premium: Number(maker.premium),
@@ -393,11 +393,11 @@ const MakerForm = ({
       }
     }
     return { label, helper, swapSats };
-  }, [fav, maker.amount, maker.premium, federationUpdatedAt]);
+  }, [maker, maker.amount, maker.premium, federationUpdatedAt]);
 
   const disableSubmit = useMemo(() => {
     return (
-      fav.type == null ||
+      maker.type == null ||
       (!makerHasAmountRange &&
         maker.amount &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
@@ -411,12 +411,9 @@ const MakerForm = ({
       maker.paymentMethods.length === 0 ||
       maker.badDescription
     );
-  }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange]);
+  }, [maker, maker.premium, amountLimits, federationUpdatedAt, maker.type, makerHasAmountRange]);
 
   const clearMaker = function (): void {
-    setFav((prev) => {
-      return { ...prev, type: null, currency: 0, mode: 'fiat' };
-    });
     setMaker(defaultMaker);
     handleCurrencyChange(0);
     handlePaymentMethodChange([]);
@@ -449,7 +446,7 @@ const MakerForm = ({
     if (currentPrice === undefined) {
       return t('The Bitcoin price is not synchronized.');
     }
-    if (fav.type == null) {
+    if (maker.type == null) {
       return t('Please select if you want to buy or sell.');
     }
     if (
@@ -491,7 +488,6 @@ const MakerForm = ({
 
   const bondAmount = useBondEstimate({
     maker,
-    fav,
     federation,
     currentPrice,
     federationUpdatedAt,
@@ -507,18 +503,18 @@ const MakerForm = ({
           align='center'
           color={disableSubmit ? 'text.secondary' : 'text.primary'}
         >
-          {fav.type == null
-            ? fav.mode === 'fiat'
+          {maker.type == null
+            ? maker.mode === 'fiat'
               ? t('Order for ')
               : t('Swap of ')
-            : fav.type === 1
-              ? fav.mode === 'fiat'
+            : maker.type === 1
+              ? maker.mode === 'fiat'
                 ? t('Buy BTC for ')
                 : t('Swap into LN ')
-              : fav.mode === 'fiat'
+              : maker.mode === 'fiat'
                 ? t('Sell BTC for ')
                 : t('Swap out of LN ')}
-          {fav.mode === 'fiat'
+          {maker.mode === 'fiat'
             ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
             : amountToString(
                 maker.amount * 100000000,
@@ -526,9 +522,9 @@ const MakerForm = ({
                 maker.minAmount * 100000000,
                 maker.maxAmount * 100000000,
               )}
-          {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
+          {' ' + (maker.mode === 'fiat' ? currencyCode : 'Sats')}
           {maker.premium === 0
-            ? fav.mode === 'fiat'
+            ? maker.mode === 'fiat'
               ? t(' at market price')
               : ''
             : maker.premium > 0
@@ -574,7 +570,7 @@ const MakerForm = ({
         message={t(
           'To protect your privacy, the exact location you pin will be slightly randomized.',
         )}
-        orderType={fav?.type ?? 0}
+        orderType={maker?.type ?? 0}
         onClose={(pos?: [number, number]) => {
           if (pos != null) handleAddLocation(pos);
           setOpenWorldmap(false);
@@ -642,9 +638,9 @@ const MakerForm = ({
                     <FormHelperText sx={{ textAlign: 'center' }}>{t('Swap?')}</FormHelperText>
                     <Checkbox
                       sx={{ position: 'relative', bottom: '0.3em' }}
-                      checked={fav.mode === 'swap'}
+                      checked={maker.mode === 'swap'}
                       onClick={() => {
-                        handleCurrencyChange(fav.mode === 'swap' ? 1 : 1000);
+                        handleCurrencyChange(maker.mode === 'swap' ? 1 : 1000);
                         handlePaymentMethodChange([]);
                       }}
                     />
@@ -655,13 +651,13 @@ const MakerForm = ({
               <Grid item>
                 <FormControl component='fieldset'>
                   <FormHelperText sx={{ textAlign: 'center' }}>
-                    {`${fav.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')} *`}
+                    {`${maker.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')} *`}
                   </FormHelperText>
                   <div style={{ textAlign: 'center' }}>
                     <ButtonGroup size='large'>
                       <Box
                         sx={{
-                          boxShadow: fav.type === 1 ? 0 : 3,
+                          boxShadow: maker.type === 1 ? 0 : 3,
                           display: 'inline-block',
                           borderBottomLeftRadius: 4,
                           borderTopLeftRadius: 4,
@@ -671,31 +667,31 @@ const MakerForm = ({
                           size={maker.advancedOptions ? 'small' : 'large'}
                           variant='contained'
                           onClick={() => {
-                            setFav((prev) => {
+                            setMaker((prev) => {
                               return {
                                 ...prev,
                                 type: 1,
                               };
                             });
                           }}
-                          disableElevation={fav.type === 1}
+                          disableElevation={maker.type === 1}
                           sx={{
                             backgroundColor:
-                              fav.type === 1 ? 'primary.main' : theme.palette.background.paper,
+                              maker.type === 1 ? 'primary.main' : theme.palette.background.paper,
                             color:
-                              fav.type === 1 ? theme.palette.background.paper : 'text.secondary',
+                              maker.type === 1 ? theme.palette.background.paper : 'text.secondary',
                             ':hover': {
                               color: theme.palette.background.paper,
                               backgroundColor: 'primary.main',
                             },
                           }}
                         >
-                          {fav.mode === 'fiat' ? t('Buy') : t('Swap In')}
+                          {maker.mode === 'fiat' ? t('Buy') : t('Swap In')}
                         </Button>
                       </Box>
                       <Box
                         sx={{
-                          boxShadow: fav.type === 0 ? 0 : 3,
+                          boxShadow: maker.type === 0 ? 0 : 3,
                           display: 'inline-block',
                           borderBottomRightRadius: 4,
                           borderTopRightRadius: 4,
@@ -705,7 +701,7 @@ const MakerForm = ({
                           size={maker.advancedOptions ? 'small' : 'large'}
                           variant='contained'
                           onClick={() => {
-                            setFav((prev) => {
+                            setMaker((prev) => {
                               return {
                                 ...prev,
                                 type: 0,
@@ -716,15 +712,15 @@ const MakerForm = ({
                           sx={{
                             boxShadow: 3,
                             backgroundColor:
-                              fav.type === 0 ? 'secondary.main' : theme.palette.background.paper,
-                            color: fav.type === 0 ? 'background.secondary' : 'text.secondary',
+                              maker.type === 0 ? 'secondary.main' : theme.palette.background.paper,
+                            color: maker.type === 0 ? 'background.secondary' : 'text.secondary',
                             ':hover': {
                               color: theme.palette.background.paper,
                               backgroundColor: 'secondary.main',
                             },
                           }}
                         >
-                          {fav.mode === 'fiat' ? t('Sell') : t('Swap Out')}
+                          {maker.mode === 'fiat' ? t('Sell') : t('Swap Out')}
                         </Button>
                       </Box>
                     </ButtonGroup>
@@ -756,7 +752,7 @@ const MakerForm = ({
             </Collapse>
             <Collapse in={makerHasAmountRange}>
               <AmountRange
-                currency={fav.currency}
+                currency={maker.currency}
                 currencyCode={currencyCode}
                 handleCurrencyChange={handleCurrencyChange}
                 amountLimits={amountLimits}
@@ -766,14 +762,14 @@ const MakerForm = ({
             </Collapse>
             <Collapse in={!makerHasAmountRange}>
               <Grid container>
-                <Grid item sx={{ width: fav.mode === 'fiat' ? '50%' : '100%' }}>
+                <Grid item sx={{ width: maker.mode === 'fiat' ? '50%' : '100%' }}>
                   <Tooltip
                     placement='top'
                     enterTouchDelay={500}
                     enterDelay={700}
                     enterNextDelay={2000}
                     title={
-                      fav.mode === 'fiat'
+                      maker.mode === 'fiat'
                         ? t('Amount of fiat to exchange for bitcoin')
                         : t('Amount of BTC to swap for LN Sats')
                     }
@@ -806,14 +802,14 @@ const MakerForm = ({
                       }}
                     />
                   </Tooltip>
-                  {fav.mode === 'swap' && maker.amount ? (
+                  {maker.mode === 'swap' && maker.amount ? (
                     <FormHelperText sx={{ textAlign: 'center' }}>
                       {amountLabel.helper}
                     </FormHelperText>
                   ) : null}
                 </Grid>
 
-                {fav.mode === 'fiat' ? (
+                {maker.mode === 'fiat' ? (
                   <Grid item sx={{ width: '50%' }}>
                     <Select
                       fullWidth
@@ -825,7 +821,7 @@ const MakerForm = ({
                       inputProps={{
                         style: { textAlign: 'center' },
                       }}
-                      value={fav.currency === 0 ? 1 : fav.currency}
+                      value={maker.currency === 0 ? 1 : maker.currency}
                       onChange={(e) => {
                         handleCurrencyChange(e.target.value);
                       }}
@@ -852,12 +848,12 @@ const MakerForm = ({
                   paymentMethodsText={maker.paymentMethodsText}
                   setHasCustomPaymentMethod={setHasCustomPaymentMethod}
                   onAutocompleteChange={handlePaymentMethodChange}
-                  optionsType={fav.mode}
+                  optionsType={maker.mode}
                   error={maker.badPaymentMethod}
-                  label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
+                  label={`${maker.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
                   tooltipTitle={t(
-                    fav.mode === 'swap'
-                      ? t('Enter the destination of the Lightning swap')
+                    maker.mode === 'swap'
+                      ? 'Enter the destination of the Lightning swap'
                       : 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
                   )}
                   addNewButtonText={t('Add New')}
@@ -905,7 +901,7 @@ const MakerForm = ({
             )}
           </Grid>
 
-          {fav.mode === 'fiat' && (
+          {maker.mode === 'fiat' && (
             <Grid item sx={{ width: '100%' }}>
               <Tooltip enterTouchDelay={0} title={t('Add geolocation for a face to face trade')}>
                 <Button

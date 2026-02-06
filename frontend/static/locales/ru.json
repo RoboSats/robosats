@@ -417,7 +417,6 @@
   "Description": "Описание",
   "Edit order": "Изменить ордер",
   "Enable advanced options": "Включить дополнительные параметры",
-  "Enter the destination of the Lightning swap": "Введите пункт назначения обмена Lightning",
   "Escrow/Invoice Timer (HH:mm)": "Таймер эскроу/инвойса (ЧЧ:мм)",
   "Escrow/invoice step length": "Длина шага эскроу/инвойса",
   "Estimated Bond": "Расчетный залог",
