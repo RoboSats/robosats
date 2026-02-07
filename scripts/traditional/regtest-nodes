@@ -121,7 +121,7 @@ _nodes_environment_set() {
     if [ "$cln_set" = true ]; then
         LIGHTNINGD_BIN="$(_get_env_var_path "LIGHTNINGD_BIN")" || return "$?"
         LIGHTNING_CLI_BIN="$(_get_env_var_path "LIGHTNING_CLI_BIN")" || return "$?"
-        HOLDINVOICE_PLUGIN_BIN="$(_get_env_var_path "HOLDINVOICE_PLUGIN_BIN")" || return "$?"
+        HOLD_PLUGIN_BIN="$(_get_env_var_path "HOLD_PLUGIN_BIN")" || return "$?"
     fi
     if [ "$lnd_set" = true ]; then
         LND_BIN="$(_get_env_var_path "LND_BIN")" || return "$?"
@@ -182,12 +182,12 @@ _nodes_environment_set() {
         if ! _command_exist "$LIGHTNING_CLI_BIN"; then
             return 1
         fi
-        if [ -z "$HOLDINVOICE_PLUGIN_BIN" ]; then
-            echo "error: $HOLDINVOICE_PLUGIN_BIN not set" >&2
+        if [ -z "$HOLD_PLUGIN_BIN" ]; then
+            echo "error: $HOLD_PLUGIN_BIN not set" >&2
             return 1
         fi
-        if [ ! -f "$HOLDINVOICE_PLUGIN_BIN" ]; then
-            echo "error: $HOLDINVOICE_PLUGIN_BIN plugin not found" >&2
+        if [ ! -f "$HOLD_PLUGIN_BIN" ]; then
+            echo "error: $HOLD_PLUGIN_BIN plugin not found" >&2
             return 1
         fi
     fi
@@ -477,7 +477,7 @@ database-upgrade=true
 log-file=lightning.log
 addr=localhost:$CLN_COORD_LISTEN_PORT
 grpc-port=$CLN_COORD_GRPC_PORT
-important-plugin=$HOLDINVOICE_PLUGIN_BIN
+important-plugin=$HOLD_PLUGIN_BIN
 grpc-hold-port=$CLN_COORD_HOLD_PORT
 disable-plugin=clnrest
 disable-plugin=wss-proxy

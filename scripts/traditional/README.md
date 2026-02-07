@@ -6,7 +6,7 @@ Binaries needed:
 * postgresql (`postgres`, `initdb`, `psql`)
 * redis (`redis-server`)
 * bitcoin (`bitcoind`, `bitcoin-cli`)
-* cln (`lightningd`, `lightning-cli`, `holdinvoice`)
+* cln (`lightningd`, `lightning-cli`, `hold`)
 * lnd (`lnd`, `lncli`)
 
 ## Preparation
@@ -26,7 +26,7 @@ ln -sf /usr/lib/postgresql/16/bin/psql ~/.local/bin/
 Bitcoin nodes if not already installed need to be manually downloaded.
 * bitcoin core binaries can be found here: https://bitcoincore.org/en/download
 * cln binaries can be found here: https://github.com/ElementsProject/lightning/releases
-* holdinvoice binary can be found here: https://github.com/daywalker90/holdinvoice/releases
+* hold binary can be found here: https://github.com/BoltzExchange/hold/releases
 * lnd binaries can be found here: https://github.com/lightningnetwork/lnd/releases
 
 Example preparation:
@@ -42,7 +42,7 @@ $ cd traditional/programs
 
 # if you do not have them already installed
 $ mkdir bitcoin cln lnd
-# download bitcoin, cln (and holdinvoice) and lnd binaries
+# download bitcoin, cln (and hold) and lnd binaries
 
 # follow https://github.com/hoytech/strfry#compile
 $ git clone https://github.com/hoytech/strfry
@@ -112,7 +112,7 @@ BITCOIND_BIN = "traditional/programs/bitcoin/bin/bitcoind"
 BITCOIN_CLI_BIN = "traditional/programs/bitcoin/bin/bitcoin-cli"
 LIGHTNINGD_BIN = "traditional/programs/cln/bin/lightningd"
 LIGHTNING_CLI_BIN = "traditional/programs/cln/bin/lightning-cli"
-HOLDINVOICE_PLUGIN_BIN = "traditional/programs/cln/holdinvoice"
+HOLD_PLUGIN_BIN = "traditional/programs/cln/hold"
 LND_BIN = "traditional/programs/lnd/lnd"
 LNCLI_BIN = "traditional/programs/lnd/lncli"
 STRFRY_GIT_DIR = "traditional/programs/strfry"

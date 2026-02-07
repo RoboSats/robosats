@@ -5,6 +5,6 @@ addr=statictor:127.0.0.1:9051
 grpc-port=9999
 grpc-hold-port=9998
 always-use-proxy=true
-important-plugin=/root/.lightning/plugins/holdinvoice
+important-plugin=/root/.lightning/plugins/hold
 # wallet=postgres://user:pass@localhost:5433/cln
 # bookkeeper-db=postgres://user:pass@localhost:5433/cln
