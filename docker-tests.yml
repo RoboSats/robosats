@@ -194,7 +194,6 @@ services:
   #     BITCOIND_RPCURL: 'http://127.0.0.1:18443'
   #     BITCOIND_RPCUSER: 'test'
   #     BITCOIND_RPCPASSWORD: 'test'
-  #     SKIP_COLLECT_STATIC: "true"
   #   env_file:
   #     - ${ROBOSATS_ENVS_FILE}
   #   volumes:

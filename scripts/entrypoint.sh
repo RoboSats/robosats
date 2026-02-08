@@ -4,13 +4,6 @@
 python manage.py migrate
 
 # Collect static files
-if [ $SKIP_COLLECT_STATIC ]; then
-    echo "Skipping collection of static files."
-else
-    python manage.py collectstatic --noinput
-fi
-
-# Collect static files
 if [ $DEVELOPMENT ]; then
     echo "Installing python development dependencies"
     pip install -r requirements_dev.txt

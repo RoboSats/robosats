@@ -1,14 +1,32 @@
-db
-docs
-docker
-.editorconfig
-.env-sample
-CONTRIBUTING.md
-django
-README.md
-setup.md
-docker-compose.yml
-.github
-.git
-node
-api/lightning/googleapis
+# This file reduces build context size and speeds up builds
+# Leading slash (/) anchors patterns to the build context root
+# Trailing slash (/) matches only directories
+# Best practices:
+# - Prefer anchored patterns over unanchored ones
+# - List directories or nested paths first, then root-level files, then unanchored patterns
+# - Keep the lists sorted in alphabetical order ignoring case
+
+# Directories and nested paths
+/.git/
+/.github/
+/android/
+/api/lightning/googleapis/
+/collected_static/
+/desktopApp/
+/development/
+/docker/
+/docs/
+/node/
+/nodeapp/
+/tests/
+
+# Root-level files
+/.dockerignore
+/.editorconfig
+/.gitignore
+/CONTRIBUTING.md
+/docker-compose.yml
+/README.md
+
+# Unanchored patterns
+node_modules/
