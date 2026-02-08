@@ -32,6 +32,11 @@ COPY . .
 RUN sh scripts/generate_grpc.sh
 RUN chmod +x scripts/entrypoint.sh
 
+RUN cp .env-sample .env \
+    && python manage.py collectstatic --noinput --clear \
+    && rm .env-sample .env \
+    && find /usr/src/static -type f -exec gzip -9 --keep {} +
+
 EXPOSE 8000
 ENTRYPOINT [ "/usr/src/robosats/scripts/entrypoint.sh" ]
 
