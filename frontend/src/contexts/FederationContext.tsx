@@ -7,6 +7,8 @@ import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
 import arraysAreDifferent from '../utils/array';
 
+const NOTIFICATION_BACKFILL_SECONDS = 48 * 60 * 60;
+
 export interface CurrentOrderIdProps {
   id: number | null;
   shortAlias: string | null;
@@ -49,7 +51,9 @@ export const FederationContextProvider = ({
   } = useContext<UseAppStoreType>(AppContext);
   const { garage, setMaker } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
-  const [subscribedTokens, setSubscribedTokens] = React.useState<string[]>([]);
+  const [subscribedNotificationPubkeys, setSubscribedNotificationPubkeys] = React.useState<
+    string[]
+  >([]);
   const [notifications, setNotifications] = useState<Record<string, Map<string, Event[]>>>({});
   const [loadingNotifications, setLoadingNotifications] = React.useState<boolean>(true);
 
@@ -57,43 +61,69 @@ export const FederationContextProvider = ({
     federation.setConnection(origin, settings, hostUrl, fav.coordinator);
   };
 
-  const loadNotifications = () => {
-    const tokens = Object.keys(garage.slots);
+  const getInterestedNotificationPubkeys = (): string[] => {
+    const pubkeys = new Set<string>();
+    const currentPubkey = garage.getSlot()?.nostrPubKey;
 
-    if (!arraysAreDifferent(subscribedTokens, tokens) || tokens.length === 0) {
+    if (currentPubkey) {
+      pubkeys.add(currentPubkey);
+    }
+
+    Object.values(garage.slots).forEach((slot) => {
+      if (slot.activeOrder?.id && slot.nostrPubKey) {
+        pubkeys.add(slot.nostrPubKey);
+      }
+    });
+
+    return Array.from(pubkeys).sort();
+  };
+
+  const loadNotifications = (force: boolean = false): void => {
+    const interestedPubkeys = getInterestedNotificationPubkeys();
+
+    if (!force && !arraysAreDifferent(subscribedNotificationPubkeys, interestedPubkeys)) {
       setLoadingNotifications(false);
       return;
     }
 
-    setNotifications({});
-    setSubscribedTokens(tokens);
+    setLoadingNotifications(true);
+    setSubscribedNotificationPubkeys(interestedPubkeys);
 
-    federation.roboPool.subscribeNotifications(garage, {
-      onevent: (event: Event) => {
-        const petPubkey = event.tags.find((t) => t[0] === 'p')?.[1] ?? '';
+    federation.roboPool.updateNotificationSubscriptions({
+      pubkeys: interestedPubkeys,
+      options: { backfillSeconds: NOTIFICATION_BACKFILL_SECONDS },
+      events: {
+        onevent: (event: Event) => {
+          const petPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
+          if (!petPubkey) return;
 
-        setNotifications((notifications) => {
-          const robotNotifications = notifications[petPubkey] ?? new Map<string, Event[]>();
+          setNotifications((currentNotifications) => {
+            const robotNotifications =
+              currentNotifications[petPubkey] ?? new Map<string, Event[]>();
 
-          if (robotNotifications.has(event.id)) {
-            return notifications;
-          }
+            if (robotNotifications.has(event.id)) {
+              return currentNotifications;
+            }
 
-          const hexPubKey = event.tags.find((t) => t[0] == 'p')?.[1];
-          const slot = Object.values(garage.slots).find((s) => s.nostrPubKey == hexPubKey);
+            const slot = Object.values(garage.slots).find((s) => s.nostrPubKey === petPubkey);
+            if (!slot?.nostrSecKey) {
+              return currentNotifications;
+            }
 
-          if (slot?.nostrSecKey) {
-            setNotificationsUpdatedAt(new Date().toISOString());
-            const rumor = nip17.unwrapEvent(event, slot.nostrSecKey);
-            const newRobotNotifications = new Map(robotNotifications);
-            newRobotNotifications.set(event.id, [event, rumor as Event]);
-            return { ...notifications, [petPubkey]: newRobotNotifications };
-          }
-
-          return notifications;
-        });
+            try {
+              const rumor = nip17.unwrapEvent(event, slot.nostrSecKey);
+              const newRobotNotifications = new Map(robotNotifications);
+              newRobotNotifications.set(event.id, [event, rumor as Event]);
+              setNotificationsUpdatedAt(new Date().toISOString());
+              return { ...currentNotifications, [petPubkey]: newRobotNotifications };
+            } catch {
+              // Ignore events that cannot be unwrapped with this slot key.
+              return currentNotifications;
+            }
+          });
+        },
+        oneose: () => setLoadingNotifications(false),
       },
-      oneose: () => setLoadingNotifications(false),
     });
   };
 
@@ -107,6 +137,12 @@ export const FederationContextProvider = ({
   }, []);
 
   useEffect(() => {
+    return () => {
+      federation.roboPool.clearNotificationSubscriptions();
+    };
+  }, []);
+
+  useEffect(() => {
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       loadNotifications();
     }
@@ -114,8 +150,10 @@ export const FederationContextProvider = ({
 
   useEffect(() => {
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
+      federation.roboPool.clearNotificationSubscriptions();
+      setSubscribedNotificationPubkeys([]);
       updateConnection(settings);
-      loadNotifications();
+      loadNotifications(true);
     }
   }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 
