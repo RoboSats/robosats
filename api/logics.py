@@ -1806,7 +1806,7 @@ class Logics:
             slashed_robot = slashed_bond.sender.robot
             slashed_robot.earned_rewards += slashed_return
             slashed_robot.save(update_fields=["earned_rewards"])
-            slashed_robot_log = "Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
+            slashed_robot_log = f"Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
 
         new_proceeds = int(slashed_satoshis * (1 - reward_fraction))
         order.proceeds += new_proceeds
