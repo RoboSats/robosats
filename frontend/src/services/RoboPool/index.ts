@@ -207,6 +207,39 @@ class RoboPool {
     onComplete: () => void,
   ): void => {
     const subscriptionId = `accountRecovery_${Math.random().toString(36).substring(7)}`;
+    const eoseRelays = new Set<string>();
+    const expectedRelayCount = Object.keys(this.webSockets).length;
+    const completeTimeoutMs = 5000;
+    let completeTimeout: ReturnType<typeof setTimeout> | null = null;
+    let isComplete = false;
+    let handler: (url: string, event: MessageEvent) => void;
+
+    const removeHandler = (): void => {
+      const handlerIndex = this.messageHandlers.indexOf(handler);
+      if (handlerIndex >= 0) {
+        this.messageHandlers.splice(handlerIndex, 1);
+      }
+    };
+
+    const completeRecovery = (): void => {
+      if (isComplete) return;
+
+      isComplete = true;
+
+      if (completeTimeout) {
+        clearTimeout(completeTimeout);
+        completeTimeout = null;
+      }
+
+      this.sendMessage(JSON.stringify(['CLOSE', subscriptionId]));
+      removeHandler();
+      onComplete();
+    };
+
+    if (expectedRelayCount === 0) {
+      onComplete();
+      return;
+    }
 
     const request = [
       'REQ',
@@ -217,7 +250,9 @@ class RoboPool {
       },
     ];
 
-    this.messageHandlers.push((_url: string, messageEvent: MessageEvent) => {
+    handler = (_url: string, messageEvent: MessageEvent) => {
+      if (isComplete) return;
+
       try {
         const jsonMessage = JSON.parse(messageEvent.data);
 
@@ -228,7 +263,6 @@ class RoboPool {
 
           try {
             const unwrappedEvent = nip59.unwrapEvent(wrappedEvent, nostrSecKey);
-
             const recoveryData = parseAccountRecoveryEvent(unwrappedEvent as Event);
 
             if (recoveryData) {
@@ -238,14 +272,25 @@ class RoboPool {
             // Ignore events we can't unwrap (might be for other purposes)
           }
         } else if (jsonMessage[0] === 'EOSE') {
-          this.sendMessage(JSON.stringify(['CLOSE', subscriptionId]));
-          onComplete();
+          eoseRelays.add(_url);
+
+          if (eoseRelays.size >= expectedRelayCount) {
+            completeRecovery();
+            return;
+          }
+
+          if (!completeTimeout) {
+            completeTimeout = setTimeout(() => {
+              completeRecovery();
+            }, completeTimeoutMs);
+          }
         }
       } catch {
         // Ignore parse errors
       }
-    });
+    };
 
+    this.messageHandlers.push(handler);
     this.sendMessage(JSON.stringify(request));
   };
 }
