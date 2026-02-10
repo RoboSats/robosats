@@ -59,6 +59,7 @@ class Slot {
   robots: Record<string, Robot>;
   activeOrder: Order | null = null;
   lastOrder: Order | null = null;
+  lastOrderStatusKnown: boolean = false;
   nostrSecKey?: Uint8Array;
   nostrPubKey?: string;
   availableRewards: string | null = null;
@@ -81,24 +82,34 @@ class Slot {
   };
 
   fetchRobot = async (federation: Federation): Promise<void> => {
-    Object.values(this.robots).forEach((robot) => {
-      void robot.fetch(federation).then((robot) => {
+    this.loading = true;
+
+    await Promise.all(
+      Object.values(this.robots).map(async (robot) => {
+        const fetchedRobot = await robot.fetch(federation);
         this.loading = Object.values(this.robots).some((r) => r.loading);
-        this.updateSlotFromRobot(robot);
-      });
-    });
+        this.updateSlotFromRobot(fetchedRobot);
+      }),
+    );
+    this.loading = Object.values(this.robots).some((r) => r.loading);
   };
 
   updateSlotFromRobot = (robot: Robot | null): void => {
     if (!robot) return;
 
     if (robot.lastOrderId && this.lastOrder?.id !== robot.lastOrderId) {
-      this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
+      // If active order became last order, preserve the full object.
       if (this.activeOrder?.id === robot.lastOrderId) {
         this.lastOrder = this.activeOrder;
+        this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
         this.activeOrder = null;
+      } else {
+        // New last order with minimal data, status must be resolved before reusability checks.
+        this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
+        this.lastOrderStatusKnown = false;
       }
     }
+
     if (robot.activeOrderId && this.activeOrder?.id !== robot.activeOrderId) {
       this.activeOrder = new Order({
         id: robot.activeOrderId,
@@ -133,6 +144,7 @@ class Slot {
     await order.make(federation, this);
     if (!order?.bad_request) {
       this.lastOrder = this.activeOrder;
+      this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
       this.activeOrder = order;
       this.onSlotUpdate();
     }
@@ -151,6 +163,7 @@ class Slot {
         this.activeOrder?.update(newOrder);
         if (this.activeOrder?.bad_request) {
           this.lastOrder = this.activeOrder;
+          this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
           this.activeOrder = null;
         }
         this.onSlotUpdate();
@@ -159,6 +172,30 @@ class Slot {
         this.onSlotUpdate();
       }
     }
+  };
+
+  private hasOrderDetails = (order: Order | null): boolean => {
+    if (!order) return false;
+
+    return (
+      order.maker > 0 ||
+      order.taker > 0 ||
+      order.payment_method !== '' ||
+      order.maker_nick !== '' ||
+      order.status_message !== '' ||
+      order.bond_size !== '' ||
+      Boolean(order.bad_request)
+    );
+  };
+
+  ensureLastOrderStatus = async (federation: Federation): Promise<void> => {
+    if (!this.lastOrder || this.lastOrderStatusKnown || this.activeOrder?.id === this.lastOrder.id) {
+      return;
+    }
+
+    await this.lastOrder.fecth(federation, this);
+    this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
+    this.onSlotUpdate();
   };
 
   syncCoordinator: (federation: Federation, shortAlias: string) => void = (
@@ -185,6 +222,10 @@ class Slot {
   isReusable = (): boolean => {
     if (!this.lastOrder) {
       return true;
+    }
+
+    if (!this.lastOrderStatusKnown) {
+      return false;
     }
 
     const reusableStatuses = [0, 1, 2, 4, 5];

@@ -26,8 +26,8 @@ import RecoveryDialog from '../../components/Dialogs/Recovery';
 const GaragePage = (): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { windowSize, slotUpdatedAt, navigateToPage } =
-    useContext<UseAppStoreType>(AppContext);
+   const { windowSize, slotUpdatedAt, navigateToPage, open } =
+     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
@@ -67,8 +67,9 @@ const GaragePage = (): React.JSX.Element => {
     setPendingMode(null);
   };
 
-  useEffect(() => {
-    const garageKey = garage.getGarageKey();
+   useEffect(() => {
+     if (open.recovery) return;
+     const garageKey = garage.getGarageKey();
     if (garageKey) {
       setInputGarageKey(garageKey.encodedKey);
       if (Object.keys(garage.slots).length > 0 && view !== 'onboarding') {

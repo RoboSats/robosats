@@ -14,6 +14,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Snackbar,
 } from '@mui/material';
 import { Casino, Bolt, Check, AddBox, School, Search, Key } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
@@ -47,6 +48,8 @@ const GarageKeyOnboarding = ({
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedKey, setGeneratedKey] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [toastOpen, setToastOpen] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string>('');
 
   const generateKey = (): void => {
     setGeneratedKey(true);
@@ -57,7 +60,7 @@ const GarageKeyOnboarding = ({
     }, 500);
   };
 
-  const handleContinueToStep2 = (): void => {
+  const handleContinueToStep2 = async (): Promise<void> => {
     const validation = validateGarageKey(inputGarageKey);
     if (!validation.valid) return;
 
@@ -66,13 +69,24 @@ const GarageKeyOnboarding = ({
     try {
       const garageKey = new GarageKey(inputGarageKey, () => {});
       garage.setGarageKey(garageKey);
+      garage.resetManualNavigation();
 
-      recoverAccountFromRelays();
+      await recoverAccountFromRelays();
+      await garage.createRobotFromGarageKey(federation);
+      const switchResult = await garage.ensureReusableSlot(federation, { source: 'auto' });
 
-      void garage.createRobotFromGarageKey(federation).then(() => {
-        setLoading(false);
-        setStep('2');
-      });
+      if (switchResult.switched) {
+        setToastMessage(
+          t(
+            'Switched from Account #{{fromIndex}} to #{{toIndex}} - previous account has completed trades',
+            { fromIndex: switchResult.fromIndex, toIndex: switchResult.toIndex },
+          ),
+        );
+        setToastOpen(true);
+      }
+
+      setLoading(false);
+      setStep('2');
     } catch (error) {
       console.error('Error creating garage key:', error);
       setLoading(false);
@@ -341,6 +355,21 @@ const GarageKeyOnboarding = ({
           </Grid>
         </AccordionDetails>
       </Accordion>
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={6000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity='info'
+          sx={{ width: '100%' }}
+          variant='filled'
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
