@@ -141,7 +141,6 @@ services:
       SKIP_COLLECT_STATIC: "true"
       SKIP_FRONTEND_TESTS: ${SKIP_FRONTEND_TESTS:-true}
       USE_TOR: False
-      LNVENDOR: ${LNVENDOR:-LND}
       MACAROON_PATH: 'data/chain/bitcoin/regtest/admin.macaroon'
       CLN_DIR: '/cln/regtest/'
       BITCOIND_RPCURL: 'http://127.0.0.1:18443'

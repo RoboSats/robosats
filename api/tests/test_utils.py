@@ -93,13 +93,13 @@ class TestUtils(TestCase):
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
 
-    if config("LNVENDOR", cast=str) == "LND":
+    if config("LNVENDOR", cast=str).strip("'\"") == "LND":
 
         def test_get_lnd_version(self):
             version = get_lnd_version()
             self.assertTrue(isinstance(version, str))
 
-    elif config("LNVENDOR", cast=str) == "CLN":
+    elif config("LNVENDOR", cast=str).strip("'\"") == "CLN":
 
         def test_get_cln_version(self):
             version = get_cln_version()

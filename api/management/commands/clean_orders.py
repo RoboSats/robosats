@@ -8,7 +8,7 @@ from api.logics import Logics
 from api.models import Order, TakeOrder
 
 
-LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+LNVENDOR = config("LNVENDOR", cast=str, default="LND").strip("'\"")
 
 
 def invoice_lookup_error(exc_string: str) -> bool:
