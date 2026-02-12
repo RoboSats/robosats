@@ -1,6 +1,5 @@
 import hashlib
 import os
-import random
 import secrets
 import struct
 import time
