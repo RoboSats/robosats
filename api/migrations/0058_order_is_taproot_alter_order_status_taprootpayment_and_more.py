@@ -10,7 +10,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0058_add_nostr_forward_fields'),
+        ('api', '0057_robot_webhook_enabled_alter_order_escrow_duration'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
