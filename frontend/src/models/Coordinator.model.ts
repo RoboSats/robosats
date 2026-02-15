@@ -196,16 +196,13 @@ export class Coordinator {
     apiClient
       .get(this.url, `/api/book/`, undefined, true)
       .then((data) => {
-        if (!data?.not_found) {
-          this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
-            order.coordinatorShortAlias = this.shortAlias;
-            return { ...book, [`${this.shortAlias}${order.id}`]: order };
-          }, {});
-          void this.generateAllMakerAvatars();
-          onDataLoad();
-        } else {
-          onDataLoad();
-        }
+        const orders = Array.isArray(data) ? data : [];
+        this.book = orders.reduce<Record<string, PublicOrder>>((book, order) => {
+          order.coordinatorShortAlias = this.shortAlias;
+          return { ...book, [`${this.shortAlias}${order.id}`]: order };
+        }, {});
+        void this.generateAllMakerAvatars();
+        onDataLoad();
       })
       .catch((e) => {
         console.log(e);
