@@ -17,17 +17,6 @@ services:
     image: ruimarinho/bitcoin-core:${BITCOIND_VERSION:-24.0.1}-alpine
     container_name: test-btc
     restart: always
-    ports:
-      - "8000:8000"
-      - "8080:8080"
-      - "8081:8081"
-      - "10009:10009"
-      - "10010:10010"
-      - "9999:9999"
-      - "9998:9998"
-      - "5432:5432"
-      - "6379:6379"
-      - "7777:7777"
     volumes:
       - bitcoin:/bitcoin/.bitcoin/
       - ./tests/bitcoind/entrypoint.sh:/entrypoint.sh
@@ -82,16 +71,18 @@ services:
     network_mode: service:bitcoind
 
   coordinator-CLN:
-    image: elementsproject/lightningd:${CLN_VERSION:-v24.08}
+    build:
+      context: docker/cln
+      dockerfile: Dockerfile
+    image: robosats-coordinator-cln
     restart: always
     container_name: test-coordinator-CLN
     environment:
       LIGHTNINGD_NETWORK: 'regtest'
     volumes:
       - cln:/root/.lightning
-      - ./docker/cln/plugins/holdinvoice:/root/.lightning/plugins/holdinvoice
       - bitcoin:/root/.bitcoin
-    command: --regtest --bitcoin-rpcuser=test --bitcoin-rpcpassword=test --developer --dev-bitcoind-poll=1 --dev-fast-gossip --log-level=debug --bind-addr=127.0.0.1:9737 --max-concurrent-htlcs=483 --grpc-port=9999 --grpc-hold-port=9998 --important-plugin=/root/.lightning/plugins/holdinvoice --database-upgrade=true
+    command: --regtest --bitcoin-rpcuser=test --bitcoin-rpcpassword=test --developer --dev-bitcoind-poll=1 --dev-fast-gossip --log-level=debug --bind-addr=127.0.0.1:9737 --max-concurrent-htlcs=483 --grpc-port=9999 --hold-grpc-host=0.0.0.0 --hold-grpc-port=9998 --important-plugin=/root/.lightning/plugins/hold --database-upgrade=true
     depends_on:
       - bitcoind
     network_mode: service:bitcoind
@@ -147,6 +138,8 @@ services:
     environment:
       DEVELOPMENT: True
       TESTING: True
+      SKIP_COLLECT_STATIC: "true"
+      SKIP_FRONTEND_TESTS: ${SKIP_FRONTEND_TESTS:-true}
       USE_TOR: False
       MACAROON_PATH: 'data/chain/bitcoin/regtest/admin.macaroon'
       CLN_DIR: '/cln/regtest/'

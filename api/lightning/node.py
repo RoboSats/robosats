@@ -1,6 +1,6 @@
 from decouple import config
 
-LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+LNVENDOR = config("LNVENDOR", cast=str, default="LND").strip("'\"")
 
 if LNVENDOR == "LND":
     from api.lightning.lnd import LNDNode

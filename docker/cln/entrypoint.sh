@@ -17,11 +17,11 @@ if [ "$EXPOSE_TCP" == "true" ]; then
     socat "TCP4-listen:$LIGHTNINGD_RPC_PORT,fork,reuseaddr" "UNIX-CONNECT:${networkdatadir}/lightning-rpc" &
     fg %-
 else
-    # Always copy the holdinvoice plugin into the plugins directory on start up
+    # Always copy the hold plugin into the plugins directory on start up
     mkdir -p /root/.lightning/plugins
-    cp /tmp/holdinvoice /root/.lightning/plugins/holdinvoice
+    cp /tmp/hold /root/.lightning/plugins/hold
     if [ ! -f /root/.lightning/config ]; then
         cp /tmp/config /root/.lightning/config
     fi
-    exec "$@"
+    exec lightningd "$@"
 fi
