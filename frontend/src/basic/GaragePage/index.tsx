@@ -12,33 +12,28 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { VpnKey, SmartToy } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
-import Onboarding from './Onboarding';
-import Welcome from './Welcome';
-import RobotProfile from './RobotProfile';
+import GarageKeyOnboarding from './GarageKeyOnboarding';
+import GarageKeyProfile from './GarageKeyProfile';
+import Welcome from '../RobotPage/Welcome';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import RecoveryDialog from '../../components/Dialogs/Recovery';
 
-const RobotPage = (): React.JSX.Element => {
+const GaragePage = (): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { torStatus, windowSize, settings, page, navigateToPage } =
-    useContext<UseAppStoreType>(AppContext);
+   const { windowSize, slotUpdatedAt, navigateToPage, open } =
+     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
-  const params = useParams();
-  const urlToken = settings.selfhostedClient ? params.token : null;
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
 
-  const [inputToken, setInputToken] = useState<string>('');
-  const [view, setView] = useState<'welcome' | 'onboarding' | 'profile'>(
-    Object.keys(garage.slots).length > 0 ? 'profile' : 'welcome',
-  );
+  const [inputGarageKey, setInputGarageKey] = useState<string>('');
+  const [view, setView] = useState<'welcome' | 'onboarding' | 'profile'>('welcome');
   const [showModeChangeDialog, setShowModeChangeDialog] = useState<boolean>(false);
   const [pendingMode, setPendingMode] = useState<'legacy' | 'garageKey' | null>(null);
 
@@ -72,20 +67,41 @@ const RobotPage = (): React.JSX.Element => {
     setPendingMode(null);
   };
 
-  useEffect(() => {
-    const token = urlToken ?? garage.currentSlot;
-    if (token !== undefined && token !== null && page === 'garage') {
-      setInputToken(token.replace(/\s+/g, ''));
+   useEffect(() => {
+     if (open.recovery) return;
+     const garageKey = garage.getGarageKey();
+    if (garageKey) {
+      setInputGarageKey(garageKey.encodedKey);
+      if (Object.keys(garage.slots).length > 0 && view !== 'onboarding') {
+        setView('profile');
+      } else if (view === 'welcome') {
+        setView('onboarding');
+      }
+    } else {
+      if (view !== 'onboarding') {
+        setView('welcome');
+      }
     }
-  }, [torStatus, page, slotUpdatedAt]);
+  }, [slotUpdatedAt]);
 
   useEffect(() => {
-    if (Object.keys(garage.slots).length > 0 && view === 'welcome') setView('profile');
+    if (Object.keys(garage.slots).length > 0 && view === 'welcome') {
+      const garageKey = garage.getGarageKey();
+      if (garageKey) {
+        setView('profile');
+      }
+    }
   }, [garage.currentSlot]);
 
-  useEffect(() => {
-    if (Object.keys(garage.slots).length === 0 && view !== 'welcome') setView('welcome');
-  }, [slotUpdatedAt]);
+  const handleSetView = (newView: 'welcome' | 'onboarding' | 'profile'): void => {
+    if (newView === 'onboarding') {
+      const garageKey = garage.getGarageKey();
+      if (!garageKey) {
+        setInputGarageKey('');
+      }
+    }
+    setView(newView);
+  };
 
   return (
     <Paper
@@ -119,12 +135,6 @@ const RobotPage = (): React.JSX.Element => {
             </Stack>
           </ToggleButton>
         </ToggleButtonGroup>
-
-        <Alert severity='warning' sx={{ width: '100%' }}>
-          {t(
-            'You are in Legacy mode. This mode is only for recovering robots from ongoing trades. Switch to Garage Key mode to create new orders.',
-          )}
-        </Alert>
       </Stack>
 
       <Dialog open={showModeChangeDialog} onClose={cancelModeChange} maxWidth='sm' fullWidth>
@@ -158,25 +168,30 @@ const RobotPage = (): React.JSX.Element => {
         </DialogActions>
       </Dialog>
 
-      <RecoveryDialog setInputToken={setInputToken} setView={setView} />
+      <RecoveryDialog setInputToken={setInputGarageKey} setView={handleSetView} />
+
       {view === 'welcome' ? (
-        <Welcome setView={setView} width={width} setInputToken={setInputToken} />
+        <Welcome setView={handleSetView} width={width} setInputToken={setInputGarageKey} />
       ) : null}
 
       {view === 'onboarding' ? (
-        <Onboarding setView={setView} inputToken={inputToken} setInputToken={setInputToken} />
+        <GarageKeyOnboarding
+          setView={handleSetView}
+          inputGarageKey={inputGarageKey}
+          setInputGarageKey={setInputGarageKey}
+        />
       ) : null}
 
       {view === 'profile' ? (
-        <RobotProfile
-          setView={setView}
+        <GarageKeyProfile
+          setView={handleSetView}
           width={width}
-          inputToken={inputToken}
-          setInputToken={setInputToken}
+          inputGarageKey={inputGarageKey}
+          setInputGarageKey={setInputGarageKey}
         />
       ) : null}
     </Paper>
   );
 };
 
-export default RobotPage;
+export default GaragePage;

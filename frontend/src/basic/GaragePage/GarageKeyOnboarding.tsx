@@ -14,58 +14,95 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Tooltip,
+  Snackbar,
 } from '@mui/material';
-import { type Robot } from '../../models';
-import { Casino, Bolt, Check, AddBox, School, Search } from '@mui/icons-material';
+import { Casino, Bolt, Check, AddBox, School, Search, Key } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import TokenInput from './TokenInput';
-import { genBase62Token } from '../../utils';
+import GarageKeyInput from './GarageKeyInput';
+import AccountNavigator from './AccountNavigator';
+import { generateGarageKey, validateGarageKey } from '../../utils';
 import { NewTabIcon } from '../../components/Icons';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
-import useLegacyMode from '../../hooks/useLegacyMode';
+import { GarageKey } from '../../models';
 
-interface OnboardingProps {
+interface GarageKeyOnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
-  robot: Robot;
-  setRobot: (state: Robot) => void;
-  inputToken: string;
-  setInputToken: (state: string) => void;
-  baseUrl: string;
+  inputGarageKey: string;
+  setInputGarageKey: (state: string) => void;
 }
 
-const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): React.JSX.Element => {
+const GarageKeyOnboarding = ({
+  setView,
+  inputGarageKey,
+  setInputGarageKey,
+}: GarageKeyOnboardingProps): React.JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const { navigateToPage, setOpen } = useContext<UseAppStoreType>(AppContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, recoverAccountFromRelays } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { isLegacyMode, legacyDisabledTooltip } = useLegacyMode();
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
-  const [generatedToken, setGeneratedToken] = useState<boolean>(false);
+  const [generatedKey, setGeneratedKey] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [toastOpen, setToastOpen] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string>('');
 
-  const generateToken = (): void => {
-    setGeneratedToken(true);
-    setInputToken(genBase62Token(36));
+  const generateKey = (): void => {
+    setGeneratedKey(true);
+    setInputGarageKey(generateGarageKey());
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 500);
+  };
+
+  const handleContinueToStep2 = async (): Promise<void> => {
+    const validation = validateGarageKey(inputGarageKey);
+    if (!validation.valid) return;
+
+    setLoading(true);
+
+    try {
+      const garageKey = new GarageKey(inputGarageKey, () => {});
+      garage.setGarageKey(garageKey);
+      garage.resetManualNavigation();
+
+      await recoverAccountFromRelays();
+      await garage.createRobotFromGarageKey(federation);
+      const switchResult = await garage.ensureReusableSlot(federation, { source: 'auto' });
+
+      if (switchResult.switched) {
+        setToastMessage(
+          t(
+            'Switched from Account #{{fromIndex}} to #{{toIndex}} - previous account has completed trades',
+            { fromIndex: switchResult.fromIndex, toIndex: switchResult.toIndex },
+          ),
+        );
+        setToastOpen(true);
+      }
+
+      setLoading(false);
+      setStep('2');
+    } catch (error) {
+      console.error('Error creating garage key:', error);
+      setLoading(false);
+    }
   };
 
   const slot = garage.getSlot();
+  const garageKey = garage.getGarageKey();
+  const isValidKey = validateGarageKey(inputGarageKey).valid;
 
   return (
     <Box>
       <Accordion expanded={step === '1'} disableGutters={true}>
         <AccordionSummary>
           <Typography variant='h5' color={step === '1' ? 'text.primary' : 'text.disabled'}>
-            {t('1. Generate a token')}
+            {t('1. Generate your Garage Key')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -73,55 +110,52 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
             <Grid item>
               <Typography>
                 {t(
-                  'This temporary key gives you access to a unique and private robot identity for your trade.',
+                  'Your Garage Key is a master key that derives unlimited robot identities. Generate it once and use it forever.',
                 )}
               </Typography>
             </Grid>
-            {!generatedToken ? (
+            {!generatedKey && !inputGarageKey ? (
               <Grid item>
-                <Button autoFocus onClick={generateToken} variant='contained' size='large'>
-                  <Casino />
-                  {t('Generate token')}
+                <Button autoFocus onClick={generateKey} variant='contained' size='large'>
+                  <Key sx={{ mr: 1 }} />
+                  {t('Generate Garage Key')}
                 </Button>
               </Grid>
             ) : (
-              <Grid item>
-                <Collapse in={generatedToken}>
+              <Grid item sx={{ width: '100%' }}>
+                <Collapse in={generatedKey || !!inputGarageKey}>
                   <Grid container direction='column' alignItems='center' spacing={1}>
                     <Grid item>
                       <Alert variant='outlined' severity='info'>
                         <b>{`${t('Store it somewhere safe!')} `}</b>
                         {t(
-                          `This token is the one and only key to your robot, you will need it later to recover your order. Keep it secret, sharing it could put your funds at risk.`,
+                          `This key is the master key to all your robots. Keep it secret and backed up securely.`,
                         )}
                       </Alert>
                     </Grid>
                     <Grid item sx={{ width: '100%' }}>
-                      <TokenInput
+                      <GarageKeyInput
                         loading={loading}
                         autoFocusTarget='copyButton'
-                        inputToken={inputToken}
-                        setInputToken={setInputToken}
-                        onPressEnter={() => null}
+                        garageKey={inputGarageKey}
+                        setGarageKey={setInputGarageKey}
+                        editable={true}
                       />
                     </Grid>
                     <Grid item>
-                      <Typography>
-                        {t('You can also add your own random characters into the token or')}
-                        <Button size='small' onClick={generateToken}>
+                      <Typography variant='body2'>
+                        {t('Or paste an existing Garage Key to recover your robots.')}
+                        <Button size='small' onClick={generateKey}>
                           <Casino />
-                          {t('roll again')}
+                          {t('Generate new')}
                         </Button>
                       </Typography>
                     </Grid>
 
                     <Grid item>
                       <Button
-                        onClick={() => {
-                          setStep('2');
-                          void garage.createRobot(federation, inputToken);
-                        }}
-                        disabled={loading}
+                        onClick={handleContinueToStep2}
+                        disabled={loading || !isValidKey}
                         variant='contained'
                         size='large'
                       >
@@ -206,6 +240,22 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                 </Typography>
               </Grid>
             ) : null}
+
+            {garageKey ? (
+              <Grid item>
+                <AccountNavigator
+                  accountIndex={garageKey.currentAccountIndex}
+                  onPrevious={() => {
+                    void garage.previousAccount(federation);
+                  }}
+                  onNext={() => {
+                    void garage.nextAccount(federation);
+                  }}
+                  loading={slot?.loading}
+                />
+              </Grid>
+            ) : null}
+
             <Grid item>
               <Collapse in={!!slot?.hashId}>
                 <Button
@@ -241,34 +291,28 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
             </Grid>
 
             <Grid item>
-              <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
-                <span>
-                  <ButtonGroup variant='contained'>
-                    <Button
-                      color='primary'
-                      disabled={isLegacyMode}
-                      onClick={() => {
-                        setOpen((open) => {
-                          return { ...open, search: true };
-                        });
-                      }}
-                    >
-                      <Search /> <div style={{ width: '0.5em' }} />
-                      {t('Search')}
-                    </Button>
-                    <Button
-                      color='secondary'
-                      disabled={isLegacyMode}
-                      onClick={() => {
-                        navigateToPage('create', navigate);
-                      }}
-                    >
-                      <AddBox /> <div style={{ width: '0.5em' }} />
-                      {t('Create')}
-                    </Button>
-                  </ButtonGroup>
-                </span>
-              </Tooltip>
+              <ButtonGroup variant='contained'>
+                <Button
+                  color='primary'
+                  onClick={() => {
+                    setOpen((open) => {
+                      return { ...open, search: true };
+                    });
+                  }}
+                >
+                  <Search /> <div style={{ width: '0.5em' }} />
+                  {t('Search')}
+                </Button>
+                <Button
+                  color='secondary'
+                  onClick={() => {
+                    navigateToPage('create', navigate);
+                  }}
+                >
+                  <AddBox /> <div style={{ width: '0.5em' }} />
+                  {t('Create')}
+                </Button>
+              </ButtonGroup>
             </Grid>
 
             <Grid item>
@@ -311,8 +355,23 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
           </Grid>
         </AccordionDetails>
       </Accordion>
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={6000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity='info'
+          sx={{ width: '100%' }}
+          variant='filled'
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
-export default Onboarding;
+export default GarageKeyOnboarding;
