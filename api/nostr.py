@@ -64,6 +64,73 @@ class Nostr:
         await client.send_private_msg(PublicKey.parse(robot.nostr_pubkey), text, tags)
         print("Nostr NOTIFICATION event sent")
 
+        await self.send_forward_notification(robot, order, text)
+
+    async def send_forward_notification(self, robot, order, text):
+        """Sends notification to user's main account via their .onion relay"""
+        from api.models import Robot
+
+        if not robot.nostr_forward_enabled:
+            return
+        if not robot.nostr_forward_pubkey or not robot.nostr_forward_relay:
+            return
+        if not Robot.is_valid_onion_url(robot.nostr_forward_relay):
+            return
+
+        print(f"Forwarding nostr notification to {robot.nostr_forward_relay}")
+
+        keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+        signer = NostrSigner.keys(keys)
+        client = Client(signer)
+
+        await client.add_relay(robot.nostr_forward_relay)
+        await client.connect()
+
+        tags = [
+            Tag.parse(
+                [
+                    "order_id",
+                    f"{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                ]
+            ),
+            Tag.parse(["status", str(order.status)]),
+        ]
+
+        await client.send_private_msg(
+            PublicKey.parse(robot.nostr_forward_pubkey), text, tags
+        )
+        print("Nostr FORWARD notification sent")
+
+    async def send_forward_test(self, robot):
+        """Sends a test notification to user's main nostr account via their .onion relay"""
+        from api.models import Robot
+
+        if config("NOSTR_NSEC", cast=str, default="") == "":
+            return
+
+        if not robot.nostr_forward_pubkey or not robot.nostr_forward_relay:
+            return
+
+        if not Robot.is_valid_onion_url(robot.nostr_forward_relay):
+            return
+
+        print(f"Sending nostr FORWARD TEST to {robot.nostr_forward_relay}")
+
+        keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+        signer = NostrSigner.keys(keys)
+        client = Client(signer)
+
+        await client.add_relay(robot.nostr_forward_relay)
+        await client.connect()
+
+        coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="RoboSats")
+        text = f"🔔 Hey {robot.user.username}, your Nostr forwarding is configured! You will receive order notifications from {coordinator_alias}."
+
+        await client.send_private_msg(
+            PublicKey.parse(robot.nostr_forward_pubkey), text, []
+        )
+        print("Nostr FORWARD TEST event sent")
+
     async def initialize_client(self, keys):
         # Initialize with coordinator Keys
         signer = NostrSigner.keys(keys)

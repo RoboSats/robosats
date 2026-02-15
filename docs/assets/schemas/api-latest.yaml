@@ -925,6 +925,19 @@ paths:
                     type: string
                     nullable: true
                     description: API key sent in X-API-Key header for webhook authentication
+                  nostr_forward_pubkey:
+                    type: string
+                    nullable: true
+                    description: Nostr public key (hex) for forwarding notifications
+                  nostr_forward_relay:
+                    type: string
+                    nullable: true
+                    description: Nostr relay URL for forwarding notifications (.onion
+                      only)
+                  nostr_forward_enabled:
+                    type: boolean
+                    default: false
+                    description: Whether Nostr forwarding notifications are enabled
               examples:
                 SuccessfullyRetrievedRobot:
                   value:
@@ -965,6 +978,12 @@ paths:
 
         **Note:** Webhook is enabled automatically when a valid .onion URL is set.
         A test notification will be sent when the webhook URL is configured.
+
+        ### Nostr Forwarding
+
+        You can also configure Nostr direct message forwarding. Provide your main Nostr
+        public key (hex format) and a .onion relay URL to receive trade notifications
+        as encrypted DMs from the coordinator's Nostr identity.
       summary: Update robot webhook settings
       tags:
       - robot
@@ -988,6 +1007,18 @@ paths:
                     type: string
                     nullable: true
                     description: API key sent in X-API-Key header
+                  nostr_forward_pubkey:
+                    type: string
+                    nullable: true
+                    description: Nostr public key (hex) for forwarding notifications
+                  nostr_forward_relay:
+                    type: string
+                    nullable: true
+                    description: Nostr relay URL for forwarding notifications (.onion
+                      only)
+                  nostr_forward_enabled:
+                    type: boolean
+                    description: Whether Nostr forwarding notifications are enabled
               examples:
                 SuccessfullyUpdatedWebhookSettings:
                   value:
@@ -995,6 +1026,12 @@ paths:
                     webhook_enabled: true
                     webhook_api_key: my-secret-key
                   summary: Successfully updated webhook settings
+                SuccessfullyUpdatedNostrForwardingSettings:
+                  value:
+                    nostr_forward_pubkey: abcd1234...
+                    nostr_forward_relay: ws://relay.onion/
+                    nostr_forward_enabled: true
+                  summary: Successfully updated Nostr forwarding settings
           description: ''
         '400':
           content:
@@ -1007,12 +1044,22 @@ paths:
                     items:
                       type: string
                     description: Validation errors for webhook_url field
+                  nostr_forward_relay:
+                    type: array
+                    items:
+                      type: string
+                    description: Validation errors for nostr_forward_relay field
               examples:
                 InvalidURL(not.onion):
                   value:
                     webhook_url:
                     - Webhook URL must be a Tor .onion address
                   summary: Invalid URL (not .onion)
+                InvalidRelayURL(not.onion):
+                  value:
+                    nostr_forward_relay:
+                    - Nostr relay must be a Tor .onion address
+                  summary: Invalid relay URL (not .onion)
           description: ''
   /api/stealth/:
     post:
