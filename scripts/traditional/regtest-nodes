@@ -1225,13 +1225,10 @@ roboauto_regtest_setup() {
 
     echo "writing roboauto regtest config"
     cat << EOF > "$ROBOAUTO_DIR/config.ini"
-[federation]
-exp = None
-sau = None
-tos = None
-tbl = None
-bve = None
-loc = "http://127.0.0.1:$RUNSERVER_PORT"
+[federation.loc]
+short_alias = "local"
+url = "http://127.0.0.1:$RUNSERVER_PORT"
+nostr_pubkey = ""
 EOF
 
     case "$LNVENDOR_USER" in
