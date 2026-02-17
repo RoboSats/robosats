@@ -48,6 +48,26 @@ describe('taproot utils', () => {
     expect(signer?.kind).toBe('unisat');
   });
 
+  it('honors preferred signer when available', () => {
+    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const okxSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const browserWindow: TaprootBrowserWindow = {
+      unisat: { signPsbt: unisatSignPsbt },
+      okxwallet: { bitcoin: { signPsbt: okxSignPsbt } },
+    };
+
+    const signer = getBrowserPsbtSigner(browserWindow, 'okx');
+    expect(signer?.kind).toBe('okx');
+  });
+
+  it('falls back to available signer when preferred signer is missing', () => {
+    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const browserWindow: TaprootBrowserWindow = { unisat: { signPsbt: unisatSignPsbt } };
+
+    const signer = getBrowserPsbtSigner(browserWindow, 'okx');
+    expect(signer?.kind).toBe('unisat');
+  });
+
   it('signs PSBT with detected browser wallet and returns base64', async () => {
     const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
     const browserWindow: TaprootBrowserWindow = { unisat: { signPsbt: unisatSignPsbt } };
@@ -56,5 +76,26 @@ describe('taproot utils', () => {
 
     expect(unisatSignPsbt).toHaveBeenCalledWith(MIN_PSBT_HEX, undefined);
     expect(signed).toBe(MIN_PSBT_BASE64);
+  });
+
+  it('signs PSBT with preferred signer', async () => {
+    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const okxSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const browserWindow: TaprootBrowserWindow = {
+      unisat: { signPsbt: unisatSignPsbt },
+      okxwallet: { bitcoin: { signPsbt: okxSignPsbt } },
+    };
+
+    const signed = await signPsbtWithBrowserWallet(MIN_PSBT_BASE64, undefined, browserWindow, 'okx');
+
+    expect(okxSignPsbt).toHaveBeenCalledWith(MIN_PSBT_HEX, undefined);
+    expect(unisatSignPsbt).not.toHaveBeenCalled();
+    expect(signed).toBe(MIN_PSBT_BASE64);
+  });
+
+  it('throws when no signer is available', async () => {
+    await expect(signPsbtWithBrowserWallet(MIN_PSBT_BASE64, undefined, {})).rejects.toThrow(
+      'No compatible browser PSBT signer detected',
+    );
   });
 });

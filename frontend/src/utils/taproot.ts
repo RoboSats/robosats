@@ -42,6 +42,27 @@ export interface BrowserPsbtSigner {
   signPsbt: (psbtHex: string, options?: BrowserPsbtSignOptions) => Promise<string>;
 }
 
+const resolveSigner = (
+  kind: BrowserPsbtSignerKind,
+  browserWindow: TaprootBrowserWindow,
+): BrowserPsbtSigner | null => {
+  if (kind === 'unisat' && browserWindow.unisat?.signPsbt !== undefined) {
+    return {
+      kind: 'unisat',
+      signPsbt: browserWindow.unisat.signPsbt.bind(browserWindow.unisat),
+    };
+  }
+
+  if (kind === 'okx' && browserWindow.okxwallet?.bitcoin?.signPsbt !== undefined) {
+    return {
+      kind: 'okx',
+      signPsbt: browserWindow.okxwallet.bitcoin.signPsbt.bind(browserWindow.okxwallet.bitcoin),
+    };
+  }
+
+  return null;
+};
+
 const hasPsbtMagic = (bytes: Uint8Array): boolean => {
   if (bytes.length < PSBT_MAGIC.length) return false;
   return PSBT_MAGIC.every((value, index) => bytes[index] === value);
@@ -138,20 +159,20 @@ export const generateTaprootKeypair = (secretKey?: Uint8Array): TaprootKeypair =
 
 export const getBrowserPsbtSigner = (
   browserWindow: TaprootBrowserWindow | undefined = getBrowserWindow(),
+  preferredSigner?: BrowserPsbtSignerKind,
 ): BrowserPsbtSigner | null => {
-  if (browserWindow?.unisat?.signPsbt !== undefined) {
-    return {
-      kind: 'unisat',
-      signPsbt: browserWindow.unisat.signPsbt.bind(browserWindow.unisat),
-    };
+  if (browserWindow === undefined) return null;
+
+  if (preferredSigner !== undefined) {
+    const preferred = resolveSigner(preferredSigner, browserWindow);
+    if (preferred !== null) return preferred;
   }
 
-  if (browserWindow?.okxwallet?.bitcoin?.signPsbt !== undefined) {
-    return {
-      kind: 'okx',
-      signPsbt: browserWindow.okxwallet.bitcoin.signPsbt.bind(browserWindow.okxwallet.bitcoin),
-    };
-  }
+  const unisat = resolveSigner('unisat', browserWindow);
+  if (unisat !== null) return unisat;
+
+  const okx = resolveSigner('okx', browserWindow);
+  if (okx !== null) return okx;
 
   return null;
 };
@@ -160,8 +181,9 @@ export const signPsbtWithBrowserWallet = async (
   psbt: string,
   options?: BrowserPsbtSignOptions,
   browserWindow: TaprootBrowserWindow | undefined = getBrowserWindow(),
+  preferredSigner?: BrowserPsbtSignerKind,
 ): Promise<string> => {
-  const signer = getBrowserPsbtSigner(browserWindow);
+  const signer = getBrowserPsbtSigner(browserWindow, preferredSigner);
   if (signer === null) {
     throw new Error('No compatible browser PSBT signer detected');
   }
