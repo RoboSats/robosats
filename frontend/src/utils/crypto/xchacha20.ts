@@ -1,4 +1,4 @@
-import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
+import { xchacha20poly1305 } from '@noble/ciphers/chacha';
 
 const KEY_LENGTH = 32;
 const NONCE_LENGTH = 24;
