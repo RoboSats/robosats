@@ -108,8 +108,8 @@ const MakerForm = ({
       coordinator.loadLimits(() => {
         const newLimits = coordinator.limits;
         if (newLimits && Object.keys(newLimits).length !== 0) {
-          updateAmountLimits(newLimits, fav.currency, maker.premium);
-          updateCurrentPrice(newLimits, fav.currency, maker.premium);
+          updateAmountLimits(newLimits, fav.currency, maker.premium ?? 0);
+          updateCurrentPrice(newLimits, fav.currency, maker.premium ?? 0);
           setLimits(newLimits);
         }
       });
@@ -157,8 +157,8 @@ const MakerForm = ({
         mode: newCurrency === 1000 ? 'swap' : 'fiat',
       };
     });
-    updateAmountLimits(limits, newCurrency, maker.premium);
-    updateCurrentPrice(limits, newCurrency, maker.premium);
+    updateAmountLimits(limits, newCurrency, maker.premium ?? 0);
+    updateCurrentPrice(limits, newCurrency, maker.premium ?? 0);
 
     if (makerHasAmountRange) {
       const minAmount = parseFloat(Number(limits[newCurrency].min_amount).toPrecision(2));
@@ -407,7 +407,7 @@ const MakerForm = ({
       (!makerHasAmountRange && maker.amount && maker.amount <= 0) ||
       maker.badPremiumText !== '' ||
       federation.getCoordinator(maker.coordinator)?.limits === undefined ||
-      typeof maker.premium !== 'number' ||
+      (maker.premium !== null && typeof maker.premium !== 'number') ||
       maker.paymentMethods.length === 0 ||
       maker.badDescription
     );
