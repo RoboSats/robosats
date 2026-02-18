@@ -1,4 +1,5 @@
 import {
+  type BrowserPsbtSignResult,
   generateTaprootKeypair,
   getBrowserPsbtSigner,
   isLikelyPsbt,
@@ -37,8 +38,12 @@ describe('taproot utils', () => {
   });
 
   it('prefers unisat signer when multiple providers are available', () => {
-    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
-    const okxSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
+    const okxSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
     const browserWindow: TaprootBrowserWindow = {
       unisat: { signPsbt: unisatSignPsbt },
       okxwallet: { bitcoin: { signPsbt: okxSignPsbt } },
@@ -49,8 +54,12 @@ describe('taproot utils', () => {
   });
 
   it('honors preferred signer when available', () => {
-    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
-    const okxSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
+    const okxSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
     const browserWindow: TaprootBrowserWindow = {
       unisat: { signPsbt: unisatSignPsbt },
       okxwallet: { bitcoin: { signPsbt: okxSignPsbt } },
@@ -61,7 +70,9 @@ describe('taproot utils', () => {
   });
 
   it('falls back to available signer when preferred signer is missing', () => {
-    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
     const browserWindow: TaprootBrowserWindow = { unisat: { signPsbt: unisatSignPsbt } };
 
     const signer = getBrowserPsbtSigner(browserWindow, 'okx');
@@ -69,7 +80,9 @@ describe('taproot utils', () => {
   });
 
   it('signs PSBT with detected browser wallet and returns base64', async () => {
-    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
     const browserWindow: TaprootBrowserWindow = { unisat: { signPsbt: unisatSignPsbt } };
 
     const signed = await signPsbtWithBrowserWallet(MIN_PSBT_BASE64, undefined, browserWindow);
@@ -79,8 +92,12 @@ describe('taproot utils', () => {
   });
 
   it('signs PSBT with preferred signer', async () => {
-    const unisatSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
-    const okxSignPsbt = jest.fn<Promise<string>, [string]>().mockResolvedValue(MIN_PSBT_HEX);
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
+    const okxSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
     const browserWindow: TaprootBrowserWindow = {
       unisat: { signPsbt: unisatSignPsbt },
       okxwallet: { bitcoin: { signPsbt: okxSignPsbt } },
@@ -91,6 +108,40 @@ describe('taproot utils', () => {
     expect(okxSignPsbt).toHaveBeenCalledWith(MIN_PSBT_HEX, undefined);
     expect(unisatSignPsbt).not.toHaveBeenCalled();
     expect(signed).toBe(MIN_PSBT_BASE64);
+  });
+
+  it('passes signing options through to the wallet signer', async () => {
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue(MIN_PSBT_HEX);
+    const browserWindow: TaprootBrowserWindow = { unisat: { signPsbt: unisatSignPsbt } };
+    const options = { autoFinalized: false, toSignInputs: [{ index: 0 }] };
+
+    await signPsbtWithBrowserWallet(MIN_PSBT_BASE64, options, browserWindow);
+
+    expect(unisatSignPsbt).toHaveBeenCalledWith(MIN_PSBT_HEX, options);
+  });
+
+  it('accepts object-shaped wallet signer responses', async () => {
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue({ psbtHex: MIN_PSBT_HEX });
+    const browserWindow: TaprootBrowserWindow = { unisat: { signPsbt: unisatSignPsbt } };
+
+    const signed = await signPsbtWithBrowserWallet(MIN_PSBT_BASE64, undefined, browserWindow);
+
+    expect(signed).toBe(MIN_PSBT_BASE64);
+  });
+
+  it('throws when wallet signer returns unsupported response shape', async () => {
+    const unisatSignPsbt = jest
+      .fn<Promise<BrowserPsbtSignResult>, [string]>()
+      .mockResolvedValue({} as BrowserPsbtSignResult);
+    const browserWindow: TaprootBrowserWindow = { unisat: { signPsbt: unisatSignPsbt } };
+
+    await expect(signPsbtWithBrowserWallet(MIN_PSBT_BASE64, undefined, browserWindow)).rejects.toThrow(
+      'Browser wallet returned an unsupported PSBT response shape',
+    );
   });
 
   it('throws when no signer is available', async () => {

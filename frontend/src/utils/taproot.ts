@@ -20,12 +20,27 @@ export interface BrowserPsbtSignOptions {
   toSignInputs?: PsbtToSignInput[];
 }
 
+export interface BrowserPsbtSignResultObject {
+  psbt?: string;
+  psbtHex?: string;
+  signedPsbt?: string;
+  hex?: string;
+}
+
+export type BrowserPsbtSignResult = string | BrowserPsbtSignResultObject;
+
 interface UnisatProvider {
-  signPsbt: (psbtHex: string, options?: BrowserPsbtSignOptions) => Promise<string>;
+  signPsbt: (
+    psbtHex: string,
+    options?: BrowserPsbtSignOptions,
+  ) => Promise<BrowserPsbtSignResult>;
 }
 
 interface OkxBitcoinProvider {
-  signPsbt: (psbtHex: string, options?: BrowserPsbtSignOptions) => Promise<string>;
+  signPsbt: (
+    psbtHex: string,
+    options?: BrowserPsbtSignOptions,
+  ) => Promise<BrowserPsbtSignResult>;
 }
 
 export interface TaprootBrowserWindow {
@@ -39,21 +54,28 @@ export type BrowserPsbtSignerKind = 'unisat' | 'okx';
 
 export interface BrowserPsbtSigner {
   kind: BrowserPsbtSignerKind;
-  signPsbt: (psbtHex: string, options?: BrowserPsbtSignOptions) => Promise<string>;
+  signPsbt: (
+    psbtHex: string,
+    options?: BrowserPsbtSignOptions,
+  ) => Promise<BrowserPsbtSignResult>;
 }
+
+const isSignPsbtFn = (
+  signPsbt: UnisatProvider['signPsbt'] | OkxBitcoinProvider['signPsbt'] | undefined,
+): signPsbt is UnisatProvider['signPsbt'] => typeof signPsbt === 'function';
 
 const resolveSigner = (
   kind: BrowserPsbtSignerKind,
   browserWindow: TaprootBrowserWindow,
 ): BrowserPsbtSigner | null => {
-  if (kind === 'unisat' && browserWindow.unisat?.signPsbt !== undefined) {
+  if (kind === 'unisat' && isSignPsbtFn(browserWindow.unisat?.signPsbt)) {
     return {
       kind: 'unisat',
       signPsbt: browserWindow.unisat.signPsbt.bind(browserWindow.unisat),
     };
   }
 
-  if (kind === 'okx' && browserWindow.okxwallet?.bitcoin?.signPsbt !== undefined) {
+  if (kind === 'okx' && isSignPsbtFn(browserWindow.okxwallet?.bitcoin?.signPsbt)) {
     return {
       kind: 'okx',
       signPsbt: browserWindow.okxwallet.bitcoin.signPsbt.bind(browserWindow.okxwallet.bitcoin),
@@ -145,6 +167,16 @@ export const normalizePsbt = (psbt: string, output: 'base64' | 'hex' = 'base64')
   return output === 'hex' ? bytesToHex(parsed) : bytesToBase64(parsed);
 };
 
+const extractSignedPsbt = (result: BrowserPsbtSignResult): string | null => {
+  if (typeof result === 'string') return result;
+  if (result === null || typeof result !== 'object') return null;
+
+  const psbtLike =
+    result.psbt ?? result.psbtHex ?? result.signedPsbt ?? result.hex;
+
+  return typeof psbtLike === 'string' && psbtLike.trim().length > 0 ? psbtLike : null;
+};
+
 export const generateTaprootKeypair = (secretKey?: Uint8Array): TaprootKeypair => {
   const privateKeyBytes = secretKey ?? generateSecretKey();
   if (privateKeyBytes.length !== 32) {
@@ -189,6 +221,11 @@ export const signPsbtWithBrowserWallet = async (
   }
 
   const psbtHex = normalizePsbt(psbt, 'hex');
-  const signed = await signer.signPsbt(psbtHex, options);
-  return normalizePsbt(signed, 'base64');
+  const signedResult = await signer.signPsbt(psbtHex, options);
+  const signedPsbt = extractSignedPsbt(signedResult);
+  if (signedPsbt === null) {
+    throw new Error('Browser wallet returned an unsupported PSBT response shape');
+  }
+
+  return normalizePsbt(signedPsbt, 'base64');
 };
