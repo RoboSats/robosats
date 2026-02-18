@@ -300,7 +300,6 @@ class Garage {
     if (slot != null) {
       await slot.fetchRobot(federation);
       this.save();
-      this.triggerHook('onSlotUpdate');
     }
   };
 
