@@ -97,6 +97,8 @@ class Slot {
   updateSlotFromRobot = (robot: Robot | null): void => {
     if (!robot) return;
 
+    let changed = false;
+
     if (robot.lastOrderId && this.lastOrder?.id !== robot.lastOrderId) {
       // If active order became last order, preserve the full object.
       if (this.activeOrder?.id === robot.lastOrderId) {
@@ -108,6 +110,7 @@ class Slot {
         this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
         this.lastOrderStatusKnown = false;
       }
+      changed = true;
     }
 
     if (robot.activeOrderId && this.activeOrder?.id !== robot.activeOrderId) {
@@ -115,21 +118,30 @@ class Slot {
         id: robot.activeOrderId,
         shortAlias: robot.shortAlias,
       });
+      changed = true;
     }
 
+    const previousRewards = this.availableRewards;
     this.availableRewards =
       robot.earnedRewards != undefined && robot.earnedRewards > 0
         ? robot.shortAlias
         : this.availableRewards === robot.shortAlias
           ? null
           : this.availableRewards;
+    if (this.availableRewards !== previousRewards) {
+      changed = true;
+    }
 
-    this.onSlotUpdate();
+    if (changed) {
+      this.onSlotUpdate();
+    }
   };
 
   // Orders
   fetchActiveOrder = async (federation: Federation): Promise<void> => {
-    void this.activeOrder?.fecth(federation, this);
+    if (this.activeOrder) {
+      await this.activeOrder.fecth(federation, this);
+    }
     this.updateSlotFromOrder(this.activeOrder);
   };
 
@@ -160,13 +172,20 @@ class Slot {
         newOrder.id === this.activeOrder?.id &&
         newOrder.shortAlias === this.activeOrder?.shortAlias
       ) {
+        const previousStatus = this.activeOrder?.status;
+        const previousBadRequest = this.activeOrder?.bad_request;
         this.activeOrder?.update(newOrder);
+        const changed =
+          this.activeOrder?.status !== previousStatus ||
+          this.activeOrder?.bad_request !== previousBadRequest;
         if (this.activeOrder?.bad_request) {
           this.lastOrder = this.activeOrder;
           this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
           this.activeOrder = null;
         }
-        this.onSlotUpdate();
+        if (changed || this.activeOrder === null) {
+          this.onSlotUpdate();
+        }
       } else if (newOrder?.is_participant && this.lastOrder?.id !== newOrder.id) {
         this.activeOrder = newOrder;
         this.onSlotUpdate();
