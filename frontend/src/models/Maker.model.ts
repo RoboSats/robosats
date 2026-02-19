@@ -1,6 +1,9 @@
 import defaultFederation from '../../static/federation.json';
 
 export interface Maker {
+  type: number | null;
+  currency: number;
+  mode: 'swap' | 'fiat';
   advancedOptions: boolean;
   coordinator: string;
   isExplicit: boolean;
@@ -27,6 +30,9 @@ export interface Maker {
 }
 
 export const defaultMaker: Maker = {
+  type: null,
+  currency: 0,
+  mode: 'fiat',
   advancedOptions: false,
   coordinator:
     Object.keys(defaultFederation)[
