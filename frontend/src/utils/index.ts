@@ -10,6 +10,23 @@ export { amountToString } from './prettyNumbers';
 export { default as saveAsJson } from './saveFile';
 export { default as statusBadgeColor } from './statusBadgeColor';
 export { genBase62Token, validateTokenEntropy } from './token';
+export {
+  generateGarageKey,
+  encodeGarageKey,
+  decodeGarageKey,
+  validateGarageKey,
+  deriveRobotKey,
+  derivedKeyToToken,
+  garageKeyToRobotToken,
+  getNostrSecKeyFromGarageKey,
+  getNostrPubKeyFromGarageKey,
+} from './garageKey';
+export {
+  createAccountRecoveryEvent,
+  parseAccountRecoveryEvent,
+  publishAccountRecoveryEvent,
+  saveAccountRecovery,
+} from './accountRecovery';
 export { default as getWebln } from './webln';
 export { default as computeSats } from './computeSats';
 export { default as federationLottery } from './federationLottery';

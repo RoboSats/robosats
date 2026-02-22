@@ -1,15 +1,18 @@
 import React, { useContext, useEffect } from 'react';
-import { Routes as DomRoutes, Route, useNavigate } from 'react-router-dom';
+import { Routes as DomRoutes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { Fade } from '@mui/material';
 import { type UseAppStoreType, AppContext, Page } from '../contexts/AppContext';
+import useLegacyMode from '../hooks/useLegacyMode';
 
-import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage } from '.';
+import { RobotPage, GaragePage, MakerPage, BookPage, OrderPage, SettingsPage } from '.';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
 const Routes: React.FC = () => {
   const navigate = useNavigate();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { page, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+
+  const { isLegacyMode } = useLegacyMode();
 
   useEffect(() => {
     if (window.AndroidDataRobosats && garage.currentSlot) {
@@ -34,6 +37,8 @@ const Routes: React.FC = () => {
     }
   }, [location]);
 
+  const GarageComponent = garage.mode === 'garageKey' ? GaragePage : RobotPage;
+
   return (
     <DomRoutes>
       {['/garage/:token?', '/garage', '/', ''].map((path, index) => {
@@ -43,7 +48,7 @@ const Routes: React.FC = () => {
             element={
               <Fade in={page === 'garage'} appear>
                 <div>
-                  <RobotPage />
+                  <GarageComponent />
                 </div>
               </Fade>
             }
@@ -55,22 +60,30 @@ const Routes: React.FC = () => {
       <Route
         path={'/offers'}
         element={
-          <Fade in={page === 'offers'} appear>
-            <div>
-              <BookPage />
-            </div>
-          </Fade>
+          isLegacyMode ? (
+            <Navigate to='/garage' replace />
+          ) : (
+            <Fade in={page === 'offers'} appear>
+              <div>
+                <BookPage />
+              </div>
+            </Fade>
+          )
         }
       />
 
       <Route
         path='/create'
         element={
-          <Fade in={page === 'create'} appear>
-            <div>
-              <MakerPage />
-            </div>
-          </Fade>
+          isLegacyMode ? (
+            <Navigate to='/garage' replace />
+          ) : (
+            <Fade in={page === 'create'} appear>
+              <div>
+                <MakerPage />
+              </div>
+            </Fade>
+          )
         }
       />
 

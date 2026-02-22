@@ -40,6 +40,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
   const { settings, setSettings, client } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
+
   const fontSizes = [
     { label: 'XS', value: { basic: 12, pro: 10 } },
     { label: 'S', value: { basic: 13, pro: 11 } },

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Button, Grid, Typography, useTheme, Tooltip } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { FastForward, RocketLaunch, Key, Search } from '@mui/icons-material';
 import { genBase62Token } from '../../utils';
@@ -8,6 +8,9 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { useNavigate } from 'react-router-dom';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import useLegacyMode from '../../hooks/useLegacyMode';
+
+import GarageKey from '../../models/GarageKey.model';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
@@ -23,6 +26,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { isLegacyMode, legacyDisabledTooltip } = useLegacyMode();
 
   return (
     <Grid
@@ -78,18 +82,23 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
               </Typography>
             </Grid>
             <Grid item>
-              <Button
-                size='large'
-                color='primary'
-                variant='contained'
-                onClick={() => {
-                  setView('onboarding');
-                }}
-              >
-                <RocketLaunch />
-                <div style={{ width: '0.5em' }} />
-                {t('Start')}
-              </Button>
+              <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
+                <span>
+                  <Button
+                    size='large'
+                    color='primary'
+                    variant='contained'
+                    disabled={isLegacyMode}
+                    onClick={() => {
+                      setView('onboarding');
+                    }}
+                  >
+                    <RocketLaunch />
+                    <div style={{ width: '0.5em' }} />
+                    {t('Start')}
+                  </Button>
+                </span>
+              </Tooltip>
             </Grid>
 
             <Grid item>
@@ -115,33 +124,57 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
         </Box>
       </Grid>
       <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
-        <Button
-          size='large'
-          color='primary'
-          onClick={() => {
-            setOpen((open) => {
-              return { ...open, search: true };
-            });
-          }}
-        >
-          <Search /> <div style={{ width: '0.5em' }} />
-          {t('Search for Orders')}
-        </Button>
+        <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
+          <span>
+            <Button
+              size='large'
+              color='primary'
+              disabled={isLegacyMode}
+              onClick={() => {
+                setOpen((open) => {
+                  return { ...open, search: true };
+                });
+              }}
+            >
+              <Search /> <div style={{ width: '0.5em' }} />
+              {t('Search for Orders')}
+            </Button>
+          </span>
+        </Tooltip>
       </Grid>
       <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
-        <Button
-          size='large'
-          color='primary'
-          onClick={() => {
-            const token = genBase62Token(36);
-            void garage.createRobot(federation, token);
-            setInputToken(token);
-            navigateToPage('create', navigate);
-          }}
-        >
-          <FastForward /> <div style={{ width: '0.5em' }} />
-          {t('Fast Generate Order')}
-        </Button>
+        <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
+          <span>
+            <Button
+              size='large'
+              color='primary'
+              disabled={isLegacyMode}
+              onClick={() => {
+                if (garage.getMode() === 'garageKey') {
+                  if (!garage.getGarageKey()) {
+                    const newKey = new GarageKey('generate');
+                    garage.setGarageKey(newKey);
+                  }
+                  void garage.createRobotFromGarageKey(federation, undefined, true).then(() => {
+                    const garageKey = garage.getGarageKey();
+                    if (garageKey) {
+                      setInputToken(garageKey.encodedKey);
+                    }
+                    navigateToPage('create', navigate);
+                  });
+                } else {
+                  const token = genBase62Token(36);
+                  void garage.createRobot(federation, token);
+                  setInputToken(token);
+                  navigateToPage('create', navigate);
+                }
+              }}
+            >
+              <FastForward /> <div style={{ width: '0.5em' }} />
+              {t('Fast Generate Order')}
+            </Button>
+          </span>
+        </Tooltip>
       </Grid>
     </Grid>
   );
