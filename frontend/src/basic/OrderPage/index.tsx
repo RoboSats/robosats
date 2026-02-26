@@ -31,6 +31,7 @@ const OrderPage = (): React.JSX.Element => {
     acknowledgedWarning,
     setAcknowledgedWarning,
     navbarHeight,
+    slotUpdatedAt,
   } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -68,7 +69,7 @@ const OrderPage = (): React.JSX.Element => {
     return () => {
       setCurrentOrder(null);
     };
-  }, [params.orderId, openNoRobot, garage.currentSlot]);
+  }, [params.orderId, openNoRobot, garage.currentSlot, slotUpdatedAt]);
 
   useEffect(() => {
     if (!currentOrder) return;
