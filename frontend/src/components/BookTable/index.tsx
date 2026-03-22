@@ -386,18 +386,38 @@ const BookTable = ({
     };
   }, []);
 
+  const getOrderPrice = useCallback(
+    (row: PublicOrder): number | null => {
+      const limits = federation.getLimits(row.coordinatorShortAlias);
+      const limitPrice = limits[row.currency.toString()]?.price;
+      if (!limitPrice) return null;
+      const premium = parseFloat(row.premium);
+      return limitPrice * (1 + premium / 100);
+    },
+    [federation],
+  );
+
   const priceObj = useCallback(() => {
     return {
       field: 'price',
       headerName: t('Price'),
       type: 'number',
       flex: 2,
+      sortComparator: (
+        _v1: number,
+        _v2: number,
+        p1: { api: { getRow: (id: number) => PublicOrder }; id: number },
+        p2: { api: { getRow: (id: number) => PublicOrder }; id: number },
+      ) => {
+        const row1 = p1.api.getRow(p1.id);
+        const row2 = p2.api.getRow(p2.id);
+        const price1 = getOrderPrice(row1) ?? 0;
+        const price2 = getOrderPrice(row2) ?? 0;
+        return price1 - price2;
+      },
       renderCell: (params: { row: PublicOrder }) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
-        const limits = federation.getLimits(params.row.coordinatorShortAlias);
-        const premium = parseFloat(params.row.premium);
-        const limitPrice = limits[params.row.currency.toString()]?.price;
-        const price = (limitPrice ?? 1) * (1 + premium / 100);
+        const price = getOrderPrice(params.row);
 
         return (
           <div
@@ -406,7 +426,7 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {limitPrice ? (
+            {price ? (
               `${pn(Math.round(price))} ${currencyCode}/BTC`
             ) : (
               <Skeleton variant='rectangular' width={200} height={20} style={{ marginTop: 15 }} />
