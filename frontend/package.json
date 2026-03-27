@@ -86,7 +86,7 @@
     "light-bolt11-decoder": "^3.2.0",
     "nostr-tools": "^2.16.2",
     "npm": "^11.4.1",
-    "openpgp": "^5.11.0",
+    "openpgp": "^6.3.0",
     "react": "^19.1.1",
     "react-countdown": "^2.3.6",
     "react-dom": "^19.1.1",
