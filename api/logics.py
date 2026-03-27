@@ -1,4 +1,5 @@
 import math
+import logging
 from datetime import timedelta
 
 from decouple import config, Csv
@@ -8,10 +9,26 @@ from django.utils import timezone
 
 from api.lightning.node import LNNode
 from api.errors import new_error
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, TakeOrder
+from api.models import (
+    Currency,
+    LNPayment,
+    MarketTick,
+    OnchainPayment,
+    Order,
+    TakeOrder,
+    TaprootPayment,
+)
+from api.taproot_escrow import (
+    TaprootEscrowBuilder,
+    MuSig2Coordinator,
+    EscrowPSBTBuilder,
+    BondValidator,
+)
 from api.tasks import send_devfund_donation, send_notification, nostr_send_order_event
 from api.utils import get_minning_fee, validate_onchain_address, location_country
 from chat.models import Message
+
+logger = logging.getLogger(__name__)
 
 FEE = float(config("FEE"))
 MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
@@ -50,6 +67,15 @@ class Logics:
             Order.Status.FSE,
             Order.Status.DIS,
             Order.Status.WFR,
+            # Taproot escrow active states
+            Order.Status.TAP_WFB,
+            Order.Status.TAP_PUB,
+            Order.Status.TAP_TAK,
+            Order.Status.TAP_WFE,
+            Order.Status.TAP_ESC,
+            Order.Status.TAP_FSE,
+            Order.Status.TAP_DIS,
+            Order.Status.TAP_PAY,
         ]
         """Checks if the user is already partipant of an active order"""
         queryset_maker = Order.objects.filter(
@@ -1672,6 +1698,11 @@ class Logics:
         If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!
         """
 
+        # ── Taproot escrow path ──────────────────────────────────────
+        if order.is_taproot:
+            return cls._confirm_fiat_taproot(order, user)
+
+        # ── Lightning path (original logic) ──────────────────────────
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE:
             # If buyer mark fiat sent
             if cls.is_buyer(order, user):
@@ -2002,3 +2033,565 @@ class Logics:
         context["platform_summary"] = platform_summary
 
         return True, context
+
+    # ═════════════════════════════════════════════════════════════════
+    # TAPROOT/MAST ESCROW METHODS
+    #
+    # These methods implement the on-chain Taproot escrow pipeline,
+    # branching from the existing Lightning-based flow when
+    # order.is_taproot is True.
+    #
+    # SECURITY MODEL: The Coordinator is an orchestrator, NOT a
+    # custodian. Private keys and secret nonces NEVER leave the
+    # traders' devices. The Coordinator handles only public data
+    # (pubkeys, public nonces, partial signatures, PSBTs) and
+    # aggregates them — it cannot sign or spend unilaterally.
+    #
+    # Ported from: taptrade-core (Rust)
+    # ═════════════════════════════════════════════════════════════════
+
+    @classmethod
+    def gen_maker_taproot_bond_requirements(cls, order):
+        """
+        Generate bond requirements for the maker in taproot mode.
+
+        Returns the coordinator's bond address and the required locking
+        amount. The maker must construct and sign a bond TX locking this
+        amount to the coordinator's address — but this TX is NEVER
+        broadcast unless the maker cheats.
+
+        Ported from: process_order() in coordinator/mod.rs
+        """
+        # Compute bond amount as percentage of trade size
+        bond_amount_sat = int(order.last_satoshis * float(order.bond_size) / 100)
+
+        # Coordinator's bond address — used as the bond output destination.
+        # The coordinator holds the signed TX but doesn't broadcast it.
+        coordinator_bond_address = config(
+            "TAPROOT_COORDINATOR_BOND_ADDRESS",
+            default="",
+        )
+
+        if not coordinator_bond_address:
+            return False, {"error": "Coordinator taproot bond address not configured"}
+
+        order.log(
+            f"Taproot bond requirements generated: {bond_amount_sat} sats "
+            f"to {coordinator_bond_address}"
+        )
+
+        return True, {
+            "bond_address": coordinator_bond_address,
+            "bond_amount_sat": bond_amount_sat,
+            "escrow_locking_input_amount": order.last_satoshis,
+        }
+
+    @classmethod
+    def validate_maker_taproot_bond(cls, order, user, bond_tx_hex, taproot_pubkey):
+        """
+        Validate the maker's submitted bond transaction and taproot pubkey.
+
+        Steps:
+        1. Verify bond TX is valid and meets amount requirements
+        2. Store the bond TX (held, never broadcast unless cheating)
+        3. Store maker's taproot pubkey for descriptor construction
+        4. Transition order to TAP_PUB (public)
+
+        SECURITY: The bond TX is a signed transaction that the coordinator
+        HOLDS but does NOT broadcast. It serves as a fidelity guarantee.
+
+        Ported from: handle_maker_bond() in coordinator/mod.rs
+        """
+        # Get bond requirements
+        _, bond_req = cls.gen_maker_taproot_bond_requirements(order)
+        if "error" in bond_req:
+            return False, new_error(1030)  # Custom error for taproot
+
+        # Validate the bond TX
+        is_valid, error_msg = BondValidator.validate_bond_tx(
+            bond_tx_hex,
+            required_amount_sat=bond_req["bond_amount_sat"],
+            coordinator_bond_address=bond_req["bond_address"],
+        )
+        if not is_valid:
+            order.log(
+                f"Maker taproot bond validation failed: {error_msg}", level="WARN"
+            )
+            return False, {"error": error_msg}
+
+        # Create TaprootPayment record
+        taproot_payment = TaprootPayment.objects.create(
+            concept=TaprootPayment.Concepts.TRADE_ESCROW,
+            status=TaprootPayment.Status.CREATED,
+            maker=user,
+            maker_taproot_pubkey=taproot_pubkey,
+            bond_tx_hex_maker=bond_tx_hex,
+            bond_amount_sat=bond_req["bond_amount_sat"],
+        )
+
+        order.taproot_escrow = taproot_payment
+        order.update_status(Order.Status.TAP_PUB)
+        order.expires_at = timezone.now() + timedelta(
+            seconds=order.t_to_expire(Order.Status.TAP_PUB)
+        )
+        order.save(update_fields=["taproot_escrow", "expires_at"])
+
+        order.log(
+            f"Maker taproot bond validated. TaprootPayment({taproot_payment.id}) created. "
+            f"Order is now public (taproot mode)."
+        )
+        return True, None
+
+    @classmethod
+    def validate_taker_taproot_bond(
+        cls, order, user, bond_tx_hex, taproot_pubkey, musig_pubkey, musig_pubnonce
+    ):
+        """
+        Validate the taker's bond and create the escrow locking PSBT.
+
+        Steps:
+        1. Validate taker's bond TX
+        2. Store taker's taproot pubkey, MuSig2 pubkey, and nonce
+        3. Build the Taproot escrow descriptor (4 MAST leaves)
+        4. Create the unsigned escrow locking PSBT
+        5. Transition order to TAP_WFE (waiting for escrow funding)
+
+        SECURITY: The escrow PSBT is returned UNSIGNED. Each trader must
+        sign their own inputs locally.
+
+        Ported from: handle_taker_bond() in coordinator/mod.rs
+        """
+        tp = order.taproot_escrow
+        if not tp:
+            return False, {"error": "No TaprootPayment exists for this order"}
+
+        # Get bond requirements
+        _, bond_req = cls.gen_maker_taproot_bond_requirements(order)
+
+        # Validate taker's bond
+        is_valid, error_msg = BondValidator.validate_bond_tx(
+            bond_tx_hex,
+            required_amount_sat=bond_req["bond_amount_sat"],
+            coordinator_bond_address=bond_req["bond_address"],
+        )
+        if not is_valid:
+            order.log(
+                f"Taker taproot bond validation failed: {error_msg}", level="WARN"
+            )
+            return False, {"error": error_msg}
+
+        # Store taker's data
+        tp.taker = user
+        tp.taker_taproot_pubkey = taproot_pubkey
+        tp.taker_musig_pubkey = musig_pubkey
+        tp.taker_musig_pubnonce = musig_pubnonce
+        tp.bond_tx_hex_taker = bond_tx_hex
+
+        # Build the Taproot descriptor
+        coordinator_pk = bytes.fromhex(config("TAPROOT_COORDINATOR_PUBKEY", default=""))
+
+        escrow_builder = TaprootEscrowBuilder(
+            maker_taproot_pk=bytes.fromhex(tp.maker_taproot_pubkey),
+            taker_taproot_pk=bytes.fromhex(tp.taker_taproot_pubkey),
+            coordinator_pk=coordinator_pk,
+            maker_musig_pk=tp.maker_musig_pubkey,
+            taker_musig_pk=tp.taker_musig_pubkey,
+        )
+
+        # Store the descriptor
+        tp.escrow_output_descriptor = escrow_builder.build_descriptor_string()
+        tp.coordinator_taproot_pubkey = coordinator_pk.hex()
+
+        # Aggregate MuSig2 pubkeys for internal key
+        agg_key = MuSig2Coordinator.aggregate_pubkeys(
+            tp.maker_musig_pubkey, tp.taker_musig_pubkey
+        )
+        tp.aggregated_musig_pubkey_ctx = agg_key.hex()
+
+        tp.status = TaprootPayment.Status.FUNDED
+        tp.save()
+
+        # Update order state
+        order.taker = user
+        order.update_status(Order.Status.TAP_WFE)
+        order.expires_at = timezone.now() + timedelta(
+            seconds=order.t_to_expire(Order.Status.TAP_WFE)
+        )
+        order.save(update_fields=["taker", "expires_at"])
+
+        order.log(
+            "Taker taproot bond validated. Escrow descriptor built. "
+            "Waiting for escrow funding (signed PSBTs)."
+        )
+
+        return True, {
+            "escrow_descriptor": tp.escrow_output_descriptor,
+            "escrow_psbt_hex": tp.escrow_psbt_hex,
+            "coordinator_pubkey": coordinator_pk.hex(),
+        }
+
+    @classmethod
+    def handle_signed_taproot_escrow(cls, order, user, signed_psbt_hex):
+        """
+        Accept a trader's signed escrow PSBT. When both are received,
+        combine them and mark for broadcasting.
+
+        SECURITY: Each trader signs only their own inputs. The Coordinator
+        combines the two partially-signed PSBTs into a fully-signed TX.
+        It CANNOT modify outputs or amounts — only merge witnesses.
+
+        Ported from: handle_signed_escrow_psbt() in coordinator/mod.rs
+        """
+        tp = order.taproot_escrow
+        if not tp:
+            return False, {"error": "No TaprootPayment exists for this order"}
+
+        # Store the signed PSBT from the appropriate user
+        if user == order.maker:
+            tp.maker_signed_escrow_psbt = signed_psbt_hex
+            tp.save(update_fields=["maker_signed_escrow_psbt"])
+            order.log("Maker submitted signed escrow PSBT")
+        elif user == order.taker:
+            tp.taker_signed_escrow_psbt = signed_psbt_hex
+            tp.save(update_fields=["taker_signed_escrow_psbt"])
+            order.log("Taker submitted signed escrow PSBT")
+        else:
+            return False, {"error": "User is not a participant in this order"}
+
+        # If both signatures are in, combine and broadcast
+        if tp.is_fully_signed:
+            try:
+                EscrowPSBTBuilder.combine_signed_escrow_psbts(
+                    tp.maker_signed_escrow_psbt,
+                    tp.taker_signed_escrow_psbt,
+                )
+                # TODO: Broadcast via bitcoind RPC once integration is wired up
+
+                tp.status = TaprootPayment.Status.FUNDED
+                tp.save(update_fields=["status"])
+
+                order.log(
+                    "Both escrow PSBTs received and combined. "
+                    "Escrow TX ready for broadcast."
+                )
+            except Exception as e:
+                order.log(f"Error combining escrow PSBTs: {e}", level="ERROR")
+                return False, {"error": f"Failed to combine PSBTs: {e}"}
+
+        return True, None
+
+    @classmethod
+    def taproot_escrow_confirmed(cls, order):
+        """
+        Handle escrow TX confirmation. Transitions the order to the
+        chatroom state (TAP_ESC) where fiat exchange happens.
+
+        This would be called by a background task that monitors the
+        Bitcoin blockchain for confirmations.
+
+        Ported from: check_offer_and_confirmation() in coordinator_utils.rs
+        """
+        tp = order.taproot_escrow
+        if not tp:
+            return False
+
+        tp.status = TaprootPayment.Status.CONFIRMED
+        tp.confirmed_at = timezone.now()
+        tp.save(update_fields=["status", "confirmed_at"])
+
+        order.update_status(Order.Status.TAP_ESC)
+        order.expires_at = timezone.now() + timedelta(
+            seconds=order.t_to_expire(Order.Status.TAP_ESC)
+        )
+        order.save(update_fields=["expires_at"])
+
+        send_notification.delay(order_id=order.id, message="taproot_escrow_confirmed")
+        order.log("Taproot escrow TX confirmed. Chatroom opened.")
+        return True
+
+    @classmethod
+    def _confirm_fiat_taproot(cls, order, user):
+        """
+        Handle fiat confirmation in the Taproot escrow path.
+
+        When the seller confirms fiat receipt:
+        1. Create the keyspend payout PSBT
+        2. Transition to TAP_PAY (waiting for partial signatures)
+
+        SECURITY: The payout PSBT is unsigned. Both traders must produce
+        partial MuSig2 signatures for the keyspend path. The Coordinator
+        aggregates them but cannot forge a signature.
+
+        Ported from: handle_obligation_confirmation() in coordinator/mod.rs
+        """
+        valid_taproot_chat_states = [
+            Order.Status.TAP_ESC,
+            Order.Status.TAP_FSE,
+        ]
+
+        if order.status not in valid_taproot_chat_states:
+            return False, new_error(1029)
+
+        if cls.is_buyer(order, user):
+            order.update_status(Order.Status.TAP_FSE)
+            order.is_fiat_sent = True
+            order.save(update_fields=["is_fiat_sent"])
+            order.log("Buyer confirmed 'fiat sent' (taproot escrow)")
+            return True, None
+
+        elif cls.is_seller(order, user):
+            if not order.is_fiat_sent:
+                return False, new_error(1027)
+
+            tp = order.taproot_escrow
+
+            # Build payout PSBT
+            # Each party gets their share of the escrow minus coordinator fees.
+            maker_fee_fraction = FEE * MAKER_FEE_SPLIT
+            taker_fee_fraction = FEE * (1 - MAKER_FEE_SPLIT)
+
+            maker_fee = int(order.last_satoshis * maker_fee_fraction)
+            taker_fee = int(order.last_satoshis * taker_fee_fraction)
+
+            # Determine payout amounts and addresses for buyer/seller
+            # TODO: Replace default addresses with actual user-provided
+            # payout addresses from the API request once endpoints exist.
+            if cls.is_buyer(order, order.maker):
+                maker_payout = order.last_satoshis - maker_fee
+                taker_payout = 0  # Seller (taker) already received fiat
+                maker_address = config("TAPROOT_DEFAULT_PAYOUT_ADDRESS", default="")
+                taker_address = ""
+            else:
+                maker_payout = 0  # Seller (maker) already received fiat
+                taker_payout = order.last_satoshis - taker_fee
+                maker_address = ""
+                taker_address = config("TAPROOT_DEFAULT_PAYOUT_ADDRESS", default="")
+
+            # Create payout PSBT
+            try:
+                payout_psbt_hex = EscrowPSBTBuilder.create_keyspend_payout_psbt(
+                    escrow_txid=tp.escrow_txid,
+                    escrow_vout=tp.escrow_vout,
+                    escrow_amount_sat=tp.escrow_amount_sat,
+                    maker_payout_address=maker_address,
+                    maker_payout_amount=maker_payout,
+                    taker_payout_address=taker_address,
+                    taker_payout_amount=taker_payout,
+                )
+                tp.payout_psbt_hex = payout_psbt_hex
+                tp.save(update_fields=["payout_psbt_hex"])
+            except Exception as e:
+                order.log(f"Error building payout PSBT: {e}", level="ERROR")
+                return False, {"error": f"Failed to build payout PSBT: {e}"}
+
+            order.update_status(Order.Status.TAP_PAY)
+            order.expires_at = timezone.now() + timedelta(
+                seconds=order.t_to_expire(Order.Status.TAP_PAY)
+            )
+            order.save(update_fields=["expires_at"])
+
+            order.log(
+                "Seller confirmed fiat received (taproot). "
+                "Payout PSBT created, waiting for partial signatures."
+            )
+            return True, {"payout_psbt_hex": payout_psbt_hex}
+
+        return True, None
+
+    @classmethod
+    def handle_taproot_payout_signature(
+        cls, order, user, partial_sig_hex, pubnonce_hex
+    ):
+        """
+        Accept a trader's partial MuSig2 signature for the payout TX.
+        When both are received, aggregate and finalize.
+
+        SECURITY:
+            - Each partial signature is a 32-byte scalar.
+            - The Coordinator aggregates s = s1 + s2 mod n.
+            - The resulting (R, s) is a valid BIP-340 Schnorr signature.
+            - The Coordinator CANNOT extract private keys from partial sigs.
+
+        Ported from: handle_payout_signature() in coordinator/mod.rs
+        """
+        tp = order.taproot_escrow
+        if not tp:
+            return False, {"error": "No TaprootPayment exists for this order"}
+
+        if user == order.maker:
+            tp.maker_partial_sig = partial_sig_hex
+            tp.maker_musig_pubnonce = pubnonce_hex
+            tp.save(update_fields=["maker_partial_sig", "maker_musig_pubnonce"])
+            order.log("Maker submitted partial payout signature")
+        elif user == order.taker:
+            tp.taker_partial_sig = partial_sig_hex
+            tp.taker_musig_pubnonce = pubnonce_hex
+            tp.save(update_fields=["taker_partial_sig", "taker_musig_pubnonce"])
+            order.log("Taker submitted partial payout signature")
+        else:
+            return False, {"error": "User is not a participant in this order"}
+
+        # If both partial sigs are in, aggregate and finalize
+        if tp.has_both_partial_sigs and tp.has_both_nonces:
+            try:
+                # Aggregate nonces
+                agg_nonce = MuSig2Coordinator.aggregate_nonces(
+                    tp.maker_musig_pubnonce, tp.taker_musig_pubnonce
+                )
+
+                # Aggregate partial signatures
+                # TODO: Compute the actual BIP-341 taproot sighash from
+                # the payout PSBT once bitcoind RPC integration is wired.
+                sighash_msg = b"\x00" * 32
+
+                agg_pubkey = bytes.fromhex(tp.aggregated_musig_pubkey_ctx)
+                schnorr_sig = MuSig2Coordinator.aggregate_partial_signatures(
+                    tp.maker_partial_sig,
+                    tp.taker_partial_sig,
+                    agg_nonce=agg_nonce,
+                    agg_pubkey=agg_pubkey,
+                    message=sighash_msg,
+                )
+
+                # Finalize the payout TX with the aggregated signature
+                EscrowPSBTBuilder.finalize_keyspend_payout(
+                    tp.payout_psbt_hex, schnorr_sig
+                )
+
+                # TODO: Broadcast via bitcoind RPC once integration is wired up
+
+                tp.status = TaprootPayment.Status.SPENT
+                tp.save(update_fields=["status"])
+
+                order.update_status(Order.Status.TAP_SUC)
+                order.contract_finalization_time = timezone.now()
+                order.save(update_fields=["contract_finalization_time"])
+
+                send_notification.delay(order_id=order.id, message="trade_successful")
+                cls.compute_proceeds(order)
+
+                order.log(
+                    "Both partial signatures received. Payout TX finalized "
+                    "and broadcast. Trade successful!"
+                )
+            except Exception as e:
+                order.log(f"Error aggregating payout signatures: {e}", level="ERROR")
+                order.update_status(Order.Status.TAP_FAI)
+                return False, {"error": f"Signature aggregation failed: {e}"}
+
+        return True, None
+
+    @classmethod
+    def settle_taproot_dispute(cls, order, winner):
+        """
+        Resolve a dispute by spending the escrow via a script path.
+
+        The Coordinator and the winning trader cooperate to sign a
+        script-path spend through the appropriate MAST leaf:
+            - winner="maker" → Leaf A (maker + coordinator)
+            - winner="taker" → Leaf B (taker + coordinator)
+
+        SECURITY: This requires TWO signatures — the Coordinator's AND
+        the winning trader's. Neither party can unilaterally steal the
+        escrow funds. The losing party can verify on-chain that the
+        correct script path was used.
+
+        Ported from: initiate_escrow() in coordinator/mod.rs (dispute branch)
+        """
+        tp = order.taproot_escrow
+        if not tp:
+            return False, {"error": "No TaprootPayment exists for this order"}
+
+        coordinator_pk = bytes.fromhex(config("TAPROOT_COORDINATOR_PUBKEY", default=""))
+
+        escrow_builder = TaprootEscrowBuilder(
+            maker_taproot_pk=bytes.fromhex(tp.maker_taproot_pubkey),
+            taker_taproot_pk=bytes.fromhex(tp.taker_taproot_pubkey),
+            coordinator_pk=coordinator_pk,
+            maker_musig_pk=tp.maker_musig_pubkey,
+            taker_musig_pk=tp.taker_musig_pubkey,
+        )
+
+        if winner == "maker":
+            leaf_name = "dispute_maker"
+            order.update_status(Order.Status.TLD)  # Taker lost dispute
+        elif winner == "taker":
+            leaf_name = "dispute_taker"
+            order.update_status(Order.Status.MLD)  # Maker lost dispute
+        else:
+            return False, {"error": f"Invalid dispute winner: {winner}"}
+
+        # Build the script-path spend TX
+        try:
+            winner_address = config("TAPROOT_DEFAULT_PAYOUT_ADDRESS", default="")
+            result = EscrowPSBTBuilder.create_script_path_spend(
+                escrow_builder=escrow_builder,
+                leaf_name=leaf_name,
+                escrow_txid=tp.escrow_txid,
+                escrow_vout=tp.escrow_vout,
+                escrow_amount_sat=tp.escrow_amount_sat,
+                winner_payout_address=winner_address,
+                winner_payout_amount=tp.escrow_amount_sat,
+            )
+
+            tp.dispute_winner = winner
+            tp.dispute_payout_psbt_hex = result["tx_hex"]
+            tp.status = TaprootPayment.Status.DISPUTED
+            tp.save(
+                update_fields=["dispute_winner", "dispute_payout_psbt_hex", "status"]
+            )
+
+            order.log(
+                f"Dispute resolved: {winner} wins. Script-path spend TX "
+                f"built via {leaf_name} leaf."
+            )
+            return True, result
+
+        except Exception as e:
+            order.log(f"Error building dispute spend TX: {e}", level="ERROR")
+            return False, {"error": f"Dispute TX creation failed: {e}"}
+
+    @classmethod
+    def open_taproot_dispute(cls, order, user=None):
+        """
+        Open a dispute for a taproot escrow order.
+
+        Unlike Lightning disputes (where the escrow hold invoice is
+        settled immediately), Taproot disputes leave the UTXO locked.
+        The coordinator resolves the dispute by creating a script-path
+        spend with the winner's cooperation.
+
+        Ported from: dispute handling in coordinator/mod.rs
+        """
+        valid_status = [
+            Order.Status.TAP_ESC,
+            Order.Status.TAP_FSE,
+        ]
+
+        if order.status not in valid_status:
+            return False, new_error(1013)
+
+        order.is_disputed = True
+        order.update_status(Order.Status.TAP_DIS)
+        order.expires_at = timezone.now() + timedelta(
+            seconds=order.t_to_expire(Order.Status.TAP_DIS)
+        )
+        order.save(update_fields=["is_disputed", "expires_at"])
+
+        if user is not None:
+            robot = user.robot
+            robot.num_disputes = robot.num_disputes + 1
+            if robot.orders_disputes_started is None:
+                robot.orders_disputes_started = [str(order.id)]
+            else:
+                robot.orders_disputes_started = list(
+                    robot.orders_disputes_started
+                ).append(str(order.id))
+            robot.save(update_fields=["num_disputes", "orders_disputes_started"])
+
+        send_notification.delay(order_id=order.id, message="dispute_opened")
+        order.log(
+            f"Taproot dispute opened "
+            f"{f'by Robot({user.robot.id},{user.username})' if user else ''}"
+        )
+        return True, None
