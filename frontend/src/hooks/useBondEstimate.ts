@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import { calculateBondAmount } from '../utils/bondCalculator';
-import { Maker, Federation, Favorites } from '../models';
+import type { Maker, Federation } from '../models';
 
 interface UseBondEstimateProps {
   maker: Maker;
-  fav: Favorites;
   federation: Federation;
   currentPrice?: number;
   federationUpdatedAt: number;
@@ -13,7 +12,6 @@ interface UseBondEstimateProps {
 
 export const useBondEstimate = ({
   maker,
-  fav,
   federation,
   currentPrice,
   federationUpdatedAt,
@@ -33,7 +31,7 @@ export const useBondEstimate = ({
       maxAmount: maker.maxAmount,
       isRange: makerHasAmountRange,
       bondSize: bondPercentage,
-      mode: fav.mode as 'fiat' | 'swap',
+      mode: maker.mode,
       price: currentPrice ?? 0,
       premium: maker.premium ?? 0,
     });
@@ -45,7 +43,7 @@ export const useBondEstimate = ({
     maker.bondSize,
     maker.premium,
     currentPrice,
-    fav.mode,
+    maker.mode,
     maker.coordinator,
     federationUpdatedAt,
   ]);
