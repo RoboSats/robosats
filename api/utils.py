@@ -15,7 +15,9 @@ logger = logging.getLogger("api.utils")
 
 TOR_PROXY = config("TOR_PROXY", default="127.0.0.1:9050")
 USE_TOR = config("USE_TOR", cast=bool, default=True)
-LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+# docker-compose env_files often carry single quotes (e.g. LNVENDOR='CLN').
+# Normalize so code paths don't depend on quoting style.
+LNVENDOR = config("LNVENDOR", cast=str, default="LND").strip("'\"")
 
 
 def get_session():
