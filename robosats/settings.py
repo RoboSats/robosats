@@ -32,6 +32,7 @@ DEBUG = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
+STATIC_ROOT = "/usr/src/static"
 STATIC_URL = "static/"
 
 # RoboSats version
@@ -41,6 +42,7 @@ with open("version.json") as f:
 # SECURITY WARNING: don't run with debug turned on in production!
 if config("DEVELOPMENT", cast=bool, default=False):
     DEBUG = True
+    STATIC_ROOT = BASE_DIR / "collected_static"
 
 ALLOWED_HOSTS = [
     config("HOST_NAME"),
