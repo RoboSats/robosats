@@ -1337,6 +1337,13 @@ components:
           format: decimal
           pattern: ^-?\d{0,10}(?:\.\d{0,8})?$
           nullable: true
+        price_limit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,8})?$
+          nullable: true
+        auto_paused:
+          type: boolean
         has_range:
           type: boolean
         min_amount:
@@ -1479,6 +1486,11 @@ components:
           type: string
           nullable: true
           maxLength: 240
+        price_limit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,8})?$
+          nullable: true
       required:
       - currency
       - type
@@ -1800,6 +1812,16 @@ components:
           type: string
           nullable: true
           description: Order description
+        price_limit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,8})?$
+          nullable: true
+          description: 'Price limit for auto-pause. For sellers: lower bound (pause
+            if price falls below). For buyers: upper bound (pause if price rises above).'
+        auto_paused:
+          type: boolean
+          description: True if the order was automatically paused due to price limit
         bad_request:
           type: string
           description: Error message when order is in a terminated state (e.g. cancelled)
@@ -1832,6 +1854,12 @@ components:
           format: decimal
           pattern: ^-?\d{0,10}(?:\.\d{0,8})?$
           nullable: true
+        price_limit:
+          type: number
+          format: decimal
+          nullable: true
+        auto_paused:
+          type: boolean
         has_range:
           type: boolean
         min_amount:

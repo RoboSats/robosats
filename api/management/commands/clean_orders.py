@@ -111,12 +111,43 @@ class Command(BaseCommand):
             self.stdout.write(str(timezone.now()))
             self.stdout.write(str(debug))
 
+    def check_price_limits(self):
+        """
+        Checks all public orders with price limits and auto-pauses
+        them if the limit is exceeded.
+        """
+
+        queryset = Order.objects.filter(
+            status=Order.Status.PUB,
+            price_limit__isnull=False
+        )
+
+        debug = {
+            "num_orders_checked": len(queryset),
+            "auto_paused_orders": []
+        }
+
+        for order in queryset:
+            try:
+                if Logics.auto_pause_order_by_price(order):
+                    debug["auto_paused_orders"].append({
+                        "order_id": order.id,
+                        "price_limit": str(order.price_limit)
+                    })
+            except Exception as e:
+                self.stdout.write(f"Error checking price limit for order {order.id}: {e}")
+
+        if len(debug["auto_paused_orders"]) > 0:
+            self.stdout.write(str(timezone.now()))
+            self.stdout.write(f"Price limit checks: {debug}")
+
     def handle(self, *args, **options):
         """Never mind database locked error, keep going, print them out.
         Not an issue with PostgresQL"""
         try:
             while True:
                 self.clean_orders()
+                self.check_price_limits()
                 time.sleep(5)
 
         except Exception as e:
