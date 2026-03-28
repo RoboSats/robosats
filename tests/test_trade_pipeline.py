@@ -12,7 +12,12 @@ from django.contrib.admin.sites import AdminSite
 from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
-from tests.utils.node import add_invoice, set_up_regtest_network
+from tests.utils.node import (
+    add_invoice,
+    set_up_regtest_network,
+    send_all_coins_to_self,
+    gen_blocks_to_confirm_pending,
+)
 from tests.utils.pgp import sign_message
 from tests.utils.trade import Trade, maker_form_buy_with_range
 
@@ -955,6 +960,46 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order(trade.maker_index)
         trade.cancel_order(trade.taker_index)
+
+    def test_trade_to_submitted_invoice_with_no_confirmed_onchain_balance(self):
+        """
+        Tests a trade from order creation until escrow locked and
+        invoice is submitted by buyer while the node has all its onchain balance
+        as pending.
+        """
+
+        # Spend all balance to self, leaving all balance "unconfirmed"
+        send_all_coins_to_self("coordinator")
+
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+
+        trade.get_order()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        # Onchain payout option "swap_allowed" should not be possible
+        self.assertFalse(trade.response.json()["swap_allowed"])
+
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
+        self.assertFalse(data["is_fiat_sent"])
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order(trade.maker_index)
+        trade.cancel_order(trade.taker_index)
+
+        # Generate blocks to confirm the onchain pending balance
+        gen_blocks_to_confirm_pending("coordinator")
 
     def test_trade_to_confirm_fiat_sent_LN(self):
         """
