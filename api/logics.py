@@ -742,10 +742,11 @@ class Logics:
                 order, buyer, preliminary_amount=context["invoice_amount"]
             )
 
-        context["suggested_mining_fee_rate"] = float(
-            order.payout_tx.suggested_mining_fee_rate
-        )
-        context["swap_fee_rate"] = order.payout_tx.swap_fee_rate
+        if order.payout_tx is not None:
+            context["suggested_mining_fee_rate"] = float(
+                order.payout_tx.suggested_mining_fee_rate
+            )
+            context["swap_fee_rate"] = order.payout_tx.swap_fee_rate
 
         if not valid:
             context["swap_allowed"] = False
