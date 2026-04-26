@@ -594,10 +594,10 @@ class RobotViewSchema:
     }
 
     put = {
-        "summary": "Update robot webhook settings",
+        "summary": "Update robot notification settings",
         "description": textwrap.dedent(
             """
-            Update the robot's webhook notification settings.
+            Update the robot's webhook and Nostr forwarding notification settings.
 
             Webhooks allow you to receive HTTP POST notifications to your own server
             when order events occur. **Only `.onion` URLs are accepted** for privacy.

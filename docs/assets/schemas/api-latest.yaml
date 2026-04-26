@@ -961,7 +961,7 @@ paths:
       operationId: robot_update
       description: |2
 
-        Update the robot's webhook notification settings.
+        Update the robot's webhook and Nostr forwarding notification settings.
 
         Webhooks allow you to receive HTTP POST notifications to your own server
         when order events occur. **Only `.onion` URLs are accepted** for privacy.
@@ -984,7 +984,7 @@ paths:
         You can also configure Nostr direct message forwarding. Provide your main Nostr
         public key (hex or npub) and a .onion relay websocket URL to receive trade notifications
         as encrypted DMs from the coordinator's Nostr identity.
-      summary: Update robot webhook settings
+      summary: Update robot notification settings
       tags:
       - robot
       security:
