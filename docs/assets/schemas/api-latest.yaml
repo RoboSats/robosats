@@ -1163,7 +1163,6 @@ components:
           maximum: 100001
           minimum: 0
           nullable: true
-          default: 0
           description: Max budget to allocate for routing in PPM
     ExpiryReasonEnum:
       enum:
