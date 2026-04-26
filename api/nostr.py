@@ -4,8 +4,22 @@ import uuid
 
 from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag, PublicKey
+from nostr_sdk import (
+    Keys,
+    Client,
+    ClientBuilder,
+    Connection,
+    ConnectionMode,
+    ConnectionTarget,
+    EventBuilder,
+    NostrSigner,
+    Options,
+    Kind,
+    Tag,
+    PublicKey,
+)
 from api.models import Order
+from api.utils import TOR_PROXY, USE_TOR
 from decouple import config
 
 
@@ -64,7 +78,10 @@ class Nostr:
         await client.send_private_msg(PublicKey.parse(robot.nostr_pubkey), text, tags)
         print("Nostr NOTIFICATION event sent")
 
-        await self.send_forward_notification(robot, order, text)
+        try:
+            await self.send_forward_notification(robot, order, text)
+        except Exception as e:
+            print(f"Nostr FORWARD notification failed: {e}")
 
     async def send_forward_notification(self, robot, order, text):
         """Sends notification to user's main account via their .onion relay"""
@@ -74,14 +91,13 @@ class Nostr:
             return
         if not robot.nostr_forward_pubkey or not robot.nostr_forward_relay:
             return
-        if not Robot.is_valid_onion_url(robot.nostr_forward_relay):
+        if not Robot.is_valid_onion_relay_url(robot.nostr_forward_relay):
             return
 
         print(f"Forwarding nostr notification to {robot.nostr_forward_relay}")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        signer = NostrSigner.keys(keys)
-        client = Client(signer)
+        client = self.initialize_onion_client(keys)
 
         await client.add_relay(robot.nostr_forward_relay)
         await client.connect()
@@ -96,9 +112,11 @@ class Nostr:
             Tag.parse(["status", str(order.status)]),
         ]
 
-        await client.send_private_msg(
+        output = await client.send_private_msg(
             PublicKey.parse(robot.nostr_forward_pubkey), text, tags
         )
+        if robot.nostr_forward_relay not in output.success:
+            raise Exception(output.failed.get(robot.nostr_forward_relay, "relay failed"))
         print("Nostr FORWARD notification sent")
 
     async def send_forward_test(self, robot):
@@ -111,14 +129,13 @@ class Nostr:
         if not robot.nostr_forward_pubkey or not robot.nostr_forward_relay:
             return
 
-        if not Robot.is_valid_onion_url(robot.nostr_forward_relay):
+        if not Robot.is_valid_onion_relay_url(robot.nostr_forward_relay):
             return
 
         print(f"Sending nostr FORWARD TEST to {robot.nostr_forward_relay}")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        signer = NostrSigner.keys(keys)
-        client = Client(signer)
+        client = self.initialize_onion_client(keys)
 
         await client.add_relay(robot.nostr_forward_relay)
         await client.connect()
@@ -126,9 +143,11 @@ class Nostr:
         coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="RoboSats")
         text = f"🔔 Hey {robot.user.username}, your Nostr forwarding is configured! You will receive order notifications from {coordinator_alias}."
 
-        await client.send_private_msg(
+        output = await client.send_private_msg(
             PublicKey.parse(robot.nostr_forward_pubkey), text, []
         )
+        if robot.nostr_forward_relay not in output.success:
+            raise Exception(output.failed.get(robot.nostr_forward_relay, "relay failed"))
         print("Nostr FORWARD TEST event sent")
 
     async def initialize_client(self, keys):
@@ -143,6 +162,22 @@ class Nostr:
         await client.connect()
 
         return client
+
+    def initialize_onion_client(self, keys):
+        signer = NostrSigner.keys(keys)
+
+        if not USE_TOR:
+            return Client(signer)
+
+        host, port = TOR_PROXY.rsplit(":", 1)
+        connection = (
+            Connection()
+            .mode(ConnectionMode.PROXY(host, int(port)))
+            .target(ConnectionTarget.ONION)
+        )
+        options = Options().connection(connection)
+
+        return ClientBuilder().signer(signer).opts(options).build()
 
     @sync_to_async
     def get_user_name(self, order):
