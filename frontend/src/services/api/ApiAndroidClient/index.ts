@@ -66,10 +66,11 @@ class ApiAndroidClient implements ApiClient {
     body: object,
     auth?: Auth,
     silent?: boolean,
-  ) => Promise<object | undefined> = async (_baseUrl, _path, _body, _auth, _silent) => {
-    return await new Promise<object>((resolve, _reject) => {
-      resolve({});
-    });
+  ) => Promise<object | undefined> = async (baseUrl, path, body, auth, silent = false) => {
+    const jsonHeaders = JSON.stringify(this.getHeaders(auth));
+    const jsonBody = JSON.stringify(body);
+
+    return await this.request('PUT', baseUrl, path, jsonHeaders, jsonBody, silent);
   };
 
   public delete: (

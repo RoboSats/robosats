@@ -559,6 +559,21 @@ class RobotViewSchema:
                         "nullable": True,
                         "description": "API key sent in X-API-Key header for webhook authentication",
                     },
+                    "nostr_forward_pubkey": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Nostr public key (hex or npub) for forwarding notifications",
+                    },
+                    "nostr_forward_relay": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Nostr relay websocket URL for forwarding notifications (.onion only)",
+                    },
+                    "nostr_forward_enabled": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Whether Nostr forwarding notifications are enabled",
+                    },
                 },
             },
         },
@@ -579,10 +594,10 @@ class RobotViewSchema:
     }
 
     put = {
-        "summary": "Update robot webhook settings",
+        "summary": "Update robot notification settings",
         "description": textwrap.dedent(
             """
-            Update the robot's webhook notification settings.
+            Update the robot's webhook and Nostr forwarding notification settings.
 
             Webhooks allow you to receive HTTP POST notifications to your own server
             when order events occur. **Only `.onion` URLs are accepted** for privacy.
@@ -599,6 +614,12 @@ class RobotViewSchema:
 
             **Note:** Webhook is enabled automatically when a valid .onion URL is set.
             A test notification will be sent when the webhook URL is configured.
+
+            ### Nostr Forwarding
+
+            You can also configure Nostr direct message forwarding. Provide your main Nostr
+            public key (hex or npub) and a .onion relay websocket URL to receive trade notifications
+            as encrypted DMs from the coordinator's Nostr identity.
             """
         ),
         "responses": {
@@ -619,6 +640,20 @@ class RobotViewSchema:
                         "nullable": True,
                         "description": "API key sent in X-API-Key header",
                     },
+                    "nostr_forward_pubkey": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Nostr public key (hex or npub) for forwarding notifications",
+                    },
+                    "nostr_forward_relay": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Nostr relay websocket URL for forwarding notifications (.onion only)",
+                    },
+                    "nostr_forward_enabled": {
+                        "type": "boolean",
+                        "description": "Whether Nostr forwarding notifications are enabled",
+                    },
                 },
             },
             400: {
@@ -628,6 +663,16 @@ class RobotViewSchema:
                         "type": "array",
                         "items": {"type": "string"},
                         "description": "Validation errors for webhook_url field",
+                    },
+                    "nostr_forward_relay": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Validation errors for nostr_forward_relay field",
+                    },
+                    "nostr_forward_pubkey": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Validation errors for nostr_forward_pubkey field",
                     },
                 },
             },
@@ -643,9 +688,36 @@ class RobotViewSchema:
                 status_codes=[200],
             ),
             OpenApiExample(
+                "Successfully updated Nostr forwarding settings",
+                value={
+                    "nostr_forward_pubkey": "abcd1234...",
+                    "nostr_forward_relay": "ws://relay.onion/",
+                    "nostr_forward_enabled": True,
+                },
+                status_codes=[200],
+            ),
+            OpenApiExample(
                 "Invalid URL (not .onion)",
                 value={
                     "webhook_url": ["Webhook URL must be a Tor .onion address"],
+                },
+                status_codes=[400],
+            ),
+            OpenApiExample(
+                "Invalid relay URL (not .onion)",
+                value={
+                    "nostr_forward_relay": [
+                        "Nostr relay must be a Tor .onion websocket URL"
+                    ],
+                },
+                status_codes=[400],
+            ),
+            OpenApiExample(
+                "Invalid Nostr forward pubkey",
+                value={
+                    "nostr_forward_pubkey": [
+                        "Nostr forward pubkey must be a valid hex or npub public key"
+                    ],
                 },
                 status_codes=[400],
             ),
