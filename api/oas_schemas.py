@@ -562,12 +562,12 @@ class RobotViewSchema:
                     "nostr_forward_pubkey": {
                         "type": "string",
                         "nullable": True,
-                        "description": "Nostr public key (hex) for forwarding notifications",
+                        "description": "Nostr public key (hex or npub) for forwarding notifications",
                     },
                     "nostr_forward_relay": {
                         "type": "string",
                         "nullable": True,
-                        "description": "Nostr relay URL for forwarding notifications (.onion only)",
+                        "description": "Nostr relay websocket URL for forwarding notifications (.onion only)",
                     },
                     "nostr_forward_enabled": {
                         "type": "boolean",
@@ -618,7 +618,7 @@ class RobotViewSchema:
             ### Nostr Forwarding
 
             You can also configure Nostr direct message forwarding. Provide your main Nostr
-            public key (hex format) and a .onion relay URL to receive trade notifications
+            public key (hex or npub) and a .onion relay websocket URL to receive trade notifications
             as encrypted DMs from the coordinator's Nostr identity.
             """
         ),
@@ -643,12 +643,12 @@ class RobotViewSchema:
                     "nostr_forward_pubkey": {
                         "type": "string",
                         "nullable": True,
-                        "description": "Nostr public key (hex) for forwarding notifications",
+                        "description": "Nostr public key (hex or npub) for forwarding notifications",
                     },
                     "nostr_forward_relay": {
                         "type": "string",
                         "nullable": True,
-                        "description": "Nostr relay URL for forwarding notifications (.onion only)",
+                        "description": "Nostr relay websocket URL for forwarding notifications (.onion only)",
                     },
                     "nostr_forward_enabled": {
                         "type": "boolean",
@@ -668,6 +668,11 @@ class RobotViewSchema:
                         "type": "array",
                         "items": {"type": "string"},
                         "description": "Validation errors for nostr_forward_relay field",
+                    },
+                    "nostr_forward_pubkey": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Validation errors for nostr_forward_pubkey field",
                     },
                 },
             },
@@ -701,7 +706,18 @@ class RobotViewSchema:
             OpenApiExample(
                 "Invalid relay URL (not .onion)",
                 value={
-                    "nostr_forward_relay": ["Nostr relay must be a Tor .onion address"],
+                    "nostr_forward_relay": [
+                        "Nostr relay must be a Tor .onion websocket URL"
+                    ],
+                },
+                status_codes=[400],
+            ),
+            OpenApiExample(
+                "Invalid Nostr forward pubkey",
+                value={
+                    "nostr_forward_pubkey": [
+                        "Nostr forward pubkey must be a valid hex or npub public key"
+                    ],
                 },
                 status_codes=[400],
             ),

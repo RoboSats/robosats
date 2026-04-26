@@ -712,6 +712,7 @@ class RobotView(APIView):
         robot = request.user.robot
         old_webhook_url = robot.webhook_url
         old_webhook_enabled = robot.webhook_enabled
+        old_nostr_forward_pubkey = robot.nostr_forward_pubkey
         old_nostr_forward_relay = robot.nostr_forward_relay
         old_nostr_forward_enabled = robot.nostr_forward_enabled
         serializer = UpdateRobotSerializer(robot, data=request.data, partial=True)
@@ -736,18 +737,28 @@ class RobotView(APIView):
             Notifications().send_webhook_test(robot)
 
         # Handle nostr forward test notification
+        new_nostr_forward_pubkey = request.data.get("nostr_forward_pubkey")
         new_nostr_forward_relay = request.data.get("nostr_forward_relay")
         new_nostr_forward_enabled = serializer.validated_data.get(
             "nostr_forward_enabled", old_nostr_forward_enabled
         )
 
+        pubkey_changed = (
+            new_nostr_forward_pubkey
+            and new_nostr_forward_pubkey != old_nostr_forward_pubkey
+        )
         relay_changed = (
             new_nostr_forward_relay
             and new_nostr_forward_relay != old_nostr_forward_relay
         )
         nostr_just_enabled = new_nostr_forward_enabled and not old_nostr_forward_enabled
+        has_nostr_forward_target = (
+            robot.nostr_forward_pubkey and robot.nostr_forward_relay
+        )
 
-        if relay_changed or nostr_just_enabled:
+        if has_nostr_forward_target and (
+            pubkey_changed or relay_changed or nostr_just_enabled
+        ):
             from api.notifications import Notifications
 
             Notifications().send_nostr_forward_test(robot)

@@ -110,5 +110,18 @@ class Robot(models.Model):
         except Exception:
             return False
 
+    @staticmethod
+    def is_valid_onion_relay_url(url):
+        """Validates that the URL is a websocket .onion relay."""
+        if not Robot.is_valid_onion_url(url):
+            return False
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(url)
+            return parsed.scheme in ["ws", "wss"]
+        except Exception:
+            return False
+
     def __str__(self):
         return self.user.username

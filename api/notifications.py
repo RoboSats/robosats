@@ -191,9 +191,9 @@ class Notifications:
             )
             return False
 
-        if not Robot.is_valid_onion_url(relay_url):
+        if not Robot.is_valid_onion_relay_url(relay_url):
             logger.warning(
-                f"Nostr forward test rejected: not a .onion address for robot {robot.id}"
+                f"Nostr forward test rejected: not a websocket .onion relay for robot {robot.id}"
             )
             return False
 

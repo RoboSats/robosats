@@ -928,12 +928,12 @@ paths:
                   nostr_forward_pubkey:
                     type: string
                     nullable: true
-                    description: Nostr public key (hex) for forwarding notifications
+                    description: Nostr public key (hex or npub) for forwarding notifications
                   nostr_forward_relay:
                     type: string
                     nullable: true
-                    description: Nostr relay URL for forwarding notifications (.onion
-                      only)
+                    description: Nostr relay websocket URL for forwarding notifications
+                      (.onion only)
                   nostr_forward_enabled:
                     type: boolean
                     default: false
@@ -982,7 +982,7 @@ paths:
         ### Nostr Forwarding
 
         You can also configure Nostr direct message forwarding. Provide your main Nostr
-        public key (hex format) and a .onion relay URL to receive trade notifications
+        public key (hex or npub) and a .onion relay websocket URL to receive trade notifications
         as encrypted DMs from the coordinator's Nostr identity.
       summary: Update robot webhook settings
       tags:
@@ -1010,12 +1010,12 @@ paths:
                   nostr_forward_pubkey:
                     type: string
                     nullable: true
-                    description: Nostr public key (hex) for forwarding notifications
+                    description: Nostr public key (hex or npub) for forwarding notifications
                   nostr_forward_relay:
                     type: string
                     nullable: true
-                    description: Nostr relay URL for forwarding notifications (.onion
-                      only)
+                    description: Nostr relay websocket URL for forwarding notifications
+                      (.onion only)
                   nostr_forward_enabled:
                     type: boolean
                     description: Whether Nostr forwarding notifications are enabled
@@ -1049,6 +1049,11 @@ paths:
                     items:
                       type: string
                     description: Validation errors for nostr_forward_relay field
+                  nostr_forward_pubkey:
+                    type: array
+                    items:
+                      type: string
+                    description: Validation errors for nostr_forward_pubkey field
               examples:
                 InvalidURL(not.onion):
                   value:
@@ -1058,8 +1063,13 @@ paths:
                 InvalidRelayURL(not.onion):
                   value:
                     nostr_forward_relay:
-                    - Nostr relay must be a Tor .onion address
+                    - Nostr relay must be a Tor .onion websocket URL
                   summary: Invalid relay URL (not .onion)
+                InvalidNostrForwardPubkey:
+                  value:
+                    nostr_forward_pubkey:
+                    - Nostr forward pubkey must be a valid hex or npub public key
+                  summary: Invalid Nostr forward pubkey
           description: ''
   /api/stealth/:
     post:

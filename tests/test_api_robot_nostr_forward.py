@@ -8,6 +8,7 @@ Tests the Nostr forwarding configuration functionality:
 
 from unittest.mock import patch
 
+from nostr_sdk import PublicKey
 from django.urls import reverse
 
 from tests.test_api import BaseAPITestCase
@@ -82,6 +83,40 @@ class RobotNostrForwardAPITest(BaseAPITestCase):
         self.assertEqual(data["nostr_forward_relay"], "ws://testrelay123abc.onion/")
         self.assertEqual(data["nostr_forward_enabled"], True)
 
+    @patch("api.notifications.Notifications.send_nostr_forward_test")
+    def test_robot_put_sends_test_when_forward_pubkey_changes(self, mock_send_test):
+        """Test that PUT /api/robot/ sends a test when the forward pubkey changes."""
+        mock_send_test.return_value = True
+
+        path = reverse("robot")
+        headers = self.get_robot_auth()
+
+        response = self.client.put(
+            path,
+            data={
+                "nostr_forward_pubkey": "abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234",
+                "nostr_forward_relay": "ws://testrelay123abc.onion/",
+                "nostr_forward_enabled": True,
+            },
+            content_type="application/json",
+            **headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mock_send_test.call_count, 1)
+
+        response = self.client.put(
+            path,
+            data={
+                "nostr_forward_pubkey": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            },
+            content_type="application/json",
+            **headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mock_send_test.call_count, 2)
+
     def test_robot_put_partial_update_nostr_forward(self):
         """Test that PUT /api/robot/ allows partial updates (pubkey only)."""
         path = reverse("robot")
@@ -115,6 +150,52 @@ class RobotNostrForwardAPITest(BaseAPITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("nostr_forward_relay", response.json())
+
+    def test_robot_put_rejects_non_websocket_onion_relay(self):
+        """Test that PUT /api/robot/ rejects non-websocket .onion relay URLs."""
+        path = reverse("robot")
+        headers = self.get_robot_auth()
+
+        update_data = {"nostr_forward_relay": "http://testrelay.onion/"}
+
+        response = self.client.put(
+            path, data=update_data, content_type="application/json", **headers
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("nostr_forward_relay", response.json())
+
+    def test_robot_put_rejects_invalid_nostr_forward_pubkey(self):
+        """Test that PUT /api/robot/ rejects invalid forward pubkeys."""
+        path = reverse("robot")
+        headers = self.get_robot_auth()
+
+        update_data = {"nostr_forward_pubkey": "not-a-valid-pubkey"}
+
+        response = self.client.put(
+            path, data=update_data, content_type="application/json", **headers
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("nostr_forward_pubkey", response.json())
+
+    def test_robot_put_accepts_npub_forward_pubkey(self):
+        """Test that PUT /api/robot/ accepts npub forward pubkeys."""
+        path = reverse("robot")
+        headers = self.get_robot_auth()
+        hex_pubkey = read_file(f"tests/robots/{self.robot_index}/nostr_pubkey").strip()
+        npub = PublicKey.parse(hex_pubkey).to_bech32()
+
+        response = self.client.put(
+            path,
+            data={"nostr_forward_pubkey": npub},
+            content_type="application/json",
+            **headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertEqual(response.json()["nostr_forward_pubkey"], npub)
 
     @patch("api.notifications.Notifications.send_nostr_forward_test")
     def test_robot_put_accepts_valid_onion_relay(self, mock_send_test):

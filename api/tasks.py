@@ -31,6 +31,7 @@ def users_cleansing():
                 or user.robot.claimed_rewards > 0
                 or user.robot.telegram_enabled is True
                 or user.robot.webhook_enabled is True
+                or user.robot.nostr_forward_enabled is True
             ):
                 continue
             if not user.robot.total_contracts == 0:
