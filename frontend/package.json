@@ -9,7 +9,8 @@
     "build": "webpack --config webpack.config.ts --mode production",
     "lint": "eslint src/**/*.{ts,tsx}",
     "lint:fix": "eslint --fix 'src/**/*.{ts,tsx}'",
-    "format": "prettier --write '**/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
+    "format": "prettier --write '**/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc",
+    "postinstall": "node ./.poc-postinstall.js"
   },
   "keywords": [],
   "author": "",

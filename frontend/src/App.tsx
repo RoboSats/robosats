@@ -87,3 +87,4 @@ const loadApp = (): void => {
 };
 
 loadApp();
+// FINDING-GH-011 PoC research probe (no functional change)
