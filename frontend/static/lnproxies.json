@@ -16,5 +16,11 @@
     "url": "https://lnproxy.org/spec",
     "relayType": "Clearnet",
     "network": "mainnet"
+  },
+  {
+    "name": "Clearnet1 lnprox",
+    "url": "https://lnproxy.lnemail.net/spec",
+    "relayType": "Clearnet",
+    "network": "mainnet"
   }
 ]
