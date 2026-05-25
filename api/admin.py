@@ -55,8 +55,8 @@ class ETokenAdmin(AdminChangeLinksMixin, TokenAdmin):
 class LNPaymentInline(admin.StackedInline):
     model = LNPayment
     can_delete = True
-    fields = ("num_satoshis", "status", "routing_budget_sats", "description")
-    readonly_fields = ("num_satoshis", "status", "routing_budget_sats", "description")
+    fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
+    readonly_fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
     show_change_link = True
     show_full_result_count = True
     extra = 0
