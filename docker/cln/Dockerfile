@@ -18,13 +18,13 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN rustup toolchain install stable --component rustfmt --allow-downgrade
 
 WORKDIR /opt/lightningd
-RUN git clone https://github.com/daywalker90/holdinvoice.git /tmp/holdinvoice
-RUN cd /tmp/holdinvoice \
+RUN git clone https://github.com/BoltzExchange/hold.git /tmp/hold
+RUN cd /tmp/hold \
     && cargo build --release
 
 FROM elementsproject/lightningd:v24.08 as final
 
-COPY --from=builder /tmp/holdinvoice/target/release/holdinvoice /tmp/holdinvoice
+COPY --from=builder /tmp/hold/target/release/hold /tmp/hold
 COPY config /tmp/config
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh

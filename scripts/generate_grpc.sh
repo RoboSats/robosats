@@ -10,7 +10,7 @@ curl --parallel -o lightning.proto https://raw.githubusercontent.com/lightningne
     -o router.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto \
     -o signer.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/signrpc/signer.proto \
     -o verrpc.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/verrpc/verrpc.proto \
-    -o hold.proto https://raw.githubusercontent.com/daywalker90/holdinvoice/master/proto/hold.proto \
+    -o hold.proto https://raw.githubusercontent.com/BoltzExchange/hold/main/protos/hold.proto \
     -o primitives.proto https://raw.githubusercontent.com/ElementsProject/lightning/v24.08/cln-grpc/proto/primitives.proto \
     -o node.proto https://raw.githubusercontent.com/ElementsProject/lightning/v24.08/cln-grpc/proto/node.proto
 
