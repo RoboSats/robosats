@@ -1,6 +1,5 @@
 import hashlib
 import os
-import random
 import secrets
 import struct
 import time
@@ -79,6 +78,17 @@ class CLNNode:
             return response
         except Exception as e:
             print(f"Cannot get CLN node id: {e}")
+
+    @classmethod
+    def _get_hold_invoice(cls, payment_hash):
+        request = hold_pb2.ListRequest(payment_hash=bytes.fromhex(payment_hash))
+        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
+        response = holdstub.List(request)
+
+        if len(response.invoices) == 0:
+            return None
+
+        return response.invoices[0]
 
     @classmethod
     def newaddress(cls):
@@ -231,24 +241,20 @@ class CLNNode:
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
-        request = hold_pb2.HoldInvoiceCancelRequest(
-            payment_hash=bytes.fromhex(payment_hash)
-        )
+        request = hold_pb2.CancelRequest(payment_hash=bytes.fromhex(payment_hash))
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceCancel(request)
+        holdstub.Cancel(request)
 
-        return response.state == hold_pb2.Holdstate.CANCELED
+        return True
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = hold_pb2.HoldInvoiceSettleRequest(
-            payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
-        )
+        request = hold_pb2.SettleRequest(payment_preimage=bytes.fromhex(preimage))
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceSettle(request)
+        holdstub.Settle(request)
 
-        return response.state == hold_pb2.Holdstate.SETTLED
+        return True
 
     @classmethod
     def gen_hold_invoice(
@@ -271,26 +277,25 @@ class CLNNode:
         # The preimage is a random hash of 256 bits entropy
         preimage = hashlib.sha256(secrets.token_bytes(nbytes=32)).digest()
 
-        request = hold_pb2.HoldInvoiceRequest(
-            description=description,
-            amount_msat=hold_pb2.Amount(msat=num_satoshis * 1_000),
-            label=f"Order:{order_id}-{lnpayment_concept}-{time}--{random.randint(1, 100000)}",
+        request = hold_pb2.InvoiceRequest(
+            payment_hash=hashlib.sha256(preimage).digest(),
+            memo=description,
+            amount_msat=num_satoshis * 1_000,
             expiry=invoice_expiry,
-            cltv=cltv_expiry_blocks,
-            preimage=preimage,  # preimage is actually optional in cln, as cln would generate one by default
+            min_final_cltv_expiry=cltv_expiry_blocks,
         )
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoice(request)
+        response = holdstub.Invoice(request)
 
         hold_payment["invoice"] = response.bolt11
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
         hold_payment["preimage"] = preimage.hex()
-        hold_payment["payment_hash"] = response.payment_hash.hex()
+        hold_payment["payment_hash"] = payreq_decoded.payment_hash
         hold_payment["created_at"] = timezone.make_aware(
             datetime.fromtimestamp(payreq_decoded.created_at)
         )
         hold_payment["expires_at"] = timezone.make_aware(
-            datetime.fromtimestamp(response.expires_at)
+            datetime.fromtimestamp(payreq_decoded.created_at + invoice_expiry)
         )
         hold_payment["cltv_expiry"] = cltv_expiry_blocks
 
@@ -301,23 +306,25 @@ class CLNNode:
         """Checks if hold invoice is locked"""
         from api.models import LNPayment
 
-        request = hold_pb2.HoldInvoiceLookupRequest(
-            payment_hash=bytes.fromhex(lnpayment.payment_hash)
-        )
-        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceLookup(request)
+        invoice = cls._get_hold_invoice(lnpayment.payment_hash)
+        if invoice is None:
+            return False
 
         # Will fail if 'empty result for listdatastore_state' or 'Invoice dropped from internal state unexpectedly'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
-        if response.state == hold_pb2.Holdstate.OPEN:
+        if invoice.state == hold_pb2.UNPAID:
             pass
-        if response.state == hold_pb2.Holdstate.SETTLED:
+        if invoice.state == hold_pb2.PAID:
             pass
-        if response.state == hold_pb2.Holdstate.CANCELED:
+        if invoice.state == hold_pb2.CANCELLED:
             pass
-        if response.state == hold_pb2.Holdstate.ACCEPTED:
-            lnpayment.expiry_height = response.htlc_expiry
+        if invoice.state == hold_pb2.ACCEPTED:
+            htlc_expiries = [
+                htlc.cltv_expiry for htlc in invoice.htlcs if htlc.HasField("cltv_expiry")
+            ]
+            if len(htlc_expiries) > 0:
+                lnpayment.expiry_height = min(htlc_expiries)
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
             return True
@@ -334,33 +341,31 @@ class CLNNode:
         expiry_height = 0
 
         cln_response_state_to_lnpayment_status = {
-            0: LNPayment.Status.INVGEN,  # OPEN
-            1: LNPayment.Status.SETLED,  # SETTLED
-            2: LNPayment.Status.CANCEL,  # CANCELLED
-            3: LNPayment.Status.LOCKED,  # ACCEPTED
+            hold_pb2.UNPAID: LNPayment.Status.INVGEN,
+            hold_pb2.ACCEPTED: LNPayment.Status.LOCKED,
+            hold_pb2.PAID: LNPayment.Status.SETLED,
+            hold_pb2.CANCELLED: LNPayment.Status.CANCEL,
         }
 
         try:
             # this is similar to LNNnode.validate_hold_invoice_locked
-            request = hold_pb2.HoldInvoiceLookupRequest(
-                payment_hash=bytes.fromhex(lnpayment.payment_hash)
-            )
-            holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-            response = holdstub.HoldInvoiceLookup(request)
+            invoice = cls._get_hold_invoice(lnpayment.payment_hash)
+            if invoice is None:
+                return status, expiry_height
 
-            status = cln_response_state_to_lnpayment_status[response.state]
+            status = cln_response_state_to_lnpayment_status[invoice.state]
 
             # try saving expiry height
-            if hasattr(response, "htlc_expiry"):
-                try:
-                    expiry_height = response.htlc_expiry
-                except Exception:
-                    pass
+            htlc_expiries = [
+                htlc.cltv_expiry for htlc in invoice.htlcs if htlc.HasField("cltv_expiry")
+            ]
+            if len(htlc_expiries) > 0:
+                expiry_height = min(htlc_expiries)
 
         except Exception as e:
-            # If it fails at finding the invoice: it has been expired for more than an hour (and could be paid or just expired).
+            # If it fails at finding the invoice: it could have been paid, cancelled, or expired.
             # In RoboSats DB we make a distinction between cancelled and returned
-            #  (holdinvoice plugin has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
+            #  (the hold plugin stores separate state for hold invoices)
             if "empty result for listdatastore_state" in str(
                 e
             ) or "Invoice dropped from internal state unexpectedly" in str(e):
@@ -862,16 +867,15 @@ class CLNNode:
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
-        request = hold_pb2.HoldInvoiceLookupRequest(
-            payment_hash=bytes.fromhex(payment_hash)
-        )
         try:
-            holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-            response = holdstub.HoldInvoiceLookup(request)
+            invoice = cls._get_hold_invoice(payment_hash)
         except Exception as e:
             if "Timed out" in str(e):
                 return False
             else:
                 raise e
 
-        return response.state == hold_pb2.Holdstate.SETTLED
+        if invoice is None:
+            return False
+
+        return invoice.state == hold_pb2.PAID
