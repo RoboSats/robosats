@@ -546,11 +546,17 @@ class LNDNode:
             return
 
         def handle_response(response, was_in_transit=False):
+            from api.logics import Logics
+
+            if not order.transition_status(
+                Order.Status.PAY,
+                from_statuses=[Order.Status.PAY, Order.Status.FAI],
+            ):
+                return
+
             lnpayment.status = LNPayment.Status.FLIGHT
             lnpayment.in_flight = True
             lnpayment.save(update_fields=["in_flight", "status"])
-            order.update_status(Order.Status.PAY)
-            order.save(update_fields=["status"])
 
             if (
                 response.status == lightning_pb2.Payment.PaymentStatus.UNKNOWN
@@ -625,7 +631,7 @@ class LNDNode:
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save(update_fields=["status", "fee", "preimage"])
 
-                order.update_status(Order.Status.SUC)
+                Logics.complete_order(order)
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.SUC)
                 )
