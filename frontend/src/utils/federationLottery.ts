@@ -14,24 +14,17 @@
 import defaultFederation from '../../static/federation.json';
 
 export default function federationLottery(): string[] {
-  // Create an array to store the coordinator short aliases and their corresponding weights (chance)
-  const coordinatorChance: Array<{ shortAlias: string; chance: number }> = [];
+  return Object.values(defaultFederation).map((coor) => {
+    const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund || 0;
 
-  // Convert the `federation` object into an array of {shortAlias, chance}
-  Object.values(defaultFederation).forEach((coor) => {
-    const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund;
-    coordinatorChance.push({ shortAlias: coor.shortAlias, chance });
-  });
-
-  // Sort randomly the coordinatorChance array using weighted shuffling algorithm
-  const shuffledCoordinators = coordinatorChance.sort((a, b) => {
-    return Math.random() * b.chance - Math.random() * a.chance;
-  });
-
-  // Extract the coordinator names from the shuffled array and return the result
-  const sortedCoordinators = shuffledCoordinators.map((coordinator) => coordinator.shortAlias);
-
-  return sortedCoordinators;
+    return {
+      shortAlias: coor.shortAlias,
+      weight: chance > 0 ? -Math.log(Math.random()) / chance : Number.POSITIVE_INFINITY,
+      tie: Math.random(), // Add a random tie-breaker to ensure fairness in case of equal chances
+    }
+  })
+    .sort((a, b) => (a.weight - b.weight) || (a.tie - b.tie))
+    .map((coordinator) => coordinator.shortAlias);
 }
 
 // // Verification
