@@ -494,13 +494,15 @@ class CLNNode:
         """Sends sats. Used for rewards payouts"""
         from api.models import LNPayment
 
-        fee_limit_sat = int(
-            max(
-                lnpayment.num_satoshis
-                * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
-                float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+        fee_limit_sat = int(lnpayment.routing_budget_sats)
+        if fee_limit_sat == 0 and lnpayment.routing_budget_ppm == 0:
+            fee_limit_sat = int(
+                max(
+                    lnpayment.num_satoshis
+                    * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                    float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+                )
             )
-        )  # 1000 ppm or 2 sats
         timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
         request = node_pb2.PayRequest(
             bolt11=lnpayment.invoice,

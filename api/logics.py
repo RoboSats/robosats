@@ -1824,23 +1824,22 @@ class Logics:
         if user.robot.earned_rewards < 1:
             return False, new_error(3003)
 
-        num_satoshis = user.robot.earned_rewards
+        earned_rewards = user.robot.earned_rewards
+        num_satoshis = earned_rewards
 
-        if routing_budget_ppm is not None and routing_budget_ppm is not False:
+        if routing_budget_ppm not in [None, False, 0]:
             routing_budget_sats = float(num_satoshis) * (
                 float(routing_budget_ppm) / 1_000_000
             )
             num_satoshis = int(num_satoshis - routing_budget_sats)
         else:
-            # start deprecate in the future
             routing_budget_sats = int(
                 max(
                     num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                     float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
                 )
-            )  # 1000 ppm or 2 sats
-            routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1_000_000
-            # end deprecate
+            )
+            routing_budget_ppm = 0
 
         reward_payout = LNNode.validate_ln_invoice(
             invoice, num_satoshis, routing_budget_ppm
@@ -1858,6 +1857,8 @@ class Logics:
                 receiver=user,
                 invoice=invoice,
                 num_satoshis=num_satoshis,
+                routing_budget_ppm=routing_budget_ppm,
+                routing_budget_sats=routing_budget_sats,
                 description=reward_payout["description"],
                 payment_hash=reward_payout["payment_hash"],
                 created_at=reward_payout["created_at"],
@@ -1880,7 +1881,7 @@ class Logics:
 
         # If fails, adds the rewards again.
         else:
-            user.robot.earned_rewards = num_satoshis
+            user.robot.earned_rewards = earned_rewards
             user.robot.save(update_fields=["earned_rewards"])
             return False, new_error(3005, {"failure_reason": failure_reason})
 
