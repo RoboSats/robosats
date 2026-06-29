@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - active-maintenance
     paths:
       - '**.py'
   pull_request_target:
     branches:
       - main
+      - active-maintenance
     paths:
       - '**.py'
 

@@ -10,10 +10,10 @@ on:
         required: true
         type: string
   push:
-    branches: [ "main" ]
+    branches: [ "main", "active-maintenance" ]
     paths: ["frontend", "web"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "active-maintenance" ]
     paths: ["frontend", "web"]
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: recksato/robosats-web
+        images: ${{ secrets.DOCKER_IMAGE_NAME }}-web
         tags: |
             type=ref,event=pr
             type=ref,event=tag

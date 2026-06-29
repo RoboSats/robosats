@@ -10,10 +10,10 @@ on:
         required: true
         type: string
   push:
-    branches: [ "main" ]
+    branches: [ "main", "active-maintenance" ]
     paths: ["frontend", "nodeapp"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "active-maintenance" ]
     paths: ["frontend", "nodeapp"]
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: recksato/robosats-client
+        images: ${{ secrets.DOCKER_IMAGE_NAME }}-client
         tags: |
             type=ref,event=pr
             type=ref,event=tag
