@@ -6,10 +6,19 @@ from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.html import format_html
+from django.db import transaction
 
 from api.lightning.node import LNNode
 from api.errors import new_error
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, TakeOrder
+from api.models import (
+    Currency,
+    LNPayment,
+    MarketTick,
+    OnchainPayment,
+    Order,
+    TakeOrder,
+    Robot,
+)
 from api.tasks import send_devfund_donation, send_notification, nostr_send_order_event
 from api.utils import get_minning_fee, validate_onchain_address, location_country
 from chat.models import Message
@@ -810,7 +819,10 @@ class Logics:
         # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
-            order.log(format_html("The address {address} is not valid", address=address), level="WARN")
+            order.log(
+                format_html("The address {address} is not valid", address=address),
+                level="WARN",
+            )
             return False, context
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
@@ -894,6 +906,10 @@ class Logics:
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
                 return False, new_error(3001)
+        if order.status == Order.Status.PAY:
+            return False, new_error(3001)
+        if order.payout and order.payout.status == LNPayment.Status.FLIGHT:
+            return False, new_error(3001)
 
         # cancel onchain_payout if existing
         cls.cancel_onchain_payment(order)
@@ -1822,54 +1838,59 @@ class Logics:
     def withdraw_rewards(cls, user, invoice, routing_budget_ppm):
         # only a user with positive withdraw balance can use this
 
-        if user.robot.earned_rewards < 1:
-            return False, new_error(3003)
+        with transaction.atomic():
+            user.robot = Robot.objects.select_for_update().get(pk=user.robot.pk)
 
-        num_satoshis = user.robot.earned_rewards
+            if user.robot.earned_rewards < 1:
+                return False, new_error(3003)
 
-        if routing_budget_ppm is not None and routing_budget_ppm is not False:
-            routing_budget_sats = float(num_satoshis) * (
-                float(routing_budget_ppm) / 1_000_000
-            )
-            num_satoshis = int(num_satoshis - routing_budget_sats)
-        else:
-            # start deprecate in the future
-            routing_budget_sats = int(
-                max(
-                    num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
-                    float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+            num_satoshis = user.robot.earned_rewards
+
+            if routing_budget_ppm is not None and routing_budget_ppm is not False:
+                routing_budget_sats = float(num_satoshis) * (
+                    float(routing_budget_ppm) / 1_000_000
                 )
-            )  # 1000 ppm or 2 sats
-            routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1_000_000
-            # end deprecate
+                num_satoshis = int(num_satoshis - routing_budget_sats)
+            else:
+                # start deprecate in the future
+                routing_budget_sats = int(
+                    max(
+                        num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                        float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+                    )
+                )  # 1000 ppm or 2 sats
+                routing_budget_ppm = (
+                    routing_budget_sats / float(num_satoshis)
+                ) * 1_000_000
+                # end deprecate
 
-        reward_payout = LNNode.validate_ln_invoice(
-            invoice, num_satoshis, routing_budget_ppm
-        )
-
-        if not reward_payout["valid"]:
-            return False, reward_payout["context"]
-
-        try:
-            lnpayment = LNPayment.objects.create(
-                concept=LNPayment.Concepts.WITHREWA,
-                type=LNPayment.Types.NORM,
-                sender=User.objects.get(username=ESCROW_USERNAME),
-                status=LNPayment.Status.VALIDI,
-                receiver=user,
-                invoice=invoice,
-                num_satoshis=num_satoshis,
-                description=reward_payout["description"],
-                payment_hash=reward_payout["payment_hash"],
-                created_at=reward_payout["created_at"],
-                expires_at=reward_payout["expires_at"],
+            reward_payout = LNNode.validate_ln_invoice(
+                invoice, num_satoshis, routing_budget_ppm
             )
-        # Might fail if payment_hash already exists in DB
-        except Exception:
-            return False, new_error(3004)
 
-        user.robot.earned_rewards = 0
-        user.robot.save(update_fields=["earned_rewards"])
+            if not reward_payout["valid"]:
+                return False, reward_payout["context"]
+
+            try:
+                lnpayment = LNPayment.objects.create(
+                    concept=LNPayment.Concepts.WITHREWA,
+                    type=LNPayment.Types.NORM,
+                    sender=User.objects.get(username=ESCROW_USERNAME),
+                    status=LNPayment.Status.VALIDI,
+                    receiver=user,
+                    invoice=invoice,
+                    num_satoshis=num_satoshis,
+                    description=reward_payout["description"],
+                    payment_hash=reward_payout["payment_hash"],
+                    created_at=reward_payout["created_at"],
+                    expires_at=reward_payout["expires_at"],
+                )
+            # Might fail if payment_hash already exists in DB
+            except Exception:
+                return False, new_error(3004)
+
+            user.robot.earned_rewards = 0
+            user.robot.save(update_fields=["earned_rewards"])
 
         # Pays the invoice.
         paid, failure_reason = LNNode.pay_invoice(lnpayment)
