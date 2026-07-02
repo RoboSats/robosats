@@ -35,6 +35,7 @@ export async function uploadToBlossom(
   ciphertext: Uint8Array,
   coordinatorUrl: string,
   nostrSecKey: Uint8Array,
+  canonicalUrl?: string,
 ): Promise<BlossomUploadResult> {
   const sha256 = await computeSha256(ciphertext);
   const authToken = createAuthEvent(sha256, nostrSecKey);
@@ -42,7 +43,7 @@ export async function uploadToBlossom(
   await apiClient.sendBinary(coordinatorUrl, '/blossom/upload', ciphertext, `Nostr ${authToken}`);
 
   return {
-    url: `${coordinatorUrl}/blossom/${sha256}`,
+    url: `${(canonicalUrl ?? coordinatorUrl)}/blossom/${sha256}`,
     sha256,
   };
 }

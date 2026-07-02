@@ -22,6 +22,7 @@ interface Props {
   userConnected?: boolean;
   imageUrls: Record<number, string>;
   setImageUrls: (imageUrls: Record<number, string>) => Record<number, string>;
+  coordinatorUrl: string;
 }
 
 const MessageCard: React.FC<Props> = ({
@@ -33,6 +34,7 @@ const MessageCard: React.FC<Props> = ({
   makerHashId,
   imageUrls,
   setImageUrls,
+  coordinatorUrl,
 }) => {
   const [imageError, setImageError] = useState<string | null>(null);
   const [openLightbox, setOpenLightbox] = useState<boolean>(false);
@@ -62,7 +64,8 @@ const MessageCard: React.FC<Props> = ({
         return;
       }
 
-      const ciphertext = await downloadFromBlossom(fileData.url);
+      const downloadUrl = `${coordinatorUrl}/blossom/${fileData.sha256}`;
+      const ciphertext = await downloadFromBlossom(downloadUrl);
       const isValid = await verifyBlobHash(ciphertext, fileData.sha256);
 
       if (!isValid) {
