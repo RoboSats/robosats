@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IconButton, Tooltip, Card, CardHeader, useTheme } from '@mui/material';
 import RobotAvatar from '../../../RobotAvatar';
 import { systemClient } from '../../../../services/System';
@@ -38,6 +38,7 @@ const MessageCard: React.FC<Props> = ({
 }) => {
   const [imageError, setImageError] = useState<string | null>(null);
   const [openLightbox, setOpenLightbox] = useState<boolean>(false);
+  const blobUrlRef = useRef<string | null>(null);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -46,13 +47,12 @@ const MessageCard: React.FC<Props> = ({
   const cardColor = isTaker ? takerCardColor : makerCardColor;
 
   useEffect(() => {
-    // Cleanup blob URL on unmount
     return () => {
-      if (imageUrls[message.index]) {
-        URL.revokeObjectURL(imageUrls[message.index]);
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
       }
     };
-  }, [imageUrls[message.index]]);
+  }, []);
 
   const handleImageLoad = async () => {
     if (imageUrls[message.index] || !message.fileMetadata || imageError) return;
@@ -77,10 +77,12 @@ const MessageCard: React.FC<Props> = ({
       const blob = new Blob([plaintext], { type: fileData.mimeType });
       const url = URL.createObjectURL(blob);
 
-      setImageUrls((urls) => {
-        urls[message.index] = url;
-        return urls;
-      });
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+      blobUrlRef.current = url;
+
+      setImageUrls((prev) => ({ ...prev, [message.index]: url }));
     } catch (error) {
       console.error('Failed to load image:', error);
       setImageError(t('Failed to decrypt image'));
