@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from html import escape
 
 import gnupg
 import numpy as np
@@ -495,6 +496,7 @@ def objects_to_hyperlinks(logs: str) -> str:
     Used to format pretty logs for the Order admin panel.
     """
     objects = ["LNPayment", "Robot", "Order", "OnchainPayment", "MarketTick"]
+    logs = escape(logs)
     try:
         for obj in objects:
             logs = re.sub(
