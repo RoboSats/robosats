@@ -1,9 +1,9 @@
+import { sha256 } from '@noble/hashes/sha256';
 import { finalizeEvent, type EventTemplate } from 'nostr-tools';
 import { apiClient } from '../services/api';
 
 export async function computeSha256(data: Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data.slice().buffer);
-  return Array.from(new Uint8Array(hashBuffer))
+  return Array.from(sha256(data))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 }
@@ -35,6 +35,7 @@ export async function uploadToBlossom(
   ciphertext: Uint8Array,
   coordinatorUrl: string,
   nostrSecKey: Uint8Array,
+  canonicalUrl?: string,
 ): Promise<BlossomUploadResult> {
   const sha256 = await computeSha256(ciphertext);
   const authToken = createAuthEvent(sha256, nostrSecKey);
@@ -42,7 +43,7 @@ export async function uploadToBlossom(
   await apiClient.sendBinary(coordinatorUrl, '/blossom/upload', ciphertext, `Nostr ${authToken}`);
 
   return {
-    url: `${coordinatorUrl}/blossom/${sha256}`,
+    url: `${(canonicalUrl ?? coordinatorUrl)}/blossom/${sha256}`,
     sha256,
   };
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IconButton, Tooltip, Card, CardHeader, useTheme } from '@mui/material';
 import RobotAvatar from '../../../RobotAvatar';
 import { systemClient } from '../../../../services/System';
@@ -22,6 +22,7 @@ interface Props {
   userConnected?: boolean;
   imageUrls: Record<number, string>;
   setImageUrls: (imageUrls: Record<number, string>) => Record<number, string>;
+  coordinatorUrl: string;
 }
 
 const MessageCard: React.FC<Props> = ({
@@ -33,9 +34,11 @@ const MessageCard: React.FC<Props> = ({
   makerHashId,
   imageUrls,
   setImageUrls,
+  coordinatorUrl,
 }) => {
   const [imageError, setImageError] = useState<string | null>(null);
   const [openLightbox, setOpenLightbox] = useState<boolean>(false);
+  const blobUrlRef = useRef<string | null>(null);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -44,13 +47,12 @@ const MessageCard: React.FC<Props> = ({
   const cardColor = isTaker ? takerCardColor : makerCardColor;
 
   useEffect(() => {
-    // Cleanup blob URL on unmount
     return () => {
-      if (imageUrls[message.index]) {
-        URL.revokeObjectURL(imageUrls[message.index]);
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
       }
     };
-  }, [imageUrls[message.index]]);
+  }, []);
 
   const handleImageLoad = async () => {
     if (imageUrls[message.index] || !message.fileMetadata || imageError) return;
@@ -62,7 +64,8 @@ const MessageCard: React.FC<Props> = ({
         return;
       }
 
-      const ciphertext = await downloadFromBlossom(fileData.url);
+      const downloadUrl = `${coordinatorUrl}/blossom/${fileData.sha256}`;
+      const ciphertext = await downloadFromBlossom(downloadUrl);
       const isValid = await verifyBlobHash(ciphertext, fileData.sha256);
 
       if (!isValid) {
@@ -74,10 +77,12 @@ const MessageCard: React.FC<Props> = ({
       const blob = new Blob([plaintext], { type: fileData.mimeType });
       const url = URL.createObjectURL(blob);
 
-      setImageUrls((urls) => {
-        urls[message.index] = url;
-        return urls;
-      });
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+      blobUrlRef.current = url;
+
+      setImageUrls((prev) => ({ ...prev, [message.index]: url }));
     } catch (error) {
       console.error('Failed to load image:', error);
       setImageError(t('Failed to decrypt image'));

@@ -148,8 +148,11 @@ const EncryptedChat: React.FC<Props> = ({
       const fileUint8 = new Uint8Array(fileBuffer);
       const originalSha256 = await computeSha256(fileUint8);
 
+      const network = settings.network as 'mainnet' | 'testnet';
+      const canonicalUrl = coordinator[network]?.onion || coordinator.url;
+
       const { ciphertext, nonce } = await encryptFile(fileBuffer, key);
-      const { url, sha256 } = await uploadToBlossom(ciphertext, coordinator.url, slot.nostrSecKey);
+      const { url, sha256 } = await uploadToBlossom(ciphertext, coordinator.url, slot.nostrSecKey, canonicalUrl);
 
       const fileEvent = createFileMessage({
         url,
@@ -210,6 +213,8 @@ const EncryptedChat: React.FC<Props> = ({
   //   );
   // }
 
+  const coordinatorUrl = federation.getCoordinator(order.shortAlias).url;
+
   return settings.connection === 'api' ? (
     <EncryptedApiChat
       messages={messages}
@@ -228,6 +233,7 @@ const EncryptedChat: React.FC<Props> = ({
       setError={setError}
       lastIndex={lastIndex}
       setLastIndex={setLastIndex}
+      coordinatorUrl={coordinatorUrl}
     />
   ) : (
     <EncryptedSocketChat
@@ -243,6 +249,7 @@ const EncryptedChat: React.FC<Props> = ({
       peerPubKey={peerPubKey}
       setPeerPubKey={setPeerPubKey}
       status={order.status}
+      coordinatorUrl={coordinatorUrl}
     />
   );
 };
