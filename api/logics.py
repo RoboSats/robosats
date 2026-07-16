@@ -747,10 +747,11 @@ class Logics:
             valid = cls.create_onchain_payment(
                 order, user, preliminary_amount=context["invoice_amount"]
             )
-            order.log(
-                f"Suggested mining fee is {order.payout_tx.suggested_mining_fee_rate} Sats/vbyte, the swap fee rate is {order.payout_tx.swap_fee_rate}%"
-            )
-            if not valid:
+            if valid:
+                order.log(
+                    f"Suggested mining fee is {order.payout_tx.suggested_mining_fee_rate} Sats/vbyte, the swap fee rate is {order.payout_tx.swap_fee_rate}%"
+                )
+            else:
                 context["swap_allowed"] = False
                 context["swap_failure_reason"] = (
                     "Not enough onchain liquidity available to offer a swap"
@@ -810,7 +811,10 @@ class Logics:
         # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
-            order.log(format_html("The address {address} is not valid", address=address), level="WARN")
+            order.log(
+                format_html("The address {address} is not valid", address=address),
+                level="WARN",
+            )
             return False, context
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
