@@ -1,5 +1,6 @@
 # We use custom seeded UUID generation during testing
 import uuid
+from html import escape
 
 from decimal import Decimal
 from decouple import config
@@ -353,7 +354,7 @@ class Order(models.Model):
             level_out_tag = "" if level == "INFO" else "</b>"
             self.logs = (
                 self.logs
-                + f"<tr><td>{timestamp}</td><td>{level_in_tag}{level}{level_out_tag}</td><td>{event}</td></tr>"
+                + f"<tr><td>{timestamp}</td><td>{level_in_tag}{escape(level)}{level_out_tag}</td><td>{escape(event)}</td></tr>"
             )
             self.save(update_fields=["logs"])
         except Exception:
