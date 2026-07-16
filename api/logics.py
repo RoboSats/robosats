@@ -810,7 +810,10 @@ class Logics:
         # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
-            order.log(format_html("The address {address} is not valid", address=address), level="WARN")
+            order.log(
+                format_html("The address {address} is not valid", address=address),
+                level="WARN",
+            )
             return False, context
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
@@ -894,6 +897,10 @@ class Logics:
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
                 return False, new_error(3001)
+        if order.status not in (Order.Status.WF2, Order.Status.WFI, Order.Status.FAI):
+            return False, new_error(3001)
+        if order.payout and order.payout.status == LNPayment.Status.FLIGHT:
+            return False, new_error(3001)
 
         # cancel onchain_payout if existing
         cls.cancel_onchain_payment(order)
