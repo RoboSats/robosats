@@ -81,6 +81,17 @@ testnet_freedomsats_port=1008
 mainnet_freedomsats_socat="socat tcp4-LISTEN:${mainnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 testnet_freedomsats_socat="socat tcp4-LISTEN:${testnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
+################################
+# Alice
+# Mainnet
+mainnet_alice_onion=alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion
+mainnet_alice_port=109
+# Testnet
+testnet_alice_onion=alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion
+testnet_alice_port=1009
+# socat cmd
+mainnet_alice_socat="socat tcp4-LISTEN:${mainnet_alice_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_alice_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_alice_socat="socat tcp4-LISTEN:${testnet_alice_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_alice_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 # RUN!
 $mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_veneto_socat & $testnet_veneto_socat & $mainnet_moon_socat & $testnet_moon_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_freedomsats_socat & $testnet_freedomsats_socat & nginx
