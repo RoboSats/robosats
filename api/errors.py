@@ -59,6 +59,7 @@ ERRORS = {
     1051: "More than 5000 market ticks have been found. Please, narrow the date range",
     1052: "Robot has no finished order",
     1053: "Wrong hex pubkey",
+    1054: "Cannot open a dispute yet. You need to wait until 18 hours before expiry.",
     # 2000 - Bad statement
     2000: "The statement and chat logs are longer than 50,000 characters",
     2001: "The statement is too short. Make sure to be thorough.",

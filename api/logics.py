@@ -536,6 +536,9 @@ class Logics:
         if order.status not in valid_status_open_dispute:
             return False, new_error(1013)
 
+        if order.expires_at and timezone.now() < order.expires_at - timedelta(hours=18):
+            return False, new_error(1054)
+
         automatically_solved = cls.automatic_dispute_resolution(order)
 
         if automatically_solved:
@@ -810,7 +813,10 @@ class Logics:
         # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
-            order.log(format_html("The address {address} is not valid", address=address), level="WARN")
+            order.log(
+                format_html("The address {address} is not valid", address=address),
+                level="WARN",
+            )
             return False, context
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
