@@ -4,7 +4,7 @@ from decimal import Decimal
 from decouple import config
 from django.contrib.auth.models import User
 from django.urls import reverse
-
+from api.logics import Logics
 from api.models import Currency, Order
 from api.tasks import cache_market
 from django.utils import timezone
@@ -15,7 +15,7 @@ from tests.test_api import BaseAPITestCase
 from tests.utils.node import add_invoice, set_up_regtest_network
 from tests.utils.pgp import sign_message
 from tests.utils.trade import Trade, maker_form_buy_with_range
-
+from tests.utils.price import PriceUtil
 from api.admin import OrderAdmin
 
 
@@ -2108,3 +2108,63 @@ class TradeTest(BaseAPITestCase):
         data = response.json()
         self.assertIn("error_code", data)
         self.assertEqual(data["error_code"], 7000)
+    def test_low_price_limit_in_buy_order(self):
+        """
+        Tests low price limit in buy order
+        """
+        price_limit_maker = maker_form_buy_with_range.copy()
+        price = PriceUtil(price_limit_maker["currency"])
+        current_price = price.get_rate()
+        price_limit = current_price - 999
+        price_limit_maker["price_limit"] = price_limit
+        trade = Trade(self.client, price_limit_maker)
+        self.assertEqual(trade.response.status_code, 400)
+        data = trade.response.json()
+        self.assertEqual(data["error_code"], 1055)
+        self.assertEqual(
+            data["bad_request"],
+            "For buy orders, price limit must be above current exchange rate",
+        )
+
+    def test_high_price_limit_in_sell_order(self):
+        """
+        Tests high price limit in sell order
+        """
+        price_limit_maker = maker_form_buy_with_range.copy()
+        price = PriceUtil(price_limit_maker["currency"])
+        current_price = price.get_rate()
+        price_limit_maker["type"] = Order.Types.SELL
+        price_limit = current_price + 999
+        price_limit_maker["price_limit"] = price_limit
+        trade = Trade(self.client, price_limit_maker)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertEqual(data["error_code"], 1054)
+        self.assertEqual(
+            data["bad_request"],
+            "For sell orders, price limit must be below current exchange rate",
+        )
+
+    def test_price_limit_auto_pause(self):
+        """
+        Tests price limit auto pause
+        """
+        price_limit_maker = maker_form_buy_with_range.copy()
+        price = PriceUtil(price_limit_maker["currency"])
+        current_price = price.get_rate()
+        price_limit_maker["price_limit"] = current_price + 999
+        trade = Trade(self.client, price_limit_maker)
+        trade.publish_order()
+        self.assertEqual(trade.response.status_code, 200)
+        data = trade.response.json()
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
+
+        # Raise the price
+        price.set_rate(current_price + 1000)
+        should_pause = Logics.auto_pause_order_by_price(order=Order.objects.get(id=trade.order_id))
+        self.assertTrue(should_pause)
+
+        trade.get_order()
+        data = trade.response.json()
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PAU).label)
+        self.assertTrue(data["auto_paused"])

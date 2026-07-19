@@ -59,6 +59,9 @@ ERRORS = {
     1051: "More than 5000 market ticks have been found. Please, narrow the date range",
     1052: "Robot has no finished order",
     1053: "Wrong hex pubkey",
+    1054: "For sell orders, price limit must be below current exchange rate",
+    1055: "For buy orders, price limit must be above current exchange rate",
+    1056: "Cannot unpause: current exchange rate ({exchange_rate:.2f}) exceeds your limit ({price_limit})",
     # 2000 - Bad statement
     2000: "The statement and chat logs are longer than 50,000 characters",
     2001: "The statement is too short. Make sure to be thorough.",
