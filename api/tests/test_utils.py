@@ -1,8 +1,13 @@
+import shutil
+import subprocess
+import tempfile
+from datetime import timedelta
 from unittest.mock import Mock, mock_open, patch
 
 import numpy as np
 from decouple import config
 from django.test import TestCase
+from django.utils import timezone
 
 from api.utils import (
     base91_to_hex,
@@ -20,6 +25,51 @@ from api.utils import (
     verify_signed_message,
     weighted_median,
 )
+
+
+def _gen_test_key(homedir: str, creation_date: str | None = None):
+    lines = [
+        "Key-Type: RSA",
+        "Key-Length: 4096",
+        "Subkey-Type: RSA",
+        "Subkey-Length: 4096",
+        "Name-Real: Test Robot",
+        "Name-Email: test@test.com",
+        "Expire-Date: 0",
+    ]
+    if creation_date is not None:
+        lines.append(f"Creation-Date: {creation_date}")
+    lines.extend(["%no-protection", "%commit"])
+    batch = "\n".join(lines) + "\n"
+    subprocess.run(
+        ["gpg", "--batch", "--homedir", homedir, "--gen-key"],
+        input=batch,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    result = subprocess.run(
+        ["gpg", "--homedir", homedir, "--list-keys", "--with-colons"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    fingerprint = [
+        line for line in result.stdout.splitlines() if line.startswith("fpr:")
+    ][0].split(":")[9]
+    pub = subprocess.run(
+        ["gpg", "--homedir", homedir, "--armor", "--export", fingerprint],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    priv = subprocess.run(
+        ["gpg", "--homedir", homedir, "--armor", "--export-secret-keys", fingerprint],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    return pub, priv
 
 
 class TestUtils(TestCase):
@@ -157,6 +207,37 @@ class TestUtils(TestCase):
         self.assertIsNotNone(error)
         self.assertIsNone(returned_pub_key)
         self.assertIsNone(returned_enc_priv_key)
+
+    def test_pgp_key_13h_ago_passes(self):
+        ts = (timezone.now() - timedelta(hours=13)).strftime("%Y%m%dT%H%M%S")
+        tmp = tempfile.mkdtemp()
+        try:
+            pub_key, enc_priv_key = _gen_test_key(tmp, creation_date=ts)
+            is_valid, error, _, _ = validate_pgp_keys(pub_key, enc_priv_key)
+            self.assertTrue(is_valid)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_pgp_key_11h_ago_fails(self):
+        ts = (timezone.now() - timedelta(hours=11)).strftime("%Y%m%dT%H%M%S")
+        tmp = tempfile.mkdtemp()
+        try:
+            pub_key, enc_priv_key = _gen_test_key(tmp, creation_date=ts)
+            is_valid, error, _, _ = validate_pgp_keys(pub_key, enc_priv_key)
+            self.assertFalse(is_valid)
+            self.assertEqual(error["error_code"], 1056)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_pgp_key_now_fails(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            pub_key, enc_priv_key = _gen_test_key(tmp)
+            is_valid, error, _, _ = validate_pgp_keys(pub_key, enc_priv_key)
+            self.assertFalse(is_valid)
+            self.assertEqual(error["error_code"], 1056)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
 
     def test_verify_signed_message(self):
         # Call the verify_signed_message function with a mock public key and a mock signed message
