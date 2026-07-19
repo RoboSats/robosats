@@ -61,6 +61,13 @@ class Command(BaseCommand):
         INVGEN / LOCKED status and do InvoiceLookupV2 every X seconds to update their status.
         """
 
+        if \
+            config("TIMING_EXTRA_IN_TESTS", cast=bool, default=False) and \
+            config("TESTING", cast=bool, default=False) and \
+            config("LNVENDOR", cast=str, default="LND") == "LND":
+            print("TIMING_EXTRA_IN_TESTS: follow_hold_invoices LND, sleeping 0.2s")
+            time.sleep(0.2)
+
         # time it for debugging
         t0 = time.time()
 
