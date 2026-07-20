@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@electron/packager": "^18.3.2",
-    "electron": "^39.2.7",
+    "electron": "^39.8.5",
     "typescript": "^5.4.5"
   },
   "dependencies": {
