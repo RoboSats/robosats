@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
@@ -1095,6 +1096,39 @@ class TradeTest(BaseAPITestCase):
         self.assertIsHash(data["maker_summary"]["txid"])
 
         self.assert_order_logs(data["id"])
+
+    @patch("control.models.LNNode.channel_balance")
+    @patch("control.models.LNNode.wallet_balance")
+    def test_onchain_insufficient_liquidity(self, mock_wallet, mock_channel):
+        """
+        Tests that swap is not allowed when the coordinator has
+        insufficient onchain balance to offer a swap.
+        """
+        mock_wallet.return_value = {
+            "total_balance": 300_000,
+            "confirmed_balance": 300_000,
+            "unconfirmed_balance": 0,
+        }
+        mock_channel.return_value = {
+            "local_balance": 0,
+            "remote_balance": 0,
+            "unsettled_local_balance": 0,
+            "unsettled_remote_balance": 0,
+        }
+
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertFalse(data["swap_allowed"])
+        self.assertIn("Not enough onchain liquidity", data["swap_failure_reason"])
 
     def test_review_order(self):
         """
