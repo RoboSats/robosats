@@ -5,7 +5,7 @@ from decouple import config
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from api.models import Currency, Order
+from api.models import Currency, LNPayment, Order
 from api.tasks import cache_market
 from django.utils import timezone
 from django.contrib.admin.sites import AdminSite
@@ -1852,19 +1852,39 @@ class TradeTest(BaseAPITestCase):
 
         # Submit reward invoice
         path = reverse("reward")
-        invoice = add_invoice("robot", response.json()["earned_rewards"])
+        earned_rewards = response.json()["earned_rewards"]
+        routing_budget_ppm = 1000
+        routing_budget_sats = earned_rewards * routing_budget_ppm / 1_000_000
+        invoice_amount = int(earned_rewards - routing_budget_sats)
+        invoice = add_invoice("robot", invoice_amount)
         signed_payout_invoice = sign_message(
             invoice,
             passphrase_path=f"tests/robots/{trade.taker_index}/token",
             private_key_path=f"tests/robots/{trade.taker_index}/enc_priv_key",
         )
-        body = {"invoice": signed_payout_invoice, "routing_budget_ppm": 0}
+        body = {
+            "invoice": signed_payout_invoice,
+            "routing_budget_ppm": routing_budget_ppm,
+        }
 
         response = self.client.post(path, body, **taker_headers)
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
         self.assertTrue(response.json()["successful_withdrawal"])
+
+        reward_payment = LNPayment.objects.get(
+            concept=LNPayment.Concepts.WITHREWA,
+            receiver__robot__hash_id=read_file(
+                f"tests/robots/{trade.taker_index}/hash_id"
+            ).strip(),
+        )
+        self.assertEqual(reward_payment.routing_budget_ppm, routing_budget_ppm)
+        self.assertEqual(
+            reward_payment.routing_budget_sats,
+            Decimal(str(routing_budget_sats)),
+        )
+        self.assertEqual(reward_payment.num_satoshis, invoice_amount)
 
     def test_order_expires_after_fiat_sent(self):
         """
