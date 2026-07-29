@@ -1,113 +1,67 @@
-# /frontend/src/contexts — Global React State
+# /frontend/src/contexts — React Global State
 
 ## Purpose
 
-Three layered context providers manage all global application state. No Redux — state flows down via React Context and is mutated only through setter functions exposed by each provider.
+Four React contexts provide app-wide state: `AppContext` (settings, theme, UI dialogs), `FederationContext` (coordinator registry, order book), `GarageContext` (robot slots, active orders), and `ThemeProvider` (MUI theme, inside `AppContextProvider`). Consumed everywhere via custom `use*` hooks.
 
-## Provider Composition Order
+## Context Map
 
-```
-AppContextProvider            ← outermost
-  └── FederationContextProvider
-        └── GarageContextProvider
-              └── UI (BasicMain or ProMain)
-```
+| File                    | Provider                    | Key State                                                            |
+| ----------------------- | --------------------------- | -------------------------------------------------------------------- |
+| `AppContext.tsx`        | `AppContextProvider`        | `settings`, `fav`, `open` dialogs, `windowSize`, tor status (mobile) |
+| `FederationContext.tsx` | `FederationContextProvider` | `federation` (Federation model), order book, coordinator info        |
+| `GarageContext.tsx`     | `GarageContextProvider`     | `garage` (Garage model), slot polling, `slotUpdatedAt`               |
+| `ThemeProvider.tsx`     | `ThemeProvider`             | MUI `theme` derived from `settings.mode` + `settings.fontSize`       |
 
-Order matters: lower contexts can read from higher ones, not vice versa.
+`ThemeProvider` is rendered **inside `AppContextProvider`** (wraps its children), not at the root App level.
 
 ## AppContext (`AppContext.tsx`)
 
-Top-level app-wide state. Available everywhere.
-
-**UI state**:
-
-- `theme`: `"dark"` | `"light"` — MUI theme mode
-- `windowSize`: `{ width, height }` — responsive layout
-- `currentPage`: active page identifier for BasicMain navigation
-- `openDialogs`: record of open modal dialogs by key
-
-**Settings** (persisted to localStorage via `systemClient`):
-
-- `language`, `fontSize`, `mode` (basic/pro), `network` (mainnet/testnet)
-- `useProxy`, `connection`, `freezeViewports`
-
-**Platform info**:
-
-- `clientVersion`: frontend semver
-- `hostUrl`: coordinator base URL
-- `isMobile`, `windowWidth`: breakpoint flags
-- `torStatus`: Tor circuit status (web only)
-
-**Timestamps** — used to trigger context refreshes:
-
-- `slotUpdatedAt`, `federationUpdatedAt`, `notificationsUpdatedAt`
-
-**Favorites**: recently used payment methods and currencies
-
-## GarageContext (`GarageContext.tsx`)
-
-Manages the robot garage (collection of robot slots) and trade polling.
-
-**State**:
-
-- `garage`: `Garage` model instance — all robot slots, persisted to localStorage
-- `maker`: current `Maker` form state for order creation
-- `activeSlot`: currently selected robot slot index
-
-**Auto-refresh polling**:
-Polls active orders with status-dependent delays. Never add blocking operations to this loop.
-
-```
-Status-based delays (seconds):
-  WFB, TAK, WF2, WFE, WFI  →  3s (bond/escrow pending)
-  PUB, PAU                  →  30s (waiting for taker)
-  CHA, FSE, DIS             →  10s (active trade)
-  PAY                       →  5s (payment in flight)
-  SUC, FAI, EXP, UCA, CCA  →  999s (terminal — stop polling)
-
-Off-page multiplier: delay × 5 when user is not on OrderPage
-```
-
-Polling resets to shortest applicable delay on page navigation.
-
-**Key actions**:
-
-- `createRobot(token, coordinator)` — generate new robot slot
-- `deleteSlot(slotIndex)` — remove slot from garage
-- `fetchActiveOrder(slot)` — triggers order status refresh
-- `setMaker(partial)` — update maker form fields
-
-**Hooks pattern**:
-Register `onSlotUpdate` callback to react to slot changes outside React render cycle.
+- `settings: Settings` — loaded async from `systemClient` on mount; all prefs read via `systemClient.getItem(key).then()`.
+- `fav: Favorites` — default `{ type: null, currency: 0, mode: 'fiat', coordinator: 'robosats' }`; `'robosats'` is a **legacy artifact replaced at runtime**; federation neutrality (randomised order) is the actual policy.
+- `open: OpenDialogs` — keys: `more, learn, community, info, coordinator, warning, exchange, client, update, profile, recovery, confirmCollabCancel, search, thirdParty`.
+- `entryPage` — `'garage'` if `client === 'mobile'`, else current path or `'garage'`.
+- `torStatus` — mobile-only: 5 s polling via `window.AndroidAppRobosats.getTorStatus(uuid)` + `window.AndroidRobosats.storePromise`.
+- Settings keys read from `systemClient`: `settings_mode`, `settings_fontsize_basic`, `settings_light_qr`, `settings_language`, `settings_connection` (default `'nostr'`), `settings_network` (default `'mainnet'`), `settings_notifications` (on by default for mobile), `settings_use_proxy` (on for mobile unless explicitly `'false'`).
 
 ## FederationContext (`FederationContext.tsx`)
 
-Manages the list of coordinators and their public order books.
+- Builds the `Federation` model from `federation.json` seed data at startup.
+- Polls coordinators for info/limits on mount and periodically.
+- Order book is fetched via Nostr (primary) or REST fallback per `settings.connection`.
+- Calls `federation.loadRatings()` on mount — loads Nostr kind 31986 coordinator ratings
+  without signature verification (trusted by default for performance). The "Verify ratings"
+  button in `FederationTable` triggers `federation.loadRatings(true)` for on-demand
+  cryptographic verification.
+- Exposes `coordinatorUpdatedAt`, `bookUpdatedAt` for consumers that need cache-busting.
+- Custom coordinator discovery (power-user `SettingsPage/Coordinators.tsx`) is supported
+  but is an escape hatch, not a headline feature.
 
-**State**:
+## GarageContext (`GarageContext.tsx`)
 
-- `federation`: `Federation` model instance — all known coordinators
-- `sortedCoordinators`: coordinator list in randomized (lottery) order
-- `book`: aggregated public orders from all coordinators
-- `loading`: book loading state
+- Manages `Garage` — a map of token→`Slot` (each Slot holds a `Robot` + optional active order).
+- Polls `slot.activeOrder` status using `statusToDelay[status]` — faster polling for active trade statuses, `defaultDelay` otherwise.
+- Exposes `garage.getSlot()` (current slot), `garage.getActiveOrderId()`.
+- **Single-active-order invariant** is coordinator-enforced; `slot.activeOrder` just surfaces what the coordinator reports. The garage does not prevent creating a second order client-side.
 
-**Key behaviors**:
+## Product Intent
 
-- Loads coordinator info from `coordinators.json` (bundled) + fetches live `/api/info/` per coordinator
-- Fetches public order book when user navigates to BookPage
-- Subscribes to Nostr relay for real-time order updates
-- Tracks connection status per coordinator (API vs Nostr)
+- **`settings.connection = 'nostr'` by default** — Nostr is the primary book discovery transport; REST is the fallback. Changing the default would break the product's privacy model.
+- **Testnet** (`settings_network`) is a first-class surface — toggling it changes which coordinator endpoints are used, not just a dev flag.
+- **`unsafeClient` / `HostAlert`** gated on `settings.unsafeClient` and `settings.selfhostedClient` — actively discourages clearnet web use in favour of Tor/desktop/mobile. Do not downplay or remove this gate.
+- **Mobile tor polling** exists solely because Android has an embedded Tor daemon whose status must be surfaced to the user before making API calls.
+- **Custom coordinators** (`selfhostedClient`, coordinators settings page) are a power-user escape hatch; federation neutrality for standard users is enforced by the random seed ordering in `federation.json`.
 
-**Key actions**:
+## Traps
 
-- `setBook(orders)` — replace book contents
-- `fetchBook()` — trigger full book refresh from all coordinators
-- `getCoordinator(shortAlias)` — look up coordinator by alias
+- `ThemeProvider` is inside `AppContextProvider`, not at `App.tsx` root — searching `App.tsx` for `ThemeProvider` will find nothing.
+- `fav.coordinator: 'robosats'` default looks like a preference but is replaced at runtime; treating it as authoritative coordinator selection is wrong.
+- Settings are loaded **asynchronously** — components consuming `settings` must handle the initial default state before async load completes.
+- `torStatus` polling uses `window.AndroidAppRobosats` which is only defined on Android; calling it on web throws.
 
-## Agent Guidelines
+## Constraints
 
-- **Do not** add synchronous operations to polling loops — they run on a tight interval
-- State setters from contexts are stable references (wrapped in `useCallback`) — safe to use as effect dependencies
-- `slotUpdatedAt` / `federationUpdatedAt` are Date timestamps — compare with `>` not `===`
-- Persist settings changes immediately via `systemClient.setItem()` — context state and localStorage must stay in sync
-- The `garage` object is mutated in place then a new reference is assigned to trigger re-render — treat it as immutable from component code
+- Never move `ThemeProvider` out of `AppContextProvider` — theme depends on `settings.mode` which lives in AppContext.
+- Never make `fav.coordinator: 'robosats'` a hard preference — federation neutrality is a product invariant.
+- Do not add a clearnet-first path that bypasses `unsafeClient` / `HostAlert`.
+- Do not add one-active-order client enforcement to `GarageContext` — that is coordinator logic.

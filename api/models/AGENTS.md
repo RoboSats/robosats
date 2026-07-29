@@ -73,6 +73,16 @@ Fields: `hash_id`, `public_key`/`encrypted_private_key` (PGP), `total_contracts`
 constraint) — restricts `webhook_url` to `.onion`, called from `serializers.py` and
 `notifications.py`.
 
+**`nostr_pubkey` is write-once via `ReviewView`** — set on the first `POST /api/review/`
+call and never changed by that endpoint again (mismatch → error 1052). It is also settable
+via `PUT /api/robot/`, but `ReviewView` only trusts the value already stored.
+
+**`platform_rating` vs coordinator Nostr rating** — `platform_rating` is set by
+`POST /api/order/ { action: 'rate_platform' }` (REST, stored in DB). Coordinator Nostr
+ratings are published as kind 31986 events by the frontend and aggregated client-side in
+`Federation.ratings` — they are **not** stored in `platform_rating` and are entirely
+separate from the Django model. Do not conflate them.
+
 ## `LNPayment` (ln_payment.py)
 `payment_hash` is the **primary key**. `Types`: NORM(0)/HOLD(1)/KEYS(2). `Concepts`:
 MAKEBOND(0)/TAKEBOND(1)/TRESCROW(2)/PAYBUYER(3)/WITHREWA(4)/DEVDONAT(5). `Status` (all

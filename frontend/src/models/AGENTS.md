@@ -1,157 +1,97 @@
-# /frontend/src/models — TypeScript Data Models
+# /frontend/src/models — TypeScript Domain Models
 
 ## Purpose
 
-Domain models as TypeScript classes with methods (not plain interfaces). Models handle API communication, localStorage persistence, and business logic on the client side.
+TypeScript classes and types representing the core domain: `Order`, `Robot`, `Slot`, `Garage`, `Federation`, `Coordinator`, `Settings`, `LightningInvoice`, and supporting enums/types. Models are plain data containers — no React, no HTTP calls.
 
-## Model Index (`index.ts`)
+## Model Map
 
-Re-exports all models. Import from `models/` not individual files.
+| File                        | Key exports                                            | Notes                                                                                            |
+| --------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `Order.model.ts`            | `Order`, `Order.Status` (19 values 0–18), `Order.Type` | Mirrors backend `Order.Status` exactly                                                           |
+| `Robot.model.ts`            | `Robot`                                                | Robot identity + active order ref; `activeOrderId` links to `slot.activeOrder`                   |
+| `Slot.model.ts`             | `Slot`                                                 | One Slot per token — holds `Robot` + optional `activeOrder: Order`                               |
+| `Garage.model.ts`           | `Garage`                                               | Map of token→`Slot`; `getSlot()`, `getActiveOrderId()`                                           |
+| `Federation.model.ts`       | `Federation`                                           | Map of shortAlias→`Coordinator`; built from `federation.json` + live API data                    |
+| `Coordinator.model.ts`      | `Coordinator`                                          | Per-coordinator info: `alias`, `mainnet`/`testnet` endpoints, `info`, `limits`, `book`, `badges` |
+| `Settings.model.ts`         | `Settings`, `Language`, `Exchange`                     | User preferences; `Language` union has a known bug (see Traps)                                   |
+| `Maker.model.ts`            | `Maker`                                                | Order creation form state; validates against `currencies.json`                                   |
+| `LightningInvoice.model.ts` | `LightningInvoice`                                     | Parsed invoice fields                                                                            |
 
-## Order (`Order.model.ts`)
+## `Order.Status` — 19 values (mirrors backend)
 
-Represents one trade contract. Mirrors the backend Order model.
+`WFB(0) PUB(1) PAU(2) TAK(3) UCA(4) EXP(5) WF2(6) WFE(7) WFI(8) CHA(9) FSE(10) DIS(11) CCA(12) PAY(13) SUC(14) FAI(15) WFR(16) MLD(17) TLD(18)` — must stay in sync with `api/models/order.py`. See `api/models/AGENTS.md` for the full state machine.
 
-**Key fields** (subset):
+## `Settings.model.ts` — fields + defaults
 
-- `id`, `shortAlias`, `reference` — identifiers
-- `type`: 0=BUY, 1=SELL (from maker's perspective)
-- `status`: 0–18 (matches backend status integers)
-- `currency`, `amount`, `has_range`, `min_amount`, `max_amount`
-- `is_explicit`, `premium`, `satoshis` — pricing
-- `is_fiat_sent`, `is_disputed` — trade state flags
-- `maker_nick`, `taker_nick`, `maker_hash_id`, `taker_hash_id`
-- `maker_status`, `taker_status`: `"Active"` | `"Seen recently"` | `"Inactive"`
-- `bond_invoice`, `escrow_invoice`, `payout_invoice` — invoice strings
-- `chat_last_index` — last seen chat message index
+| Field                  | Default                                   | Notes                                              |
+| ---------------------- | ----------------------------------------- | -------------------------------------------------- |
+| `frontend`             | `'basic'`                                 | Drives `isPro` in `App.tsx`                        |
+| `client`               | `'web'`                                   | Set by `window.RobosatsSettings` prefix            |
+| `connection`           | `'nostr'`                                 | Primary book discovery transport                   |
+| `network`              | `'mainnet'`                               | `'testnet'` is a first-class surface, not dev-only |
+| `language`             | `'en'`                                    | Must be a valid `Language` type (see Traps)        |
+| `fontSize`             | `14`                                      | Basic UI font size                                 |
+| `lightQRs`             | `false`                                   | QR code colour scheme                              |
+| `freezeViewports`      | `false`                                   | Mobile viewport lock                               |
+| `unsafeClient`         | `false`                                   | Enables clearnet web (discouraged)                 |
+| `selfhostedClient`     | `false`                                   | Enables custom coordinator                         |
+| `useProxy`             | `false` (mobile: `true` unless `'false'`) | LN proxy routing                                   |
+| `androidNotifications` | `false` (mobile: `true`)                  | Nostr DM push notifications                        |
 
-**Methods**:
+All prefs loaded **asynchronously** from `systemClient.getItem()` in the constructor.
 
-- `make(coordinator, garage, amount?)` — POST `/api/make/` to create order
-- `take(coordinator, garage, amount?)` — POST `/api/order/` with action `"take"`
-- `submitAction(coordinator, garage, action, body?)` — generic order action (confirm_fiat, dispute, cancel, etc.)
-- `fecth(coordinator, garage)` — GET `/api/order/` (note: intentional typo in codebase, do not "fix")
-- `nullify()` — reset to empty state
+## `Federation.model.ts` / `Coordinator.model.ts`
 
-**Status integers** (same as backend):
-`WFB=0, PUB=1, PAU=2, TAK=3, UCA=4, EXP=5, WF2=6, WFE=7, WFI=8, CHA=9, FSE=10, DIS=11, CCA=12, PAY=13, SUC=14, FAI=15, WFR=16, MLD=17, TLD=18`
+- `Federation` is built from `federation.json` at module load + enriched with live coordinator `/api/info` + `/api/limits` data.
+- `federation.json` is maintainer-owned; a webpack rebuild is required to add/remove coordinators.
+- Coordinator order is randomised at runtime — `fav.coordinator: 'robosats'` in the seed is a legacy default, not a preference.
 
-## Robot (`Robot.model.ts`)
+**Coordinator ratings**
 
-Represents a robot identity on a specific coordinator.
+`public ratings: Record<string, Record<string, number>>` — outer key: coordinator
+`nostrHexPubkey`; inner key: voter robot pubkey; value: normalised rating (0–1).
+Seeded to empty maps by `coordinatorsRatingInit()` (called on init and on `addCoordinator`).
 
-**Fields**:
+`loadRatings(verify: boolean = false)`:
 
-- `token`, `tokenSHA256`: raw token + hash for anonymous auth
-- `pubKey`, `encPrivKey`: PGP keypair (public key + encrypted private key)
-- `nostrPubKey`: for Nostr DM notifications
-- `activeOrderId`, `lastOrderId`: current/previous order
-- `found`: whether robot exists on coordinator
-- `loading`: async fetch in progress
-- `earned_rewards`, `wants_stealth`
+- Subscribes to Nostr kind 31986 events via `RoboPool.subscribeRatings` with a
+  6-month rolling window (`since: now - 6×30×24×60×60`).
+- `onevent` callback: extracts coordinator pubkey (`p` tag) and rating (`rating` tag);
+  if `verify=true`, calls `verifyCoordinatorToken(event)` (schnorr-verify); if
+  `verify=false`, trusts the event without checking. Stores one vote per voter pubkey
+  (last event wins if a voter re-rates).
+- `oneose`: closes the subscription, triggers UI update.
+- Guards against duplicate subscriptions: if `ratingsLoaded` is true and `verify=false`,
+  returns early (ratings already loaded; re-fetch only when verifying).
 
-**Methods**:
+**Average rating** is computed on-the-fly (not cached) in `FederationTable` and
+`Dialogs/Coordinator.tsx`: `sum(values) / count` of `ratings[pubkey]` entries, displayed
+as `avg × 5` stars + `(count)`.
 
-- `getAuthHeaders()` — returns `{ Authorization: "Token {tokenSHA256}", ... }` for API calls
-- `fetchRobot(coordinator, token)` — GET `/api/robot/`, populates fields
-- `fetchReward(coordinator, invoice)` — POST `/api/reward/` to claim earned sats
-- `fetchStealth(coordinator, wantsStealth)` — POST `/api/stealth/`
+## `Garage.model.ts` / `Slot.model.ts`
 
-## Slot (`Slot.model.ts`)
+- `Garage` stores all robot slots across sessions (persisted via `systemClient`).
+- Each `Slot` holds exactly one `Robot` and its `activeOrder` (if any).
+- `getSlot()` returns the **currently selected** slot (one active at a time in the UI, but multiple can exist).
+- The garage does not enforce single-active-order — the coordinator does.
 
-Container for a single robot token across multiple coordinators. One Slot = one identity that can trade with any coordinator.
+## Product Intent
 
-**Fields**:
+- `Order.Status` must mirror backend exactly — the TradeBox renders user-facing prompts from these numeric values; mismatches cause wrong UI state.
+- `Settings.network = 'testnet'` is intentionally supported for trading real testnet Lightning — not a dev/debug mode.
+- `Settings.useProxy` defaults on for mobile: Lightning invoice proxies protect the buyer's privacy (invoice reveals IP to the sender) — particularly important on mobile.
+- `Maker.model.ts` rules (premium bounds, range amounts, duration) encode product policy — don't relax them without coordinator alignment.
 
-- `token`, `hashId`, `nickname`, `nostrPubKey`, `nostrSecKey` — identity
-- `robots`: `Record<shortAlias, Robot>` — one Robot instance per coordinator
-- `activeOrderShortAlias`, `lastOrderShortAlias` — which coordinator has the active order
+## Traps
 
-**Methods**:
+- `Settings.model.ts`'s `Language` union **duplicates `'pl'` and omits `'ja'`** — `ja` locale ships and is fetchable at runtime but is not a valid TypeScript `Language` type. Passing `'ja'` to any typed `Language` field causes a compile error.
+- `Order.Status` has 19 values (0–18); `TAK(3)` is **never persisted** by the backend — it's a view-layer projection. See `api/AGENTS.md`.
+- `Coordinator` fields are populated asynchronously after startup — components must handle the partial state (e.g., `limits` may be undefined until the first fetch).
+- `Garage` persistence relies on `systemClient` which is platform-specific (`SystemAndroidClient` uses Android Keystore; `SystemWebClient` uses `localStorage`). Never assume a specific storage implementation.
 
-- `fetchRobot(coordinator, systemClient)` — creates/updates Robot for given coordinator
-- `fetchActiveOrder(coordinator)` — polls Order status
-- `syncCoordinator(coordinator)` — ensures robot exists on coordinator
+## Constraints
 
-## Garage (`Garage.model.ts`)
-
-Collection of all robot Slots. Persisted to localStorage.
-
-**Fields**:
-
-- `slots`: `Slot[]` — all stored robot identities
-- `currentSlot`: active slot index
-- `onSlotUpdate`: hook callback for external subscribers
-
-**Methods**:
-
-- `createRobot(token, coordinator, systemClient)` — add new slot
-- `deleteSlot(index, systemClient)` — remove slot + clear localStorage
-- `getSlot(index?)` — get slot by index (defaults to currentSlot)
-- `loadSlots(systemClient)` — restore from localStorage on startup
-- `save(systemClient)` — persist current state
-
-## Federation (`Federation.model.ts`)
-
-Collection of Coordinator instances. Aggregates orders into a unified book.
-
-**Fields**:
-
-- `coordinators`: `Record<shortAlias, Coordinator>` — all known coordinators
-- `book`: `Order[]` — aggregated public orders
-- `exchange`: aggregated exchange rate info
-
-**Methods**:
-
-- `getCoordinator(shortAlias)` → `Coordinator`
-- `getCoordinatorsAlias()` → `string[]`
-- `loadBook(coordinator?)` — fetch orders from one or all coordinators
-- `setBook(orders)` — replace aggregated book
-
-**Lottery**: coordinator order is randomized to distribute traffic fairly.
-
-## Coordinator (`Coordinator.model.ts`)
-
-One coordinator instance. Largest model (~1000 lines).
-
-**Fields**:
-
-- `shortAlias`, `longAlias`, `url` — identity and URL
-- `info`: version, fees, limits, volume stats from `/api/info/`
-- `contact`: email, telegram, nostr, PGP key, matrix, website
-- `testnet` / `mainnet`: URL objects for each network
-- `book`: `Order[]` — this coordinator's public orders
-- `exchange`: current price info
-- `limits`: min/max per currency
-
-**Methods**:
-
-- `fetchInfo(systemClient)` — GET `/api/info/`, updates limits/fees/version
-- `loadBook(systemClient)` — GET `/api/book/`, populates `book`
-- `getExchangeRate(currency)` — fiat/BTC rate for given currency
-
-## Settings (`Settings.model.ts`)
-
-User preferences, persisted via systemClient.
-
-**Fields**:
-
-- `mode`: `"light"` | `"dark"`
-- `fontSize`: integer
-- `language`: BCP-47 string
-- `network`: `"mainnet"` | `"testnet"`
-- `useProxy`, `connection`: network settings
-- `freezeViewports`: pro mode layout lock
-
-Defaults vary by deployment type (`web-basic`, `web-pro`, `self-hosted`). Do not hardcode defaults — read from `Settings.defaultValues`.
-
-## Maker (`Maker.model.ts`)
-
-Form state for order creation. Not persisted — lives in GarageContext.
-
-All order creation parameters: `type`, `currency`, `amount`, `has_range`, `min_amount`, `max_amount`, `is_explicit`, `premium`, `satoshis`, `payment_method`, `bond_size`, `public_duration`, `escrow_duration`, `latitude`, `longitude`, `is_advanced`.
-
-## Book (`Book.model.ts`)
-
-Lightweight order data for book display (subset of Order fields).
-Used in BookTable and DepthChart — does not include sensitive trade details.
+- Keep `Order.Status` values in sync with `api/models/order.py` — never add a status without a corresponding backend entry.
+- Do not add logic to `Garage`/`Slot` that prevents creating a second active order — that is coordinator-enforced.
+- Do not remove `Language` without also fixing the `'pl'` duplication and adding `'ja'` — the current union is a known bug, not intentional design.

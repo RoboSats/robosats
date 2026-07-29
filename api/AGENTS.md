@@ -37,7 +37,7 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `/api/stealth/` | POST | `StealthView` | Toggle stealth invoice descriptions — POST-only |
 | `/api/chat/` | GET/POST | `chat.views.ChatView` | Owned by `chat/`, mounted here |
 | `/api/notifications/` | GET | `NotificationsView` | In-app notifications |
-| `/api/review/` | — | `ReviewView` | Nostr-signed proof-of-trade |
+| `/api/review/` | POST | `ReviewView` | Nostr-signed proof-of-trade token for coordinator rating |
 
 No `shortAlias` param exists on `/api/order/` — do not invent one. **`POST /api/order/`**
 dispatches on `UpdateOrderSerializer.action`: `pause, take, update_invoice, update_address,
@@ -157,6 +157,28 @@ decade→field — 1000s→`bad_request` (default, incl. unlisted 6000s/7000s), 
 `bad_statement`, 3000s→`bad_invoice`, 4000s→`bad_address`, 5000s→`bad_summary`.
 `oas_schemas.py` reads bond/duration settings at **import time** — needs app reload on change.
 
+## `/api/review/` — coordinator rating token
+`ReviewView.post(request)`:
+1. Validates `{ pubkey }` via `ReviewSerializer`.
+2. Finds `last_order = Order.objects.filter(maker=user | taker=user).last()` (highest pk).
+3. Requires `last_order.status ∈ {SUC, MLD, TLD}` — error 1052 otherwise.
+4. Binds `robot.nostr_pubkey = pubkey` on first call (write-once); mismatch → error 1052.
+5. Returns `{ pubkey, token: Nostr.sign_message(f"{pubkey}{last_order.id}") }`.
+   `Nostr.sign_message` schnorr-signs with `NOSTR_NSEC`, returns hex signature string.
+
+The frontend (`Successful.tsx`) uses `token` as the `sig` tag in a kind 31986 Nostr event.
+`verifyCoordinatorToken` on the client reconstructs the message as
+`UTF8("${event.pubkey}${orderId}")` and verifies the schnorr signature against the
+coordinator's Nostr pubkey.
+
+**Losing a trade (MLD/TLD) does not block review** — intentional. Coordinator
+attestation proves the trade happened, not who won; a losing trader can still rate
+the coordinator's service.
+
+**`robot.nostr_pubkey` is write-once via this endpoint** — a robot that calls
+`/api/review/` once cannot rotate its Nostr pubkey. The field is also set via
+`PUT /api/robot/` but the ReviewView check only trusts the first value.
+
 ## Product intent (business rationale, not just mechanics)
 Collaborative cancel post-escrow is **intentionally free, permanently** —
 `oas_schemas.py`'s "future cost" text is stale/aspirational, not a roadmap item. Slashed-
@@ -190,7 +212,14 @@ credit-only admin actions. Several `Logics` methods are plain functions with no 
 `cls` (`is_buyer`, `is_seller`, `calc_sats`, `settle_bond`, `dispute_statement`) — adding
 one breaks call sites. `chat/urls.py` is dead — `/api/chat/` mounts from `api/urls.py`.
 `Order.log()` gated by `DISABLE_ORDER_LOGS` — code default `True` vs `.env-sample`'s
-`False` disagree.
+`False` disagree. `ReviewView` returns error 1052 for two distinct failure modes (no
+completed order AND pubkey mismatch) — clients cannot distinguish them. `Nostr.sign_message`
+signs the raw UTF-8 bytes `f"{pubkey}{last_order.id}"` (not a 32-byte hash); the frontend's
+`verifyCoordinatorToken` must use the same raw bytes — any hash/encode change to one side
+silently breaks verification on the other. `Order.objects.filter(...).last()` in
+`ReviewView` uses the **highest pk** (default ordering), not the most recently active order;
+a robot whose latest-by-pk order is not `SUC/MLD/TLD` will be blocked even if an earlier
+order was successful.
 
 ## Constraints
 Never settle `trade_escrow` before `order.is_fiat_sent` is confirmed by the buyer. Never
@@ -199,3 +228,7 @@ is ever a DB row. Admin dispute actions bypass `Logics` and move real funds — 
 carefully as `Logics` itself. Never add an `Order.Status` member without a `t_to_expire`
 entry. Don't add a cost to collaborative cancel, or a loser-penalty field to disputes beyond
 `num_disputes`, without confirming the product intent above first.
+
+## Rules
+
+- Always update or create integration and/or unitary tests in ../tests

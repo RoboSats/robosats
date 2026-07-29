@@ -24,7 +24,7 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 | `/tests` | Integration tests — requires real Lightning nodes (regtest) |
 | `/docker` | Dockerfiles for Bitcoin, LND, CLN, Tor, Strfry services |
 | `/docs` | Jekyll docs site (learn.robosats.org) |
-| `/development` | Documentation for developers (Humans and Agents) |
+| `/development` | Detailed documentation for developers (Humans and Agents) |
 
 ## Tech Stack
 - **Backend**: Python/Django 5.1, DRF, PostgreSQL, Redis, Celery, Django Channels (WebSocket)
@@ -53,3 +53,12 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 - Frontend linting: ESLint 9 + Prettier
 - Pre-commit hooks: `.pre-commit-config.yaml`
 - API docs: drf-spectacular at `/api/schema/`
+
+## Rules
+
+- When creating/editing AGENTS.md files, follow .claude/references/agents-md.md for good practices.
+- Check /development docs for unclear business rules or entities relationships.
+
+## Gotchas
+
+- Modifications to api endpoint paths or coordinators requires updating /nodeapp

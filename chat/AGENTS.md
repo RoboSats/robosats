@@ -46,16 +46,18 @@ Encryption uses PGP (Curve25519) with robot's keypair:
 - Private key stored encrypted with robot token as passphrase
 
 ## Frontend Chat Implementations
-Three implementations in `frontend/src/components/EncryptedChat/`:
+Three implementations in `frontend/src/components/TradeBox/EncryptedChat/`:
 1. **Socket** (`EncryptedSocketChat`) — WebSocket-based, preferred
 2. **API** (`EncryptedAPIChat`) — REST polling fallback
-3. **Nostr** (`EncryptedNostrChat`) — Nostr relay-based (decentralized option)
+3. **Nostr** (`EncryptedNostrChat`) — Nostr relay-based, under development
 
 ## Notification Throttling
 Chat notifications (Telegram/Nostr/webhook) are rate-limited:
-- Only triggered if more than 5 minutes have elapsed since the robot's last notification
-- Configurable via `MIN_NOTIFICATION_INTERVAL` (default 5 min)
-- Prevents notification spam during active conversations
+- Throttles on `CHAT_NOTIFICATION_TIMEGAP` min (env, default 5) since the prior chatroom
+  message for the receiving robot — **except the first message**, which always notifies
+  regardless of the time gap.
+- Controlled by env var `CHAT_NOTIFICATION_TIMEGAP` (not `MIN_NOTIFICATION_INTERVAL`).
+- Prevents notification spam during active conversations.
 
 ## Views (`views.py`)
 - `ChatView` — combined GET/POST for HTTP-based chat access
