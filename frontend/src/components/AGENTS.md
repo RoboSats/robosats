@@ -81,7 +81,7 @@ All in `TradeBox/EncryptedChat/`:
 | Component             | Transport                   | Status                                       |
 | --------------------- | --------------------------- | -------------------------------------------- |
 | `EncryptedSocketChat` | Django Channels WebSocket   | **Primary** — preferred                      |
-| `EncryptedAPIChat`    | REST polling (`/api/chat/`) | Fallback when WebSocket unavailable          |
+| `EncryptedApiChat`    | REST polling (`/api/chat/`) | Fallback when WebSocket unavailable          |
 | `EncryptedNostrChat`  | Nostr relay DMs             | **Under development** — not production-ready |
 
 Also in `TradeBox/EncryptedChat/`:

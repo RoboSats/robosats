@@ -90,7 +90,7 @@ passphrase — losing the token makes past chat history permanently inaccessible
 
 ## Integration Points
 
-- `EncryptedSocketChat` and `EncryptedAPIChat` call `encryptMessage` before sending.
+- `EncryptedSocketChat` and `EncryptedApiChat` call `encryptMessage` before sending.
 - `GET /api/robot/` returns the counterparty's `public_key` at trade start; that key
   is passed as `peerPublicKeyArmored`.
 - `api/utils.py`'s `validate_pgp_keys` / `verify_signed_message` are the backend

@@ -68,3 +68,10 @@ Asset regex: `robosats-v\d+\.\d+\.\d+.\w+-arm64-v8a\.\w+.apk`.
 - Rust JNI robohash/roboname exist for **offline deterministic parity** with coordinator
   avatars, not for performance. The coordinator uses the same algorithm server-side;
   the app must produce identical output from the same token.
+
+## Traps
+- **`x86` ABI split is built but never uploaded.** `app/build.gradle.kts` defines four ABI
+  splits (`armeabi-v7a, arm64-v8a, x86, x86_64`) plus universal, but CI
+  (`android-build.yml` + `release.yml`) only uploads and releases universal, arm64-v8a,
+  armeabi-v7a, and x86_64. The `x86` APK is produced locally but silently discarded — do
+  not expect it on any release page or in Zapstore.

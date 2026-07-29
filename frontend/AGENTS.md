@@ -103,7 +103,7 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - **Token loss = no recovery by design.** Robots are ephemeral; losing the token means losing the identity. No recovery UI exists or should be added.
 - **Nostr is the primary book-discovery transport; REST is the fallback.** `settings.connection` defaults to `'nostr'`.
 - **`HostAlert` / `unsafeClient` actively discourages clearnet web use** in favour of Tor/selfhosted/desktop/mobile. This is intentional, not a warning to downplay.
-- **`fav.coordinator: 'robosats'` is a legacy artifact** replaced at runtime; federation neutrality (randomised coordinator order) is the actual policy.
+- **`fav.coordinator: 'robosats'` is a legacy artifact** replaced at runtime by `federationLottery`, which randomises coordinator order **weighted by DevFund donation % (capped at 50)** — a donation incentive mechanism, not a flat-neutral shuffle.
 - **Testnet is a first-class product surface**, not a dev-only escape hatch.
 - **ProMain targets arbitrage traders** who need a multi-panel dashboard with live orderbook depth and portfolio controls.
 - **`federation.json`/`lnproxies.json`/`thirdparties.json` are maintainer-owned seed files.** A webpack rebuild is required to propagate changes into the bundle.

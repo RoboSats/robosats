@@ -63,7 +63,7 @@ Child docs (load on demand):
 |---|---|
 | `window.RobosatsSettings` | `'desktop-basic'` — injected by shared `frontend/templates/frontend/index.ejs` |
 | UI mode | `RobosatsSettings.split('-')[1] === 'basic'` → `BasicMain`; no desktop-pro entry exists |
-| API client | `split('-')[0] === 'android' ? ApiAndroidClient : ApiWebClient` → `ApiWebClient` (desktop never matches `'android'`) |
+| API client | Selected at **module load** from `window.navigator.userAgent` — `AndroidRobosats` UA → `ApiAndroidClient`; default → `ApiWebClient`. Desktop UA is `Electron` (not `'android'`), so desktop always gets `ApiWebClient`. Selection is **not** from `window.RobosatsSettings`. |
 | Origin | `getOrigin()` forces `origin = 'onion'` when `client === 'desktop'` |
 | Settings | `getSettings()` returns plain `Settings` (not `SettingsSelfhosted`) |
 | JS↔native bridge | **None** — no `window.AndroidAppRobosats` equivalent; `fetch`/`WebSocket` go through Tor at the session level |

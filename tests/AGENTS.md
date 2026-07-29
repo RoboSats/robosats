@@ -4,7 +4,7 @@
 End-to-end integration tests against a real Django server with real Lightning nodes running in regtest. No mocking of Lightning â€” tests require the full stack.
 
 ## Requirements
-Tests require `docker-compose-tests.yml` stack running:
+Tests require `docker-tests.yml` stack running:
 - Bitcoin Core (regtest)
 - LND node(s) or CLN
 - PostgreSQL + Redis
@@ -62,7 +62,7 @@ Test robots are in `/tests/robots/1/`, `/tests/robots/2/`, `/tests/robots/3/` â€
 ## Running Tests
 ```bash
 # Requires full test stack running
-docker-compose -f docker-compose-tests.yml up -d
+docker compose -f docker-tests.yml --env-file ./tests/compose.env up -d
 python manage.py test tests.test_trade_pipeline
 python manage.py test tests  # all tests
 ```

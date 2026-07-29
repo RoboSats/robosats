@@ -109,8 +109,9 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
   up --build`), or pulls the `image` if no build is requested. The intent is pull-only for
   end users — remove `build: .` to avoid ambiguity.
 - **`docker-compose.yml` (dev) mounts `../node/tor/data` and `../node/tor/config`** — the
-  `../node/` directory does not exist in the repo root. The dev compose will fail at
-  startup unless that directory is created or the mounts are adjusted.
+  `../node/` directory is **untracked**; it is created at runtime by the dev stack and is
+  absent on a fresh clone. The dev compose will fail at startup unless that directory is
+  created first or the volume mounts are adjusted.
 - **Three coordinators (bazaar, freedomsats, alice) reuse the same `.onion` for both
   mainnet and testnet** in `robosats-client.sh`. Only temple, lake, and moon have distinct
   testnet onions. This means testnet and mainnet traffic for those three coordinators is

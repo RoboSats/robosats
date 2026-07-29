@@ -48,7 +48,7 @@ Encryption uses PGP (Curve25519) with robot's keypair:
 ## Frontend Chat Implementations
 Three implementations in `frontend/src/components/TradeBox/EncryptedChat/`:
 1. **Socket** (`EncryptedSocketChat`) — WebSocket-based, preferred
-2. **API** (`EncryptedAPIChat`) — REST polling fallback
+2. **API** (`EncryptedApiChat`) — REST polling fallback
 3. **Nostr** (`EncryptedNostrChat`) — Nostr relay-based, under development
 
 ## Notification Throttling

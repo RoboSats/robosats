@@ -12,19 +12,21 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 | `/chat` | WebSocket encrypted chat (Django Channels) |
 | `/control` | Admin accounting/balance tracking (coordinator finances) |
 | `/robosats` | Django project config: settings, Celery, ASGI/WSGI, routing |
-| `/frontend` | React 19 + TypeScript SPA — web, desktop, mobile wrapper |
+| `/frontend` | React 19 + TypeScript SPA — web, desktop, Android WebView, self-hosted |
 | `/frontend/src/contexts` | Global React state: App, Garage, Federation contexts |
 | `/frontend/src/components` | UI components: TradeBox, BookTable, MakerForm, EncryptedChat |
 | `/frontend/src/models` | TypeScript models: Order, Robot, Slot, Garage, Federation, Coordinator |
 | `/frontend/src/services` | API client, WebSocket, Nostr relay, platform abstraction |
-| `/mobile` | React Native wrapper — reuses /frontend/src directly |
 | `/android` | Native Kotlin Android app (WebView bridge to frontend) |
 | `/desktopApp` | Electron wrapper around React frontend |
 | `/nodeapp` | Self-hosted deployment: Umbrel/StartOS, Nginx, coordinator configs |
+| `/web` | Clearnet web client — Nginx + coordinator proxies; `recksato/robosats-web` image |
 | `/tests` | Integration tests — requires real Lightning nodes (regtest) |
 | `/docker` | Dockerfiles for Bitcoin, LND, CLN, Tor, Strfry services |
 | `/docs` | Jekyll docs site (learn.robosats.org) |
 | `/development` | Detailed documentation for developers (Humans and Agents) |
+| `/scripts` | Utility scripts (API spec update, gRPC generation, devfund, lnproxy sync) |
+| `/fastlane` | Fastlane metadata for app-store listings |
 | `/.github` | CI/CD workflows, release orchestration, issue/PR templates, CODEOWNERS |
 
 ## Tech Stack
