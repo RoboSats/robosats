@@ -1,103 +1,70 @@
 # /android — Native Android App
 
 ## Purpose
-Native Kotlin Android app that wraps the React frontend in a WebView. Provides Tor networking, encrypted local storage, push notifications (Nostr), and native robot identity generation via Rust JNI libraries. Frontend code lives in `/frontend` — this app is a platform bridge only.
+Kotlin Android app wrapping the React frontend in a WebView. Platform bridge only —
+provides embedded Tor networking, Android Keystore encrypted storage, Nostr push
+notifications, and Rust JNI robot identity generation. Frontend lives in `/frontend`;
+this app is not a standalone product.
 
 ## Architecture
 ```
-MainActivity.kt
-  └── TorKmpManager (kmp-tor)
-        └── WebView (loads file:///android_asset/index.html)
-              └── WebAppInterface (JS ↔ Kotlin bridge)
-                    ├── HTTP requests (OkHttp through Tor SOCKS proxy)
-                    ├── WebSocket (OkHttp through Tor)
-                    ├── EncryptedStorage (Android Keystore)
-                    └── RoboIdentities (Rust .so — robohash + robonames)
+MainActivity
+  ├── kmp-tor (TorKmpManager / TorKmp)  ← embedded Tor daemon
+  │     └── OkHttp SOCKS proxy          ← all outbound HTTP/WS
+  ├── WebView (file:///android_asset/index.html)
+  │     └── WebAppInterface             ← @JavascriptInterface bridge
+  │           ├── OkHttp (HTTP + WS)
+  │           ├── EncryptedStorage      ← Android Keystore
+  │           └── RoboIdentities        ← Rust JNI .so
+  └── NotificationsService (foreground) ← Nostr push, runs independently
+        └── NostrClient
 ```
 
-## Key Kotlin Files
-| File | Role |
+Child docs (load on demand):
+- `app/src/main/java/com/robosats/AGENTS.md` — MainActivity, WebAppInterface, RoboIdentities, Connectivity
+- `app/src/main/java/com/robosats/tor/AGENTS.md` — TorKmpManager, TorKmp, ports, Orbot
+- `app/src/main/java/com/robosats/models/AGENTS.md` — EncryptedStorage, LanguageManager, NostrClient
+- `app/src/main/java/com/robosats/services/AGENTS.md` — NotificationsService
+
+## Layer map
+| Directory / File | Role |
 |---|---|
-| `MainActivity.kt` | App entry, Tor init, WebView setup, deep link handling |
-| `WebAppInterface.kt` | `@JavascriptInterface` bridge — all JS↔Native calls |
-| `RoboIdentities.kt` | JNI wrapper for `librobohash.so` + `librobonames.so` (Rust) |
-| `Connectivity.kt` | Network availability checks |
-| `models/EncryptedStorage.kt` | Android Keystore-backed encrypted key-value store |
-| `models/LanguageManager.kt` | Device locale → i18n language mapping |
-| `models/NostrClient.kt` | Nostr relay client for push notifications (uses quartz/ammolite) |
-| `services/NotificationsService.kt` | Android notification delivery service |
-| `tor/TorKmpManager.kt` | kmp-tor v4.8.10 lifecycle manager |
+| `app/src/main/java/com/robosats/` | Core Kotlin sources |
+| `app/src/main/java/com/robosats/tor/` | kmp-tor lifecycle |
+| `app/src/main/java/com/robosats/models/` | EncryptedStorage, LanguageManager, NostrClient |
+| `app/src/main/java/com/robosats/services/` | Foreground NotificationsService |
+| `app/src/main/assets/` | Baked-in frontend bundle (index.html + static/) |
+| `app/src/main/jniLibs/` | Pre-compiled Rust .so per ABI |
+| `app/src/main/AndroidManifest.xml` | Permissions, service declarations |
+| `app/build.gradle.kts` | Build config, ABI splits, version code math |
+| `zapstore.yaml` | Zapstore (Nostr app store) publication config |
 
-## JS → Native Bridge (`WebAppInterface.kt`)
-Registered as `window.AndroidAppRobosats`. All methods use a `uuid` parameter — the native layer resolves the matching JS Promise via:
-```
-window.AndroidRobosats.onResolvePromise(uuid, result)
-window.AndroidRobosats.onRejectPromise(uuid, error)
-```
+## Frontend bundle (assets)
+`app/src/main/assets/index.html` sets `window.RobosatsSettings = 'mobile-basic'` and
+loads the bundled JS. The `static/` tree (JS, CSS, fonts, locales, avatars, sounds) is
+baked into the APK — **not fetched at runtime**. Bundle must be copied from a `/frontend`
+build before assembling the APK. `index.html` also declares `window.RobosatsSettings`
+before the bundle loads — the React app gates on this value.
 
-Key bridge methods:
-| Method | Purpose |
-|---|---|
-| `generateRoboname(uuid, message)` | Deterministic nickname from token (Rust) |
-| `generateRobohash(uuid, message)` | Robot avatar from token (Rust) |
-| `sendRequest(uuid, action, url, headers, body)` | HTTP GET/POST/PUT/DELETE via Tor OkHttp |
-| `sendBinary(uuid, url, headers, base64Data)` | PUT binary (avatar upload) |
-| `getBinary(uuid, url)` | GET returning base64 |
-| `openWS(uuid, path)` / `sendWsMessage(uuid, path, message)` | WebSocket via Tor |
-| `getEncryptedStorage` / `setEncryptedStorage` / `deleteEncryptedStorage` | Keystore-backed storage |
-| `getTorStatus(uuid)` | Returns `ON`/`STARTING`/`OFF`/`STOPPING` |
-| `copyToClipboard(message)` | System clipboard |
-| `restart()` | Reload WebView |
-
-Security: all inputs validated with UUID_PATTERN and SAFE_STRING_PATTERN before processing.
-
-WebSocket events pushed to JS:
-- `window.AndroidRobosats.onWSMessage(path, message)`
-- `window.AndroidRobosats.onWsError(path)` / `onWsClose(path)`
-
-## Tor Integration
-Uses `kmp-tor` v4.8.10. Configured in `tor/TorKmp.kt`:
-- SOCKS ports: 9254, 9255, 9264 (last port: `OnionTrafficOnly` + `IsolateClientAddr`)
-- DNS ports: 9252, 9253
-- `DormantClientTimeout` = 10 min
-- Bootstrap progress polled (up to 15 retries × 2s before timeout)
-- Proxy for OkHttp: `InetSocketAddress` SOCKS proxy from TorKmpManager's AddressInfo
-
-Orbot mode: if `settings_use_proxy=false` in EncryptedStorage, built-in Tor is skipped — the app expects Orbot to provide a system SOCKS proxy instead.
-
-## Startup Flow (`MainActivity.kt`)
-1. Init EncryptedStorage + LanguageManager
-2. Check `settings_use_proxy` → start TorKmp or skip
-3. Wait for Tor bootstrap in background thread
-4. Call `setupWebView()`:
-   - Register `WebAppInterface` as `window.AndroidAppRobosats`
-   - Set user agent: `"AndroidRobosats"`
-   - Load `file:///android_asset/index.html`
-5. If deep-link intent present: inject `window.AndroidDataRobosats = { navigateToPage: '...' }`
-
-## Frontend Entry Point
-`app/src/main/assets/index.html` sets:
-```javascript
-window.RobosatsSettings = 'mobile-basic'
-```
-Loads: `./static/frontend/main.v0.8.4.js`
-
-The frontend `static/` bundle is bundled into the APK assets — it is **not** fetched at runtime.
-
-## Native Libraries (Rust JNI)
-Pre-compiled `.so` files in `jniLibs/{arm64-v8a,armeabi-v7a,x86_64}/`:
-- `librobohash.so` — generates robot avatar PNGs
-- `librobonames.so` — generates deterministic robot nicknames
-
-Falls back gracefully if JNI load fails (`UnsatisfiedLinkError`).
-
-## Build Config (`app/build.gradle.kts`)
-- `applicationId`: `com.robosats`
-- `compileSdk`/`targetSdk`: 36, `minSdk`: 26
-- `versionName`: `"0.8.5-alpha"`, `versionCode`: 85
-- ABI split version codes: `baseVersionCode * 1000 + {armeabi-v7a=1, arm64-v8a=2, x86=3, x86_64=4}`
-- `jniLibs.useLegacyPackaging = true` (required for .so files)
-- Custom repo: `jitpack.io` (for quartz/ammolite Nostr libraries)
+## Build & packaging (`app/build.gradle.kts`)
+- `applicationId`: `com.robosats`; `compileSdk`/`targetSdk`: 36; `minSdk`: 26
+- `isMinifyEnabled = false` for release (ProGuard off)
+- ABI splits: `armeabi-v7a, arm64-v8a, x86, x86_64` + universal APK
+- Version code formula: `baseVersionCode * 1000 + abiCode` (armeabi-v7a=1, arm64-v8a=2, x86=3, x86_64=4, universal=0)
+- `jniLibs.useLegacyPackaging = true` — required for `.so` extraction
+- Repos: google, mavenCentral, mvnrepository, **jitpack.io** (quartz/ammolite Nostr libs)
+- `quartz`/`ammolite` both exclude `net.java.dev.jna`; `jna` added as `aar` artifact type
 
 ## Distribution
-`zapstore.yaml` — configures publication to Zapstore (Nostr-based app store, AGPL-3.0).
+`zapstore.yaml` publishes arm64-v8a APK to Zapstore (Nostr-based app store), AGPL-3.0.
+Asset regex: `robosats-v\d+\.\d+\.\d+.\w+-arm64-v8a\.\w+.apk`.
+
+## Product intent
+- Embedded kmp-tor is the **default and primary transport** — Orbot mode is an escape
+  hatch for power users who already run Orbot and want to conserve battery/resources;
+  it is not the intended path for most users.
+- The app learns about active trades **only via Nostr DMs** (kind 1059 gift-wrap) sent to
+  the robot's pubkey — it never background-polls the coordinator REST API.
+- Rust JNI robohash/roboname exist for **offline deterministic parity** with coordinator
+  avatars, not for performance. The coordinator uses the same algorithm server-side;
+  the app must produce identical output from the same token.
