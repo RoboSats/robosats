@@ -47,15 +47,6 @@ repos:
         files: ^frontend/
         types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
         entry: bash -c 'cd frontend && npm run lint'
-      - id: generate-clinerules
-        name: generate-clinerules
-        stages:
-          - pre-commit
-          - pre-merge-commit
-        language: system
-        files: ^\.claude/rules/
-        types_or: [markdown] # uses https://github.com/pre-commit/identify
-        entry: bash -c 'scripts/generate_clinerules.sh'
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.13
     hooks:
