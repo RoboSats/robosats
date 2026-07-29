@@ -25,6 +25,7 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 | `/docker` | Dockerfiles for Bitcoin, LND, CLN, Tor, Strfry services |
 | `/docs` | Jekyll docs site (learn.robosats.org) |
 | `/development` | Detailed documentation for developers (Humans and Agents) |
+| `/.github` | CI/CD workflows, release orchestration, issue/PR templates, CODEOWNERS |
 
 ## Tech Stack
 - **Backend**: Python/Django 5.1, DRF, PostgreSQL, Redis, Celery, Django Channels (WebSocket)
