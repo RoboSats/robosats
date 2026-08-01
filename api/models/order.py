@@ -51,6 +51,17 @@ class Order(models.Model):
         WFR = 16, "Wait for dispute resolution"
         MLD = 17, "Maker lost dispute"
         TLD = 18, "Taker lost dispute"
+        # ── Taproot/MAST escrow statuses ─────────────────────────
+        TAP_WFB = 19, "Waiting for maker taproot bond"
+        TAP_PUB = 20, "Public (taproot mode)"
+        TAP_TAK = 21, "Waiting for taker taproot bond"
+        TAP_WFE = 22, "Waiting for taproot escrow funding"
+        TAP_ESC = 23, "Taproot escrow confirmed - In chatroom"
+        TAP_FSE = 24, "Fiat sent - Taproot escrow"
+        TAP_DIS = 25, "In dispute - Taproot escrow"
+        TAP_PAY = 26, "Signing taproot payout"
+        TAP_SUC = 27, "Successful taproot trade"
+        TAP_FAI = 28, "Failed taproot trade"
 
     class ExpiryReasons(models.IntegerChoices):
         NTAKEN = 0, "Expired not taken"
@@ -276,6 +287,18 @@ class Order(models.Model):
         default=None,
         blank=True,
     )
+    # ── Taproot escrow ───────────────────────────────────────────
+    # Flag: is this order using the Taproot/MAST escrow pipeline?
+    is_taproot = models.BooleanField(default=False, null=False)
+    # Reference to the TaprootPayment tracking all escrow UTXO state
+    taproot_escrow = models.OneToOneField(
+        "api.TaprootPayment",
+        related_name="order_taproot_escrow",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+        blank=True,
+    )
 
     # coordinator proceeds (sats revenue for this order)
     proceeds = models.PositiveBigIntegerField(
@@ -335,6 +358,21 @@ class Order(models.Model):
             16: 100 * 24 * 60 * 60,  # 'Wait for dispute resolution'
             17: 100 * 24 * 60 * 60,  # 'Maker lost dispute'
             18: 100 * 24 * 60 * 60,  # 'Taker lost dispute'
+            # ── Taproot escrow statuses ──────────────────────────
+            19: config(
+                "EXP_MAKER_BOND_INVOICE", cast=int, default=300
+            ),  # TAP_WFB - Waiting for maker taproot bond
+            20: self.public_duration,  # TAP_PUB - Public (taproot)
+            21: config(
+                "EXP_TAKER_BOND_INVOICE", cast=int, default=150
+            ),  # TAP_TAK - Waiting for taker taproot bond
+            22: int(self.escrow_duration),  # TAP_WFE - Waiting for escrow funding
+            23: 60 * 60 * settings.FIAT_EXCHANGE_DURATION,  # TAP_ESC - In chatroom
+            24: 60 * 60 * settings.FIAT_EXCHANGE_DURATION,  # TAP_FSE - Fiat sent
+            25: 1 * 24 * 60 * 60,  # TAP_DIS - In dispute (taproot)
+            26: 100 * 24 * 60 * 60,  # TAP_PAY - Signing payout
+            27: 100 * 24 * 60 * 60,  # TAP_SUC - Successful taproot trade
+            28: 100 * 24 * 60 * 60,  # TAP_FAI - Failed taproot trade
         }
 
         return t_to_expire[status]
@@ -384,3 +422,10 @@ def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
             lnpayment.delete()
         except Exception:
             pass
+
+    # Also clean up any TaprootPayment attached to this order
+    try:
+        if instance.taproot_escrow:
+            instance.taproot_escrow.delete()
+    except Exception:
+        pass
