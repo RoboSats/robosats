@@ -393,14 +393,6 @@ def validate_pgp_keys(pub_key, enc_priv_key):
     enc_priv_key = enc_priv_key.replace("\r\n", "\n").replace("\\", "\n")
     pub_key = pub_key.replace("\r\n", "\n").replace("\\", "\n")
 
-    if Robot.objects.filter(public_key=pub_key).exists():
-        return (
-            False,
-            new_error(1055),
-            None,
-            None,
-        )
-
     if not _is_well_formed_pgp_key(pub_key):
         return (
             False,
@@ -414,6 +406,14 @@ def validate_pgp_keys(pub_key, enc_priv_key):
                     "import_pub_result_imported": "0",
                 },
             ),
+            None,
+            None,
+        )
+
+    if Robot.objects.filter(public_key=pub_key).exists():
+        return (
+            False,
+            new_error(1055),
             None,
             None,
         )
