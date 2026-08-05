@@ -29,4 +29,4 @@ jobs:
           python-version: '3.12'
           cache: pip
       - name: Ruff
-        uses: chartboost/ruff-action@v1
+        uses: astral-sh/ruff-action@v3
