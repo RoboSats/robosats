@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from decouple import config
 from django.contrib.auth.models import User
+from django.test import RequestFactory
 from django.urls import reverse
 
 from api.models import Currency, Order
@@ -47,6 +48,9 @@ class TradeTest(BaseAPITestCase):
 
         # Take the first node balances snapshot
         compute_node_balance()
+
+    def setUp(self):
+        self.factory = RequestFactory()
 
     def assert_order_logs(self, order_id):
         order = Order.objects.get(id=order_id)
@@ -1738,36 +1742,125 @@ class TradeTest(BaseAPITestCase):
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
-    # def test_dispute_closed_maker_wins(self):
-    #     trade = Trade(self.client)
-    #     trade.publish_order()
-    #     trade.take_order()
-    #     trade.lock_taker_bond()
-    #     trade.lock_escrow(trade.taker_index)
-    #     trade.submit_payout_invoice(trade.maker_index)
+    def test_dispute_closed_maker_wins(self):
+        """
+        Tests the admin action 'maker_wins' during a disputed order.
+        Verifies the maker is credited with their own bond + trade satoshis,
+        and the order transitions to TLD (Taker Lost Dispute).
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
 
-    #     # Admin resolves dispute
+        # Open dispute as maker
+        path = reverse("order")
+        params = f"?order_id={trade.order_id}"
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        body = {"action": "dispute"}
+        response = self.client.post(path + params, body, **maker_headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertEqual(
+            response.json()["status_message"], Order.Status(Order.Status.DIS).label
+        )
 
-    #     trade.clean_orders()
+        # Fetch order and bond amounts before admin action
+        order = Order.objects.get(id=trade.order_id)
+        maker_bond_sats = order.maker_bond.num_satoshis
+        trade_sats = order.payout.num_satoshis
+        expected_maker_rewards = maker_bond_sats + trade_sats
 
-    #     maker_headers = trade.get_robot_auth(trade.maker_index)
-    #     response = self.client.get(reverse("notifications"), **maker_headers)
-    #     self.assertResponse(response)
-    #     notifications_data = list(response.json())
-    #     self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-    #     self.assertEqual(
-    #         notifications_data[0]["title"],
-    #         f"⚖️ Hey {data['maker_nick']}, you won the dispute on your order with ID {str(trade.order_id)}."
-    #     )
-    #     taker_headers = trade.get_robot_auth(trade.taker_index)
-    #     response = self.client.get(reverse("notifications"), **taker_headers)
-    #     self.assertResponse(response)
-    #     notifications_data = list(response.json())
-    #     self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
-    #     self.assertEqual(
-    #         notifications_data[0]["title"],
-    #         f"⚖️ Hey {data['taker_nick']}, you lost the dispute on your order with ID {str(trade.order_id)}."
-    #     )
+        # Admin resolves dispute in favor of the maker
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        request = self.factory.post("/")
+        request.user = User.objects.get(username=self.su_name)
+        order_admin.maker_wins(request, Order.objects.filter(id=trade.order_id))
+
+        # Verify order status is now TLD (Taker Lost Dispute)
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.TLD)
+
+        # Verify maker received their bond + trade sats as earned_rewards
+        order.maker.robot.refresh_from_db()
+        self.assertEqual(order.maker.robot.earned_rewards, expected_maker_rewards)
+
+        # Verify maker_bond.num_satoshis was used (not taker_bond)
+        self.assertNotEqual(
+            expected_maker_rewards,
+            order.taker_bond.num_satoshis + trade_sats,
+            "maker_bond and taker_bond must differ for this test to be meaningful",
+        )
+
+    def test_dispute_closed_taker_wins(self):
+        """
+        Tests the admin action 'taker_wins' during a disputed order.
+        Verifies the taker is credited with their own bond (taker_bond) + trade satoshis,
+        and the order transitions to MLD (Maker Lost Dispute).
+
+        This is the regression test for the security fix F1: taker_wins was
+        incorrectly using order.maker_bond.num_satoshis instead of
+        order.taker_bond.num_satoshis when computing own_bond_sats for the taker.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        # Open dispute as taker
+        path = reverse("order")
+        params = f"?order_id={trade.order_id}"
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        body = {"action": "dispute"}
+        response = self.client.post(path + params, body, **taker_headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertEqual(
+            response.json()["status_message"], Order.Status(Order.Status.DIS).label
+        )
+
+        # Fetch order and bond amounts before admin action
+        order = Order.objects.get(id=trade.order_id)
+        taker_bond_sats = order.taker_bond.num_satoshis
+        maker_bond_sats = order.maker_bond.num_satoshis
+        # Maker is buyer (BUY order), so trade escrow belongs to taker (seller)
+        trade_sats = order.trade_escrow.num_satoshis
+        expected_taker_rewards = taker_bond_sats + trade_sats
+
+        # Sanity-check: maker_bond and taker_bond differ so the regression is detectable
+        self.assertNotEqual(
+            taker_bond_sats,
+            maker_bond_sats,
+            "maker_bond and taker_bond must differ for this regression test to be meaningful",
+        )
+
+        # Admin resolves dispute in favor of the taker
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        request = self.factory.post("/")
+        request.user = User.objects.get(username=self.su_name)
+        order_admin.taker_wins(request, Order.objects.filter(id=trade.order_id))
+
+        # Verify order status is now MLD (Maker Lost Dispute)
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.MLD)
+
+        # Verify taker received their own bond (taker_bond) + trade sats as earned_rewards
+        order.taker.robot.refresh_from_db()
+        self.assertEqual(order.taker.robot.earned_rewards, expected_taker_rewards)
+
+        # Explicitly verify the bugfix: rewards must be based on taker_bond, NOT maker_bond
+        wrong_amount = maker_bond_sats + trade_sats
+        self.assertNotEqual(
+            order.taker.robot.earned_rewards,
+            wrong_amount,
+            "taker_wins must use taker_bond, not maker_bond (security fix F1)",
+        )
 
     def test_lightning_payment_failed(self):
         trade = Trade(self.client)
