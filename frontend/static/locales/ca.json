@@ -664,7 +664,7 @@
   "Payment failed?": "Ha fallat el pagament?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "Digues hola! Sigues clar i concís. Escriu-li com pot enviarte {{amount}} {{currencyCode}}.",
   "To open a dispute you need to wait": "Per obrir una disputa cal esperar",
-  "Wait for the seller to confirm he has received the payment.": "Espera a que el vendedor confirmi que ha rebut el pagament.",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "A contact method is required",
   "Attach chat logs": "Adjuntar registres de xat",
