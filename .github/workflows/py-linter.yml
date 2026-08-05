@@ -30,3 +30,5 @@ jobs:
           cache: pip
       - name: Ruff
         uses: astral-sh/ruff-action@v3
+        with:
+          version: "0.13.1"
