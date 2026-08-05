@@ -231,4 +231,4 @@ entry. Don't add a cost to collaborative cancel, or a loser-penalty field to dis
 
 ## Rules
 
-- Always update or create integration and/or unitary tests in ../tests
+- While working on this folder, always update or create integration and/or unitary tests in ../tests
