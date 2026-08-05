@@ -463,9 +463,9 @@ class Logics:
         flagging it as dispute, we avoid having to settle the
         bonds"""
 
-        # If fiat has been marked as sent, automatic dispute
-        # resolution is not possible.
-        if order.is_fiat_sent and not order.reverted_fiat_sent:
+        # If fiat has been marked as sent (or was sent and then reverted),
+        # automatic dispute resolution is not possible.
+        if order.is_fiat_sent or order.reverted_fiat_sent:
             return False
 
         # If the order has not entered dispute due to time expire
@@ -550,17 +550,39 @@ class Logics:
         if automatically_solved:
             return True, None
 
-        if not order.trade_escrow.status == LNPayment.Status.SETLED:
-            cls.settle_escrow(order)
-            cls.settle_bond(order.maker_bond)
-            cls.settle_bond(order.taker_bond)
+        # === F26 FIX: acquire row lock before settling escrow/bonds ===
+        # Re-read and re-check status under lock so that a concurrent confirm_fiat
+        # (which already acquired the lock and settled escrow) blocks this path,
+        # preventing both sides from independently settling/settling the same HTLC.
+        with transaction.atomic():
+            locked_order = Order.objects.select_for_update().get(pk=order.pk)
+            if locked_order.status not in valid_status_open_dispute:
+                # Order has already been moved out of CHA/FSE by a concurrent
+                # confirm_fiat or cancel — abort the dispute.
+                order.log(
+                    f"open_dispute aborted: order status changed to "
+                    f"{locked_order.status} during concurrent operation"
+                )
+                return False, new_error(1013)
 
+            if not locked_order.trade_escrow.status == LNPayment.Status.SETLED:
+                cls.settle_escrow(locked_order)
+                cls.settle_bond(locked_order.maker_bond)
+                cls.settle_bond(locked_order.taker_bond)
+
+            locked_order.is_disputed = True
+            locked_order.update_status(Order.Status.DIS)
+            locked_order.expires_at = timezone.now() + timedelta(
+                seconds=locked_order.t_to_expire(Order.Status.DIS)
+            )
+            locked_order.save(update_fields=["is_disputed", "expires_at"])
+
+        # Sync the in-memory order reference so the rest of the method is consistent
+        order.status = Order.Status.DIS
         order.is_disputed = True
-        order.update_status(Order.Status.DIS)
-        order.expires_at = timezone.now() + timedelta(
-            seconds=order.t_to_expire(Order.Status.DIS)
-        )
-        order.save(update_fields=["is_disputed", "expires_at"])
+        order.trade_escrow.refresh_from_db()
+        order.maker_bond.refresh_from_db()
+        order.taker_bond.refresh_from_db()
 
         # User could be None if a dispute is open automatically due to time expiration.
         if user is not None:
@@ -569,9 +591,9 @@ class Logics:
             if robot.orders_disputes_started is None:
                 robot.orders_disputes_started = [str(order.id)]
             else:
-                robot.orders_disputes_started = list(
-                    robot.orders_disputes_started
-                ).append(str(order.id))
+                disputes = list(robot.orders_disputes_started)
+                disputes.append(str(order.id))
+                robot.orders_disputes_started = disputes
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
@@ -1195,12 +1217,28 @@ class Logics:
     def collaborative_cancel(cls, order):
         if order.status not in [Order.Status.WFI, Order.Status.CHA]:
             return
-        # cancel onchain payment if existing
-        cls.cancel_onchain_payment(order)
-        cls.return_bond(order.maker_bond)
-        cls.return_bond(order.taker_bond)
-        cls.return_escrow(order)
-        order.update_status(Order.Status.CCA)
+
+        # === F26 FIX: acquire row lock before returning bonds/escrow ===
+        # Prevents a concurrent confirm_fiat from settling the escrow while
+        # this cancel is mid-flight, which would result in returned HTLC funds
+        # that were already consumed by the confirm path.
+        with transaction.atomic():
+            locked_order = Order.objects.select_for_update().get(pk=order.pk)
+            if locked_order.status not in [Order.Status.WFI, Order.Status.CHA]:
+                # Order already moved by a concurrent confirm_fiat/dispute — bail out.
+                order.log(
+                    f"collaborative_cancel aborted: order status changed to "
+                    f"{locked_order.status} during concurrent operation"
+                )
+                return
+
+            # cancel onchain payment if existing
+            cls.cancel_onchain_payment(locked_order)
+            cls.return_bond(locked_order.maker_bond)
+            cls.return_bond(locked_order.taker_bond)
+            cls.return_escrow(locked_order)
+            locked_order.update_status(Order.Status.CCA)
+
         send_notification.delay(order_id=order.id, message="collaborative_cancelled")
 
         nostr_send_order_event.delay(order_id=order.id)
@@ -1683,6 +1721,9 @@ class Logics:
         """If Order is in the CHAT states:
         If user is buyer: fiat_sent goes to true.
         If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!
+
+        The seller path (escrow settle + payout) acquires a row lock and re-validates
+        order.status before touching any funds (F26 — TOCTOU race fix).
         """
 
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE:
@@ -1708,16 +1749,55 @@ class Logics:
                 if order.trade_escrow.num_satoshis <= num_satoshis:
                     return False, new_error(1028)
 
-                # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
-                if cls.settle_escrow(order):
-                    order.trade_escrow.status = LNPayment.Status.SETLED
-                    order.trade_escrow.save(update_fields=["status"])
+                # === F26 FIX: acquire row-level lock before any irreversible money move ===
+                # Re-read order under lock. If a concurrent open_dispute/cancel already
+                # transitioned the order out of {CHA, FSE}, abort — do NOT settle escrow
+                # or queue the payout.
+                with transaction.atomic():
+                    locked_order = Order.objects.select_for_update().get(pk=order.pk)
+                    if locked_order.status not in [
+                        Order.Status.CHA,
+                        Order.Status.FSE,
+                    ]:
+                        # Order was concurrently moved to DIS/CCA/etc — abort.
+                        order.log(
+                            f"confirm_fiat aborted: order status changed to "
+                            f"{locked_order.status} during concurrent dispute/cancel"
+                        )
+                        return False, new_error(1029)
 
-                # Double check the escrow is settled.
+                    # Re-check fiat sent flag under the lock (may have been reverted)
+                    if not locked_order.is_fiat_sent:
+                        return False, new_error(1027)
+
+                    # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                    if cls.settle_escrow(order):
+                        order.trade_escrow.status = LNPayment.Status.SETLED
+                        order.trade_escrow.save(update_fields=["status"])
+
+                # Double check the escrow is settled (outside atomic block — gRPC call).
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
-                    # RETURN THE BONDS
+                    # RETURN THE BONDS — if a bond is already settled (dispute won the
+                    # race to settle it), return_bond raises; catch and abort payout.
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
+
+                    # If either bond was already settled by a concurrent dispute,
+                    # the seller's bond has been taken — log and abort rather than
+                    # paying buyer from an escrow that was also used by the dispute.
+                    if order.taker_bond.status == LNPayment.Status.SETLED:
+                        order.log(
+                            "confirm_fiat aborted: taker bond was already settled "
+                            "by a concurrent dispute — payout suppressed to avoid double-spend"
+                        )
+                        return False, new_error(1028)
+                    if order.maker_bond.status == LNPayment.Status.SETLED:
+                        order.log(
+                            "confirm_fiat aborted: maker bond was already settled "
+                            "by a concurrent dispute — payout suppressed to avoid double-spend"
+                        )
+                        return False, new_error(1028)
+
                     order.log("Taker bond was <b>unlocked</b>")
                     order.log("Maker bond was <b>unlocked</b>")
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
