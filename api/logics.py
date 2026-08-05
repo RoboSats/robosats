@@ -545,23 +545,33 @@ class Logics:
         if order.status not in valid_status_open_dispute:
             return False, new_error(1013)
 
-        automatically_solved = cls.automatic_dispute_resolution(order)
+        # ── Concurrency guard ──────────────────────────────────────────────
+        # Acquire a row-level lock on the Order and re-read status so that a
+        # concurrent confirm_fiat (or another open_dispute) cannot race past
+        # the status check and touch invoices at the same time.
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=order.pk)
+            if order.status not in valid_status_open_dispute:
+                return False, new_error(1013)
 
-        if automatically_solved:
-            return True, None
+            automatically_solved = cls.automatic_dispute_resolution(order)
 
-        if not order.trade_escrow.status == LNPayment.Status.SETLED:
-            cls.settle_escrow(order)
-            cls.settle_bond(order.maker_bond)
-            cls.settle_bond(order.taker_bond)
+            if automatically_solved:
+                return True, None
 
-        order.is_disputed = True
-        order.update_status(Order.Status.DIS)
-        order.expires_at = timezone.now() + timedelta(
-            seconds=order.t_to_expire(Order.Status.DIS)
-        )
-        order.save(update_fields=["is_disputed", "expires_at"])
+            if not order.trade_escrow.status == LNPayment.Status.SETLED:
+                cls.settle_escrow(order)
+                cls.settle_bond(order.maker_bond)
+                cls.settle_bond(order.taker_bond)
 
+            order.is_disputed = True
+            order.update_status(Order.Status.DIS)
+            order.expires_at = timezone.now() + timedelta(
+                seconds=order.t_to_expire(Order.Status.DIS)
+            )
+            order.save(update_fields=["is_disputed", "expires_at"])
+
+        # ── Post-lock bookkeeping (no more money moves below) ─────────────
         # User could be None if a dispute is open automatically due to time expiration.
         if user is not None:
             robot = user.robot
@@ -1604,9 +1614,12 @@ class Logics:
             return True
         except Exception as e:
             if "invoice already settled" in str(e):
+                # The bond was settled by someone else (e.g. a concurrent dispute).
+                # Record the real status but return False so the caller knows the
+                # return did NOT happen — it must not proceed to pay the buyer.
                 bond.status = LNPayment.Status.SETLED
                 bond.save(update_fields=["status"])
-                return True
+                return False
             else:
                 raise e
 
@@ -1708,25 +1721,53 @@ class Logics:
                 if order.trade_escrow.num_satoshis <= num_satoshis:
                     return False, new_error(1028)
 
-                # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
-                if cls.settle_escrow(order):
-                    order.trade_escrow.status = LNPayment.Status.SETLED
-                    order.trade_escrow.save(update_fields=["status"])
+                # ── Concurrency guard ──────────────────────────────────────────
+                # Re-read order status under a row lock so that a concurrent
+                # open_dispute (or a clean_orders expiry job) cannot have already
+                # moved the order out of {CHA, FSE} between the check above and
+                # the escrow settlement below.
+                with transaction.atomic():
+                    order = Order.objects.select_for_update().get(pk=order.pk)
 
-                # Double check the escrow is settled.
-                if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
-                    # RETURN THE BONDS
-                    cls.return_bond(order.taker_bond)
-                    cls.return_bond(order.maker_bond)
-                    order.log("Taker bond was <b>unlocked</b>")
-                    order.log("Maker bond was <b>unlocked</b>")
-                    # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    cls.pay_buyer(order)
+                    if order.status not in (
+                        Order.Status.CHA,
+                        Order.Status.FSE,
+                    ):
+                        return False, new_error(1029)
 
-                    # Computes coordinator trade revenue
-                    cls.compute_proceeds(order)
+                    if not order.is_fiat_sent:
+                        return False, new_error(1027)
 
-                    return True, None
+                    # Re-check escrow size after re-read
+                    num_satoshis = (
+                        order.payout_tx.num_satoshis
+                        if order.is_swap
+                        else order.payout.num_satoshis
+                    )
+                    if order.trade_escrow.num_satoshis <= num_satoshis:
+                        return False, new_error(1028)
+
+                    # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                    if cls.settle_escrow(order):
+                        order.trade_escrow.status = LNPayment.Status.SETLED
+                        order.trade_escrow.save(update_fields=["status"])
+
+                    # Double check the escrow is settled.
+                    if LNNode.double_check_htlc_is_settled(
+                        order.trade_escrow.payment_hash
+                    ):
+                        # RETURN THE BONDS
+                        cls.return_bond(order.taker_bond)
+                        cls.return_bond(order.maker_bond)
+                        order.log("Taker bond was <b>unlocked</b>")
+                        order.log("Maker bond was <b>unlocked</b>")
+                        # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                        cls.pay_buyer(order)
+
+                        # Computes coordinator trade revenue
+                        cls.compute_proceeds(order)
+
+                        return True, None
 
         else:
             return False, new_error(1029)
@@ -1888,19 +1929,30 @@ class Logics:
             user.robot.earned_rewards = 0
             user.robot.save(update_fields=["earned_rewards"])
 
-        # Pays the invoice.
-        paid, failure_reason = LNNode.pay_invoice(lnpayment)
+        # Pays the invoice OUTSIDE the atomic block — we must not hold a DB lock
+        # across a blocking Lightning RPC.  The rewards have already been zeroed;
+        # if the payment fails (or the process crashes here) we restore them below.
+        try:
+            paid, failure_reason = LNNode.pay_invoice(lnpayment)
+        except Exception:
+            # Unexpected error during payment — restore rewards so the user can retry.
+            with transaction.atomic():
+                robot = Robot.objects.select_for_update().get(pk=user.robot.pk)
+                robot.earned_rewards = num_satoshis
+                robot.save(update_fields=["earned_rewards"])
+            raise
+
         if paid:
-            user.robot.earned_rewards = 0
             user.robot.claimed_rewards += num_satoshis
-            user.robot.save(update_fields=["earned_rewards", "claimed_rewards"])
+            user.robot.save(update_fields=["claimed_rewards"])
             return True, None
 
-        # If fails, adds the rewards again.
-        else:
-            user.robot.earned_rewards = num_satoshis
-            user.robot.save(update_fields=["earned_rewards"])
-            return False, new_error(3005, {"failure_reason": failure_reason})
+        # Payment failed — restore the rewards so the user can retry.
+        with transaction.atomic():
+            robot = Robot.objects.select_for_update().get(pk=user.robot.pk)
+            robot.earned_rewards = num_satoshis
+            robot.save(update_fields=["earned_rewards"])
+        return False, new_error(3005, {"failure_reason": failure_reason})
 
     @classmethod
     def compute_proceeds(cls, order):

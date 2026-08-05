@@ -212,11 +212,23 @@ class CLNNode:
             time.sleep(3 + delay)
 
         if onchainpayment.status == queue_code:
-            # Changing the state to "MEMPO" should be atomic with SendCoins.
+            # Flip status to MEMPO first so a concurrent worker can detect a
+            # duplicate attempt via the elif branch below.  If the broadcast
+            # fails we roll back to queue_code so the next attempt can retry.
             onchainpayment.status = on_mempool_code
             onchainpayment.save(update_fields=["status"])
-            nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
-            response = nodestub.Withdraw(request)
+            try:
+                nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
+                response = nodestub.Withdraw(request)
+            except Exception as e:
+                # Broadcast failed — roll back so the payment can be retried.
+                onchainpayment.status = queue_code
+                onchainpayment.save(update_fields=["status"])
+                onchainpayment.order_paid_TX.log(
+                    f"Withdraw failed for OnchainPayment({onchainpayment.id}): {e}",
+                    level="ERROR",
+                )
+                raise e
 
             if response.txid:
                 onchainpayment.txid = response.txid.hex()
@@ -225,7 +237,7 @@ class CLNNode:
             return True
 
         elif onchainpayment.status == on_mempool_code:
-            # Bug, double payment attempted
+            # Duplicate attempt detected — status was already flipped by another worker.
             return True
 
     @classmethod
