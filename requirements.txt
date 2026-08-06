@@ -1,4 +1,4 @@
-django==5.1.15
+django==5.2.15
 django-admin-relation-links==0.2.5
 django-celery-beat==2.8.1
 django-celery-results==2.6.0
@@ -6,15 +6,15 @@ django-model-utils==5.0.0
 django-redis==6.0.0
 djangorestframework==3.16.1
 channels==4.2.2
-channels-redis==4.2.1
+channels-redis==4.3.0
 celery==5.5.3
 grpcio==1.67.0
 googleapis-common-protos==1.70.0
 grpcio-tools==1.67.0
 numpy==1.26.4
-Pillow==12.1.1
+Pillow==12.2.0
 python-decouple==3.8
-requests==2.32.4
+requests==2.33.0
 ring==0.10.1
 gunicorn==23.0.0
 psycopg2==2.9.10
@@ -23,7 +23,7 @@ django-import-export==4.3.10
 requests[socks]
 shapely==2.0.7
 python-gnupg==0.5.5
-daphne==4.2.1
+daphne==4.2.2
 drf-spectacular==0.28.0
 drf-spectacular-sidecar==2025.9.1
 django-cors-headers==4.7.0
@@ -32,3 +32,5 @@ nostr-sdk==0.42.1
 pygeohash==3.2.0
 asgiref == 3.9.2
 secp256k1
+idna==3.15
+redis==7.4.1
