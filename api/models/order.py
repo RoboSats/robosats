@@ -363,9 +363,12 @@ class Order(models.Model):
         old_status = self.status
         self.status = new_status
         self.save(update_fields=["status"])
-        self.log(
-            f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
-        )
+
+        if old_status != new_status:
+            self.log(
+                f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
+            )
+
         if new_status == Order.Status.FAI:
             send_notification.delay(order_id=self.id, message="lightning_failed")
 
