@@ -545,6 +545,9 @@ class Logics:
         if order.status not in valid_status_open_dispute:
             return False, new_error(1013)
 
+        if order.expires_at and timezone.now() < order.expires_at - timedelta(hours=18):
+            return False, new_error(1054)
+
         automatically_solved = cls.automatic_dispute_resolution(order)
 
         if automatically_solved:

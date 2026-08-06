@@ -663,3 +663,7 @@ api/lightning/*.proto
 
 # Traditional environment
 /traditional/
+
+# Local config
+
+*.local.json
