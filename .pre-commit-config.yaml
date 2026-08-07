@@ -63,4 +63,3 @@ repos:
         - pre-merge-commit
       language: system
       types: [python]
-
