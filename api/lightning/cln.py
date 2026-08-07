@@ -1,6 +1,5 @@
 import hashlib
 import os
-import random
 import secrets
 import struct
 import time
@@ -29,11 +28,24 @@ with open(os.path.join(CLN_DIR, "client-key.pem"), "rb") as f:
 with open(os.path.join(CLN_DIR, "server.pem"), "rb") as f:
     server_cert = f.read()
 
+HOLD_CERT_DIR = config(
+    "CLN_HOLD_CERT_DIR", cast=str, default=os.path.join(CLN_DIR, "hold")
+)
+HOLD_CA_PATH = os.path.join(HOLD_CERT_DIR, "ca.pem")
+HOLD_CLIENT_CERT_PATH = os.path.join(HOLD_CERT_DIR, "client.pem")
+HOLD_CLIENT_KEY_PATH = os.path.join(HOLD_CERT_DIR, "client-key.pem")
+
 
 CLN_GRPC_HOST = config("CLN_GRPC_HOST", cast=str, default="localhost:9999")
 CLN_GRPC_HOLD_HOST = config("CLN_GRPC_HOLD_HOST", cast=str, default="localhost:9998")
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
+
+
+HOLD_STATE_UNPAID = 0
+HOLD_STATE_ACCEPTED = 1
+HOLD_STATE_PAID = 2
+HOLD_STATE_CANCELLED = 3
 
 
 class CLNNode:
@@ -45,8 +57,50 @@ class CLNNode:
         private_key=client_key,
         certificate_chain=client_cert,
     )
+
+    hold_channel = None
+    hold_channel_signature = None
+
+    @staticmethod
+    def _hold_cert_signature():
+        paths = (HOLD_CA_PATH, HOLD_CLIENT_CERT_PATH, HOLD_CLIENT_KEY_PATH)
+        if not all(os.path.exists(path) for path in paths):
+            return None
+        return tuple(os.path.getmtime(path) for path in paths)
+
+    @classmethod
+    def get_hold_channel(cls):
+        signature = cls._hold_cert_signature()
+        if cls.hold_channel is not None and signature == cls.hold_channel_signature:
+            return cls.hold_channel
+
+        if signature is None:
+            hold_creds = cls.creds
+            hold_channel_options = ()
+        else:
+            # The Boltz hold plugin creates its own CA and client certs.
+            # Refresh lazily so startup order does not freeze the CLN gRPC creds.
+            with open(HOLD_CA_PATH, "rb") as f:
+                hold_ca = f.read()
+            with open(HOLD_CLIENT_CERT_PATH, "rb") as f:
+                hold_client_cert = f.read()
+            with open(HOLD_CLIENT_KEY_PATH, "rb") as f:
+                hold_client_key = f.read()
+
+            hold_creds = grpc.ssl_channel_credentials(
+                root_certificates=hold_ca,
+                private_key=hold_client_key,
+                certificate_chain=hold_client_cert,
+            )
+            hold_channel_options = (("grpc.ssl_target_name_override", "hold"),)
+
+        cls.hold_channel = grpc.secure_channel(
+            CLN_GRPC_HOLD_HOST, hold_creds, options=hold_channel_options
+        )
+        cls.hold_channel_signature = signature
+        return cls.hold_channel
+
     # Create the gRPC channel using the SSL credentials
-    hold_channel = grpc.secure_channel(CLN_GRPC_HOLD_HOST, creds)
     node_channel = grpc.secure_channel(CLN_GRPC_HOST, creds)
 
     payment_failure_context = {
@@ -231,24 +285,40 @@ class CLNNode:
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
-        request = hold_pb2.HoldInvoiceCancelRequest(
-            payment_hash=bytes.fromhex(payment_hash)
-        )
-        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceCancel(request)
+        request = hold_pb2.CancelRequest(payment_hash=bytes.fromhex(payment_hash))
+        holdstub = hold_pb2_grpc.HoldStub(cls.get_hold_channel())
+        holdstub.Cancel(request)
 
-        return response.state == hold_pb2.Holdstate.CANCELED
+        return True
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = hold_pb2.HoldInvoiceSettleRequest(
-            payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
-        )
-        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceSettle(request)
+        request = hold_pb2.SettleRequest(payment_preimage=bytes.fromhex(preimage))
+        holdstub = hold_pb2_grpc.HoldStub(cls.get_hold_channel())
+        holdstub.Settle(request)
 
-        return response.state == hold_pb2.Holdstate.SETTLED
+        return True
+
+    @classmethod
+    def _lookup_hold_invoice(cls, payment_hash):
+        request = hold_pb2.ListRequest(payment_hash=bytes.fromhex(payment_hash))
+        holdstub = hold_pb2_grpc.HoldStub(cls.get_hold_channel())
+        response = holdstub.List(request)
+        if not response.invoices:
+            return None
+        return response.invoices[0]
+
+    @staticmethod
+    def _hold_invoice_expiry_height(invoice):
+        expiries = [
+            htlc.cltv_expiry
+            for htlc in invoice.htlcs
+            if getattr(htlc, "cltv_expiry", 0)
+        ]
+        if not expiries:
+            return 0
+        return min(expiries)
 
     @classmethod
     def gen_hold_invoice(
@@ -270,27 +340,27 @@ class CLNNode:
         hold_payment = {}
         # The preimage is a random hash of 256 bits entropy
         preimage = hashlib.sha256(secrets.token_bytes(nbytes=32)).digest()
+        payment_hash = hashlib.sha256(preimage).digest()
 
-        request = hold_pb2.HoldInvoiceRequest(
-            description=description,
-            amount_msat=hold_pb2.Amount(msat=num_satoshis * 1_000),
-            label=f"Order:{order_id}-{lnpayment_concept}-{time}--{random.randint(1, 100000)}",
+        request = hold_pb2.InvoiceRequest(
+            payment_hash=payment_hash,
+            amount_msat=num_satoshis * 1_000,
+            memo=description,
             expiry=invoice_expiry,
-            cltv=cltv_expiry_blocks,
-            preimage=preimage,  # preimage is actually optional in cln, as cln would generate one by default
+            min_final_cltv_expiry=cltv_expiry_blocks,
         )
-        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoice(request)
+        holdstub = hold_pb2_grpc.HoldStub(cls.get_hold_channel())
+        response = holdstub.Invoice(request)
 
         hold_payment["invoice"] = response.bolt11
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
         hold_payment["preimage"] = preimage.hex()
-        hold_payment["payment_hash"] = response.payment_hash.hex()
+        hold_payment["payment_hash"] = payment_hash.hex()
         hold_payment["created_at"] = timezone.make_aware(
             datetime.fromtimestamp(payreq_decoded.created_at)
         )
         hold_payment["expires_at"] = timezone.make_aware(
-            datetime.fromtimestamp(response.expires_at)
+            datetime.fromtimestamp(payreq_decoded.created_at + invoice_expiry)
         )
         hold_payment["cltv_expiry"] = cltv_expiry_blocks
 
@@ -301,23 +371,12 @@ class CLNNode:
         """Checks if hold invoice is locked"""
         from api.models import LNPayment
 
-        request = hold_pb2.HoldInvoiceLookupRequest(
-            payment_hash=bytes.fromhex(lnpayment.payment_hash)
-        )
-        holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceLookup(request)
+        invoice = cls._lookup_hold_invoice(lnpayment.payment_hash)
+        if invoice is None:
+            return False
 
-        # Will fail if 'empty result for listdatastore_state' or 'Invoice dropped from internal state unexpectedly'. Happens if invoice expiry
-        # time has passed (but these are 15% padded at the moment). Should catch it
-        # and report back that the invoice has expired (better robustness)
-        if response.state == hold_pb2.Holdstate.OPEN:
-            pass
-        if response.state == hold_pb2.Holdstate.SETTLED:
-            pass
-        if response.state == hold_pb2.Holdstate.CANCELED:
-            pass
-        if response.state == hold_pb2.Holdstate.ACCEPTED:
-            lnpayment.expiry_height = response.htlc_expiry
+        if invoice.state == HOLD_STATE_ACCEPTED:
+            lnpayment.expiry_height = cls._hold_invoice_expiry_height(invoice)
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
             return True
@@ -334,36 +393,30 @@ class CLNNode:
         expiry_height = 0
 
         cln_response_state_to_lnpayment_status = {
-            0: LNPayment.Status.INVGEN,  # OPEN
-            1: LNPayment.Status.SETLED,  # SETTLED
-            2: LNPayment.Status.CANCEL,  # CANCELLED
-            3: LNPayment.Status.LOCKED,  # ACCEPTED
+            HOLD_STATE_UNPAID: LNPayment.Status.INVGEN,
+            HOLD_STATE_ACCEPTED: LNPayment.Status.LOCKED,
+            HOLD_STATE_PAID: LNPayment.Status.SETLED,
+            HOLD_STATE_CANCELLED: LNPayment.Status.CANCEL,
         }
 
         try:
             # this is similar to LNNnode.validate_hold_invoice_locked
-            request = hold_pb2.HoldInvoiceLookupRequest(
-                payment_hash=bytes.fromhex(lnpayment.payment_hash)
-            )
-            holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-            response = holdstub.HoldInvoiceLookup(request)
+            response = cls._lookup_hold_invoice(lnpayment.payment_hash)
+
+            if response is None:
+                raise ValueError("hold invoice not found")
 
             status = cln_response_state_to_lnpayment_status[response.state]
-
-            # try saving expiry height
-            if hasattr(response, "htlc_expiry"):
-                try:
-                    expiry_height = response.htlc_expiry
-                except Exception:
-                    pass
+            expiry_height = cls._hold_invoice_expiry_height(response)
 
         except Exception as e:
-            # If it fails at finding the invoice: it has been expired for more than an hour (and could be paid or just expired).
-            # In RoboSats DB we make a distinction between cancelled and returned
-            #  (holdinvoice plugin has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
-            if "empty result for listdatastore_state" in str(
-                e
-            ) or "Invoice dropped from internal state unexpectedly" in str(e):
+            # If the hold plugin cannot find the invoice, it may have expired or
+            # been cleaned. Fall back to CLN's invoice list before giving up.
+            if (
+                "hold invoice not found" in str(e)
+                or "empty result for listdatastore_state" in str(e)
+                or "Invoice dropped from internal state unexpectedly" in str(e)
+            ):
                 print(str(e))
                 request2 = node_pb2.ListinvoicesRequest(
                     payment_hash=bytes.fromhex(lnpayment.payment_hash)
@@ -862,16 +915,15 @@ class CLNNode:
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
-        request = hold_pb2.HoldInvoiceLookupRequest(
-            payment_hash=bytes.fromhex(payment_hash)
-        )
         try:
-            holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-            response = holdstub.HoldInvoiceLookup(request)
+            response = cls._lookup_hold_invoice(payment_hash)
         except Exception as e:
             if "Timed out" in str(e):
                 return False
             else:
                 raise e
 
-        return response.state == hold_pb2.Holdstate.SETTLED
+        if response is None:
+            return False
+
+        return response.state == HOLD_STATE_PAID
