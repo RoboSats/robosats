@@ -570,11 +570,11 @@ class Logics:
             robot = user.robot
             robot.num_disputes = robot.num_disputes + 1
             if robot.orders_disputes_started is None:
-                robot.orders_disputes_started = [str(order.id)]
+                robot.orders_disputes_started = str(order.id)
             else:
-                robot.orders_disputes_started = list(
-                    robot.orders_disputes_started
-                ).append(str(order.id))
+                robot.orders_disputes_started = (
+                    f"{robot.orders_disputes_started},{order.id}"
+                )
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
