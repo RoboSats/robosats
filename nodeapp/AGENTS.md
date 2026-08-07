@@ -19,7 +19,7 @@ Host :12596  (published on the tor service — see Traps)
         ├── /pro                  → SPA (pro.html)
         ├── /static/              → filesystem alias /usr/src/robosats/static/ (autoindex on)
         ├── /favicon.ico          → filesystem alias /usr/src/robosats/static/assets/images/favicon-32x32.png
-        ├── /selfhosted           → 200 OK (container healthcheck probe — curl absent, see Traps)
+        ├── /selfhosted           → 200 OK (container healthcheck probe)
         └── /mainnet/{alias}/...
         └── /testnet/{alias}/...  → socat upstreams (127.0.0.1:{port})
               └── socat tcp4-LISTEN:{port} … SOCKS5-CONNECT:{Tor}:{onion}:80
@@ -33,7 +33,7 @@ No clearnet path exists; no I2P fallback is implemented.
 |---|---|
 | `robosats-client.sh` | Starts 12 socat bridges (2 per coordinator: mainnet + testnet) then `nginx` in foreground |
 | `nginx.conf` | Nginx config; `daemon off;` listen 12596; includes `conf.d/{alias}/upstreams.conf` (http block) + `locations.conf` (server block) per coordinator |
-| `Dockerfile` | Alpine 3.23; installs socat + nginx; `COPY . .`; `EXPOSE 12596`; broken HEALTHCHECK (see Traps); `CMD ["sh", "robosats-client.sh"]` |
+| `Dockerfile` | Alpine 3.23; installs socat + nginx; `COPY . .`; `EXPOSE 12596`; HEALTHCHECK uses `wget` (BusyBox); `CMD ["sh", "robosats-client.sh"]` |
 | `docker-compose.yml` | **Dev-only** — builds `../frontend` + `../docker/tor` locally; references non-existent `../node/tor/*` path (see Traps) |
 | `docker-compose-example.yml` | **End-user reference** — has both `build: .` and `image: recksato/robosats-client:latest` (see Traps); ports published on the `tor` service |
 | `coordinators/` | One subdirectory per coordinator with `upstreams.conf` + `locations.conf` |
@@ -117,13 +117,11 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
   testnet onions. This means testnet and mainnet traffic for those three coordinators is
   routed to the same hidden service — the coordinator must distinguish them server-side, or
   testnet is effectively absent for those three.
-- **alice and freedomsats both define socat ports 108/1008** — port collision at runtime;
-  the second socat to bind will fail (`EADDRINUSE`). Additionally,
-  `coordinators/alice/upstreams.conf` points to `127.0.0.1:107/1007` (Bazaar's ports) with
-  "Libre Bazaar" comments — alice API/WS traffic currently routes to Libre Bazaar. Both
-  bugs are tracked in an open PR; they are live in `:latest`.
-- **All six `locations.conf` testnet avatar routes use `/test/{alias}/...`** instead of
-  `/testnet/{alias}/...` — testnet avatar requests return 404 for all coordinators.
+- **alice uses socat ports 109/1009** (mainnet/testnet), freedomsats uses 108/1008 — no
+  port collision. `coordinators/alice/upstreams.conf` correctly points to 109/1009.
+  (Previously both were 108/1008 and alice upstreams pointed to Bazaar — fixed.)
+- **All five `locations.conf` testnet avatar routes** now use `/testnet/{alias}/...`
+  consistent with the API/WS routes — fixed in this codebase.
 - **No `/testnet/{alias}/relay/`** route exists in any coordinator config — testnet Nostr
   relay is unreachable through nodeapp.
 - **`basic.html` / `pro.html` in the working tree** are local dev outputs — they may pin
