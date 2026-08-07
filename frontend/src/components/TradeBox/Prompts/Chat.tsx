@@ -52,8 +52,8 @@ export const ChatPrompt = ({
   setMessages,
 }: ChatPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { slotUpdatedAt, garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { client } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { client, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -126,7 +126,7 @@ export const ChatPrompt = ({
         setSentButton(false);
         setUndoSentButton(true);
         setReceivedButton(false);
-        setText(t('Wait for the seller to confirm he has received the payment.'));
+        setText(t('Wait for the seller to confirm they have received the payment.'));
       } else {
         setSentButton(false);
         setUndoSentButton(false);
@@ -175,7 +175,6 @@ export const ChatPrompt = ({
 
       <Grid item>
         <EncryptedChat
-          status={order.status}
           chatOffset={order.chat_last_index}
           order={order}
           messages={messages}

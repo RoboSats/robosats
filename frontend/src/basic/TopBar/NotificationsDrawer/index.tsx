@@ -12,15 +12,14 @@ import {
 import defaultFederation from '../../../../static/federation.json';
 import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { type Event } from 'nostr-tools';
-import { UseFederationStoreType, FederationContext } from '../../../contexts/FederationContext';
 import { GarageContext, UseGarageStoreType } from '../../../contexts/GarageContext';
 import NotificationCard from './NotificationCard';
 import { Coordinator } from '../../../models';
 import { Close } from '@mui/icons-material';
 import { systemClient } from '../../../services/System';
 import { useNavigate } from 'react-router-dom';
-import arraysAreDifferent from '../../../utils/array';
 import getSettings from '../../../utils/settings';
+import { UseFederationStoreType, FederationContext } from '../../../contexts/FederationContext';
 
 const path =
   getSettings().client === 'mobile'
@@ -37,24 +36,19 @@ const audio = {
 interface NotificationsDrawerProps {
   show: boolean;
   setShow: (show: boolean) => void;
-  setLoading: (loading: boolean) => void;
 }
 
-const NotificationsDrawer = ({
-  show,
-  setShow,
-  setLoading,
-}: NotificationsDrawerProps): React.JSX.Element => {
+const NotificationsDrawer = ({ show, setShow }: NotificationsDrawerProps): React.JSX.Element => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { page, settings, navigateToPage, client } = useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { page, navigateToPage, client, settings, slotUpdatedAt, notificationsUpdatedAt } =
+    useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation, notifications } = useContext<UseFederationStoreType>(FederationContext);
 
-  const [messages, setMessages] = useState<Map<string, Event>>(new Map());
+  const [messages, setMessages] = useState<Event[]>([]);
   const [openSnak, setOpenSnak] = React.useState<boolean>(false);
   const [snakEvent, setSnakevent] = React.useState<Event>();
-  const [subscribedTokens, setSubscribedTokens] = React.useState<string[]>([]);
   const [_, setLastNotification] = React.useState<number>(0);
 
   useEffect(() => {
@@ -64,22 +58,44 @@ const NotificationsDrawer = ({
   }, []);
 
   useEffect(() => {
+    if (settings.connection === 'nostr' && !federation.loading) updateMessages();
+  }, [settings.connection, slotUpdatedAt, notificationsUpdatedAt]);
+
+  useEffect(() => {
     setShow(false);
   }, [page]);
 
-  useEffect(() => {
-    if (settings.connection === 'nostr' && !federation.loading) loadNotifciationsNostr();
-  }, [settings.connection, federation.loading, slotUpdatedAt]);
+  const updateMessages = () => {
+    setMessages(() => {
+      const msgs = [];
+      const federationPubKeys = federation.getCoordinators().map((c) => c.nostrHexPubkey);
+      const garageKeys = Object.values(garage.slots).map((s) => s.nostrPubKey);
 
-  const cleanUpNotifications = () => {
-    setMessages((msg) => {
-      const pubKeys = Object.values(garage.slots).map((s) => s.nostrPubKey);
-      return new Map<string, Event>(
-        [...msg].filter(([_, event]) => {
-          const nostrHexPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
-          return pubKeys.includes(nostrHexPubkey);
-        }),
-      );
+      for (const [robotKey, eventMap] of Object.entries(notifications)) {
+        if (garageKeys.includes(robotKey)) {
+          for (const [_eventId, [_wrappedEvent, event]] of eventMap.entries()) {
+            if (federationPubKeys.includes(event.pubkey)) {
+              msgs.push(event);
+
+              setLastNotification((last) => {
+                if (last < event.created_at) {
+                  setSnakevent(event);
+                  systemClient.setItem('last_notification', event.created_at.toString());
+                  const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
+                  if (orderStatus) playSound(parseInt(orderStatus, 10));
+                  if (client !== 'mobile') setOpenSnak(true);
+
+                  return event.created_at;
+                } else {
+                  return last;
+                }
+              });
+            }
+          }
+        }
+      }
+
+      return msgs.sort((a, b) => a.created_at - b.created_at);
     });
   };
 
@@ -95,39 +111,6 @@ const NotificationsDrawer = ({
     const sound = audio[soundType];
 
     void sound.play();
-  };
-
-  const loadNotifciationsNostr = (): void => {
-    const tokens = Object.keys(garage.slots);
-    if (!arraysAreDifferent(subscribedTokens, tokens)) {
-      setLoading(false);
-      return;
-    }
-
-    cleanUpNotifications();
-    setSubscribedTokens(tokens);
-    federation.roboPool.subscribeNotifications(garage, federation, {
-      onevent: (event) => {
-        setLastNotification((last) => {
-          if (last < event.created_at) {
-            setSnakevent(event);
-            systemClient.setItem('last_notification', event.created_at.toString());
-            const orderStatus = event.tags.find((t) => t[0] === 'status')?.[1];
-            if (orderStatus) playSound(parseInt(orderStatus, 10));
-            if (client !== 'mobile') setOpenSnak(true);
-
-            return event.created_at;
-          } else {
-            return last;
-          }
-        });
-        setMessages((msg) => {
-          msg.set(event.id, event);
-          return msg;
-        });
-      },
-      oneose: () => setLoading(false),
-    });
   };
 
   const handleCloseSnak = () => {

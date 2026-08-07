@@ -79,7 +79,7 @@ const MapChart: React.FC<MapChartProps> = ({
               setUseTiles(true);
             }}
           >
-            {t('Accept')}
+            {t('Acknowledged')}
           </Button>
         </DialogActions>
       </Dialog>

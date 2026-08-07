@@ -11,7 +11,8 @@ import RecoveryDialog from '../../components/Dialogs/Recovery';
 
 const RobotPage = (): React.JSX.Element => {
   const { torStatus, windowSize, settings, page } = useContext<UseAppStoreType>(AppContext);
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;
   const width = Math.min(windowSize.width * 0.8, 28);

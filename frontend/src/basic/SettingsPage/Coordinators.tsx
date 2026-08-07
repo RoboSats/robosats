@@ -38,7 +38,7 @@ const Coordinators = (): React.JSX.Element => {
               </Typography>
             </Grid>
             <Grid item xs={12}>
-              <FederationTable fillContainer />
+              <FederationTable fillContainer showTitle={false} />
             </Grid>
           </Grid>
         </DialogContent>

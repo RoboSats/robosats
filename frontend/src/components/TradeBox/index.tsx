@@ -123,8 +123,8 @@ export interface SubmitActionProps {
 }
 
 const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { settings, navigateToPage, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
 
@@ -166,10 +166,20 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         password: password && password !== '' ? password : undefined,
       };
 
-      void slot.makeOrder(federation, orderAttributes).then((order: Order) => {
-        if (order?.id)
-          navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
-      });
+      void slot
+        .makeOrder(federation, orderAttributes)
+        .then((order: Order) => {
+          if (order?.id) {
+            navigateToPage(`order/${String(order?.shortAlias)}/${String(order.id)}`, navigate);
+          } else if (order?.bad_request) {
+            currentOrder.bad_request = order.bad_request;
+            slot.updateSlotFromOrder(currentOrder);
+          }
+          setLoadingButtons(noLoadingButtons);
+        })
+        .catch(() => {
+          setLoadingButtons(noLoadingButtons);
+        });
     }
   };
 

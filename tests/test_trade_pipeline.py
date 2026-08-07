@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
@@ -282,6 +283,47 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             data["bad_request"], "The coordinator does not support orders in AGO"
         )
+
+    def test_escrow_duration_min_max(self):
+        good_form = {
+            "type": 0,
+            "currency": 1,
+            "has_range": True,
+            "min_amount": 84,
+            "max_amount": 201.7,
+            "payment_method": "Advcash Cash F2F",
+            "is_explicit": False,
+            "premium": 3.34,
+            "public_duration": 69360,
+            "escrow_duration": 60 * 30,  # allowed duration
+            "bond_size": 3.5,
+            "latitude": 0,
+            "longitude": 0,
+        }
+
+        good_trade = Trade(self.client, maker_form=good_form)
+        self.assertEqual(good_trade.response.status_code, 201)
+        self.assertResponse(good_trade.response)
+
+        # escrow duration too low
+        bad_form_too_low_escrow_duration = good_form.copy()
+        bad_form_too_low_escrow_duration["escrow_duration"] = 60 * 30 - 1
+
+        bad_trade_too_low = Trade(
+            self.client, maker_form=bad_form_too_low_escrow_duration
+        )
+        self.assertEqual(bad_trade_too_low.response.status_code, 400)
+        self.assertResponse(bad_trade_too_low.response)
+
+        # escrow duration too high
+        bad_form_too_high_escrow_duration = good_form.copy()
+        bad_form_too_high_escrow_duration["escrow_duration"] = 60 * 60 * 10 + 1
+
+        bad_trade_too_high = Trade(
+            self.client, maker_form=bad_form_too_high_escrow_duration
+        )
+        self.assertEqual(bad_trade_too_high.response.status_code, 400)
+        self.assertResponse(bad_trade_too_high.response)
 
     def test_get_order_created(self):
         """
@@ -1055,6 +1097,39 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
+    @patch("control.models.LNNode.channel_balance")
+    @patch("control.models.LNNode.wallet_balance")
+    def test_onchain_insufficient_liquidity(self, mock_wallet, mock_channel):
+        """
+        Tests that swap is not allowed when the coordinator has
+        insufficient onchain balance to offer a swap.
+        """
+        mock_wallet.return_value = {
+            "total_balance": 300_000,
+            "confirmed_balance": 300_000,
+            "unconfirmed_balance": 0,
+        }
+        mock_channel.return_value = {
+            "local_balance": 0,
+            "remote_balance": 0,
+            "unsettled_local_balance": 0,
+            "unsettled_remote_balance": 0,
+        }
+
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertFalse(data["swap_allowed"])
+        self.assertIn("Not enough onchain liquidity", data["swap_failure_reason"])
+
     def test_review_order(self):
         """
         Tests a trade review token generation after the trade ends
@@ -1105,10 +1180,10 @@ class TradeTest(BaseAPITestCase):
 
         data = trade.response.json()
 
-        self.assertEqual(trade.response.status_code, 400)
-        self.assertResponse(trade.response)
+        self.assertEqual(trade.response.status_code, 200)
 
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.UCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
@@ -1217,7 +1292,9 @@ class TradeTest(BaseAPITestCase):
 
         trade.cancel_order(trade.maker_index)
         data = trade.response.json()
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.UCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         trade.get_order(trade.taker_index)
@@ -1239,18 +1316,17 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
 
         self.assertEqual(trade.response.status_code, 200)
-        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
 
         # Cancel order if the order status is public
         trade.cancel_order(cancel_status=Order.Status.PUB)
 
-        self.assertEqual(trade.response.status_code, 400)
-        self.assertResponse(trade.response)
+        self.assertEqual(trade.response.status_code, 200)
 
         data = trade.response.json()
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.UCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
     def test_cancel_order_different_cancel_status(self):
@@ -1310,10 +1386,11 @@ class TradeTest(BaseAPITestCase):
 
         # Taker accepts (ask) the cancellation
         trade.cancel_order(trade.taker_index)
-        self.assertEqual(trade.response.status_code, 400)
-        self.assertResponse(trade.response)
+        self.assertEqual(trade.response.status_code, 200)
+
         data = trade.response.json()
-        self.assertEqual(data["error_code"], 1043)
+        self.assertEqual(data["id"], trade.order_id)
+        self.assertEqual(data["status"], Order.Status.CCA)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
         maker_headers = trade.get_robot_auth(trade.maker_index)
@@ -1975,3 +2052,93 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
+
+    def test_robot_creation_with_valid_nostr_pubkey(self):
+        """
+        Test that a robot can be created with a valid 64-character hex nostr pubkey.
+        """
+        trade = Trade(self.client)
+
+        # create_robot() should succeed with a valid nostr pubkey
+        response = trade.create_robot(1)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsNotNone(data["nickname"])
+        self.assertIn("nostr_pubkey", data)
+
+    def test_robot_creation_with_invalid_nostr_pubkey_format(self):
+        """
+        Test that robot creation fails when nostr pubkey is invalid.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/2/b91_token").read().strip()
+        pub_key = open("tests/robots/2/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/2/enc_priv_key").read().strip()
+
+        # Test with invalid nostr pubkey (too short)
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr abc123"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("error_code", data)
+        self.assertEqual(data["error_code"], 7001)
+
+    def test_robot_creation_with_nostr_pubkey_prefix(self):
+        """
+        Test that robot creation succeeds when nostr pubkey has "Nostr " prefix.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/3/b91_token").read().strip()
+        pub_key = open("tests/robots/3/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/3/enc_priv_key").read().strip()
+        nostr_pubkey = open("tests/robots/3/nostr_pubkey").read().strip()
+
+        # Test with "Nostr " prefix (should be parsed correctly)
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {nostr_pubkey}"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIsNotNone(data["nickname"])
+
+    def test_robot_creation_with_nostr_pubkey_invalid_hex(self):
+        """
+        Test that robot creation fails when nostr pubkey has invalid hex characters.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/2/b91_token").read().strip()
+        pub_key = open("tests/robots/2/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/2/enc_priv_key").read().strip()
+
+        # Test with invalid hex characters (64 chars but not hex)
+        invalid_hex = "g" * 64  # 'g' is not a valid hex character
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {invalid_hex}"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("error_code", data)
+        self.assertEqual(data["error_code"], 7001)
+
+    def test_robot_creation_with_missing_nostr_pubkey(self):
+        """
+        Test that robot creation fails when nostr pubkey is missing.
+        """
+        path = reverse("robot")
+        b91_token = open("tests/robots/2/b91_token").read().strip()
+        pub_key = open("tests/robots/2/pub_key").read().strip()
+        enc_priv_key = open("tests/robots/2/enc_priv_key").read().strip()
+
+        # Test with missing nostr pubkey
+        headers = {
+            "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} |"
+        }
+        response = self.client.get(path, **headers)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("error_code", data)
+        self.assertEqual(data["error_code"], 7000)

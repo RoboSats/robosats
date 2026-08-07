@@ -7,6 +7,7 @@ import {
   Typography,
   Paper,
   useTheme,
+  useMediaQuery,
   CircularProgress,
   IconButton,
   Tooltip,
@@ -21,6 +22,7 @@ import {
   type GridValidRowModel,
   type GridSlotsComponent,
   type GridSortModel,
+  type GridRenderCellParams,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -67,6 +69,7 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
+  fillContainer?: boolean;
   onOrderClicked?: (id: number, shortAlias: string) => void;
 }
 
@@ -81,6 +84,7 @@ const BookTable = ({
   showControls = true,
   showFooter = true,
   showNoResults = true,
+  fillContainer = false,
   onOrderClicked = () => null,
 }: BookTableProps): React.JSX.Element => {
   const { fav, settings } = useContext<UseAppStoreType>(AppContext);
@@ -88,6 +92,7 @@ const BookTable = ({
 
   const { t } = useTranslation();
   const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const orders = orderList ?? Object.values(federation.book) ?? [];
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -154,6 +159,10 @@ const BookTable = ({
       page: 0,
     });
   }, [defaultPageSize]);
+
+  useEffect(() => {
+    setPaymentMethods([]);
+  }, [fav.mode]);
 
   const localeText = useMemo(() => {
     return {
@@ -408,7 +417,9 @@ const BookTable = ({
     };
   }, []);
 
-  const premiumObj = useCallback(() => {
+  const defaultBondSize = 3;
+
+  const premiumObj = () => {
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
     // Hardcoded: a buy order at 10% is an outstanding premium
@@ -419,7 +430,7 @@ const BookTable = ({
       headerName: t('Premium'),
       type: 'number',
       flex: 1,
-      renderCell: (params: { row: PublicOrder }) => {
+      renderCell: (params: GridRenderCellParams<PublicOrder>) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
         let fontColor = `rgb(0,0,0)`;
         let premiumPoint = 0;
@@ -441,12 +452,33 @@ const BookTable = ({
           );
         }
         const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
+        const bondSize = Number(params.row.bond_size);
+        const isLowBond = bondSize > 0 && bondSize < defaultBondSize;
+
+        const limits = federation.getLimits(params.row.coordinatorShortAlias);
+        const premium = parseFloat(params.row.premium);
+        const limitPrice = limits[params.row.currency.toString()]?.price;
+        const calculatedPrice = limitPrice
+          ? Math.round((limitPrice ?? 1) * (1 + premium / 100))
+          : null;
+
+        const tooltipTitle = (
+          <span>
+            {calculatedPrice ? `${pn(calculatedPrice)} ${currencyCode}/BTC` : ''}
+            {!isLargeScreen && isLowBond && (
+              <>
+                {calculatedPrice && <br />}
+                {t(
+                  'Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.',
+                  { defaultBond: defaultBondSize },
+                )}
+              </>
+            )}
+          </span>
+        );
+
         return (
-          <Tooltip
-            placement='left'
-            enterTouchDelay={0}
-            title={`${pn(params.row.price)} ${currencyCode}/BTC`}
-          >
+          <Tooltip placement='left' enterTouchDelay={0} title={tooltipTitle}>
             <div
               style={{
                 cursor: 'pointer',
@@ -474,31 +506,55 @@ const BookTable = ({
               >
                 {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
               </Typography>
-              <Box
-                sx={{
-                  display: { xs: 'block', lg: 'none' },
-                  lineHeight: '1',
-                  marginTop: '2px',
-                }}
-              >
-                <Typography
-                  variant='caption'
-                  color='text.secondary'
+              {!visibleColumnKeys.has('bond_size') && (
+                <Box
                   sx={{
-                    fontSize: '0.70rem',
                     lineHeight: '1',
-                    whiteSpace: 'nowrap',
+                    marginTop: '2px',
                   }}
                 >
-                  {params.row.bond_size ? `Bond: ${Number(params.row.bond_size)}%` : 'Bond: -'}
-                </Typography>
-              </Box>
+                  {(() => {
+                    const bondElement = (
+                      <Typography
+                        component='span'
+                        variant='caption'
+                        sx={{
+                          fontSize: '0.70rem',
+                          lineHeight: '1',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          sx={{ fontSize: '0.70rem', color: 'text.secondary' }}
+                        >
+                          {'Bond: '}
+                        </Typography>
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          sx={{
+                            fontSize: '0.70rem',
+                            color: isLowBond ? theme.palette.warning.main : 'text.secondary',
+                            fontWeight: isLowBond ? 600 : 'normal',
+                          }}
+                        >
+                          {params.row.bond_size ? `${bondSize}%` : '-'}
+                        </Typography>
+                      </Typography>
+                    );
+
+                    return bondElement;
+                  })()}
+                </Box>
+              )}
             </div>
           </Tooltip>
         );
       },
     };
-  }, [theme]);
+  };
 
   const timerObj = useCallback(() => {
     return {
@@ -603,26 +659,58 @@ const BookTable = ({
     };
   }, []);
 
-  const bondObj = useCallback((width: number) => {
-    return {
-      field: 'bond_size',
-      headerName: t('Bond'),
-      type: 'number',
-      width: width * fontSize,
-      renderCell: (params: { row: PublicOrder }) => {
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
-            }}
-          >
-            {params.row.bond_size ? `${Number(params.row.bond_size)}%` : '-'}
-          </div>
-        );
-      },
-    };
-  }, []);
+  const bondObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'bond_size',
+        headerName: t('Bond'),
+        type: 'number',
+        width: width * fontSize,
+        renderCell: (params: { row: PublicOrder }) => {
+          const bondSize = Number(params.row.bond_size);
+          const isLowBond = bondSize > 0 && bondSize < defaultBondSize;
+          const warningIntensity = isLowBond ? 1 - bondSize / defaultBondSize : 0;
+
+          const bondContent = (
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              }}
+            >
+              <Typography
+                variant='inherit'
+                sx={{
+                  color: isLowBond ? theme.palette.warning.main : 'inherit',
+                  fontWeight: isLowBond ? 600 + Math.round(warningIntensity * 300) : 'inherit',
+                }}
+              >
+                {params.row.bond_size ? `${bondSize}%` : '-'}
+              </Typography>
+            </div>
+          );
+
+          if (isLowBond) {
+            return (
+              <Tooltip
+                placement='left'
+                enterTouchDelay={0}
+                title={t(
+                  'Low bond: This maker has set a bond below the default {{defaultBond}}%. Lower bonds mean reduced trade security.',
+                  { defaultBond: defaultBondSize },
+                )}
+              >
+                {bondContent}
+              </Tooltip>
+            );
+          }
+
+          return bondContent;
+        },
+      };
+    },
+    [theme],
+  );
 
   const columnSpecs = useMemo(() => {
     return {
@@ -728,9 +816,11 @@ const BookTable = ({
   const filteredColumns = function (maxWidth: number): {
     columns: Array<GridColDef<GridValidRowModel>>;
     width: number;
+    visibleColumnKeys: Set<string>;
   } {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
+    const visibleColumnKeys = new Set<string>();
     let width: number = -4;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
@@ -747,6 +837,7 @@ const BookTable = ({
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
         selectedColumns.push([colObject(colWidth), value.order]);
+        visibleColumnKeys.add(key);
       }
     }
 
@@ -759,10 +850,10 @@ const BookTable = ({
         return item[0];
       });
 
-    return { columns, width: maxWidth };
+    return { columns, width: maxWidth, visibleColumnKeys };
   };
 
-  const { columns, width } = useMemo(() => {
+  const { columns, width, visibleColumnKeys } = useMemo(() => {
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
@@ -859,14 +950,24 @@ const BookTable = ({
     return (
       <Paper
         elevation={elevation}
-        style={{
-          minWidth: `23em`,
-          width: `${width}em`,
-          height: `${height}em`,
-          overflow: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        style={
+          fillContainer
+            ? {
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+              }
+            : {
+                minWidth: `23em`,
+                width: `${width}em`,
+                height: `${height}em`,
+                overflow: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+              }
+        }
       >
         {showControls && (
           <BookControl

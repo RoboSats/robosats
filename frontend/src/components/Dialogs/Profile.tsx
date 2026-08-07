@@ -19,6 +19,7 @@ import RobotAvatar from '../RobotAvatar';
 import RobotInfo from '../RobotInfo';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Slot, type Coordinator } from '../../models';
 import AuditPGPDialog from './AuditPGP';
 
@@ -29,7 +30,8 @@ interface Props {
 
 const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const [audit, setAudit] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);

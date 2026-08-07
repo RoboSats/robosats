@@ -235,6 +235,135 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
     }
 
     @JavascriptInterface
+    fun sendBinary(uuid: String, url: String, headers: String, base64Data: String) {
+        // Validate inputs
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for sendBinary: $uuid")
+            rejectPromise(uuid, "Invalid UUID")
+            return
+        }
+
+        try {
+            // Decode base64 to byte array
+            val binaryData = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
+
+            // Create OkHttpClient
+            var builder = Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
+                .readTimeout(120, TimeUnit.SECONDS) // Set read timeout
+
+            if (context.useProxy) {
+                builder = builder.proxy(getTorKmpObject().proxy)
+            }
+
+            val client = builder.build()
+
+            // Build request with URL
+            val requestBuilder = RequestBuilder().url(url)
+
+            // Add headers from JSON and extract Content-Type
+            val headersObject = JSONObject(headers)
+            var contentType = "application/octet-stream" // Default content type
+            val keys = headersObject.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val value = headersObject.optString(key)
+                requestBuilder.addHeader(key, value)
+                if (key.equals("Content-Type", ignoreCase = true)) {
+                    contentType = value
+                }
+            }
+
+            // Create request body with binary data
+            val mediaType = contentType.toMediaType()
+            val requestBody = binaryData.toRequestBody(mediaType)
+            requestBuilder.put(requestBody)
+
+            // Build and execute request
+            val request = requestBuilder.build()
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.d("RobosatsError", e.toString())
+                    rejectPromise(uuid, "Binary upload failed: ${e.message}")
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        // Get response body
+                        val responseBody = response.body.string()
+
+                        // Create JSON object with headers
+                        val headersJson = JSONObject()
+                        response.headers.names().forEach { name ->
+                            headersJson.put(name, response.header(name))
+                        }
+
+                        resolvePromise(uuid, responseBody)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error processing response", e)
+                        rejectPromise(uuid, "Error processing response: ${e.message}")
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in sendBinary", e)
+            rejectPromise(uuid, "Error sending binary data: ${e.message}")
+        }
+    }
+
+    @JavascriptInterface
+    fun getBinary(uuid: String, url: String) {
+        // Validate inputs
+        if (!isValidUuid(uuid)) {
+            Log.e(TAG, "Invalid UUID for getBinary: $uuid")
+            rejectPromise(uuid, "Invalid UUID")
+            return
+        }
+
+        try {
+            // Create OkHttpClient
+            var builder = Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
+                .readTimeout(120, TimeUnit.SECONDS) // Set read timeout
+
+            if (context.useProxy) {
+                builder = builder.proxy(getTorKmpObject().proxy)
+            }
+
+            val client = builder.build()
+
+            // Build request with URL
+            val request = RequestBuilder().url(url).build()
+
+            // Execute request
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.d("RobosatsError", e.toString())
+                    rejectPromise(uuid, "Binary download failed: ${e.message}")
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        // Get response body as bytes
+                        val binaryData = response.body.bytes()
+
+                        // Encode to base64 for JavaScript bridge
+                        val base64Data = android.util.Base64.encodeToString(binaryData, android.util.Base64.NO_WRAP)
+
+                        resolvePromise(uuid, base64Data)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error processing binary response", e)
+                        rejectPromise(uuid, "Error processing binary response: ${e.message}")
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in getBinary", e)
+            rejectPromise(uuid, "Error downloading binary data: ${e.message}")
+        }
+    }
+
+    @JavascriptInterface
     fun sendRequest(uuid: String, action: String, url: String, headers: String, body: String) {
         // Validate inputs
         if (!isValidUuid(uuid)) {
@@ -275,6 +404,11 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
                     val requestBody = body.toRequestBody(mediaType)
                     requestBuilder.post(requestBody)
                 }
+                "PUT" -> {
+                    val mediaType = "application/json; charset=utf-8".toMediaType()
+                    val requestBody = body.toRequestBody(mediaType)
+                    requestBuilder.put(requestBody)
+                }
                 else -> requestBuilder.get()
             }
 
@@ -297,7 +431,6 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
                             headersJson.put(name, response.header(name))
                         }
 
-                        // Return response as JSON string
                         val result = "{\"json\":$responseBody, \"headers\": $headersJson}"
                         resolvePromise(uuid, result)
                     } catch (e: Exception) {

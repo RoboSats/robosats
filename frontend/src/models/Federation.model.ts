@@ -12,6 +12,7 @@ import { federationLottery, getHost } from '../utils';
 import { coordinatorDefaultValues } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 import eventToPublicOrder from '../utils/nostr';
+import { verifyCoordinatorToken } from '../utils/nostr';
 import RoboPool from '../services/RoboPool';
 import { systemClient } from '../services/System';
 
@@ -38,6 +39,8 @@ export class Federation {
       totalCoordinators: Object.keys(this.coordinators).length,
     };
     this.book = {};
+    this.ratings = {};
+    this.ratingsLoaded = false;
     this.hooks = {
       onFederationUpdate: [],
     };
@@ -70,11 +73,15 @@ export class Federation {
       systemClient.setItem('federation_relays', JSON.stringify(federationUrls));
       systemClient.setItem('federation_pubkeys', JSON.stringify(federationPubKeys));
     }
+
+    this.coordinatorsRatingInit();
   }
 
   private coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
   public book: Record<string, PublicOrder | undefined>;
+  public ratings: Record<string, Record<string, number>>;
+  private ratingsLoaded: boolean;
   public loading: boolean;
   public connection: 'api' | 'nostr' | null;
   public network: 'testnet' | 'mainnet';
@@ -82,6 +89,14 @@ export class Federation {
   public hooks: Record<FederationHooks, Array<() => void>>;
 
   public roboPool: RoboPool;
+
+  coordinatorsRatingInit = (): void => {
+    Object.values(this.coordinators).forEach((coord) => {
+      if (coord.nostrHexPubkey && !this.ratings[coord.nostrHexPubkey]) {
+        this.ratings[coord.nostrHexPubkey] = {};
+      }
+    });
+  };
 
   setConnection = (
     origin: Origin,
@@ -133,6 +148,45 @@ export class Federation {
     });
   };
 
+  loadRatings = (verify: boolean = false): void => {
+    if (this.ratingsLoaded && !verify) {
+      return;
+    }
+
+    this.coordinatorsRatingInit();
+
+    if (verify) {
+      this.ratings = {};
+      this.coordinatorsRatingInit();
+    }
+
+    if (!verify) {
+      this.ratingsLoaded = true;
+    }
+
+    const subscriptionId = this.roboPool.subscribeRatings({
+      onevent: (event) => {
+        const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
+        const verified = verify ? verifyCoordinatorToken(event) : true;
+
+        if (verified && coordinatorPubKey) {
+          const rating = event.tags.find((t) => t[0] === 'rating')?.[1];
+          if (rating) {
+            if (!this.ratings[coordinatorPubKey]) {
+              this.ratings[coordinatorPubKey] = {};
+            }
+            this.ratings[coordinatorPubKey][event.pubkey] = parseFloat(rating);
+            this.triggerHook('onFederationUpdate');
+          }
+        }
+      },
+      oneose: () => {
+        this.roboPool.closeSubscription(subscriptionId);
+        this.triggerHook('onFederationUpdate');
+      },
+    });
+  };
+
   addCoordinator = (
     origin: Origin,
     settings: Settings,
@@ -144,6 +198,13 @@ export class Federation {
       ...attributes,
     };
     this.coordinators[value.shortAlias] = new Coordinator(value, origin, settings, hostUrl);
+
+    if (this.coordinators[value.shortAlias].nostrHexPubkey) {
+      if (!this.ratings[this.coordinators[value.shortAlias].nostrHexPubkey]) {
+        this.ratings[this.coordinators[value.shortAlias].nostrHexPubkey] = {};
+      }
+    }
+
     this.exchange.totalCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
     this.triggerHook('onFederationUpdate');

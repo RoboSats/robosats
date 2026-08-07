@@ -64,7 +64,8 @@ const MakerForm = ({
   submitButtonLabel = 'Create Order',
 }: MakerFormProps): React.JSX.Element => {
   const { fav, setFav, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
-  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
@@ -958,7 +959,7 @@ const MakerForm = ({
                 enterTouchDelay={300}
                 enterDelay={700}
                 enterNextDelay={2000}
-                title={t('You can add a more details about your order.')}
+                title={t('You can add more details about your order.')}
               >
                 <TextField
                   fullWidth
@@ -1071,7 +1072,7 @@ const MakerForm = ({
                   value={maker.escrowExpiryTime}
                   onChange={handleChangeEscrowDuration}
                   minTime={new Date(0, 0, 0, 1, 0)}
-                  maxTime={new Date(0, 0, 0, 8, 0)}
+                  maxTime={new Date(0, 0, 0, 10, 0)}
                 />
               </LocalizationProvider>
             </Grid>

@@ -41,8 +41,9 @@ const TakeButton = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
-  const { garage, slotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');

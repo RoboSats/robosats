@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -14,6 +15,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -52,11 +54,16 @@ class NotificationsService : Service() {
     private var channelNotificationsId = "Notifications"
 
     private lateinit var notificationGroup: NotificationChannelGroupCompat
+    private var wakeLock: PowerManager.WakeLock? = null
 
     private val roboIdentities = RoboIdentities()
     private val timer = Timer()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val processedEvents = ConcurrentHashMap<String, Boolean>()
+
+    companion object {
+        const val ACTION_STOP_SERVICE = "com.robosats.services.STOP_SERVICE"
+    }
 
     private val clientNotificationListener =
         object : Client.Listener {
@@ -141,6 +148,16 @@ class NotificationsService : Service() {
 
     override fun onCreate() {
         try {
+            // Acquire a partial wake lock to keep CPU running when screen is off
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "RoboSats::NotificationsWakeLock"
+            ).apply {
+                acquire()
+                Log.d("RobosatsNotifications", "Wake lock acquired")
+            }
+
             val connectivityManager =
                 (getSystemService(ConnectivityManager::class.java) as ConnectivityManager)
             connectivityManager.registerDefaultNetworkCallback(networkCallback)
@@ -158,6 +175,13 @@ class NotificationsService : Service() {
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Handle stop action
+        if (intent?.action == ACTION_STOP_SERVICE) {
+            Log.d("RobosatsNotifications", "Received stop service action")
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         startService()
 
         return START_STICKY
@@ -173,6 +197,14 @@ class NotificationsService : Service() {
             connectivityManager.unregisterNetworkCallback(networkCallback)
         } catch (e: Exception) {
             Log.d("RobosatsNotifications", "Failed to unregisterNetworkCallback", e)
+        }
+
+        // Release wake lock
+        wakeLock?.let {
+            if (it.isHeld) {
+                it.release()
+                Log.d("RobosatsNotifications", "Wake lock released")
+            }
         }
 
         super.onDestroy()
@@ -247,12 +279,30 @@ class NotificationsService : Service() {
         notificationManager.createNotificationChannel(channelNotification)
 
         Log.d("RobosatsNotifications", "Building notification...")
+
+        // Create intent to stop the service
+        val stopIntent = Intent(this, NotificationsService::class.java).apply {
+            action = ACTION_STOP_SERVICE
+        }
+        val stopPendingIntent = PendingIntent.getService(
+            this,
+            0,
+            stopIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         val notificationBuilder =
             NotificationCompat.Builder(this, channelRelaysId)
                 .setContentTitle(getString(R.string.robosats_is_running_in_background))
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setGroup(notificationGroup.id)
                 .setSmallIcon(R.drawable.ic_notification)
+                .setOngoing(true)  // Make notification persistent
+                .addAction(
+                    R.drawable.ic_notification,
+                    "Stop",  // You may want to add this to strings.xml for localization
+                    stopPendingIntent
+                )
 
         val build = notificationBuilder.build()
         notificationManager.notify(1, build)

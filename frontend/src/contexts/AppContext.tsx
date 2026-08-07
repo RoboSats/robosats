@@ -86,6 +86,12 @@ export interface UseAppStoreType {
   setFav: Dispatch<SetStateAction<Favorites>>;
   client: 'mobile' | 'web' | 'desktop' | string;
   view: 'basic' | 'pro' | string;
+  slotUpdatedAt: string;
+  setSlotUpdatedAt: Dispatch<SetStateAction<string>>;
+  federationUpdatedAt: string;
+  setFederationUpdatedAt: Dispatch<SetStateAction<string>>;
+  notificationsUpdatedAt: string;
+  setNotificationsUpdatedAt: Dispatch<SetStateAction<string>>;
 }
 
 export const initialAppContext: UseAppStoreType = {
@@ -108,6 +114,12 @@ export const initialAppContext: UseAppStoreType = {
   setFav: () => {},
   client: 'web',
   view: 'basic',
+  slotUpdatedAt: '',
+  setSlotUpdatedAt: () => {},
+  federationUpdatedAt: '',
+  setFederationUpdatedAt: () => {},
+  notificationsUpdatedAt: '',
+  setNotificationsUpdatedAt: () => {},
 };
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
@@ -136,6 +148,12 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
   const [fav, setFav] = useState<Favorites>(initialAppContext.fav);
   const [acknowledgedWarning, setAcknowledgedWarning] = useState<boolean>(
     initialAppContext.acknowledgedWarning,
+  );
+
+  const [slotUpdatedAt, setSlotUpdatedAt] = useState<string>(new Date().toISOString());
+  const [federationUpdatedAt, setFederationUpdatedAt] = useState<string>(new Date().toISOString());
+  const [notificationsUpdatedAt, setNotificationsUpdatedAt] = useState<string>(
+    new Date().toISOString(),
   );
 
   const navigateToPage: (newPage: Page | string, navigate: NavigateFunction) => void = (
@@ -221,6 +239,12 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
         setFav,
         client,
         view,
+        slotUpdatedAt,
+        setSlotUpdatedAt,
+        federationUpdatedAt,
+        setFederationUpdatedAt,
+        notificationsUpdatedAt,
+        setNotificationsUpdatedAt,
       }}
     >
       <ThemeProvider theme={theme}>{children}</ThemeProvider>

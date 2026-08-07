@@ -306,8 +306,9 @@ const BookControl = ({
                     <CheckBoxOutlineBlankIcon style={{ position: 'relative', top: '0.1em' }} />
                   );
                 } else {
-                  const methods = fav.currency === 1000 ? swapMethods : fiatMethods;
+                  const methods = fav.mode === 'swap' ? swapMethods : fiatMethods;
                   const method = methods.find((m) => m.name === value);
+                  if (!method) return null;
                   return (
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <PaymentIcon width={22} height={22} icon={method.icon} />
@@ -332,7 +333,7 @@ const BookControl = ({
                   </Typography>
                 </div>
               </MenuItem>
-              {fav.currency === 1000
+              {fav.mode === 'swap'
                 ? swapMethods.map((method, index) => (
                     <MenuItem
                       style={{ width: '10em' }}

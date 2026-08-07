@@ -42,6 +42,3 @@ remote_metadata:
   - github
 assets: # for github
   - robosats-v\d+\.\d+\.\d+.\w+-arm64-v8a\.\w+.apk
-  - robosats-v\d+\.\d+\.\d+.\w+-armeabi-v7a\.\w+.apk
-  - robosats-v\d+\.\d+\.\d+.\w+-universal\.\w+.apk
-  - robosats-v\d+\.\d+\.\d+.\w+-x86_64\.\w+.apk
