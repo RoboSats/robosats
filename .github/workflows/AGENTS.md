@@ -9,15 +9,15 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | Workflow file | Name | Trigger | Consumes | Produces |
 |---|---|---|---|---|
 | `frontend-build.yml` | Build: Frontend All Bundles | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend"]` | — | 5 artifacts (see below) + dispatches 3 Docker workflows when non-release |
-| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api","chat","control","robosats"]` / `pull_request_target **.py` | `django-main-static` | coverage HTML artifact |
+| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML artifact |
 | `coordinator-image.yml` | Docker: Coordinator | dispatch / workflow_call(`semver`) / push+PR `main paths:["api","robosats","frontend"]` | `django-main-static` | Docker image `recksato/robosats` |
 | `selfhosted-client-image.yml` | Docker: Selfhosted Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","nodeapp"]` | `nodeapp-main-static` | Docker image `recksato/robosats-client` |
 | `web-client-image.yml` | Docker: Web Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","web"]` | `web-main-static` | Docker image `recksato/robosats-web` |
 | `android-build.yml` | Build: Android | workflow_call(`semver`, secrets) / push+PR `main paths:["android","frontend"]` | `mobile-web.bundle` | APK artifacts (4 ABIs) |
 | `desktop-build.yml` | Build: Desktop | dispatch / workflow_call(`semver`) / push+PR `main paths:["desktopApp","frontend"]` | `desktop-main-static` | desktop zip artifacts (mac/linux/win) |
 | `release.yml` | Release | `push: tags: v*.*.*` | all build artifacts | Draft GitHub release + all APK/zip assets |
-| `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request_target **.(js\|ts\|tsx)` | — | ESLint + Prettier check |
-| `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request_target **.py` | — | ruff check (`chartboost/ruff-action@v1`) |
+| `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check (check-mode) |
+| `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v3`) |
 | `codeql.yml` | CodeQL Advanced | push/PR `main` / `schedule: Sun 21:27 UTC` | — | GitHub security alerts |
 | `lnproxy-sync.yml` | Sync lnproxy relays | `schedule: Sun 12:00 UTC` | live `lnproxy-webui2/assets/relays.json` | PR against `main` updating `frontend/static/lnproxies.json` |
 
@@ -98,12 +98,19 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
   before landing in `main`, preventing silent supply-chain edits.
 
 ## Traps
-1. **Path filters missing `/**`** — `paths: [ "frontend" ]`, `["api","chat",…]`, etc. use
-   bare directory names; GitHub's path filter requires glob patterns to match files inside
-   a dir. These push/PR triggers likely never fire on file changes within those directories.
-2. **`pull_request_target` + PR-head checkout** in `js-linter.yml`, `py-linter.yml`, and
-   `integration-tests.yml` — checks out `github.event.pull_request.head.sha` (fork code)
-   with privileged context and secret access.
+1. **Path filters missing `/**`** — most push/PR triggers use bare directory names (e.g.
+   `paths: [ "frontend" ]`, `["api","chat",…]`); GitHub requires glob patterns to match
+   files *inside* a directory. These triggers likely never fire on file changes within
+   those directories. **Fixed in `integration-tests.yml`** (now `["api/**",…]`); remaining
+   workflows (`frontend-build`, `coordinator-image`, image workflows, `android-build`,
+   `desktop-build`) still use bare names — fixing those would newly activate dormant push
+   triggers with Docker-push side effects, and is deferred.
+2. **`pull_request` first-time contributor gate** — `js-linter.yml`, `py-linter.yml`, and
+   `integration-tests.yml` use `pull_request` (untrusted fork code runs in an isolated,
+   read-only context). For PRs from **first-time contributors**, GitHub requires a
+   maintainer to click "Approve and run" before the workflow starts — this is the intended
+   security trade-off and replaces the previous `pull_request_target` shape which ran fork
+   code in a privileged context.
 3. **Deprecated actions**: `::set-output` in `release.yml check-versions`;
    `actions/upload-release-asset@v1` (all APK/zip uploads in `release.yml`);
    `actions/create-release@v1` (android non-release path).
@@ -117,11 +124,8 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
    filenames. x86_64 APK is also omitted from this path.
 7. **`desktop-build.yml` never runs tsc**: `npm run compile` is not in the CI script; a
    stale committed `desktopApp/index.js` ships silently (see `desktopApp/AGENTS.md`).
-8. **`js-linter.yml` runs `npm run format`** (Prettier write mode) — Prettier writes files
-   in place rather than failing; this step likely never blocks CI on formatting issues.
-9. **`codeql.yml` uses `checkout@v4`** while all other workflows use `v5`; its `runs-on`
+8. **`codeql.yml` uses `checkout@v4`** while all other workflows use `v5`; its `runs-on`
    expression branches on `swift` (absent from the matrix → always falls through to default).
-10. **`py-linter.yml` uses `chartboost/ruff-action@v1`** (third-party, no SHA pin).
 
 ## Constraints
 - Never add a new build target without adding its artifact upload to `frontend-build.yml`

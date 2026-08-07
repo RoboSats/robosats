@@ -1,251 +1,237 @@
 {
-    "temple": {
-        "longAlias": "Temple of Sats",
-        "shortAlias": "temple",
-        "identifier": "templeofsats",
-        "description": "I am passionate about joining Robosats as a coordinator because I believe that peer-to-peer, non-KYC Bitcoin transactions are vital for the community's empowerment and autonomy. I aim to champion users' privacy, and provide a seamless experience for genuine Bitcoin enthusiasts.",
-        "motto": "Privacy and Integrity: Temple of Sats, where Bitcoin's essence thrives.",
-        "color": "#000",
-        "established": "2023-12-02",
-        "nostrHexPubkey": "74001620297035daa61475c069f90b6950087fea0d0134b795fac758c34e7191",
-        "contact": {
-            "email": "coordinator@templeofsats.org",
-            "telegram": "templeofsats",
-            "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
-            "matrix": "@venividivici13:matrix.org",
-            "website": "https://templeofsats.org",
-            "nostr": "npub1wsqpvgpfwq6a4fs5whqxn7gtd9gqsll2p5qnfdu4ltr43s6wwxgsgk4xtl",
-            "pgp": "/static/federation/pgp/25791752E9661C1DE118A8C6F78CD3D6471B6789.asc",
-            "fingerprint": "25791752E9661C1DE118A8C6F78CD3D6471B6789"
-        },
-        "badges": {
-            "isFounder": true,
-            "donatesToDevFund": 30,
-            "hasGoodOpSec": true,
-            "hasLargeLimits": true
-        },
-        "policies": {
-            "Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-            "Short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
-            "No Third-Party Sharing": "Under no circumstances will user information be shared with third parties.",
-            "Short-term storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
-            "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
-            "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!",
-            "Rule 3:": "To protect our users, the use of this coordinator for Cash Face-to-Face (F2F) transactions within the United States territory is not allowed.",
-            "Rule 4:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction.",
-            "Rule 5:": "In accordance with U.S. regulations, residents of the United States are prohibited from using this coordinator. If you are a U.S. resident, you must not engage in any transactions on this platform. This restriction is in place to comply with U.S. regulatory requirements and to protect both the platform and its users from potential issues. As the system is built on the tor network, and the transfer of FIAT happens in a p2p fashion without passing through this coordinator, we are unable to collect or store user information, including but not limited to, the location of users. This means that this coordinator will not and cannot proactively ban any user from trading, but it also mean that users agree to ensure that their activities on the platform are lawful to their jurisdiction."
-        },
-        "mainnet": {
-            "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
-            "clearnet": "https://unsafe.templeofsats.org",
-            "i2p": ""
-        },
-        "testnet": {
-            "onion": "http://jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion",
-            "clearnet": "",
-            "i2p": ""
-        },
-        "mainnetNodesPubkeys": [
-            "0226f31c5f3a8b48bbbb7aaa97a10effcfb445b5972a676955d5c095383d35a428"
-        ],
-        "testnetNodesPubkeys": [
-            "028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"
-        ],
-        "federated": true
+  "temple": {
+    "longAlias": "Temple of Sats",
+    "shortAlias": "temple",
+    "identifier": "templeofsats",
+    "description": "I am passionate about joining Robosats as a coordinator because I believe that peer-to-peer, non-KYC Bitcoin transactions are vital for the community's empowerment and autonomy. I aim to champion users' privacy, and provide a seamless experience for genuine Bitcoin enthusiasts.",
+    "motto": "Privacy and Integrity: Temple of Sats, where Bitcoin's essence thrives.",
+    "color": "#000",
+    "established": "2023-12-02",
+    "nostrHexPubkey": "74001620297035daa61475c069f90b6950087fea0d0134b795fac758c34e7191",
+    "contact": {
+      "email": "coordinator@templeofsats.org",
+      "telegram": "templeofsats",
+      "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
+      "matrix": "@venividivici13:matrix.org",
+      "website": "https://templeofsats.org",
+      "nostr": "npub1wsqpvgpfwq6a4fs5whqxn7gtd9gqsll2p5qnfdu4ltr43s6wwxgsgk4xtl",
+      "pgp": "/static/federation/pgp/25791752E9661C1DE118A8C6F78CD3D6471B6789.asc",
+      "fingerprint": "25791752E9661C1DE118A8C6F78CD3D6471B6789"
     },
-    "lake": {
-        "longAlias": "TheBigLake",
-        "shortAlias": "lake",
-        "identifier": "thebiglake",
-        "description": "Becoming a RoboSats coordinator represents boosting intrinsic values of decentralization and economic freedom. RoboSats solves the problem of KYC and loss of privacy that big Exchanges are forced to comply with. I believe that decentralizing the lightning nodes will enhance the robustness of the tool, allowing more users to join. I am excited to be part of this new phase of growth.",
-        "motto": "TheBigLake: The Lake of Economic Freedom.",
-        "color": "#000D28",
-        "established": "2023-12-30",
-        "nostrHexPubkey": "f2d4855df39a7db6196666e8469a07a131cddc08dcaa744a344343ffcf54a10c",
-        "contact": {
-            "email": "gabbygator184@proton.me",
-            "telegram": "gabbygator184",
-            "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2FLsFHfMGI9rm3kUDz1jwXZf3uAYPUuhli%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJ8hrCl81w79Wx2qfae6cGR9rZpeHVoevAObBqNgzqGU%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion",
-            "matrix": "@gabbygator184:matrix.org",
-            "pgp": "/static/federation/pgp/EC4F94F629AA28242B54265F1ABE1CA3582A031A.asc",
-            "nostr": "npub17t2g2h0nnf7mvxtxvm5ydxs85ycumhqgmj48gj35gdplln655yxq68wj6f",
-            "website": "https://thebiglake.org/",
-            "fingerprint": "EC4F94F629AA28242B54265F1ABE1CA3582A031A"
-        },
-        "badges": {
-            "isFounder": true,
-            "donatesToDevFund": 30,
-            "hasGoodOpSec": true,
-            "hasLargeLimits": true
-        },
-        "policies": {
-            "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-            "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
-            "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
-            "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
-            "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
-            "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
-        },
-        "mainnet": {
-            "onion": "http://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion",
-            "clearnet": "https://unsafe.thebiglake.org",
-            "i2p": ""
-        },
-        "testnet": {
-            "onion": "http://ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion",
-            "clearnet": "https://test.unsafe.thebiglake.org",
-            "i2p": ""
-        },
-        "mainnetNodesPubkeys": [
-            "0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"
-        ],
-        "testnetNodesPubkeys": [
-            "0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"
-        ],
-        "federated": true
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": true
     },
-    "bazaar": {
-        "longAlias": "LibreBazaar",
-        "shortAlias": "bazaar",
-        "identifier": "bazaar",
-        "description": "Unorthodox undockerized coordinator. Happy to help the decentralization of Robosats.",
-        "motto": "Freedom and Integrity",
-        "color": "#200000",
-        "established": "2025-05-20",
-        "nostrHexPubkey": "95521a33ba34f5924464f425e81b896b1aa9069796a778368ed053e3612c509b",
-        "contact": {
-            "email": "mail@librebazaar.com",
-            "telegram": "jerryfletcher21",
-            "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2FPtsqghzQKU83kYTlQ1VKg996dW4Cw4x_bvpKmiv8uns%3D%40smp18.simplex.im%2FV6N4pmHtaKhNbY8ab2Opmk9qJsGEaIYd%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEA7Uv1vk2CDBDL0Jcrfn0oe5xxK-QvZmyB0f731ftJbQ0%253D%26q%3Dc%26srv%3Dlyqpnwbs2zqfr45jqkncwpywpbtq7jrhxnib5qddtr6npjyezuwd3nqd.onion",
-            "pgp": "/static/federation/pgp/C6894FC235E06C4FC2FE77916FA7713E574EDEC3.asc",
-            "nostr": "npub1j4fp5va6xn6ey3ry7sj7sxufdvd2jp5hj6nhsd5w6pf7xcfv2zdspj5e5g",
-            "website": null,
-            "fingerprint": "C6894FC235E06C4FC2FE77916FA7713E574EDEC3"
-        },
-        "badges": {
-            "isFounder": false,
-            "donatesToDevFund": 30,
-            "hasGoodOpSec": true,
-            "hasLargeLimits": false
-        },
-        "policies": {
-            "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-            "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and XMPP are advised.",
-            "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties",
-            "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
-            "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
-            "Rule 2:": "Any dispute can be first addressed through our public chats in the different social networks but never will be started using private chats."
-        },
-        "mainnet": {
-            "onion": "http://librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion",
-            "clearnet": null,
-            "i2p": null
-        },
-        "testnet": {
-            "onion": null,
-            "clearnet": null,
-            "i2p": null
-        },
-        "mainnetNodesPubkeys": [
-            "03ab3468f06d3aac93992ef7ae79bce083e18617dc760f09ef687d7bca89667a15"
-        ],
-        "testnetNodesPubkeys": [],
-        "federated": true
+    "policies": {
+      "Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "No Third-Party Sharing": "Under no circumstances will user information be shared with third parties.",
+      "Short-term storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!",
+      "Rule 3:": "To protect our users, the use of this coordinator for Cash Face-to-Face (F2F) transactions within the United States territory is not allowed.",
+      "Rule 4:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction.",
+      "Rule 5:": "In accordance with U.S. regulations, residents of the United States are prohibited from using this coordinator. If you are a U.S. resident, you must not engage in any transactions on this platform. This restriction is in place to comply with U.S. regulatory requirements and to protect both the platform and its users from potential issues. As the system is built on the tor network, and the transfer of FIAT happens in a p2p fashion without passing through this coordinator, we are unable to collect or store user information, including but not limited to, the location of users. This means that this coordinator will not and cannot proactively ban any user from trading, but it also mean that users agree to ensure that their activities on the platform are lawful to their jurisdiction."
     },
-    "freedomsats": {
-        "longAlias": "FreedomSats",
-        "shortAlias": "freedomsats",
-        "identifier": "freedomsats",
-        "description": "A Decentralized, deflationary currency enthusiast. Hoping to add liquidity to a non-KYC means for purchasing and selling bitcoin. Robosats P2P solves many issues with the modern day fiat system, and FreedomSats is happy to aid in its decentralization. The focus of FreedomSats will be to ensure data privacy and uptime-consistency.",
-        "motto": "Liberty\u2019s Network Above",
-        "color": "#5d2365",
-        "established": "2025-06-30",
-        "nostrHexPubkey": "ded3dc02a1a9b61ce59d11f496539cb3fd15f00326a16f47e5f8d76baba24bdb",
-        "contact": {
-            "email": "FreedomSatoshis@proton.me",
-            "telegram": "@freedomsats",
-            "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FLjWY29_NGy7vujmzRCmnJocepWWMAk2D%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEAWRfXNPT2xQihjv0Ef2sV51J2YiAmboLcmE0adlEAv2c%253D%26q%3Dc%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
-            "pgp": "/static/federation/pgp/9D3D3BAF4744305EE3F0B837331AB575DD78D930.asc",
-            "nostr": "npub1mmfacq4p4xmpeevaz86fv5uuk073tuqry6sk73l9lrtkh2azf0dsykwxuj",
-            "website": null,
-            "fingerprint": "9D3D3BAF4744305EE3F0B837331AB575DD78D930"
-        },
-        "badges": {
-            "isFounder": false,
-            "donatesToDevFund": 20,
-            "hasGoodOpSec": true,
-            "hasLargeLimits": false
-        },
-        "policies": {
-            "Privacy Policy 1": "Dispute Evidence Submission: If a dispute arises, you will be asked to provide only the transaction-related documentation needed to evaluate your claim\u2014for example, transaction IDs, payment\u2010confirmation screenshots, or other pertinent records. Please keep a record of all relevant information.",
-            "Privacy Policy 2": "Limited Retention Period: All sensitive data gathered for the purpose of resolving a dispute will be retained strictly for the duration of that process. Once the issue is fully resolved, this information will be irrevocably and securely deleted",
-            "Data Policy 1": "No Third-Party Data Sharing: RoboSats is deliberately designed to collect no user data\u2014no IP addresses, geolocation, or personal identifiers\u2014and will never share information with outside parties.",
-            "Data Policy 2": "Ephemeral Log Retention: All operational logs required to run the coordinator are automatically deleted after seven days, unless they\u2019re essential for an active dispute.",
-            "Rule 1:": "Please do not share any personal information through the chat, if possible share as little revealing information as possible.",
-            "Rule 2:": "Email is provided for convenience but other means of communication are recommended. Like Nostr/SimpleX/Telegram"
-        },
-        "mainnet": {
-            "onion": "http://dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion",
-            "clearnet": null,
-            "i2p": null
-        },
-        "testnet": {
-            "onion": null,
-            "clearnet": null,
-            "i2p": null
-        },
-        "mainnetNodesPubkeys": [
-            "028059662c65626f3002290dd3151186bc1952726c03f56012406f3ceadb81cacc"
-        ],
-        "testnetNodesPubkeys": [],
-        "federated": true
+    "mainnet": {
+      "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
+      "clearnet": "https://unsafe.templeofsats.org",
+      "i2p": ""
     },
-    "alice": {
-        "longAlias": "Alice",
-        "shortAlias": "alice",
-        "identifier": "alice",
-        "description": "Alice is here to empower Bitcoin enthusiasts by providing a decentralized, non-KYC, peer-to-peer exchange platform. With a focus on privacy, security, and ease of use, Alice is committed to ensuring that all users can participate in the Bitcoin economy with autonomy and integrity.",
-        "motto": "Privacy is not a crime",
-        "color": "#9932cc",
-        "established": "2025-11-27",
-        "nostrHexPubkey": "40d33962fdf26e0910805f36a3a96b239cf93b95d4a3e6dd779f1ea3ff9b0866",
-        "contact": {
-            "email": "alice7b@proton.me",
-            "telegram": "",
-            "simplex": "https://smp12.simplex.im/a#peg1Oqqy55zhLXugHUmlZqXGkd31Fcr3HXXhvsZLQt0",
-            "pgp": "/static/federation/pgp/349137316F89DAF6D7E66A40D0B7C7C3C3744DBA.asc",
-            "nostr": "npub1grfnjcha7fhqjyyqtum282ttyww0jwu46j37dhthnu028lumppnqtenl5y",
-            "website": null,
-            "fingerprint": "349137316F89DAF6D7E66A40D0B7C7C3C3744DBA"
-        },
-        "badges": {
-            "isFounder": false,
-            "donatesToDevFund": 20,
-            "hasGoodOpSec": true,
-            "hasLargeLimits": false
-        },
-        "policies": {
-            "Privacy Policy 1 \u2014 Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
-            "Privacy Policy 2 \u2014 short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR and SIMPLEX are advised.",
-            "Data Policy 1 \u2014 No Third-Party Sharing": "Under no circumstances will user information be shared with third parties. Also because it is impossible to do so by design of Robosats architecture. Due to the decentralized and privacy-centric structure of RoboSats built on the Tor network, we are unable to collect or store user information, including but not limited to, the location of users. This design ensures maximum privacy and anonymity for our users.",
-            "Data Policy 2 \u2014 Short-term Storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
-            "Rule 1:": " Do not share personal information through the chat, unless strictly needed for completing the trade.",
-            "Rule 2:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction."
-        },
-        "mainnet": {
-            "onion": "http://alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion",
-            "clearnet": null,
-            "i2p": null
-        },
-        "testnet": {
-            "onion": null,
-            "clearnet": null,
-            "i2p": null
-        },
-        "mainnetNodesPubkeys": [
-            "02580496598cf3e7bfe41c9b0721d1c90693d31d308364456dc30f0a22bf58ddd7"
-        ],
-        "testnetNodesPubkeys": [],
-        "federated": true
-    }
+    "testnet": {
+      "onion": "http://jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion",
+      "clearnet": "",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["0226f31c5f3a8b48bbbb7aaa97a10effcfb445b5972a676955d5c095383d35a428"],
+    "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"],
+    "federated": true
+  },
+  "lake": {
+    "longAlias": "TheBigLake",
+    "shortAlias": "lake",
+    "identifier": "thebiglake",
+    "description": "Becoming a RoboSats coordinator represents boosting intrinsic values of decentralization and economic freedom. RoboSats solves the problem of KYC and loss of privacy that big Exchanges are forced to comply with. I believe that decentralizing the lightning nodes will enhance the robustness of the tool, allowing more users to join. I am excited to be part of this new phase of growth.",
+    "motto": "TheBigLake: The Lake of Economic Freedom.",
+    "color": "#000D28",
+    "established": "2023-12-30",
+    "nostrHexPubkey": "f2d4855df39a7db6196666e8469a07a131cddc08dcaa744a344343ffcf54a10c",
+    "contact": {
+      "email": "gabbygator184@proton.me",
+      "telegram": "gabbygator184",
+      "simplex": "https://simplex.chat/contact#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2FLsFHfMGI9rm3kUDz1jwXZf3uAYPUuhli%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAJ8hrCl81w79Wx2qfae6cGR9rZpeHVoevAObBqNgzqGU%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion",
+      "matrix": "@gabbygator184:matrix.org",
+      "pgp": "/static/federation/pgp/EC4F94F629AA28242B54265F1ABE1CA3582A031A.asc",
+      "nostr": "npub17t2g2h0nnf7mvxtxvm5ydxs85ycumhqgmj48gj35gdplln655yxq68wj6f",
+      "website": "https://thebiglake.org/",
+      "fingerprint": "EC4F94F629AA28242B54265F1ABE1CA3582A031A"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": true
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and MATRIX are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties.",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be fist address through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://4t4jxmivv6uqej6xzx2jx3fxh75gtt65v3szjoqmc4ugdlhipzdat6yd.onion",
+      "clearnet": "https://unsafe.thebiglake.org",
+      "i2p": ""
+    },
+    "testnet": {
+      "onion": "http://ghbtv7lhoyhomyir4xvxaeyqgx4ylxksia343jaat3njqqlkqpdjqcyd.onion",
+      "clearnet": "https://test.unsafe.thebiglake.org",
+      "i2p": ""
+    },
+    "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
+    "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"],
+    "federated": true
+  },
+  "bazaar": {
+    "longAlias": "LibreBazaar",
+    "shortAlias": "bazaar",
+    "identifier": "bazaar",
+    "description": "Unorthodox undockerized coordinator. Happy to help the decentralization of Robosats.",
+    "motto": "Freedom and Integrity",
+    "color": "#200000",
+    "established": "2025-05-20",
+    "nostrHexPubkey": "95521a33ba34f5924464f425e81b896b1aa9069796a778368ed053e3612c509b",
+    "contact": {
+      "email": "mail@librebazaar.com",
+      "telegram": "jerryfletcher21",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2FPtsqghzQKU83kYTlQ1VKg996dW4Cw4x_bvpKmiv8uns%3D%40smp18.simplex.im%2FV6N4pmHtaKhNbY8ab2Opmk9qJsGEaIYd%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEA7Uv1vk2CDBDL0Jcrfn0oe5xxK-QvZmyB0f731ftJbQ0%253D%26q%3Dc%26srv%3Dlyqpnwbs2zqfr45jqkncwpywpbtq7jrhxnib5qddtr6npjyezuwd3nqd.onion",
+      "pgp": "/static/federation/pgp/C6894FC235E06C4FC2FE77916FA7713E574EDEC3.asc",
+      "nostr": "npub1j4fp5va6xn6ey3ry7sj7sxufdvd2jp5hj6nhsd5w6pf7xcfv2zdspj5e5g",
+      "website": null,
+      "fingerprint": "C6894FC235E06C4FC2FE77916FA7713E574EDEC3"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Evidence in Disputes: In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2": "Short-term Storage: Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR, SIMPLEX and XMPP are advised.",
+      "Data Policy 1": "No Third-Party Sharing: Under no circumstances will user information be shared with third parties",
+      "Data Policy 2": "Short-term Storage: Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Any dispute can be first addressed through our public chats in the different social networks but never will be started using private chats."
+    },
+    "mainnet": {
+      "onion": "http://librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["03ab3468f06d3aac93992ef7ae79bce083e18617dc760f09ef687d7bca89667a15"],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "freedomsats": {
+    "longAlias": "FreedomSats",
+    "shortAlias": "freedomsats",
+    "identifier": "freedomsats",
+    "description": "A Decentralized, deflationary currency enthusiast. Hoping to add liquidity to a non-KYC means for purchasing and selling bitcoin. Robosats P2P solves many issues with the modern day fiat system, and FreedomSats is happy to aid in its decentralization. The focus of FreedomSats will be to ensure data privacy and uptime-consistency.",
+    "motto": "Liberty\u2019s Network Above",
+    "color": "#5d2365",
+    "established": "2025-06-30",
+    "nostrHexPubkey": "ded3dc02a1a9b61ce59d11f496539cb3fd15f00326a16f47e5f8d76baba24bdb",
+    "contact": {
+      "email": "FreedomSatoshis@proton.me",
+      "telegram": "@freedomsats",
+      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FLjWY29_NGy7vujmzRCmnJocepWWMAk2D%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEAWRfXNPT2xQihjv0Ef2sV51J2YiAmboLcmE0adlEAv2c%253D%26q%3Dc%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
+      "pgp": "/static/federation/pgp/9D3D3BAF4744305EE3F0B837331AB575DD78D930.asc",
+      "nostr": "npub1mmfacq4p4xmpeevaz86fv5uuk073tuqry6sk73l9lrtkh2azf0dsykwxuj",
+      "website": null,
+      "fingerprint": "9D3D3BAF4744305EE3F0B837331AB575DD78D930"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1": "Dispute Evidence Submission: If a dispute arises, you will be asked to provide only the transaction-related documentation needed to evaluate your claim\u2014for example, transaction IDs, payment\u2010confirmation screenshots, or other pertinent records. Please keep a record of all relevant information.",
+      "Privacy Policy 2": "Limited Retention Period: All sensitive data gathered for the purpose of resolving a dispute will be retained strictly for the duration of that process. Once the issue is fully resolved, this information will be irrevocably and securely deleted",
+      "Data Policy 1": "No Third-Party Data Sharing: RoboSats is deliberately designed to collect no user data\u2014no IP addresses, geolocation, or personal identifiers\u2014and will never share information with outside parties.",
+      "Data Policy 2": "Ephemeral Log Retention: All operational logs required to run the coordinator are automatically deleted after seven days, unless they\u2019re essential for an active dispute.",
+      "Rule 1:": "Please do not share any personal information through the chat, if possible share as little revealing information as possible.",
+      "Rule 2:": "Email is provided for convenience but other means of communication are recommended. Like Nostr/SimpleX/Telegram"
+    },
+    "mainnet": {
+      "onion": "http://dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["028059662c65626f3002290dd3151186bc1952726c03f56012406f3ceadb81cacc"],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "alice": {
+    "longAlias": "Alice",
+    "shortAlias": "alice",
+    "identifier": "alice",
+    "description": "Alice is here to empower Bitcoin enthusiasts by providing a decentralized, non-KYC, peer-to-peer exchange platform. With a focus on privacy, security, and ease of use, Alice is committed to ensuring that all users can participate in the Bitcoin economy with autonomy and integrity.",
+    "motto": "Privacy is not a crime",
+    "color": "#9932cc",
+    "established": "2025-11-27",
+    "nostrHexPubkey": "40d33962fdf26e0910805f36a3a96b239cf93b95d4a3e6dd779f1ea3ff9b0866",
+    "contact": {
+      "email": "alice7b@proton.me",
+      "telegram": "",
+      "simplex": "https://smp12.simplex.im/a#peg1Oqqy55zhLXugHUmlZqXGkd31Fcr3HXXhvsZLQt0",
+      "pgp": "/static/federation/pgp/349137316F89DAF6D7E66A40D0B7C7C3C3744DBA.asc",
+      "nostr": "npub1grfnjcha7fhqjyyqtum282ttyww0jwu46j37dhthnu028lumppnqtenl5y",
+      "website": null,
+      "fingerprint": "349137316F89DAF6D7E66A40D0B7C7C3C3744DBA"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1 \u2014 Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2 \u2014 short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR and SIMPLEX are advised.",
+      "Data Policy 1 \u2014 No Third-Party Sharing": "Under no circumstances will user information be shared with third parties. Also because it is impossible to do so by design of Robosats architecture. Due to the decentralized and privacy-centric structure of RoboSats built on the Tor network, we are unable to collect or store user information, including but not limited to, the location of users. This design ensures maximum privacy and anonymity for our users.",
+      "Data Policy 2 \u2014 Short-term Storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
+      "Rule 1:": " Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": ["02580496598cf3e7bfe41c9b0721d1c90693d31d308364456dc30f0a22bf58ddd7"],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  }
 }
