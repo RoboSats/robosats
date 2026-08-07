@@ -117,9 +117,6 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
   testnet onions. This means testnet and mainnet traffic for those three coordinators is
   routed to the same hidden service — the coordinator must distinguish them server-side, or
   testnet is effectively absent for those three.
-- **alice uses socat ports 109/1009** (mainnet/testnet), freedomsats uses 108/1008 — no
-  port collision. `coordinators/alice/upstreams.conf` correctly points to 109/1009.
-  (Previously both were 108/1008 and alice upstreams pointed to Bazaar — fixed.)
 - **All five `locations.conf` testnet avatar routes** now use `/testnet/{alias}/...`
   consistent with the API/WS routes — fixed in this codebase.
 - **No `/testnet/{alias}/relay/`** route exists in any coordinator config — testnet Nostr
