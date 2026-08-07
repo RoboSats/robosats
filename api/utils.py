@@ -2,6 +2,8 @@ import json
 import logging
 import re
 from html import escape
+from datetime import datetime, timedelta
+from datetime import timezone as datetime_timezone
 
 import gnupg
 import numpy as np
@@ -9,6 +11,7 @@ import requests
 import ring
 from base91 import decode, encode
 from decouple import config
+from django.utils import timezone
 
 from api.errors import new_error
 
@@ -388,6 +391,21 @@ def validate_pgp_keys(pub_key, enc_priv_key):
                 None,
                 None,
             )
+    # Check key creation timestamp
+    if import_pub_result.fingerprints:
+        keys = gpg.list_keys(keys=import_pub_result.fingerprints[0])
+        if keys:
+            key_creation = datetime.fromtimestamp(
+                int(keys[0]["date"]), tz=datetime_timezone.utc
+            )
+            if key_creation > timezone.now() - timedelta(hours=12):
+                return (
+                    False,
+                    new_error(1056, {"key_creation_date": key_creation.isoformat()}),
+                    None,
+                    None,
+                )
+
     # Exports the public key again for uniform formatting.
     pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
 
@@ -501,7 +519,9 @@ def objects_to_hyperlinks(logs: str) -> str:
         for obj in objects:
             logs = re.sub(
                 rf"{obj}\(([0-9a-fA-F\-A-F]+),\s*([^)]+)\)",
-                lambda m: f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>',
+                lambda m: (
+                    f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>'
+                ),
                 logs,
                 flags=re.DOTALL,
             )
