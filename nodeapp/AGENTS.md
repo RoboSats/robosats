@@ -19,7 +19,7 @@ Host :12596  (published on the tor service — see Traps)
         ├── /pro                  → SPA (pro.html)
         ├── /static/              → filesystem alias /usr/src/robosats/static/ (autoindex on)
         ├── /favicon.ico          → filesystem alias /usr/src/robosats/static/assets/images/favicon-32x32.png
-        ├── /selfhosted           → 200 OK (container healthcheck probe — curl absent, see Traps)
+        ├── /selfhosted           → 200 OK (container healthcheck probe)
         └── /mainnet/{alias}/...
         └── /testnet/{alias}/...  → socat upstreams (127.0.0.1:{port})
               └── socat tcp4-LISTEN:{port} … SOCKS5-CONNECT:{Tor}:{onion}:80
@@ -33,7 +33,7 @@ No clearnet path exists; no I2P fallback is implemented.
 |---|---|
 | `robosats-client.sh` | Starts 12 socat bridges (2 per coordinator: mainnet + testnet) then `nginx` in foreground |
 | `nginx.conf` | Nginx config; `daemon off;` listen 12596; includes `conf.d/{alias}/upstreams.conf` (http block) + `locations.conf` (server block) per coordinator |
-| `Dockerfile` | Alpine 3.23; installs socat + nginx; `COPY . .`; `EXPOSE 12596`; broken HEALTHCHECK (see Traps); `CMD ["sh", "robosats-client.sh"]` |
+| `Dockerfile` | Alpine 3.23; installs socat + nginx; `COPY . .`; `EXPOSE 12596`; HEALTHCHECK uses `wget` (BusyBox); `CMD ["sh", "robosats-client.sh"]` |
 | `docker-compose.yml` | **Dev-only** — builds `../frontend` + `../docker/tor` locally; references non-existent `../node/tor/*` path (see Traps) |
 | `docker-compose-example.yml` | **End-user reference** — has both `build: .` and `image: recksato/robosats-client:latest` (see Traps); ports published on the `tor` service |
 | `coordinators/` | One subdirectory per coordinator with `upstreams.conf` + `locations.conf` |
@@ -97,9 +97,9 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
   responsibility.
 
 ## Traps
-- **`curl` is not installed** in the Alpine image (only `socat` + `nginx`). The Dockerfile
-  `HEALTHCHECK CMD curl --fail http://localhost:12596/selfhosted` always fails/errors.
-  Known issue; replace with `wget -q -O- …` or remove the healthcheck.
+- **HEALTHCHECK uses `wget`** (BusyBox, ships with Alpine) against `/selfhosted`. `curl`
+  is not installed in the image; the previous `curl --fail …` command was always failing.
+  Fixed in this codebase; do not replace `wget` with `curl` without adding a curl install.
 - **Port 12596 is published by the `tor` service**, not by the `nodeapp` service. Because
   `nodeapp` uses `network_mode: service:tor`, it shares the tor container's network
   namespace. The `ports:` mapping in `docker-compose-example.yml` must be on the `tor`
@@ -140,7 +140,7 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
 - When adding a coordinator: update `robosats-client.sh` (unique port pair), create
   `coordinators/{alias}/upstreams.conf` + `locations.conf`, and `include` both in
   `nginx.conf`. See `nodeapp/coordinators/AGENTS.md` for the full procedure.
-- Do not add a `curl` install to the Dockerfile without also fixing the healthcheck CMD
-  to match a real endpoint — or replace with `wget` which Alpine ships.
+- Do not replace `wget` in the HEALTHCHECK with `curl` — `curl` is not installed; use
+  `wget -q -O-` (BusyBox, ships with Alpine) or install `curl` explicitly.
 - Do not assume `nodeapp` sets `network_mode: bridge` — it shares the `tor` service's
   network namespace; any port mapping must live on the `tor` service.
