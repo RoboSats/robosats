@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 
 # generate LND grpc definitions
 cd api/lightning
@@ -14,29 +15,24 @@ curl --parallel -o lightning.proto https://raw.githubusercontent.com/lightningne
     -o primitives.proto https://raw.githubusercontent.com/ElementsProject/lightning/v24.08/cln-grpc/proto/primitives.proto \
     -o node.proto https://raw.githubusercontent.com/ElementsProject/lightning/v24.08/cln-grpc/proto/node.proto
 
-echo -n "Done\nBuilding api from GRPC specs..."
+printf "Done\nBuilding api from GRPC specs..."
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto invoices.proto router.proto signer.proto verrpc.proto
 python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto hold.proto primitives.proto
 
 # patch generated files relative imports
-# LND
-sed -i 's/^import .*_pb2 as/from . \0/' router_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' signer_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' router_pb2_grpc.py
-sed -i 's/^import .*_pb2 as/from . \0/' signer_pb2_grpc.py
-sed -i 's/^import .*_pb2 as/from . \0/' lightning_pb2_grpc.py
-sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2_grpc.py
-sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2_grpc.py
+python3 <<'PY'
+from pathlib import Path
 
-# CLN
-sed -i 's/^import .*_pb2 as/from . \0/' hold_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' hold_pb2_grpc.py
-sed -i 's/^import .*_pb2 as/from . \0/' node_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' node_pb2_grpc.py
+for path in Path(".").glob("*_pb2*.py"):
+    lines = path.read_text().splitlines()
+    patched = [
+        f"from . {line}" if line.startswith("import ") and "_pb2 as " in line else line
+        for line in lines
+    ]
+    path.write_text("\n".join(patched) + "\n")
+PY
 
-echo -n "Done\nDeleting googleapi..."
+printf "Done\nDeleting googleapi..."
 rm -rf googleapis # delete googleapis
 echo "Done"
 
