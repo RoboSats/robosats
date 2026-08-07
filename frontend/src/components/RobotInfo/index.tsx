@@ -21,8 +21,9 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { Numbers, Send, EmojiEvents, Webhook } from '@mui/icons-material';
+import { Numbers, Send, EmojiEvents, Webhook, Key } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { nip19 } from 'nostr-tools';
 import { Robot, type Coordinator } from '../../models';
 import { useTranslation } from 'react-i18next';
 import { EnableTelegramDialog } from '../Dialogs';
@@ -63,12 +64,40 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const [webhookEnabled, setWebhookEnabled] = useState<boolean>(false);
   const [webhookSaving, setWebhookSaving] = useState<boolean>(false);
   const [webhookUrlError, setWebhookUrlError] = useState<string>('');
+  const [openNostrForwardSettings, setOpenNostrForwardSettings] = useState<boolean>(false);
+  const [nostrForwardPubkey, setNostrForwardPubkey] = useState<string>('');
+  const [nostrForwardRelay, setNostrForwardRelay] = useState<string>('');
+  const [nostrForwardEnabled, setNostrForwardEnabled] = useState<boolean>(false);
+  const [nostrForwardSaving, setNostrForwardSaving] = useState<boolean>(false);
+  const [nostrForwardPubkeyError, setNostrForwardPubkeyError] = useState<string>('');
+  const [nostrForwardRelayError, setNostrForwardRelayError] = useState<string>('');
 
   const isValidOnionUrl = (url: string): boolean => {
     if (!url) return true;
     try {
       const parsed = new URL(url);
       return parsed.hostname.endsWith('.onion');
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidOnionRelayUrl = (url: string): boolean => {
+    if (!url) return true;
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname.endsWith('.onion') && ['ws:', 'wss:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidNostrPubkey = (pubkey: string): boolean => {
+    if (!pubkey) return true;
+    if (/^[0-9a-fA-F]{64}$/.test(pubkey)) return true;
+
+    try {
+      return nip19.decode(pubkey).type === 'npub';
     } catch {
       return false;
     }
@@ -81,6 +110,9 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
       setWebhookUrl(robot.webhookUrl ?? '');
       setWebhookApiKey(robot.webhookApiKey ?? '');
       setWebhookEnabled(robot.webhookEnabled ?? false);
+      setNostrForwardPubkey(robot.nostrForwardPubkey ?? '');
+      setNostrForwardRelay(robot.nostrForwardRelay ?? '');
+      setNostrForwardEnabled(robot.nostrForwardEnabled ?? false);
     }
   }, [slotUpdatedAt]);
 
@@ -128,6 +160,31 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     });
     setWebhookSaving(false);
     setOpenWebhookSettings(false);
+  };
+
+  const handleSaveNostrForwardSettings = async (): Promise<void> => {
+    if (!robot) return;
+
+    if (nostrForwardPubkey && !isValidNostrPubkey(nostrForwardPubkey)) {
+      setNostrForwardPubkeyError(t('Pubkey must be valid hex or npub'));
+      return;
+    }
+    setNostrForwardPubkeyError('');
+
+    if (nostrForwardRelay && !isValidOnionRelayUrl(nostrForwardRelay)) {
+      setNostrForwardRelayError(t('Relay must be a valid ws:// or wss:// .onion address'));
+      return;
+    }
+    setNostrForwardRelayError('');
+
+    setNostrForwardSaving(true);
+    await robot.fetchNostrForward(federation, {
+      nostr_forward_pubkey: nostrForwardPubkey || undefined,
+      nostr_forward_relay: nostrForwardRelay || undefined,
+      nostr_forward_enabled: nostrForwardEnabled,
+    });
+    setNostrForwardSaving(false);
+    setOpenNostrForwardSettings(false);
   };
 
   return (
@@ -363,6 +420,107 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   disabled={webhookSaving}
                 >
                   {webhookSaving ? <CircularProgress size={20} /> : t('Save')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            {/* Nostr Forward Settings */}
+            <ListItem>
+              <ListItemIcon>
+                <Key />
+              </ListItemIcon>
+
+              <ListItemText>
+                {robot?.nostrForwardEnabled ? (
+                  <Typography color={theme.palette.success.main}>
+                    <b>{t('Nostr forwarding enabled')}</b>
+                  </Typography>
+                ) : (
+                  <Button
+                    color='primary'
+                    onClick={() => {
+                      setOpenNostrForwardSettings(true);
+                    }}
+                  >
+                    {t('Configure Nostr Forwarding')}
+                  </Button>
+                )}
+                {robot?.nostrForwardEnabled && (
+                  <Button
+                    size='small'
+                    onClick={() => {
+                      setOpenNostrForwardSettings(true);
+                    }}
+                  >
+                    {t('Edit')}
+                  </Button>
+                )}
+              </ListItemText>
+            </ListItem>
+
+            <Dialog
+              open={openNostrForwardSettings}
+              onClose={() => setOpenNostrForwardSettings(false)}
+            >
+              <DialogContent>
+                <Typography variant='h6' gutterBottom>
+                  {t('Nostr Forwarding')}
+                </Typography>
+                <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
+                  {t('Forward notifications to your main Nostr account via your .onion relay.')}
+                </Typography>
+                <Grid container spacing={2} direction='column'>
+                  <Grid item>
+                    <TextField
+                      fullWidth
+                      label={t('Forward pubkey (npub or hex)')}
+                      placeholder='npub1... or hex pubkey'
+                      value={nostrForwardPubkey}
+                      onChange={(e) => {
+                        setNostrForwardPubkey(e.target.value);
+                        setNostrForwardPubkeyError('');
+                      }}
+                      size='small'
+                      error={Boolean(nostrForwardPubkeyError)}
+                      helperText={nostrForwardPubkeyError}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      fullWidth
+                      label={t('Forward relay (.onion only)')}
+                      placeholder='ws://yourrelay.onion'
+                      value={nostrForwardRelay}
+                      onChange={(e) => {
+                        setNostrForwardRelay(e.target.value);
+                        setNostrForwardRelayError('');
+                      }}
+                      size='small'
+                      error={Boolean(nostrForwardRelayError)}
+                      helperText={nostrForwardRelayError}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      label={t('Enable Nostr forwarding')}
+                      control={
+                        <Switch
+                          checked={nostrForwardEnabled}
+                          onChange={(e) => setNostrForwardEnabled(e.target.checked)}
+                        />
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setOpenNostrForwardSettings(false)}>{t('Cancel')}</Button>
+                <Button
+                  variant='contained'
+                  onClick={handleSaveNostrForwardSettings}
+                  disabled={nostrForwardSaving}
+                >
+                  {nostrForwardSaving ? <CircularProgress size={20} /> : t('Save')}
                 </Button>
               </DialogActions>
             </Dialog>

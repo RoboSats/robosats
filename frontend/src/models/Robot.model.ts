@@ -30,6 +30,10 @@ class Robot {
   public webhookEnabled: boolean = false;
   public webhookApiKey: string = '';
 
+  public nostrForwardPubkey: string = '';
+  public nostrForwardRelay: string = '';
+  public nostrForwardEnabled: boolean = false;
+
   update = (attributes: object): void => {
     Object.assign(this, attributes);
   };
@@ -83,6 +87,9 @@ class Robot {
           webhookUrl: data.webhook_url ?? '',
           webhookEnabled: data.webhook_enabled ?? false,
           webhookApiKey: data.webhook_api_key ?? '',
+          nostrForwardPubkey: data.nostr_forward_pubkey ?? '',
+          nostrForwardRelay: data.nostr_forward_relay ?? '',
+          nostrForwardEnabled: data.nostr_forward_enabled ?? false,
         });
       })
       .catch((e) => {
@@ -152,6 +159,33 @@ class Robot {
             webhookUrl: data.webhook_url ?? this.webhookUrl,
             webhookEnabled: data.webhook_enabled ?? this.webhookEnabled,
             webhookApiKey: data.webhook_api_key ?? this.webhookApiKey,
+          });
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  fetchNostrForward = async (
+    federation: Federation,
+    settings: {
+      nostr_forward_pubkey?: string;
+      nostr_forward_relay?: string;
+      nostr_forward_enabled?: boolean;
+    },
+  ): Promise<void> => {
+    if (!federation) return;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    await apiClient
+      .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
+      .then((data) => {
+        if (data) {
+          this.update({
+            nostrForwardPubkey: data.nostr_forward_pubkey ?? this.nostrForwardPubkey,
+            nostrForwardRelay: data.nostr_forward_relay ?? this.nostrForwardRelay,
+            nostrForwardEnabled: data.nostr_forward_enabled ?? this.nostrForwardEnabled,
           });
         }
       })

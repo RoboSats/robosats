@@ -49,6 +49,11 @@ class Robot(models.Model):
     webhook_api_key = models.CharField(max_length=256, null=True, blank=True)
     webhook_enabled = models.BooleanField(default=False, null=False)
 
+    # Nostr forwarding to main account
+    nostr_forward_pubkey = models.CharField(max_length=64, null=True, blank=True)
+    nostr_forward_relay = models.CharField(max_length=500, null=True, blank=True)
+    nostr_forward_enabled = models.BooleanField(default=False, null=False)
+
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards
@@ -102,6 +107,19 @@ class Robot(models.Model):
             parsed = urlparse(url)
             hostname = parsed.hostname or ""
             return hostname.endswith(".onion")
+        except Exception:
+            return False
+
+    @staticmethod
+    def is_valid_onion_relay_url(url):
+        """Validates that the URL is a websocket .onion relay."""
+        if not Robot.is_valid_onion_url(url):
+            return False
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(url)
+            return parsed.scheme in ["ws", "wss"]
         except Exception:
             return False
 
