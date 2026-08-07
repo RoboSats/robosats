@@ -545,6 +545,9 @@ class Logics:
         if order.status not in valid_status_open_dispute:
             return False, new_error(1013)
 
+        if order.expires_at and timezone.now() < order.expires_at - timedelta(hours=18):
+            return False, new_error(1054)
+
         automatically_solved = cls.automatic_dispute_resolution(order)
 
         if automatically_solved:
@@ -756,10 +759,11 @@ class Logics:
             valid = cls.create_onchain_payment(
                 order, user, preliminary_amount=context["invoice_amount"]
             )
-            order.log(
-                f"Suggested mining fee is {order.payout_tx.suggested_mining_fee_rate} Sats/vbyte, the swap fee rate is {order.payout_tx.swap_fee_rate}%"
-            )
-            if not valid:
+            if valid:
+                order.log(
+                    f"Suggested mining fee is {order.payout_tx.suggested_mining_fee_rate} Sats/vbyte, the swap fee rate is {order.payout_tx.swap_fee_rate}%"
+                )
+            else:
                 context["swap_allowed"] = False
                 context["swap_failure_reason"] = (
                     "Not enough onchain liquidity available to offer a swap"
