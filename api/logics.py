@@ -570,11 +570,11 @@ class Logics:
             robot = user.robot
             robot.num_disputes = robot.num_disputes + 1
             if robot.orders_disputes_started is None:
-                robot.orders_disputes_started = [str(order.id)]
+                robot.orders_disputes_started = str(order.id)
             else:
-                robot.orders_disputes_started = list(
-                    robot.orders_disputes_started
-                ).append(str(order.id))
+                robot.orders_disputes_started = (
+                    f"{robot.orders_disputes_started},{order.id}"
+                )
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
@@ -910,6 +910,10 @@ class Logics:
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
                 return False, new_error(3001)
+        if order.status not in (Order.Status.WF2, Order.Status.WFI, Order.Status.FAI):
+            return False, new_error(3001)
+        if order.payout and order.payout.status == LNPayment.Status.FLIGHT:
+            return False, new_error(3001)
 
         # cancel onchain_payout if existing
         cls.cancel_onchain_payment(order)
@@ -984,9 +988,10 @@ class Logics:
                 order.update_status(Order.Status.WFE)
 
         # If the order status is 'Failed Routing'. Retry payment.
-        elif order.status == Order.Status.FAI:
-            if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
-                order.update_status(Order.Status.PAY)
+        elif LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
+            if order.transition_status(
+                Order.Status.PAY, from_statuses=[Order.Status.FAI]
+            ):
                 order.payout.status = LNPayment.Status.FLIGHT
                 order.payout.routing_attempts = 0
                 order.payout.save(update_fields=["status", "routing_attempts"])
@@ -1674,13 +1679,27 @@ class Logics:
                 order.payout_tx.status = OnchainPayment.Status.QUEUE
                 order.payout_tx.save(update_fields=["status"])
 
-                order.update_status(Order.Status.SUC)
+                cls.complete_order(order)
                 order.contract_finalization_time = timezone.now()
                 order.save(update_fields=["contract_finalization_time"])
 
                 send_notification.delay(order_id=order.id, message="trade_successful")
                 order.log("<b>Paying buyer onchain address</b>")
                 return True
+
+    @classmethod
+    def complete_order(cls, order):
+        """
+        Completes the order after the the sats are successfully paid out
+        and computes the coordinator revenue.
+        """
+        if not order.transition_status(
+            Order.Status.SUC, from_statuses=[Order.Status.FSE, Order.Status.PAY, Order.Status.FAI]
+        ):
+            return
+
+        # Computes coordinator trade revenue
+        cls.compute_proceeds(order)
 
     @classmethod
     def confirm_fiat(cls, order, user):
@@ -1726,9 +1745,6 @@ class Logics:
                     order.log("Maker bond was <b>unlocked</b>")
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     cls.pay_buyer(order)
-
-                    # Computes coordinator trade revenue
-                    cls.compute_proceeds(order)
 
                     return True, None
 

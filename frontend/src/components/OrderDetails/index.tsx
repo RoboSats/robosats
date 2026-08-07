@@ -41,7 +41,7 @@ import { fiatMethods, PaymentStringAsIcons, swapMethods } from '../../components
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { pn, amountToString, computeSats, statusBadgeColor } from '../../utils';
+import { pn, amountToString, btcToSatsString, computeSats, statusBadgeColor } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog, OrderDescriptionDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
@@ -89,11 +89,11 @@ const OrderDetails = ({
 
     if (currentOrder.currency === 1000) {
       return (
-        amountToString(
-          (currentOrder.amount * 100000000).toString(),
+        btcToSatsString(
+          currentOrder.amount,
           currentOrder.amount > 0 ? false : currentOrder.has_range,
-          currentOrder.min_amount * 100000000,
-          currentOrder.max_amount * 100000000,
+          currentOrder.min_amount,
+          currentOrder.max_amount,
         ) + ' Sats'
       );
     } else {
