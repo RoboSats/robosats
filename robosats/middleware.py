@@ -5,6 +5,7 @@ from datetime import timedelta
 from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
 from django.contrib.auth.models import AnonymousUser, User, update_last_login
+from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
@@ -132,7 +133,14 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # Generate nickname deterministically
             nickname = NickGen.short_from_SHA256(hash, max_length=18)[0]
 
-            user = User.objects.create_user(username=nickname, password=None)
+            try:
+                user = User.objects.create_user(username=nickname, password=None)
+            except IntegrityError:
+                # Nickname collision: this hash already has a user (race condition or
+                # NickGen pool exhaustion). Return a conflict error instead of a 500.
+                return JsonResponse(
+                    new_error(7004), status=status.HTTP_409_CONFLICT
+                )
 
             # Store hash_id
             user.robot.hash_id = hash
