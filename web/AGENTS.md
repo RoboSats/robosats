@@ -80,9 +80,8 @@ also emits `nodeapp/basic.html`, `nodeapp/pro.html`, `desktopApp/index.html`, et
 - **`/pro` is a first-class route** — same bundle, pro entry point.
 
 ## Traps
-- **`curl` is not installed** in the Alpine image; the Dockerfile
-  `HEALTHCHECK CMD curl --fail http://localhost:80` always fails. Replace with
-  `wget -q -O- …` or remove the HEALTHCHECK.
+- **HEALTHCHECK uses `wget`** (BusyBox, ships with Alpine). `curl` is not installed;
+  the previous `curl --fail …` command always failed. Fixed in this codebase.
 - **Stale Dockerfile comment**: `# Needs a copy or symlink of /frontend/static in /nodeapp/static` —
   copy-paste from nodeapp; this is the `/web` container, not `/nodeapp`.
 - `basic.html` and `pro.html` are gitignored — any copy in the working tree is a local
