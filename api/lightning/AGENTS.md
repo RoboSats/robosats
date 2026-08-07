@@ -24,9 +24,7 @@ class-definition time (also import time), reused by every call.
 - `validate_ln_invoice(cls, invoice, num_satoshis, routing_budget_ppm)` → **dict**
   `{valid, context, description, payment_hash, created_at, expires_at}`.
 - `pay_invoice(cls, lnpayment)` — **rewards-withdrawal payouts only** (sole caller:
-  `Logics.withdraw_rewards`). Returns `(bool, Optional[str] failure_reason)`. LND has one
-  fall-through branch that returns a bare `False` (not a 2-tuple) if the response stream
-  ends without SUCCEEDED/FAILED.
+  `Logics.withdraw_rewards`). Returns `(bool, Optional[str] failure_reason)` on all paths — consistent with CLN.
 - `follow_send_payment(cls, lnpayment, fee_limit_sat, timeout_seconds)` — **`fee_limit_sat`
   is absolute satoshis, not ppm** (converted by the caller in `tasks.py`). LND streams via
   `RouterStub.SendPaymentV2`; CLN polls `ListPays` in a loop with recursive retry.
@@ -106,9 +104,9 @@ before reaching this module. Retry **scheduling** (deciding *when* to dispatch) 
 ## Traps
 Both `settle_hold_invoice` and `cancel_return_hold_invoice` on LND detect success by
 checking `str(response) == ""` (an empty gRPC response), annotated `# TODO` in-code as
-fragile. `pay_invoice` on LND can return a bare `False` (1-tuple shape) instead of the
-expected `(bool, reason)` 2-tuple on one fall-through path — don't unpack blindly without
-checking length, or match CLN's consistent 2-tuple return instead.
+fragile. `pay_invoice` on LND returns a consistent `(bool, str|None)` 2-tuple on all paths
+(fixed). Do not re-add a bare `return False` or a broad `try/except` that re-credits
+`earned_rewards` on exceptions — see `api/AGENTS.md` Constraints for the exploit rationale.
 
 ## Constraints
 Keep LND and CLN method signatures in lockstep — `node.py`'s aliasing assumes identical
