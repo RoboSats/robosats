@@ -664,7 +664,7 @@
   "Payment failed?": "Betalning misslyckades?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "Säg hej! Var hjälpsam och koncis. Låt dem veta hur de kan skicka {{amount}} {{currencyCode}} till dig.",
   "To open a dispute you need to wait": "För att öppna en tvist måste du vänta",
-  "Wait for the seller to confirm he has received the payment.": "Vänta på att säljaren ska bekräfta att han har mottagit betalningen.",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "En kontaktmetod krävs",
   "Attach chat logs": "Bifoga chattloggar",

@@ -1,10 +1,9 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography, Tooltip, IconButton } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { decryptMessage } from '../../../../pgp';
 
 // Icons
-import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
@@ -17,7 +16,7 @@ import {
 import { type UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
 import { type Order } from '../../../../models';
 import getSettings from '../../../../utils/settings';
-import { AttachFile, Send } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
 
@@ -74,7 +73,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [messageCount, setMessageCount] = useState<number>(0);
   const [serverMessages, setServerMessages] = useState<ServerMessage[]>([]);
-  const [uploading, setUploading] = useState<boolean>(false);
+  const [_uploading, setUploading] = useState<boolean>(false);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -201,7 +200,7 @@ const EncryptedApiChat: React.FC<Props> = ({
     }
   };
 
-  const handleAttachClick = (): void => {
+  const _handleAttachClick = (): void => {
     // Clear any previous errors
     setError('');
     setPrivacyWarningOpen(true);
@@ -215,7 +214,7 @@ const EncryptedApiChat: React.FC<Props> = ({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const _handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) {
       // User cancelled file selection
@@ -318,7 +317,7 @@ const EncryptedApiChat: React.FC<Props> = ({
               }}
               fullWidth={true}
             />
-            <input
+            {/* <input
               type='file'
               ref={fileInputRef}
               style={{ display: 'none' }}
@@ -335,7 +334,7 @@ const EncryptedApiChat: React.FC<Props> = ({
                   {uploading ? <CircularProgress size={24} /> : <AttachFile />}
                 </IconButton>
               </span>
-            </Tooltip>
+            </Tooltip> */}
             <Button
               disabled={waitingEcho || peerPubKey === undefined}
               type='submit'
