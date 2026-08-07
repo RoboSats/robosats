@@ -229,14 +229,8 @@ carefully as `Logics` itself. Never add an `Order.Status` member without a `t_to
 entry. Don't add a cost to collaborative cancel, or a loser-penalty field to disputes beyond
 `num_disputes`, without confirming the product intent above first.
 
-`LNNode.pay_invoice` (LND only) historically returned a bare `False` (1-tuple) when the
-gRPC stream ended without SUCCEEDED/FAILED. `Logics.withdraw_rewards` unpacks it as
-`paid, failure_reason = LNNode.pay_invoice(...)` — a 1-tuple raises `TypeError` and
-bypasses the `earned_rewards` re-credit path, permanently losing user sats. Fixed: all
-paths now return `(bool, str|None)`. **Do not** re-add a broad `try/except` around
-`pay_invoice` that re-credits on any exception — a user able to force repeated node
-exceptions could restore rewards they already received (exploit). Only a clean
-`(False, reason)` 2-tuple return should trigger re-credit, as designed.
+**Do not** re-credit rewards — a user able to force repeated
+exceptions could restore rewards they already received (exploit).
 
 ## Rules
 
