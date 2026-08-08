@@ -649,6 +649,7 @@ node
 desktopApp/release-builds
 
 # frontend statics
+collected_static
 frontend/templates/frontend/*.html
 frontend/*.html
 desktopApp/static
