@@ -7,7 +7,7 @@ from decouple import config
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ReadTimeout
 
-LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+LNVENDOR = config("LNVENDOR", cast=str, default="LND").strip("'\"")
 WAIT_STEP = 0.2
 
 
