@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, TextField, Tooltip, Typography, useTheme } from '@mui/material';
+import { Grid, TextField, Tooltip, Typography, useTheme, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
 import { type Order } from '../../../models';
@@ -9,17 +9,21 @@ interface ExpiredPromptProps {
   order: Order;
   loadingRenew: boolean;
   onClickRenew: (password?: string) => void;
+  badRequest?: string | null;
 }
 
 export const ExpiredPrompt = ({
   loadingRenew,
   order,
   onClickRenew,
+  badRequest,
 }: ExpiredPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [password, setPassword] = useState<string>();
   const [error, setError] = useState<boolean>(false);
+
+  const errorText = badRequest || order.bad_request || '';
 
   return (
     <Grid container direction='row'>
@@ -28,13 +32,11 @@ export const ExpiredPrompt = ({
           {t(order.expiry_message)}
         </Typography>
       </Grid>
-      {order.bad_request && (
-        <Grid item style={{ width: '100%' }}>
-          <Typography variant='body2' align='center' color='error'>
-            {t(order.bad_request)}
-          </Typography>
+      {errorText ? (
+        <Grid item style={{ width: '100%', marginTop: '8px' }}>
+          <Alert severity='error'>{t(errorText, { defaultValue: errorText })}</Alert>
         </Grid>
-      )}
+      ) : null}
       {order.is_maker ? (
         <>
           {order.has_password && (

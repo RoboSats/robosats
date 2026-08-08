@@ -32,15 +32,28 @@ const StoreTokenDialog = ({
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
 
+  const isGarageKeyMode = garage.getMode() === 'garageKey';
+  const garageKey = garage.getGarageKey();
+
+  const displayToken = isGarageKeyMode && garageKey
+    ? garageKey.encodedKey
+    : garage.getSlot()?.token;
+
+  const displayTitle = isGarageKeyMode
+    ? t('Store your garage key')
+    : t('Store your robot token');
+
+  const displayMessage = isGarageKeyMode
+    ? t('Your garage key provides access to all your robot accounts. Store it safely. You can simply copy it into another application.')
+    : t('You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.');
+
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t('Store your robot token')}</DialogTitle>
+      <DialogTitle>{displayTitle}</DialogTitle>
 
       <DialogContent>
         <DialogContentText>
-          {t(
-            'You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.',
-          )}
+          {displayMessage}
         </DialogContentText>
         <br />
         <Grid container>
@@ -48,7 +61,7 @@ const StoreTokenDialog = ({
             sx={{ width: '100%', maxWidth: '550px' }}
             disabled
             label={t('Back it up!')}
-            value={garage.getSlot()?.token}
+            value={displayToken}
             variant='filled'
             size='medium'
             InputProps={{
@@ -56,7 +69,7 @@ const StoreTokenDialog = ({
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
                   <IconButton
                     onClick={() => {
-                      systemClient.copyToClipboard(garage.getSlot()?.token ?? '');
+                      systemClient.copyToClipboard(displayToken ?? '');
                     }}
                   >
                     <ContentCopy color='primary' />

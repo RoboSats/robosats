@@ -17,11 +17,13 @@ import { Key } from '@mui/icons-material';
 
 import RobotAvatar from '../RobotAvatar';
 import RobotInfo from '../RobotInfo';
+import AccountNavigator from '../../basic/GaragePage/AccountNavigator';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Slot, type Coordinator } from '../../models';
 import AuditPGPDialog from './AuditPGP';
+import useLegacyMode from '../../hooks/useLegacyMode';
 
 interface Props {
   open: boolean;
@@ -33,8 +35,11 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
+  const { isLegacyMode } = useLegacyMode();
   const [audit, setAudit] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const garageKey = garage.getGarageKey();
 
   const loadRobot = (token: string) => {
     garage.setCurrentSlot(token);
@@ -46,6 +51,20 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
       setLoading(true);
       loadRobot(e.target.value as string);
     }
+  };
+
+  const handlePreviousAccount = (): void => {
+    setLoading(true);
+    void garage.previousAccount(federation).finally(() => {
+      setLoading(false);
+    });
+  };
+
+  const handleNextAccount = (): void => {
+    setLoading(true);
+    void garage.nextAccount(federation).finally(() => {
+      setLoading(false);
+    });
   };
 
   useEffect(() => {
@@ -69,42 +88,69 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           <Typography component='h5' variant='h5'>
             {t('Your Robot')}
           </Typography>
-          <Select
-            fullWidth
-            inputProps={{
-              style: { textAlign: 'center' },
-            }}
-            value={garage.currentSlot}
-            onChange={handleChangeSlot}
-          >
-            {Object.values(garage.slots).map((slot: Slot, index: number) => {
-              return (
-                <MenuItem key={index} value={slot.token}>
-                  <Grid
-                    container
-                    direction='row'
-                    justifyContent='flex-start'
-                    alignItems='center'
-                    style={{ height: '2.8em' }}
-                    spacing={1}
-                  >
-                    <Grid item>
-                      <RobotAvatar
-                        hashId={slot?.hashId}
-                        smooth={true}
-                        style={{ width: '2.6em', height: '2.6em' }}
-                        placeholderType='loading'
-                        small={true}
-                      />
+          {!isLegacyMode && garageKey ? (
+            <Grid container direction='column' alignItems='center' spacing={1}>
+              <Grid item>
+                <RobotAvatar
+                  hashId={garage.getSlot()?.hashId}
+                  smooth={true}
+                  style={{ width: '5em', height: '5em' }}
+                  placeholderType='loading'
+                  small={true}
+                />
+              </Grid>
+              <Grid item>
+                <Typography variant='subtitle1'>
+                  <b>{garage.getSlot()?.nickname}</b>
+                </Typography>
+              </Grid>
+              <Grid item>
+                <AccountNavigator
+                  accountIndex={garageKey.currentAccountIndex}
+                  onPrevious={handlePreviousAccount}
+                  onNext={handleNextAccount}
+                  loading={loading}
+                />
+              </Grid>
+            </Grid>
+          ) : (
+            <Select
+              fullWidth
+              inputProps={{
+                style: { textAlign: 'center' },
+              }}
+              value={garage.currentSlot}
+              onChange={handleChangeSlot}
+            >
+              {Object.values(garage.slots).map((slot: Slot, index: number) => {
+                return (
+                  <MenuItem key={index} value={slot.token}>
+                    <Grid
+                      container
+                      direction='row'
+                      justifyContent='flex-start'
+                      alignItems='center'
+                      style={{ height: '2.8em' }}
+                      spacing={1}
+                    >
+                      <Grid item>
+                        <RobotAvatar
+                          hashId={slot?.hashId}
+                          smooth={true}
+                          style={{ width: '2.6em', height: '2.6em' }}
+                          placeholderType='loading'
+                          small={true}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <Typography>{slot?.nickname}</Typography>
+                      </Grid>
                     </Grid>
-                    <Grid item>
-                      <Typography>{slot?.nickname}</Typography>
-                    </Grid>
-                  </Grid>
-                </MenuItem>
-              );
-            })}
-          </Select>
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          )}
           {loading && <LinearProgress />}
 
           <Grid

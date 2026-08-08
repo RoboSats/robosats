@@ -15,6 +15,7 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 import { useNavigate } from 'react-router-dom';
 import { sha256 } from 'js-sha256';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import useLegacyMode from '../../hooks/useLegacyMode';
 
 interface TakeButtonProps {
   currentOrder: Order;
@@ -44,6 +45,7 @@ const TakeButton = ({
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
+  const { isLegacyMode, legacyDisabledTooltip } = useLegacyMode();
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -227,15 +229,23 @@ const TakeButton = ({
                     display: invalidTakeAmount ? 'none' : '',
                   }}
                 >
-                  <LoadingButton
-                    loading={loadingTake}
-                    sx={{ height: '2.8em' }}
-                    variant='outlined'
-                    color='primary'
-                    onClick={onTakeOrderClicked}
+                  <Tooltip
+                    title={isLegacyMode ? legacyDisabledTooltip : ''}
+                    placement='top'
                   >
-                    {t('Take Order')}
-                  </LoadingButton>
+                    <span>
+                      <LoadingButton
+                        loading={loadingTake}
+                        sx={{ height: '2.8em' }}
+                        variant='outlined'
+                        color='primary'
+                        disabled={isLegacyMode}
+                        onClick={onTakeOrderClicked}
+                      >
+                        {t('Take Order')}
+                      </LoadingButton>
+                    </span>
+                  </Tooltip>
                 </div>
               </Grid>
             </Grid>
@@ -261,16 +271,21 @@ const TakeButton = ({
             bottom: '0.25em',
           }}
         >
-          <LoadingButton
-            loading={loadingTake}
-            sx={{ height: '2.71em' }}
-            variant='outlined'
-            color='primary'
-            size='large'
-            onClick={onTakeOrderClicked}
-          >
-            {t('Take Order')}
-          </LoadingButton>
+          <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
+            <span>
+              <LoadingButton
+                loading={loadingTake}
+                sx={{ height: '2.71em' }}
+                variant='outlined'
+                color='primary'
+                size='large'
+                disabled={isLegacyMode}
+                onClick={onTakeOrderClicked}
+              >
+                {t('Take Order')}
+              </LoadingButton>
+            </span>
+          </Tooltip>
         </Box>
       );
     }
