@@ -585,12 +585,19 @@ class CLNNode:
                     time.sleep(2)
 
         def handle_response():
+            from api.logics import Logics
+
+            if not order.transition_status(
+                Order.Status.PAY,
+                from_statuses=[Order.Status.PAY, Order.Status.FAI],
+            ):
+                return
+
             try:
                 lnpayment.status = LNPayment.Status.FLIGHT
                 lnpayment.in_flight = True
                 lnpayment.save(update_fields=["in_flight", "status"])
 
-                order.update_status(Order.Status.PAY)
                 nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
                 response = nodestub.Pay(request)
 
@@ -649,7 +656,7 @@ class CLNNode:
                     )
                     lnpayment.preimage = response.payment_preimage.hex()
                     lnpayment.save(update_fields=["status", "fee", "preimage"])
-                    order.update_status(Order.Status.SUC)
+                    Logics.complete_order(order)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.SUC)
                     )
