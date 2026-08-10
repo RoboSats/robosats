@@ -13,6 +13,7 @@ from decouple import config
 from django.utils import timezone
 
 from api.errors import new_error
+from api.models import Robot
 
 logger = logging.getLogger("api.utils")
 
@@ -359,20 +360,74 @@ def compute_avg_premium(queryset):
     return weighted_median_premium, total_volume
 
 
+_ARMOR_BODY_LINE = re.compile(r"^[A-Za-z0-9+/]+={0,2}$")
+
+
+def _is_well_formed_pgp_key(key_text: str) -> bool:
+    lines = key_text.strip().splitlines()
+    if len(lines) < 4:
+        return False
+    if not lines[0].startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
+        return False
+    if not lines[-1].startswith("-----END PGP PUBLIC KEY BLOCK-----"):
+        return False
+    try:
+        blank_idx = next(
+            i for i, line in enumerate(lines[1:-1], 1) if line.strip() == ""
+        )
+    except StopIteration:
+        return False
+    for line in lines[blank_idx + 1 : -1]:
+        if line.startswith("="):
+            continue
+        if not _ARMOR_BODY_LINE.match(line):
+            return False
+    return True
+
+
 def validate_pgp_keys(pub_key, enc_priv_key):
     """Validates PGP valid keys. Formats them in a way understandable by the frontend"""
-    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
 
     # Standardize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
     enc_priv_key = enc_priv_key.replace("\r\n", "\n").replace("\\", "\n")
     pub_key = pub_key.replace("\r\n", "\n").replace("\\", "\n")
+
+    if not _is_well_formed_pgp_key(pub_key):
+        return (
+            False,
+            new_error(
+                1034,
+                {
+                    "import_pub_result_stderr": "Invalid PGP key format",
+                    "import_pub_result_returncode": "",
+                    "import_pub_result_summary": "",
+                    "import_pub_result_results": str([]),
+                    "import_pub_result_imported": "0",
+                },
+            ),
+            None,
+            None,
+        )
+
+    if Robot.objects.filter(public_key=pub_key).exists():
+        return (
+            False,
+            new_error(1055),
+            None,
+            None,
+        )
+
+    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
 
     # Try to import the public key
     import_pub_result = gpg.import_keys(pub_key)
     if not import_pub_result.imported == 1:
         # If a robot is deleted and it is rebuilt with the same pubKey, the key will not be imported again
         # so we assert that the import error is "Not actually changed"
-        if "Not actually changed" not in import_pub_result.results[0]["text"]:
+        if (
+            import_pub_result.results
+            and "Not actually changed" not in import_pub_result.results[0]["text"]
+        ):
             return (
                 False,
                 new_error(
@@ -406,12 +461,16 @@ def validate_pgp_keys(pub_key, enc_priv_key):
                 )
 
     # Exports the public key again for uniform formatting.
-    pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
+    if import_pub_result.fingerprints:
+        pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
 
     # Try to import the encrypted private key (without passphrase)
     import_priv_result = gpg.import_keys(enc_priv_key)
     if not import_priv_result.sec_imported == 1:
-        if "Not actually changed" not in import_priv_result.results[0]["text"]:
+        if (
+            import_priv_result.results
+            and "Not actually changed" not in import_priv_result.results[0]["text"]
+        ):
             return (
                 False,
                 new_error(
