@@ -34,6 +34,9 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
   button in `FederationTable` triggers `federation.loadRatings(true)` for on-demand
   cryptographic verification.
 - Exposes `coordinatorUpdatedAt`, `bookUpdatedAt` for consumers that need cache-busting.
+- Calls `void federation.loadDevFund()` on mount — probes every coordinator's live
+  `DEVFUND` via `/api/info/`, overrides the static federation badge, re-runs the lottery
+  and reorders `Federation.coordinators`.
 - Custom coordinator discovery (power-user `SettingsPage/Coordinators.tsx`) is supported
   but is an escape hatch, not a headline feature.
 
@@ -41,6 +44,12 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
 
 - Manages `Garage` — a map of token→`Slot` (each Slot holds a `Robot` + optional active order).
 - Polls `slot.activeOrder` status using `statusToDelay[status]` — faster polling for active trade statuses, `defaultDelay` otherwise.
+- Exposes `markCoordinatorPicked` / `resetCoordinatorPicked` — a ref flag that records
+  whether the user manually selected a coordinator in `MakerForm` (`SelectCoordinator`).
+- When `federation.devFundLoaded` flips true, re-derives the default MakerForm host to the
+  new `getCoordinatorsAlias()[0]` **only if** the user has not picked one manually
+  (`coordinatorPickedRef`), preventing a late-arriving live-DevFund lottery shuffle from
+  overwriting an explicit choice. `MakerForm.clearMaker` calls `resetCoordinatorPicked`.
 - Exposes `garage.getSlot()` (current slot), `garage.getActiveOrderId()`.
 - **Single-active-order invariant** is coordinator-enforced; `slot.activeOrder` just surfaces what the coordinator reports. The garage does not prevent creating a second order client-side.
 
