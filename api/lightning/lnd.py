@@ -520,7 +520,7 @@ class LNDNode:
                 lnpayment.save(update_fields=["fee", "status", "preimage"])
                 return True, None
 
-        return False
+        return False, "Payment stream ended without a final status"
 
     @classmethod
     def follow_send_payment(cls, lnpayment, fee_limit_sat, timeout_seconds):

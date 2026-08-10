@@ -91,6 +91,7 @@ ERRORS = {
     7001: "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys and a nostr pubkey",
     7002: "Invalid keys: {bad_keys_context}",
     7003: "Authentication credentials were not provided.",
+    7004: "Robot nickname already taken. Please try a different token.",
 }
 
 

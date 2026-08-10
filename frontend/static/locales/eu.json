@@ -664,7 +664,7 @@
   "Payment failed?": "Ordainketa huts egin du?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "Agurtu! Lagungarri eta labur izan. Jakin dezatela {{amount}} {{currencyCode}}ak nola bidali.",
   "To open a dispute you need to wait": "Eztabaida bat irekitzeko itxaron behar duzu",
-  "Wait for the seller to confirm he has received the payment.": "Itxaron saltzaileak ordainketa jaso duela baieztatu arte.",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "Harremanetarako metodo bat beharrezkoa da",
   "Attach chat logs": "Itsatsi txat log-ak",

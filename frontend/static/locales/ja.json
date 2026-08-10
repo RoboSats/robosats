@@ -664,7 +664,7 @@
   "Payment failed?": "支払いに失敗しました？",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "こんにちはと言ってください！役に立つように簡潔にしてください。どのようにして{{amount}} {{currencyCode}}を送信するかを知らせてください。",
   "To open a dispute you need to wait": "紛争を開くには待つ必要があります",
-  "Wait for the seller to confirm he has received the payment.": "売り手が支払いを受け取ったことを確認するまで待ちます。",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "連絡手段が必要です",
   "Attach chat logs": "チャットログを添付",
