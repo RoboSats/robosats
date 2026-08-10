@@ -20,6 +20,22 @@ NickGen = NickGenerator(
     lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
 )
 
+# Nostr pubkey placeholder used for robots with an unknown/corrupted key.
+# When an existing robot has this value stored, it gets replaced by the
+# nostr pubkey received in the Authorization header.
+INVALID_NOSTR_PUBKEY = "0" * 64
+
+
+def parse_nostr_pubkey(request):
+    """Extracts and lowercases a 64-char hex nostr pubkey from the request header."""
+    match = re.search(
+        r"(?:Nostr\s+)?(?P<pubkey>[0-9a-fA-F]{64})",
+        request.META.get("NOSTR_PUBKEY", ""),
+    )
+    if match:
+        return match.group("pubkey").lower()
+    return ""
+
 
 class DisableCSRFMiddleware(object):
     def __init__(self, get_response):
@@ -89,6 +105,17 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 if token.user.last_login < timezone.now() - timedelta(minutes=2):
                     update_last_login(None, token.user)
 
+                    # If the robot's stored nostr pubkey is the placeholder,
+                    # update it with the one being received (if valid).
+                    if token.user.robot.nostr_pubkey == INVALID_NOSTR_PUBKEY:
+                        received_nostr_pubkey = parse_nostr_pubkey(request)
+                        if (
+                            received_nostr_pubkey
+                            and received_nostr_pubkey != INVALID_NOSTR_PUBKEY
+                        ):
+                            token.user.robot.nostr_pubkey = received_nostr_pubkey
+                            token.user.robot.save(update_fields=["nostr_pubkey"])
+
             except Exception:
                 update_last_login(None, token.user)
 
@@ -106,9 +133,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             encrypted_private_key = request.META.get(
                 "ENCRYPTED_PRIVATE_KEY", ""
             ).replace("Private ", "")
-            match = re.search(r"(?:Nostr\s+)?(?P<pubkey>[0-9a-fA-F]{64})", request.META.get("NOSTR_PUBKEY", ""))
-            if match:
-                nostr_pubkey = match.group("pubkey").lower()
+            nostr_pubkey = parse_nostr_pubkey(request)
 
             if not public_key or not encrypted_private_key or not nostr_pubkey:
                 return JsonResponse(new_error(7001), status=status.HTTP_400_BAD_REQUEST)
