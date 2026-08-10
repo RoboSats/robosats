@@ -864,6 +864,9 @@ class InfoView(viewsets.ViewSet):
         context["node_alias"] = config("NODE_ALIAS")
         context["node_id"] = config("NODE_ID")
         context["network"] = config("NETWORK", cast=str, default="mainnet")
+        context["devfund"] = round(
+            float(config("DEVFUND", cast=float, default=0.2)) * 100, 2
+        )
         context["maker_fee"] = float(config("FEE")) * float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE")) * (
             1 - float(config("MAKER_FEE_SPLIT"))

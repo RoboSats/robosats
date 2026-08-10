@@ -169,6 +169,8 @@ paths:
         - Fees
           - maker and taker fees
           - on-chain swap fees
+        - Development fund
+          - devfund donation percentage
       summary: Get info
       tags:
       - info
@@ -1241,6 +1243,11 @@ components:
           type: number
           format: double
           description: 'Exchange''s set taker fee '
+        devfund:
+          type: number
+          format: double
+          description: Percentage of trade proceeds the coordinator donates to the
+            development fund
         bond_size:
           type: number
           format: double
@@ -1265,6 +1272,7 @@ components:
       - book_liquidity
       - cln_version
       - current_swap_fee_rate
+      - devfund
       - last_day_nonkyc_btc_premium
       - last_day_volume
       - lifetime_volume
