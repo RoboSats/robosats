@@ -47,6 +47,7 @@ export interface Info {
   version: Version;
   maker_fee: number;
   taker_fee: number;
+  devfund?: number;
   bond_size: number;
   min_order_size: number;
   max_order_size: number;

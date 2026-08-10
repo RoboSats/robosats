@@ -9,6 +9,7 @@ Platform-abstraction layer. Four singleton clients hide transport/platform diffe
 ```
 services/
   Android/index.ts            ← AndroidAppRobosats bridge helpers
+  DevFundProfile.ts            ← live DevFund % probes per coordinator (module-level TTL cache)
   api/
     index.ts                  ← exports apiClient singleton
     ApiAndroidClient/         ← OkHttp via WebAppInterface
@@ -81,6 +82,18 @@ services/
   ```
   Called by `Federation.model.loadRatings()`. Returns a subscription ID that can be
   passed to `closeSubscription(id)` when the `oneose` callback fires.
+
+### `DevFundProfile.ts`
+
+`fetchDevFundProfiles(federation): Promise<Record<string, number>>` — probes each enabled
+coordinator's `GET /api/info/` (via `apiClient.get(url, '/api/info/', undefined, true)`)
+to read its live `devfund` percentage, returning a `shortAlias → %` map. Used by
+`Federation.loadDevFund()` to override the static `badges.donatesToDevFund` before
+re-running the weighted lottery. Requests are `silent` (no global error snackbar) and
+bounded by a 15 s timeout; failures/unreachable URLs (e.g. Tor-only coordinators on
+clearnet web) are simply omitted → those coordinators keep the static fallback. Results
+are cached at module level for 30 min, keyed by the `alias|url` set so a network/origin
+switch forces a refresh.
 
 ## Product Intent
 
