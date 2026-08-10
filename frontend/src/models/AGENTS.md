@@ -47,6 +47,16 @@ All prefs loaded **asynchronously** from `systemClient.getItem()` in the constru
 - `federation.json` is maintainer-owned; a webpack rebuild is required to add/remove coordinators.
 - Coordinator order is randomised at runtime — `fav.coordinator: 'robosats'` in the seed is a legacy default, not a preference.
 
+**Live DevFund weight (`loadDevFund`)** — `Coordinator.Info` carries an optional `devfund`
+(percentage, from `GET /api/info/`). `Federation.loadDevFund()` (called by
+`FederationContext` on mount) probes all coordinators via `services/DevFundProfile.ts`,
+overwrites `badges.donatesToDevFund` with the live value for reachable coordinators, then
+re-runs `federationLottery` and reorders `this.coordinators` (the lottery order drives the
+default MakerForm host and the book sort). Sets `devFundLoaded = true` and fires the
+`onFederationUpdate` hook so the UI re-renders; `GarageContext` watches
+`federation.devFundLoaded` to re-derive the default host only if the user has not already
+picked one manually (`markCoordinatorPicked`/`resetCoordinatorPicked`).
+
 **Coordinator ratings**
 
 `public ratings: Record<string, Record<string, number>>` — outer key: coordinator
