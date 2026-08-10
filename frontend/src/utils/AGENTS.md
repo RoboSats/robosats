@@ -13,9 +13,9 @@ One subdirectory: `crypto/`.
 | `aggregateInfo.ts`     | `aggregateInfo`                                          | Merges `/api/info` responses across coordinators                           |
 | `array.ts`             | misc array helpers                                       |                                                                            |
 | `blossom.ts`           | Blossom media-upload helpers                             | Used by chat image upload                                                  |
-| `bondCalculator.ts`    | `BondCalculatorProps`, `calculateBondAmount`             | Bond sats ↔ percent, delegates from `useBondEstimate`                     |
+| `bondCalculator.ts`    | `BondCalculatorProps`, `calculateBondAmount`             | Bond sats ↔ percent, delegates from `useBondEstimate`                      |
 | `checkVer.ts`          | `checkVer`                                               | Compares client version vs coordinator-reported `version`                  |
-| `computeSats.ts`       | `computeSats`                                            | Fiat ↔ sats conversion using current price + premium                      |
+| `computeSats.ts`       | `computeSats`                                            | Fiat ↔ sats conversion using current price + premium                       |
 | `crypto/`              | subdirectory                                             | Crypto helpers (entropy, hashing)                                          |
 | `federationLottery.ts` | `federationLottery`                                      | Randomises coordinator order weighted by DevFund donation % (capped at 50) |
 | `filterOrders.ts`      | `filterOrders`                                           | Applies book filter state to an order list                                 |
