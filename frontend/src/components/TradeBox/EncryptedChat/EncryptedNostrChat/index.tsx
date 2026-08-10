@@ -1,11 +1,10 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography, IconButton, Tooltip } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
-import { AttachFile } from '@mui/icons-material';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
@@ -75,7 +74,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
   const [value, setValue] = useState<string>('');
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [messageCount, setMessageCount] = useState<number>(0);
-  const [uploading, setUploading] = useState<boolean>(false);
+  const [_uploading, setUploading] = useState<boolean>(false);
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
@@ -192,7 +191,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
     }
   };
 
-  const handleAttachClick = (): void => {
+  const _handleAttachClick = (): void => {
     // Clear any previous errors
     setError('');
     setPrivacyWarningOpen(true);
@@ -206,7 +205,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const _handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) {
       // User cancelled file selection
@@ -326,7 +325,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
               }}
               fullWidth={true}
             />
-            <input
+            {/* <input
               type='file'
               ref={fileInputRef}
               style={{ display: 'none' }}
@@ -343,7 +342,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
                   {uploading ? <CircularProgress size={24} /> : <AttachFile />}
                 </IconButton>
               </span>
-            </Tooltip>
+            </Tooltip> */}
             <Button
               disabled={waitingEcho || !peerPubKey}
               type='submit'
