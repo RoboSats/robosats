@@ -89,12 +89,13 @@ No `desktop-pro` value exists.
 ## Service Injection — userAgent-based (module-level singletons)
 
 Not from `window.RobosatsSettings`; selection happens at **module load** via `window.navigator.userAgent`:
-| Service | Android UA `AndroidRobosats` | Electron UA `Electron` | Default |
-|---|---|---|---|
-| `api/` → `apiClient` | `ApiAndroidClient` | — | `ApiWebClient` |
-| `Websocket/` → `websocketClient` | `WebsocketAndroidClient` | — | `WebsocketWebClient` |
-| `System/` → `systemClient` | `SystemAndroidClient` | `SystemDesktopClient` | `SystemWebClient` |
-| `Roboidentities/` → `roboidentitiesClient` | swapped by file-replace | — | `RoboidentitiesWebClient` |
+
+| Service                                    | Android UA `AndroidRobosats` | Electron UA `Electron` | Default                   |
+| ------------------------------------------ | ---------------------------- | ---------------------- | ------------------------- |
+| `api/` → `apiClient`                       | `ApiAndroidClient`           | —                      | `ApiWebClient`            |
+| `Websocket/` → `websocketClient`           | `WebsocketAndroidClient`     | —                      | `WebsocketWebClient`      |
+| `System/` → `systemClient`                 | `SystemAndroidClient`        | `SystemDesktopClient`  | `SystemWebClient`         |
+| `Roboidentities/` → `roboidentitiesClient` | swapped by file-replace      | —                      | `RoboidentitiesWebClient` |
 
 ## Product Intent
 
