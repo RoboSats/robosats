@@ -230,7 +230,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.status in [Order.Status.DIS, Order.Status.WFR]
                 and order.is_disputed
             ):
-                own_bond_sats = order.maker_bond.num_satoshis
+                own_bond_sats = order.taker_bond.num_satoshis
                 if Logics.is_buyer(order, order.taker):
                     if order.is_swap:
                         trade_sats = order.payout_tx.num_satoshis

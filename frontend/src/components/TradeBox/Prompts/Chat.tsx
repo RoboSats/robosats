@@ -126,7 +126,7 @@ export const ChatPrompt = ({
         setSentButton(false);
         setUndoSentButton(true);
         setReceivedButton(false);
-        setText(t('Wait for the seller to confirm he has received the payment.'));
+        setText(t('Wait for the seller to confirm they have received the payment.'));
       } else {
         setSentButton(false);
         setUndoSentButton(false);

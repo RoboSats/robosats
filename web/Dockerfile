@@ -19,6 +19,6 @@ RUN apk -U --no-cache upgrade \
     && apk --no-cache add nginx
 
 EXPOSE 80
-HEALTHCHECK CMD curl --fail http://localhost:80 || exit 1
+HEALTHCHECK CMD wget -q -O- http://localhost:80 || exit 1
 
 CMD ["sh", "run.sh"]

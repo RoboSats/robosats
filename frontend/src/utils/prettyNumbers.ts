@@ -27,4 +27,17 @@ export const amountToString: (
   return pn(parseFloat(Number(amount).toPrecision(precision))) ?? '';
 };
 
+export const btcToSatsString: (
+  amount: number,
+  has_range: boolean,
+  min_amount: number,
+  max_amount: number,
+) => string = (amount, has_range, min_amount, max_amount) => {
+  const toSats = (btc: number): string => pn(Math.round(btc * 100000000));
+  if (has_range) {
+    return `${toSats(min_amount)}-${toSats(max_amount)}`;
+  }
+  return toSats(amount);
+};
+
 export default pn;

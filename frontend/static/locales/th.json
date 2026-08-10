@@ -664,7 +664,7 @@
   "Payment failed?": "การชำระเงินล้มเหลวหรือไม่?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "สวัสดีครับ! กรุณากระชับและเป็นประโยชน์ ให้อธิบายว่าควรที่จะส่ง {{amount}} {{currencyCode}} ให้คุณอย่างไร",
   "To open a dispute you need to wait": "การเปิดข้อพิพาทต้องรอการอนุมัติ",
-  "Wait for the seller to confirm he has received the payment.": "รอให้ผู้ขายยืนยันว่าได้รับการชำระเงินแล้ว",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "จำเป็นต้องมีวิธีการติดต่อ",
   "Attach chat logs": "แนบไดอารี่แชท",
