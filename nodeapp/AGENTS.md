@@ -97,9 +97,9 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
   responsibility.
 
 ## Traps
-- **`curl` is not installed** in the Alpine image (only `socat` + `nginx`). The Dockerfile
-  `HEALTHCHECK CMD curl --fail http://localhost:12596/selfhosted` always fails/errors.
-  Known issue; replace with `wget -q -O- …` or remove the healthcheck.
+- **HEALTHCHECK uses `wget`** (BusyBox, ships with Alpine) against `/selfhosted`. `curl`
+  is not installed in the image; the previous `curl --fail …` command was always failing.
+  Fixed in this codebase; do not replace `wget` with `curl` without adding a curl install.
 - **Port 12596 is published by the `tor` service**, not by the `nodeapp` service. Because
   `nodeapp` uses `network_mode: service:tor`, it shares the tor container's network
   namespace. The `ports:` mapping in `docker-compose-example.yml` must be on the `tor`
@@ -135,7 +135,7 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
 - When adding a coordinator: update `robosats-client.sh` (unique port pair), create
   `coordinators/{alias}/upstreams.conf` + `locations.conf`, and `include` both in
   `nginx.conf`. See `nodeapp/coordinators/AGENTS.md` for the full procedure.
-- Do not add a `curl` install to the Dockerfile without also fixing the healthcheck CMD
-  to match a real endpoint — or replace with `wget` which Alpine ships.
+- Do not replace `wget` in the HEALTHCHECK with `curl` — `curl` is not installed; use
+  `wget -q -O-` (BusyBox, ships with Alpine) or install `curl` explicitly.
 - Do not assume `nodeapp` sets `network_mode: bridge` — it shares the `tor` service's
   network namespace; any port mapping must live on the `tor` service.
