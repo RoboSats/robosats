@@ -463,9 +463,9 @@ class Logics:
         flagging it as dispute, we avoid having to settle the
         bonds"""
 
-        # If fiat has been marked as sent, automatic dispute
-        # resolution is not possible.
-        if order.is_fiat_sent and not order.reverted_fiat_sent:
+        # If fiat has been marked as sent (or was sent and then reverted),
+        # automatic dispute resolution is not possible.
+        if order.is_fiat_sent or order.reverted_fiat_sent:
             return False
 
         # If the order has not entered dispute due to time expire
@@ -572,9 +572,9 @@ class Logics:
             if robot.orders_disputes_started is None:
                 robot.orders_disputes_started = str(order.id)
             else:
-                robot.orders_disputes_started = (
-                    f"{robot.orders_disputes_started},{order.id}"
-                )
+                disputes = list(robot.orders_disputes_started)
+                disputes.append(str(order.id))
+                robot.orders_disputes_started = disputes
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")

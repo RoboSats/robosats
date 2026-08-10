@@ -229,6 +229,9 @@ carefully as `Logics` itself. Never add an `Order.Status` member without a `t_to
 entry. Don't add a cost to collaborative cancel, or a loser-penalty field to disputes beyond
 `num_disputes`, without confirming the product intent above first.
 
+**Do not** re-credit rewards — a user able to force repeated
+exceptions could restore rewards they already received (exploit).
+
 ## Rules
 
 - Always update or create integration and/or unitary tests in ../tests

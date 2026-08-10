@@ -37,7 +37,7 @@ Both upstream names must match exactly what `locations.conf` references in `prox
 | `/mainnet/{alias}/api/` | `mainnet_{alias}` | REST API; WS upgrade headers set (`Upgrade`, `Connection "Upgrade"`, `Host $host`, `proxy_http_version 1.1`) |
 | `/mainnet/{alias}/ws/` | `mainnet_{alias}` | WebSocket; same upgrade headers |
 | `/mainnet/{alias}/relay/` | `mainnet_{alias}` | Nostr relay; also sets `Origin $http_origin` + `add_header Access-Control-Allow-Origin *` |
-| `/test/{alias}/static/assets/avatars/` | `testnet_{alias}` | **BUG**: prefix is `/test/` not `/testnet/` — typo in all six files; testnet avatar requests return 404 |
+| `/testnet/{alias}/static/assets/avatars/` | `testnet_{alias}` | Coordinator avatar images (testnet) |
 | `/testnet/{alias}/api/` | `testnet_{alias}` | |
 | `/testnet/{alias}/ws/` | `testnet_{alias}` | |
 
@@ -58,7 +58,7 @@ Nostr relay is unreachable through nodeapp.
 3. Create `coordinators/{alias}/upstreams.conf` (exact template above).
 4. Create `coordinators/{alias}/locations.conf` (copy a working coordinator's file,
    replace all occurrences of the old alias with the new one and update upstream names;
-   **do not copy alice or freedomsats** — they contain bugs).
+   prefer temple or lake as the source — they have distinct testnet onions and clean configs).
 5. Add two `include` lines in `nginx.conf`: one in the `http` block
    (`conf.d/{alias}/upstreams.conf`) and one in the `server` block
    (`conf.d/{alias}/locations.conf`).
@@ -75,10 +75,10 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   users deploy a known, auditable set of coordinators torified at the container level,
   not a runtime-fetched list. Generating this config automatically from
   `federation.json` is a known improvement path but has not been implemented.
-- **Testnet support in nodeapp is best-effort.** Three of six coordinators share a single
-  onion for mainnet and testnet; avatar routes have a path typo (404); no testnet relay
-  route exists. Testnet is functionally degraded in this container — usable for API/WS
-  only, on the three coordinators with distinct testnet onions.
+- **Testnet support in nodeapp is best-effort.** Three of five coordinators (bazaar,
+  freedomsats, alice) share a single onion for mainnet and testnet; no testnet relay route
+  exists. Testnet is functionally degraded in this container — usable for API/WS only on
+  the coordinators with distinct testnet onions (temple, lake).
 
 ## Traps
 - `coordinators/alice/upstreams.conf` comments say "Libre Bazaar" (copy-paste error) and
@@ -89,8 +89,8 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   — identical ports; the second socat process to bind will fail (`EADDRINUSE`). Fix pending
   in the same PR; live in `:latest`. **Net effect: one of alice or freedomsats is
   completely unreachable in any running `:latest` container.**
-- All six `locations.conf` testnet avatar location uses `location /test/{alias}/…` instead
-  of `/testnet/{alias}/…` — testnet avatar requests return 404 for all coordinators.
+- All five `locations.conf` testnet avatar routes now use `/testnet/{alias}/...`
+  consistent with the API/WS routes — fixed in this codebase.
 - No testnet `relay/` route exists in any coordinator config — testnet Nostr relay is
   unreachable through nodeapp.
 - `coordinators/freedomsats/upstreams.conf` comments say "Libre freedomsats" — another
@@ -105,5 +105,5 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
 - Upstream names (`mainnet_{alias}`, `testnet_{alias}`) must match exactly in both
   `upstreams.conf` and `locations.conf` for the same coordinator.
 - Never duplicate the nginx include lines for the same coordinator in `nginx.conf`.
-- When copying an existing coordinator as a template, **do not use alice or freedomsats**
-  as the source — both contain bugs that would propagate to the new coordinator.
+- When copying an existing coordinator as a template, prefer temple or lake as the source
+  — they have distinct testnet onions and clean configs.

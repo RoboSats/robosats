@@ -664,7 +664,7 @@
   "Payment failed?": "Pagamento fallito?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "Saluta! Sii utile e conciso. Fagli sapere come inviarti {{amount}} {{currencyCode}}.",
   "To open a dispute you need to wait": "Per aprire una disputa devi aspettare",
-  "Wait for the seller to confirm he has received the payment.": "Aspetta che il venditore confermi di aver ricevuto il pagamento.",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "È richiesto un metodo di contatto",
   "Attach chat logs": "Allega i registri della chat",

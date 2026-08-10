@@ -664,7 +664,7 @@
   "Payment failed?": "Платёж не прошёл?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "Скажите привет! Будьте доброжелательны и кратки. Сообщите, как отправить вам {{amount}} {{currencyCode}}.",
   "To open a dispute you need to wait": "Чтобы открыть диспут, нужно подождать",
-  "Wait for the seller to confirm he has received the payment.": "Подождите, пока продавец подтвердит, что он получил платёж.",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "Требуется метод связи",
   "Attach chat logs": "Прикрепите журналы чата",
