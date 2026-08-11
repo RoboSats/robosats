@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim as builder
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG LIGHTNINGD_VERSION=v24.08
+ARG HOLD_VERSION=v0.3.3
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
         autoconf \
@@ -10,6 +10,8 @@ RUN apt-get update -qq && \
         ca-certificates \
         curl \
         git \
+        libpq-dev \
+        libsqlite3-dev \
         protobuf-compiler
 
 ENV RUST_PROFILE=release
@@ -18,13 +20,14 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN rustup toolchain install stable --component rustfmt --allow-downgrade
 
 WORKDIR /opt/lightningd
-RUN git clone https://github.com/daywalker90/holdinvoice.git /tmp/holdinvoice
-RUN cd /tmp/holdinvoice \
+RUN git clone --branch ${HOLD_VERSION} --depth 1 https://github.com/BoltzExchange/hold.git /tmp/hold
+RUN cd /tmp/hold \
     && cargo build --release
 
-FROM elementsproject/lightningd:v24.08 as final
+ARG LIGHTNINGD_VERSION=v24.08
+FROM elementsproject/lightningd:${LIGHTNINGD_VERSION} as final
 
-COPY --from=builder /tmp/holdinvoice/target/release/holdinvoice /tmp/holdinvoice
+COPY --from=builder /tmp/hold/target/release/hold /tmp/hold
 COPY config /tmp/config
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
