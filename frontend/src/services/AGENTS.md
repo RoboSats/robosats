@@ -9,7 +9,7 @@ Platform-abstraction layer. Four singleton clients hide transport/platform diffe
 ```
 services/
   Android/index.ts            ← AndroidAppRobosats bridge helpers
-  DevFundProfile.ts            ← live DevFund % probes per coordinator (module-level TTL cache)
+  DevFundProfile.ts            ← live DevFund % per coordinator via Coordinator.loadInfo (module-level TTL cache)
   api/
     index.ts                  ← exports apiClient singleton
     ApiAndroidClient/         ← OkHttp via WebAppInterface
@@ -85,15 +85,17 @@ services/
 
 ### `DevFundProfile.ts`
 
-`fetchDevFundProfiles(federation): Promise<Record<string, number>>` — probes each enabled
-coordinator's `GET /api/info/` (via `apiClient.get(url, '/api/info/', undefined, true)`)
-to read its live `devfund` percentage, returning a `shortAlias → %` map. Used by
-`Federation.loadDevFund()` to override the static `badges.donatesToDevFund` before
-re-running the weighted lottery. Requests are `silent` (no global error snackbar) and
-bounded by a 15 s timeout; failures/unreachable URLs (e.g. Tor-only coordinators on
-clearnet web) are simply omitted → those coordinators keep the static fallback. Results
-are cached at module level for 30 min, keyed by the `alias|url` set so a network/origin
-switch forces a refresh.
+`fetchDevFundProfiles(federation): Promise<Record<string, number>>` — reads each enabled
+coordinator's live `devfund` percentage by reusing `Coordinator.loadInfo()` (the canonical
+`GET /api/info/` fetch, which already shares in-flight requests and is `silent`), reading
+the value from `coordinator.info.devfund`, and returning a `shortAlias → %` map. It never
+issues its own `/api/info/` request. Used by `Federation.loadDevFund()` to override the
+static `badges.donatesToDevFund` before re-running the weighted lottery. A coordinator with
+`coordinator.info.devfund` already valid is not re-fetched. The `loadInfo` wait is bounded
+by a 15 s timeout; failures/unreachable URLs (e.g. Tor-only coordinators on clearnet web)
+are simply omitted → those coordinators keep the static fallback. Results are cached at
+module level for 30 min, keyed by the `alias|url` set so a network/origin switch forces a
+refresh.
 
 ## Product Intent
 

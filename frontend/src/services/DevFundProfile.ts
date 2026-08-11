@@ -1,5 +1,4 @@
-import { apiClient } from './api';
-import type { Federation } from '../models';
+import type { Coordinator, Federation } from '../models';
 
 const PROFILE_TTL = 30 * 60 * 1000;
 const PROBE_TIMEOUT = 15 * 1000;
@@ -9,20 +8,18 @@ let cache: { key: string; at: number; map: Record<string, number> } | null = nul
 const isReachableUrl = (url: string | undefined): boolean =>
   url !== undefined && url !== '' && url !== 'null' && url !== 'undefined';
 
-const probeDevFund = async (
-  shortAlias: string,
-  url: string,
-): Promise<{ shortAlias: string; donatesToDevFund: number } | null> => {
-  const data = (await Promise.race([
-    apiClient.get(url, '/api/info/', undefined, true),
-    new Promise((resolve) => setTimeout(() => resolve(null), PROBE_TIMEOUT)),
-  ])) as { devfund?: unknown } | null;
+const readDevFund = (coordinator: Coordinator): number | undefined => {
+  const devfund = coordinator.info?.devfund;
+  return typeof devfund === 'number' && Number.isFinite(devfund) ? devfund : undefined;
+};
 
-  const donatesToDevFund = data?.devfund;
-  if (typeof donatesToDevFund === 'number' && Number.isFinite(donatesToDevFund)) {
-    return { shortAlias, donatesToDevFund };
-  }
-  return null;
+const loadCoordinatorDevFund = async (coordinator: Coordinator): Promise<number | undefined> => {
+  if (readDevFund(coordinator) !== undefined) return readDevFund(coordinator);
+  await Promise.race([
+    coordinator.loadInfo(),
+    new Promise((resolve) => setTimeout(resolve, PROBE_TIMEOUT)),
+  ]);
+  return readDevFund(coordinator);
 };
 
 export const fetchDevFundProfiles = async (
@@ -45,8 +42,8 @@ export const fetchDevFundProfiles = async (
     coordinators
       .filter((coordinator) => isReachableUrl(coordinator.url))
       .map((coordinator) =>
-        probeDevFund(coordinator.shortAlias, coordinator.url).then((profile) => {
-          if (profile) results[profile.shortAlias] = profile.donatesToDevFund;
+        loadCoordinatorDevFund(coordinator).then((donatesToDevFund) => {
+          if (donatesToDevFund !== undefined) results[coordinator.shortAlias] = donatesToDevFund;
         }),
       ),
   );

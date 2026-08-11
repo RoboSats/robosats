@@ -169,6 +169,7 @@ export class Coordinator {
   public loadingBook: boolean = false;
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = false;
+  private _infoPromise?: Promise<void> | undefined;
   public limits: LimitList = {};
   public loadingLimits: boolean = false;
 
@@ -245,27 +246,38 @@ export class Coordinator {
       });
   };
 
-  loadInfo = (onDataLoad: () => void = () => {}): void => {
-    if (!this.enabled) return;
-    if (this.url === '') return;
-    if (this.loadingInfo) return;
+  loadInfo = (onDataLoad: () => void = () => {}): Promise<void> => {
+    if (!this.enabled) return Promise.resolve();
+    if (this.url === '') return Promise.resolve();
+
+    if (this._infoPromise) {
+      return this._infoPromise.then(() => {
+        if (this.info !== undefined) onDataLoad();
+      });
+    }
 
     this.loadingInfo = true;
 
-    apiClient
-      .get(this.url, `/api/info/`, undefined, true)
-      .then((data) => {
-        if (data !== null) {
-          this.info = data as Info;
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingInfo = false;
-      });
+    this._infoPromise = new Promise<void>((resolve) => {
+      apiClient
+        .get(this.url, `/api/info/`, undefined, true)
+        .then((data) => {
+          if (data !== null) {
+            this.info = data as Info;
+            onDataLoad();
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          this.loadingInfo = false;
+          this._infoPromise = undefined;
+          resolve();
+        });
+    });
+
+    return this._infoPromise;
   };
 
   enable = (onEnabled: () => void = () => {}): void => {

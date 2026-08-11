@@ -49,10 +49,17 @@ All prefs loaded **asynchronously** from `systemClient.getItem()` in the constru
 
 **Live DevFund weight (`loadDevFund`)** — `Coordinator.Info` carries an optional `devfund`
 (percentage, from `GET /api/info/`). `Federation.loadDevFund()` (called by
-`FederationContext` on mount) probes all coordinators via `services/DevFundProfile.ts`,
+`FederationContext` on mount) reads each coordinator via `services/DevFundProfile.ts`,
+which reuses `Coordinator.loadInfo()` (no duplicate `/api/info/` requests),
 overwrites `badges.donatesToDevFund` with the live value for reachable coordinators, then
 re-runs `federationLottery` and reorders `this.coordinators` (the lottery order drives the
-default MakerForm host and the book sort). Sets `devFundLoaded = true` and fires the
+default MakerForm host and the book sort).
+
+**`Coordinator.loadInfo()` returns a shared in-flight `Promise`** — the first call issues
+the `GET /api/info/` request; concurrent callers awaiting the same coordinator reuse that
+request (guarded by a private `_infoPromise`) instead of firing a duplicate. The promise
+always resolves (failures are logged, `info` stays `undefined`); refresh semantics are
+unchanged — once settled, a later call issues a fresh request. Sets `devFundLoaded = true` and fires the
 `onFederationUpdate` hook so the UI re-renders; `GarageContext` watches
 `federation.devFundLoaded` to re-derive the default host only if the user has not already
 picked one manually (`markCoordinatorPicked`/`resetCoordinatorPicked`).
