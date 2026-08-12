@@ -66,6 +66,13 @@ jobs:
         restore-keys: |
           coordinator-docker-cache-
 
+    - name: 'Build coordinator image'
+      run: docker compose -f docker-tests.yml build coordinator
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+        LND_VERSION: ${{ matrix.lnd-version }}
+        CLN_VERSION: ${{ matrix.cln-version }}
+
     - name: 'Compose Regtest Orchestration'
       uses: isbang/compose-action@v2.4.0
       with:
