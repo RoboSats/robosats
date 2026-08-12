@@ -33,6 +33,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      skip_frontend_tests: ${{ steps.frontend_check.outputs.skip_frontend_tests }}
     strategy:
       matrix:
         python-tag: ['3.12.3-slim-bookworm']
@@ -48,6 +50,17 @@ jobs:
         workflow_conclusion: success
         name: django-main-static
         path: frontend
+        if_no_artifact_found: ignore
+
+    - name: 'Detect whether frontend templates are present'
+      id: frontend_check
+      run: |
+        if [ -f "frontend/templates/frontend/basic.html" ]; then
+          echo "skip_frontend_tests=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "skip_frontend_tests=true" >> "$GITHUB_OUTPUT"
+          echo "::notice::frontend/templates/frontend/basic.html not found — SKIP_FRONTEND_TESTS=True (backend-only PR, no frontend artifact available)"
+        fi
 
     - name: Patch Dockerfile
       run: |
@@ -129,7 +142,9 @@ jobs:
 
     - name: 'Run tests with coverage'
       run: |
-        docker exec test-coordinator coverage run manage.py test
+        docker exec \
+          -e SKIP_FRONTEND_TESTS=${{ needs.build.outputs.skip_frontend_tests }} \
+          test-coordinator coverage run manage.py test
         docker exec test-coordinator coverage report
         docker exec test-coordinator coverage html
       env:
