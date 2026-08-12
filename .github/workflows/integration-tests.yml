@@ -31,16 +31,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     strategy:
-      max-parallel: 2
       matrix:
         python-tag: ['3.12.3-slim-bookworm']
-        lnd-version: ['v0.18.2-beta']
-        cln-version: ['v24.08']
-        ln-vendor: ['LND', 'CLN']
 
     steps:
     - name: 'Checkout'
@@ -54,15 +49,14 @@ jobs:
         name: django-main-static
         path: frontend
 
-    - name: Patch Dockerfile and .env-sample
+    - name: Patch Dockerfile
       run: |
         sed -i "1s/FROM python:.*/FROM python:${{ matrix.python-tag }}/" Dockerfile
-        sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
 
     - uses: satackey/action-docker-layer-caching@v0.0.11
       continue-on-error: true
       with:
-        key: coordinator-docker-cache-${{ hashFiles('Dockerfile', 'requirements.txt', 'requirements_dev.txt') }}-${{ matrix.ln-vendor }}
+        key: coordinator-docker-cache-${{ hashFiles('Dockerfile', 'requirements.txt', 'requirements_dev.txt') }}
         restore-keys: |
           coordinator-docker-cache-
 
@@ -70,8 +64,44 @@ jobs:
       run: docker compose -f docker-tests.yml build coordinator
       env:
         ROBOSATS_ENVS_FILE: ".env-sample"
-        LND_VERSION: ${{ matrix.lnd-version }}
-        CLN_VERSION: ${{ matrix.cln-version }}
+
+    - name: 'Export coordinator image'
+      run: docker save backend-image | gzip > backend-image.tar.gz
+
+    - name: 'Upload coordinator image artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-image-${{ github.run_id }}
+        path: backend-image.tar.gz
+        retention-days: 1
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 30
+    strategy:
+      max-parallel: 2
+      matrix:
+        python-tag: ['3.12.3-slim-bookworm']
+        lnd-version: ['v0.18.2-beta']
+        cln-version: ['v24.08']
+        ln-vendor: ['LND', 'CLN']
+
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v5
+
+    - name: 'Download coordinator image artifact'
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-image-${{ github.run_id }}
+
+    - name: 'Load coordinator image'
+      run: docker load < backend-image.tar.gz
+
+    - name: Patch .env-sample
+      run: |
+        sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
 
     - name: 'Compose Regtest Orchestration'
       uses: isbang/compose-action@v2.4.0
