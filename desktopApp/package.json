@@ -27,7 +27,7 @@
   "devDependencies": {
     "@electron/packager": "^18.3.2",
     "electron": "^39.2.7",
-    "typescript": "^5.4.5"
+    "typescript": "^7.0.2"
   },
   "build": {
     "appId": "com.electron.robosats",
