@@ -324,7 +324,7 @@ class Logics:
             send_notification.delay(order_id=order.id, message="order_expired_untaken")
 
             order.log("Order expired while public or paused")
-            order.log("Maker bond was <b>unlocked</b>")
+            order.log("Maker bond was **unlocked**")
 
             return True
 
@@ -344,8 +344,8 @@ class Logics:
             order.log(
                 "Order expired while waiting for both buyer invoice and seller escrow"
             )
-            order.log("Maker bond was <b>settled</b>")
-            order.log("Taker bond was <b>settled</b>")
+            order.log("Maker bond was **settled**")
+            order.log("Taker bond was **settled**")
 
             return True
 
@@ -367,8 +367,8 @@ class Logics:
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
                 order.log("Order expired while waiting for escrow of the maker/seller")
-                order.log("Maker bond was <b>settled</b>")
-                order.log("Taker bond was <b>unlocked</b>")
+                order.log("Maker bond was **settled**")
+                order.log("Taker bond was **unlocked**")
 
                 return True
 
@@ -387,7 +387,7 @@ class Logics:
                 cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
 
                 order.log("Order expired while waiting for escrow of the taker/seller")
-                order.log("Taker bond was <b>settled</b>")
+                order.log("Taker bond was **settled**")
 
                 return True
 
@@ -408,8 +408,8 @@ class Logics:
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
                 order.log("Order expired while waiting for invoice of the maker/buyer")
-                order.log("Maker bond was <b>settled</b>")
-                order.log("Taker bond was <b>unlocked</b>")
+                order.log("Maker bond was **settled**")
+                order.log("Taker bond was **unlocked**")
 
                 return True
 
@@ -424,7 +424,7 @@ class Logics:
                 cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
 
                 order.log("Order expired while waiting for invoice of the taker/buyer")
-                order.log("Taker bond was <b>settled</b>")
+                order.log("Taker bond was **settled**")
 
                 return True
 
@@ -487,8 +487,8 @@ class Logics:
             cls.settle_bond(order.taker_bond)
             order.update_status(Order.Status.DIS)
 
-            order.log("Maker bond was <b>settled</b>")
-            order.log("Taker bond was <b>settled</b>")
+            order.log("Maker bond was **settled**")
+            order.log("Taker bond was **settled**")
             order.log(
                 "No robot wrote in the chat, the dispute cannot be solved automatically"
             )
@@ -500,10 +500,10 @@ class Logics:
             order.update_status(Order.Status.MLD)
             cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
-            order.log("Maker bond was <b>settled</b>")
-            order.log("Taker bond was <b>unlocked</b>")
+            order.log("Maker bond was **settled**")
+            order.log("Taker bond was **unlocked**")
             order.log(
-                "<b>The dispute was solved automatically:</b> 'Maker lost dispute', the maker did not write in the chat"
+                "**The dispute was solved automatically:** 'Maker lost dispute', the maker did not write in the chat"
             )
 
         elif num_messages_taker == 0:
@@ -513,10 +513,10 @@ class Logics:
             order.update_status(Order.Status.TLD)
             cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
 
-            order.log("Maker bond was <b>unlocked</b>")
-            order.log("Taker bond was <b>settled</b>")
+            order.log("Maker bond was **unlocked**")
+            order.log("Taker bond was **settled**")
             order.log(
-                "<b>The dispute was solved automatically:</b> 'Taker lost dispute', the maker did not write in the chat"
+                "**The dispute was solved automatically:** 'Taker lost dispute', the maker did not write in the chat"
             )
         else:
             return False
@@ -581,8 +581,8 @@ class Logics:
         order.log(
             f"Dispute was opened {f'by Robot({user.robot.id},{user.username})' if user else ''}"
         )
-        order.log("Maker bond was <b>settled</b>")
-        order.log("Taker bond was <b>settled</b>")
+        order.log("Maker bond was **settled**")
+        order.log("Taker bond was **settled**")
 
         return True, None
 
@@ -1060,11 +1060,11 @@ class Logics:
                     order.update_status(Order.Status.UCA)
 
                     order.log("Order cancelled by maker while public or paused")
-                    order.log("Maker bond was <b>unlocked</b>")
+                    order.log("Maker bond was **unlocked**")
 
                     take_orders_queryset = TakeOrder.objects.filter(order=order)
                     for idx, take_order in enumerate(take_orders_queryset):
-                        order.log("Pretaker bond was <b>unlocked</b>")
+                        order.log("Pretaker bond was **unlocked**")
                         cls.take_order_expires(take_order)
 
                     send_notification.delay(
@@ -1113,8 +1113,8 @@ class Logics:
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
                 order.log("Maker cancelled before escrow was locked")
-                order.log("Maker bond was <b>settled</b>")
-                order.log("Taker bond was <b>unlocked</b>")
+                order.log("Maker bond was **settled**")
+                order.log("Taker bond was **unlocked**")
 
                 nostr_send_order_event.delay(order_id=order.id)
 
@@ -1137,8 +1137,8 @@ class Logics:
                 cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
 
                 order.log("Taker cancelled before escrow was locked")
-                order.log("Taker bond was <b>settled</b>")
-                order.log("Maker bond was <b>unlocked</b>")
+                order.log("Taker bond was **settled**")
+                order.log("Maker bond was **unlocked**")
 
                 nostr_send_order_event.delay(order_id=order.id)
 
@@ -1191,7 +1191,7 @@ class Logics:
                 return True, None
 
         order.log(
-            f"Cancel request was sent by Robot({user.robot.id},{user.username}) on an invalid status {order.status}: <i>{Order.Status(order.status).label}</i>"
+            f"Cancel request was sent by Robot({user.robot.id},{user.username}) on an invalid status {order.status}: *{Order.Status(order.status).label}*"
         )
         return False, new_error(1021)
 
@@ -1210,9 +1210,9 @@ class Logics:
         nostr_send_order_event.delay(order_id=order.id)
 
         order.log("Order was collaboratively cancelled")
-        order.log("Maker bond was <b>unlocked</b>")
-        order.log("Taker bond was <b>unlocked</b>")
-        order.log("Trade escrow was <b>unlocked</b>")
+        order.log("Maker bond was **unlocked**")
+        order.log("Taker bond was **unlocked**")
+        order.log("Trade escrow was **unlocked**")
 
         return
 
@@ -1390,7 +1390,7 @@ class Logics:
         nostr_send_order_event.delay(order_id=order.id)
 
         order.log(
-            f"<b>Contract formalized.</b> Maker: Robot({order.maker.robot.id},{order.maker}). Taker: Robot({order.taker.robot.id},{order.taker}). API median price {order.currency.exchange_rate} {dict(Currency.currency_choices)[order.currency.currency]}/BTC. Premium is {order.premium}%. Contract size {order.last_satoshis} Sats"
+            f"**Contract formalized.** Maker: Robot({order.maker.robot.id},{order.maker}). Taker: Robot({order.taker.robot.id},{order.taker}). API median price {order.currency.exchange_rate} {dict(Currency.currency_choices)[order.currency.currency]}/BTC. Premium is {order.premium}%. Contract size {order.last_satoshis} Sats"
         )
         return True
 
@@ -1570,7 +1570,7 @@ class Logics:
         if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
             order.trade_escrow.status = LNPayment.Status.SETLED
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was <b>settled</b>")
+            order.log("Trade escrow was **settled**")
             return True
 
     def settle_bond(bond):
@@ -1585,7 +1585,7 @@ class Logics:
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.RETNED
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was <b>unlocked</b>")
+            order.log("Trade escrow was **unlocked**")
             return True
 
     def cancel_escrow(order):
@@ -1594,7 +1594,7 @@ class Logics:
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.CANCEL
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was <b>cancelled</b>")
+            order.log("Trade escrow was **cancelled**")
             return True
 
     def return_bond(bond):
@@ -1622,7 +1622,7 @@ class Logics:
             order.payout_tx.save(update_fields=["status"])
 
             order.log(
-                f"Onchain payment OnchainPayment({order.payout_tx.id},{str(order.payout_tx)}) was <b>cancelled</b>"
+                f"Onchain payment OnchainPayment({order.payout_tx.id},{str(order.payout_tx)}) was **cancelled**"
             )
 
             return True
@@ -1662,7 +1662,7 @@ class Logics:
             order.save(update_fields=["contract_finalization_time"])
 
             send_notification.delay(order_id=order.id, message="trade_successful")
-            order.log("<b>Paying buyer invoice</b>")
+            order.log("**Paying buyer invoice**")
             return True
 
         # Pay onchain to address
@@ -1679,7 +1679,7 @@ class Logics:
                 order.save(update_fields=["contract_finalization_time"])
 
                 send_notification.delay(order_id=order.id, message="trade_successful")
-                order.log("<b>Paying buyer onchain address</b>")
+                order.log("**Paying buyer onchain address**")
                 return True
 
     @classmethod
@@ -1722,8 +1722,8 @@ class Logics:
                     # RETURN THE BONDS
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
-                    order.log("Taker bond was <b>unlocked</b>")
-                    order.log("Maker bond was <b>unlocked</b>")
+                    order.log("Taker bond was **unlocked**")
+                    order.log("Maker bond was **unlocked**")
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     cls.pay_buyer(order)
 

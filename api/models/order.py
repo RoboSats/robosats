@@ -1,6 +1,6 @@
 # We use custom seeded UUID generation during testing
+import json
 import uuid
-from html import escape
 
 from decimal import Decimal
 from decouple import config
@@ -341,21 +341,21 @@ class Order(models.Model):
         return t_to_expire[status]
 
     def log(self, event="empty event", level="INFO"):
-        """
-        log() adds a new line to the Order.log field. We wrap it all in a
-        try/catch block since this function is called inside the main request->response
-        pipe and any error here would lead to a 500 response.
-        """
         if config("DISABLE_ORDER_LOGS", cast=bool, default=True):
             return
         try:
-            timestamp = timezone.now().replace(microsecond=0).isoformat()
-            level_in_tag = "" if level == "INFO" else "<b>"
-            level_out_tag = "" if level == "INFO" else "</b>"
-            self.logs = (
-                self.logs
-                + f"<tr><td>{timestamp}</td><td>{level_in_tag}{escape(level)}{level_out_tag}</td><td>{escape(event)}</td></tr>"
+            try:
+                entries = json.loads(self.logs)
+            except (json.JSONDecodeError, TypeError):
+                entries = []
+            entries.append(
+                {
+                    "timestamp": timezone.now().replace(microsecond=0).isoformat(),
+                    "level": level,
+                    "event": str(event),
+                }
             )
+            self.logs = json.dumps(entries)
             self.save(update_fields=["logs"])
         except Exception:
             pass
