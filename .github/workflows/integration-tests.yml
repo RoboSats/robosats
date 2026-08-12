@@ -33,8 +33,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      skip_frontend_tests: ${{ steps.frontend_check.outputs.skip_frontend_tests }}
     strategy:
       matrix:
         python-tag: ['3.12.3-slim-bookworm']
@@ -51,16 +49,6 @@ jobs:
         name: django-main-static
         path: frontend
         if_no_artifact_found: ignore
-
-    - name: 'Detect whether frontend templates are present'
-      id: frontend_check
-      run: |
-        if [ -f "frontend/templates/frontend/basic.html" ]; then
-          echo "skip_frontend_tests=false" >> "$GITHUB_OUTPUT"
-        else
-          echo "skip_frontend_tests=true" >> "$GITHUB_OUTPUT"
-          echo "::notice::frontend/templates/frontend/basic.html not found — SKIP_FRONTEND_TESTS=True (backend-only PR, no frontend artifact available)"
-        fi
 
     - name: Patch Dockerfile
       run: |
@@ -140,10 +128,20 @@ jobs:
           sleep 5
         done
 
+    - name: 'Detect whether frontend templates are present in container'
+      id: frontend_check
+      run: |
+        if docker exec test-coordinator test -f /usr/src/robosats/frontend/templates/frontend/basic.html; then
+          echo "skip_frontend=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "skip_frontend=true" >> "$GITHUB_OUTPUT"
+          echo "::notice::frontend/basic.html not in container — will set SKIP_FRONTEND_TESTS=True"
+        fi
+
     - name: 'Run tests with coverage'
       run: |
         docker exec \
-          -e SKIP_FRONTEND_TESTS=${{ needs.build.outputs.skip_frontend_tests }} \
+          -e SKIP_FRONTEND_TESTS=${{ steps.frontend_check.outputs.skip_frontend }} \
           test-coordinator coverage run manage.py test
         docker exec test-coordinator coverage report
         docker exec test-coordinator coverage html
