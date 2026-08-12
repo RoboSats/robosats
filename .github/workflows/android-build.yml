@@ -86,7 +86,7 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      - uses: kaisugi/action-regex-match@v1.0.1
+      - uses: kaisugi/action-regex-match@v1.0.2
         id: regex-match
         with:
           text: ${{ github.ref }}
