@@ -91,7 +91,7 @@ const TakeButton = ({
     } else {
       return (
         <Tooltip enterTouchDelay={0} title={t('Wait until you can take an order')}>
-          <Grid container sx={{ width: '100%' }} padding={1} justifyContent='center'>
+          <Grid container sx={{ width: '100%', justifyContent: 'center', padding: 1 }}>
             <LoadingButton
               loading={loadingTake}
               disabled={true}
@@ -163,13 +163,13 @@ const TakeButton = ({
             },
           }}
         >
-          <Grid container direction='column' alignItems='center'>
+          <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
             <Grid
               item
               container
               direction='row'
-              alignItems='flex-start'
-              justifyContent='space-evenly'
+
+              sx={{ alignItems: 'flex-start', justifyContent: 'space-evenly' }}
             >
               <Grid item>
                 <Tooltip

@@ -19,7 +19,7 @@ const TopBar = (): React.JSX.Element => {
   const mobileView = windowSize?.width < 50;
 
   return (
-    <Grid container direction='row' justifyContent='space-between' spacing={1}>
+    <Grid container direction='row' spacing={1} sx={{ justifyContent: 'space-between' }}>
       {mobileView && (
         <Grid item>
           <Button

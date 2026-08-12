@@ -321,7 +321,11 @@ export const LightningPayoutForm = ({
   };
 
   return (
-    <Grid container direction='column' justifyContent='flex-start' alignItems='center' spacing={1}>
+    <Grid
+      container
+      spacing={1}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
+    >
       <div style={{ height: '0.3em' }} />
       <Grid
         item
@@ -355,19 +359,17 @@ export const LightningPayoutForm = ({
         >
           <Grid
             container
-            direction='column'
-            justifyContent='flex-start'
-            alignItems='center'
+
             spacing={0.5}
+            sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
           >
             <Collapse in={lightning.advancedOptions}>
               <Grid
                 container
-                direction='column'
-                justifyContent='flex-start'
-                alignItems='center'
+
                 spacing={0.5}
                 padding={0.5}
+                sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
               >
                 <Grid item>
                   <TextField
@@ -452,10 +454,13 @@ export const LightningPayoutForm = ({
                   <Collapse in={lightning.useLnproxy}>
                     <Grid
                       container
-                      direction='column'
-                      justifyContent='flex-start'
-                      alignItems='center'
+
                       spacing={1}
+                      sx={{
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        flexDirection: 'column',
+                      }}
                     >
                       <Grid item>
                         <FormControl error={noMatchingLnProxies !== ''}>

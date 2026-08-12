@@ -99,10 +99,9 @@ const BookPage = (): React.JSX.Element => {
   return (
     <Grid
       container
-      direction='column'
-      alignItems='center'
+
       spacing={1}
-      sx={{ minWidth: 400, marginTop: 2.5 }}
+      sx={{ minWidth: 400, marginTop: 2.5, alignItems: 'center', flexDirection: 'column' }}
     >
       <GoToOrder
         open={goToOrder}
@@ -121,11 +120,11 @@ const BookPage = (): React.JSX.Element => {
         {doubleView ? (
           <Grid
             container
-            alignItems='center'
-            justifyContent='center'
+
             spacing={1}
             direction='row'
             style={{ width: `${width}em`, height: `${windowSize.height * 0.875}em` }}
+            sx={{ alignItems: 'center', justifyContent: 'center' }}
           >
             <Grid>
               <BookTable

@@ -8,11 +8,10 @@ export const SendingSatsPrompt = (): React.JSX.Element => {
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={1}
       padding={1}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
       <Grid item>
         <Typography variant='body2'>

@@ -582,7 +582,7 @@ const MakerForm = ({
         zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
       />
       <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
-        <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
+        <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
           <Grid item>
             <IconButton
               sx={{
@@ -633,9 +633,13 @@ const MakerForm = ({
       </Collapse>
 
       <Collapse in={!collapseAll}>
-        <Grid container spacing={1} justifyContent='center' alignItems='center'>
+        <Grid container spacing={1} sx={{ alignItems: 'center', justifyContent: 'center' }}>
           <Grid item>
-            <Grid container direction='row' justifyContent='center' alignItems='stretch'>
+            <Grid
+              container
+              direction='row'
+              sx={{ alignItems: 'stretch', justifyContent: 'center' }}
+            >
               <Collapse in={maker.advancedOptions} orientation='horizontal'>
                 <Grid item>
                   <FormControl>
@@ -1090,7 +1094,11 @@ const MakerForm = ({
                   },
                 }}
               >
-                <Grid container direction='column' alignItems='center' spacing={0.5}>
+                <Grid
+                  container
+                  spacing={0.5}
+                  sx={{ alignItems: 'center', flexDirection: 'column' }}
+                >
                   <Grid
                     item
                     sx={{
@@ -1157,13 +1165,18 @@ const MakerForm = ({
         }}
       />
 
-      <Grid container direction='column' alignItems='center'>
+      <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
         <Grid item sx={{ marginBottom: '8px', marginTop: '8px' }}>
           <SummaryText />
         </Grid>
 
         <Grid item>
-          <Grid container direction='row' justifyItems='center' alignItems='center' spacing={1}>
+          <Grid
+            container
+            direction='row'
+            spacing={1}
+            sx={{ alignItems: 'center', justifyItems: 'center' }}
+          >
             <Grid item>
               {/* conditions to disable the make button */}
               {disableSubmit ? (

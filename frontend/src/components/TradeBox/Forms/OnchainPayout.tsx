@@ -51,10 +51,9 @@ export const OnchainPayoutForm = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0.5}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
       <List dense={true}>
         <ListItem>
@@ -106,7 +105,12 @@ export const OnchainPayoutForm = ({
       </List>
 
       <Grid item>
-        <Grid container direction='row' justifyContent='center' alignItems='flex-start' spacing={0}>
+        <Grid
+          container
+          direction='row'
+          spacing={0}
+          sx={{ alignItems: 'flex-start', justifyContent: 'center' }}
+        >
           <Grid item xs={7}>
             <TextField
               error={onchain.badAddress !== ''}

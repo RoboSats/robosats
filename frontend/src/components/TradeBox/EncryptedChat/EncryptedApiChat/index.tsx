@@ -4,7 +4,7 @@ import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { decryptMessage } from '../../../../pgp';
 
 // Icons
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
@@ -255,10 +255,9 @@ const EncryptedApiChat: React.FC<Props> = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0.5}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
       <Grid item>
         <ChatHeader connected={Boolean(peerPubKey)} peerConnected={peerConnected} />
@@ -299,7 +298,10 @@ const EncryptedApiChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked} style={{ width: '100%' }}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
+          <Grid
+            style={{ display: 'flex', width: '100%', marginTop: '8px' }}
+            sx={{ alignItems: 'stretch' }}
+          >
             <TextField
               label={t('Type a message')}
               variant='standard'

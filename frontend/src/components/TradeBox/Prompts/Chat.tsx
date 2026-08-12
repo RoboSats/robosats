@@ -151,11 +151,14 @@ export const ChatPrompt = ({
   return (
     <Grid
       container
-      padding={0}
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexDirection: 'column',
+        padding: 0,
+      }}
     >
       <Grid item style={{ mb: 1 }}>
         <Typography variant='body2' align='center'>
@@ -247,7 +250,11 @@ export const ChatPrompt = ({
         <DialogTitle>{t('Order options')}</DialogTitle>
         <DialogContent>
           <DialogContent>
-            <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+            <Grid
+              container
+              spacing={1}
+              sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+            >
               <Grid item xs={1} style={{ width: '100%' }}>
                 <Button
                   fullWidth

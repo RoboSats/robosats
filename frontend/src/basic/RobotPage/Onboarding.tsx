@@ -66,7 +66,11 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 1 }}
+          >
             <Grid item>
               <Typography>
                 {t(
@@ -84,7 +88,11 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
             ) : (
               <Grid item>
                 <Collapse in={generatedToken}>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
+                  <Grid
+                    container
+                    spacing={1}
+                    sx={{ alignItems: 'center', flexDirection: 'column' }}
+                  >
                     <Grid item>
                       <Alert variant='outlined' severity='info'>
                         <b>{`${t('Store it somewhere safe!')} `}</b>
@@ -141,7 +149,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1}>
+          <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
             <Grid item>
               <Typography>
                 {slot?.hashId ? (
@@ -228,7 +236,11 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 1.5 }}
+          >
             <Grid item>
               <Typography>
                 {t(

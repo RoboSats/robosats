@@ -82,7 +82,7 @@ const MakerPage = (): React.JSX.Element => {
   const tableMaxHeight = Math.min(matches.length * 3.25 + 3, windowSize.height * 0.68);
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1}>
+    <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
       <VisitThirdParty
         open={openVisitThirdParty}
         onClose={() => {
@@ -111,7 +111,7 @@ const MakerPage = (): React.JSX.Element => {
       />
       <Grid item>
         <Collapse in={matches.length > 0 && showMatches}>
-          <Grid container direction='column' alignItems='center' spacing={1}>
+          <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
             <Grid item>
               <Typography variant='h5'>{t('Existing orders match yours!')}</Typography>
             </Grid>

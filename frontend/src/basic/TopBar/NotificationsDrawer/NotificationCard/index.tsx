@@ -7,7 +7,7 @@ import { Coordinator } from '../../../../models';
 import RobotAvatar from '../../../../components/RobotAvatar';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { Grid } from '@mui/system';
+import { Grid } from '@mui/material';
 import { GarageContext, UseGarageStoreType } from '../../../../contexts/GarageContext';
 import { formatDistanceToNow } from 'date-fns';
 

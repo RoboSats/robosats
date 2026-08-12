@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogTitle, DialogContent, Grid, Box, Typography } from '@mui/material';
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 
 interface Props {
   open: boolean;

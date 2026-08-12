@@ -134,7 +134,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
           },
         }}
       >
-        <Grid container direction='column' alignItems='center' spacing={0.5}>
+        <Grid container spacing={0.5} sx={{ alignItems: 'center', flexDirection: 'column' }}>
           <Grid item sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography
               sx={{

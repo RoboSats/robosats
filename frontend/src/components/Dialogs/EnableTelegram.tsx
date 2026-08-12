@@ -45,7 +45,7 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): Rea
     >
       <DialogTitle id='open-dispute-dialog-title'>{t('Enable TG Notifications')}</DialogTitle>
       <DialogContent>
-        <Grid container justifyContent='center'>
+        <Grid container sx={{ justifyContent: 'center' }}>
           <Grid item>
             <Box
               sx={{

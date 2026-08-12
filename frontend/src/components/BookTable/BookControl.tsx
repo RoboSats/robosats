@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Typography, Grid, Select, MenuItem, Box } from '@mui/material';
 import currencyDict from '../../../static/assets/currencies.json';
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 import { AutocompletePayments } from '../MakerForm';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
@@ -115,11 +115,16 @@ const BookControl = ({
     <Box>
       <Grid
         container
-        alignItems='flex-start'
+
         direction='row'
-        justifyContent='center'
+
         spacing={0.8}
-        sx={{ padding: '0.2em', alignContent: 'center' }}
+        sx={{
+          padding: '0.2em',
+          alignContent: 'center',
+          alignItems: 'flex-start',
+          justifyContent: 'center',
+        }}
       >
         {width > large ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>

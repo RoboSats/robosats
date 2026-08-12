@@ -20,7 +20,7 @@ import {
   type GridPaginationModel,
   type GridColDef,
   type GridValidRowModel,
-  type GridSlotsComponent,
+  type GridSlots,
   type GridSortModel,
   type GridRenderCellParams,
 } from '@mui/x-data-grid';
@@ -106,7 +106,6 @@ const BookTable = ({
       ? [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }]
       : [],
   );
-  const [page, setPage] = useState<number>(0);
   const prevFavTypeRef = useRef<number>();
 
   useEffect(() => {
@@ -859,9 +858,13 @@ const BookTable = ({
 
   const Footer = function (): React.JSX.Element {
     return (
-      <Grid container alignItems='center' direction='row' justifyContent='space-between'>
+      <Grid
+        container
+        direction='row'
+        sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+      >
         <Grid item>
-          <Grid container alignItems='center' direction='row'>
+          <Grid container direction='row' sx={{ alignItems: 'center' }}>
             <Grid item xs={6}>
               <IconButton
                 onClick={() => {
@@ -896,10 +899,14 @@ const BookTable = ({
     return (
       <Grid
         container
-        direction='column'
-        justifyContent='center'
-        alignItems='center'
-        sx={{ width: '100%', height: '100%' }}
+
+        sx={{
+          width: '100%',
+          height: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+        }}
       >
         <Grid item>
           <Typography align='center' component='h5' variant='h5'>
@@ -924,7 +931,7 @@ const BookTable = ({
   };
 
   const gridComponents = useMemo(() => {
-    const components: GridSlotsComponent = {};
+    const components: Partial<GridSlots> = {};
 
     if (showNoResults) {
       components.noResultsOverlay = NoResultsOverlay;
@@ -983,8 +990,6 @@ const BookTable = ({
           getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
           loading={federation.loading}
           columns={columns}
-          page={page}
-          onPageChange={setPage}
           hideFooter={!showFooter}
           slots={gridComponents}
           paginationModel={paginationModel}
@@ -1020,14 +1025,12 @@ const BookTable = ({
             sx={headerStyleFix}
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
-            headerHeight={3.25 * theme.typography.fontSize}
+            columnHeaderHeight={3.25 * theme.typography.fontSize}
             rows={filteredOrders}
             loading={federation.loading}
             columns={columns}
             hideFooter={!showFooter}
             slots={gridComponents}
-            page={page}
-            onPageChange={setPage}
             paginationModel={paginationModel}
             pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
             onPaginationModelChange={(newPaginationModel) => {

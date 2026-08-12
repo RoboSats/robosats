@@ -27,11 +27,10 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
   return (
     <Grid
       container
-      direction='column'
-      alignItems='center'
+
       spacing={1.8}
-      paddingTop={2.2}
-      padding={0.5}
+
+      sx={{ alignItems: 'center', flexDirection: 'column', padding: 0.5, paddingTop: 2.2 }}
     >
       <Grid item style={{ paddingTop: '2em', paddingBottom: '1.5em' }}>
         <svg width={0} height={0}>
@@ -71,7 +70,11 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
             },
           }}
         >
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 1.5 }}
+          >
             <Grid item>
               <Typography align='center'>
                 {t('Create a new robot and learn to use RoboSats')}

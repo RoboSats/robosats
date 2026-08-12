@@ -95,14 +95,17 @@ const RobotProfile = ({
   const robot = slot?.getRobot();
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
+    <Grid
+      container
+      spacing={1}
+      sx={{ alignItems: 'center', flexDirection: 'column', padding: 1, paddingTop: 2 }}
+    >
       <Grid
         item
         container
-        direction='column'
-        alignItems='center'
+
         spacing={1}
-        sx={{ width: '100%' }}
+        sx={{ width: '100%', alignItems: 'center', flexDirection: 'column' }}
       >
         <Grid
           item
@@ -203,9 +206,9 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        <Grid item container direction='row' alignItems='center'>
+        <Grid item container direction='row' sx={{ alignItems: 'center' }}>
           {!slot?.activeOrder && slot?.lastOrder ? (
-            <Grid item container direction='column' alignItems='center'>
+            <Grid item container sx={{ alignItems: 'center', flexDirection: 'column' }}>
               <Grid item>
                 <Button
                   onClick={() => {
@@ -222,7 +225,7 @@ const RobotProfile = ({
           ) : null}
 
           {slot?.availableRewards !== null && (
-            <Grid item container direction='column' alignItems='center'>
+            <Grid item container sx={{ alignItems: 'center', flexDirection: 'column' }}>
               <Grid item>
                 <Button
                   onClick={() => {
@@ -252,9 +255,8 @@ const RobotProfile = ({
             item
             container
             direction='row'
-            justifyContent='stretch'
-            alignItems='stretch'
-            sx={{ width: '100%' }}
+
+            sx={{ width: '100%', alignItems: 'stretch', justifyContent: 'stretch' }}
           >
             <TokenInput
               error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
@@ -277,9 +279,13 @@ const RobotProfile = ({
             borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
           }}
         >
-          <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
+          <Grid
+            container
+            spacing={2}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+          >
             <Grid item sx={{ width: '100%' }}>
-              <Grid container direction='row' justifyContent='space-between'>
+              <Grid container direction='row' sx={{ justifyContent: 'space-between' }}>
                 <Typography variant='caption'>{t('Robot Garage')}</Typography>
                 <Button
                   size='small'
@@ -312,10 +318,10 @@ const RobotProfile = ({
                         <Grid
                           container
                           direction='row'
-                          justifyContent='flex-start'
-                          alignItems='center'
+
                           style={{ height: '2.8em' }}
                           spacing={1}
+                          sx={{ alignItems: 'center', justifyContent: 'flex-start' }}
                         >
                           <Grid item>
                             <RobotAvatar
@@ -339,7 +345,13 @@ const RobotProfile = ({
               </Select>
             </Grid>
 
-            <Grid item container direction='row' justifyContent='space-between' width='100%'>
+            <Grid
+              item
+              container
+              direction='row'
+              width='100%'
+              sx={{ justifyContent: 'space-between' }}
+            >
               <Grid item>
                 <LoadingButton
                   loading={loading}

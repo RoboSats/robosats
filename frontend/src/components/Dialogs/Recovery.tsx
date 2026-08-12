@@ -52,7 +52,11 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
       aria-describedby='recovery-description'
     >
       <DialogContent>
-        <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+        <Grid
+          container
+          spacing={1}
+          sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+        >
           <Grid item>
             <Typography variant='h5' align='center'>
               {t('Robot recovery')}

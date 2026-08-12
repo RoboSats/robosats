@@ -45,7 +45,7 @@ const ContactButtons = ({
   const [client] = window.RobosatsSettings.split('-');
 
   return (
-    <Grid container direction='row' alignItems='center' justifyContent='center'>
+    <Grid container direction='row' sx={{ alignItems: 'center', justifyContent: 'center' }}>
       {nostr && (
         <Grid item>
           <Tooltip
@@ -207,7 +207,7 @@ const ThirdPartyDialog = ({ open = false, onClose, shortAlias }: Props): React.J
         </Typography>
         <List dense>
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Grid container direction='column' alignItems='center' padding={0}>
+            <Grid container sx={{ alignItems: 'center', flexDirection: 'column', padding: 0 }}>
               <Grid item>
                 <RobotAvatar
                   shortAlias={thirdParty?.shortAlias}

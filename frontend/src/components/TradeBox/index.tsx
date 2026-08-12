@@ -763,10 +763,9 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
       <Grid
         container
         padding={1}
-        direction='column'
-        justifyContent='flex-start'
-        alignItems='center'
+
         spacing={0}
+        sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
       >
         <Grid item>
           <Title

@@ -192,7 +192,7 @@ const Main = (): React.JSX.Element => {
 
   return (
     <Router>
-      <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
+      <Grid container sx={{ width: `${windowSize.width}em`, flexDirection: 'column' }}>
         <WidgetDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
