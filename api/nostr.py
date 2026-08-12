@@ -4,7 +4,16 @@ import uuid
 
 from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag, PublicKey
+from nostr_sdk import (
+    Keys,
+    Client,
+    EventBuilder,
+    NostrSigner,
+    Kind,
+    Tag,
+    PublicKey,
+    nip17_make_private_msg_async,
+)
 from api.models import Order
 from decouple import config
 
@@ -25,7 +34,8 @@ class Nostr:
         print("Sending nostr ORDER event")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        client = await self.initialize_client(keys)
+        signer = NostrSigner.keys(keys)
+        client = await self.initialize_client()
 
         robot_name = await self.get_user_name(order)
         robot_hash_id = await self.get_robot_hash_id(order)
@@ -33,10 +43,10 @@ class Nostr:
 
         content = order.description if order.description is not None else ""
 
-        event = (
+        event = await (
             EventBuilder(Kind(38383), content)
             .tags(self.generate_tags(order, robot_name, robot_hash_id, currency))
-            .sign_with_keys(keys)
+            .finalize_async(signer)
         )
         await client.send_event(event)
         print(f"Nostr ORDER event sent: {event.as_json()}")
@@ -49,9 +59,10 @@ class Nostr:
         print("Sending nostr NOTIFICATION event")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        client = await self.initialize_client(keys)
+        signer = NostrSigner.keys(keys)
+        client = await self.initialize_client()
 
-        tags = [
+        rumor_extra_tags = [
             Tag.parse(
                 [
                     "order_id",
@@ -61,13 +72,18 @@ class Nostr:
             Tag.parse(["status", str(order.status)]),
         ]
 
-        await client.send_private_msg(PublicKey.parse(robot.nostr_pubkey), text, tags)
+        gift_wrap = await nip17_make_private_msg_async(
+            signer,
+            PublicKey.parse(robot.nostr_pubkey),
+            text,
+            rumor_extra_tags=rumor_extra_tags,
+        )
+        await client.send_event(gift_wrap)
         print("Nostr NOTIFICATION event sent")
 
-    async def initialize_client(self, keys):
-        # Initialize with coordinator Keys
-        signer = NostrSigner.keys(keys)
-        client = Client(signer)
+    async def initialize_client(self):
+        # Initialize a bare client (no signer needed on the client itself)
+        client = Client()
 
         # Add relays and connect
         strfry_host = config("STRFRY_HOST", cast=str, default="localhost")
