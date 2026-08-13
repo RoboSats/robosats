@@ -20,7 +20,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from django.test import TestCase
 
-from nostr_sdk import Keys
+from nostr_sdk import Keys, RelayUrl
 
 from api.nostr import Nostr
 from api.models import Order
@@ -478,7 +478,9 @@ class TestNostrSendOrderEvent(TestCase):
         patch_cls, mock_client = _patch_client()
         with patch_cls:
             asyncio.run(self.nostr.send_order_event(order))
-        mock_client.add_relay.assert_called_once_with("ws://relay.mycoord.onion:9000")
+        mock_client.add_relay.assert_called_once_with(
+            RelayUrl.parse("ws://relay.mycoord.onion:9000")
+        )
 
     @patch("api.nostr.config")
     def test_event_is_signed_by_coordinator_key(self, mock_config):
@@ -646,4 +648,6 @@ class TestNostrInitializeClient(TestCase):
         patch_cls, mock_client = _patch_client()
         with patch_cls:
             asyncio.run(self.nostr.initialize_client())
-        mock_client.add_relay.assert_called_once_with("ws://localhost:7778")
+        mock_client.add_relay.assert_called_once_with(
+            RelayUrl.parse("ws://localhost:7778")
+        )
