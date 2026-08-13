@@ -25,13 +25,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
 
       - name: 'Download Basic main.js Artifact'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v21
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
@@ -92,7 +92,7 @@ jobs:
 
       - name: Upload macOS Build Artifact
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload Windows Build Artifact
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload Linux Build Artifact
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -120,7 +120,7 @@ jobs:
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
         if: inputs.semver == ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -130,7 +130,7 @@ jobs:
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
         if: inputs.semver == ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -140,7 +140,7 @@ jobs:
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
         if: inputs.semver == ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
