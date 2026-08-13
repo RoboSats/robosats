@@ -105,10 +105,13 @@ export const SuccessfulPrompt = ({
   return (
     <Grid
       container
-
       spacing={0.5}
-      padding={1}
-      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexDirection: 'column',
+        padding: 1,
+      }}
     >
       <Grid container direction='row'>
         <Grid item width='48%'>

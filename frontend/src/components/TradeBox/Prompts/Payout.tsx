@@ -47,10 +47,13 @@ export const PayoutPrompt = ({
   return (
     <Grid
       container
-      padding={1}
-
       spacing={1}
-      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexDirection: 'column',
+        padding: 1,
+      }}
     >
       <Grid item>
         <Typography variant='body2'>

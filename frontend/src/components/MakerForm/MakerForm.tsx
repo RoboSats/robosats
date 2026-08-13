@@ -1057,8 +1057,7 @@ const MakerForm = ({
                   localeText={{ toolbarTitle: t('Escrow/invoice step length') }}
                   openTo='hours'
                   views={['hours', 'minutes']}
-                  inputFormat='HH:mm'
-                  mask='__:__'
+                  format='HH:mm'
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -1241,8 +1240,7 @@ const MakerForm = ({
               align='center'
               variant='caption'
               color='text.secondary'
-              display='flex'
-              flexDirection='row'
+              sx={{ display: 'flex', flexDirection: 'row', whiteSpace: 'nowrap', gap: '0.3em' }}
             >
               {t('Order current rate:')}
               <Skeleton width='4.5em' />

@@ -81,10 +81,13 @@ export const RoutingFailedPrompt = ({
     return (
       <Grid
         container
-
         spacing={0.5}
-        padding={1}
-        sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          flexDirection: 'column',
+          padding: 1,
+        }}
       >
         <Grid item>
           <Typography variant='body2'>
@@ -118,10 +121,13 @@ export const RoutingFailedPrompt = ({
     return (
       <Grid
         container
-
         spacing={1}
-        padding={1}
-        sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          flexDirection: 'column',
+          padding: 1,
+        }}
       >
         <Grid item>
           <FailureReason failureReason={order.failure_reason} />

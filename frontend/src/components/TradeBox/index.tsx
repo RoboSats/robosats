@@ -762,10 +762,13 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
       <CollabCancelAlert order={currentOrder ?? null} />
       <Grid
         container
-        padding={1}
-
         spacing={0}
-        sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          flexDirection: 'column',
+          padding: 1,
+        }}
       >
         <Grid item>
           <Title

@@ -9,6 +9,7 @@ import {
   ListItemIcon,
   Divider,
   Grid,
+  Box,
   Collapse,
   useTheme,
   Typography,
@@ -46,7 +47,6 @@ import TakeButton from './TakeButton';
 import { F2fMapDialog, OrderDescriptionDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { Coordinator, type Order } from '../../models';
-// Box imported from @mui/material above
 
 interface OrderDetailsProps {
   shortAlias: string;

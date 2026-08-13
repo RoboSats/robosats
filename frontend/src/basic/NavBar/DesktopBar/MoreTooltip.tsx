@@ -33,8 +33,6 @@ const MoreTooltip = ({ children }: MoreTooltipProps): React.JSX.Element => {
       title={
         <Grid
           container
-
-          padding={0}
           sx={{ width: '2em', padding: '0em', justifyContent: 'center', flexDirection: 'column' }}
         >
           <Grid item sx={{ position: 'relative', right: '0.4em' }}>

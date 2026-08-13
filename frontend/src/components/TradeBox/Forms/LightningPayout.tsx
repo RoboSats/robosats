@@ -366,10 +366,13 @@ export const LightningPayoutForm = ({
             <Collapse in={lightning.advancedOptions}>
               <Grid
                 container
-
                 spacing={0.5}
-                padding={0.5}
-                sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
+                sx={{
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  flexDirection: 'column',
+                  padding: 0.5,
+                }}
               >
                 <Grid item>
                   <TextField

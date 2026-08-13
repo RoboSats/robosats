@@ -312,7 +312,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                 <Typography variant='h6' gutterBottom>
                   {t('Webhook Notifications')}
                 </Typography>
-                <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
+                <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
                   {t('Receive notifications via HTTP POST to your own .onion server.')}
                 </Typography>
                 <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
