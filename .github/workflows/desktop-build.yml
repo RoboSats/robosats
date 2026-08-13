@@ -8,10 +8,10 @@ on:
         type: string
   push:
     branches: [ "main" ]
-    paths: [ "desktopApp", "frontend" ]
+    paths: [ "desktopApp/**", "frontend/**" ]
   pull_request:
     branches: [ "main" ]
-    paths: [ "desktopApp", "frontend" ]
+    paths: [ "desktopApp/**", "frontend/**" ]
 
 jobs:
   build-desktop:
