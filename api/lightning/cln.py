@@ -235,20 +235,43 @@ class CLNNode:
             payment_hash=bytes.fromhex(payment_hash)
         )
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceCancel(request)
+        holdstub.HoldInvoiceCancel(request)
 
-        return response.state == hold_pb2.Holdstate.CANCELED
+        # CLN's HoldInvoiceCancel response state may still be ACCEPTED briefly
+        # while the HTLC cancellation propagates. Poll until CANCELED or timeout.
+        lookup_request = hold_pb2.HoldInvoiceLookupRequest(
+            payment_hash=bytes.fromhex(payment_hash)
+        )
+        for _ in range(10):
+            lookup_response = holdstub.HoldInvoiceLookup(lookup_request)
+            if lookup_response.state == hold_pb2.Holdstate.CANCELED:
+                return True
+            if lookup_response.state == hold_pb2.Holdstate.OPEN:
+                # Invoice was never locked — treat as cancelled
+                return True
+            time.sleep(0.2)
+
+        return False
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = hold_pb2.HoldInvoiceSettleRequest(
-            payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
-        )
+        payment_hash = hashlib.sha256(bytes.fromhex(preimage)).digest()
+        request = hold_pb2.HoldInvoiceSettleRequest(payment_hash=payment_hash)
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceSettle(request)
+        holdstub.HoldInvoiceSettle(request)
 
-        return response.state == hold_pb2.Holdstate.SETTLED
+        # CLN's HoldInvoiceSettle response state may still be ACCEPTED briefly
+        # while the HTLC settlement propagates through the channel. Poll until
+        # SETTLED or timeout.
+        lookup_request = hold_pb2.HoldInvoiceLookupRequest(payment_hash=payment_hash)
+        for _ in range(10):
+            lookup_response = holdstub.HoldInvoiceLookup(lookup_request)
+            if lookup_response.state == hold_pb2.Holdstate.SETTLED:
+                return True
+            time.sleep(0.2)
+
+        return False
 
     @classmethod
     def gen_hold_invoice(
