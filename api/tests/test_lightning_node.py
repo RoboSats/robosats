@@ -138,16 +138,24 @@ class TestCLNSettleHoldInvoice(TestCase, _CLNHoldStubPatcher):
             lookup_states=lookup_states or [],
         )
         import_patches = _make_cln_import_patches()
-        # Remove stale cached module so patches apply on the next import.
-        # Patch time.sleep at the 'time' module level (not at api.lightning.cln.time.sleep)
-        # because the latter would trigger a premature import of api.lightning.cln.
+        # Save and restore the original api.lightning.cln module so that
+        # subsequent integration tests still get the real CLNNode (not the
+        # mocked one we import here).
+        original_cln = sys.modules.get("api.lightning.cln")
         sys.modules.pop("api.lightning.cln", None)
-        with patch("time.sleep") as mock_sleep:
-            with import_patches[0], import_patches[1], import_patches[2]:
-                with patcher:
-                    from api.lightning.cln import CLNNode
+        try:
+            with patch("time.sleep") as mock_sleep:
+                with import_patches[0], import_patches[1], import_patches[2]:
+                    with patcher:
+                        from api.lightning.cln import CLNNode
 
-                    result = CLNNode.settle_hold_invoice(PREIMAGE_HEX)
+                        result = CLNNode.settle_hold_invoice(PREIMAGE_HEX)
+        finally:
+            # Restore original module (or remove the mocked one if none existed)
+            if original_cln is not None:
+                sys.modules["api.lightning.cln"] = original_cln
+            else:
+                sys.modules.pop("api.lightning.cln", None)
         return result, stub, mock_sleep
 
     def test_fast_path_returns_true_when_settled_in_response(self):
@@ -172,13 +180,13 @@ class TestCLNSettleHoldInvoice(TestCase, _CLNHoldStubPatcher):
         self.assertEqual(mock_sleep.call_count, 2)
 
     def test_polling_returns_false_when_timeout_exhausted(self):
-        """All 10 polling retries return ACCEPTED — must return False."""
+        """All 30 polling retries return ACCEPTED — must return False."""
         result, stub, _ = self._run(
             CLN_STATE_ACCEPTED,
-            lookup_states=[CLN_STATE_ACCEPTED] * 10,
+            lookup_states=[CLN_STATE_ACCEPTED] * 30,
         )
         self.assertFalse(result)
-        self.assertEqual(stub.HoldInvoiceLookup.call_count, 10)
+        self.assertEqual(stub.HoldInvoiceLookup.call_count, 30)
 
     def test_calls_hold_invoice_settle_exactly_once(self):
         """The gRPC settle call must be issued exactly once."""
@@ -206,15 +214,23 @@ class TestCLNCancelReturnHoldInvoice(TestCase, _CLNHoldStubPatcher):
             stub.HoldInvoiceCancel.side_effect = Exception("cannot cancel")
 
         import_patches = _make_cln_import_patches()
-        # Same as TestCLNSettleHoldInvoice._run: patch time.sleep at the top-level
-        # 'time' module to avoid triggering a premature import of api.lightning.cln.
+        # Save and restore the original api.lightning.cln module so that
+        # subsequent integration tests still get the real CLNNode (not the
+        # mocked one we import here).
+        original_cln = sys.modules.get("api.lightning.cln")
         sys.modules.pop("api.lightning.cln", None)
-        with patch("time.sleep") as mock_sleep:
-            with import_patches[0], import_patches[1], import_patches[2]:
-                with patcher:
-                    from api.lightning.cln import CLNNode
+        try:
+            with patch("time.sleep") as mock_sleep:
+                with import_patches[0], import_patches[1], import_patches[2]:
+                    with patcher:
+                        from api.lightning.cln import CLNNode
 
-                    result = CLNNode.cancel_return_hold_invoice(PAYMENT_HASH_HEX)
+                        result = CLNNode.cancel_return_hold_invoice(PAYMENT_HASH_HEX)
+        finally:
+            if original_cln is not None:
+                sys.modules["api.lightning.cln"] = original_cln
+            else:
+                sys.modules.pop("api.lightning.cln", None)
         return result, stub, mock_sleep
 
     def test_fast_path_returns_true_when_canceled_in_response(self):
@@ -264,19 +280,19 @@ class TestCLNCancelReturnHoldInvoice(TestCase, _CLNHoldStubPatcher):
         self.assertEqual(stub.HoldInvoiceLookup.call_count, 2)
 
     def test_polling_returns_false_when_timeout_exhausted(self):
-        """All 10 polling retries return ACCEPTED — must return False."""
+        """All 30 polling retries return ACCEPTED — must return False."""
         result, stub, _ = self._run(
             cancel_resp_state=CLN_STATE_ACCEPTED,
-            lookup_states=[CLN_STATE_ACCEPTED] * 10,
+            lookup_states=[CLN_STATE_ACCEPTED] * 30,
         )
         self.assertFalse(result)
-        self.assertEqual(stub.HoldInvoiceLookup.call_count, 10)
+        self.assertEqual(stub.HoldInvoiceLookup.call_count, 30)
 
     def test_returns_false_for_already_settled_invoice(self):
         """A SETTLED invoice cannot be cancelled — all retries exhaust."""
         result, _, _ = self._run(
             cancel_resp_state=CLN_STATE_SETTLED,
-            lookup_states=[CLN_STATE_SETTLED] * 10,
+            lookup_states=[CLN_STATE_SETTLED] * 30,
         )
         self.assertFalse(result)
 

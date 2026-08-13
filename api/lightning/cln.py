@@ -255,7 +255,8 @@ class CLNNode:
         # CLN's cancel response state may still be ACCEPTED briefly while the
         # HTLC cancellation propagates. Poll HoldInvoiceLookup until CANCELED
         # (or OPEN = never locked) is confirmed, or the retry window expires.
-        for _ in range(10):
+        # 30 × 0.2 s = up to 6 seconds, enough for any regtest or slow CI environment.
+        for _ in range(30):
             lookup_response = holdstub.HoldInvoiceLookup(lookup_request)
             if lookup_response.state == hold_pb2.Holdstate.CANCELED:
                 return True
@@ -281,8 +282,9 @@ class CLNNode:
         # CLN's settle response state may still be ACCEPTED briefly while the
         # HTLC settlement propagates through the channel. Poll HoldInvoiceLookup
         # until SETTLED is confirmed, or the retry window expires.
+        # 30 × 0.2 s = up to 6 seconds, enough for any regtest or slow CI environment.
         lookup_request = hold_pb2.HoldInvoiceLookupRequest(payment_hash=payment_hash)
-        for _ in range(10):
+        for _ in range(30):
             lookup_response = holdstub.HoldInvoiceLookup(lookup_request)
             if lookup_response.state == hold_pb2.Holdstate.SETTLED:
                 return True
