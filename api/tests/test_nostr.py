@@ -125,7 +125,7 @@ class TestNostrGenerateTags(TestCase):
         """Convert a list of Tag objects to {tag_name: [values...]} for easy assertions."""
         result = {}
         for tag in tags:
-            data = json.loads(tag.as_json())  # nostr-sdk Tag.as_json() → '["k","buy"]'
+            data = tag.to_vec()  # nostr-sdk 0.45.0: Tag.to_vec() → List[str]
             if data:
                 result[data[0]] = data[1:]
         return result
