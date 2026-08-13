@@ -138,9 +138,11 @@ class TestCLNSettleHoldInvoice(TestCase, _CLNHoldStubPatcher):
             lookup_states=lookup_states or [],
         )
         import_patches = _make_cln_import_patches()
-        # Remove stale cached module to ensure patches apply on import
+        # Remove stale cached module so patches apply on the next import.
+        # Patch time.sleep at the 'time' module level (not at api.lightning.cln.time.sleep)
+        # because the latter would trigger a premature import of api.lightning.cln.
         sys.modules.pop("api.lightning.cln", None)
-        with patch("api.lightning.cln.time.sleep") as mock_sleep:
+        with patch("time.sleep") as mock_sleep:
             with import_patches[0], import_patches[1], import_patches[2]:
                 with patcher:
                     from api.lightning.cln import CLNNode
@@ -204,8 +206,10 @@ class TestCLNCancelReturnHoldInvoice(TestCase, _CLNHoldStubPatcher):
             stub.HoldInvoiceCancel.side_effect = Exception("cannot cancel")
 
         import_patches = _make_cln_import_patches()
+        # Same as TestCLNSettleHoldInvoice._run: patch time.sleep at the top-level
+        # 'time' module to avoid triggering a premature import of api.lightning.cln.
         sys.modules.pop("api.lightning.cln", None)
-        with patch("api.lightning.cln.time.sleep") as mock_sleep:
+        with patch("time.sleep") as mock_sleep:
             with import_patches[0], import_patches[1], import_patches[2]:
                 with patcher:
                     from api.lightning.cln import CLNNode
