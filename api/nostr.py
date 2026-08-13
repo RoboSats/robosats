@@ -8,7 +8,6 @@ from nostr_sdk import (
     Keys,
     Client,
     EventBuilder,
-    NostrSigner,
     Kind,
     Tag,
     PublicKey,
@@ -34,7 +33,6 @@ class Nostr:
         print("Sending nostr ORDER event")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        signer = NostrSigner.keys(keys)
         client = await self.initialize_client()
 
         robot_name = await self.get_user_name(order)
@@ -43,10 +41,11 @@ class Nostr:
 
         content = order.description if order.description is not None else ""
 
+        # Keys implements AsyncNostrSigner directly in nostr-sdk 0.45.0
         event = await (
             EventBuilder(Kind(38383), content)
             .tags(self.generate_tags(order, robot_name, robot_hash_id, currency))
-            .finalize_async(signer)
+            .finalize_async(keys)
         )
         await client.send_event(event)
         print(f"Nostr ORDER event sent: {event.as_json()}")
@@ -59,7 +58,6 @@ class Nostr:
         print("Sending nostr NOTIFICATION event")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        signer = NostrSigner.keys(keys)
         client = await self.initialize_client()
 
         rumor_extra_tags = [
@@ -72,8 +70,9 @@ class Nostr:
             Tag.parse(["status", str(order.status)]),
         ]
 
+        # Keys implements AsyncNostrSigner directly in nostr-sdk 0.45.0
         gift_wrap = await nip17_make_private_msg_async(
-            signer,
+            keys,
             PublicKey.parse(robot.nostr_pubkey),
             text,
             rumor_extra_tags=rumor_extra_tags,
