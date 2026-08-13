@@ -752,11 +752,8 @@ class BookView(ListAPIView):
                 currency=currency, type=type, status=Order.Status.PUB
             )
 
-        if len(queryset) == 0:
-            return Response(
-                {"not_found": "No orders found, be the first to make one"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        if not queryset.exists():
+            return Response([], status=status.HTTP_200_OK)
 
         book_data = []
         for order in queryset:
