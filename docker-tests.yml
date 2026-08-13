@@ -11,7 +11,6 @@
 # docker exec -it coordinator-LND lncli --network=regtest getinfo
 # docker exec -it robot-LND lncli --network=regtest --rpcserver localhost:10010 getinfo
 
-version: '3.9'
 services:
   bitcoind:
     image: ruimarinho/bitcoin-core:${BITCOIND_VERSION:-24.0.1}-alpine
@@ -142,6 +141,7 @@ services:
       args:
         DEVELOPMENT: True
     image: backend-image
+    pull_policy: never
     container_name: test-coordinator
     restart: always
     environment:
