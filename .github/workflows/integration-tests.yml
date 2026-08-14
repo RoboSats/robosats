@@ -82,9 +82,7 @@ jobs:
         ROBOSATS_ENVS_FILE: ".env-sample"
 
     - name: 'Export strfry image'
-      run: |
-        IMAGE_ID=$(docker compose -f docker-tests.yml images -q strfry)
-        docker save "$IMAGE_ID" | gzip > strfry-image.tar.gz
+      run: docker save strfry-test | gzip > strfry-image.tar.gz
       env:
         ROBOSATS_ENVS_FILE: ".env-sample"
 

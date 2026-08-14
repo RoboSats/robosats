@@ -183,6 +183,7 @@ services:
 
   strfry:
     build: ./docker/strfry
+    image: strfry-test
     container_name: test-strfry
     restart: always
     entrypoint: ["/app/strfry", "relay"]
