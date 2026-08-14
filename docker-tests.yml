@@ -27,6 +27,7 @@ services:
       - "5432:5432"
       - "6379:6379"
       - "7777:7777"
+      - "7778:7778"
     volumes:
       - bitcoin:/bitcoin/.bitcoin/
       - ./tests/bitcoind/entrypoint.sh:/entrypoint.sh
@@ -178,6 +179,17 @@ services:
       POSTGRES_PASSWORD: 'example'
       POSTGRES_USER: 'postgres'
       POSTGRES_DB: 'postgres'
+    network_mode: service:bitcoind
+
+  strfry:
+    build: ./docker/strfry
+    container_name: test-strfry
+    restart: always
+    entrypoint: ["/app/strfry", "relay"]
+    volumes:
+      - ./docker/strfry/strfry.conf:/etc/strfry.conf:ro
+    tmpfs:
+      - /app/strfry-db
     network_mode: service:bitcoind
 
   # celery-worker:

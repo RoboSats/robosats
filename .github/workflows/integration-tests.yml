@@ -76,6 +76,25 @@ jobs:
         path: backend-image.tar.gz
         retention-days: 1
 
+    - name: 'Build strfry image'
+      run: docker compose -f docker-tests.yml build strfry
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: 'Export strfry image'
+      run: |
+        IMAGE_ID=$(docker compose -f docker-tests.yml images -q strfry)
+        docker save "$IMAGE_ID" | gzip > strfry-image.tar.gz
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: 'Upload strfry image artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: strfry-image-${{ github.run_id }}
+        path: strfry-image.tar.gz
+        retention-days: 1
+
   test:
     runs-on: ubuntu-latest
     needs: build
@@ -109,6 +128,14 @@ jobs:
     - name: 'Load coordinator image'
       run: docker load < backend-image.tar.gz
 
+    - name: 'Download strfry image artifact'
+      uses: actions/download-artifact@v4
+      with:
+        name: strfry-image-${{ github.run_id }}
+
+    - name: 'Load strfry image'
+      run: docker load < strfry-image.tar.gz
+
     - name: Patch .env-sample
       run: |
         sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
@@ -124,6 +151,7 @@ jobs:
           redis
           coordinator-${{ matrix.ln-vendor }}
           robot-LND
+          strfry
           coordinator
       env:
         LND_VERSION: ${{ matrix.lnd-version }}
@@ -136,6 +164,20 @@ jobs:
           echo "Waiting for coordinator to be healthy..."
           sleep 5
         done
+
+    - name: Wait for strfry relay
+      run: |
+        echo "Waiting for strfry relay on port 7778..."
+        for i in $(seq 1 30); do
+          if docker exec test-btc nc -z 127.0.0.1 7778 2>/dev/null; then
+            echo "strfry relay is up"
+            exit 0
+          fi
+          echo "  attempt $i/30 — not ready, sleeping 2s..."
+          sleep 2
+        done
+        echo "ERROR: strfry relay did not come up within 60 seconds" >&2
+        exit 1
 
     - name: 'Run tests with coverage'
       run: |
