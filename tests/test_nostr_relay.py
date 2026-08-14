@@ -11,12 +11,18 @@ Strategy
 --------
 - Build a minimal Order / Robot mock with the exact fields Nostr() reads.
 - Call async_to_sync(nostr.send_*) directly (no Celery worker needed).
-- Open a **second** real nostr_sdk Client, subscribe to the relay, and assert
-  the expected event arrived with correct NIP-69 tags (send_order_event) or
-  kind-1059 gift-wrap (send_notification_event).
+- Open a **second** real nostr_sdk Client, fetch events from the relay, and
+  assert the expected event arrived with correct NIP-69 tags (send_order_event)
+  or kind-1059 gift-wrap (send_notification_event).
 
 Requirements: strfry relay must be reachable at STRFRY_HOST:STRFRY_PORT.
 In the docker-tests.yml stack this is 127.0.0.1:7778.
+
+nostr-sdk 0.45.0 API notes:
+  - Client.fetch_events(target: ReqTarget, timeout=...) -> List[Event]
+  - ReqTarget.single(url: RelayUrl, filters: List[Filter]) -> ReqTarget
+  - ReqTarget.auto(filters: List[Filter]) -> ReqTarget
+  - No get_events_of; no Duration type.
 """
 
 import asyncio
@@ -37,6 +43,7 @@ from nostr_sdk import (
     Kind,
     PublicKey,
     RelayUrl,
+    ReqTarget,
 )
 
 from api.models import Order
@@ -45,14 +52,14 @@ from api.nostr import Nostr
 # ---------------------------------------------------------------------------
 # Test credentials — same as api/tests/test_nostr.py, never a production key.
 TEST_NSEC = "nsec1w72q58pyng0fa8czqeyr4qvw5v58vegxeremqclshlncqns83cpsd2nmk9"
-# Recipient pubkey for notification tests (hex format required by nostr_sdk)
+# Recipient pubkey for notification tests
 TEST_RECIPIENT_NPUB = "npub16sfzpqkjrunmweeu4tj9z83pv4cwweqcnc5kyxctzdgpelng73zqms3kqr"
 
 RELAY_HOST = config("STRFRY_HOST", cast=str, default="localhost")
 RELAY_PORT = config("STRFRY_PORT", cast=str, default="7778")
 RELAY_URL = f"ws://{RELAY_HOST}:{RELAY_PORT}"
 
-# How long to wait for an event to appear on the relay after publishing (seconds)
+# How long (seconds) to wait for an event to appear on the relay after publishing
 EVENT_FETCH_TIMEOUT = 10
 
 
@@ -108,26 +115,31 @@ def _make_robot(nostr_pubkey=TEST_RECIPIENT_NPUB):
     return robot
 
 
-async def _fetch_events_from_relay(
-    relay_url, event_filter, timeout=EVENT_FETCH_TIMEOUT
-):
+async def _fetch_events_from_relay(relay_url, filters, timeout=EVENT_FETCH_TIMEOUT):
     """
-    Connect a fresh client to the relay, subscribe with the given Filter,
-    wait up to `timeout` seconds, and return collected events as parsed dicts.
+    Connect a fresh client to relay_url, use ReqTarget.single to fetch
+    events matching `filters` (list of Filter), wait up to `timeout` seconds,
+    disconnect, and return events as parsed JSON dicts.
+
+    Uses the nostr-sdk 0.45.0 API:
+        client.fetch_events(ReqTarget.single(RelayUrl, [Filter, ...]))
     """
+    relay = RelayUrl.parse(relay_url)
     client = Client()
-    await client.add_relay(RelayUrl.parse(relay_url))
+    await client.add_relay(relay)
     await client.connect()
 
-    # Give the relay a moment then fetch synchronously via HTTP-compatible NIP-01
-    # nostr_sdk 0.45: use get_events_of for a one-shot fetch
+    target = ReqTarget.single(relay, filters)
+
     deadline = time.monotonic() + timeout
     events = []
     while time.monotonic() < deadline and not events:
         try:
-            raw = await client.get_events_of([event_filter], timeout=2)
+            raw = await client.fetch_events(target)
             events = raw
         except Exception:
+            pass
+        if not events:
             await asyncio.sleep(0.5)
 
     await client.disconnect()
@@ -137,7 +149,7 @@ async def _fetch_events_from_relay(
 class TestNostrOrderEventOnRealRelay(TestCase):
     """
     send_order_event() publishes a NIP-69 kind-38383 event to the live relay.
-    Verified by subscribing as a second client and checking tags.
+    Verified by fetching back with a second client and checking tags.
     """
 
     def setUp(self):
@@ -166,15 +178,13 @@ class TestNostrOrderEventOnRealRelay(TestCase):
             )
             async_to_sync(self.nostr.send_order_event)(order)
 
-        # Subscribe as a second client and fetch the event
         keys = Keys.parse(TEST_NSEC)
         coordinator_pubkey = keys.get_public_key()
-        event_filter = Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(5)
-        events = self._run(_fetch_events_from_relay(RELAY_URL, event_filter))
+        filters = [Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(5)]
+        events = self._run(_fetch_events_from_relay(RELAY_URL, filters))
 
         self.assertGreater(len(events), 0, "No kind-38383 event found on relay")
-        event = events[0]
-        self.assertEqual(event["kind"], 38383)
+        self.assertEqual(events[0]["kind"], 38383)
 
     def test_order_event_tags(self):
         """Verify core NIP-69 tags are present and correct."""
@@ -196,8 +206,8 @@ class TestNostrOrderEventOnRealRelay(TestCase):
 
         keys = Keys.parse(TEST_NSEC)
         coordinator_pubkey = keys.get_public_key()
-        event_filter = Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(10)
-        events = self._run(_fetch_events_from_relay(RELAY_URL, event_filter))
+        filters = [Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(10)]
+        events = self._run(_fetch_events_from_relay(RELAY_URL, filters))
 
         # Find event matching order_id=10002 via source tag
         matching = [
@@ -215,7 +225,6 @@ class TestNostrOrderEventOnRealRelay(TestCase):
         self.assertEqual(tags.get("k"), ["sell"])
         self.assertEqual(tags.get("f"), ["USD"])
         self.assertEqual(tags.get("s"), ["pending"])
-        self.assertIn("network", tags)
         self.assertEqual(tags.get("network"), ["testnet"])
 
     def test_password_protected_order_not_published(self):
@@ -226,10 +235,9 @@ class TestNostrOrderEventOnRealRelay(TestCase):
 
         keys = Keys.parse(TEST_NSEC)
         coordinator_pubkey = keys.get_public_key()
-        event_filter = Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(20)
+        filters = [Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(20)]
 
-        # Count events before
-        events_before = self._run(_fetch_events_from_relay(RELAY_URL, event_filter))
+        events_before = self._run(_fetch_events_from_relay(RELAY_URL, filters))
         count_before = len(events_before)
 
         with patch("api.nostr.config") as mock_config:
@@ -238,9 +246,8 @@ class TestNostrOrderEventOnRealRelay(TestCase):
             )
             async_to_sync(self.nostr.send_order_event)(order)
 
-        # Give the relay a brief moment; count must not have increased
         time.sleep(1)
-        events_after = self._run(_fetch_events_from_relay(RELAY_URL, event_filter))
+        events_after = self._run(_fetch_events_from_relay(RELAY_URL, filters))
         self.assertEqual(
             len(events_after),
             count_before,
@@ -256,8 +263,8 @@ class TestNostrOrderEventOnRealRelay(TestCase):
         env = {**self.env_overrides, "NOSTR_NSEC": ""}
         keys = Keys.parse(TEST_NSEC)
         coordinator_pubkey = keys.get_public_key()
-        event_filter = Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(20)
-        events_before = self._run(_fetch_events_from_relay(RELAY_URL, event_filter))
+        filters = [Filter().kind(Kind(38383)).author(coordinator_pubkey).limit(20)]
+        events_before = self._run(_fetch_events_from_relay(RELAY_URL, filters))
         count_before = len(events_before)
 
         with patch("api.nostr.config") as mock_config:
@@ -267,7 +274,7 @@ class TestNostrOrderEventOnRealRelay(TestCase):
             async_to_sync(self.nostr.send_order_event)(order)
 
         time.sleep(1)
-        events_after = self._run(_fetch_events_from_relay(RELAY_URL, event_filter))
+        events_after = self._run(_fetch_events_from_relay(RELAY_URL, filters))
         self.assertEqual(len(events_after), count_before)
 
 
@@ -307,8 +314,8 @@ class TestNostrNotificationEventOnRealRelay(TestCase):
 
         # kind-1059 gift-wraps are addressed to the recipient's pubkey
         recipient_pubkey = PublicKey.parse(TEST_RECIPIENT_NPUB)
-        event_filter = Filter().kind(Kind(1059)).pubkey(recipient_pubkey).limit(5)
-        events = self._run(_fetch_events_from_relay(RELAY_URL, event_filter))
+        filters = [Filter().kind(Kind(1059)).pubkey(recipient_pubkey).limit(5)]
+        events = self._run(_fetch_events_from_relay(RELAY_URL, filters))
 
         self.assertGreater(len(events), 0, "No kind-1059 gift-wrap found on relay")
         self.assertEqual(events[0]["kind"], 1059)
