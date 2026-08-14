@@ -57,7 +57,7 @@ jobs:
     - uses: satackey/action-docker-layer-caching@v0.0.11
       continue-on-error: true
       with:
-        key: coordinator-docker-cache-${{ hashFiles('Dockerfile', 'requirements.txt', 'requirements_dev.txt') }}
+        key: coordinator-docker-cache-${{ hashFiles('Dockerfile', 'requirements.txt', 'requirements_dev.txt', 'docker/strfry/Dockerfile') }}
         restore-keys: |
           coordinator-docker-cache-
 
@@ -74,6 +74,23 @@ jobs:
       with:
         name: backend-image-${{ github.run_id }}
         path: backend-image.tar.gz
+        retention-days: 1
+
+    - name: 'Build strfry image'
+      run: docker compose -f docker-tests.yml build strfry
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: 'Export strfry image'
+      run: docker save strfry-test | gzip > strfry-image.tar.gz
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: 'Upload strfry image artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: strfry-image-${{ github.run_id }}
+        path: strfry-image.tar.gz
         retention-days: 1
 
   test:
@@ -109,6 +126,14 @@ jobs:
     - name: 'Load coordinator image'
       run: docker load < backend-image.tar.gz
 
+    - name: 'Download strfry image artifact'
+      uses: actions/download-artifact@v4
+      with:
+        name: strfry-image-${{ github.run_id }}
+
+    - name: 'Load strfry image'
+      run: docker load < strfry-image.tar.gz
+
     - name: Patch .env-sample
       run: |
         sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
@@ -124,6 +149,7 @@ jobs:
           redis
           coordinator-${{ matrix.ln-vendor }}
           robot-LND
+          strfry
           coordinator
       env:
         LND_VERSION: ${{ matrix.lnd-version }}
@@ -136,6 +162,27 @@ jobs:
           echo "Waiting for coordinator to be healthy..."
           sleep 5
         done
+
+    - name: Wait for strfry relay
+      run: |
+        echo "Waiting for strfry relay on port 7778..."
+        for i in $(seq 1 30); do
+          # strfry responds with HTTP 426 (Upgrade Required) to plain HTTP —
+          # any response on port 7778 means the relay is accepting connections.
+          STATUS=$(docker exec test-coordinator curl -s -o /dev/null -w "%{http_code}" --max-time 2 http://127.0.0.1:7778 2>/dev/null || true)
+          if [ -n "$STATUS" ] && [ "$STATUS" != "000" ]; then
+            echo "strfry relay is up (HTTP $STATUS)"
+            exit 0
+          fi
+          echo "  attempt $i/30 — not ready, sleeping 2s..."
+          sleep 2
+        done
+        echo "=== strfry container logs ===" >&2
+        docker logs test-strfry >&2 || true
+        echo "=== strfry container state ===" >&2
+        docker inspect test-strfry --format '{{.State}}' >&2 || true
+        echo "ERROR: strfry relay did not come up within 60 seconds" >&2
+        exit 1
 
     - name: 'Run tests with coverage'
       run: |

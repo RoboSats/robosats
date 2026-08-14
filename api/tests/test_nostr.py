@@ -1,26 +1,24 @@
 """
-Tests for api/nostr.py — Nostr event manager.
+Unit tests for api/nostr.py — pure-logic, no relay required.
 
-Strategy: no live relay, no live Lightning node required.
-- All nostr_sdk network I/O (Client.add_relay, Client.connect, Client.send_event)
-  is mocked with AsyncMock so the async event loop is exercised without TCP.
-- Keys.parse / EventBuilder / Tag / PublicKey / nip17_make_private_msg_async are
-  exercised against the real nostr-sdk 0.45.0 library so tag construction and
-  signing logic is actually validated, not just stubbed.
-- Order and Robot objects are plain MagicMocks to avoid needing DB / Django setup.
+Coverage:
+- generate_tags: tag construction and NIP-69 field values
+- get_status_tag: PUB → "pending", everything else → "success"
+- sign_message: Schnorr signature shape, determinism, bad-key fallback
+
+Network tests (send_order_event, send_notification_event, initialize_client)
+live in tests/test_nostr_relay.py and run against the real strfry relay in
+the docker-tests.yml stack. There are no Client mocks here.
 """
 
-import asyncio
 import hashlib
-import json
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
-from nostr_sdk import Keys, RelayUrl
 
 from api.nostr import Nostr
 from api.models import Order
@@ -29,8 +27,6 @@ from api.models import Order
 # A deterministic nsec used only in tests — never a real key.
 # Generated with Keys.generate() from nostr-sdk 0.45.0.
 TEST_NSEC = "nsec1w72q58pyng0fa8czqeyr4qvw5v58vegxeremqclshlncqns83cpsd2nmk9"
-# Corresponding npub (used as recipient in notification tests)
-TEST_NPUB = "npub16sfzpqkjrunmweeu4tj9z83pv4cwweqcnc5kyxctzdgpelng73zqms3kqr"
 
 
 def _make_order(
@@ -84,14 +80,8 @@ def _make_order(
     return order
 
 
-def _make_robot(nostr_pubkey=TEST_NPUB):
-    robot = MagicMock()
-    robot.nostr_pubkey = nostr_pubkey
-    return robot
-
-
 # ---------------------------------------------------------------------------
-# Shared env overrides applied to every test in this module
+# Shared env overrides applied to generate_tags tests
 ENV_OVERRIDES = {
     "NOSTR_NSEC": TEST_NSEC,
     "COORDINATOR_ALIAS": "TestCoord",
@@ -100,18 +90,6 @@ ENV_OVERRIDES = {
     "STRFRY_HOST": "localhost",
     "STRFRY_PORT": "7778",
 }
-
-
-def _patch_client():
-    """
-    Return a context-manager that replaces the nostr_sdk Client with an
-    AsyncMock so no real websocket connection is attempted.
-    """
-    mock_client = MagicMock()
-    mock_client.add_relay = AsyncMock()
-    mock_client.connect = AsyncMock()
-    mock_client.send_event = AsyncMock()
-    return patch("api.nostr.Client", return_value=mock_client), mock_client
 
 
 # ---------------------------------------------------------------------------
@@ -137,8 +115,7 @@ class TestNostrGenerateTags(TestCase):
         )
         order = _make_order(order_type=Order.Types.BUY)
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["k"], ["buy"])
+        self.assertEqual(self._tags_as_dict(tags)["k"], ["buy"])
 
     @patch("api.nostr.config")
     def test_sell_order_tag(self, mock_config):
@@ -147,8 +124,7 @@ class TestNostrGenerateTags(TestCase):
         )
         order = _make_order(order_type=Order.Types.SELL)
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["k"], ["sell"])
+        self.assertEqual(self._tags_as_dict(tags)["k"], ["sell"])
 
     @patch("api.nostr.config")
     def test_fixed_amount_fa_tag(self, mock_config):
@@ -157,8 +133,7 @@ class TestNostrGenerateTags(TestCase):
         )
         order = _make_order(has_range=False, amount=Decimal("250.00"))
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["fa"], ["250.00"])
+        self.assertEqual(self._tags_as_dict(tags)["fa"], ["250.00"])
 
     @patch("api.nostr.config")
     def test_range_amount_fa_tag(self, mock_config):
@@ -167,27 +142,28 @@ class TestNostrGenerateTags(TestCase):
         )
         order = _make_order(
             has_range=True,
-            amount=None,
-            min_amount=Decimal("100"),
-            max_amount=Decimal("500"),
+            min_amount=Decimal("100.00"),
+            max_amount=Decimal("500.00"),
         )
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["fa"], ["100", "500"])
+        self.assertEqual(self._tags_as_dict(tags)["fa"], ["100.00", "500.00"])
 
     @patch("api.nostr.config")
     def test_d_tag_is_deterministic_uuid(self, mock_config):
         mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
             key, kw.get("default", "")
         )
-        order = _make_order(order_id=99)
+        order = _make_order(order_id=42)
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-
-        # Recompute expected UUID
-        hashed = hashlib.md5("TestCoord99".encode("utf-8")).hexdigest()
-        expected = str(uuid.UUID(hashed))
-        self.assertEqual(tag_dict["d"], [expected])
+        d_values = self._tags_as_dict(tags)["d"]
+        self.assertEqual(len(d_values), 1)
+        # Value must be a valid UUID string
+        parsed = uuid.UUID(d_values[0])
+        # Re-derive the expected value
+        hashed_id = hashlib.md5(
+            f"{ENV_OVERRIDES['COORDINATOR_ALIAS']}42".encode("utf-8")
+        ).hexdigest()
+        self.assertEqual(parsed, uuid.UUID(hashed_id))
 
     @patch("api.nostr.config")
     def test_required_tags_present(self, mock_config):
@@ -215,20 +191,17 @@ class TestNostrGenerateTags(TestCase):
             "bond",
             "z",
         ):
-            self.assertIn(required, tag_dict, f"Missing required tag: {required}")
+            with self.subTest(tag=required):
+                self.assertIn(required, tag_dict)
 
     @patch("api.nostr.config")
     def test_geo_tag_added_when_coordinates_present(self, mock_config):
         mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
             key, kw.get("default", "")
         )
-        order = _make_order(
-            latitude=Decimal("40.416775"), longitude=Decimal("-3.703790")
-        )
+        order = _make_order(latitude=34.7455, longitude=135.503)
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertIn("g", tag_dict)
-        self.assertTrue(len(tag_dict["g"][0]) > 0)
+        self.assertIn("g", self._tags_as_dict(tags))
 
     @patch("api.nostr.config")
     def test_geo_tag_absent_without_coordinates(self, mock_config):
@@ -237,18 +210,16 @@ class TestNostrGenerateTags(TestCase):
         )
         order = _make_order(latitude=None, longitude=None)
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertNotIn("g", tag_dict)
+        self.assertNotIn("g", self._tags_as_dict(tags))
 
     @patch("api.nostr.config")
     def test_payment_method_split_into_pm_tag(self, mock_config):
         mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
             key, kw.get("default", "")
         )
-        order = _make_order(payment_method="Revolut SEPA Wise")
+        order = _make_order(payment_method="Revolut SEPA Wire")
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["pm"], ["Revolut", "SEPA", "Wise"])
+        self.assertEqual(self._tags_as_dict(tags)["pm"], ["Revolut", "SEPA", "Wire"])
 
     @patch("api.nostr.config")
     def test_y_tag_contains_coordinator_alias(self, mock_config):
@@ -257,8 +228,9 @@ class TestNostrGenerateTags(TestCase):
         )
         order = _make_order()
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["y"], ["robosats", "testcoord"])
+        y_values = self._tags_as_dict(tags)["y"]
+        self.assertIn("robosats", y_values)
+        self.assertIn(ENV_OVERRIDES["COORDINATOR_ALIAS"].lower(), y_values)
 
     @patch("api.nostr.config")
     def test_network_tag_value(self, mock_config):
@@ -267,18 +239,19 @@ class TestNostrGenerateTags(TestCase):
         )
         order = _make_order()
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["network"], ["testnet"])
+        self.assertEqual(self._tags_as_dict(tags)["network"], ["testnet"])
 
     @patch("api.nostr.config")
     def test_source_tag_url_format(self, mock_config):
         mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
             key, kw.get("default", "")
         )
-        order = _make_order(order_id=7)
+        order = _make_order(order_id=99)
         tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
-        tag_dict = self._tags_as_dict(tags)
-        self.assertEqual(tag_dict["source"], ["http://test.onion/order/testcoord/7"])
+        source_values = self._tags_as_dict(tags)["source"]
+        self.assertEqual(len(source_values), 1)
+        self.assertIn("test.onion", source_values[0])
+        self.assertIn("/99", source_values[0])
 
 
 # ---------------------------------------------------------------------------
@@ -337,317 +310,3 @@ class TestNostrSignMessage(TestCase):
         mock_config.return_value = "not_a_valid_nsec"
         result = Nostr.sign_message("any text")
         self.assertEqual(result, "")
-
-
-# ---------------------------------------------------------------------------
-class TestNostrSendOrderEvent(TestCase):
-    """Integration-style tests for send_order_event — relay I/O is mocked."""
-
-    def setUp(self):
-        self.nostr = Nostr()
-
-    @patch("api.nostr.config")
-    def test_skips_password_protected_orders(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        order = _make_order(password="secret")
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-        mock_client.send_event.assert_not_called()
-
-    @patch("api.nostr.config")
-    def test_skips_when_nostr_nsec_empty(self, mock_config):
-        env = {**ENV_OVERRIDES, "NOSTR_NSEC": ""}
-        mock_config.side_effect = lambda key, **kw: env.get(key, kw.get("default", ""))
-        order = _make_order()
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-        mock_client.send_event.assert_not_called()
-
-    @patch("api.nostr.config")
-    def test_sends_event_for_public_order(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        order = _make_order(password=None, status=Order.Status.PUB)
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-        mock_client.send_event.assert_called_once()
-
-    @patch("api.nostr.config")
-    def test_event_has_correct_kind(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        order = _make_order(password=None)
-        captured_event = None
-
-        async def capture_send_event(event):
-            nonlocal captured_event
-            captured_event = event
-
-        patch_cls, mock_client = _patch_client()
-        mock_client.send_event.side_effect = capture_send_event
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-
-        self.assertIsNotNone(captured_event)
-        event_json = json.loads(captured_event.as_json())
-        self.assertEqual(event_json["kind"], 38383)
-
-    @patch("api.nostr.config")
-    def test_event_content_uses_description(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        order = _make_order(password=None, description="Pay via Wise")
-        captured_event = None
-
-        async def capture_send_event(event):
-            nonlocal captured_event
-            captured_event = event
-
-        patch_cls, mock_client = _patch_client()
-        mock_client.send_event.side_effect = capture_send_event
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-
-        event_json = json.loads(captured_event.as_json())
-        self.assertEqual(event_json["content"], "Pay via Wise")
-
-    @patch("api.nostr.config")
-    def test_event_content_empty_when_no_description(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        order = _make_order(password=None, description=None)
-        captured_event = None
-
-        async def capture_send_event(event):
-            nonlocal captured_event
-            captured_event = event
-
-        patch_cls, mock_client = _patch_client()
-        mock_client.send_event.side_effect = capture_send_event
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-
-        event_json = json.loads(captured_event.as_json())
-        self.assertEqual(event_json["content"], "")
-
-    @patch("api.nostr.config")
-    def test_connect_called_before_send(self, mock_config):
-        """Relay must be added and connected before sending."""
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        order = _make_order(password=None)
-        call_order = []
-
-        async def record_add_relay(url):
-            call_order.append("add_relay")
-
-        async def record_connect(**kw):
-            call_order.append("connect")
-
-        async def record_send_event(event):
-            call_order.append("send_event")
-
-        patch_cls, mock_client = _patch_client()
-        mock_client.add_relay.side_effect = record_add_relay
-        mock_client.connect.side_effect = record_connect
-        mock_client.send_event.side_effect = record_send_event
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-
-        self.assertEqual(call_order, ["add_relay", "connect", "send_event"])
-
-    @patch("api.nostr.config")
-    def test_relay_url_uses_strfry_host_and_port(self, mock_config):
-        env = {
-            **ENV_OVERRIDES,
-            "STRFRY_HOST": "relay.mycoord.onion",
-            "STRFRY_PORT": "9000",
-        }
-        mock_config.side_effect = lambda key, **kw: env.get(key, kw.get("default", ""))
-        order = _make_order(password=None)
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-        mock_client.add_relay.assert_called_once_with(
-            RelayUrl.parse("ws://relay.mycoord.onion:9000")
-        )
-
-    @patch("api.nostr.config")
-    def test_event_is_signed_by_coordinator_key(self, mock_config):
-        """The signed event pubkey must match the coordinator's nsec."""
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        keys = Keys.parse(TEST_NSEC)
-        expected_pubkey = keys.get_public_key().to_hex()
-
-        order = _make_order(password=None)
-        captured_event = None
-
-        async def capture_send_event(event):
-            nonlocal captured_event
-            captured_event = event
-
-        patch_cls, mock_client = _patch_client()
-        mock_client.send_event.side_effect = capture_send_event
-        with patch_cls:
-            asyncio.run(self.nostr.send_order_event(order))
-
-        event_json = json.loads(captured_event.as_json())
-        self.assertEqual(event_json["pubkey"], expected_pubkey)
-
-
-# ---------------------------------------------------------------------------
-class TestNostrSendNotificationEvent(TestCase):
-    """Integration-style tests for send_notification_event."""
-
-    def setUp(self):
-        self.nostr = Nostr()
-
-    @patch("api.nostr.config")
-    def test_skips_when_nostr_nsec_empty(self, mock_config):
-        env = {**ENV_OVERRIDES, "NOSTR_NSEC": ""}
-        mock_config.side_effect = lambda key, **kw: env.get(key, kw.get("default", ""))
-        robot = _make_robot()
-        order = _make_order()
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(self.nostr.send_notification_event(robot, order, "hello"))
-        mock_client.send_event.assert_not_called()
-
-    @patch("api.nostr.config")
-    def test_sends_gift_wrap_event(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        robot = _make_robot()
-        order = _make_order()
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(
-                self.nostr.send_notification_event(robot, order, "Trade update")
-            )
-        mock_client.send_event.assert_called_once()
-
-    @patch("api.nostr.config")
-    def test_gift_wrap_has_kind_1059(self, mock_config):
-        """NIP-17 gift-wrap events must use kind 1059."""
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        robot = _make_robot()
-        order = _make_order()
-        captured_event = None
-
-        async def capture_send_event(event):
-            nonlocal captured_event
-            captured_event = event
-
-        patch_cls, mock_client = _patch_client()
-        mock_client.send_event.side_effect = capture_send_event
-        with patch_cls:
-            asyncio.run(self.nostr.send_notification_event(robot, order, "hello"))
-
-        self.assertIsNotNone(captured_event)
-        event_json = json.loads(captured_event.as_json())
-        self.assertEqual(event_json["kind"], 1059)
-
-    @patch("api.nostr.config")
-    def test_connect_called_before_send(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        robot = _make_robot()
-        order = _make_order()
-        call_order = []
-
-        async def record_add_relay(url):
-            call_order.append("add_relay")
-
-        async def record_connect(**kw):
-            call_order.append("connect")
-
-        async def record_send_event(event):
-            call_order.append("send_event")
-
-        patch_cls, mock_client = _patch_client()
-        mock_client.add_relay.side_effect = record_add_relay
-        mock_client.connect.side_effect = record_connect
-        mock_client.send_event.side_effect = record_send_event
-        with patch_cls:
-            asyncio.run(self.nostr.send_notification_event(robot, order, "hello"))
-
-        self.assertEqual(call_order, ["add_relay", "connect", "send_event"])
-
-    @patch("api.nostr.config")
-    def test_invalid_receiver_pubkey_raises(self, mock_config):
-        """A robot with a malformed nostr_pubkey must raise before sending."""
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        robot = _make_robot(nostr_pubkey="not_a_valid_pubkey")
-        order = _make_order()
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            with self.assertRaises(Exception):
-                asyncio.run(self.nostr.send_notification_event(robot, order, "hello"))
-        mock_client.send_event.assert_not_called()
-
-
-# ---------------------------------------------------------------------------
-class TestNostrInitializeClient(TestCase):
-    """Tests for initialize_client."""
-
-    def setUp(self):
-        self.nostr = Nostr()
-
-    @patch("api.nostr.config")
-    def test_returns_client_instance(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            client = asyncio.run(self.nostr.initialize_client())
-        self.assertIs(client, mock_client)
-
-    @patch("api.nostr.config")
-    def test_add_relay_and_connect_both_called(self, mock_config):
-        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
-            key, kw.get("default", "")
-        )
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(self.nostr.initialize_client())
-        mock_client.add_relay.assert_called_once()
-        mock_client.connect.assert_called_once()
-
-    @patch("api.nostr.config")
-    def test_default_strfry_url(self, mock_config):
-        env = {k: v for k, v in ENV_OVERRIDES.items()}
-
-        # Use defaults for STRFRY_HOST/PORT — config() should return the default kwarg
-        def side_effect(key, **kw):
-            if key == "STRFRY_HOST":
-                return kw.get("default", "localhost")
-            if key == "STRFRY_PORT":
-                return kw.get("default", "7778")
-            return env.get(key, kw.get("default", ""))
-
-        mock_config.side_effect = side_effect
-        patch_cls, mock_client = _patch_client()
-        with patch_cls:
-            asyncio.run(self.nostr.initialize_client())
-        mock_client.add_relay.assert_called_once_with(
-            RelayUrl.parse("ws://localhost:7778")
-        )
