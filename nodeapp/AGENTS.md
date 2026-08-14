@@ -119,8 +119,11 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
   testnet is effectively absent for those three.
 - **All five `locations.conf` testnet avatar routes** now use `/testnet/{alias}/...`
   consistent with the API/WS routes — fixed in this codebase.
-- **No `/testnet/{alias}/relay/`** route exists in any coordinator config — testnet Nostr
-  relay is unreachable through nodeapp.
+- **All five `locations.conf` now include `/testnet/{alias}/relay/`** — testnet Nostr
+  relay is reachable through nodeapp (mirrors the mainnet relay route, including the
+  `Origin $http_origin` proxy header and `Access-Control-Allow-Origin: *`). Note: bazaar,
+  freedomsats, and alice reuse their mainnet onion for testnet, so their relay serves both
+  networks — the client filters order events by the `network` tag.
 - **`basic.html` / `pro.html` in the working tree** are local dev outputs — they may pin
   an old bundle version (e.g., v0.8.4 while `static/frontend/` contains v0.8.5). CI
   always injects the correct artifact; never rely on committed HTML.
