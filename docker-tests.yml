@@ -189,8 +189,11 @@ services:
     entrypoint: ["/app/strfry", "--config", "/etc/strfry.conf", "relay"]
     volumes:
       - ./docker/strfry/strfry.conf:/etc/strfry.conf:ro
-    tmpfs:
-      - /app/strfry-db
+      - strfry-db:/app/strfry-db
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
     network_mode: service:bitcoind
 
   # celery-worker:
@@ -225,3 +228,4 @@ volumes:
   lnd:
   cln:
   lndrobot:
+  strfry-db:
