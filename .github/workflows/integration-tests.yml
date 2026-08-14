@@ -167,8 +167,11 @@ jobs:
       run: |
         echo "Waiting for strfry relay on port 7778..."
         for i in $(seq 1 30); do
-          if docker exec test-btc nc -z 127.0.0.1 7778 2>/dev/null; then
-            echo "strfry relay is up"
+          # strfry responds with HTTP 426 (Upgrade Required) to plain HTTP —
+          # any response on port 7778 means the relay is accepting connections.
+          STATUS=$(docker exec test-coordinator curl -s -o /dev/null -w "%{http_code}" --max-time 2 http://127.0.0.1:7778 2>/dev/null || true)
+          if [ -n "$STATUS" ] && [ "$STATUS" != "000" ]; then
+            echo "strfry relay is up (HTTP $STATUS)"
             exit 0
           fi
           echo "  attempt $i/30 — not ready, sleeping 2s..."
