@@ -113,7 +113,7 @@ const BookTable = ({
 
     if (typeof prevFavType !== 'undefined' && prevFavType !== fav.type) {
       setSortModel((currentSortModel) => {
-        let isCurrentSortDefault = false;
+        let isCurrentSortDefault: boolean;
 
         if (prevFavType === null) {
           isCurrentSortDefault = currentSortModel.length === 0;
@@ -431,8 +431,8 @@ const BookTable = ({
       flex: 1,
       renderCell: (params: GridRenderCellParams<PublicOrder>) => {
         const currencyCode = String(currencyDict[params.row.currency.toString()]);
-        let fontColor = `rgb(0,0,0)`;
-        let premiumPoint = 0;
+        let fontColor: string;
+        let premiumPoint: number;
         if (params.row.type === 0) {
           premiumPoint = params.row.premium / buyOutstandingPremium;
           premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;

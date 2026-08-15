@@ -25,7 +25,7 @@ export const getHostUrl = (network = 'mainnet'): string => {
 
 export const getOrigin = (network = 'mainnet'): Origin => {
   const host = getHostUrl(network);
-  let origin: Origin = 'onion';
+  let origin: Origin;
   const [client] = window.RobosatsSettings.split('-');
   if (
     client === 'mobile' ||

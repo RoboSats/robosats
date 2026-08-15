@@ -119,7 +119,8 @@ const EncryptedNostrChat: React.FC<Props> = ({
               event.pubkey === order.maker_nostr_pubkey ? order.maker_nick : order.taker_nick;
 
             let fileMetadata: ParsedFileMessage | undefined;
-            let displayText = event.content;
+            // Default to the decrypted message content; overwrite only for known file/image kinds.
+            let displayText: string = event.content;
 
             if (event.kind === 15) {
               const fileData = parseFileMessage(event);
@@ -134,9 +135,8 @@ const EncryptedNostrChat: React.FC<Props> = ({
               if (imgMeta) {
                 fileMetadata = imgMeta;
                 displayText = t('[Loading Encrypted Image]');
-              } else {
-                displayText = t('[Corrupted Image File]');
               }
+              // else: keep displayText = event.content (normal text message)
             }
 
             return {

@@ -24,7 +24,7 @@ export const calculateBondAmount = ({
 
   if (!amountToCalc) return null;
 
-  let tradeAmountSats = 0;
+  let tradeAmountSats: number;
 
   if (mode === 'fiat') {
     tradeAmountSats = (amountToCalc / price) * 100_000_000;

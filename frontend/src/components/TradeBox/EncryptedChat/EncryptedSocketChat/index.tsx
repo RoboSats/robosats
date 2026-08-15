@@ -20,7 +20,7 @@ import getSettings from '../../../../utils/settings';
 import { Send } from '@mui/icons-material';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
-import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
+import { parseImageMetadataJson } from '../../../../utils/nip17File';
 
 const audioPath =
   getSettings().client == 'mobile'
@@ -193,7 +193,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
               return prev;
             } else {
               const plainText = String(decryptedData.decryptedMessage);
-              let fileMetadata: ParsedFileMessage | undefined;
 
               let x: EncryptedChatMessage = {
                 index: dataFromServer.index,
@@ -202,7 +201,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
                 validSignature: decryptedData.validSignature,
                 userNick: dataFromServer.user_nick,
                 time: dataFromServer.time,
-                fileMetadata,
               };
 
               const imgMeta = parseImageMetadataJson(plainText);

@@ -182,9 +182,9 @@ const OrderDetails = ({
   };
 
   const satsSummary = useMemo(() => {
-    let send: string = '';
-    let receive: string = '';
-    let sats: string = '';
+    let send: string;
+    let receive: string;
+    let sats: string;
     const order = currentOrder;
 
     if (order === null) return {};
