@@ -11,6 +11,7 @@ from nostr_sdk import (
     Kind,
     Tag,
     PublicKey,
+    RelayUrl,
     nip17_make_private_msg_async,
 )
 from api.models import Order
@@ -87,7 +88,7 @@ class Nostr:
         # Add relays and connect
         strfry_host = config("STRFRY_HOST", cast=str, default="localhost")
         strfry_port = config("STRFRY_PORT", cast=str, default="7778")
-        await client.add_relay(f"ws://{strfry_host}:{strfry_port}")
+        await client.add_relay(RelayUrl.parse(f"ws://{strfry_host}:{strfry_port}"))
         await client.connect()
 
         return client

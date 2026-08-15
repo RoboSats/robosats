@@ -43,7 +43,7 @@ class ApiAndroidClient implements ApiClient {
     path: string,
     headers: string = '{}',
     body: string = '',
-    silent: boolean = false,
+    _silent: boolean = false,
   ): Promise<object> {
     try {
       const result = await new Promise<string>((resolve, reject) => {
@@ -55,7 +55,6 @@ class ApiAndroidClient implements ApiClient {
       return this.parseResponse(result);
     } catch (error) {
       console.error('API Error:', error);
-      if (!silent) dispatchError('Coordinator unreachable! Please check your connection.');
       throw error;
     }
   }
