@@ -14,16 +14,17 @@
 import defaultFederation from '../../static/federation.json';
 
 export default function federationLottery(): string[] {
-  return Object.values(defaultFederation).map((coor) => {
-    const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund || 0;
+  return Object.values(defaultFederation)
+    .map((coor) => {
+      const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund || 0;
 
-    return {
-      shortAlias: coor.shortAlias,
-      weight: chance > 0 ? -Math.log(Math.random()) / chance : Number.POSITIVE_INFINITY,
-      tie: Math.random(), // Add a random tie-breaker to ensure fairness in case of equal chances
-    }
-  })
-    .sort((a, b) => (a.weight - b.weight) || (a.tie - b.tie))
+      return {
+        shortAlias: coor.shortAlias,
+        weight: chance > 0 ? -Math.log(Math.random()) / chance : Number.POSITIVE_INFINITY,
+        tie: Math.random(), // Add a random tie-breaker to ensure fairness in case of equal chances
+      };
+    })
+    .sort((a, b) => a.weight - b.weight || a.tie - b.tie)
     .map((coordinator) => coordinator.shortAlias);
 }
 

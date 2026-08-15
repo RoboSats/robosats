@@ -35,11 +35,12 @@ These destinations are **generated outputs** — never hand-edit files there; ed
 ## Android Build (CopyWebpackPlugin — `configAndroid`)
 
 Android receives three specific subsets, not the whole directory:
-| Source | Destination (in `android/app/src/main/assets/`) | Notes |
-|---|---|---|
-| `static/css` | `static/css` | Font URLs rewritten: `url(/static/css/fonts/roboto` → `url(file:///android_asset/static/css/fonts/roboto` |
-| `static/assets/sounds` | `static/assets/sounds` | Notification sounds |
-| `static/federation` | `static/assets/federation` | **Path rename**: `federation/` becomes `assets/federation/` in Android assets |
+
+| Source                 | Destination (in `android/app/src/main/assets/`) | Notes                                                                                                     |
+| ---------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `static/css`           | `static/css`                                    | Font URLs rewritten: `url(/static/css/fonts/roboto` → `url(file:///android_asset/static/css/fonts/roboto` |
+| `static/assets/sounds` | `static/assets/sounds`                          | Notification sounds                                                                                       |
+| `static/federation`    | `static/assets/federation`                      | **Path rename**: `federation/` becomes `assets/federation/` in Android assets                             |
 
 ## Locales (`locales/`)
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAutocomplete } from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
 import {
   Button,
@@ -9,6 +8,7 @@ import {
   Typography,
   Grow,
   useTheme,
+  useAutocomplete,
   type SxProps,
   type Theme,
   Chip,
