@@ -18,7 +18,8 @@ import {
   Select,
   useTheme,
 } from '@mui/material';
-import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlined';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutlined';
 import { useTranslation } from 'react-i18next';
 import { type PublicOrder } from '../../../models';
 import { matchMedian } from '../../../utils';
@@ -324,16 +325,20 @@ const DepthChart: React.FC<DepthChartProps> = ({
         ) : (
           <Grid
             container
-            alignItems='center'
-            direction='column'
-            sx={{ height: '100%', flexWrap: 'nowrap' }}
+
+            sx={{
+              height: '100%',
+              flexWrap: 'nowrap',
+              alignItems: 'center',
+              flexDirection: 'column',
+            }}
           >
             <Grid
               container
               direction='row'
-              justifyContent='space-between'
-              alignItems='center'
+
               style={{ width: '100%', flexShrink: 0 }}
+              sx={{ alignItems: 'center', justifyContent: 'space-between' }}
             >
               <Grid container style={{ paddingLeft: '1em', paddingTop: 3 }}>
                 <b>{t('Chart')}</b>
@@ -358,14 +363,14 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   </MenuItem>
                 </Select>
               </Grid>
-              <Grid container justifyContent='center' alignItems='center'>
+              <Grid container sx={{ alignItems: 'center', justifyContent: 'center' }}>
                 <Grid item>
                   <IconButton
                     onClick={() => {
                       setXRange(xRange + rangeSteps);
                     }}
                   >
-                    <RemoveCircleOutline />
+                    <RemoveCircleOutlineIcon />
                   </IconButton>
                 </Grid>
                 <Grid item>
@@ -382,7 +387,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                     }}
                     disabled={xRange <= 1}
                   >
-                    <AddCircleOutline />
+                    <AddCircleOutlineIcon />
                   </IconButton>
                 </Grid>
               </Grid>

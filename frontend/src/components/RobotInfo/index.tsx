@@ -312,10 +312,10 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                 <Typography variant='h6' gutterBottom>
                   {t('Webhook Notifications')}
                 </Typography>
-                <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
+                <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
                   {t('Receive notifications via HTTP POST to your own .onion server.')}
                 </Typography>
-                <Grid container spacing={2} direction='column'>
+                <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
                   <Grid item>
                     <TextField
                       fullWidth
@@ -405,7 +405,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
 
               {!openClaimRewards ? (
                 <ListItemText secondary={t('Your compensations')}>
-                  <Grid container justifyContent='space-between'>
+                  <Grid container sx={{ justifyContent: 'space-between' }}>
                     <Grid item xs={9}>
                       <Typography>{`${String(robot?.earnedRewards)} Sats`}</Typography>
                     </Grid>
@@ -441,7 +441,11 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                         }}
                       />
                     </Grid>
-                    <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 80 }}>
+                    <Grid
+                      item
+                      style={{ display: 'flex', maxWidth: 80 }}
+                      sx={{ alignItems: 'stretch' }}
+                    >
                       <Button
                         sx={{ maxHeight: 38 }}
                         disabled={rewardInvoice === ''}

@@ -50,7 +50,10 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
 
   return (
     <Grid item xs={12}>
-      <Grid container direction='column' justifyItems='center' alignItems='center'>
+      <Grid
+        container
+        sx={{ alignItems: 'center', justifyItems: 'center', flexDirection: 'column' }}
+      >
         <Grid item xs={12}>
           <List dense={dense}>
             <ListItem>

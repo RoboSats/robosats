@@ -8,7 +8,10 @@ const Coordinators = (): React.JSX.Element => {
 
   return (
     <Grid item xs={12}>
-      <Grid container direction='column' justifyItems='center' alignItems='center'>
+      <Grid
+        container
+        sx={{ alignItems: 'center', justifyItems: 'center', flexDirection: 'column' }}
+      >
         <Grid item>
           <Button
             onClick={() => {
@@ -31,7 +34,11 @@ const Coordinators = (): React.JSX.Element => {
         fullWidth
       >
         <DialogContent>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+          >
             <Grid item>
               <Typography variant='h5' align='center'>
                 {t('Coordinators')}

@@ -9,6 +9,7 @@ import {
   ListItemIcon,
   Divider,
   Grid,
+  Box,
   Collapse,
   useTheme,
   Typography,
@@ -46,7 +47,6 @@ import TakeButton from './TakeButton';
 import { F2fMapDialog, OrderDescriptionDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { Coordinator, type Order } from '../../models';
-import { Box } from '@mui/system';
 
 interface OrderDetailsProps {
   shortAlias: string;
@@ -301,7 +301,7 @@ const OrderDetails = ({
             onClickCoordinator();
           }}
         >
-          <Grid container direction='row' justifyContent='center' alignItems='center'>
+          <Grid container direction='row' sx={{ alignItems: 'center', justifyContent: 'center' }}>
             <Grid item sx={{ width: '20%' }}>
               <RobotAvatar
                 shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
@@ -509,7 +509,11 @@ const OrderDetails = ({
             {/* if order is in a status that does not expire, do not show countdown */}
             <Collapse in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(currentOrder?.status ?? 0)}>
               <Divider />
-              <Grid container direction='row' justifyContent='center' alignItems='center'>
+              <Grid
+                container
+                direction='row'
+                sx={{ alignItems: 'center', justifyContent: 'center' }}
+              >
                 <ListItem style={{ width: '60%' }}>
                   <ListItemIcon>
                     <AccessTime />

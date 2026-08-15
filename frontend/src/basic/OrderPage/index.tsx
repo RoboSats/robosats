@@ -171,10 +171,10 @@ const OrderPage = (): React.JSX.Element => {
             <Grid
               container
               direction='row'
-              justifyContent='center'
-              alignItems='flex-start'
+
               spacing={2}
               style={{ width: '43em' }}
+              sx={{ alignItems: 'flex-start', justifyContent: 'center' }}
             >
               <Grid item xs={12} style={{ width: '42em' }}>
                 <Stepper activeStep={orderStep}>

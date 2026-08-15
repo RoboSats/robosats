@@ -45,7 +45,7 @@ const FederationTable = ({
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
-  const [pageSize, setPageSize] = useState<number>(0);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 0 });
 
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
@@ -106,7 +106,7 @@ const FederationTable = ({
 
   useEffect(() => {
     if (useDefaultPageSize) {
-      setPageSize(defaultPageSize);
+      setPaginationModel((prev) => ({ ...prev, pageSize: defaultPageSize }));
     }
   }, [federationUpdatedAt]);
 
@@ -137,12 +137,13 @@ const FederationTable = ({
               left: '-0.3em',
               width: '50em',
               marginTop: '2px',
+              alignItems: 'center',
             }}
             wrap='nowrap'
             onClick={() => {
               onClickCoordinator(params.row.shortAlias);
             }}
-            alignItems='center'
+
             spacing={1}
           >
             <Grid item>
@@ -188,7 +189,11 @@ const FederationTable = ({
         return (
           <>
             {mobile ? (
-              <Grid container direction='column' alignItems='center' style={{ paddingTop: 10 }}>
+              <Grid
+                container
+                style={{ paddingTop: 10 }}
+                sx={{ alignItems: 'center', flexDirection: 'column' }}
+              >
                 <Typography>{`${parseFloat((average * 10).toFixed(1))}`}</Typography>
               </Grid>
             ) : (
@@ -392,15 +397,17 @@ const FederationTable = ({
           style={{ maxHeight: fillContainer ? undefined : `${height / 2}em` }}
           autoHeight={fillContainer}
           rowHeight={3.714 * theme.typography.fontSize}
-          headerHeight={3.25 * theme.typography.fontSize}
+          columnHeaderHeight={3.25 * theme.typography.fontSize}
           rows={federation.getCoordinators()}
           getRowId={(params: Coordinator) => params.shortAlias}
           columns={columns}
           checkboxSelection={false}
-          pageSize={fillContainer ? 100 : pageSize}
-          rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
-          onPageSizeChange={(newPageSize) => {
-            setPageSize(newPageSize);
+          paginationModel={fillContainer ? { page: 0, pageSize: 100 } : paginationModel}
+          pageSizeOptions={
+            width < 22 ? [] : [0, paginationModel.pageSize, defaultPageSize * 2, 50, 100]
+          }
+          onPaginationModelChange={(newModel) => {
+            setPaginationModel(newModel);
             setUseDefaultPageSize(false);
           }}
           hideFooter={true}
@@ -464,7 +471,11 @@ const FederationTable = ({
       >
         <DialogTitle>{t('Add coordinator')}</DialogTitle>
         <DialogContent>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+          >
             {error ?? (
               <Grid item xs={12}>
                 <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
@@ -473,7 +484,7 @@ const FederationTable = ({
               </Grid>
             )}
             <Grid item xs={12}>
-              <Grid container direction='column' alignItems='center'>
+              <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
                 <Grid item xs={4}>
                   <TextField
                     id='outlined-basic'
@@ -486,7 +497,7 @@ const FederationTable = ({
                     }}
                   />
                 </Grid>
-                <Grid item xs={6} padding={2}>
+                <Grid item xs={6} sx={{ padding: 2 }}>
                   <TextField
                     id='outlined-basic'
                     label={t('URL')}

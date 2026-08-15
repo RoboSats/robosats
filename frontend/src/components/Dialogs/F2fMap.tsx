@@ -99,7 +99,7 @@ const F2fMapDialog = ({
       </Dialog>
 
       <DialogTitle>
-        <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
+        <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
           <Grid item>{interactive ? t('Choose a location') : t('Map')}</Grid>
           <Grid item>
             <Tooltip enterTouchDelay={0} placement='top' title={t('Show tiles')}>
@@ -148,7 +148,7 @@ const F2fMapDialog = ({
         />
       </DialogContent>
       <DialogActions sx={{ paddingTop: 0 }}>
-        <Grid container direction='row' spacing={1} justifyContent='flex-end'>
+        <Grid container direction='row' spacing={1} sx={{ justifyContent: 'flex-end' }}>
           <Grid item>
             <Typography variant='caption' color='text.secondary'>
               {message}

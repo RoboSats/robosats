@@ -32,7 +32,7 @@ import { EncryptedChatMessage } from '../TradeBox/EncryptedChat';
 
 function CredentialTextfield(props): React.JSX.Element {
   return (
-    <Grid item align='center' xs={12}>
+    <Grid item xs={12} sx={{ textAlign: 'center' }}>
       <Tooltip placement='top' enterTouchDelay={200} enterDelay={200} title={props.tooltipTitle}>
         <TextField
           sx={{ width: '100%', maxWidth: '550px' }}
@@ -112,8 +112,8 @@ const AuditPGPDialog = ({
               'Your communication is end-to-end encrypted with OpenPGP. You can verify the privacy of this chat using any tool based on the OpenPGP standard.',
             )}
           </DialogContentText>
-          <Grid container spacing={1} align='center' direction='column'>
-            <Grid item align='center' xs={12}>
+          <Grid container spacing={1} sx={{ flexDirection: 'column', textAlign: 'center' }}>
+            <Grid item xs={12} sx={{ textAlign: 'center' }}>
               <Button
                 component={Link}
                 target='_blank'
@@ -238,7 +238,12 @@ const AuditPGPDialog = ({
               'Your communication is end-to-end encrypted with secp256k1 schnorr signatures. You can verify the privacy of this chat using any nostr messages validation tool.',
             )}
           </DialogContentText>
-          <Grid container spacing={1} align='center' direction='column' style={{ marginTop: 16 }}>
+          <Grid
+            container
+            spacing={1}
+            style={{ marginTop: 16 }}
+            sx={{ flexDirection: 'column', textAlign: 'center' }}
+          >
             <CredentialTextfield
               tooltipTitle={t(
                 'Your nostr public key. Your peer uses it to encrypt messages only you can read.',

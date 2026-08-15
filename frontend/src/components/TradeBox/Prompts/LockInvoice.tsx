@@ -63,10 +63,9 @@ export const LockInvoicePrompt = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0.5}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
       <Grid item xs={12}>
         {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}

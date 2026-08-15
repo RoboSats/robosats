@@ -83,10 +83,10 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                   <Grid
                     container
                     direction='row'
-                    justifyContent='flex-start'
-                    alignItems='center'
+
                     style={{ height: '2.8em' }}
                     spacing={1}
+                    sx={{ alignItems: 'center', justifyContent: 'flex-start' }}
                   >
                     <Grid item>
                       <RobotAvatar

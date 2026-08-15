@@ -30,9 +30,9 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
 
   return order ? (
     <Paper elevation={12} style={{ padding: 10, width: 150 }}>
-      <Grid container justifyContent='space-between'>
+      <Grid container sx={{ justifyContent: 'space-between' }}>
         <Grid item xs={3}>
-          <Grid container justifyContent='center' alignItems='center'>
+          <Grid container sx={{ alignItems: 'center', justifyContent: 'center' }}>
             <RobotAvatar
               orderType={order.type}
               statusColor={
@@ -50,13 +50,19 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
           </Grid>
         </Grid>
         <Grid item xs={8}>
-          <Grid container direction='column' justifyContent='center' alignItems='flex-start'>
+          <Grid
+            container
+            sx={{ alignItems: 'flex-start', justifyContent: 'center', flexDirection: 'column' }}
+          >
             <Box>
               <Grid
                 container
-                direction='column'
-                justifyContent='flex-start'
-                alignItems='flex-start'
+
+                sx={{
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                  flexDirection: 'column',
+                }}
               >
                 <Grid item xs={12}>
                   {amountToString(

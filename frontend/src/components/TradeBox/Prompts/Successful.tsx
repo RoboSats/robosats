@@ -25,7 +25,7 @@ import {
 } from '../../../contexts/FederationContext';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 interface SuccessfulPromptProps {
@@ -105,11 +105,13 @@ export const SuccessfulPrompt = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
       spacing={0.5}
-      padding={1}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexDirection: 'column',
+        padding: 1,
+      }}
     >
       <Grid container direction='row'>
         <Grid item width='48%'>
@@ -258,9 +260,8 @@ export const SuccessfulPrompt = ({
       <Grid
         item
         container
-        alignItems='center'
-        justifyContent='space-evenly'
-        sx={{ marginTop: 0.5 }}
+
+        sx={{ marginTop: 0.5, alignItems: 'center', justifyContent: 'space-evenly' }}
       >
         <Grid item>
           <Button color='primary' variant='outlined' onClick={onClickStartAgain}>

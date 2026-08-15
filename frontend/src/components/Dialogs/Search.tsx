@@ -70,12 +70,20 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
             </AccordionSummary>
 
             <AccordionDetails>
-              <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
+              <Grid
+                container
+                spacing={1}
+                sx={{ alignItems: 'center', flexDirection: 'column', padding: 1 }}
+              >
                 <Grid item>
                   <Typography>{t('Are you looking to sell your Bitcoins or buy some?')}</Typography>
                 </Grid>
                 <Grid item>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
+                  <Grid
+                    container
+                    spacing={1}
+                    sx={{ alignItems: 'center', flexDirection: 'column' }}
+                  >
                     <Grid item>
                       <ButtonGroup variant='contained'>
                         <Button
@@ -109,7 +117,11 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                   </Typography>
                 </Grid>
                 <Grid item>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
+                  <Grid
+                    container
+                    spacing={1}
+                    sx={{ alignItems: 'center', flexDirection: 'column' }}
+                  >
                     <Grid item>
                       <ButtonGroup variant='contained'>
                         <Button
@@ -148,7 +160,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Grid container direction='column' alignItems='center' spacing={1}>
+              <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
                 <Grid item>
                   <Typography>
                     {t('You can specify the currency you want to use for your trade.')}

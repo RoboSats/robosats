@@ -127,7 +127,7 @@ export const DisputePrompt = ({
   };
 
   return (
-    <Grid container direction='column' style={{ width: '100%', padding: 16 }}>
+    <Grid container style={{ width: '100%', padding: 16 }} sx={{ flexDirection: 'column' }}>
       <Grid item>
         <Typography variant='body2'>
           {t(
@@ -223,7 +223,7 @@ export const DisputePrompt = ({
             />
           </Tooltip>
         </Grid>
-        <Grid container sx={{ width: '100%' }} justifyContent='center'>
+        <Grid container sx={{ width: '100%', justifyContent: 'center' }}>
           <LoadingButton
             onClick={submitStatement}
             variant='contained'
