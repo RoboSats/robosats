@@ -664,7 +664,7 @@
   "Payment failed?": "Platba selhala?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "Pozdravte! Buďte nápomocní a struční. Dejte jim vědět, jak vám mohou poslat {{amount}} {{currencyCode}}.",
   "To open a dispute you need to wait": "Pro otevření sporu musíte počkat",
-  "Wait for the seller to confirm he has received the payment.": "Počkejte, až prodávající potvrdí, že přijal platbu.",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "Je vyžadována kontaktní metoda",
   "Attach chat logs": "Přiložit záznamy chatu",

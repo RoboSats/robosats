@@ -664,7 +664,7 @@
   "Payment failed?": "付款失败？",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "打个招呼！请保持你的回答有用且简洁。让他们知道如何向你发送 {{amount}} {{currencyCode}}。",
   "To open a dispute you need to wait": "要打开争议的话你需要等",
-  "Wait for the seller to confirm he has received the payment.": "等待卖方确认他已收到付款。",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "需要联系方法",
   "Attach chat logs": "附加聊天记录",

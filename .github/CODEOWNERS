@@ -1,0 +1,11 @@
+# CODEOWNERS — auto-requests reviewers and (with branch protection enabled)
+# requires their approval to merge.
+#
+# Order matters: the LAST matching pattern wins.
+# Syntax: <path-glob>   <owner1> <owner2> ...
+#
+# To enforce: in repo Settings → Branches → branch protection rule for `main`,
+# enable "Require review from Code Owners".
+
+# Default
+*                              @RoboSats/maintainers

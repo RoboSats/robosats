@@ -47,7 +47,6 @@ class ApiWebClient implements ApiClient {
       return await response.json();
     } catch (error) {
       console.error('API Error:', error);
-      if (!silent) dispatchError('Coordinator unreachable! Please check your connection.');
       throw error;
     }
   }

@@ -3,6 +3,7 @@
 exclude = [
     "*migrations/*",
     "api/nick_generator/nick_generator.py",
+    "api/lightning/*pb2*",
     ]
 
 [tool.coverage.run]

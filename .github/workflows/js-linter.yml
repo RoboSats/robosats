@@ -9,16 +9,20 @@ on:
     branches:
       - main
     paths:
-      - '**/*.js'
-      - '**/*.ts'
-      - '**/*.tsx'
-  pull_request_target:
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+  pull_request:
     branches:
       - main
     paths:
-      - '**/*.js'
-      - '**/*.ts'
-      - '**/*.tsx'
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
 
 jobs:
   run-linters:
@@ -28,13 +32,11 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: 'Setup node'
         uses: actions/setup-node@v5
         with:
-          node-version: 18.20.8
+          node-version: 20.20.0
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -42,7 +44,7 @@ jobs:
       - name: 'Install NPM Dependencies'
         run: |
           cd frontend
-          npm install
+          npm ci
 
       - name: 'Run EsLint'
         run: |
@@ -52,4 +54,21 @@ jobs:
       - name: 'Run Prettier'
         run: |
           cd frontend
-          npm run format
+          npm run format:check
+
+      - name: 'Audit dependencies'
+        # Checks for high/critical vulns in RoboSats deps only.
+        # Excludes node_modules/npm/** — vulnerabilities inside npm's own
+        # bundled sub-dependencies are not shipped with the application.
+        run: |
+          cd frontend
+          HIGH_VULNS=$(npm audit --json 2>/dev/null \
+            | jq '[.vulnerabilities | to_entries[]
+                   | select(.value.severity == "high" or .value.severity == "critical")
+                   | select(.value.nodes | all(startswith("node_modules/npm/") | not))
+                  ] | length')
+          echo "High/critical vulnerabilities outside npm internals: $HIGH_VULNS"
+          if [ "$HIGH_VULNS" -gt 0 ]; then
+            npm audit --audit-level=high 2>&1 || true
+            exit 1
+          fi
