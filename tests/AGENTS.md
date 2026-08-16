@@ -19,6 +19,7 @@ Tests require `docker-tests.yml` stack running:
 | `test_trade_pipeline.py` | Full end-to-end trade flow: make → bond → escrow → fiat → payout → SUC |
 | `test_api.py` | Base test case class (`BaseAPITestCase`) + general API tests |
 | `test_api_info.py` | `/api/info/` endpoint |
+| `test_api_cache.py` | Redis response-cache behavior for `/api/book/`, `/api/info/`, `/api/price/` (locmem cache override, no Redis dependency) |
 | `test_api_limits.py` | `/api/limits/` endpoint |
 | `test_api_robot_webhook.py` | Robot webhook notification delivery |
 | `test_frontend_fetch.py` | Frontend asset serving |

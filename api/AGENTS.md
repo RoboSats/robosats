@@ -157,6 +157,13 @@ decade→field — 1000s→`bad_request` (default, incl. unlisted 6000s/7000s), 
 `bad_statement`, 3000s→`bad_invoice`, 4000s→`bad_address`, 5000s→`bad_summary`.
 `oas_schemas.py` reads bond/duration settings at **import time** — needs app reload on change.
 
+## Redis response caching (`views.py`)
+Public reads cached in Redis (`CACHES` default → `REDIS_URL`): `BookView` key `book:{currency}:{type}`
+TTL 10s (`BOOK_CACHE_TTL`, only HTTP 200 cached — 404 "no orders" is not), `InfoView` key `info`
+TTL 30s (`INFO_CACHE_TTL`), `PriceView` key `price` TTL 30s (`PRICE_CACHE_TTL`). No manual
+invalidation — short TTLs suffice; book staleness is invisible to clients because frontends
+update the live book via Nostr kind 38383, not `/api/book/`.
+
 ## `/api/review/` — coordinator rating token
 `ReviewView.post(request)`:
 1. Validates `{ pubkey }` via `ReviewSerializer`.
@@ -219,7 +226,9 @@ signs the raw UTF-8 bytes `f"{pubkey}{last_order.id}"` (not a 32-byte hash); the
 silently breaks verification on the other. `Order.objects.filter(...).last()` in
 `ReviewView` uses the **highest pk** (default ordering), not the most recently active order;
 a robot whose latest-by-pk order is not `SUC/MLD/TLD` will be blocked even if an earlier
-order was successful.
+order was successful. `PriceView` returns an **object** keyed by currency code, but its
+generated OpenAPI schema (`serializer_class`) declares `type: array` — so `assertResponse`/
+schema validation on `/api/price/` always fails; don't add it back to tests.
 
 ## Constraints
 Never settle `trade_escrow` before `order.is_fiat_sent` is confirmed by the buyer. Never
