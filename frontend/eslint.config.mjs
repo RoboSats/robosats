@@ -81,4 +81,21 @@ export default defineConfig([globalIgnores(["**/index.js", "**/PaymentMethods/Ic
             { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
         ],
     },
+}, {
+    // Test files are excluded from tsconfig.json — disable TypeScript project-aware
+    // rules so @typescript-eslint/parser does not error on "file not found in project".
+    files: ["**/*.test.ts", "**/*.spec.ts"],
+    languageOptions: {
+        parserOptions: {
+            project: false,
+        },
+    },
+    rules: {
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/require-await": "off",
+    },
 }]);

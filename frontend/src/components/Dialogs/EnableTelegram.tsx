@@ -28,8 +28,8 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): Rea
   const theme = useTheme();
 
   const handleClickOpenBrowser = (): void => {
-    window.open(`https://t.me/${tgBotName}?start=${tgToken}`, '_blank').focus();
-    setOpenEnableTelegram(false);
+    window.open(`https://t.me/${tgBotName}?start=${tgToken}`, '_blank')?.focus();
+    onClose();
   };
 
   const handleOpenTG = (): void => {

@@ -15,4 +15,4 @@ Every new version always follows:
 12. Now `/nodeapp` should display the new version in the unsafe webapp and `/web` in the onion webapp
 13. Announce the new release to SimpleX, nostr, nostr group and Telegram
 14. Update the startOS instance (ie. https://github.com/RoboSats/robosats-startos/pull/36) and ping them
-15. Update the Umbrel instance (ie. https://github.com/getumbrel/umbrel-apps/pull/3076/). They will take care of merging it.
+15. Update the Umbrel instance (ie. https://github.com/getumbrel/umbrel-apps/pull/5991). They will take care of merging it.
