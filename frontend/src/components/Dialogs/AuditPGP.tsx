@@ -41,18 +41,20 @@ function CredentialTextfield(props): React.JSX.Element {
           value={props.value}
           variant='filled'
           size='small'
-          InputProps={{
-            endAdornment: (
-              <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
-                <IconButton
-                  onClick={() => {
-                    systemClient.copyToClipboard(props.value);
-                  }}
-                >
-                  <ContentCopy />
-                </IconButton>
-              </Tooltip>
-            ),
+          slotProps={{
+            input: {
+              endAdornment: (
+                <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
+                  <IconButton
+                    onClick={() => {
+                      systemClient.copyToClipboard(props.value);
+                    }}
+                  >
+                    <ContentCopy />
+                  </IconButton>
+                </Tooltip>
+              ),
+            },
           }}
         />
       </Tooltip>
