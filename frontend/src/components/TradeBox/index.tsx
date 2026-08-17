@@ -308,13 +308,13 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
     if (webln === undefined) {
       console.log('WebLN dialog will not be shown');
     } else if (order.is_maker && order.status === 0) {
-      void webln.sendPayment(order.bond_invoice ?? '');
+      webln.sendPaymentAsync(order.bond_invoice ?? '');
       setOpen({ ...open, webln: true });
     } else if (order.is_taker && order.status === 3) {
-      void webln.sendPayment(order.bond_invoice ?? '');
+      webln.sendPaymentAsync(order.bond_invoice ?? '');
       setOpen({ ...open, webln: true });
     } else if (order.is_seller && (order.status === 6 || order.status === 7)) {
-      void webln.sendPayment(order.escrow_invoice ?? '');
+      webln.sendPaymentAsync(order.escrow_invoice ?? '');
       setOpen({ ...open, webln: true });
     } else if (order.is_buyer && (order.status === 6 || order.status === 8)) {
       setOpen({ ...open, webln: true });

@@ -496,7 +496,7 @@ const MakerForm = ({
     fav,
     federation,
     currentPrice,
-    federationUpdatedAt: new Date(federationUpdatedAt ?? '').getTime(),
+    federationUpdatedAt: federationUpdatedAt ? Date.parse(federationUpdatedAt) : 0,
     amountRangeEnabled,
   });
 
@@ -865,11 +865,6 @@ const MakerForm = ({
                   onAutocompleteChange={handlePaymentMethodChange}
                   optionsType={fav.mode}
                   error={maker.badPaymentMethod}
-                  labelProps={{}}
-                  tagProps={{}}
-                  listBoxProps={{}}
-                  sx={{}}
-                  listHeaderText={''}
                   label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
                   tooltipTitle={t(
                     fav.mode === 'swap'

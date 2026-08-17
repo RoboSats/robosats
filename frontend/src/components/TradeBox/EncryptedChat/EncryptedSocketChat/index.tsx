@@ -181,11 +181,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
       }
       // If we receive an encrypted message
       else if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        const senderPubKey = dataFromServer.user_nick === userNick ? robot?.pubKey : peerPubKey;
+        if (!senderPubKey || !robot?.encPrivKey || !slot?.token) return;
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
-          dataFromServer.user_nick === userNick ? (robot?.pubKey ?? '') : (peerPubKey ?? ''),
-          robot?.encPrivKey ?? '',
-          slot?.token ?? '',
+          senderPubKey,
+          robot.encPrivKey,
+          slot.token,
         ).then((decryptedData) => {
           setWaitingEcho(waitingEcho ? decryptedData.decryptedMessage !== lastSent : false);
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
@@ -237,17 +239,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
     // Else if message is not empty send message
     else if (value !== '') {
+      if (!robot?.pubKey || !peerPubKey || !robot?.encPrivKey || !slot?.token) return;
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
       onSendMessage(value, { skipCoordinator: true });
-      encryptMessage(
-        value,
-        robot?.pubKey ?? '',
-        peerPubKey ?? '',
-        robot?.encPrivKey ?? '',
-        slot?.token ?? '',
-      )
+      encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, slot.token)
         .then((encryptedMessage) => {
           if (connection != null) {
             connection.send(

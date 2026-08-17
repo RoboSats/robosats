@@ -104,11 +104,13 @@ export const DisputePrompt = ({
     if (slot && robot) {
       for (const dataFromServer of serverMessages) {
         if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+          const senderPubKey = dataFromServer.nick === slot.nickname ? robot.pubKey : peerPubKey;
+          if (!senderPubKey || !robot.encPrivKey || !slot.token) continue;
           const decryptedData = await decryptMessage(
             dataFromServer.message.split('\\').join('\n'),
-            dataFromServer.nick === slot.nickname ? (robot.pubKey ?? '') : (peerPubKey ?? ''),
-            robot.encPrivKey ?? '',
-            slot.token ?? '',
+            senderPubKey,
+            robot.encPrivKey,
+            slot.token,
           );
           setMessages((prev: EncryptedChatMessage[]) => {
             const x: EncryptedChatMessage = {

@@ -92,7 +92,6 @@ const RobotProfile = ({
   };
 
   const slot = garage.getSlot();
-  const _robot = slot?.getRobot();
 
   return (
     <Grid

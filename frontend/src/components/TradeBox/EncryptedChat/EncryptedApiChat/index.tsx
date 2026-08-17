@@ -134,11 +134,13 @@ const EncryptedApiChat: React.FC<Props> = ({
     if (slot && robot && dataFromServer != null) {
       // If we receive an encrypted message
       if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        const senderPubKey = dataFromServer.nick === userNick ? robot.pubKey : peerPubKey;
+        if (!senderPubKey || !robot.encPrivKey || !slot.token) return;
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
-          dataFromServer.nick === userNick ? (robot.pubKey ?? '') : (peerPubKey ?? ''),
-          robot.encPrivKey ?? '',
-          slot.token ?? '',
+          senderPubKey,
+          robot.encPrivKey,
+          slot.token,
         ).then((decryptedData) => {
           setLastIndex((prev) => {
             return prev < dataFromServer.index ? dataFromServer.index : prev;

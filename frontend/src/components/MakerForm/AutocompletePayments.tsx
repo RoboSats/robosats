@@ -56,10 +56,10 @@ const InputWrapper = styled('div')<{ error?: boolean; sx?: Record<string, unknow
   max-height: ${String((sx as Record<string, unknown>)?.maxHeight ?? '8.6em')};
   border: 1px solid ${
     theme.palette.mode === 'dark'
-      ? !error
+      ? error === true
         ? '#f44336'
         : '#434343'
-      : !error
+      : error === true
         ? '#dd0000'
         : '#c4c4c4'
   };
@@ -118,7 +118,7 @@ interface TagProps {
   label: string;
   icon?: string;
   onDelete?: () => void;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
 }
 
 const Tag: React.FC<TagProps> = ({ label, icon, onDelete, onClick, ...other }) => {
@@ -271,17 +271,17 @@ interface AutocompletePaymentsProps {
   setHasCustomPaymentMethod?: (value: boolean) => void;
   onAutocompleteChange: (value: string[]) => void;
   tooltipTitle: string;
-  labelProps: MUIStyledCommonProps;
-  tagProps: MUIStyledCommonProps;
-  listBoxProps: MUIStyledCommonProps;
+  labelProps?: MUIStyledCommonProps;
+  tagProps?: MUIStyledCommonProps;
+  listBoxProps?: MUIStyledCommonProps;
   error: boolean;
   label: string;
-  sx: SxProps<Theme>;
+  sx?: SxProps<Theme>;
   addNewButtonText: string;
   isFilter: boolean;
   multiple: boolean;
   optionsDisplayLimit?: number;
-  listHeaderText: string;
+  listHeaderText?: string;
   onClick?: (e: React.MouseEvent) => void;
 }
 
@@ -332,7 +332,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     value,
     popupOpen,
     setAnchorEl,
-  } = useAutocomplete({
+  } = useAutocomplete<PaymentMethod, true, false, false>({
     id: 'payment-methods',
     multiple: true,
     value: selectedOptions,
@@ -423,7 +423,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                     key={index}
                     label={t(option.name)}
                     icon={option.icon}
-                    onClick={() => props.onClick?.(undefined as unknown as React.MouseEvent)}
+                    onClick={(e) => props.onClick?.(e)}
                     sx={{ height: '1.6rem', ...(props.tagProps ?? {}) }}
                     onDelete={() => {
                       const newValue = value.filter((_, i) => i !== index);
@@ -440,32 +440,42 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                 ) : null}
               </>
             ) : null}
-            {value.length > 0 && !props.multiple ? null : (
-              <input
-                style={
-                  props.isFilter
-                    ? {
-                        position: 'absolute',
-                        backgroundColor: 'transparent',
-                        display: showFilterInput ? 'block' : 'none',
-                        width: '166px',
+            {value.length > 0 && !props.multiple
+              ? null
+              : (() => {
+                  const { ref: autocompleteRef, ...inputProps } = getInputProps();
+                  return (
+                    <input
+                      style={
+                        props.isFilter
+                          ? {
+                              position: 'absolute',
+                              backgroundColor: 'transparent',
+                              display: showFilterInput ? 'block' : 'none',
+                              width: '166px',
+                            }
+                          : {}
                       }
-                    : {}
-                }
-                {...getInputProps()}
-                ref={(el) => {
-                  (filterInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
-                  if (getInputProps().ref) {
-                    const r = getInputProps().ref;
-                    if (typeof r === 'function') r(el);
-                  }
-                }}
-                value={val}
-                onBlur={() => {
-                  if (props.isFilter) setShowFilterInput(false);
-                }}
-              />
-            )}
+                      {...inputProps}
+                      ref={(el) => {
+                        (
+                          filterInputRef as React.MutableRefObject<HTMLInputElement | null>
+                        ).current = el;
+                        if (typeof autocompleteRef === 'function') {
+                          autocompleteRef(el);
+                        } else if (autocompleteRef != null) {
+                          (
+                            autocompleteRef as React.MutableRefObject<HTMLInputElement | null>
+                          ).current = el;
+                        }
+                      }}
+                      value={val}
+                      onBlur={() => {
+                        if (props.isFilter) setShowFilterInput(false);
+                      }}
+                    />
+                  );
+                })()}
           </InputWrapper>
         </div>
       </Tooltip>
