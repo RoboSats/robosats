@@ -100,7 +100,7 @@ const ContactButtons = ({
   return (
     <Grid container direction='row' sx={{ alignItems: 'center', justifyContent: 'center' }}>
       {nostr !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip
             title={
               <div>
@@ -137,7 +137,7 @@ const ContactButtons = ({
       )}
 
       {pgp && fingerprint && (
-        <Grid item>
+        <Grid>
           <Tooltip
             enterTouchDelay={0}
             enterNextDelay={2000}
@@ -151,7 +151,7 @@ const ContactButtons = ({
       )}
 
       {email !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Send Email')}>
             <IconButton component='a' href={`mailto: ${email}`}>
               <Email />
@@ -161,7 +161,7 @@ const ContactButtons = ({
       )}
 
       {telegram !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Telegram')}>
             <IconButton
               component='a'
@@ -176,7 +176,7 @@ const ContactButtons = ({
       )}
 
       {twitter !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('X')}>
             <IconButton
               component='a'
@@ -191,7 +191,7 @@ const ContactButtons = ({
       )}
 
       {reddit !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Reddit')}>
             <IconButton
               component='a'
@@ -206,7 +206,7 @@ const ContactButtons = ({
       )}
 
       {website !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Website')}>
             <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
               <Language />
@@ -216,7 +216,7 @@ const ContactButtons = ({
       )}
 
       {matrix !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip
             title={
               <Typography variant='body2'>
@@ -241,7 +241,7 @@ const ContactButtons = ({
       )}
 
       {simplex !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Simplex')}>
             <IconButton component='a' target='_blank' href={`${simplex}`} rel='noreferrer'>
               <SimplexIcon sx={{ width: '0.7em', height: '0.7em' }} />
@@ -283,7 +283,7 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
           </Typography>
         }
       >
-        <Grid item sx={{ filter: badges?.isFounder !== true ? 'grayscale(100%)' : undefined }}>
+        <Grid sx={{ filter: badges?.isFounder !== true ? 'grayscale(100%)' : undefined }}>
           <BadgeFounder sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -299,7 +299,6 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
         }
       >
         <Grid
-          item
           sx={{ filter: Number(badges?.donatesToDevFund) >= 20 ? undefined : 'grayscale(100%)' }}
         >
           <BadgeDevFund sx={sxProps} />
@@ -318,7 +317,7 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
           </Typography>
         }
       >
-        <Grid item sx={{ filter: badges?.hasGoodOpSec === true ? undefined : 'grayscale(100%)' }}>
+        <Grid sx={{ filter: badges?.hasGoodOpSec === true ? undefined : 'grayscale(100%)' }}>
           <BadgePrivacy sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -333,7 +332,7 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
           </Typography>
         }
       >
-        <Grid item sx={{ filter: size_limit > 3000000 ? undefined : 'grayscale(100%)' }}>
+        <Grid sx={{ filter: size_limit > 3000000 ? undefined : 'grayscale(100%)' }}>
           <BadgeLimits sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -385,7 +384,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
         <List dense>
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid container sx={{ alignItems: 'center', flexDirection: 'column', padding: 0 }}>
-              <Grid item>
+              <Grid>
                 <RobotAvatar
                   shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
                   hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
@@ -393,13 +392,13 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   smooth={true}
                 />
               </Grid>
-              <Grid item>
+              <Grid>
                 <Typography align='center' variant='body2'>
                   <i>{String(coordinator?.motto)}</i>
                 </Typography>
               </Grid>
               <Grid container sx={{ alignItems: 'center', flexDirection: 'column', padding: 0 }}>
-                <Grid item>
+                <Grid>
                   <Rating
                     readOnly
                     precision={0.5}
@@ -413,7 +412,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   </Typography>
                 </Grid>
               </Grid>
-              <Grid item>
+              <Grid>
                 <ContactButtons {...coordinator?.contact} />
               </Grid>
             </Grid>
@@ -422,18 +421,18 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
           {['create'].includes(page) && (
             <>
               <ListItem {...listItemProps}>
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <Percent />
                 </ListItemIcon>
 
                 <Grid container>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <ListItemText secondary={t('Maker fee')}>
                       {((coordinator?.info?.maker_fee ?? 0) * 100).toFixed(3)}%
                     </ListItemText>
                   </Grid>
 
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <ListItemText secondary={t('Taker fee')}>
                       {((coordinator?.info?.taker_fee ?? 0) * 100).toFixed(3)}%
                     </ListItemText>
@@ -442,7 +441,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               </ListItem>
 
               <ListItem {...listItemProps}>
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <LinkIcon />
                 </ListItemIcon>
 
@@ -470,7 +469,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
           </ListItem>
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Description />
             </ListItemIcon>
 
@@ -482,7 +481,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
           </ListItem>
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Flag />
             </ListItemIcon>
 
@@ -498,7 +497,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               href={coordinator[settings.network][settings.selfhostedClient ? 'onion' : origin]}
               rel='noreferrer'
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Web />
               </ListItemIcon>
               <ListItemText
@@ -539,7 +538,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <List dense>
                     {Object.keys(coordinator?.policies).map((key, index) => (
                       <ListItem key={index} sx={{ maxWidth: '24em' }}>
-                        <ListItemIcon>{index + 1}</ListItemIcon>
+                        <ListItemIcon sx={{ minWidth: 56 }}>{index + 1}</ListItemIcon>
                         <ListItemText primary={key} secondary={coordinator?.policies[key]} />
                       </ListItem>
                     ))}
@@ -559,7 +558,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               <AccordionDetails sx={{ padding: 0 }}>
                 <List dense>
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Circle />
                     </ListItemIcon>
 
@@ -573,18 +572,18 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   <Divider />
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Percent />
                     </ListItemIcon>
 
                     <Grid container>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <ListItemText secondary={t('Maker fee')}>
                           {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
                         </ListItemText>
                       </Grid>
 
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <ListItemText secondary={t('Taker fee')}>
                           {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
                         </ListItemText>
@@ -596,7 +595,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {!coordinator?.info?.swap_enabled ? (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <LinkIcon />
                       </ListItemIcon>
 
@@ -609,7 +608,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   ) : (
                     <>
                       <ListItem {...listItemProps}>
-                        <ListItemIcon>
+                        <ListItemIcon sx={{ minWidth: 56 }}>
                           <LinkIcon />
                         </ListItemIcon>
 
@@ -639,7 +638,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <VolunteerActivism />
                     </ListItemIcon>
 
@@ -652,7 +651,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Inventory />
                     </ListItemIcon>
 
@@ -665,7 +664,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Sell />
                     </ListItemIcon>
 
@@ -678,7 +677,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Book />
                     </ListItemIcon>
 
@@ -691,7 +690,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <SmartToy />
                     </ListItemIcon>
 
@@ -704,7 +703,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <PriceChange />
                     </ListItemIcon>
 
@@ -717,7 +716,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <ApiOutlined />
                     </ListItemIcon>
 
@@ -742,7 +741,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               <AccordionDetails>
                 <List dense>
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <RoboSatsNoTextIcon
                         sx={{
                           width: '1.4em',
@@ -764,7 +763,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {coordinator?.info?.lnd_version !== undefined && (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <Bolt />
                       </ListItemIcon>
                       <ListItemText
@@ -776,7 +775,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {Boolean(coordinator?.info?.cln_version) && (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <Bolt />
                       </ListItemIcon>
                       <ListItemText
@@ -790,7 +789,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {coordinator?.info?.network === 'testnet' ? (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <Dns />
                       </ListItemIcon>
                       <ListItemText secondary={`${t('LN Node')}: ${coordinator?.info?.node_alias}`}>
@@ -805,7 +804,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                     </ListItem>
                   ) : (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <AmbossIcon />
                       </ListItemIcon>
                       <ListItemText secondary={coordinator?.info?.node_alias}>
@@ -823,7 +822,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <GitHub />
                     </ListItemIcon>
                     <ListItemText secondary={t('Coordinator commit hash')}>
@@ -840,7 +839,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Equalizer />
                     </ListItemIcon>
                     <ListItemText secondary={t('24h contracted volume')}>
@@ -864,7 +863,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Equalizer />
                     </ListItemIcon>
                     <ListItemText secondary={t('Lifetime contracted volume')}>

@@ -64,7 +64,7 @@ const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): React.JSX.E
             href={`https://github.com/RoboSats/robosats/releases/tag/${coordinatorString}-alpha`}
             rel='noreferrer'
           >
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <AndroidIcon color='primary' sx={{ height: 32, width: 32 }} />
             </ListItemIcon>
 
@@ -84,7 +84,7 @@ const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): React.JSX.E
             href={`https://hub.docker.com/r/recksato/robosats-client`}
             rel='noreferrer'
           >
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <UpcomingIcon color='primary' sx={{ height: 32, width: 32 }} />
             </ListItemIcon>
 
@@ -102,7 +102,7 @@ const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): React.JSX.E
               location.reload(true);
             }}
           >
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <WebIcon color='primary' sx={{ height: 32, width: 32 }} />
             </ListItemIcon>
 

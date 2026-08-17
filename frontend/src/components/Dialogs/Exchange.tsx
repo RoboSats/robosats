@@ -64,7 +64,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
 
         <List dense>
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Groups3 />
             </ListItemIcon>
 
@@ -76,7 +76,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
 
           <Divider />
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Groups3 />
             </ListItemIcon>
 
@@ -88,7 +88,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
 
           <Divider />
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Inventory />
             </ListItemIcon>
 
@@ -101,7 +101,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Sell />
             </ListItemIcon>
 
@@ -114,7 +114,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Book />
             </ListItemIcon>
 
@@ -127,7 +127,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <SmartToy />
             </ListItemIcon>
 
@@ -140,7 +140,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <PriceChange />
             </ListItemIcon>
 
@@ -155,7 +155,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Equalizer />
             </ListItemIcon>
             <ListItemText secondary={t('24h contracted volume')}>
@@ -176,7 +176,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Equalizer />
             </ListItemIcon>
             <ListItemText secondary={t('Lifetime contracted volume')}>

@@ -160,7 +160,7 @@ export const ChatPrompt = ({
         padding: 0,
       }}
     >
-      <Grid item style={{ mb: 1 }}>
+      <Grid style={{ mb: 1 }}>
         <Typography variant='body2' align='center'>
           {text} <br />
           <>
@@ -176,7 +176,7 @@ export const ChatPrompt = ({
         </Typography>
       </Grid>
 
-      <Grid item>
+      <Grid>
         <EncryptedChat
           chatOffset={order.chat_last_index}
           order={order}
@@ -188,7 +188,6 @@ export const ChatPrompt = ({
       </Grid>
 
       <Grid
-        item
         direction='row'
         sx={{ width: '100%', display: 'flex', justifyContent: 'space-around', mt: 2.5 }}
       >
@@ -255,7 +254,7 @@ export const ChatPrompt = ({
               spacing={1}
               sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
             >
-              <Grid item xs={1} style={{ width: '100%' }}>
+              <Grid size={1} style={{ width: '100%' }}>
                 <Button
                   fullWidth
                   disabled={false}
@@ -269,7 +268,7 @@ export const ChatPrompt = ({
                 </Button>
               </Grid>
 
-              <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+              <Grid size={1} style={{ width: '100%', marginTop: 20 }}>
                 <Button
                   fullWidth
                   onClick={() =>
@@ -293,7 +292,7 @@ export const ChatPrompt = ({
                   />
                 }
               >
-                <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                <Grid size={1} style={{ width: '100%', marginTop: 20 }}>
                   <Button
                     fullWidth
                     loading={loadingDispute}
@@ -317,7 +316,7 @@ export const ChatPrompt = ({
                 enterTouchDelay={0}
                 title={t("Orders can't be cancelled if fiat has been sent.")}
               >
-                <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                <Grid size={1} style={{ width: '100%', marginTop: 20 }}>
                   <Button
                     fullWidth
                     onClick={() => {

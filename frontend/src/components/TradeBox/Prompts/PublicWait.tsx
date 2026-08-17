@@ -97,9 +97,9 @@ export const PublicWaitPrompt = ({
       <Divider />
 
       <Grid container>
-        <Grid item xs={10}>
+        <Grid size={10}>
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Storefront />
             </ListItemIcon>
             <ListItemText
@@ -111,7 +111,7 @@ export const PublicWaitPrompt = ({
           </ListItem>
         </Grid>
 
-        <Grid item xs={2}>
+        <Grid size={2}>
           <div style={{ position: 'relative', top: '0.5em', right: '1em' }}>
             <Tooltip
               placement='top'
@@ -132,7 +132,7 @@ export const PublicWaitPrompt = ({
 
       <Divider />
       <ListItem>
-        <ListItemIcon>
+        <ListItemIcon sx={{ minWidth: 56 }}>
           <Percent />
         </ListItemIcon>
         <ListItemText

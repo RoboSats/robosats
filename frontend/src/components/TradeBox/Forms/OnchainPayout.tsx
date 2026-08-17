@@ -104,14 +104,14 @@ export const OnchainPayoutForm = ({
         </ListItem>
       </List>
 
-      <Grid item>
+      <Grid>
         <Grid
           container
           direction='row'
           spacing={0}
           sx={{ alignItems: 'flex-start', justifyContent: 'center' }}
         >
-          <Grid item xs={7}>
+          <Grid size={7}>
             <TextField
               error={onchain.badAddress !== ''}
               helperText={onchain.badAddress !== '' ? t(onchain.badAddress) : ''}
@@ -125,7 +125,7 @@ export const OnchainPayoutForm = ({
               }}
             />
           </Grid>
-          <Grid item xs={5}>
+          <Grid size={5}>
             <TextField
               error={invalidFee}
               helperText={invalidFee ? t('Invalid') : ''}
@@ -145,7 +145,7 @@ export const OnchainPayoutForm = ({
         </Grid>
       </Grid>
 
-      <Grid item style={{ marginTop: 16 }}>
+      <Grid style={{ marginTop: 16 }}>
         <LoadingButton
           loading={loading}
           onClick={onClickSubmit}

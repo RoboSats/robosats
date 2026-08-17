@@ -204,7 +204,7 @@ const Main = (): React.JSX.Element => {
           onAddWidget={handleAddWidget}
           onRemoveWidget={handleRemoveWidget}
         />
-        <Grid item>
+        <Grid>
           <ToolBar
             height={`${toolbarHeight}em`}
             layout={layout}
@@ -222,7 +222,7 @@ const Main = (): React.JSX.Element => {
           />
         </Grid>
 
-        <Grid item>
+        <Grid>
           <StyledRGL
             gridHeight={windowSize.height - toolbarHeight}
             width={gridWidth}

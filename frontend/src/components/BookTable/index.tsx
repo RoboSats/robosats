@@ -863,9 +863,9 @@ const BookTable = ({
         direction='row'
         sx={{ alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <Grid item>
+        <Grid>
           <Grid container direction='row' sx={{ alignItems: 'center' }}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <IconButton
                 onClick={() => {
                   setFullscreen(!fullscreen);
@@ -875,7 +875,7 @@ const BookTable = ({
               </IconButton>
             </Grid>
             {settings.connection === 'api' && (
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <IconButton
                   onClick={() => {
                     void federation.loadBook();
@@ -888,7 +888,7 @@ const BookTable = ({
           </Grid>
         </Grid>
 
-        <Grid item>
+        <Grid>
           <GridPagination />
         </Grid>
       </Grid>
@@ -908,7 +908,7 @@ const BookTable = ({
           flexDirection: 'column',
         }}
       >
-        <Grid item>
+        <Grid>
           <Typography align='center' component='h5' variant='h5'>
             {fav.type === 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
@@ -921,7 +921,7 @@ const BookTable = ({
                 })}
           </Typography>
         </Grid>
-        <Grid item>
+        <Grid>
           <Typography align='center' color='primary' variant='h6'>
             {t('Be the first one to create an order')}
           </Typography>

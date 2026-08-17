@@ -75,16 +75,16 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                 spacing={1}
                 sx={{ alignItems: 'center', flexDirection: 'column', padding: 1 }}
               >
-                <Grid item>
+                <Grid>
                   <Typography>{t('Are you looking to sell your Bitcoins or buy some?')}</Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Grid
                     container
                     spacing={1}
                     sx={{ alignItems: 'center', flexDirection: 'column' }}
                   >
-                    <Grid item>
+                    <Grid>
                       <ButtonGroup variant='contained'>
                         <Button
                           color='secondary'
@@ -111,18 +111,18 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Typography>
                     {t('Do you want to swap from on-chain into Lightning or vice versa?')}
                   </Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Grid
                     container
                     spacing={1}
                     sx={{ alignItems: 'center', flexDirection: 'column' }}
                   >
-                    <Grid item>
+                    <Grid>
                       <ButtonGroup variant='contained'>
                         <Button
                           color='primary'
@@ -161,12 +161,12 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
-                <Grid item>
+                <Grid>
                   <Typography>
                     {t('You can specify the currency you want to use for your trade.')}
                   </Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Select
                     autoWidth
                     sx={{
