@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Typography, Select, MenuItem, Box, SelectChangeEvent } from '@mui/material';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { useTheme } from '@mui/material';
 import { AutocompletePayments } from '../MakerForm';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';

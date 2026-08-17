@@ -312,7 +312,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
       if (paymentMethod) {
         selectedOptions.push(paymentMethod);
       } else {
-        customSelectedOptions.push({ name: pm, icon: 'custom' } as PaymentMethod);
+        customSelectedOptions.push({ name: pm, icon: 'custom' });
       }
     });
 

@@ -15,7 +15,6 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
-import { type Robot } from '../../models';
 import { Casino, Bolt, Check, AddBox, School, Search } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
@@ -27,11 +26,8 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
-  robot?: Robot;
-  setRobot?: (state: Robot) => void;
   inputToken: string;
   setInputToken: (state: string) => void;
-  baseUrl?: string;
 }
 
 const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): React.JSX.Element => {

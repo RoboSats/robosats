@@ -1,4 +1,5 @@
 export { checkVer, getHigherVer, getClientVersion } from './checkVer';
+export { default as currencies } from './currencies';
 export { default as filterOrders } from './filterOrders';
 export { default as getHost } from './getHost';
 export { default as hexToRgb } from './hexToRgb';

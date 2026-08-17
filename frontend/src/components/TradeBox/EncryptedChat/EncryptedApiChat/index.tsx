@@ -135,7 +135,14 @@ const EncryptedApiChat: React.FC<Props> = ({
       // If we receive an encrypted message
       if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
         const senderPubKey = dataFromServer.nick === userNick ? robot.pubKey : peerPubKey;
-        if (!senderPubKey || !robot.encPrivKey || !slot.token) return;
+        if (!senderPubKey || !robot.encPrivKey || !slot.token) {
+          console.warn('[EncryptedApiChat] skipping decrypt: missing keys or token', {
+            hasSenderPubKey: Boolean(senderPubKey),
+            hasEncPrivKey: Boolean(robot.encPrivKey),
+            hasToken: Boolean(slot.token),
+          });
+          return;
+        }
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
           senderPubKey,

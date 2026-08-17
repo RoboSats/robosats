@@ -3,7 +3,7 @@ import { Box, Grid, Paper } from '@mui/material';
 import { type PublicOrder } from '../../../../models';
 import RobotAvatar from '../../../RobotAvatar';
 import { amountToString, statusBadgeColor } from '../../../../utils';
-import currencyDict from '../../../../../static/assets/currencies.json';
+import currencyDict from '../../../../utils/currencies';
 import { PaymentStringAsIcons } from '../../../PaymentMethods';
 import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../../../contexts/AppContext';
@@ -75,7 +75,7 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
                     Number(order.min_amount ?? 0),
                     Number(order.max_amount ?? 0),
                   )}{' '}
-                  {(currencyDict as Record<string, string>)[(order.currency ?? 0).toString()]}
+                  {currencyDict[(order.currency ?? 0).toString()]}
                 </Grid>
                 <Grid size={12}>
                   <PaymentStringAsIcons

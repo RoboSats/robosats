@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 
 import { SwapCalls } from '@mui/icons-material';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import { UseAppStoreType, AppContext, initialAppContext } from '../../contexts/AppContext';
 import { useNavigate } from 'react-router-dom';

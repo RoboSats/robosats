@@ -27,7 +27,7 @@ import {
 
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
-import currencies from '../../../static/assets/currencies.json';
+import currencies from '../../utils/currencies';
 import {
   AccessTime,
   PriceChange,
@@ -77,9 +77,7 @@ const OrderDetails = ({
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias));
-    setCurrencyCode(
-      (currencies as Record<string, string>)[(currentOrder?.currency ?? 1).toString()],
-    );
+    setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
   }, [currentOrder]);
 
   useEffect(() => {

@@ -24,7 +24,7 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutlined';
 import { useTranslation } from 'react-i18next';
 import { type PublicOrder } from '../../../models';
 import { matchMedian } from '../../../utils';
-import currencyDict from '../../../../static/assets/currencies.json';
+import currencyDict from '../../../utils/currencies';
 import getNivoScheme from '../NivoScheme';
 import OrderTooltip from '../helpers/OrderTooltip';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
@@ -384,7 +384,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 <Grid>
                   <Box sx={{ justifyContent: 'center' }}>
                     {xType === 'base_price'
-                      ? `${center} ${String(currencyDict[(currencyCode || 1) as keyof object])}`
+                      ? `${center} ${String(currencyDict[String(currencyCode || 1)])}`
                       : `${String(center.toPrecision(3))}%`}
                   </Box>
                 </Grid>

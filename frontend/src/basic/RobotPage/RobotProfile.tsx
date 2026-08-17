@@ -17,7 +17,7 @@ import {
 import { Key, Bolt, Add, DeleteSweep, Download, Settings } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
-import { type Slot, type Robot } from '../../models';
+import { type Slot } from '../../models';
 import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
@@ -26,13 +26,10 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 import { DeleteRobotConfirmationDialog } from '../../components/Dialogs';
 
 interface RobotProfileProps {
-  robot?: Robot;
-  setRobot?: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   inputToken: string;
   setInputToken: (state: string) => void;
   width: number;
-  baseUrl?: string;
 }
 
 const RobotProfile = ({

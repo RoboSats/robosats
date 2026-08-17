@@ -32,7 +32,7 @@ import { ConfirmationDialog, F2fMapDialog } from '../Dialogs';
 import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 import { useBondEstimate } from '../../hooks/useBondEstimate';
 
@@ -91,9 +91,7 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    setCurrencyCode(
-      (currencyDict as Record<string, string>)[String(fav.currency === 0 ? 1 : fav.currency)],
-    );
+    setCurrencyCode(currencyDict[String(fav.currency === 0 ? 1 : fav.currency)]);
   }, [federationUpdatedAt]);
 
   useEffect(() => {
@@ -150,7 +148,7 @@ const MakerForm = ({
   };
 
   const handleCurrencyChange = function (newCurrency: number): void {
-    const currencyCode: string = (currencyDict as Record<string, string>)[String(newCurrency)];
+    const currencyCode: string = currencyDict[String(newCurrency)];
     setCurrencyCode(currencyCode);
     setFav((prev) => {
       return {

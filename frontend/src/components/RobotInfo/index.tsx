@@ -96,9 +96,9 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot?.token).then(
         (signedInvoice) => {
           void robot.fetchReward(federation, signedInvoice).then((data) => {
+            setShowRewardsSpinner(false);
             if (data != null) {
               setBadInvoice(data.bad_invoice ?? '');
-              setShowRewardsSpinner(false);
               setWithdrawn(Boolean(data.successful_withdrawal));
               setOpenClaimRewards(!data.successful_withdrawal);
             }

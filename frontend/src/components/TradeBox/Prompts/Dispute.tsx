@@ -105,7 +105,14 @@ export const DisputePrompt = ({
       for (const dataFromServer of serverMessages) {
         if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
           const senderPubKey = dataFromServer.nick === slot.nickname ? robot.pubKey : peerPubKey;
-          if (!senderPubKey || !robot.encPrivKey || !slot.token) continue;
+          if (!senderPubKey || !robot.encPrivKey || !slot.token) {
+            console.warn('[DisputePrompt] skipping decrypt: missing keys or token', {
+              hasSenderPubKey: Boolean(senderPubKey),
+              hasEncPrivKey: Boolean(robot.encPrivKey),
+              hasToken: Boolean(slot.token),
+            });
+            continue;
+          }
           const decryptedData = await decryptMessage(
             dataFromServer.message.split('\\').join('\n'),
             senderPubKey,

@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { type Order } from '../../../models';
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 import { pn } from '../../../utils';
 import { LoadingButton } from '@mui/lab';
 
@@ -29,7 +29,7 @@ export const ConfirmFiatSentDialog = ({
   onConfirmClick,
 }: ConfirmFiatSentDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const currencyCode = (currencies as Record<string, string>)[(order?.currency ?? 0).toString()];
+  const currencyCode = currencies[(order?.currency ?? 0).toString()];
   const amount = pn(
     parseFloat(parseFloat(String(order?.amount ?? 0)).toFixed(order?.currency === 1000 ? 8 : 4)),
   );

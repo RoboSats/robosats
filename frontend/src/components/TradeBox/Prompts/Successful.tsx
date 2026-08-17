@@ -12,7 +12,7 @@ import {
   Button,
   CircularProgress,
 } from '@mui/material';
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 import TradeSummary from '../TradeSummary';
 import { Favorite, RocketLaunch, ContentCopy, Refresh } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -44,7 +44,7 @@ export const SuccessfulPrompt = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const theme = useTheme();
-  const currencyCode: string = (currencies as Record<string, string>)[`${order.currency}`];
+  const currencyCode: string = currencies[`${order.currency}`];
   const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);

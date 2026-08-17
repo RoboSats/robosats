@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order } from '../../../models';
 import { pn, saveAsJson } from '../../../utils';
@@ -70,7 +70,7 @@ export const ChatPrompt = ({
   const [text, setText] = useState<string>('');
   const [openOrderOptions, setOpenOrderOptions] = useState<boolean>(false);
 
-  const currencyCode: string = (currencies as Record<string, string>)[`${order.currency}`];
+  const currencyCode: string = currencies[`${order.currency}`];
   const amount: string = pn(
     Number(parseFloat(String(order.amount ?? 0)).toFixed(order.currency === 1000 ? 8 : 4)),
   );

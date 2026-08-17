@@ -13,7 +13,7 @@ import {
 
 import { FlagWithProps } from '../Icons';
 import RangeSlider from './RangeSlider';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { pn } from '../../utils';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';

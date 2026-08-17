@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
 
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order, type Settings } from '../../../models';
 import { pn } from '../../../utils';
@@ -40,7 +40,7 @@ export const PayoutPrompt = ({
   settings,
 }: PayoutPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const currencyCode: string = (currencies as Record<string, string>)[`${order.currency}`];
+  const currencyCode: string = currencies[`${order.currency}`];
 
   const [tab, setTab] = useState<'lightning' | 'onchain'>('lightning');
 

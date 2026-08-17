@@ -862,14 +862,9 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(
-                          parseFloat(
-                            parseFloat(String(coordinator?.info?.last_day_volume ?? 0)).toFixed(8),
-                          ),
-                        )}
+                        {pn(parseFloat(String(coordinator?.info?.last_day_volume ?? 0)).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '0.6em', height: '0.6em' }}
-                          color={'action'}
+                          sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
                         />
                       </div>
                     </ListItemText>
@@ -890,14 +885,9 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(
-                          parseFloat(
-                            parseFloat(String(coordinator?.info?.lifetime_volume ?? 0)).toFixed(8),
-                          ),
-                        )}
+                        {pn(parseFloat(String(coordinator?.info?.lifetime_volume ?? 0)).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '0.6em', height: '0.6em' }}
-                          color={'action'}
+                          sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
                         />
                       </div>
                     </ListItemText>

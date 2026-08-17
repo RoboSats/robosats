@@ -25,7 +25,7 @@ import {
   type GridRenderCellParams,
   type GridRowIdGetter,
 } from '@mui/x-data-grid';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { type PublicOrder } from '../../models';
 import { filterOrders, hexToRgb, statusBadgeColor, pn, amountToString } from '../../utils';
 import BookControl from './BookControl';
@@ -332,9 +332,7 @@ const BookTable = ({
       headerName: t('Currency'),
       flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
-        const currencyCode = String(
-          (currencyDict as Record<string, string>)[(params.row.currency ?? 0).toString()],
-        );
+        const currencyCode = String(currencyDict[(params.row.currency ?? 0).toString()]);
         return (
           <div
             style={{
@@ -421,9 +419,7 @@ const BookTable = ({
       type: 'number',
       flex: 2,
       renderCell: (params: { row: PublicOrder }) => {
-        const currencyCode = String(
-          (currencyDict as Record<string, string>)[(params.row.currency ?? 0).toString()],
-        );
+        const currencyCode = String(currencyDict[(params.row.currency ?? 0).toString()]);
         const limits = federation.getLimits(params.row.coordinatorShortAlias ?? '');
         const premium = parseFloat(params.row.premium ?? '0');
         const limitPrice = limits[(params.row.currency ?? 0).toString()]?.price;
@@ -461,9 +457,7 @@ const BookTable = ({
       type: 'number',
       flex: 1,
       renderCell: (params: GridRenderCellParams<PublicOrder>) => {
-        const currencyCode = String(
-          (currencyDict as Record<string, string>)[(params.row.currency ?? 0).toString()],
-        );
+        const currencyCode = String(currencyDict[(params.row.currency ?? 0).toString()]);
         let fontColor = `rgb(0,0,0)`;
         let premiumPoint = 0;
         const premiumFloat = parseFloat(params.row.premium ?? '0');
@@ -952,15 +946,11 @@ const BookTable = ({
             {fav.type === 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
                   currencyCode:
-                    fav.currency === 0
-                      ? t('ANY')
-                      : (currencyDict as Record<string, string>)[fav.currency.toString()],
+                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
                 })
               : t('No orders found to buy BTC for {{currencyCode}}', {
                   currencyCode:
-                    fav.currency === 0
-                      ? t('ANY')
-                      : (currencyDict as Record<string, string>)[fav.currency.toString()],
+                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
                 })}
           </Typography>
         </Grid>

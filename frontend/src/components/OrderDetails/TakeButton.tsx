@@ -4,7 +4,7 @@ import { Box, Tooltip, Grid, TextField, useTheme, Typography, FormHelperText } f
 
 import Countdown from 'react-countdown';
 
-import currencies from '../../../static/assets/currencies.json';
+import currencies from '../../utils/currencies';
 
 import { type Order, type Info } from '../../models';
 import { ConfirmationDialog, OrderDescriptionDialog } from '../Dialogs';
@@ -75,9 +75,7 @@ const TakeButton = ({
   }, [slotUpdatedAt, takeAmount, info]);
 
   const currencyCode: string =
-    currentOrder?.currency === 1000
-      ? 'Sats'
-      : (currencies as Record<string, string>)[`${Number(currentOrder?.currency)}`];
+    currentOrder?.currency === 1000 ? 'Sats' : currencies[`${Number(currentOrder?.currency)}`];
 
   interface countdownTakeOrderRendererProps {
     seconds: number;

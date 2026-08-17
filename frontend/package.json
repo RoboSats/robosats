@@ -73,6 +73,7 @@
     "@mui/x-date-pickers": "^9.11.0",
     "@nivo/core": "^0.99.0",
     "@nivo/line": "^0.99.0",
+    "@nivo/theming": "^0.99.0",
     "@noble/ciphers": "^2.3.0",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",

@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order } from '../../../models';
 import {
@@ -37,7 +37,7 @@ export const PublicWaitPrompt = ({
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
 
-  const currencyCode = (currencies as Record<string, string>)[order.currency.toString()];
+  const currencyCode = currencies[order.currency.toString()];
 
   const depositHoursMinutes = function (): {
     deposit_timer_hours: number;

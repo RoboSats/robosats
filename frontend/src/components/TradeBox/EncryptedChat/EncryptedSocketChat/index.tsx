@@ -182,7 +182,14 @@ const EncryptedSocketChat: React.FC<Props> = ({
       // If we receive an encrypted message
       else if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
         const senderPubKey = dataFromServer.user_nick === userNick ? robot?.pubKey : peerPubKey;
-        if (!senderPubKey || !robot?.encPrivKey || !slot?.token) return;
+        if (!senderPubKey || !robot?.encPrivKey || !slot?.token) {
+          console.warn('[EncryptedSocketChat] skipping decrypt: missing keys or token', {
+            hasSenderPubKey: Boolean(senderPubKey),
+            hasEncPrivKey: Boolean(robot?.encPrivKey),
+            hasToken: Boolean(slot?.token),
+          });
+          return;
+        }
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
           senderPubKey,
