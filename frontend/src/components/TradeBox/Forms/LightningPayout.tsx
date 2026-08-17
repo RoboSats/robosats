@@ -388,27 +388,29 @@ export const LightningPayoutForm = ({
                         : lightning.routingBudgetSats
                     }
                     variant='outlined'
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <Button
-                            variant='text'
-                            onClick={() => {
-                              setLightning({
-                                ...lightning,
-                                routingBudgetUnit:
-                                  lightning.routingBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
-                              });
-                            }}
-                          >
-                            {lightning.routingBudgetUnit}
-                          </Button>
-                        </InputAdornment>
-                      ),
-                    }}
-                    inputProps={{
-                      style: {
-                        textAlign: 'center',
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position='end'>
+                            <Button
+                              variant='text'
+                              onClick={() => {
+                                setLightning({
+                                  ...lightning,
+                                  routingBudgetUnit:
+                                    lightning.routingBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
+                                });
+                              }}
+                            >
+                              {lightning.routingBudgetUnit}
+                            </Button>
+                          </InputAdornment>
+                        ),
+                      },
+                      htmlInput: {
+                        style: {
+                          textAlign: 'center',
+                        },
                       },
                     }}
                     onChange={onRoutingBudgetChange}
@@ -504,27 +506,29 @@ export const LightningPayoutForm = ({
                               : lightning.lnproxyBudgetSats
                           }
                           variant='outlined'
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <Button
-                                  variant='text'
-                                  onClick={() => {
-                                    setLightning({
-                                      ...lightning,
-                                      lnproxyBudgetUnit:
-                                        lightning.lnproxyBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
-                                    });
-                                  }}
-                                >
-                                  {lightning.lnproxyBudgetUnit}
-                                </Button>
-                              </InputAdornment>
-                            ),
-                          }}
-                          inputProps={{
-                            style: {
-                              textAlign: 'center',
+                          slotProps={{
+                            input: {
+                              endAdornment: (
+                                <InputAdornment position='end'>
+                                  <Button
+                                    variant='text'
+                                    onClick={() => {
+                                      setLightning({
+                                        ...lightning,
+                                        lnproxyBudgetUnit:
+                                          lightning.lnproxyBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
+                                      });
+                                    }}
+                                  >
+                                    {lightning.lnproxyBudgetUnit}
+                                  </Button>
+                                </InputAdornment>
+                              ),
+                            },
+                            htmlInput: {
+                              style: {
+                                textAlign: 'center',
+                              },
                             },
                           }}
                           onChange={onProxyBudgetChange}
