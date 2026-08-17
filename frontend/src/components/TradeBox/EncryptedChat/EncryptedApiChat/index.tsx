@@ -259,7 +259,7 @@ const EncryptedApiChat: React.FC<Props> = ({
       spacing={0.5}
       sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item>
+      <Grid>
         <ChatHeader connected={Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}

@@ -770,7 +770,7 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
           padding: 1,
         }}
       >
-        <Grid item>
+        <Grid>
           <Title
             order={currentOrder ?? null}
             text={contract?.title}
@@ -781,10 +781,10 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         </Grid>
         <Divider />
 
-        <Grid item>{contract?.prompt()}</Grid>
+        <Grid>{contract?.prompt()}</Grid>
 
         {contract?.bondStatus !== 'hide' ? (
-          <Grid item sx={{ width: '100%', mt: 1 }}>
+          <Grid sx={{ width: '100%', mt: 1 }}>
             <BondStatus status={contract?.bondStatus} isMaker={currentOrder?.is_maker ?? false} />
           </Grid>
         ) : (

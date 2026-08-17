@@ -7,23 +7,16 @@ const Coordinators = (): React.JSX.Element => {
   const [open, setOpen] = useState<boolean>(false);
 
   return (
-    <Grid item xs={12}>
-      <Grid
-        container
-        sx={{ alignItems: 'center', justifyItems: 'center', flexDirection: 'column' }}
+    <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '0.5em' }}>
+      <Button
+        onClick={() => {
+          setOpen(true);
+        }}
+        color='primary'
+        variant='contained'
       >
-        <Grid item>
-          <Button
-            onClick={() => {
-              setOpen(true);
-            }}
-            color='primary'
-            variant='contained'
-          >
-            {t('Coordinators')}
-          </Button>
-        </Grid>
-      </Grid>
+        {t('Coordinators')}
+      </Button>
       <Dialog
         open={open}
         onClose={() => {
@@ -36,21 +29,20 @@ const Coordinators = (): React.JSX.Element => {
         <DialogContent>
           <Grid
             container
-            spacing={1}
-            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2, gap: 1 }}
           >
-            <Grid item>
+            <Grid>
               <Typography variant='h5' align='center'>
                 {t('Coordinators')}
               </Typography>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <FederationTable fillContainer showTitle={false} />
             </Grid>
           </Grid>
         </DialogContent>
       </Dialog>
-    </Grid>
+    </div>
   );
 };
 

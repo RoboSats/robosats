@@ -30,7 +30,7 @@ const NotificationCard: React.FC<Props> = ({ event, robotHashId, coordinator, se
     if (!coordinator) return <></>;
 
     return (
-      <Grid item style={{ display: 'flex', flexDirection: 'column' }}>
+      <Grid style={{ display: 'flex', flexDirection: 'column' }}>
         <RobotAvatar
           shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
           hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}

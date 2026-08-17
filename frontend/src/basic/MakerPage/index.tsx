@@ -109,13 +109,13 @@ const MakerPage = (): React.JSX.Element => {
             });
         }}
       />
-      <Grid item>
+      <Grid>
         <Collapse in={matches.length > 0 && showMatches}>
           <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
-            <Grid item>
+            <Grid>
               <Typography variant='h5'>{t('Existing orders match yours!')}</Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <BookTable
                 orderList={matches}
                 maxWidth={tableMaxWidth} // EM units
@@ -130,7 +130,7 @@ const MakerPage = (): React.JSX.Element => {
           </Grid>
         </Collapse>
       </Grid>
-      <Grid item>
+      <Grid>
         <Paper
           elevation={12}
           style={{

@@ -21,7 +21,7 @@ const TopBar = (): React.JSX.Element => {
   return (
     <Grid container direction='row' spacing={1} sx={{ justifyContent: 'space-between' }}>
       {mobileView && (
-        <Grid item>
+        <Grid>
           <Button
             size='large'
             color='inherit'
@@ -37,7 +37,7 @@ const TopBar = (): React.JSX.Element => {
         title={t('You need to enable nostr to receive notifications.')}
         disableHoverListener={settings.connection === 'nostr'}
       >
-        <Grid item>
+        <Grid>
           <LoadingButton
             aria-label='open notifications drawer'
             color='primary'

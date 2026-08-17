@@ -67,7 +67,7 @@ const AddNewPaymentMethodDialog = ({
             {t('Use this free input to add any payment method you would like to offer.')}
           </Typography>
 
-          <Grid item style={{ width: '100%' }} sx={{ mt: 2 }}>
+          <Grid style={{ width: '100%' }} sx={{ mt: 2 }}>
             <TextField
               required={true}
               fullWidth
