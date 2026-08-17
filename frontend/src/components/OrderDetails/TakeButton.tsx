@@ -179,6 +179,7 @@ const TakeButton = ({
                 enterDelay={700}
                 enterNextDelay={2000}
                 title={t('Enter amount of fiat to exchange for bitcoin')}
+                sx={{ flex: 1 }}
               >
                 <TextField
                   error={takeAmount === '' ? false : invalidTakeAmount}
@@ -188,6 +189,7 @@ const TakeButton = ({
                   type='number'
                   required={true}
                   value={takeAmount}
+                  sx={{ flex: 1 }}
                   slotProps={{
                     htmlInput: {
                       min: currentOrder?.min_amount,
@@ -201,6 +203,7 @@ const TakeButton = ({
               <div
                 style={{
                   display: invalidTakeAmount ? '' : 'none',
+                  flex: 1,
                 }}
               >
                 <Tooltip
@@ -210,10 +213,10 @@ const TakeButton = ({
                   enterNextDelay={1200}
                   title={t('You must specify an amount first')}
                 >
-                  <div>
+                  <div style={{ width: '100%' }}>
                     <LoadingButton
                       loading={loadingTake}
-                      sx={{ height: '2.8em', whiteSpace: 'nowrap' }}
+                      sx={{ height: '2.8em', width: '100%', whiteSpace: 'nowrap' }}
                       variant='outlined'
                       color='primary'
                       disabled={true}
@@ -226,11 +229,12 @@ const TakeButton = ({
               <div
                 style={{
                   display: invalidTakeAmount ? 'none' : '',
+                  flex: 1,
                 }}
               >
                 <LoadingButton
                   loading={loadingTake}
-                  sx={{ height: '2.8em', whiteSpace: 'nowrap' }}
+                  sx={{ height: '2.8em', width: '100%', whiteSpace: 'nowrap' }}
                   variant='outlined'
                   color='primary'
                   onClick={onTakeOrderClicked}

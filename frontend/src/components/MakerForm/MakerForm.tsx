@@ -586,7 +586,7 @@ const MakerForm = ({
         }}
         zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
       />
-      <Collapse in={!(Object.keys(limits).length === 0 || collapseAll)}>
+      <Collapse in={!collapseAll}>
         <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
           <Grid>
             <IconButton
