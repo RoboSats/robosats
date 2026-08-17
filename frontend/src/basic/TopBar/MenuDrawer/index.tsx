@@ -275,8 +275,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
               }}
             />
             <Typography
-              lineHeight={0.82}
-              sx={{ position: 'relative', bottom: '0.3em' }}
+              sx={{ position: 'relative', bottom: '0.3em', lineHeight: 0.82 }}
               color='secondary'
               align='center'
             >

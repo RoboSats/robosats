@@ -70,7 +70,7 @@ const FederationTable = ({
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.getCoordinator(alias)) {
-      const attributes: object = {
+      const attributes: Record<string, unknown> = {
         longAlias: alias,
         shortAlias: alias,
         federated: false,
@@ -313,11 +313,17 @@ const FederationTable = ({
     const selectedColumns: object[] = [];
     let width: number = 0;
 
-    for (const value of Object.values(columnSpecs)) {
+    interface ColSpec {
+      priority: number;
+      order: number;
+      normal: { width: number; object: (w: number, b: boolean) => object };
+      small?: { width: number; object: (w: number, b: boolean) => object };
+    }
+    for (const value of Object.values(columnSpecs) as ColSpec[]) {
       const colWidth = Number(
-        useSmall && Boolean(value.small) ? value.small.width : value.normal.width,
+        useSmall && value.small != null ? value.small.width : value.normal.width,
       );
-      const colObject = useSmall && Boolean(value.small) ? value.small.object : value.normal.object;
+      const colObject = useSmall && value.small != null ? value.small.object : value.normal.object;
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
@@ -329,11 +335,11 @@ const FederationTable = ({
 
     // sort columns by column.order value
     selectedColumns.sort(function (first, second) {
-      return first[1] - second[1];
+      return (first as [object, number])[1] - (second as [object, number])[1];
     });
 
     const columns: Array<GridColDef<GridValidRowModel>> = selectedColumns.map(function (item) {
-      return item[0];
+      return (item as [object, number])[0] as GridColDef<GridValidRowModel>;
     });
 
     return { columns, width: width * 0.9 };
@@ -400,7 +406,7 @@ const FederationTable = ({
           columnHeaderHeight={3.25 * theme.typography.fontSize}
           rows={federation.getCoordinators()}
           getRowId={(params: Coordinator) => params.shortAlias}
-          columns={columns}
+          columns={columns as readonly GridColDef<Coordinator>[]}
           checkboxSelection={false}
           paginationModel={fillContainer ? { page: 0, pageSize: 100 } : paginationModel}
           pageSizeOptions={

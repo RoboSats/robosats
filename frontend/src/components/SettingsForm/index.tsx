@@ -54,7 +54,7 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
           <Translate />
         </ListItemIcon>
         <SelectLanguage
-          language={settings.language}
+          language={settings.language ?? 'en'}
           setLanguage={(language) => {
             setSettings({ ...settings, language });
             systemClient.setItem('settings_language', language);
@@ -176,8 +176,8 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
           min={settings.frontend === 'basic' ? 12 : 10}
           max={settings.frontend === 'basic' ? 16 : 14}
           step={1}
-          onChange={(e) => {
-            const fontSize = e.target.value;
+          onChange={(_e, newValue) => {
+            const fontSize = Array.isArray(newValue) ? newValue[0] : newValue;
             setSettings({ ...settings, fontSize });
             systemClient.setItem(`settings_fontsize_${settings.frontend}`, fontSize.toString());
           }}

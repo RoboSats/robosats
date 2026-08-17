@@ -34,7 +34,9 @@ interface ChatPromptProps {
   onClickDispute: () => void;
   loadingDispute: boolean;
   messages: EncryptedChatMessage[];
-  setMessages: (state: EncryptedChatMessage[]) => void;
+  setMessages: (
+    state: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
+  ) => void;
 }
 
 export const ChatPrompt = ({
@@ -62,13 +64,15 @@ export const ChatPrompt = ({
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [enableCollaborativeButton, setEnableCollaborativeButton] = useState<boolean>(false);
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
-  const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
+  const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(
+    new Date(String(order.expires_at)),
+  );
   const [text, setText] = useState<string>('');
   const [openOrderOptions, setOpenOrderOptions] = useState<boolean>(false);
 
-  const currencyCode: string = currencies[`${order.currency}`];
+  const currencyCode: string = (currencies as Record<string, string>)[`${order.currency}`];
   const amount: string = pn(
-    Number(parseFloat(order.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4)),
+    Number(parseFloat(String(order.amount ?? 0)).toFixed(order.currency === 1000 ? 8 : 4)),
   );
 
   const disputeCountdownRenderer = function ({
@@ -86,9 +90,9 @@ export const ChatPrompt = ({
   useEffect(() => {
     // open dispute button enables 18h before expiry
     const now = Date.now();
-    const expiresAt = new Date(order.expires_at);
+    const expiresAt = new Date(String(order.expires_at));
     expiresAt.setHours(expiresAt.getHours() - 18);
-    setEnableDisputeButton(now > expiresAt);
+    setEnableDisputeButton(now > expiresAt.getTime());
     setEnableDisputeTime(expiresAt);
 
     if (order.status === 9) {
@@ -160,7 +164,7 @@ export const ChatPrompt = ({
         padding: 0,
       }}
     >
-      <Grid style={{ mb: 1 }}>
+      <Grid sx={{ mb: 1 }}>
         <Typography variant='body2' align='center'>
           {text} <br />
           <>

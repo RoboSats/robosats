@@ -55,7 +55,9 @@ const StringAsIcons: React.FC<StringAsIconsProps> = ({
                 width={size}
                 height={size}
                 icon={method.icon}
-                reversible={method.reversible}
+                reversible={
+                  (method as { name: string; icon: string; reversible?: boolean }).reversible
+                }
               />
             </div>
           </Tooltip>,

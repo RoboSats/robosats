@@ -10,8 +10,8 @@ import {
   SettingsWidget,
   FederationWidget,
 } from '../pro/Widgets';
-import ToolBar, { type WidgetInfo } from '../pro/ToolBar';
-import WidgetDrawer from '../pro/ToolBar/WidgetDrawer';
+import ToolBar from '../pro/ToolBar';
+import WidgetDrawer, { type WidgetInfo } from '../pro/ToolBar/WidgetDrawer';
 import LandingDialog from '../pro/LandingDialog';
 
 import { AppContext, type UseAppStoreType } from '../contexts/AppContext';

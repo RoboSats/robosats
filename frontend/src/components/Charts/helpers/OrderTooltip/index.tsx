@@ -25,8 +25,10 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
   const coordinatorAlias = order?.coordinatorShortAlias ?? '';
   const network = settings.network;
   const coordinator = federation.getCoordinator(coordinatorAlias);
-  const thirdParty = thirdParties[coordinatorAlias];
-  const baseUrl = coordinator?.[network]?.[origin] ?? '';
+  const thirdParty = (thirdParties as Record<string, { shortAlias?: string }>)[coordinatorAlias];
+  const baseUrl = (coordinator as unknown as Record<string, unknown>)?.[network ?? 'mainnet'] as
+    Record<string, string> | undefined;
+  const resolvedBaseUrl = baseUrl?.[origin] ?? '';
 
   return order ? (
     <Paper elevation={12} style={{ padding: 10, width: 150 }}>
@@ -36,12 +38,14 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
             <RobotAvatar
               orderType={order.type}
               statusColor={
-                settings.connection === 'api' ? statusBadgeColor(order.maker_status) : undefined
+                settings.connection === 'api'
+                  ? statusBadgeColor(order.maker_status ?? '')
+                  : undefined
               }
-              tooltip={t(order.maker_status)}
-              baseUrl={baseUrl}
+              tooltip={t(order.maker_status ?? '')}
+              baseUrl={resolvedBaseUrl}
               small={true}
-              hashId={order.maker_hash_id}
+              hashId={order.maker_hash_id ?? undefined}
               coordinatorShortAlias={
                 thirdParty?.shortAlias ??
                 (coordinator?.federated ? coordinator?.shortAlias : undefined)
@@ -66,12 +70,12 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
               >
                 <Grid size={12}>
                   {amountToString(
-                    order.amount,
+                    String(order.amount ?? 0),
                     order.has_range,
-                    order.min_amount,
-                    order.max_amount,
+                    Number(order.min_amount ?? 0),
+                    Number(order.max_amount ?? 0),
                   )}{' '}
-                  {currencyDict[order.currency]}
+                  {(currencyDict as Record<string, string>)[(order.currency ?? 0).toString()]}
                 </Grid>
                 <Grid size={12}>
                   <PaymentStringAsIcons

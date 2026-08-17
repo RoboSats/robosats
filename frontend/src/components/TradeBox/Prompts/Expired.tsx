@@ -54,11 +54,13 @@ export const ExpiredPrompt = ({
                   style={{ marginBottom: 8 }}
                   error={error}
                   required
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 4,
+                  slotProps={{
+                    htmlInput: {
+                      style: {
+                        textAlign: 'center',
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 4,
+                      },
                     },
                   }}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>

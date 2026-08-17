@@ -23,6 +23,7 @@ import {
   type GridSlots,
   type GridSortModel,
   type GridRenderCellParams,
+  type GridRowIdGetter,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -47,13 +48,13 @@ const ClickThroughDataGrid = styled(DataGrid)({
 });
 
 const premiumColor = function (baseColor: string, accentColor: string, point: number): string {
-  const baseRGB = hexToRgb(baseColor);
-  const accentRGB = hexToRgb(accentColor);
-  const redDiff = accentRGB[0] - baseRGB[0];
+  const baseRGB = hexToRgb(baseColor) ?? ['0', '0', '0'];
+  const accentRGB = hexToRgb(accentColor) ?? ['0', '0', '0'];
+  const redDiff = Number(accentRGB[0]) - Number(baseRGB[0]);
   const red = Number(baseRGB[0]) + redDiff * point;
-  const greenDiff = accentRGB[1] - baseRGB[1];
+  const greenDiff = Number(accentRGB[1]) - Number(baseRGB[1]);
   const green = Number(baseRGB[1]) + greenDiff * point;
-  const blueDiff = accentRGB[2] - baseRGB[2];
+  const blueDiff = Number(accentRGB[2]) - Number(baseRGB[2]);
   const blue = Number(baseRGB[2]) + blueDiff * point;
   return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${0.7 + point * 0.3})`;
 };
@@ -71,6 +72,19 @@ interface BookTableProps {
   showNoResults?: boolean;
   fillContainer?: boolean;
   onOrderClicked?: (id: number, shortAlias: string) => void;
+}
+
+interface ColumnSpecEntry {
+  priority: number;
+  order: number;
+  normal: {
+    width: number;
+    object: (width?: number) => object;
+  };
+  small?: {
+    width: number;
+    object: (width?: number) => object;
+  };
 }
 
 const BookTable = ({
@@ -106,13 +120,13 @@ const BookTable = ({
       ? [{ field: 'premium', sort: fav.type === 0 ? 'desc' : 'asc' }]
       : [],
   );
-  const prevFavTypeRef = useRef<number>();
+  const prevFavTypeRef = useRef<number | null | undefined>(undefined);
 
   useEffect(() => {
     const prevFavType = prevFavTypeRef.current;
 
     if (typeof prevFavType !== 'undefined' && prevFavType !== fav.type) {
-      setSortModel((currentSortModel) => {
+      setSortModel((currentSortModel: GridSortModel) => {
         let isCurrentSortDefault = false;
 
         if (prevFavType === null) {
@@ -136,7 +150,7 @@ const BookTable = ({
       });
     }
 
-    prevFavTypeRef.current = fav.type;
+    prevFavTypeRef.current = fav.type ?? null;
   }, [fav.type]);
 
   // all sizes in 'em'
@@ -220,27 +234,29 @@ const BookTable = ({
       headerName: t('Robot'),
       flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
-        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias);
-        const thirdParty = thirdParties[params.row.coordinatorShortAlias];
+        const coordinator = federation.getCoordinator(params.row.coordinatorShortAlias ?? '');
+        const thirdParty = (thirdParties as Record<string, { shortAlias?: string }>)[
+          params.row.coordinatorShortAlias ?? ''
+        ];
         return (
           <div
             style={{ position: 'relative', cursor: 'pointer', bottom: '0.2em' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             <RobotAvatar
-              hashId={params.row.maker_hash_id}
+              hashId={params.row.maker_hash_id ?? undefined}
               smooth={true}
               flipHorizontally={true}
               style={{ width: '3.215em', height: '3.215em' }}
               orderType={params.row.type}
               statusColor={
                 settings.connection === 'api'
-                  ? statusBadgeColor(params.row.maker_status)
+                  ? statusBadgeColor(params.row.maker_status ?? '')
                   : undefined
               }
-              tooltip={t(params.row.maker_status)}
+              tooltip={t(params.row.maker_status ?? '')}
               coordinatorShortAlias={
                 thirdParty?.shortAlias ??
                 (coordinator?.federated ? params.row.coordinatorShortAlias : undefined)
@@ -262,7 +278,7 @@ const BookTable = ({
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             {params.row.type === 1
@@ -281,18 +297,29 @@ const BookTable = ({
       type: 'number',
       flex: 1.5,
       renderCell: (params: { row: PublicOrder }) => {
-        const amount = fav.mode === 'swap' ? params.row.amount * 100 : params.row.amount;
-        const minAmount = fav.mode === 'swap' ? params.row.min_amount * 100 : params.row.min_amount;
-        const maxAmount = fav.mode === 'swap' ? params.row.max_amount * 100 : params.row.max_amount;
+        const amount =
+          fav.mode === 'swap'
+            ? parseFloat(params.row.amount ?? '0') * 100
+            : parseFloat(params.row.amount ?? '0');
+        const minAmount =
+          fav.mode === 'swap'
+            ? parseFloat(params.row.min_amount ?? '0') * 100
+            : parseFloat(params.row.min_amount ?? '0');
+        const maxAmount =
+          fav.mode === 'swap'
+            ? parseFloat(params.row.max_amount ?? '0') * 100
+            : parseFloat(params.row.max_amount ?? '0');
         return (
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
-            {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
-              (fav.mode === 'swap' ? 'M Sats' : '')}
+            {
+              (amountToString(String(amount), params.row.has_range, minAmount, maxAmount) +
+                (fav.mode === 'swap' ? 'M Sats' : '')) as string
+            }
           </div>
         );
       },
@@ -305,7 +332,9 @@ const BookTable = ({
       headerName: t('Currency'),
       flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
-        const currencyCode = String(currencyDict[params.row.currency.toString()]);
+        const currencyCode = String(
+          (currencyDict as Record<string, string>)[(params.row.currency ?? 0).toString()],
+        );
         return (
           <div
             style={{
@@ -315,7 +344,7 @@ const BookTable = ({
               flexWrap: 'wrap',
             }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             {currencyCode}
@@ -338,7 +367,7 @@ const BookTable = ({
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             <div style={{ position: 'relative', top: '0.4em' }}>
@@ -370,7 +399,7 @@ const BookTable = ({
               cursor: 'pointer',
             }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             <PaymentStringAsIcons
@@ -392,17 +421,19 @@ const BookTable = ({
       type: 'number',
       flex: 2,
       renderCell: (params: { row: PublicOrder }) => {
-        const currencyCode = String(currencyDict[params.row.currency.toString()]);
-        const limits = federation.getLimits(params.row.coordinatorShortAlias);
-        const premium = parseFloat(params.row.premium);
-        const limitPrice = limits[params.row.currency.toString()]?.price;
+        const currencyCode = String(
+          (currencyDict as Record<string, string>)[(params.row.currency ?? 0).toString()],
+        );
+        const limits = federation.getLimits(params.row.coordinatorShortAlias ?? '');
+        const premium = parseFloat(params.row.premium ?? '0');
+        const limitPrice = limits[(params.row.currency ?? 0).toString()]?.price;
         const price = (limitPrice ?? 1) * (1 + premium / 100);
 
         return (
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             {limitPrice ? (
@@ -430,11 +461,14 @@ const BookTable = ({
       type: 'number',
       flex: 1,
       renderCell: (params: GridRenderCellParams<PublicOrder>) => {
-        const currencyCode = String(currencyDict[params.row.currency.toString()]);
+        const currencyCode = String(
+          (currencyDict as Record<string, string>)[(params.row.currency ?? 0).toString()],
+        );
         let fontColor = `rgb(0,0,0)`;
         let premiumPoint = 0;
+        const premiumFloat = parseFloat(params.row.premium ?? '0');
         if (params.row.type === 0) {
-          premiumPoint = params.row.premium / buyOutstandingPremium;
+          premiumPoint = premiumFloat / buyOutstandingPremium;
           premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
           fontColor = premiumColor(
             theme.palette.text.primary,
@@ -442,7 +476,7 @@ const BookTable = ({
             premiumPoint,
           );
         } else {
-          premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
+          premiumPoint = (sellStandardPremium - premiumFloat) / sellStandardPremium;
           premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
           fontColor = premiumColor(
             theme.palette.text.primary,
@@ -454,9 +488,9 @@ const BookTable = ({
         const bondSize = Number(params.row.bond_size);
         const isLowBond = bondSize > 0 && bondSize < defaultBondSize;
 
-        const limits = federation.getLimits(params.row.coordinatorShortAlias);
-        const premium = parseFloat(params.row.premium);
-        const limitPrice = limits[params.row.currency.toString()]?.price;
+        const limits = federation.getLimits(params.row.coordinatorShortAlias ?? '');
+        const premium = parseFloat(params.row.premium ?? '0');
+        const limitPrice = limits[(params.row.currency ?? 0).toString()]?.price;
         const calculatedPrice = limitPrice
           ? Math.round((limitPrice ?? 1) * (1 + premium / 100))
           : null;
@@ -490,7 +524,7 @@ const BookTable = ({
                 lineHeight: 1,
               }}
               onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
               }}
             >
               <Typography
@@ -503,7 +537,7 @@ const BookTable = ({
                   textAlign: 'right',
                 }}
               >
-                {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
+                {`${parseFloat(parseFloat(params.row.premium ?? '0').toFixed(4))}%`}
               </Typography>
               {!visibleColumnKeys.has('bond_size') && (
                 <Box
@@ -568,7 +602,7 @@ const BookTable = ({
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             {hours > 0 ? `${hours}h` : minutes ? `${minutes}m` : '-'}
@@ -585,8 +619,11 @@ const BookTable = ({
       type: 'string',
       flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
-        const expiresAt: Date = new Date(params.row.expires_at);
-        const timeToExpiry: number = Math.abs(expiresAt - new Date());
+        const expiresAt: Date =
+          params.row.expires_at instanceof Date
+            ? params.row.expires_at
+            : new Date(String(params.row.expires_at));
+        const timeToExpiry: number = Math.abs(expiresAt.getTime() - new Date().getTime());
         const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
         const hours = Math.round(timeToExpiry / (3600 * 1000));
         const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
@@ -594,7 +631,7 @@ const BookTable = ({
           <Box
             sx={{ position: 'relative', display: 'inline-flex', left: '0.3em', top: '0.5em' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             <CircularProgress
@@ -633,20 +670,21 @@ const BookTable = ({
       type: 'number',
       flex: 1,
       renderCell: (params: { row: PublicOrder }) => {
-        const limits = federation.getLimits(params.row.coordinatorShortAlias);
+        const limits = federation.getLimits(params.row.coordinatorShortAlias ?? '');
         const amount =
           params.row.has_range === true
-            ? parseFloat(params.row.max_amount)
-            : parseFloat(params.row.amount);
-        const premium = parseFloat(params.row.premium);
-        const price = (limits[params.row.currency.toString()]?.price ?? 1) * (1 + premium / 100);
+            ? parseFloat(params.row.max_amount ?? '0')
+            : parseFloat(params.row.amount ?? '0');
+        const premium = parseFloat(params.row.premium ?? '0');
+        const price =
+          (limits[(params.row.currency ?? 0).toString()]?.price ?? 1) * (1 + premium / 100);
         const satoshisNow = (100000000 * amount) / price;
 
         return (
           <div
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
             {satoshisNow > 1000000
@@ -674,7 +712,7 @@ const BookTable = ({
             <div
               style={{ cursor: 'pointer' }}
               onClick={() => {
-                onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+                onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
               }}
             >
               <Typography
@@ -818,7 +856,7 @@ const BookTable = ({
     visibleColumnKeys: Set<string>;
   } {
     const useSmall = maxWidth < 70;
-    const selectedColumns: object[] = [];
+    const selectedColumns: Array<[object, number]> = [];
     const visibleColumnKeys = new Set<string>();
     let width: number = -4;
 
@@ -828,10 +866,11 @@ const BookTable = ({
         continue;
       }
 
+      const entry = value as ColumnSpecEntry;
       const colWidth = Number(
-        useSmall && Boolean(value.small) ? value.small.width : value.normal.width,
+        useSmall && entry.small != null ? entry.small.width : entry.normal.width,
       );
-      const colObject = useSmall && Boolean(value.small) ? value.small.object : value.normal.object;
+      const colObject = useSmall && entry.small != null ? entry.small.object : entry.normal.object;
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
@@ -846,7 +885,7 @@ const BookTable = ({
         return first[1] - second[1];
       })
       .map(function (item) {
-        return item[0];
+        return item[0] as GridColDef<GridValidRowModel>;
       });
 
     return { columns, width: maxWidth, visibleColumnKeys };
@@ -913,11 +952,15 @@ const BookTable = ({
             {fav.type === 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
                   currencyCode:
-                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+                    fav.currency === 0
+                      ? t('ANY')
+                      : (currencyDict as Record<string, string>)[fav.currency.toString()],
                 })
               : t('No orders found to buy BTC for {{currencyCode}}', {
                   currencyCode:
-                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+                    fav.currency === 0
+                      ? t('ANY')
+                      : (currencyDict as Record<string, string>)[fav.currency.toString()],
                 })}
           </Typography>
         </Grid>
@@ -986,8 +1029,11 @@ const BookTable = ({
         <ClickThroughDataGrid
           sx={headerStyleFix}
           localeText={localeText}
-          rows={filteredOrders}
-          getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
+          rows={filteredOrders.filter((o): o is PublicOrder => o != null)}
+          getRowId={
+            ((params: PublicOrder) =>
+              `${String(params.coordinatorShortAlias)}/${params.id}`) as GridRowIdGetter<GridValidRowModel>
+          }
           loading={federation.loading}
           columns={columns}
           hideFooter={!showFooter}
@@ -1026,7 +1072,7 @@ const BookTable = ({
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
             columnHeaderHeight={3.25 * theme.typography.fontSize}
-            rows={filteredOrders}
+            rows={filteredOrders.filter((o): o is PublicOrder => o != null)}
             loading={federation.loading}
             columns={columns}
             hideFooter={!showFooter}

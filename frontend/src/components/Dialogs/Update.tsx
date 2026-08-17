@@ -99,7 +99,7 @@ const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): React.JSX.E
           <ListItemButton
             component='a'
             onClick={() => {
-              location.reload(true);
+              location.reload();
             }}
           >
             <ListItemIcon sx={{ minWidth: 56 }}>

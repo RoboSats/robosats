@@ -42,9 +42,9 @@ const MakerPage = (): React.JSX.Element => {
       premium: maker.premium ?? null,
       paymentMethods: maker.paymentMethods,
       amountFilter: {
-        amount: maker.amount,
-        minAmount: maker.minAmount,
-        maxAmount: maker.maxAmount,
+        amount: maker.amount ?? null,
+        minAmount: maker.minAmount ?? null,
+        maxAmount: maker.maxAmount ?? null,
         threshold: 0.7,
       },
     });
@@ -59,7 +59,7 @@ const MakerPage = (): React.JSX.Element => {
   ]);
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    const thirdParty = thirdParties[shortAlias];
+    const thirdParty = (thirdParties as Record<string, unknown>)[shortAlias];
     if (thirdParty) {
       const thirdPartyOrder = Object.values(federation.book).find(
         (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,

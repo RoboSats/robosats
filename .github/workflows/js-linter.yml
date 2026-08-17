@@ -46,6 +46,11 @@ jobs:
           cd frontend
           npm ci
 
+      - name: 'Run TypeScript type-check'
+        run: |
+          cd frontend
+          npm run typecheck
+
       - name: 'Run EsLint'
         run: |
           cd frontend

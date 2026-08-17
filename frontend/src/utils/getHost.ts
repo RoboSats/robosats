@@ -13,7 +13,10 @@ export const getHostUrl = (network = 'mainnet'): string => {
     Object.keys(defaultFederation)[
       Math.floor(Math.random() * Object.keys(defaultFederation).length)
     ];
-  let host: string = defaultFederation[randomAlias][network].onion;
+  const fedEntry = (
+    defaultFederation as unknown as Record<string, Record<string, Record<string, string>>>
+  )[randomAlias];
+  let host: string = fedEntry?.[network]?.['onion'] ?? '';
   let protocol: string = 'http:';
   if (client !== 'mobile') {
     host = getHost();

@@ -44,7 +44,7 @@ export const SuccessfulPrompt = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const theme = useTheme();
-  const currencyCode: string = currencies[`${order.currency}`];
+  const currencyCode: string = (currencies as Record<string, string>)[`${order.currency}`];
   const { settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -123,7 +123,7 @@ export const SuccessfulPrompt = ({
             defaultValue={0}
             size='large'
             onChange={(e) => {
-              const rate = e.target.value;
+              const rate = Number((e.target as HTMLInputElement).value);
               rateUserPlatform(rate);
             }}
           />
@@ -150,7 +150,7 @@ export const SuccessfulPrompt = ({
                 defaultValue={0}
                 size='large'
                 onChange={(e) => {
-                  const rate = e.target.value;
+                  const rate = (e.target as HTMLInputElement).value;
                   setHostRating(parseInt(rate));
                 }}
               />

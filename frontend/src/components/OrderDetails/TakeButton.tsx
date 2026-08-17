@@ -75,7 +75,9 @@ const TakeButton = ({
   }, [slotUpdatedAt, takeAmount, info]);
 
   const currencyCode: string =
-    currentOrder?.currency === 1000 ? 'Sats' : currencies[`${Number(currentOrder?.currency)}`];
+    currentOrder?.currency === 1000
+      ? 'Sats'
+      : (currencies as Record<string, string>)[`${Number(currentOrder?.currency)}`];
 
   interface countdownTakeOrderRendererProps {
     seconds: number;
@@ -188,10 +190,12 @@ const TakeButton = ({
                   type='number'
                   required={true}
                   value={takeAmount}
-                  inputProps={{
-                    min: currentOrder?.min_amount,
-                    max: currentOrder?.max_amount,
-                    style: { textAlign: 'center' },
+                  slotProps={{
+                    htmlInput: {
+                      min: currentOrder?.min_amount,
+                      max: currentOrder?.max_amount,
+                      style: { textAlign: 'center' },
+                    },
                   }}
                   onChange={handleTakeAmountChange}
                 />

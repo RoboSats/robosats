@@ -39,7 +39,7 @@ export const OnchainPayoutForm = ({
   const invalidFee = onchain.miningFee < minMiningFee || onchain.miningFee > maxMiningFee;
   const costPerVByte = 280;
 
-  const handleMiningFeeChange = (e: React.ChangeEventHandler<HTMLInputElement>): void => {
+  const handleMiningFeeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const miningFee = Number(e.target.value);
     setOnchain({ ...onchain, miningFee });
   };
@@ -134,12 +134,14 @@ export const OnchainPayoutForm = ({
               fullWidth={true}
               value={onchain.miningFee}
               type='number'
-              inputProps={{
-                max: maxMiningFee,
-                min: minMiningFee,
-                style: { textAlign: 'center' },
+              slotProps={{
+                htmlInput: {
+                  max: maxMiningFee,
+                  min: minMiningFee,
+                  style: { textAlign: 'center' },
+                },
               }}
-              onChange={handleMiningFeeChange}
+              onChange={(e) => handleMiningFeeChange(e as React.ChangeEvent<HTMLInputElement>)}
             />
           </Grid>
         </Grid>

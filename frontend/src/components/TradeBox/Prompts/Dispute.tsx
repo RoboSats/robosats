@@ -89,9 +89,10 @@ export const DisputePrompt = ({
       .get(url, `/api/chat/?order_id=${order.id}&offset=0`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
-      .then((results: object) => {
+      .then((results: object | undefined) => {
         if (results != null) {
-          void decryptMessages(results.messages, results.peer_pubkey.split('\\').join('\n'));
+          const r = results as { messages: ServerMessage[]; peer_pubkey?: string };
+          void decryptMessages(r.messages, (r.peer_pubkey ?? '').split('\\').join('\n'));
         }
       });
   }, []);
@@ -105,9 +106,9 @@ export const DisputePrompt = ({
         if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
           const decryptedData = await decryptMessage(
             dataFromServer.message.split('\\').join('\n'),
-            dataFromServer.nick === slot.nickname ? robot.pubKey : peerPubKey,
-            robot.encPrivKey,
-            slot.token,
+            dataFromServer.nick === slot.nickname ? (robot.pubKey ?? '') : (peerPubKey ?? ''),
+            robot.encPrivKey ?? '',
+            slot.token ?? '',
           );
           setMessages((prev: EncryptedChatMessage[]) => {
             const x: EncryptedChatMessage = {
@@ -156,27 +157,31 @@ export const DisputePrompt = ({
             required
             fullWidth
             displayEmpty
-            placeholder={t('Contact method')}
             value={dispute.contactMethod}
             onChange={(e) => {
-              setDispute({ ...dispute, contactMethod: e.target.value });
+              setDispute({ ...dispute, contactMethod: String(e.target.value) });
             }}
-            renderValue={(value?: string) => {
-              if (!value) {
+            renderValue={(value: unknown) => {
+              const v = value as string;
+              if (!v) {
                 return <span style={{ color: 'gray' }}>{t('Select a contact method')}</span>;
               }
-              return value.charAt(0).toUpperCase() + value.slice(1);
+              return v.charAt(0).toUpperCase() + v.slice(1);
             }}
           >
             <MenuItem value='' disabled>
               {t('Select a contact method')}
             </MenuItem>
             {Object.keys(contactMethods).map((contact) => {
-              if (!contactMethods[contact] || contactMethods[contact] === '') return <></>;
+              if (
+                !(contactMethods as Record<string, string>)[contact] ||
+                (contactMethods as Record<string, string>)[contact] === ''
+              )
+                return <></>;
               if (['pgp', 'fingerprint', 'website'].includes(contact)) return <></>;
 
               return (
-                <MenuItem value={contact} key={contact}>
+                <MenuItem value={contact as string} key={contact}>
                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                     {contact.charAt(0).toUpperCase() + contact.slice(1)}
                   </div>

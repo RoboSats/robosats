@@ -33,7 +33,7 @@ const BookPage = (): React.JSX.Element => {
   const fontSize = theme.typography.fontSize;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    const thirdParty = thirdParties[shortAlias];
+    const thirdParty = (thirdParties as Record<string, unknown>)[shortAlias];
     if (thirdParty) {
       const thirdPartyOrder = Object.values(federation.book).find(
         (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,

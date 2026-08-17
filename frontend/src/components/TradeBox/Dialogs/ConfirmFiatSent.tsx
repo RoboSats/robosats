@@ -29,9 +29,9 @@ export const ConfirmFiatSentDialog = ({
   onConfirmClick,
 }: ConfirmFiatSentDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const currencyCode = currencies[order?.currency.toString()];
+  const currencyCode = (currencies as Record<string, string>)[(order?.currency ?? 0).toString()];
   const amount = pn(
-    parseFloat(parseFloat(order?.amount).toFixed(order?.currency === 1000 ? 8 : 4)),
+    parseFloat(parseFloat(String(order?.amount ?? 0)).toFixed(order?.currency === 1000 ? 8 : 4)),
   );
 
   return (

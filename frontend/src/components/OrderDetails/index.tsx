@@ -77,12 +77,14 @@ const OrderDetails = ({
 
   useEffect(() => {
     setCoordinator(federation.getCoordinator(shortAlias));
-    setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
+    setCurrencyCode(
+      (currencies as Record<string, string>)[(currentOrder?.currency ?? 1).toString()],
+    );
   }, [currentOrder]);
 
   useEffect(() => {
     if (!coordinator?.info) coordinator?.loadInfo();
-  }, [coordinator.shortAlias, coordinator.info]);
+  }, [coordinator?.shortAlias, coordinator?.info]);
 
   const amountString = useMemo(() => {
     if (currentOrder === null) return;
@@ -90,20 +92,20 @@ const OrderDetails = ({
     if (currentOrder.currency === 1000) {
       return (
         btcToSatsString(
-          currentOrder.amount,
-          currentOrder.amount > 0 ? false : currentOrder.has_range,
-          currentOrder.min_amount,
-          currentOrder.max_amount,
+          currentOrder.amount ?? 0,
+          (currentOrder.amount ?? 0) > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount ?? 0,
+          currentOrder.max_amount ?? 0,
         ) + ' Sats'
       );
     } else {
       return (
         amountToString(
-          currentOrder.amount?.toString(),
-          currentOrder.amount > 0 ? false : currentOrder.has_range,
-          currentOrder.min_amount,
-          currentOrder.max_amount,
-        ) + ` ${String(currencyCode)}`
+          currentOrder.amount?.toString() ?? '0',
+          (currentOrder.amount ?? 0) > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount ?? 0,
+          currentOrder.max_amount ?? 0,
+        ) + ` ${String(currencyCode ?? '')}`
       );
     }
   }, [currentOrder, currencyCode]);
@@ -184,15 +186,15 @@ const OrderDetails = ({
   const satsSummary = useMemo(() => {
     let send: string = '';
     let receive: string = '';
-    let sats: string = '';
+    let sats: string | undefined = '';
     const order = currentOrder;
 
     if (order === null) return {};
 
     const isBuyer = (order.type === 0 && order.is_maker) || (order.type === 1 && !order.is_maker);
     const tradeFee = order.is_maker
-      ? (coordinator.info?.maker_fee ?? 0)
-      : (coordinator.info?.taker_fee ?? 0);
+      ? (coordinator?.info?.maker_fee ?? 0)
+      : (coordinator?.info?.taker_fee ?? 0);
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
     const rate =
@@ -304,8 +306,8 @@ const OrderDetails = ({
           <Grid container direction='row' sx={{ alignItems: 'center', justifyContent: 'center' }}>
             <Grid sx={{ width: '20%' }}>
               <RobotAvatar
-                shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
-                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                shortAlias={coordinator?.federated ? coordinator.shortAlias : undefined}
+                hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                 small={true}
                 smooth={true}
                 style={{
@@ -315,7 +317,7 @@ const OrderDetails = ({
               />
             </Grid>
             <Grid sx={{ width: '50%' }}>
-              <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
+              <ListItemText primary={coordinator?.longAlias} secondary={t('Order host')} />
             </Grid>
             <ListItem style={{ width: '30%' }}>
               <ListItemIcon sx={{ minWidth: 56 }}>
@@ -358,13 +360,11 @@ const OrderDetails = ({
                   style={{
                     zoom: 1.25,
                     opacity: 0.7,
-                    msZoom: 1.25,
-                    WebkitZoom: 1.25,
                     MozTransform: 'scale(1.25,1.25)',
                     MozTransformOrigin: 'left center',
                   }}
                 >
-                  <FlagWithProps code={currencyCode} width='1.2em' height='1.2em' />
+                  <FlagWithProps code={currencyCode ?? ''} width='1.2em' height='1.2em' />
                 </div>
               </ListItemIcon>
               <ListItemText
@@ -376,7 +376,7 @@ const OrderDetails = ({
                   flipHorizontally
                   hashId={currentOrder.maker_hash_id}
                   statusColor={statusBadgeColor(currentOrder.maker_status)}
-                  tooltip={t(currentOrder.maker_status)}
+                  tooltip={t(currentOrder.maker_status ?? '')}
                 />
               </ListItemIcon>
             </ListItem>
@@ -538,7 +538,7 @@ const OrderDetails = ({
               </Grid>
               <LinearDeterminate
                 totalSecsExp={currentOrder?.total_secs_exp ?? 0}
-                expiresAt={currentOrder?.expires_at ?? ''}
+                expiresAt={String(currentOrder?.expires_at ?? '')}
               />
             </Collapse>
           </>
@@ -567,11 +567,13 @@ const OrderDetails = ({
             type='password'
             value={password}
             style={{ marginBottom: 8 }}
-            inputProps={{
-              style: {
-                textAlign: 'center',
-                backgroundColor: theme.palette.background.paper,
-                borderRadius: 4,
+            slotProps={{
+              htmlInput: {
+                style: {
+                  textAlign: 'center',
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: 4,
+                },
               },
             }}
             onChange={(e) => onPasswordChange(e.target.value)}
@@ -585,7 +587,7 @@ const OrderDetails = ({
             password={password}
             currentOrder={currentOrder}
             setCurrentOrder={setCurrentOrder}
-            info={coordinator.info}
+            info={coordinator?.info}
             onClickGenerateRobot={onClickGenerateRobot}
           />
         </Grid>

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Typography, Select, MenuItem, Box } from '@mui/material';
+import { Typography, Select, MenuItem, Box, SelectChangeEvent } from '@mui/material';
 import currencyDict from '../../../static/assets/currencies.json';
 import { useTheme } from '@mui/material';
 import { AutocompletePayments } from '../MakerForm';
@@ -18,6 +18,10 @@ interface BookControlProps {
   width: number;
   paymentMethod: string[];
   setPaymentMethods: (state: string[]) => void;
+}
+
+interface MenuItemWithProps {
+  props: { value: string };
 }
 
 const BookControl = ({
@@ -49,12 +53,12 @@ const BookControl = ({
     }
   }, [fav.mode, fav.type]);
 
-  const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+  const handleCurrencyChange = function (e: SelectChangeEvent<number>): void {
     const currency = Number(e.target.value);
     setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
   };
 
-  const handleHostChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+  const handleHostChange = function (e: SelectChangeEvent<string>): void {
     const coordinator = String(e.target.value);
     if (coordinator === 'any') {
       federation.refreshBookHosts(coordinator !== 'any');
@@ -62,7 +66,11 @@ const BookControl = ({
     setFav({ ...fav, coordinator });
   };
 
-  const handleOrderTypeChange = (mouseEvent: React.MouseEvent, select: object): void => {
+  const handleOrderTypeChange = (
+    _event: SelectChangeEvent<string>,
+    child: React.ReactNode,
+  ): void => {
+    const select = child as MenuItemWithProps;
     if (select.props.value === 'sell') {
       const currency = fav.currency === 1000 ? 0 : fav.currency;
       setFav({ ...fav, mode: 'fiat', type: 0, currency });
@@ -144,7 +152,7 @@ const BookControl = ({
               borderColor: 'text.primary',
             },
           }}
-          size='large'
+          size='medium'
           label={t('Select Order Type')}
           required={true}
           value={orderType}
@@ -207,7 +215,7 @@ const BookControl = ({
 
       {fav.mode === 'fiat' ? (
         <div>
-          <Select
+          <Select<number>
             autoWidth
             sx={{
               height: '2.6em',
@@ -219,7 +227,7 @@ const BookControl = ({
                 borderColor: 'text.primary',
               },
             }}
-            size='large'
+            size='medium'
             label={t('Select Payment Currency')}
             required={true}
             value={fav.currency}
@@ -289,7 +297,7 @@ const BookControl = ({
 
       {width <= medium ? (
         <div>
-          <Select
+          <Select<string>
             sx={{
               height: '2.6em',
               border: '0.5px solid',
@@ -300,7 +308,7 @@ const BookControl = ({
                 borderColor: 'text.primary',
               },
             }}
-            size='large'
+            size='medium'
             label={t('Select Payment Method')}
             required={true}
             renderValue={(value) => {
@@ -322,7 +330,10 @@ const BookControl = ({
             }}
             value={paymentMethod[0] ?? 'ANY'}
             onChange={(e) => {
-              setPaymentMethods(e.target.value === 'ANY' ? [] : [e.target.value.name]);
+              const val = e.target.value;
+              const methods = fav.mode === 'swap' ? swapMethods : fiatMethods;
+              const method = methods.find((m) => m.name === val);
+              setPaymentMethods(val === 'ANY' ? [] : method ? [method.name] : []);
             }}
           >
             <MenuItem value={'ANY'}>
@@ -339,7 +350,7 @@ const BookControl = ({
                   <MenuItem
                     style={{ width: '10em' }}
                     key={index}
-                    value={method}
+                    value={method.name}
                     color='text.secondary'
                   >
                     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -355,7 +366,7 @@ const BookControl = ({
                   <MenuItem
                     style={{ width: '14em' }}
                     key={index}
-                    value={method}
+                    value={method.name}
                     color='text.secondary'
                   >
                     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -379,7 +390,7 @@ const BookControl = ({
         </div>
       ) : null}
       <div>
-        <Select
+        <Select<string>
           autoWidth
           sx={{
             height: '2.6em',
@@ -391,7 +402,7 @@ const BookControl = ({
               borderColor: 'text.primary',
             },
           }}
-          size='large'
+          size='medium'
           label={t('Select Host')}
           required={true}
           value={fav.coordinator}

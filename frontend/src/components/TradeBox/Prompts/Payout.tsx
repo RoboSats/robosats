@@ -40,7 +40,7 @@ export const PayoutPrompt = ({
   settings,
 }: PayoutPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const currencyCode: string = currencies[`${order.currency}`];
+  const currencyCode: string = (currencies as Record<string, string>)[`${order.currency}`];
 
   const [tab, setTab] = useState<'lightning' | 'onchain'>('lightning');
 
@@ -62,8 +62,9 @@ export const PayoutPrompt = ({
             {
               amountFiat: pn(
                 parseFloat(
-                  parseFloat(
-                    order.currency === 1000 ? order.amount * 100000000 : order.amount,
+                  (order.currency === 1000
+                    ? Number(order.amount ?? 0) * 100000000
+                    : Number(order.amount ?? 0)
                   ).toFixed(4),
                 ),
               ),

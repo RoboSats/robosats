@@ -21,7 +21,7 @@ export const LockInvoicePrompt = ({
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
-  const currencyCode: string = currencies[`${order.currency}`];
+  const currencyCode: string = (currencies as Record<string, string>)[`${order.currency}`];
 
   const invoice = concept === 'bond' ? order.bond_invoice : order.escrow_invoice;
 

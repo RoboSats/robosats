@@ -91,7 +91,9 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
+    setCurrencyCode(
+      (currencyDict as Record<string, string>)[String(fav.currency === 0 ? 1 : fav.currency)],
+    );
   }, [federationUpdatedAt]);
 
   useEffect(() => {
@@ -108,8 +110,8 @@ const MakerForm = ({
       coordinator.loadLimits(() => {
         const newLimits = coordinator.limits;
         if (newLimits && Object.keys(newLimits).length !== 0) {
-          updateAmountLimits(newLimits, fav.currency, maker.premium);
-          updateCurrentPrice(newLimits, fav.currency, maker.premium);
+          updateAmountLimits(newLimits, fav.currency, maker.premium ?? 0);
+          updateCurrentPrice(newLimits, fav.currency, maker.premium ?? 0);
           setLimits(newLimits);
         }
       });
@@ -148,7 +150,7 @@ const MakerForm = ({
   };
 
   const handleCurrencyChange = function (newCurrency: number): void {
-    const currencyCode: string = currencyDict[newCurrency];
+    const currencyCode: string = (currencyDict as Record<string, string>)[String(newCurrency)];
     setCurrencyCode(currencyCode);
     setFav((prev) => {
       return {
@@ -157,22 +159,22 @@ const MakerForm = ({
         mode: newCurrency === 1000 ? 'swap' : 'fiat',
       };
     });
-    updateAmountLimits(limits, newCurrency, maker.premium);
-    updateCurrentPrice(limits, newCurrency, maker.premium);
+    updateAmountLimits(limits, newCurrency, maker.premium ?? 0);
+    updateCurrentPrice(limits, newCurrency, maker.premium ?? 0);
 
     if (makerHasAmountRange) {
       const minAmount = parseFloat(Number(limits[newCurrency].min_amount).toPrecision(2));
       const maxAmount = parseFloat(Number(limits[newCurrency].max_amount).toPrecision(2));
       if (
-        parseFloat(maker.minAmount) < minAmount ||
-        parseFloat(maker.minAmount) > maxAmount ||
-        parseFloat(maker.maxAmount) > maxAmount ||
-        parseFloat(maker.maxAmount) < minAmount
+        parseFloat(String(maker.minAmount ?? 0)) < minAmount ||
+        parseFloat(String(maker.minAmount ?? 0)) > maxAmount ||
+        parseFloat(String(maker.maxAmount ?? 0)) > maxAmount ||
+        parseFloat(String(maker.maxAmount ?? 0)) < minAmount
       ) {
         setMaker({
           ...maker,
-          minAmount: (maxAmount * 0.25).toPrecision(2),
-          maxAmount: (maxAmount * 0.75).toPrecision(2),
+          minAmount: parseFloat((maxAmount * 0.25).toPrecision(2)),
+          maxAmount: parseFloat((maxAmount * 0.75).toPrecision(2)),
         });
       }
     }
@@ -228,7 +230,7 @@ const MakerForm = ({
       updateAmountLimits(limits, fav.currency, premium);
       setMaker({
         ...maker,
-        premium: isNaN(newPremium) || value === '' ? '' : premium,
+        premium: isNaN(newPremium) || value === '' ? null : premium,
         badPremiumText,
       });
     };
@@ -338,7 +340,7 @@ const MakerForm = ({
     const index = fav.currency === 0 ? 1 : fav.currency;
     const minAmount =
       maker.amount !== null
-        ? (maker.amount / 2).toPrecision(2)
+        ? parseFloat((maker.amount / 2).toPrecision(2))
         : parseFloat(Number(limits[index].max_amount * 0.25).toPrecision(2));
     const maxAmount =
       maker.amount !== null
@@ -367,7 +369,7 @@ const MakerForm = ({
     const defaultRoutingBudget = 0.001;
     let label = t('Amount');
     let helper = '';
-    let swapSats = 0;
+    let swapSats: string | undefined = '0';
     if (fav.mode === 'swap') {
       if (fav.type === 1) {
         swapSats = computeSats({
@@ -494,7 +496,7 @@ const MakerForm = ({
     fav,
     federation,
     currentPrice,
-    federationUpdatedAt,
+    federationUpdatedAt: new Date(federationUpdatedAt ?? '').getTime(),
     amountRangeEnabled,
   });
 
@@ -519,21 +521,26 @@ const MakerForm = ({
                 ? t('Sell BTC for ')
                 : t('Swap out of LN ')}
           {fav.mode === 'fiat'
-            ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
-            : amountToString(
-                maker.amount * 100000000,
+            ? amountToString(
+                String(maker.amount ?? 0),
                 makerHasAmountRange,
-                maker.minAmount * 100000000,
-                maker.maxAmount * 100000000,
+                maker.minAmount ?? 0,
+                maker.maxAmount ?? 0,
+              )
+            : amountToString(
+                String((maker.amount ?? 0) * 100000000),
+                makerHasAmountRange,
+                (maker.minAmount ?? 0) * 100000000,
+                (maker.maxAmount ?? 0) * 100000000,
               )}
           {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
-          {maker.premium === 0
+          {(maker.premium ?? 0) === 0
             ? fav.mode === 'fiat'
               ? t(' at market price')
               : ''
-            : maker.premium > 0
+            : (maker.premium ?? 0) > 0
               ? t(' at a {{premium}}% premium', { premium: maker.premium })
-              : t(' at a {{discount}}% discount', { discount: -maker.premium })}
+              : t(' at a {{discount}}% discount', { discount: -(maker.premium ?? 0) })}
         </Typography>
         {bondAmount !== null && (
           <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5 }}>
@@ -581,7 +588,7 @@ const MakerForm = ({
         }}
         zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
       />
-      <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
+      <Collapse in={!(Object.keys(limits).length === 0 || collapseAll)}>
         <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
           <Grid>
             <IconButton
@@ -801,7 +808,7 @@ const MakerForm = ({
                               })
                             : null
                       }
-                      label={amountLabel.label}
+                      label={amountLabel?.label ?? t('Amount')}
                       required={true}
                       value={maker.amount ?? ''}
                       type='number'
@@ -812,7 +819,7 @@ const MakerForm = ({
                   </Tooltip>
                   {fav.mode === 'swap' && maker.amount ? (
                     <FormHelperText sx={{ textAlign: 'center' }}>
-                      {amountLabel.helper}
+                      {amountLabel?.helper}
                     </FormHelperText>
                   ) : null}
                 </Grid>
@@ -831,7 +838,7 @@ const MakerForm = ({
                       }}
                       value={fav.currency === 0 ? 1 : fav.currency}
                       onChange={(e) => {
-                        handleCurrencyChange(e.target.value);
+                        handleCurrencyChange(Number(e.target.value));
                       }}
                     >
                       {Object.entries(currencyDict).map(([key, value]) => (
@@ -858,6 +865,11 @@ const MakerForm = ({
                   onAutocompleteChange={handlePaymentMethodChange}
                   optionsType={fav.mode}
                   error={maker.badPaymentMethod}
+                  labelProps={{}}
+                  tagProps={{}}
+                  listBoxProps={{}}
+                  sx={{}}
+                  listHeaderText={''}
                   label={`${fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')} *`}
                   tooltipTitle={t(
                     fav.mode === 'swap'
@@ -944,13 +956,15 @@ const MakerForm = ({
               label={`${t('Premium over Market (%)')} *`}
               type='number'
               value={maker.premium ?? ''}
-              inputProps={{
-                min: -100,
-                max: 999,
-                style: {
-                  textAlign: 'center',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: '4px',
+              slotProps={{
+                htmlInput: {
+                  min: -100,
+                  max: 999,
+                  style: {
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: '4px',
+                  },
                 },
               }}
               onChange={handlePremiumChange}
@@ -968,14 +982,15 @@ const MakerForm = ({
                 <TextField
                   fullWidth
                   label={`${t('Description')}`}
-                  type='description'
                   value={maker.description ?? ''}
                   style={{ marginBottom: 8 }}
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 4,
+                  slotProps={{
+                    htmlInput: {
+                      style: {
+                        textAlign: 'center',
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 4,
+                      },
                     },
                   }}
                   onChange={handleDescriptionChange}
@@ -1005,11 +1020,13 @@ const MakerForm = ({
                   type='password'
                   value={maker.password ?? ''}
                   style={{ marginBottom: 8 }}
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 4,
+                  slotProps={{
+                    htmlInput: {
+                      style: {
+                        textAlign: 'center',
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 4,
+                      },
                     },
                   }}
                   onChange={handlePasswordChange}
@@ -1029,19 +1046,23 @@ const MakerForm = ({
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      InputProps: {
-                        style: {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '4px',
-                          marginBottom: 8,
+                      onClick: () => setOpenPublicDuration(true),
+                      slotProps: {
+                        input: {
+                          style: {
+                            backgroundColor: theme.palette.background.paper,
+                            borderRadius: '4px',
+                            marginBottom: 8,
+                          },
                         },
-                        onClick: () => setOpenPublicDuration(true),
                       },
                     },
                   }}
                   label={t('Public Duration (HH:mm)')}
                   value={maker.publicExpiryTime}
-                  onChange={handleChangePublicDuration}
+                  onChange={(value: unknown) => {
+                    if (value instanceof Date) handleChangePublicDuration(value);
+                  }}
                   minTime={new Date(0, 0, 0, 0, 10)}
                   maxTime={new Date(0, 0, 0, 23, 59)}
                 />
@@ -1061,19 +1082,23 @@ const MakerForm = ({
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      InputProps: {
-                        style: {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '4px',
-                          marginBottom: 8,
+                      onClick: () => setOpenEscrowTimer(true),
+                      slotProps: {
+                        input: {
+                          style: {
+                            backgroundColor: theme.palette.background.paper,
+                            borderRadius: '4px',
+                            marginBottom: 8,
+                          },
                         },
-                        onClick: () => setOpenEscrowTimer(true),
                       },
                     },
                   }}
                   label={t('Escrow/Invoice Timer (HH:mm)')}
                   value={maker.escrowExpiryTime}
-                  onChange={handleChangeEscrowDuration}
+                  onChange={(value: unknown) => {
+                    if (value instanceof Date) handleChangeEscrowDuration(value);
+                  }}
                   minTime={new Date(0, 0, 0, 1, 0)}
                   maxTime={new Date(0, 0, 0, 10, 0)}
                 />
@@ -1132,7 +1157,7 @@ const MakerForm = ({
                       defaultValue={3}
                       value={maker.bondSize}
                       valueLabelDisplay='auto'
-                      valueLabelFormat={(x: string) => x + '%'}
+                      valueLabelFormat={(x: number) => x + '%'}
                       step={0.25}
                       marks={[
                         { value: 2, label: '2%' },
@@ -1142,8 +1167,11 @@ const MakerForm = ({
                       ]}
                       min={2}
                       max={15}
-                      onChange={(e) => {
-                        setMaker({ ...maker, bondSize: e.target.value });
+                      onChange={(_e, newValue) => {
+                        setMaker({
+                          ...maker,
+                          bondSize: Array.isArray(newValue) ? newValue[0] : newValue,
+                        });
                       }}
                     />
                   </Grid>

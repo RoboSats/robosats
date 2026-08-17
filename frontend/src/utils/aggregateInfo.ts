@@ -32,7 +32,14 @@ export const weightedMean = (arrValues: number[], arrWeights: number[]): number 
 };
 
 const getHigherVer = (ver0: Version, ver1: Version): Version => {
-  if (ver1.major == null || ver0.minor == null || ver0.patch == null) {
+  if (
+    ver0.major == null ||
+    ver0.minor == null ||
+    ver0.patch == null ||
+    ver1.major == null ||
+    ver1.minor == null ||
+    ver1.patch == null
+  ) {
     return ver0;
   } else if (ver0.major > ver1.major) {
     return ver0;

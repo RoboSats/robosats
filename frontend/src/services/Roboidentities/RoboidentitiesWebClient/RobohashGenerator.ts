@@ -64,6 +64,8 @@ class RoboGenerator {
   };
 
   createWorker = (id: number): RoboWorker => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const worker = new Worker(new URL('./robohash.worker.ts', import.meta.url));
 
     worker.onmessage = (event) => {

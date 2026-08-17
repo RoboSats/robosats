@@ -30,7 +30,12 @@ import { Order, Slot } from '../../models';
 import { nip19 } from 'nostr-tools';
 import { EncryptedChatMessage } from '../TradeBox/EncryptedChat';
 
-function CredentialTextfield(props): React.JSX.Element {
+function CredentialTextfield(props: {
+  tooltipTitle: string;
+  label: string;
+  value?: string;
+  copiedTitle?: string;
+}): React.JSX.Element {
   return (
     <Grid size={12} sx={{ textAlign: 'center' }}>
       <Tooltip placement='top' enterTouchDelay={200} enterDelay={200} title={props.tooltipTitle}>
@@ -47,7 +52,7 @@ function CredentialTextfield(props): React.JSX.Element {
                 <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
                   <IconButton
                     onClick={() => {
-                      systemClient.copyToClipboard(props.value);
+                      systemClient.copyToClipboard(props.value ?? '');
                     }}
                   >
                     <ContentCopy />
@@ -292,13 +297,13 @@ const AuditPGPDialog = ({
                     color='primary'
                     variant='contained'
                     onClick={() => {
-                      const object = {
+                      const object: Record<string, string> = {
                         own_public_key: nip19.npubEncode(slot?.nostrPubKey ?? ''),
                         private_key: slot?.nostrSecKey ? nip19.nsecEncode(slot?.nostrSecKey) : '',
                       };
 
                       if (order) {
-                        object.peer_public_key = nip19.npubEncode(
+                        object['peer_public_key'] = nip19.npubEncode(
                           order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
                         );
                       }

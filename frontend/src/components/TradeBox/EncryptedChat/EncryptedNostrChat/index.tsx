@@ -318,7 +318,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
               maxRows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  onButtonClicked(e);
+                  onButtonClicked(e as unknown as React.FormEvent<HTMLFormElement>);
                 }
               }}
               value={value}
