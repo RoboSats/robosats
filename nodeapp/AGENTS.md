@@ -138,7 +138,8 @@ The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` —
   an old bundle version (e.g., v0.8.4 while `static/frontend/` contains v0.8.5). CI
   always injects the correct artifact; never rely on committed HTML.
 - `README.md` is stale: "localhost:81", references an old default onion address, "Future:
-  I2P" (unimplemented), and a WebLN/getAlby note (not an active product feature).
+  I2P" (unimplemented), and a WebLN/getAlby note (not an active product feature). The
+  HTTPS/self-signed-cert warning section is current — keep it in sync with any TLS changes.
 
 ## Constraints
 - Never add a clearnet network path or set `network_mode` to anything other than
