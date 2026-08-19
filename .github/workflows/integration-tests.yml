@@ -87,7 +87,7 @@ jobs:
         ROBOSATS_ENVS_FILE: ".env-sample"
 
     - name: 'Upload strfry image artifact'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: strfry-image-${{ github.run_id }}
         path: strfry-image.tar.gz
