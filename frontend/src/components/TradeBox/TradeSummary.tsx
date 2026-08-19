@@ -157,7 +157,7 @@ const TradeSummary = ({
       <div style={{ display: [0, 2].includes(buttonValue) ? '' : 'none' }}>
         <List dense={true}>
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Badge
                 overlap='circular'
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -184,7 +184,7 @@ const TradeSummary = ({
               secondary={t('User role')}
             />
 
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <div
                 style={{
                   position: 'relative',
@@ -211,7 +211,7 @@ const TradeSummary = ({
           </ListItem>
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <BitcoinIcon />
             </ListItemIcon>
             <ListItemText
@@ -233,7 +233,7 @@ const TradeSummary = ({
 
           {userSummary.is_swap ? (
             <ListItem>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Link />
               </ListItemIcon>
               <ListItemText
@@ -253,7 +253,7 @@ const TradeSummary = ({
           ) : null}
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <LockOpen color='success' />
             </ListItemIcon>
             <ListItemText
@@ -274,7 +274,7 @@ const TradeSummary = ({
       <div style={{ display: buttonValue === 1 ? '' : 'none' }}>
         <List dense={true}>
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <AccountBalance />
             </ListItemIcon>
             <ListItemText
@@ -286,7 +286,7 @@ const TradeSummary = ({
           </ListItem>
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Route />
             </ListItemIcon>
             <ListItemText
@@ -298,7 +298,7 @@ const TradeSummary = ({
           </ListItem>
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <PriceChange />
             </ListItemIcon>
             <ListItemText

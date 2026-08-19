@@ -114,7 +114,7 @@ export const SuccessfulPrompt = ({
       }}
     >
       <Grid container direction='row'>
-        <Grid item width='48%'>
+        <Grid sx={{ width: '48%' }}>
           <Typography variant='body2' align='center'>
             {t('Rate your trade experience')}
           </Typography>
@@ -128,7 +128,7 @@ export const SuccessfulPrompt = ({
             }}
           />
         </Grid>
-        <Grid item width='48%'>
+        <Grid sx={{ width: '48%' }}>
           <Tooltip
             title={t('You need to enable nostr to rate your coordinator.')}
             disableHoverListener={settings.connection === 'nostr'}
@@ -159,7 +159,7 @@ export const SuccessfulPrompt = ({
         </Grid>
       </Grid>
       {hostRating ? (
-        <Grid item xs={12}>
+        <Grid size={12}>
           <div
             style={{
               display: 'flex',
@@ -258,12 +258,11 @@ export const SuccessfulPrompt = ({
       </Collapse>
 
       <Grid
-        item
         container
 
         sx={{ marginTop: 0.5, alignItems: 'center', justifyContent: 'space-evenly' }}
       >
-        <Grid item>
+        <Grid>
           <Button color='primary' variant='outlined' onClick={onClickStartAgain}>
             <RocketLaunch sx={{ width: '0.8em' }} />
             <Typography style={{ display: 'inline-block' }}>{t('Start Again')}</Typography>
@@ -271,7 +270,7 @@ export const SuccessfulPrompt = ({
         </Grid>
 
         {order.is_maker ? (
-          <Grid item>
+          <Grid>
             <LoadingButton
               color='primary'
               variant='outlined'
@@ -286,7 +285,7 @@ export const SuccessfulPrompt = ({
       </Grid>
 
       {order.platform_summary != null ? (
-        <Grid item sx={{ marginTop: 0.5 }}>
+        <Grid sx={{ marginTop: 0.5 }}>
           <TradeSummary
             robotNick={order.ur_nick}
             isMaker={order.is_maker}

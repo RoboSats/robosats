@@ -57,17 +57,17 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
           spacing={1}
           sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
         >
-          <Grid item>
+          <Grid>
             <Typography variant='h5' align='center'>
               {t('Robot recovery')}
             </Typography>
           </Grid>
-          <Grid item>
+          <Grid>
             <Typography align='center'>
               {t('Enter your robot token to re-build your robot and gain access to its trades.')}
             </Typography>
           </Grid>
-          <Grid item style={{ width: '100%' }}>
+          <Grid style={{ width: '100%' }}>
             <TokenInput
               fullWidth
               inputRef={textFieldRef}
@@ -79,7 +79,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
               setValidToken={setValidToken}
             />
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant='contained'
               size='large'

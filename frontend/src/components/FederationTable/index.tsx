@@ -146,7 +146,7 @@ const FederationTable = ({
 
             spacing={1}
           >
-            <Grid item>
+            <Grid>
               <RobotAvatar
                 shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
                 hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
@@ -156,7 +156,7 @@ const FederationTable = ({
               />
             </Grid>
             {!mobile ? (
-              <Grid item>
+              <Grid>
                 <Typography>{params.row.longAlias}</Typography>
               </Grid>
             ) : (
@@ -448,7 +448,7 @@ const FederationTable = ({
           {t('Verify ratings')}
         </Button>
       </Grid>
-      <Grid item sx={{ px: 0.5, pb: 1 }}>
+      <Grid sx={{ px: 0.5, pb: 1 }}>
         <Typography
           variant='body2'
           color={verifcationText ? 'success.main' : 'warning.main'}
@@ -477,15 +477,15 @@ const FederationTable = ({
             sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
           >
             {error ?? (
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
                   {error}
                 </Typography>
               </Grid>
             )}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <TextField
                     id='outlined-basic'
                     label={t('Alias')}
@@ -497,7 +497,7 @@ const FederationTable = ({
                     }}
                   />
                 </Grid>
-                <Grid item xs={6} sx={{ padding: 2 }}>
+                <Grid size={6} sx={{ padding: 2 }}>
                   <TextField
                     id='outlined-basic'
                     label={t('URL')}
@@ -509,7 +509,7 @@ const FederationTable = ({
                     }}
                   />
                 </Grid>
-                <Grid item xs={1}>
+                <Grid size={1}>
                   <Button
                     sx={{ maxHeight: 38, marginTop: 2.5 }}
                     disabled={false}

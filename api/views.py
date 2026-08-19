@@ -4,6 +4,7 @@ from hmac import compare_digest
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -71,6 +72,11 @@ from control.models import AccountingDay, BalanceLog
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
+
+# Redis response cache TTLs (seconds) for the hot public endpoints
+BOOK_CACHE_TTL = 10
+INFO_CACHE_TTL = 30
+PRICE_CACHE_TTL = 30
 
 
 class MakerView(CreateAPIView):
@@ -740,42 +746,51 @@ class BookView(ListAPIView):
         currency = request.GET.get("currency", 0)
         type = request.GET.get("type", 2)
 
-        queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
+        cache_key = f"book:{currency}:{type}"
+        book_data = cache.get(cache_key)
+        if book_data is None:
+            queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
 
-        # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
-        if int(currency) == 0 and int(type) != 2:
-            queryset = Order.objects.filter(type=type, status=Order.Status.PUB)
-        elif int(type) == 2 and int(currency) != 0:
-            queryset = Order.objects.filter(currency=currency, status=Order.Status.PUB)
-        elif not (int(currency) == 0 and int(type) == 2):
-            queryset = Order.objects.filter(
-                currency=currency, type=type, status=Order.Status.PUB
-            )
+            # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
+            if int(currency) == 0 and int(type) != 2:
+                queryset = Order.objects.filter(type=type, status=Order.Status.PUB)
+            elif int(type) == 2 and int(currency) != 0:
+                queryset = Order.objects.filter(
+                    currency=currency, status=Order.Status.PUB
+                )
+            elif not (int(currency) == 0 and int(type) == 2):
+                queryset = Order.objects.filter(
+                    currency=currency, type=type, status=Order.Status.PUB
+                )
 
-        if len(queryset) == 0:
-            return Response(
-                {"not_found": "No orders found, be the first to make one"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            if len(queryset) == 0:
+                return Response(
+                    {"not_found": "No orders found, be the first to make one"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
-        book_data = []
-        for order in queryset:
-            data = ListOrderSerializer(order).data
-            data["maker_nick"] = str(order.maker)
-            data["maker_hash_id"] = str(order.maker.robot.hash_id)
+            book_data = []
+            for order in queryset:
+                data = ListOrderSerializer(order).data
+                data["maker_nick"] = str(order.maker)
+                data["maker_hash_id"] = str(order.maker.robot.hash_id)
 
-            data["satoshis_now"] = Logics.satoshis_now(order)
-            # Compute current premium for those orders that are explicitly priced.
-            price, premium = Logics.price_and_premium_now(order)
-            data["price"], data["premium"] = price, str(premium)
-            data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
-            for key in (
-                "status",
-                "taker",
-            ):  # Non participants should not see the status or who is the taker
-                del data[key]
+                data["satoshis_now"] = Logics.satoshis_now(order)
+                # Compute current premium for those orders that are explicitly priced.
+                price, premium = Logics.price_and_premium_now(order)
+                data["price"], data["premium"] = price, str(premium)
+                data["maker_status"] = Logics.user_activity_status(
+                    order.maker.last_login
+                )
+                for key in (
+                    "status",
+                    "taker",
+                ):  # Non participants should not see the status or who is the taker
+                    del data[key]
 
-            book_data.append(data)
+                book_data.append(data)
+
+            cache.set(cache_key, book_data, timeout=BOOK_CACHE_TTL)
 
         return Response(book_data, status=status.HTTP_200_OK)
 
@@ -811,6 +826,10 @@ class InfoView(viewsets.ViewSet):
 
     @extend_schema(**InfoViewSchema.get)
     def get(self, request):
+        context = cache.get("info")
+        if context is not None:
+            return Response(context, status.HTTP_200_OK)
+
         context = {}
 
         context["num_public_buy_orders"] = len(
@@ -886,6 +905,8 @@ class InfoView(viewsets.ViewSet):
         except BalanceLog.DoesNotExist:
             context["current_swap_fee_rate"] = 0
 
+        cache.set("info", context, timeout=INFO_CACHE_TTL)
+
         return Response(context, status.HTTP_200_OK)
 
 
@@ -928,6 +949,10 @@ class PriceView(ListAPIView):
 
     @extend_schema(**PriceViewSchema.get)
     def get(self, request):
+        payload = cache.get("price")
+        if payload is not None:
+            return Response(payload, status.HTTP_200_OK)
+
         payload = {}
         queryset = Currency.objects.all().order_by("currency")
 
@@ -945,6 +970,8 @@ class PriceView(ListAPIView):
                 }
             except Exception:
                 payload[code] = None
+
+        cache.set("price", payload, timeout=PRICE_CACHE_TTL)
 
         return Response(payload, status.HTTP_200_OK)
 

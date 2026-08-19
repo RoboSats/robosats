@@ -364,7 +364,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Select>
               </Grid>
               <Grid container sx={{ alignItems: 'center', justifyContent: 'center' }}>
-                <Grid item>
+                <Grid>
                   <IconButton
                     onClick={() => {
                       setXRange(xRange + rangeSteps);
@@ -373,14 +373,14 @@ const DepthChart: React.FC<DepthChartProps> = ({
                     <RemoveCircleOutlineIcon />
                   </IconButton>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Box justifyContent='center'>
                     {xType === 'base_price'
                       ? `${center} ${String(currencyDict[(currencyCode || 1) as keyof object])}`
                       : `${String(center.toPrecision(3))}%`}
                   </Box>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <IconButton
                     onClick={() => {
                       setXRange(xRange - rangeSteps);

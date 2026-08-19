@@ -479,7 +479,6 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
             </div>
           ) : null}
           {groupedOptions.map((option, index) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { key: _key, ...optionProps } = getOptionProps({ option, index });
             return (
               <li {...optionProps} key={index}>

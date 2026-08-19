@@ -328,7 +328,6 @@ export const LightningPayoutForm = ({
     >
       <div style={{ height: '0.3em' }} />
       <Grid
-        item
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -346,7 +345,7 @@ export const LightningPayoutForm = ({
         <SelfImprovement sx={{ color: 'text.primary' }} />
       </Grid>
 
-      <Grid item>
+      <Grid>
         <Box
           sx={{
             backgroundColor: 'background.paper',
@@ -374,7 +373,7 @@ export const LightningPayoutForm = ({
                   padding: 0.5,
                 }}
               >
-                <Grid item>
+                <Grid>
                   <TextField
                     sx={{ width: '14em' }}
                     disabled={!lightning.advancedOptions}
@@ -388,34 +387,36 @@ export const LightningPayoutForm = ({
                         : lightning.routingBudgetSats
                     }
                     variant='outlined'
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <Button
-                            variant='text'
-                            onClick={() => {
-                              setLightning({
-                                ...lightning,
-                                routingBudgetUnit:
-                                  lightning.routingBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
-                              });
-                            }}
-                          >
-                            {lightning.routingBudgetUnit}
-                          </Button>
-                        </InputAdornment>
-                      ),
-                    }}
-                    inputProps={{
-                      style: {
-                        textAlign: 'center',
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position='end'>
+                            <Button
+                              variant='text'
+                              onClick={() => {
+                                setLightning({
+                                  ...lightning,
+                                  routingBudgetUnit:
+                                    lightning.routingBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
+                                });
+                              }}
+                            >
+                              {lightning.routingBudgetUnit}
+                            </Button>
+                          </InputAdornment>
+                        ),
+                      },
+                      htmlInput: {
+                        style: {
+                          textAlign: 'center',
+                        },
                       },
                     }}
                     onChange={onRoutingBudgetChange}
                   />
                 </Grid>
 
-                <Grid item>
+                <Grid>
                   <Tooltip
                     enterTouchDelay={0}
                     leaveTouchDelay={4000}
@@ -453,7 +454,7 @@ export const LightningPayoutForm = ({
                   </Tooltip>
                 </Grid>
 
-                <Grid item>
+                <Grid>
                   <Collapse in={lightning.useLnproxy}>
                     <Grid
                       container
@@ -465,7 +466,7 @@ export const LightningPayoutForm = ({
                         flexDirection: 'column',
                       }}
                     >
-                      <Grid item>
+                      <Grid>
                         <FormControl error={noMatchingLnProxies !== ''}>
                           <InputLabel id='select-label'>{t('Server')}</InputLabel>
                           <Select
@@ -491,7 +492,7 @@ export const LightningPayoutForm = ({
                         </FormControl>
                       </Grid>
 
-                      <Grid item>
+                      <Grid>
                         <TextField
                           sx={{ width: '14em' }}
                           disabled={!lightning.useLnproxy}
@@ -504,27 +505,29 @@ export const LightningPayoutForm = ({
                               : lightning.lnproxyBudgetSats
                           }
                           variant='outlined'
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position='end'>
-                                <Button
-                                  variant='text'
-                                  onClick={() => {
-                                    setLightning({
-                                      ...lightning,
-                                      lnproxyBudgetUnit:
-                                        lightning.lnproxyBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
-                                    });
-                                  }}
-                                >
-                                  {lightning.lnproxyBudgetUnit}
-                                </Button>
-                              </InputAdornment>
-                            ),
-                          }}
-                          inputProps={{
-                            style: {
-                              textAlign: 'center',
+                          slotProps={{
+                            input: {
+                              endAdornment: (
+                                <InputAdornment position='end'>
+                                  <Button
+                                    variant='text'
+                                    onClick={() => {
+                                      setLightning({
+                                        ...lightning,
+                                        lnproxyBudgetUnit:
+                                          lightning.lnproxyBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
+                                      });
+                                    }}
+                                  >
+                                    {lightning.lnproxyBudgetUnit}
+                                  </Button>
+                                </InputAdornment>
+                              ),
+                            },
+                            htmlInput: {
+                              style: {
+                                textAlign: 'center',
+                              },
                             },
                           }}
                           onChange={onProxyBudgetChange}
@@ -536,7 +539,7 @@ export const LightningPayoutForm = ({
               </Grid>
             </Collapse>
 
-            <Grid item>
+            <Grid>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Typography align='center' variant='body2'>
                   {t('Submit invoice for {{amountSats}} Sats', {
@@ -562,7 +565,7 @@ export const LightningPayoutForm = ({
               </div>
             </Grid>
 
-            <Grid item>
+            <Grid>
               {lightning.useLnproxy ? (
                 <TextField
                   id='proxy-textfield'
@@ -603,7 +606,7 @@ export const LightningPayoutForm = ({
               />
             </Grid>
 
-            <Grid item style={{ marginTop: 16 }}>
+            <Grid style={{ marginTop: 16 }}>
               {lightning.useLnproxy ? (
                 <LoadingButton
                   loading={loadingLnproxy}
@@ -639,7 +642,7 @@ export const LightningPayoutForm = ({
         </Box>
       </Grid>
 
-      <Grid item>
+      <Grid>
         <WalletsButton />
       </Grid>
     </Grid>

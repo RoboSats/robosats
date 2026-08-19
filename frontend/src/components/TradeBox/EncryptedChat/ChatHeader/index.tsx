@@ -19,7 +19,7 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected }) => {
       direction='row'
       sx={{ alignItems: 'flex-end', justifyContent: 'space-between', padding: 0 }}
     >
-      <Grid item>
+      <Grid>
         <Paper
           style={{
             width: '7.2em',
@@ -37,7 +37,7 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected }) => {
           </Typography>
         </Paper>
       </Grid>
-      <Grid item>
+      <Grid>
         <Paper
           style={{
             width: '7.2em',

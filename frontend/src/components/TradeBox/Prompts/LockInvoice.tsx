@@ -67,7 +67,7 @@ export const LockInvoicePrompt = ({
       spacing={0.5}
       sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item xs={12}>
+      <Grid size={12} sx={{ display: 'flex', justifyContent: 'center' }}>
         {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}
       </Grid>
 
@@ -83,7 +83,7 @@ export const LockInvoicePrompt = ({
         <></>
       )}
 
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Box
           sx={{
             display: 'flex',
@@ -108,7 +108,7 @@ export const LockInvoicePrompt = ({
           />
         </Box>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12} sx={{ display: 'flex', justifyContent: 'center' }}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
           <Button
             size='small'
@@ -123,8 +123,10 @@ export const LockInvoicePrompt = ({
         </Tooltip>
       </Grid>
 
-      <Grid item xs={12}>
-        <Typography variant='caption'>{helperText}</Typography>
+      <Grid size={12} sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Typography variant='caption' align='center'>
+          {helperText}
+        </Typography>
       </Grid>
     </Grid>
   );
