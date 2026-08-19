@@ -33,18 +33,6 @@ mainnet_lake_socat="socat tcp4-LISTEN:${mainnet_lake_port},reuseaddr,fork,keepal
 testnet_lake_socat="socat tcp4-LISTEN:${testnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
-# Over the Moon
-# Mainnet
-mainnet_moon_onion=otmoonrndnrddqdlhu6b36heunmbyw3cgvadqo2oqeau3656wfv7fwad.onion
-mainnet_moon_port=106
-# Testnet
-testnet_moon_onion=otmtestgbj3kqo3nre6oksusuqfb4ids5zg2y5z2qza2jogeu67stwid.onion
-testnet_moon_port=1006
-# socat cmd
-mainnet_moon_socat="socat tcp4-LISTEN:${mainnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_moon_socat="socat tcp4-LISTEN:${testnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-
-################################
 # Libre Bazaar
 # Mainnet
 mainnet_bazaar_onion=librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion
@@ -73,13 +61,13 @@ testnet_freedomsats_socat="socat tcp4-LISTEN:${testnet_freedomsats_port},reusead
 # Alice
 # Mainnet
 mainnet_alice_onion=alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion
-mainnet_alice_port=108
+mainnet_alice_port=109
 # Testnet
 testnet_alice_onion=alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion
-testnet_alice_port=1008
+testnet_alice_port=1009
 # socat cmd
 mainnet_alice_socat="socat tcp4-LISTEN:${mainnet_alice_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_alice_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 testnet_alice_socat="socat tcp4-LISTEN:${testnet_alice_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_alice_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 # RUN!
-$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_moon_socat & $testnet_moon_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_freedomsats_socat & $testnet_freedomsats_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx
+$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_freedomsats_socat & $testnet_freedomsats_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx

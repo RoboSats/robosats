@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
@@ -1096,6 +1097,39 @@ class TradeTest(BaseAPITestCase):
 
         self.assert_order_logs(data["id"])
 
+    @patch("control.models.LNNode.channel_balance")
+    @patch("control.models.LNNode.wallet_balance")
+    def test_onchain_insufficient_liquidity(self, mock_wallet, mock_channel):
+        """
+        Tests that swap is not allowed when the coordinator has
+        insufficient onchain balance to offer a swap.
+        """
+        mock_wallet.return_value = {
+            "total_balance": 300_000,
+            "confirmed_balance": 300_000,
+            "unconfirmed_balance": 0,
+        }
+        mock_channel.return_value = {
+            "local_balance": 0,
+            "remote_balance": 0,
+            "unsettled_local_balance": 0,
+            "unsettled_remote_balance": 0,
+        }
+
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertFalse(data["swap_allowed"])
+        self.assertIn("Not enough onchain liquidity", data["swap_failure_reason"])
+
     def test_review_order(self):
         """
         Tests a trade review token generation after the trade ends
@@ -1923,6 +1957,80 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         trade.get_review(trade.taker_index)
         self.assertEqual(trade.response.status_code, 400)
+
+    def test_order_expires_after_undo_confirm_fiat_sent(self):
+        """
+        Tests that automatic dispute resolution is blocked when fiat was marked
+        sent and then reverted (undo_confirm). The fix for security issue F2
+        ensures that reverted_fiat_sent=True prevents auto-resolution even if
+        the taker never messaged, so the order must enter full DIS status.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        # Buyer (maker) confirms fiat sent → order moves to FSE
+        trade.confirm_fiat(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.FSE).label)
+        self.assertTrue(data["is_fiat_sent"])
+
+        # Buyer (maker) reverts the fiat-sent confirmation → order back to CHA,
+        # reverted_fiat_sent is now True
+        trade.undo_confirm_sent(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
+        self.assertFalse(data["is_fiat_sent"])
+
+        # Expire the order (no chat messages from either side)
+        order = Order.objects.get(id=trade.order_id)
+        order.expires_at = datetime.now()
+        order.save()
+
+        # Make orders expire — this calls open_dispute → automatic_dispute_resolution
+        trade.clean_orders()
+
+        trade.get_order()
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        # The fix: reverted_fiat_sent=True must block automatic resolution,
+        # so the order must be in full DIS status (not TLD/MLD).
+        self.assertEqual(
+            data["status"],
+            Order.Status.DIS,
+            "Order with reverted_fiat_sent must enter full DIS, not be auto-resolved",
+        )
+        self.assertTrue(data["is_disputed"])
+
+        self.assert_order_logs(data["id"])
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
 
     def test_ticks(self):
         """

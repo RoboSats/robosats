@@ -582,8 +582,8 @@ const MakerForm = ({
         zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
       />
       <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
-        <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
-          <Grid item>
+        <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
+          <Grid>
             <IconButton
               sx={{
                 width: '1.3em',
@@ -606,7 +606,7 @@ const MakerForm = ({
               </Tooltip>
             </IconButton>
           </Grid>
-          <Grid item>
+          <Grid>
             <Tooltip enterTouchDelay={0} placement='top' title={t('Enable advanced options')}>
               <div
                 style={{
@@ -633,11 +633,15 @@ const MakerForm = ({
       </Collapse>
 
       <Collapse in={!collapseAll}>
-        <Grid container spacing={1} justifyContent='center' alignItems='center'>
-          <Grid item>
-            <Grid container direction='row' justifyContent='center' alignItems='stretch'>
+        <Grid container spacing={1} sx={{ alignItems: 'center', justifyContent: 'center' }}>
+          <Grid>
+            <Grid
+              container
+              direction='row'
+              sx={{ alignItems: 'stretch', justifyContent: 'center' }}
+            >
               <Collapse in={maker.advancedOptions} orientation='horizontal'>
-                <Grid item>
+                <Grid>
                   <FormControl>
                     <FormHelperText sx={{ textAlign: 'center' }}>{t('Swap?')}</FormHelperText>
                     <Checkbox
@@ -652,7 +656,7 @@ const MakerForm = ({
                 </Grid>
               </Collapse>
 
-              <Grid item>
+              <Grid>
                 <FormControl component='fieldset'>
                   <FormHelperText sx={{ textAlign: 'center' }}>
                     {`${fav.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')} *`}
@@ -734,7 +738,7 @@ const MakerForm = ({
             </Grid>
           </Grid>
 
-          <Grid item sx={{ width: '100%' }}>
+          <Grid sx={{ width: '100%' }}>
             <Collapse in={maker.advancedOptions}>
               <FormControlLabel
                 control={
@@ -766,7 +770,7 @@ const MakerForm = ({
             </Collapse>
             <Collapse in={!makerHasAmountRange}>
               <Grid container>
-                <Grid item sx={{ width: fav.mode === 'fiat' ? '50%' : '100%' }}>
+                <Grid sx={{ width: fav.mode === 'fiat' ? '50%' : '100%' }}>
                   <Tooltip
                     placement='top'
                     enterTouchDelay={500}
@@ -814,7 +818,7 @@ const MakerForm = ({
                 </Grid>
 
                 {fav.mode === 'fiat' ? (
-                  <Grid item sx={{ width: '50%' }}>
+                  <Grid sx={{ width: '50%' }}>
                     <Select
                       fullWidth
                       sx={{
@@ -844,9 +848,9 @@ const MakerForm = ({
               </Grid>
             </Collapse>
           </Grid>
-          <Grid item sx={{ width: '100%' }}>
-            <Grid item sx={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
-              <Grid item sx={{ width: '80%' }}>
+          <Grid sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
+              <Grid sx={{ width: '80%' }}>
                 <AutocompletePayments
                   paymentMethods={maker.paymentMethods}
                   paymentMethodsText={maker.paymentMethodsText}
@@ -865,7 +869,7 @@ const MakerForm = ({
                   multiple={true}
                 />
               </Grid>
-              <Grid item sx={{ width: '20%' }}>
+              <Grid sx={{ width: '20%' }}>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={300}
@@ -906,7 +910,7 @@ const MakerForm = ({
           </Grid>
 
           {fav.mode === 'fiat' && (
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Tooltip enterTouchDelay={0} title={t('Add geolocation for a face to face trade')}>
                 <Button
                   size='large'
@@ -932,7 +936,7 @@ const MakerForm = ({
             </Grid>
           )}
 
-          <Grid item sx={{ width: '100%' }}>
+          <Grid sx={{ width: '100%' }}>
             <TextField
               fullWidth
               error={maker.badPremiumText !== ''}
@@ -953,7 +957,7 @@ const MakerForm = ({
             />
           </Grid>
           <Collapse in={maker.advancedOptions} sx={{ width: '100%' }}>
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Tooltip
                 placement='top'
                 enterTouchDelay={300}
@@ -985,7 +989,7 @@ const MakerForm = ({
               </FormHelperText>
             )}
 
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Tooltip
                 placement='top'
                 enterTouchDelay={300}
@@ -1013,7 +1017,7 @@ const MakerForm = ({
               </Tooltip>
             </Grid>
 
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker
                   open={openPublicDuration}
@@ -1044,7 +1048,7 @@ const MakerForm = ({
               </LocalizationProvider>
             </Grid>
 
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker
                   ampm={false}
@@ -1053,8 +1057,7 @@ const MakerForm = ({
                   localeText={{ toolbarTitle: t('Escrow/invoice step length') }}
                   openTo='hours'
                   views={['hours', 'minutes']}
-                  inputFormat='HH:mm'
-                  mask='__:__'
+                  format='HH:mm'
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -1077,7 +1080,7 @@ const MakerForm = ({
               </LocalizationProvider>
             </Grid>
 
-            <Grid item sx={{ width: '100%', marginBottom: '8px' }}>
+            <Grid sx={{ width: '100%', marginBottom: '8px' }}>
               <Box
                 sx={{
                   padding: '0.5em',
@@ -1090,9 +1093,12 @@ const MakerForm = ({
                   },
                 }}
               >
-                <Grid container direction='column' alignItems='center' spacing={0.5}>
+                <Grid
+                  container
+                  spacing={0.5}
+                  sx={{ alignItems: 'center', flexDirection: 'column' }}
+                >
                   <Grid
-                    item
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -1119,7 +1125,7 @@ const MakerForm = ({
                       </Typography>
                     </Tooltip>
                   </Grid>
-                  <Grid item sx={{ width: 'calc(100% - 2em)' }}>
+                  <Grid sx={{ width: 'calc(100% - 2em)' }}>
                     <Slider
                       sx={{ width: '100%', align: 'center' }}
                       aria-label='Bond Size (%)'
@@ -1157,14 +1163,19 @@ const MakerForm = ({
         }}
       />
 
-      <Grid container direction='column' alignItems='center'>
-        <Grid item sx={{ marginBottom: '8px', marginTop: '8px' }}>
+      <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
+        <Grid sx={{ marginBottom: '8px', marginTop: '8px' }}>
           <SummaryText />
         </Grid>
 
-        <Grid item>
-          <Grid container direction='row' justifyItems='center' alignItems='center' spacing={1}>
-            <Grid item>
+        <Grid>
+          <Grid
+            container
+            direction='row'
+            spacing={1}
+            sx={{ alignItems: 'center', justifyItems: 'center' }}
+          >
+            <Grid>
               {/* conditions to disable the make button */}
               {disableSubmit ? (
                 <Tooltip enterTouchDelay={0} title={getDisabledMessage()}>
@@ -1187,7 +1198,7 @@ const MakerForm = ({
               )}
             </Grid>
             {collapseAll ? (
-              <Grid item>
+              <Grid>
                 <Collapse in={collapseAll} orientation='vertical'>
                   <IconButton onClick={onReset}>
                     <Tooltip
@@ -1206,7 +1217,7 @@ const MakerForm = ({
           </Grid>
         </Grid>
 
-        <Grid item>
+        <Grid>
           <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
             {badRequest}
           </Typography>
@@ -1228,8 +1239,7 @@ const MakerForm = ({
               align='center'
               variant='caption'
               color='text.secondary'
-              display='flex'
-              flexDirection='row'
+              sx={{ display: 'flex', flexDirection: 'row', whiteSpace: 'nowrap', gap: '0.3em' }}
             >
               {t('Order current rate:')}
               <Skeleton width='4.5em' />

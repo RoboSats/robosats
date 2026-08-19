@@ -664,7 +664,7 @@
   "Payment failed?": "Malipo yameshindwa?",
   "Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.": "Sema hi! Kuwa msaada na mafupi. Waambie jinsi ya kukutumia {{amount}} {{currencyCode}}.",
   "To open a dispute you need to wait": "Ili kufungua mzozo unahitaji kusubiri",
-  "Wait for the seller to confirm he has received the payment.": "Subiri muuzaji kuthibitisha kuwa amepokea malipo.",
+  "Wait for the seller to confirm they have received the payment.": "Wait for the seller to confirm they have received the payment.",
   "#72": "Phrases in components/TradeBox/Prompts/Dispute.tsx",
   "A contact method is required": "Njia ya mawasiliano inahitajika",
   "Attach chat logs": "Ambatanisha logi za gumzo",

@@ -66,8 +66,12 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
-            <Grid item>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 1 }}
+          >
+            <Grid>
               <Typography>
                 {t(
                   'This temporary key gives you access to a unique and private robot identity for your trade.',
@@ -75,17 +79,21 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
               </Typography>
             </Grid>
             {!generatedToken ? (
-              <Grid item>
+              <Grid>
                 <Button autoFocus onClick={generateToken} variant='contained' size='large'>
                   <Casino />
                   {t('Generate token')}
                 </Button>
               </Grid>
             ) : (
-              <Grid item>
+              <Grid>
                 <Collapse in={generatedToken}>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
-                    <Grid item>
+                  <Grid
+                    container
+                    spacing={1}
+                    sx={{ alignItems: 'center', flexDirection: 'column' }}
+                  >
+                    <Grid>
                       <Alert variant='outlined' severity='info'>
                         <b>{`${t('Store it somewhere safe!')} `}</b>
                         {t(
@@ -93,7 +101,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                         )}
                       </Alert>
                     </Grid>
-                    <Grid item sx={{ width: '100%' }}>
+                    <Grid sx={{ width: '100%' }}>
                       <TokenInput
                         loading={loading}
                         autoFocusTarget='copyButton'
@@ -102,7 +110,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                         onPressEnter={() => null}
                       />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                       <Typography>
                         {t('You can also add your own random characters into the token or')}
                         <Button size='small' onClick={generateToken}>
@@ -112,7 +120,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                       </Typography>
                     </Grid>
 
-                    <Grid item>
+                    <Grid>
                       <Button
                         onClick={() => {
                           setStep('2');
@@ -141,8 +149,8 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1}>
-            <Grid item>
+          <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
+            <Grid>
               <Typography>
                 {slot?.hashId ? (
                   t('This is your trading avatar')
@@ -155,7 +163,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
               </Typography>
             </Grid>
 
-            <Grid item sx={{ width: '13.5em' }}>
+            <Grid sx={{ width: '13.5em' }}>
               <RobotAvatar
                 hashId={slot?.hashId ?? ''}
                 smooth={true}
@@ -173,7 +181,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
             </Grid>
 
             {slot?.nickname ? (
-              <Grid item>
+              <Grid>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
                   <div
@@ -203,7 +211,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                 </Typography>
               </Grid>
             ) : null}
-            <Grid item>
+            <Grid>
               <Collapse in={!!slot?.hashId}>
                 <Button
                   onClick={() => {
@@ -228,8 +236,12 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
-            <Grid item>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 1.5 }}
+          >
+            <Grid>
               <Typography>
                 {t(
                   'RoboSats is a peer-to-peer marketplace. You can browse the public offers or create a new one.',
@@ -237,7 +249,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
               </Typography>
             </Grid>
 
-            <Grid item>
+            <Grid>
               <ButtonGroup variant='contained'>
                 <Button
                   color='primary'
@@ -262,7 +274,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
               </ButtonGroup>
             </Grid>
 
-            <Grid item>
+            <Grid>
               <Typography>
                 {`${t('If you need help on your RoboSats journey join our public support')} `}
                 <Link
@@ -275,7 +287,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                 {`, ${t('or visit the robot school for documentation.')} `}
               </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Button
                 component={Link}
                 href='https://learn.robosats.org'
@@ -289,7 +301,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                 <NewTabIcon sx={{ width: '0.8em' }} />
               </Button>
             </Grid>
-            <Grid item sx={{ position: 'relative', top: '0.6em' }}>
+            <Grid sx={{ position: 'relative', top: '0.6em' }}>
               <Button
                 color='inherit'
                 onClick={() => {

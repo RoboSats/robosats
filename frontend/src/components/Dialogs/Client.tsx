@@ -39,7 +39,7 @@ const ClientDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <RoboSatsNoTextIcon
                 sx={{ width: '1.4em', height: '1.4em', right: '0.2em', position: 'relative' }}
               />
@@ -49,7 +49,7 @@ const ClientDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
 
           <Divider />
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <PublicIcon />
             </ListItemIcon>
             <ListItemText

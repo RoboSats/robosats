@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAutocomplete } from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
 import {
   Button,
@@ -9,6 +8,7 @@ import {
   Typography,
   Grow,
   useTheme,
+  useAutocomplete,
   type SxProps,
   type Theme,
   Chip,
@@ -325,7 +325,6 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     getRootProps,
     getInputLabelProps,
     getInputProps,
-    getTagProps,
     getListboxProps,
     getOptionProps,
     groupedOptions,
@@ -425,7 +424,11 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                     icon={option.icon}
                     onClick={props.onClick}
                     sx={{ height: '1.6rem', ...(props.tagProps ?? {}) }}
-                    {...getTagProps({ index })}
+                    onDelete={() => {
+                      const newValue = value.filter((_, i) => i !== index);
+                      setSelectedOptions(newValue);
+                      props.onAutocompleteChange(newValue.map((v) => v.name));
+                    }}
                   />
                 ))}
                 {qttHiddenTags > 0 ? (
@@ -475,27 +478,30 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
               </ListHeader>
             </div>
           ) : null}
-          {groupedOptions.map((option, index) => (
-            <li {...getOptionProps({ option, index })} key={index}>
-              <Button
-                fullWidth={true}
-                color='inherit'
-                size='small'
-                sx={{ textTransform: 'none' }}
-                style={{ justifyContent: 'flex-start' }}
-              >
-                <div style={{ padding: '0.286em', position: 'relative', top: '0.35em' }}>
-                  <PaymentIcon width={iconSize} height={iconSize} icon={option.icon} />
+          {groupedOptions.map((option, index) => {
+            const { key: _key, ...optionProps } = getOptionProps({ option, index });
+            return (
+              <li {...optionProps} key={index}>
+                <Button
+                  fullWidth={true}
+                  color='inherit'
+                  size='small'
+                  sx={{ textTransform: 'none' }}
+                  style={{ justifyContent: 'flex-start' }}
+                >
+                  <div style={{ padding: '0.286em', position: 'relative', top: '0.35em' }}>
+                    <PaymentIcon width={iconSize} height={iconSize} icon={option.icon} />
+                  </div>
+                  <Typography variant='inherit' align='left'>
+                    {t(option.name)}
+                  </Typography>
+                </Button>
+                <div style={{ position: 'relative', top: '0.357em' }}>
+                  <CheckIcon />
                 </div>
-                <Typography variant='inherit' align='left'>
-                  {t(option.name)}
-                </Typography>
-              </Button>
-              <div style={{ position: 'relative', top: '0.357em' }}>
-                <CheckIcon />
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </Listbox>
       </Grow>
     </Root>

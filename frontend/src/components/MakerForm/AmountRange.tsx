@@ -121,7 +121,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
   }, [minAmountError, maxAmountError]);
 
   return (
-    <Grid item xs={12}>
+    <Grid size={12}>
       <Box
         sx={{
           padding: '0.5em',
@@ -134,8 +134,8 @@ const AmountRange: React.FC<AmountRangeProps> = ({
           },
         }}
       >
-        <Grid container direction='column' alignItems='center' spacing={0.5}>
-          <Grid item sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+        <Grid container spacing={0.5} sx={{ alignItems: 'center', flexDirection: 'column' }}>
+          <Grid sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography
               sx={{
                 width: `${t('From').length * 0.56 + 0.6}em`,
@@ -226,7 +226,6 @@ const AmountRange: React.FC<AmountRangeProps> = ({
           </Grid>
 
           <Grid
-            item
             sx={{
               width: `calc(100% - ${Math.abs(Math.log10(amountLimits[1]) * 0.65) + 2}em)`,
             }}

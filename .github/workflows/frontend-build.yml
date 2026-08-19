@@ -33,9 +33,9 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha || github.ref }}
     - name: 'Setup node'
-      uses: actions/setup-node@v5
+      uses: actions/setup-node@v7
       with:
-        node-version: 16.17.0
+        node-version: 22
         cache: npm
         cache-dependency-path: frontend/package-lock.json
     - name: 'Install NPM Dependencies'
@@ -48,35 +48,35 @@ jobs:
         cd frontend
         npm run build
     - name: 'Archive Django Static Build Results'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: django-main-static
         path: |
           frontend/static
           frontend/templates/frontend/*.html
     - name: 'Archive Node App Static Build Results'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: nodeapp-main-static
         path: |
           nodeapp/static
           nodeapp/*.html
     - name: 'Archive Desktop App Static Build Results'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: desktop-main-static
         path: |
           desktopApp/static
           desktopApp/*.html
     - name: 'Archive Web Static Build Results'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: web-main-static
         path: |
           web/static
           web/*.html
     - name: 'Archive Mobile Build Results'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: mobile-web.bundle
         path: android/app/src/main/assets

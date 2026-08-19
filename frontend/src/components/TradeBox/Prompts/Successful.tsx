@@ -25,7 +25,7 @@ import {
 } from '../../../contexts/FederationContext';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 interface SuccessfulPromptProps {
@@ -105,14 +105,16 @@ export const SuccessfulPrompt = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
       spacing={0.5}
-      padding={1}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexDirection: 'column',
+        padding: 1,
+      }}
     >
       <Grid container direction='row'>
-        <Grid item width='48%'>
+        <Grid sx={{ width: '48%' }}>
           <Typography variant='body2' align='center'>
             {t('Rate your trade experience')}
           </Typography>
@@ -126,7 +128,7 @@ export const SuccessfulPrompt = ({
             }}
           />
         </Grid>
-        <Grid item width='48%'>
+        <Grid sx={{ width: '48%' }}>
           <Tooltip
             title={t('You need to enable nostr to rate your coordinator.')}
             disableHoverListener={settings.connection === 'nostr'}
@@ -157,7 +159,7 @@ export const SuccessfulPrompt = ({
         </Grid>
       </Grid>
       {hostRating ? (
-        <Grid item xs={12}>
+        <Grid size={12}>
           <div
             style={{
               display: 'flex',
@@ -256,13 +258,11 @@ export const SuccessfulPrompt = ({
       </Collapse>
 
       <Grid
-        item
         container
-        alignItems='center'
-        justifyContent='space-evenly'
-        sx={{ marginTop: 0.5 }}
+
+        sx={{ marginTop: 0.5, alignItems: 'center', justifyContent: 'space-evenly' }}
       >
-        <Grid item>
+        <Grid>
           <Button color='primary' variant='outlined' onClick={onClickStartAgain}>
             <RocketLaunch sx={{ width: '0.8em' }} />
             <Typography style={{ display: 'inline-block' }}>{t('Start Again')}</Typography>
@@ -270,7 +270,7 @@ export const SuccessfulPrompt = ({
         </Grid>
 
         {order.is_maker ? (
-          <Grid item>
+          <Grid>
             <LoadingButton
               color='primary'
               variant='outlined'
@@ -285,7 +285,7 @@ export const SuccessfulPrompt = ({
       </Grid>
 
       {order.platform_summary != null ? (
-        <Grid item sx={{ marginTop: 0.5 }}>
+        <Grid sx={{ marginTop: 0.5 }}>
           <TradeSummary
             robotNick={order.ur_nick}
             isMaker={order.is_maker}

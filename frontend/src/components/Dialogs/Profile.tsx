@@ -83,12 +83,12 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                   <Grid
                     container
                     direction='row'
-                    justifyContent='flex-start'
-                    alignItems='center'
+
                     style={{ height: '2.8em' }}
                     spacing={1}
+                    sx={{ alignItems: 'center', justifyContent: 'flex-start' }}
                   >
-                    <Grid item>
+                    <Grid>
                       <RobotAvatar
                         hashId={slot?.hashId}
                         smooth={true}
@@ -97,7 +97,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                         small={true}
                       />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                       <Typography>{slot?.nickname}</Typography>
                     </Grid>
                   </Grid>
@@ -108,8 +108,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           {loading && <LinearProgress />}
 
           <Grid
-            item
-            xs={1}
+            size={1}
             style={{ width: '33%', display: 'flex', alignContent: 'center', margin: '8px 0' }}
           >
             <Button

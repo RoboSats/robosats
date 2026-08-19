@@ -95,19 +95,18 @@ const RobotProfile = ({
   const robot = slot?.getRobot();
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
+    <Grid
+      container
+      spacing={1}
+      sx={{ alignItems: 'center', flexDirection: 'column', padding: 1, paddingTop: 2 }}
+    >
       <Grid
-        item
         container
-        direction='column'
-        alignItems='center'
+
         spacing={1}
-        sx={{ width: '100%' }}
+        sx={{ width: '100%', alignItems: 'center', flexDirection: 'column' }}
       >
-        <Grid
-          item
-          sx={{ height: '2.3em', position: 'relative', display: 'flex', flexDirection: 'row' }}
-        >
+        <Grid sx={{ height: '2.3em', position: 'relative', display: 'flex', flexDirection: 'row' }}>
           <IconButton
             color='primary'
             onClick={() => {
@@ -156,7 +155,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        <Grid item sx={{ width: `13.5em` }}>
+        <Grid sx={{ width: `13.5em` }}>
           <RobotAvatar
             hashId={slot?.hashId}
             error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
@@ -189,7 +188,7 @@ const RobotProfile = ({
         ) : null}
 
         {slot?.activeOrder ? (
-          <Grid item>
+          <Grid>
             <Button
               onClick={() => {
                 navigateToPage(
@@ -203,10 +202,10 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        <Grid item container direction='row' alignItems='center'>
+        <Grid container direction='row' sx={{ alignItems: 'center' }}>
           {!slot?.activeOrder && slot?.lastOrder ? (
-            <Grid item container direction='column' alignItems='center'>
-              <Grid item>
+            <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
+              <Grid>
                 <Button
                   onClick={() => {
                     navigateToPage(
@@ -222,8 +221,8 @@ const RobotProfile = ({
           ) : null}
 
           {slot?.availableRewards !== null && (
-            <Grid item container direction='column' alignItems='center'>
-              <Grid item>
+            <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
+              <Grid>
                 <Button
                   onClick={() => {
                     setOpen({ ...closeAll, profile: !open.profile });
@@ -237,7 +236,7 @@ const RobotProfile = ({
         </Grid>
 
         {!slot?.activeOrder && !slot?.lastOrder && !slot?.loading ? (
-          <Grid item>{t('No existing orders found')}</Grid>
+          <Grid>{t('No existing orders found')}</Grid>
         ) : null}
 
         <Tooltip
@@ -249,12 +248,10 @@ const RobotProfile = ({
           )}
         >
           <Grid
-            item
             container
             direction='row'
-            justifyContent='stretch'
-            alignItems='stretch'
-            sx={{ width: '100%' }}
+
+            sx={{ width: '100%', alignItems: 'stretch', justifyContent: 'stretch' }}
           >
             <TokenInput
               error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
@@ -268,7 +265,7 @@ const RobotProfile = ({
           </Grid>
         </Tooltip>
       </Grid>
-      <Grid item sx={{ width: '100%' }}>
+      <Grid sx={{ width: '100%' }}>
         <Box
           sx={{
             backgroundColor: 'background.paper',
@@ -277,9 +274,13 @@ const RobotProfile = ({
             borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
           }}
         >
-          <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
-            <Grid item sx={{ width: '100%' }}>
-              <Grid container direction='row' justifyContent='space-between'>
+          <Grid
+            container
+            spacing={2}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+          >
+            <Grid sx={{ width: '100%' }}>
+              <Grid container direction='row' sx={{ justifyContent: 'space-between' }}>
                 <Typography variant='caption'>{t('Robot Garage')}</Typography>
                 <Button
                   size='small'
@@ -312,12 +313,12 @@ const RobotProfile = ({
                         <Grid
                           container
                           direction='row'
-                          justifyContent='flex-start'
-                          alignItems='center'
+
                           style={{ height: '2.8em' }}
                           spacing={1}
+                          sx={{ alignItems: 'center', justifyContent: 'flex-start' }}
                         >
-                          <Grid item>
+                          <Grid>
                             <RobotAvatar
                               hashId={slot.hashId}
                               smooth={true}
@@ -326,7 +327,7 @@ const RobotProfile = ({
                               small={true}
                             />
                           </Grid>
-                          <Grid item>
+                          <Grid>
                             <Typography variant={windowSize.width < 26 ? 'caption' : undefined}>
                               {slot?.nickname}
                             </Typography>
@@ -339,8 +340,8 @@ const RobotProfile = ({
               </Select>
             </Grid>
 
-            <Grid item container direction='row' justifyContent='space-between' width='100%'>
-              <Grid item>
+            <Grid container direction='row' sx={{ width: '100%', justifyContent: 'space-between' }}>
+              <Grid>
                 <LoadingButton
                   loading={loading}
                   color='primary'
@@ -351,7 +352,7 @@ const RobotProfile = ({
                   {!mobileView && t('Add Robot')}
                 </LoadingButton>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Button
                   color='primary'
                   size='large'
@@ -364,7 +365,7 @@ const RobotProfile = ({
                   <Key />
                 </Button>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Button color='primary' onClick={handleDeleteRobot} size='large'>
                   <DeleteSweep />
                   {!mobileView && t('Delete Robot')}

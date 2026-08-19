@@ -127,16 +127,16 @@ export const DisputePrompt = ({
   };
 
   return (
-    <Grid container direction='column' style={{ width: '100%', padding: 16 }}>
-      <Grid item>
+    <Grid container style={{ width: '100%', padding: 16 }} sx={{ flexDirection: 'column' }}>
+      <Grid>
         <Typography variant='body2'>
           {t(
             'Please, submit your statement. Be clear and specific about what happened and provide the necessary evidence. You MUST provide a contact method: burner email, SimpleX incognito link or telegram (make sure to create a searchable username) to follow up with the dispute solver (your trade host/coordinator). Disputes are solved at the discretion of real robots (aka humans), so be as helpful as possible to ensure a fair outcome.',
           )}
         </Typography>
       </Grid>
-      <Grid item>
-        <Grid item xs={12}>
+      <Grid>
+        <Grid size={12}>
           <TextField
             error={dispute.badStatement !== ''}
             helperText={dispute.badStatement}
@@ -150,7 +150,7 @@ export const DisputePrompt = ({
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Select
             variant='standard'
             required
@@ -190,7 +190,7 @@ export const DisputePrompt = ({
             </MenuItem>
           </Select>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TextField
             error={dispute.badContact !== ''}
             helperText={dispute.badContact}
@@ -202,7 +202,7 @@ export const DisputePrompt = ({
             }}
           />
         </Grid>
-        <Grid item>
+        <Grid>
           <Tooltip
             enterTouchDelay={0}
             placement='top'
@@ -223,7 +223,7 @@ export const DisputePrompt = ({
             />
           </Tooltip>
         </Grid>
-        <Grid container sx={{ width: '100%' }} justifyContent='center'>
+        <Grid container sx={{ width: '100%', justifyContent: 'center' }}>
           <LoadingButton
             onClick={submitStatement}
             variant='contained'

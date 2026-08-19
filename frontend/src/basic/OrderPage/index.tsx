@@ -25,14 +25,8 @@ import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageCon
 import { genBase62Token } from '../../utils';
 
 const OrderPage = (): React.JSX.Element => {
-  const {
-    windowSize,
-    setOpen,
-    acknowledgedWarning,
-    setAcknowledgedWarning,
-    navbarHeight,
-    slotUpdatedAt,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, setOpen, acknowledgedWarning, setAcknowledgedWarning, navbarHeight } =
+    useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -69,7 +63,7 @@ const OrderPage = (): React.JSX.Element => {
     return () => {
       setCurrentOrder(null);
     };
-  }, [params.orderId, openNoRobot, garage.currentSlot, slotUpdatedAt]);
+  }, [params.orderId, openNoRobot, garage.currentSlot]);
 
   useEffect(() => {
     if (!currentOrder) return;
@@ -155,7 +149,7 @@ const OrderPage = (): React.JSX.Element => {
             {t(currentOrder.bad_request)}
           </Typography>
           {currentOrder?.bad_request?.includes('password') && (
-            <Grid item xs={6} style={{ width: '21em' }}>
+            <Grid size={6} style={{ width: '21em' }}>
               <Paper
                 elevation={12}
                 style={{
@@ -177,12 +171,12 @@ const OrderPage = (): React.JSX.Element => {
             <Grid
               container
               direction='row'
-              justifyContent='center'
-              alignItems='flex-start'
+
               spacing={2}
               style={{ width: '43em' }}
+              sx={{ alignItems: 'flex-start', justifyContent: 'center' }}
             >
-              <Grid item xs={12} style={{ width: '42em' }}>
+              <Grid size={12} style={{ width: '42em' }}>
                 <Stepper activeStep={orderStep}>
                   {steps.map((label) => (
                     <Step key={label}>
@@ -191,7 +185,7 @@ const OrderPage = (): React.JSX.Element => {
                   ))}
                 </Stepper>
               </Grid>
-              <Grid item xs={6} style={{ width: '21em' }}>
+              <Grid size={6} style={{ width: '21em' }}>
                 <Paper
                   elevation={12}
                   style={{
@@ -203,7 +197,7 @@ const OrderPage = (): React.JSX.Element => {
                   {orderDetailsSpace}
                 </Paper>
               </Grid>
-              <Grid item xs={6} style={{ width: '21em' }}>
+              <Grid size={6} style={{ width: '21em' }}>
                 <Paper
                   elevation={12}
                   style={{

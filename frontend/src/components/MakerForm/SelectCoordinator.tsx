@@ -50,7 +50,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   }, [coordinatorAlias]);
 
   return (
-    <Grid item>
+    <Grid>
       <Grid sx={{ marginBottom: 1 }}>
         <Alert
           severity={
@@ -87,7 +87,6 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
         >
           <Grid container style={{ marginTop: 10, width: '100%' }}>
             <Grid
-              item
               sx={{
                 cursor: 'pointer',
                 position: 'relative',
@@ -100,7 +99,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 onClickCurrentCoordinator(coordinatorAlias);
               }}
             >
-              <Grid item>
+              <Grid>
                 <RobotAvatar
                   shortAlias={coordinatorAlias}
                   hashId={!coordinator?.federated ? coordinator?.mainnet.onion : undefined}
@@ -119,7 +118,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Grid>
             </Grid>
 
-            <Grid item xs={{ width: '100%' }}>
+            <Grid>
               <Select
                 variant='standard'
                 fullWidth
@@ -149,9 +148,9 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
           </Grid>
         </Tooltip>
         <Grid container>
-          <Grid item>
+          <Grid>
             <Stack direction='row' alignContent='center' spacing={2} style={{ flexGrow: 1 }}>
-              <Grid item>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}
@@ -171,7 +170,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   </Typography>
                 </Tooltip>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}
@@ -191,7 +190,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   </Typography>
                 </Tooltip>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}

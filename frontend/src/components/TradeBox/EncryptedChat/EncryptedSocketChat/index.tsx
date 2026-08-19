@@ -1,21 +1,12 @@
 import React, { useEffect, useLayoutEffect, useState, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  TextField,
-  Grid,
-  Paper,
-  Typography,
-  Tooltip,
-  IconButton,
-  CircularProgress,
-} from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
@@ -26,7 +17,7 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import getSettings from '../../../../utils/settings';
-import { AttachFile, Send } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
@@ -83,7 +74,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
-  const [uploading, setUploading] = useState<boolean>(false);
+  const [_uploading, setUploading] = useState<boolean>(false);
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -271,7 +262,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
   };
 
-  const handleAttachClick = (): void => {
+  const _handleAttachClick = (): void => {
     // Clear any previous errors
     setError('');
     setPrivacyWarningOpen(true);
@@ -285,7 +276,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const _handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) {
       // User cancelled file selection
@@ -326,12 +317,11 @@ const EncryptedSocketChat: React.FC<Props> = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0.5}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item>
+      <Grid>
         <ChatHeader connected={connected && Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
@@ -370,7 +360,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked} style={{ width: '100%' }}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
+          <Grid
+            style={{ display: 'flex', width: '100%', marginTop: '8px' }}
+            sx={{ alignItems: 'stretch' }}
+          >
             <TextField
               label={t('Type a message')}
               variant='standard'
@@ -388,7 +381,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               }}
               fullWidth
             />
-            <input
+            {/* <input
               type='file'
               ref={fileInputRef}
               style={{ display: 'none' }}
@@ -405,7 +398,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   {uploading ? <CircularProgress size={24} /> : <AttachFile />}
                 </IconButton>
               </span>
-            </Tooltip>
+            </Tooltip> */}
             <Button
               disabled={!connected || waitingEcho || peerPubKey === undefined}
               type='submit'

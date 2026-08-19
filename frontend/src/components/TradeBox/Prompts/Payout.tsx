@@ -47,13 +47,15 @@ export const PayoutPrompt = ({
   return (
     <Grid
       container
-      padding={1}
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
       spacing={1}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexDirection: 'column',
+        padding: 1,
+      }}
     >
-      <Grid item>
+      <Grid>
         <Typography variant='body2'>
           {t(
             'Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.',
@@ -71,7 +73,7 @@ export const PayoutPrompt = ({
         </Typography>
       </Grid>
 
-      <Grid item>
+      <Grid>
         <ToggleButtonGroup
           size='medium'
           value={tab}
@@ -107,7 +109,7 @@ export const PayoutPrompt = ({
         </ToggleButtonGroup>
       </Grid>
 
-      <Grid item style={{ display: tab === 'lightning' ? '' : 'none' }}>
+      <Grid style={{ display: tab === 'lightning' ? '' : 'none' }}>
         <LightningPayoutForm
           order={order}
           settings={settings}
@@ -119,7 +121,7 @@ export const PayoutPrompt = ({
       </Grid>
 
       {/* ONCHAIN PAYOUT TAB */}
-      <Grid item style={{ display: tab === 'onchain' ? '' : 'none' }}>
+      <Grid style={{ display: tab === 'onchain' ? '' : 'none' }}>
         <OnchainPayoutForm
           order={order}
           loading={loadingOnchain}
