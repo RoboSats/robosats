@@ -479,56 +479,54 @@ const FederationTable = ({
         <DialogContent>
           <Grid
             container
-            spacing={1}
-            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+            spacing={2}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2, minWidth: '18em' }}
           >
-            {error ?? (
+            {error && (
               <Grid size={12}>
                 <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
                   {error}
                 </Typography>
               </Grid>
             )}
-            <Grid size={12}>
-              <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
-                <Grid size={4}>
-                  <TextField
-                    id='outlined-basic'
-                    label={t('Alias')}
-                    variant='outlined'
-                    size='medium'
-                    value={newAlias}
-                    onChange={(e) => {
-                      setNewAlias(e.target.value);
-                    }}
-                  />
-                </Grid>
-                <Grid size={6} sx={{ padding: 2 }}>
-                  <TextField
-                    id='outlined-basic'
-                    label={t('URL')}
-                    variant='outlined'
-                    size='medium'
-                    value={newUrl}
-                    onChange={(e) => {
-                      setNewUrl(e.target.value);
-                    }}
-                  />
-                </Grid>
-                <Grid size={1}>
-                  <Button
-                    sx={{ maxHeight: 38, marginTop: 2.5 }}
-                    disabled={false}
-                    onClick={addCoordinator}
-                    variant='contained'
-                    color='primary'
-                    size='large'
-                    type='submit'
-                  >
-                    {t('Add coordinator')}
-                  </Button>
-                </Grid>
-              </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                id='outlined-alias'
+                label={t('Alias')}
+                variant='outlined'
+                size='medium'
+                value={newAlias}
+                onChange={(e) => {
+                  setNewAlias(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                id='outlined-url'
+                label={t('URL')}
+                variant='outlined'
+                size='medium'
+                value={newUrl}
+                onChange={(e) => {
+                  setNewUrl(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <Button
+                fullWidth
+                disabled={false}
+                onClick={addCoordinator}
+                variant='contained'
+                color='primary'
+                size='large'
+                type='submit'
+              >
+                {t('Add coordinator')}
+              </Button>
             </Grid>
           </Grid>
         </DialogContent>

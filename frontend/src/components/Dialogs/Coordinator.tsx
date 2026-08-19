@@ -630,7 +630,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                       </ListItem>
 
                       <ListItem {...listItemProps}>
-                        <ListItemIcon />
+                        <ListItemIcon sx={{ minWidth: 56 }} />
 
                         <ListItemText
                           primary={`${pn(
