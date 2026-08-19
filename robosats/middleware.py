@@ -37,16 +37,6 @@ def parse_nostr_pubkey(request):
     return ""
 
 
-class DisableCSRFMiddleware(object):
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        setattr(request, "_dont_enforce_csrf_checks", True)
-        response = self.get_response(request)
-        return response
-
-
 class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
     """
     This middleware splits the HTTP_AUTHORIZATION, leaves on it only the `Token ` and creates
@@ -163,9 +153,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             except IntegrityError:
                 # Nickname collision: this hash already has a user (race condition or
                 # NickGen pool exhaustion). Return a conflict error instead of a 500.
-                return JsonResponse(
-                    new_error(7004), status=status.HTTP_409_CONFLICT
-                )
+                return JsonResponse(new_error(7004), status=status.HTTP_409_CONFLICT)
 
             # Store hash_id
             user.robot.hash_id = hash
