@@ -49,7 +49,7 @@ const BookPage = (): React.JSX.Element => {
 
   const NavButtons = function (): React.JSX.Element {
     return (
-      <ButtonGroup variant='contained' color='inherit'>
+      <ButtonGroup fullWidth variant='contained' color='inherit'>
         {doubleView ? (
           <></>
         ) : (
