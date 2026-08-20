@@ -461,9 +461,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               <ListItem>
                 <Alert severity={coordinator?.info?.notice_severity} sx={{ width: '100%' }}>
                   <AlertTitle>{t('Coordinator Notice')}</AlertTitle>
-                  <div
-                    dangerouslySetInnerHTML={{ __html: coordinator?.info?.notice_message ?? '' }}
-                  />
+                  <Typography variant='body2'>{coordinator?.info?.notice_message ?? ''}</Typography>
                 </Alert>
               </ListItem>
             )}
