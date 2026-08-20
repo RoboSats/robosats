@@ -21,6 +21,7 @@ services:
       - ./:/usr/src/robosats/
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./coordinators/:/etc/nginx/conf.d/
+      - ./ssl:/etc/nginx/ssl
 
   tor:
     build: ../docker/tor
