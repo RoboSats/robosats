@@ -13,12 +13,13 @@ import {
   Button,
   ButtonGroup,
   Select,
+  SelectChangeEvent,
   useTheme,
   MenuItem,
 } from '@mui/material';
 
 import { SwapCalls } from '@mui/icons-material';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import { UseAppStoreType, AppContext, initialAppContext } from '../../contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
@@ -48,7 +49,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
     }
   }, [step]);
 
-  const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+  const handleCurrencyChange = function (e: SelectChangeEvent<number>): void {
     const currency = Number(e.target.value);
     setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
     setStep('3');
@@ -179,7 +180,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                         borderColor: 'text.primary',
                       },
                     }}
-                    size='large'
+                    size='medium'
                     label={t('Select Payment Currency')}
                     required={true}
                     value={fav.currency}

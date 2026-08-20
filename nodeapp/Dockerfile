@@ -18,9 +18,10 @@ COPY ./coordinators/ /etc/nginx/conf.d/
 
 RUN apk -U --no-cache upgrade \
     && apk --no-cache add socat \
-    && apk --no-cache add nginx
+    && apk --no-cache add nginx \
+    && apk --no-cache add openssl
 
 EXPOSE 12596
-HEALTHCHECK CMD wget -q -O- http://localhost:12596/selfhosted || exit 1
+HEALTHCHECK CMD wget -q -O- http://127.0.0.1:8080/selfhosted || exit 1
 
 CMD ["sh", "robosats-client.sh"]

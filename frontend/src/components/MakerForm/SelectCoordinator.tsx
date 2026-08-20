@@ -14,7 +14,7 @@ import {
 import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { useTheme } from '@emotion/react';
+import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { Coordinator } from '../../models';
@@ -149,7 +149,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
         </Tooltip>
         <Grid container>
           <Grid>
-            <Stack direction='row' alignContent='center' spacing={2} style={{ flexGrow: 1 }}>
+            <Stack direction='row' sx={{ alignItems: 'center', flexGrow: 1 }} spacing={2}>
               <Grid>
                 <Tooltip
                   placement='top'

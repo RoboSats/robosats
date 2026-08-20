@@ -47,8 +47,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
           }}
         />
         <Typography
-          lineHeight={0.82}
-          sx={{ position: 'relative', bottom: '0.3em' }}
+          sx={{ position: 'relative', bottom: '0.3em', lineHeight: 0.82 }}
           color='secondary'
           align='center'
           component='h6'

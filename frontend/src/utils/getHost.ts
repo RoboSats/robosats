@@ -13,7 +13,16 @@ export const getHostUrl = (network = 'mainnet'): string => {
     Object.keys(defaultFederation)[
       Math.floor(Math.random() * Object.keys(defaultFederation).length)
     ];
-  let host: string = defaultFederation[randomAlias][network].onion;
+  const fedEntry = (
+    defaultFederation as unknown as Record<string, Record<string, Record<string, string>>>
+  )[randomAlias];
+  const onionUrl = fedEntry?.[network]?.['onion'];
+  if (!onionUrl) {
+    console.warn(
+      `[getHostUrl] No onion URL found for coordinator "${randomAlias}" on network "${network}". Falling back to empty host.`,
+    );
+  }
+  let host: string = onionUrl ?? '';
   let protocol: string = 'http:';
   if (client !== 'mobile') {
     host = getHost();

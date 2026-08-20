@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
 
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order, type Settings } from '../../../models';
 import { pn } from '../../../utils';
@@ -62,8 +62,9 @@ export const PayoutPrompt = ({
             {
               amountFiat: pn(
                 parseFloat(
-                  parseFloat(
-                    order.currency === 1000 ? order.amount * 100000000 : order.amount,
+                  (order.currency === 1000
+                    ? Number(order.amount ?? 0) * 100000000
+                    : Number(order.amount ?? 0)
                   ).toFixed(4),
                 ),
               ),

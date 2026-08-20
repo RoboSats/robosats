@@ -88,7 +88,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     setDisable(Boolean(robot?.loading));
   }, [robot?.loading]);
 
-  const handleSubmitInvoiceClicked = (e: Event, rewardInvoice: string): void => {
+  const handleSubmitInvoiceClicked = (e: React.MouseEvent | Event, rewardInvoice: string): void => {
     setBadInvoice('');
     setShowRewardsSpinner(true);
 
@@ -96,10 +96,12 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot?.token).then(
         (signedInvoice) => {
           void robot.fetchReward(federation, signedInvoice).then((data) => {
-            setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
-            setWithdrawn(data.successful_withdrawal);
-            setOpenClaimRewards(!data.successful_withdrawal);
+            if (data != null) {
+              setBadInvoice(data.bad_invoice ?? '');
+              setWithdrawn(Boolean(data.successful_withdrawal));
+              setOpenClaimRewards(!data.successful_withdrawal);
+            }
           });
         },
       );

@@ -12,13 +12,14 @@ import {
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order } from '../../../models';
 import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../contexts/FederationContext';
+import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { PauseCircle, Storefront, Percent } from '@mui/icons-material';
 
 interface PublicWaitPrompProps {
@@ -33,7 +34,8 @@ export const PublicWaitPrompt = ({
   onClickPauseOrder,
 }: PublicWaitPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
 
   const currencyCode = currencies[order.currency.toString()];
 

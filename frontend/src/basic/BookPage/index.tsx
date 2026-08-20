@@ -33,7 +33,7 @@ const BookPage = (): React.JSX.Element => {
   const fontSize = theme.typography.fontSize;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    const thirdParty = thirdParties[shortAlias];
+    const thirdParty = (thirdParties as Record<string, unknown>)[shortAlias];
     if (thirdParty) {
       const thirdPartyOrder = Object.values(federation.book).find(
         (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,
@@ -49,7 +49,7 @@ const BookPage = (): React.JSX.Element => {
 
   const NavButtons = function (): React.JSX.Element {
     return (
-      <ButtonGroup variant='contained' color='inherit'>
+      <ButtonGroup fullWidth variant='contained' color='inherit'>
         {doubleView ? (
           <></>
         ) : (

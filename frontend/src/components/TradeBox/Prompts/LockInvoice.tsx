@@ -5,7 +5,7 @@ import { ContentCopy } from '@mui/icons-material';
 import QRCode from 'react-qr-code';
 import { type Order } from '../../../models';
 import { systemClient } from '../../../services/System';
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 import WalletsButton from '../WalletsButton';
 import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 

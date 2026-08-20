@@ -13,7 +13,7 @@ import {
 
 import { FlagWithProps } from '../Icons';
 import RangeSlider from './RangeSlider';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { pn } from '../../utils';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
@@ -235,9 +235,9 @@ const AmountRange: React.FC<AmountRangeProps> = ({
               value={[maker.minAmount ?? amountLimits[0], maker.maxAmount ?? amountLimits[1]]}
               step={(amountLimits[1] - amountLimits[0]) / 5000}
               valueLabelDisplay='auto'
-              components={{ Thumb: RangeThumbComponent }}
-              componentsProps={{
-                thumb: { style: { backgroundColor: theme.palette.background.paper } },
+              slots={{ thumb: RangeThumbComponent }}
+              slotProps={{
+                thumb: { style: { backgroundColor: theme.palette.background.paper } } as object,
               }}
               valueLabelFormat={(x) =>
                 pn(parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))) + ' ' + currencyCode

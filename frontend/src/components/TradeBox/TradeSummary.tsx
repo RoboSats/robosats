@@ -191,8 +191,6 @@ const TradeSummary = ({
                   left: 15,
                   zoom: 1.25,
                   opacity: 0.7,
-                  msZoom: 1.25,
-                  WebkitZoom: 1.25,
                   MozTransform: 'scale(1.25,1.25)',
                   MozTransformOrigin: 'left center',
                 }}
@@ -302,9 +300,7 @@ const TradeSummary = ({
               <PriceChange />
             </ListItemIcon>
             <ListItemText
-              primary={`${pn(
-                platformSummary.contract_exchange_rate.toPrecision(7),
-              )} ${currencyCode}/BTC`}
+              primary={`${pn(platformSummary.contract_exchange_rate.toPrecision(7))} ${currencyCode}/BTC`}
               secondary={t('Contract exchange rate')}
             />
           </ListItem>

@@ -70,4 +70,11 @@ mainnet_alice_socat="socat tcp4-LISTEN:${mainnet_alice_port},reuseaddr,fork,keep
 testnet_alice_socat="socat tcp4-LISTEN:${testnet_alice_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_alice_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 # RUN!
+mkdir -p /etc/nginx/ssl
+if [ ! -f /etc/nginx/ssl/server.crt ]; then
+    openssl req -x509 -nodes -newkey rsa:2048 -days 3650 \
+        -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt \
+        -subj "/CN=robosats_client" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+fi
+
 $mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_freedomsats_socat & $testnet_freedomsats_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx

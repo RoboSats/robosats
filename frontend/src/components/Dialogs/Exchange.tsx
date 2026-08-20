@@ -168,7 +168,9 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
                 }}
               >
                 {pn(federation.exchange.info.last_day_volume.toFixed(8))}
-                <BitcoinSignIcon sx={{ width: '0.6em', height: '0.6em' }} color='text.secondary' />
+                <BitcoinSignIcon
+                  sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
+                />
               </div>
             </ListItemText>
           </ListItem>
@@ -189,7 +191,9 @@ const ExchangeDialog = ({ open = false, onClose }: Props): React.JSX.Element => 
                 }}
               >
                 {pn(federation.exchange.info.lifetime_volume.toFixed(8))}
-                <BitcoinSignIcon sx={{ width: '0.6em', height: '0.6em' }} color='text.secondary' />
+                <BitcoinSignIcon
+                  sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
+                />
               </div>
             </ListItemText>
           </ListItem>

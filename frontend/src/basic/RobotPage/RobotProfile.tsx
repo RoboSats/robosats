@@ -17,7 +17,7 @@ import {
 import { Key, Bolt, Add, DeleteSweep, Download, Settings } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
-import { type Slot, type Robot } from '../../models';
+import { type Slot } from '../../models';
 import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
@@ -26,13 +26,10 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 import { DeleteRobotConfirmationDialog } from '../../components/Dialogs';
 
 interface RobotProfileProps {
-  robot: Robot;
-  setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   inputToken: string;
   setInputToken: (state: string) => void;
   width: number;
-  baseUrl: string;
 }
 
 const RobotProfile = ({
@@ -69,7 +66,7 @@ const RobotProfile = ({
     setInputToken(token);
   };
 
-  const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
+  const handleChangeSlot = (e: SelectChangeEvent<string>): void => {
     if (e?.target?.value) {
       garage.setCurrentSlot(e.target.value as string);
       setInputToken(garage.getSlot()?.token ?? '');
@@ -92,7 +89,6 @@ const RobotProfile = ({
   };
 
   const slot = garage.getSlot();
-  const robot = slot?.getRobot();
 
   return (
     <Grid
@@ -157,8 +153,7 @@ const RobotProfile = ({
 
         <Grid sx={{ width: `13.5em` }}>
           <RobotAvatar
-            hashId={slot?.hashId}
-            error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
+            hashId={slot?.hashId ?? undefined}
             smooth
             style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
             placeholderType='generating'
@@ -299,7 +294,7 @@ const RobotProfile = ({
                 inputProps={{
                   style: { textAlign: 'center' },
                 }}
-                value={loading ? 'loading' : garage.currentSlot}
+                value={loading ? 'loading' : (garage.currentSlot ?? '')}
                 onChange={handleChangeSlot}
               >
                 {loading ? (
@@ -309,7 +304,7 @@ const RobotProfile = ({
                 ) : (
                   Object.values(garage.slots).map((slot: Slot, index: number) => {
                     return (
-                      <MenuItem key={index} value={slot.token}>
+                      <MenuItem key={index} value={slot.token ?? ''}>
                         <Grid
                           container
                           direction='row'
@@ -320,7 +315,7 @@ const RobotProfile = ({
                         >
                           <Grid>
                             <RobotAvatar
-                              hashId={slot.hashId}
+                              hashId={slot.hashId ?? undefined}
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
@@ -380,7 +375,7 @@ const RobotProfile = ({
         open={deleteDialogOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        robotName={robot?.nickname}
+        robotName={slot?.nickname ?? undefined}
       />
     </Grid>
   );

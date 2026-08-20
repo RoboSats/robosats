@@ -12,7 +12,7 @@ import {
   Button,
   CircularProgress,
 } from '@mui/material';
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 import TradeSummary from '../TradeSummary';
 import { Favorite, RocketLaunch, ContentCopy, Refresh } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -123,7 +123,7 @@ export const SuccessfulPrompt = ({
             defaultValue={0}
             size='large'
             onChange={(e) => {
-              const rate = e.target.value;
+              const rate = Number((e.target as HTMLInputElement).value);
               rateUserPlatform(rate);
             }}
           />
@@ -150,7 +150,7 @@ export const SuccessfulPrompt = ({
                 defaultValue={0}
                 size='large'
                 onChange={(e) => {
-                  const rate = e.target.value;
+                  const rate = (e.target as HTMLInputElement).value;
                   setHostRating(parseInt(rate));
                 }}
               />

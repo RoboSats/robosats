@@ -1,7 +1,7 @@
 export interface PaymentMethod {
   name: string;
   icon: string;
-  reversible: boolean;
+  reversible?: boolean;
 }
 
 export const fiatMethods: PaymentMethod[] = [

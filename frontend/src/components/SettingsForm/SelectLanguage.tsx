@@ -48,7 +48,7 @@ const SelectLanguage: React.FC<SelectLanguageProps> = ({ language, setLanguage }
   };
 
   const handleChangeLang = function (e: SelectChangeEvent): void {
-    setLanguage(e.target.value);
+    setLanguage(e.target.value as Language);
     void i18n.changeLanguage(e.target.value);
   };
 

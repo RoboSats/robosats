@@ -189,10 +189,12 @@ const ContactButtons = ({
 const ThirdPartyDialog = ({ open = false, onClose, shortAlias }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const [thirdParty, setThirdParty] = useState<Coordinator>(thirdParties[shortAlias]);
+  const [thirdParty, setThirdParty] = useState<Coordinator>(
+    (thirdParties as unknown as Record<string, Coordinator>)[shortAlias],
+  );
 
   useEffect(() => {
-    setThirdParty(thirdParties[shortAlias]);
+    setThirdParty((thirdParties as unknown as Record<string, Coordinator>)[shortAlias]);
   }, [shortAlias]);
 
   useEffect(() => {

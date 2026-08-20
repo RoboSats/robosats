@@ -141,7 +141,10 @@ const ContactButtons = ({
           <Tooltip
             enterTouchDelay={0}
             enterNextDelay={2000}
-            title={t('Download PGP Pubkey. Fingerprint: ') + fingerprint.match(/.{1,4}/g).join(' ')}
+            title={
+              t('Download PGP Pubkey. Fingerprint: ') +
+              (fingerprint.match(/.{1,4}/g) ?? []).join(' ')
+            }
           >
             <IconButton component='a' target='_blank' href={pgp} rel='noreferrer'>
               <Key />
@@ -326,13 +329,13 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
         {...tooltipProps}
         title={
           <Typography align='center' variant='body2'>
-            {size_limit > 3000000
+            {(size_limit ?? 0) > 3000000
               ? t('Large limits: the coordinator has large trade limits.')
               : t('Does not have large trade limits.')}
           </Typography>
         }
       >
-        <Grid sx={{ filter: size_limit > 3000000 ? undefined : 'grayscale(100%)' }}>
+        <Grid sx={{ filter: (size_limit ?? 0) > 3000000 ? undefined : 'grayscale(100%)' }}>
           <BadgeLimits sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -475,7 +478,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
             <ListItemText
               primary={coordinator?.description}
-              primaryTypographyProps={{ sx: { maxWidth: '20em' } }}
+              slotProps={{ primary: { sx: { maxWidth: '20em' } } }}
               secondary={t('Coordinator description')}
             />
           </ListItem>
@@ -491,10 +494,14 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
             />
           </ListItem>
 
-          {coordinator?.[settings.network] && (
+          {coordinator?.[settings.network ?? 'mainnet'] && (
             <ListItemButton
               target='_blank'
-              href={coordinator[settings.network][settings.selfhostedClient ? 'onion' : origin]}
+              href={
+                (coordinator as unknown as Record<string, Record<string, string>>)[
+                  settings.network ?? 'mainnet'
+                ]?.[settings.selfhostedClient ? 'onion' : origin] ?? ''
+              }
               rel='noreferrer'
             >
               <ListItemIcon sx={{ minWidth: 56 }}>
@@ -502,16 +509,20 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               </ListItemIcon>
               <ListItemText
                 secondary={t('Coordinator hosted web app')}
-                primaryTypographyProps={{
-                  style: {
-                    maxWidth: '20em',
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word',
+                slotProps={{
+                  primary: {
+                    style: {
+                      maxWidth: '20em',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                    },
                   },
                 }}
               >
                 {`${String(
-                  coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin],
+                  (coordinator as unknown as Record<string, Record<string, string>>)?.[
+                    settings.network ?? 'mainnet'
+                  ]?.[settings.selfhostedClient ? 'onion' : origin] ?? '',
                 )}`}
               </ListItemText>
             </ListItemButton>
@@ -601,7 +612,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                       <ListItemText
                         primary={t('Onchain payouts disabled')}
-                        primaryTypographyProps={{ color: 'red' }}
+                        slotProps={{ primary: { style: { color: 'red' } } }}
                         secondary={t('Current onchain payout status')}
                       />
                     </ListItem>
@@ -619,7 +630,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                       </ListItem>
 
                       <ListItem {...listItemProps}>
-                        <ListItemIcon />
+                        <ListItemIcon sx={{ minWidth: 56 }} />
 
                         <ListItemText
                           primary={`${pn(
@@ -851,10 +862,9 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(parseFloat(coordinator?.info?.last_day_volume).toFixed(8))}
+                        {pn(parseFloat(String(coordinator?.info?.last_day_volume ?? 0)).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '0.6em', height: '0.6em' }}
-                          color={'text.secondary'}
+                          sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
                         />
                       </div>
                     </ListItemText>
@@ -875,10 +885,9 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(parseFloat(coordinator?.info?.lifetime_volume).toFixed(8))}
+                        {pn(parseFloat(String(coordinator?.info?.lifetime_volume ?? 0)).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '0.6em', height: '0.6em' }}
-                          color={'text.secondary'}
+                          sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
                         />
                       </div>
                     </ListItemText>

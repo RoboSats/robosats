@@ -51,7 +51,7 @@ const AddNewPaymentMethodDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
-        <Box display='flex' alignItems='center' gap={1}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DashboardCustomizeIcon color='primary' />
           {t('Add custom payment method')}
         </Box>
