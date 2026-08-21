@@ -31,6 +31,14 @@ jobs:
           cache: npm
           cache-dependency-path: desktopApp/package-lock.json
 
+      - name: Cache Electron binary
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/electron
+          key: electron-${{ hashFiles('desktopApp/package-lock.json') }}
+          restore-keys: |
+            electron-
+
       - name: 'Download Basic main.js Artifact'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
         uses: dawidd6/action-download-artifact@57aa996fc1713cc1579039614f4645a7f4841fd4  # v23
@@ -95,17 +103,39 @@ jobs:
           cd desktopApp
           npm ci
 
+      - name: Pre-download Electron binary (with retry)
+        run: |
+          cd desktopApp
+          ELECTRON_VERSION=$(node -e "console.log(require('electron/package.json').version)")
+          echo "Pre-fetching Electron v${ELECTRON_VERSION}"
+          for attempt in 1 2 3; do
+            ELECTRON_VERSION="${ELECTRON_VERSION}" node -e "
+              const { download } = require('@electron/get');
+              download(process.env.ELECTRON_VERSION)
+                .then(p => { console.log('Cached at', p); process.exit(0); })
+                .catch(e => { console.error(e.message); process.exit(1); });
+            " && break
+            echo "Attempt ${attempt} failed, retrying in 10s..."
+            sleep 10
+          done
+
       - name: Build for macOS
+        env:
+          ELECTRON_GET_NO_PROGRESS: 'true'
         run: |
           cd desktopApp
           npm run package-mac
 
       - name: Build for Windows
+        env:
+          ELECTRON_GET_NO_PROGRESS: 'true'
         run: |
           cd desktopApp
           npm run package-win
 
       - name: Build for Linux
+        env:
+          ELECTRON_GET_NO_PROGRESS: 'true'
         run: |
           cd desktopApp
           npm run package-linux
