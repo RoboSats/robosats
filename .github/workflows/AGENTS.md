@@ -17,7 +17,7 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | `desktop-build.yml` | Build: Desktop | dispatch / workflow_call(`semver`) / push+PR `main paths:["desktopApp","frontend"]` | `desktop-main-static` | desktop zip artifacts (mac/linux/win) |
 | `release.yml` | Release | `push: tags: v*.*.*` | all build artifacts | Draft GitHub release + all APK/zip assets |
 | `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check (check-mode) |
-| `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v3`) |
+| `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v4`) |
 | `codeql.yml` | CodeQL Advanced | push/PR `main` / `schedule: Sun 21:27 UTC` | — | GitHub security alerts |
 | `lnproxy-sync.yml` | Sync lnproxy relays | `schedule: Sun 12:00 UTC` | live `lnproxy-webui2/assets/relays.json` | PR against `main` updating `frontend/static/lnproxies.json` |
 
@@ -124,8 +124,8 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
    filenames. x86_64 APK is also omitted from this path.
 7. **`desktop-build.yml` never runs tsc**: `npm run compile` is not in the CI script; a
    stale committed `desktopApp/index.js` ships silently (see `desktopApp/AGENTS.md`).
-8. **`codeql.yml` uses `checkout@v4`** while all other workflows use `v5`; its `runs-on`
-   expression branches on `swift` (absent from the matrix → always falls through to default).
+8. **`codeql.yml` `runs-on`** expression branches on `swift` (absent from the matrix →
+   always falls through to default `ubuntu-latest`).
 
 ## Constraints
 - Never add a new build target without adding its artifact upload to `frontend-build.yml`
