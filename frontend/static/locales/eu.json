@@ -633,6 +633,7 @@
   "Encrypted image": "Encrypted image",
   "Failed to decrypt image": "Failed to decrypt image",
   "Failed to display image": "Failed to display image",
+  "Image content verification failed": "Image content verification failed",
   "Image hash verification failed": "Image hash verification failed",
   "#69": "Phrases in components/TradeBox/Forms/LightningPayout.tsx",
   "Advanced options": "Aukera aurreratuak",

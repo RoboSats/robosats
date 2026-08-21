@@ -1,6 +1,15 @@
 import React, { useEffect, useLayoutEffect, useState, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
+import {
+  Button,
+  TextField,
+  Grid,
+  Paper,
+  Typography,
+  Tooltip,
+  IconButton,
+  CircularProgress,
+} from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
@@ -17,7 +26,7 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import getSettings from '../../../../utils/settings';
-import { Send } from '@mui/icons-material';
+import { AttachFile, Send } from '@mui/icons-material';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
@@ -76,7 +85,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
-  const [_uploading, setUploading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -276,7 +285,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
   };
 
-  const _handleAttachClick = (): void => {
+  const handleAttachClick = (): void => {
     // Clear any previous errors
     setError('');
     setPrivacyWarningOpen(true);
@@ -290,7 +299,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
   };
 
-  const _handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) {
       // User cancelled file selection
@@ -395,7 +404,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               }}
               fullWidth
             />
-            {/* <input
+            <input
               type='file'
               ref={fileInputRef}
               style={{ display: 'none' }}
@@ -412,7 +421,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   {uploading ? <CircularProgress size={24} /> : <AttachFile />}
                 </IconButton>
               </span>
-            </Tooltip> */}
+            </Tooltip>
             <Button
               disabled={!connected || waitingEcho || peerPubKey === undefined}
               type='submit'
