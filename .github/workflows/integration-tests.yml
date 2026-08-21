@@ -21,6 +21,10 @@ on:
       - 'requirements.txt'
       - 'requirements_dev.txt'
       - 'Dockerfile'
+      - 'docker/**'
+      - 'tests/compose.env'
+      - 'docker-tests.yml'
+      - 'scripts/generate_grpc.sh'
 
 permissions:
   contents: read
