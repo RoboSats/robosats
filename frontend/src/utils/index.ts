@@ -1,4 +1,5 @@
 export { checkVer, getHigherVer, getClientVersion } from './checkVer';
+export { default as currencies } from './currencies';
 export { default as filterOrders } from './filterOrders';
 export { default as getHost } from './getHost';
 export { default as hexToRgb } from './hexToRgb';
@@ -6,7 +7,7 @@ export { default as hexToBase91 } from './hexToBase91';
 export { default as matchMedian } from './match';
 export { default as weightedMean } from './weightedMean';
 export { default as pn } from './prettyNumbers';
-export { amountToString } from './prettyNumbers';
+export { amountToString, btcToSatsString } from './prettyNumbers';
 export { default as saveAsJson } from './saveFile';
 export { default as statusBadgeColor } from './statusBadgeColor';
 export { genBase62Token, validateTokenEntropy } from './token';

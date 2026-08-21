@@ -1,21 +1,12 @@
 import React, { useEffect, useLayoutEffect, useState, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  TextField,
-  Grid,
-  Paper,
-  Typography,
-  Tooltip,
-  IconButton,
-  CircularProgress,
-} from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
@@ -26,7 +17,7 @@ import {
   FederationContext,
 } from '../../../../contexts/FederationContext';
 import getSettings from '../../../../utils/settings';
-import { AttachFile, Send } from '@mui/icons-material';
+import { Send } from '@mui/icons-material';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
@@ -44,7 +35,9 @@ interface Props {
   takerHashId: string;
   makerHashId: string;
   messages: EncryptedChatMessage[];
-  setMessages: (messages: EncryptedChatMessage[]) => void;
+  setMessages: (
+    messages: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
+  ) => void;
   onSendMessage: (content: string, options: { skipCoordinator?: boolean }) => void;
   onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
@@ -83,7 +76,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
   const [error, setError] = useState<string>('');
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
-  const [uploading, setUploading] = useState<boolean>(false);
+  const [_uploading, setUploading] = useState<boolean>(false);
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -135,7 +128,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       .open(
         `${url.replace(/^https?:\/\//, protocol)}/ws/chat/${
           order.id
-        }/?token_sha256_hex=${sha256(slot?.token)}`,
+        }/?token_sha256_hex=${sha256(slot?.token ?? '')}`,
       )
       .then((connection) => {
         setConnection(connection);
@@ -165,7 +158,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   };
 
   const onMessage: (message: object) => void = (message) => {
-    const dataFromServer = JSON.parse(message.data);
+    const dataFromServer = JSON.parse((message as { data: string }).data);
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
     if (dataFromServer != null && !receivedIndexes.includes(dataFromServer.index)) {
@@ -175,29 +168,40 @@ const EncryptedSocketChat: React.FC<Props> = ({
       if (
         connection != null &&
         dataFromServer.message.substring(0, 36) === `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
-        dataFromServer.message !== robot.pubKey
+        dataFromServer.message !== robot?.pubKey
       ) {
         setPeerPubKey(dataFromServer.message);
         connection.send(
           JSON.stringify({
             type: 'message',
             message: `-----SERVE HISTORY-----`,
-            nick: userNick,
+            nick: userNick ?? '',
           }),
         );
       }
       // If we receive an encrypted message
       else if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        const senderPubKey = dataFromServer.user_nick === userNick ? robot?.pubKey : peerPubKey;
+        if (!senderPubKey || !robot?.encPrivKey || !slot?.token) {
+          console.warn('[EncryptedSocketChat] skipping decrypt: missing keys or token', {
+            hasSenderPubKey: Boolean(senderPubKey),
+            hasEncPrivKey: Boolean(robot?.encPrivKey),
+            hasToken: Boolean(slot?.token),
+          });
+          return;
+        }
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
-          dataFromServer.user_nick === userNick ? robot.pubKey : peerPubKey,
+          senderPubKey,
           robot.encPrivKey,
           slot.token,
         ).then((decryptedData) => {
           setWaitingEcho(waitingEcho ? decryptedData.decryptedMessage !== lastSent : false);
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
-          setMessages((prev) => {
-            const existingMessage = prev.find((item) => item.index === dataFromServer.index);
+          setMessages((prev: EncryptedChatMessage[]) => {
+            const existingMessage = prev.find(
+              (item: EncryptedChatMessage) => item.index === dataFromServer.index,
+            );
             if (existingMessage != null) {
               return prev;
             } else {
@@ -234,7 +238,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
-    if (slot?.token !== undefined && value.includes(slot.token)) {
+    if (slot?.token != null && value.includes(slot.token ?? '')) {
       alert(
         `Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
@@ -242,6 +246,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
     // Else if message is not empty send message
     else if (value !== '') {
+      if (!robot?.pubKey || !peerPubKey || !robot?.encPrivKey || !slot?.token) return;
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
@@ -271,7 +276,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
   };
 
-  const handleAttachClick = (): void => {
+  const _handleAttachClick = (): void => {
     // Clear any previous errors
     setError('');
     setPrivacyWarningOpen(true);
@@ -285,7 +290,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const _handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) {
       // User cancelled file selection
@@ -326,12 +331,11 @@ const EncryptedSocketChat: React.FC<Props> = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0.5}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item>
+      <Grid>
         <ChatHeader connected={connected && Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
@@ -370,7 +374,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked} style={{ width: '100%' }}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
+          <Grid
+            style={{ display: 'flex', width: '100%', marginTop: '8px' }}
+            sx={{ alignItems: 'stretch' }}
+          >
             <TextField
               label={t('Type a message')}
               variant='standard'
@@ -379,7 +386,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               maxRows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  onButtonClicked(e);
+                  onButtonClicked(e as unknown as React.FormEvent<HTMLFormElement>);
                 }
               }}
               value={value}
@@ -388,7 +395,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               }}
               fullWidth
             />
-            <input
+            {/* <input
               type='file'
               ref={fileInputRef}
               style={{ display: 'none' }}
@@ -405,7 +412,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   {uploading ? <CircularProgress size={24} /> : <AttachFile />}
                 </IconButton>
               </span>
-            </Tooltip>
+            </Tooltip> */}
             <Button
               disabled={!connected || waitingEcho || peerPubKey === undefined}
               type='submit'
