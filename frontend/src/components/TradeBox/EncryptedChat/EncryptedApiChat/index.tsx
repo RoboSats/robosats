@@ -1,9 +1,10 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
+import { Button, TextField, Grid, Paper, Typography, Tooltip, IconButton } from '@mui/material';
 import { decryptMessage } from '../../../../pgp';
 
 // Icons
+import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/material';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
@@ -16,7 +17,7 @@ import {
 import { type UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
 import { type Order } from '../../../../models';
 import getSettings from '../../../../utils/settings';
-import { Send } from '@mui/icons-material';
+import { AttachFile, Send } from '@mui/icons-material';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
 
@@ -45,6 +46,7 @@ interface Props {
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
+  blossomEnabled: boolean;
 }
 
 const audioPath =
@@ -69,6 +71,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   onSendFile,
   setError,
   setLastIndex,
+  blossomEnabled,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -81,7 +84,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [messageCount, setMessageCount] = useState<number>(0);
   const [serverMessages, setServerMessages] = useState<ServerMessage[]>([]);
-  const [_uploading, setUploading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -219,7 +222,7 @@ const EncryptedApiChat: React.FC<Props> = ({
     }
   };
 
-  const _handleAttachClick = (): void => {
+  const handleAttachClick = (): void => {
     // Clear any previous errors
     setError('');
     setPrivacyWarningOpen(true);
@@ -233,7 +236,7 @@ const EncryptedApiChat: React.FC<Props> = ({
     }
   };
 
-  const _handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) {
       // User cancelled file selection
@@ -338,24 +341,32 @@ const EncryptedApiChat: React.FC<Props> = ({
               }}
               fullWidth={true}
             />
-            {/* <input
+            <input
               type='file'
               ref={fileInputRef}
               style={{ display: 'none' }}
               accept='image/*'
               onChange={handleFileChange}
             />
-            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+            <Tooltip
+              title={
+                !blossomEnabled
+                  ? t('This coordinator does not offer image uploads')
+                  : peerPubKey === undefined
+                    ? t('Waiting for peer...')
+                    : ''
+              }
+            >
               <span>
                 <IconButton
-                  disabled={uploading || peerPubKey === undefined}
+                  disabled={uploading || peerPubKey === undefined || !blossomEnabled}
                   onClick={handleAttachClick}
                   color='primary'
                 >
                   {uploading ? <CircularProgress size={24} /> : <AttachFile />}
                 </IconButton>
               </span>
-            </Tooltip> */}
+            </Tooltip>
             <Button
               disabled={waitingEcho || peerPubKey === undefined}
               type='submit'
