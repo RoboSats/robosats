@@ -442,7 +442,7 @@ const BookTable = ({
         return price1 - price2;
       },
       renderCell: (params: { row: PublicOrder }) => {
-        const currencyCode = String(currencyDict[params.row.currency ?? 0).toString()]);
+        const currencyCode = String(currencyDict[params.row.currency ?? 0]).toString()]);
         const price = getOrderPrice(params.row);
 
         return (
