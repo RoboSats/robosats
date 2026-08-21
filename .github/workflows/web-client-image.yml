@@ -21,7 +21,7 @@ jobs:
     name: 'Push Docker image to Docker Hub'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
@@ -36,7 +36,7 @@ jobs:
 
     - name: 'Download Basic main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v8
       with:
         name: web-main-static
         path: web
@@ -61,7 +61,7 @@ jobs:
 
     - name: 'Get Commit Hash'
       id: commit
-      uses: pr-mpt/actions-commit-hash@v3
+      uses: pr-mpt/actions-commit-hash@v4
 
     - name: 'Set up QEMU'
       uses: docker/setup-qemu-action@v3

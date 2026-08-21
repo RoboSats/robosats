@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
@@ -43,13 +43,13 @@ jobs:
 
       - name: 'Download main.js Artifact for a release'
         if: inputs.semver != ''  # Only if fired as job in release.yml
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: mobile-web.bundle
           path: android/app/src/main/assets
 
       - name: Cache gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
@@ -95,7 +95,7 @@ jobs:
 
       - name: 'Get Commit Hash'
         id: commit
-        uses: pr-mpt/actions-commit-hash@v3
+        uses: pr-mpt/actions-commit-hash@v4
 
       # Create app-universal-release APK artifact asset for Release
       - name: 'Upload universal .apk Artifact'
