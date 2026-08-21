@@ -93,15 +93,15 @@ const F2fMapDialog = ({
               setUseTiles(true);
             }}
           >
-            {t('Accept')}
+            {t('Acknowledged')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <DialogTitle>
-        <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
-          <Grid item>{interactive ? t('Choose a location') : t('Map')}</Grid>
-          <Grid item>
+        <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
+          <Grid>{interactive ? t('Choose a location') : t('Map')}</Grid>
+          <Grid>
             <Tooltip enterTouchDelay={0} placement='top' title={t('Show tiles')}>
               <div
                 style={{
@@ -148,13 +148,13 @@ const F2fMapDialog = ({
         />
       </DialogContent>
       <DialogActions sx={{ paddingTop: 0 }}>
-        <Grid container direction='row' spacing={1} justifyContent='flex-end'>
-          <Grid item>
+        <Grid container direction='row' spacing={1} sx={{ justifyContent: 'flex-end' }}>
+          <Grid>
             <Typography variant='caption' color='text.secondary'>
               {message}
             </Typography>
           </Grid>
-          <Grid item>
+          <Grid>
             {interactive ? (
               <Button
                 color='primary'

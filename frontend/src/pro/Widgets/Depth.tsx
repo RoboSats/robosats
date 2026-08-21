@@ -2,11 +2,11 @@ import React, { useContext } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import DepthChart from '../../components/Charts/DepthChart';
-import { type Layout } from 'react-grid-layout';
+import { type LayoutItem } from 'react-grid-layout';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface DepthChartWidgetProps {
-  layout: Layout;
+  layout: LayoutItem | undefined;
   gridCellSize: number;
   style?: React.StyleHTMLAttributes<HTMLElement>;
   className?: string;
@@ -24,11 +24,23 @@ const DepthChartWidget = React.forwardRef(function Component({
 
   return React.useMemo(() => {
     return (
-      <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
+      <Paper
+        elevation={3}
+        style={{
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+        }}
+      >
         <DepthChart
           elevation={0}
-          maxWidth={layout.w * gridCellSize} // EM units
-          maxHeight={layout.h * gridCellSize} // EM units
+          maxWidth={(layout?.w ?? 0) * gridCellSize}
+          maxHeight={(layout?.h ?? 0) * gridCellSize}
+          fillContainer={true}
         />
       </Paper>
     );

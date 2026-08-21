@@ -103,7 +103,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                     setOpen({ ...closeAll, profile: !open.profile });
                   }}
                 >
-                  <ListItemIcon>
+                  <ListItemIcon sx={{ minWidth: 56 }}>
                     <RobotAvatar
                       style={{ width: '1.5em', height: '1.5em' }}
                       hashId={slot?.hashId}
@@ -140,7 +140,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                             setTimeout(() => setShow(false), 300);
                           }}
                         >
-                          <ListItemIcon>
+                          <ListItemIcon sx={{ minWidth: 56 }}>
                             <RobotAvatar
                               style={{ width: '1.5em', height: '1.5em' }}
                               hashId={garageSlot.hashId ?? ''}
@@ -154,7 +154,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                     );
                   })}
                   <ListItemButton sx={{ pr: 0 }} onClick={handleAddRobot} key='add_robot'>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Add /> <div style={{ width: '0.5em' }} />
                       {t('Add Robot')}
                     </ListItemIcon>
@@ -165,7 +165,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
           ) : (
             <ListItem disablePadding sx={{ height: '30px', mt: '8px', mb: '8px' }}>
               <ListItemButton sx={{ pr: 0 }} onClick={handleAddRobot}>
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <Add /> <div style={{ width: '0.5em' }} />
                   {t('Add Robot')}
                 </ListItemIcon>
@@ -179,7 +179,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                 setOpen({ ...closeAll, info: !open.info });
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Info />
               </ListItemIcon>
               <ListItemText primary={t('RoboSats')} />
@@ -191,7 +191,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                 setOpen({ ...closeAll, learn: !open.learn });
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <School />
               </ListItemIcon>
               <ListItemText primary={t('Learn RoboSats')} />
@@ -203,7 +203,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                 setOpen({ ...closeAll, community: !open.community });
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <People />
               </ListItemIcon>
               <ListItemText primary={t('Community')} />
@@ -215,7 +215,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                 setOpen({ ...closeAll, exchange: !open.exchange });
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <PriceChange />
               </ListItemIcon>
               <ListItemText primary={t('Exchange summary')} />
@@ -227,7 +227,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                 setOpen({ ...closeAll, client: !open.client });
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <BubbleChart />
               </ListItemIcon>
               <ListItemText primary={t('Client info')} />
@@ -236,7 +236,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
           <div style={{ flexGrow: 1 }} />
           <ListItem disablePadding>
             <ListItemButton onClick={() => changePage('settings')}>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <SettingsApplications />
               </ListItemIcon>
               <ListItemText primary={t('Settings')} />
@@ -245,7 +245,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
           {client === 'mobile' && settings.useProxy && (
             <ListItem disablePadding sx={{ display: 'flex', flexDirection: 'column' }}>
               <ListItemButton selected>
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   {torProgress ? (
                     <Box>
                       <CircularProgress color={torColor} thickness={6} size={22} />
@@ -275,8 +275,7 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
               }}
             />
             <Typography
-              lineHeight={0.82}
-              sx={{ position: 'relative', bottom: '0.3em' }}
+              sx={{ position: 'relative', bottom: '0.3em', lineHeight: 0.82 }}
               color='secondary'
               align='center'
             >

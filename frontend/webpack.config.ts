@@ -54,7 +54,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
     plugins: [
       // Django
       new HtmlWebpackPlugin({
-        publicPath: './static/frontend/',
+        publicPath: '/static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
@@ -66,7 +66,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         basePath: '/',
       }),
       new HtmlWebpackPlugin({
-        publicPath: './static/frontend/',
+        publicPath: '/static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: true,
@@ -79,7 +79,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
       }),
       // Node App
       new HtmlWebpackPlugin({
-        publicPath: './static/frontend/',
+        publicPath: '/static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
@@ -91,7 +91,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         basePath: '/',
       }),
       new HtmlWebpackPlugin({
-        publicPath: './static/frontend/',
+        publicPath: '/static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: true,
@@ -119,7 +119,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
 
       // Web App
       new HtmlWebpackPlugin({
-        publicPath: './static/frontend/',
+        publicPath: '/static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: false,
@@ -131,7 +131,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
         basePath: '/',
       }),
       new HtmlWebpackPlugin({
-        publicPath: './static/frontend/',
+        publicPath: '/static/frontend/',
         template: path.resolve(__dirname, 'templates/frontend/index.ejs'),
         templateParameters: {
           pro: true,

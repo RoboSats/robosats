@@ -73,20 +73,24 @@ export const FederationContextProvider = ({
         const petPubkey = event.tags.find((t) => t[0] === 'p')?.[1] ?? '';
 
         setNotifications((notifications) => {
-          const robotNotifications = notifications[petPubkey] ?? new Map<string, Event>();
+          const robotNotifications = notifications[petPubkey] ?? new Map<string, Event[]>();
 
-          if (!robotNotifications.has(event.id)) {
-            const hexPubKey = event.tags.find((t) => t[0] == 'p')?.[1];
-            const slot = Object.values(garage.slots).find((s) => s.nostrPubKey == hexPubKey);
-
-            if (slot?.nostrSecKey) {
-              setNotificationsUpdatedAt(new Date().toISOString());
-              const rumor = nip17.unwrapEvent(event, slot.nostrSecKey);
-              robotNotifications.set(event.id, [event, rumor as Event]);
-            }
+          if (robotNotifications.has(event.id)) {
+            return notifications;
           }
 
-          return { ...notifications, [petPubkey]: robotNotifications };
+          const hexPubKey = event.tags.find((t) => t[0] == 'p')?.[1];
+          const slot = Object.values(garage.slots).find((s) => s.nostrPubKey == hexPubKey);
+
+          if (slot?.nostrSecKey) {
+            setNotificationsUpdatedAt(new Date().toISOString());
+            const rumor = nip17.unwrapEvent(event, slot.nostrSecKey);
+            const newRobotNotifications = new Map(robotNotifications);
+            newRobotNotifications.set(event.id, [event, rumor as Event]);
+            return { ...notifications, [petPubkey]: newRobotNotifications };
+          }
+
+          return notifications;
         });
       },
       oneose: () => setLoadingNotifications(false),

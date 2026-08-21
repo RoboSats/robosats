@@ -231,24 +231,66 @@ class CLNNode:
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
-        request = hold_pb2.HoldInvoiceCancelRequest(
-            payment_hash=bytes.fromhex(payment_hash)
-        )
+        payment_hash_bytes = bytes.fromhex(payment_hash)
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
-        response = holdstub.HoldInvoiceCancel(request)
+        lookup_request = hold_pb2.HoldInvoiceLookupRequest(
+            payment_hash=payment_hash_bytes
+        )
 
-        return response.state == hold_pb2.Holdstate.CANCELED
+        try:
+            request = hold_pb2.HoldInvoiceCancelRequest(payment_hash=payment_hash_bytes)
+            response = holdstub.HoldInvoiceCancel(request)
+            # Fast path: CLN already reports the final state in the response.
+            if response.state == hold_pb2.Holdstate.CANCELED:
+                return True
+            if response.state == hold_pb2.Holdstate.OPEN:
+                # Invoice was never locked — treat as successfully cancelled.
+                return True
+        except Exception:
+            # CLN may throw if the invoice is in a state that cannot be cancelled
+            # (e.g. OPEN invoices on some hold-plugin versions). Fall through to
+            # lookup polling to determine the actual state.
+            pass
+
+        # CLN's cancel response state may still be ACCEPTED briefly while the
+        # HTLC cancellation propagates. Poll HoldInvoiceLookup until CANCELED
+        # (or OPEN = never locked) is confirmed, or the retry window expires.
+        # 30 × 0.2 s = up to 6 seconds, enough for any regtest or slow CI environment.
+        for _ in range(30):
+            lookup_response = holdstub.HoldInvoiceLookup(lookup_request)
+            if lookup_response.state == hold_pb2.Holdstate.CANCELED:
+                return True
+            if lookup_response.state == hold_pb2.Holdstate.OPEN:
+                return True
+            time.sleep(0.2)
+
+        return False
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = hold_pb2.HoldInvoiceSettleRequest(
-            payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
-        )
+        payment_hash = hashlib.sha256(bytes.fromhex(preimage)).digest()
         holdstub = hold_pb2_grpc.HoldStub(cls.hold_channel)
+
+        request = hold_pb2.HoldInvoiceSettleRequest(payment_hash=payment_hash)
         response = holdstub.HoldInvoiceSettle(request)
 
-        return response.state == hold_pb2.Holdstate.SETTLED
+        # Fast path: CLN reports settled state directly.
+        if response.state == hold_pb2.Holdstate.SETTLED:
+            return True
+
+        # CLN's settle response state may still be ACCEPTED briefly while the
+        # HTLC settlement propagates through the channel. Poll HoldInvoiceLookup
+        # until SETTLED is confirmed, or the retry window expires.
+        # 30 × 0.2 s = up to 6 seconds, enough for any regtest or slow CI environment.
+        lookup_request = hold_pb2.HoldInvoiceLookupRequest(payment_hash=payment_hash)
+        for _ in range(30):
+            lookup_response = holdstub.HoldInvoiceLookup(lookup_request)
+            if lookup_response.state == hold_pb2.Holdstate.SETTLED:
+                return True
+            time.sleep(0.2)
+
+        return False
 
     @classmethod
     def gen_hold_invoice(
@@ -585,12 +627,19 @@ class CLNNode:
                     time.sleep(2)
 
         def handle_response():
+            from api.logics import Logics
+
+            if not order.transition_status(
+                Order.Status.PAY,
+                from_statuses=[Order.Status.PAY, Order.Status.FAI],
+            ):
+                return
+
             try:
                 lnpayment.status = LNPayment.Status.FLIGHT
                 lnpayment.in_flight = True
                 lnpayment.save(update_fields=["in_flight", "status"])
 
-                order.update_status(Order.Status.PAY)
                 nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
                 response = nodestub.Pay(request)
 
@@ -649,7 +698,7 @@ class CLNNode:
                     )
                     lnpayment.preimage = response.payment_preimage.hex()
                     lnpayment.save(update_fields=["status", "fee", "preimage"])
-                    order.update_status(Order.Status.SUC)
+                    Logics.complete_order(order)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.SUC)
                     )

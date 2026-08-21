@@ -4,6 +4,7 @@ from hmac import compare_digest
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -56,6 +57,7 @@ from api.serializers import (
     ReviewSerializer,
     UpdateOrderSerializer,
     ListNotificationSerializer,
+    UpdateRobotSerializer,
 )
 from api.utils import (
     compute_avg_premium,
@@ -70,6 +72,11 @@ from control.models import AccountingDay, BalanceLog
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
+
+# Redis response cache TTLs (seconds) for the hot public endpoints
+BOOK_CACHE_TTL = 10
+INFO_CACHE_TTL = 30
+PRICE_CACHE_TTL = 30
 
 
 class MakerView(CreateAPIView):
@@ -564,6 +571,8 @@ class OrderView(viewsets.ViewSet):
                     {
                         "id": order.id,
                         "status": order.status,
+                        "type": order.type,
+                        "expires_at": order.expires_at,
                         "bad_request": "This order has been cancelled",
                     },
                     status.HTTP_200_OK,
@@ -668,6 +677,11 @@ class RobotView(APIView):
         context["earned_rewards"] = user.robot.earned_rewards
         context["wants_stealth"] = user.robot.wants_stealth
         context["nostr_pubkey"] = user.robot.nostr_pubkey
+
+        context["webhook_url"] = user.robot.webhook_url
+        context["webhook_enabled"] = user.robot.webhook_enabled
+        context["webhook_api_key"] = user.robot.webhook_api_key
+
         context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
@@ -692,6 +706,36 @@ class RobotView(APIView):
 
         return Response(context, status=status.HTTP_200_OK)
 
+    @extend_schema(**RobotViewSchema.put)
+    def put(self, request, format=None):
+        """
+        Update robot's webhook settings.
+        """
+        robot = request.user.robot
+        old_webhook_url = robot.webhook_url
+        old_webhook_enabled = robot.webhook_enabled
+        serializer = UpdateRobotSerializer(robot, data=request.data, partial=True)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+        new_webhook_url = request.data.get("webhook_url")
+        new_webhook_enabled = serializer.validated_data.get(
+            "webhook_enabled", old_webhook_enabled
+        )
+
+        url_changed = new_webhook_url and new_webhook_url != old_webhook_url
+        just_enabled = new_webhook_enabled and not old_webhook_enabled
+
+        if url_changed or just_enabled:
+            from api.notifications import Notifications
+
+            Notifications().send_webhook_test(robot)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class BookView(ListAPIView):
     serializer_class = OrderPublicSerializer
@@ -702,42 +746,51 @@ class BookView(ListAPIView):
         currency = request.GET.get("currency", 0)
         type = request.GET.get("type", 2)
 
-        queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
+        cache_key = f"book:{currency}:{type}"
+        book_data = cache.get(cache_key)
+        if book_data is None:
+            queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
 
-        # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
-        if int(currency) == 0 and int(type) != 2:
-            queryset = Order.objects.filter(type=type, status=Order.Status.PUB)
-        elif int(type) == 2 and int(currency) != 0:
-            queryset = Order.objects.filter(currency=currency, status=Order.Status.PUB)
-        elif not (int(currency) == 0 and int(type) == 2):
-            queryset = Order.objects.filter(
-                currency=currency, type=type, status=Order.Status.PUB
-            )
+            # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
+            if int(currency) == 0 and int(type) != 2:
+                queryset = Order.objects.filter(type=type, status=Order.Status.PUB)
+            elif int(type) == 2 and int(currency) != 0:
+                queryset = Order.objects.filter(
+                    currency=currency, status=Order.Status.PUB
+                )
+            elif not (int(currency) == 0 and int(type) == 2):
+                queryset = Order.objects.filter(
+                    currency=currency, type=type, status=Order.Status.PUB
+                )
 
-        if len(queryset) == 0:
-            return Response(
-                {"not_found": "No orders found, be the first to make one"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            if len(queryset) == 0:
+                return Response(
+                    {"not_found": "No orders found, be the first to make one"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
-        book_data = []
-        for order in queryset:
-            data = ListOrderSerializer(order).data
-            data["maker_nick"] = str(order.maker)
-            data["maker_hash_id"] = str(order.maker.robot.hash_id)
+            book_data = []
+            for order in queryset:
+                data = ListOrderSerializer(order).data
+                data["maker_nick"] = str(order.maker)
+                data["maker_hash_id"] = str(order.maker.robot.hash_id)
 
-            data["satoshis_now"] = Logics.satoshis_now(order)
-            # Compute current premium for those orders that are explicitly priced.
-            price, premium = Logics.price_and_premium_now(order)
-            data["price"], data["premium"] = price, str(premium)
-            data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
-            for key in (
-                "status",
-                "taker",
-            ):  # Non participants should not see the status or who is the taker
-                del data[key]
+                data["satoshis_now"] = Logics.satoshis_now(order)
+                # Compute current premium for those orders that are explicitly priced.
+                price, premium = Logics.price_and_premium_now(order)
+                data["price"], data["premium"] = price, str(premium)
+                data["maker_status"] = Logics.user_activity_status(
+                    order.maker.last_login
+                )
+                for key in (
+                    "status",
+                    "taker",
+                ):  # Non participants should not see the status or who is the taker
+                    del data[key]
 
-            book_data.append(data)
+                book_data.append(data)
+
+            cache.set(cache_key, book_data, timeout=BOOK_CACHE_TTL)
 
         return Response(book_data, status=status.HTTP_200_OK)
 
@@ -773,6 +826,10 @@ class InfoView(viewsets.ViewSet):
 
     @extend_schema(**InfoViewSchema.get)
     def get(self, request):
+        context = cache.get("info")
+        if context is not None:
+            return Response(context, status.HTTP_200_OK)
+
         context = {}
 
         context["num_public_buy_orders"] = len(
@@ -848,6 +905,8 @@ class InfoView(viewsets.ViewSet):
         except BalanceLog.DoesNotExist:
             context["current_swap_fee_rate"] = 0
 
+        cache.set("info", context, timeout=INFO_CACHE_TTL)
+
         return Response(context, status.HTTP_200_OK)
 
 
@@ -890,6 +949,10 @@ class PriceView(ListAPIView):
 
     @extend_schema(**PriceViewSchema.get)
     def get(self, request):
+        payload = cache.get("price")
+        if payload is not None:
+            return Response(payload, status.HTTP_200_OK)
+
         payload = {}
         queryset = Currency.objects.all().order_by("currency")
 
@@ -907,6 +970,8 @@ class PriceView(ListAPIView):
                 }
             except Exception:
                 payload[code] = None
+
+        cache.set("price", payload, timeout=PRICE_CACHE_TTL)
 
         return Response(payload, status.HTTP_200_OK)
 

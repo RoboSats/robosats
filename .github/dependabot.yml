@@ -1,0 +1,70 @@
+version: 2
+updates:
+  # Python backend (requirements.txt + requirements_dev.txt)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "backend"
+    groups:
+      python-patch:
+        update-types: ["patch", "minor"]
+        exclude-patterns: ["django"]
+      python-major:
+        update-types: ["major"]
+        patterns: ["django"]
+
+  # Frontend (frontend/package.json)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      frontend-security:
+        dependency-type: "production"
+        update-types: ["patch", "minor"]
+      frontend-eslint:
+        patterns: ["eslint*", "@eslint/*"]
+      frontend-babel-webpack:
+        patterns: ["@babel/*", "webpack*"]
+      frontend-i18n:
+        patterns: ["i18next*", "react-i18next"]
+      frontend-mui:
+        patterns: ["@mui/*", "@emotion/*"]
+
+  # Electron desktop app (desktopApp/package.json)
+  - package-ecosystem: "npm"
+    directory: "/desktopApp"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "desktop"
+    groups:
+      desktop-all:
+        patterns: ["*"]
+
+  # GitHub Actions workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      ci-artifact-pipeline:
+        patterns: ["actions/upload-artifact", "dawidd6/action-download-artifact"]
+      ci-docker:
+        patterns: ["docker/*"]
+      ci-misc:
+        patterns: ["*"]

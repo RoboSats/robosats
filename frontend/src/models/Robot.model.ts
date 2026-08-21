@@ -1,6 +1,41 @@
 import { apiClient, type Auth } from '../services/api';
 import type Federation from './Federation.model';
 
+interface RobotApiResponse {
+  bad_request?: string;
+  nickname?: string;
+  active_order_id?: number | null;
+  last_order_id?: number | null;
+  earned_rewards?: number;
+  wants_stealth?: boolean;
+  tg_enabled?: boolean;
+  tg_bot_name?: string;
+  tg_token?: string;
+  found?: boolean;
+  last_login?: string;
+  public_key?: string;
+  encrypted_private_key?: string;
+  nostr_pubkey?: string;
+  webhook_url?: string;
+  webhook_enabled?: boolean;
+  webhook_api_key?: string;
+}
+
+interface RewardApiResponse {
+  successful_withdrawal?: boolean;
+  bad_invoice?: string;
+}
+
+interface WebhookApiResponse {
+  webhook_url?: string;
+  webhook_enabled?: boolean;
+  webhook_api_key?: string;
+}
+
+interface ReviewApiResponse {
+  token?: string;
+}
+
 class Robot {
   constructor(attributes?: object) {
     Object.assign(this, attributes);
@@ -25,6 +60,10 @@ class Robot {
   public shannonEntropy?: number;
   public tokenSHA256: string = '';
   public hasEnoughEntropy: boolean = false;
+
+  public webhookUrl: string = '';
+  public webhookEnabled: boolean = false;
+  public webhookApiKey: string = '';
 
   update = (attributes: object): void => {
     Object.assign(this, attributes);
@@ -55,8 +94,9 @@ class Robot {
     this.loading = true;
 
     await apiClient
-      .get(coordinator.url, '/api/robot/', authHeaders)
-      .then((data: object) => {
+      .get(coordinator.url, '/api/robot/', authHeaders, true)
+      .then((raw) => {
+        const data = raw as RobotApiResponse;
         if (data?.bad_request) {
           console.error(data?.bad_request);
           return;
@@ -76,6 +116,9 @@ class Robot {
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
           nostrPubKey: data.nostr_pubkey,
+          webhookUrl: data.webhook_url ?? '',
+          webhookEnabled: data.webhook_enabled ?? false,
+          webhookApiKey: data.webhook_api_key ?? '',
         });
       })
       .catch((e) => {
@@ -96,7 +139,7 @@ class Robot {
     if (!federation) return null;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
-    const data = await apiClient
+    const data = (await apiClient
       .post(
         coordinator.url,
         '/api/reward/',
@@ -107,7 +150,7 @@ class Robot {
       )
       .catch((e) => {
         console.log(e);
-      });
+      })) as RewardApiResponse | undefined;
     this.earnedRewards = data?.successful_withdrawal === true ? 0 : this.earnedRewards;
 
     return data ?? {};
@@ -126,6 +169,34 @@ class Robot {
     this.stealthInvoices = wantsStealth;
   };
 
+  fetchWebhook = async (
+    federation: Federation,
+    settings: {
+      webhook_url?: string;
+      webhook_enabled?: boolean;
+      webhook_api_key?: string;
+    },
+  ): Promise<void> => {
+    if (!federation) return;
+
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    await apiClient
+      .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
+      .then((raw) => {
+        const data = raw as WebhookApiResponse | undefined;
+        if (data) {
+          this.update({
+            webhookUrl: data.webhook_url ?? this.webhookUrl,
+            webhookEnabled: data.webhook_enabled ?? this.webhookEnabled,
+            webhookApiKey: data.webhook_api_key ?? this.webhookApiKey,
+          });
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
   loadReviewToken = (
     federation: Federation,
     onDataLoad: (token: string) => void = () => {},
@@ -141,8 +212,9 @@ class Robot {
       .post(coordinator.url, '/api/review/', body, {
         tokenSHA256: this.tokenSHA256,
       })
-      .then((data) => {
-        if (data) {
+      .then((raw) => {
+        const data = raw as ReviewApiResponse | undefined;
+        if (data?.token) {
           onDataLoad(data.token);
         }
       })

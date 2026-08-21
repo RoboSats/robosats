@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import {
   ResponsiveLine,
-  type Serie,
-  type Datum,
+  type LineSeries,
   type PointTooltipProps,
-  type PointMouseHandler,
   type Point,
-  type CustomLayer,
+  type LineCustomSvgLayerProps,
+  type LineSvgLayer,
+  type PointOrSliceMouseHandler,
+  type AllowedValue,
 } from '@nivo/line';
 import {
   Box,
@@ -18,11 +19,12 @@ import {
   Select,
   useTheme,
 } from '@mui/material';
-import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlined';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutlined';
 import { useTranslation } from 'react-i18next';
 import { type PublicOrder } from '../../../models';
 import { matchMedian } from '../../../utils';
-import currencyDict from '../../../../static/assets/currencies.json';
+import currencyDict from '../../../utils/currencies';
 import getNivoScheme from '../NivoScheme';
 import OrderTooltip from '../helpers/OrderTooltip';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
@@ -32,34 +34,37 @@ import {
 } from '../../../contexts/FederationContext';
 
 interface DepthChartProps {
-  maxWidth: number;
-  maxHeight: number;
+  maxWidth?: number;
+  maxHeight?: number;
   elevation?: number;
   onOrderClicked?: (id: number, shortAlias: string) => void;
+  fillContainer?: boolean;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
-  maxWidth,
-  maxHeight,
+  maxWidth = 10,
+  maxHeight = 10,
   elevation = 6,
   onOrderClicked = () => null,
+  fillContainer = false,
 }) => {
   const { fav } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
+
+  const height = maxHeight < 10 ? 10 : maxHeight;
+  const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
+
   const [enrichedOrders, setEnrichedOrders] = useState<PublicOrder[]>([]);
-  const [series, setSeries] = useState<Serie[]>([]);
+  const [series, setSeries] = useState<LineSeries[]>([]);
   const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
   const [currencyCode, setCurrencyCode] = useState<number>(0);
   const [coordinatorFilter, setCoordinatorFilter] = useState<string>('all');
   const [center, setCenter] = useState<number>();
-
-  const height = maxHeight < 10 ? 10 : maxHeight;
-  const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
     setCurrencyCode(fav.currency); // as selected in BookControl
@@ -88,7 +93,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
         }
         return order;
       });
-      setEnrichedOrders(enriched);
+      setEnrichedOrders(enriched.filter((o): o is PublicOrder => o != null));
     }
   }, [federationUpdatedAt, currencyCode, coordinatorFilter]);
 
@@ -112,7 +117,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setRangeSteps(rangeSteps);
     } else {
       if (federation.exchange.info?.last_day_nonkyc_btc_premium === undefined) {
-        const premiums: number[] = enrichedOrders.map((order) => order?.premium ?? 0);
+        const premiums: number[] = enrichedOrders.map((order) => parseFloat(order?.premium ?? '0'));
         setCenter(~~matchMedian(premiums));
       } else {
         setCenter(federation.exchange.info?.last_day_nonkyc_btc_premium);
@@ -151,7 +156,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
             )
             .sort(
               (order1: PublicOrder | null, order2: PublicOrder | null) =>
-                order1?.premium - order2?.premium,
+                parseFloat(order1?.premium ?? '0') - parseFloat(order2?.premium ?? '0'),
             );
 
     const sortedBuyOrders: PublicOrder[] = sortedOrders
@@ -159,8 +164,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
       .reverse();
     const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order?.type === 1);
 
-    const buySerie: Datum[] = generateSerie(sortedBuyOrders);
-    const sellSerie: Datum[] = generateSerie(sortedSellOrders);
+    const buySerie: Record<string, unknown>[] = generateSerie(sortedBuyOrders);
+    const sellSerie: Record<string, unknown>[] = generateSerie(sortedSellOrders);
 
     const maxX: number = (center ?? 0) + xRange;
     const minX: number = (center ?? 0) - xRange;
@@ -168,27 +173,27 @@ const DepthChart: React.FC<DepthChartProps> = ({
     setSeries([
       {
         id: 'buy',
-        data: closeSerie(buySerie, maxX, minX),
+        data: closeSerie(buySerie, maxX, minX) as { x: AllowedValue; y: AllowedValue }[],
       },
       {
         id: 'sell',
-        data: closeSerie(sellSerie, minX, maxX),
+        data: closeSerie(sellSerie, minX, maxX) as { x: AllowedValue; y: AllowedValue }[],
       },
     ]);
   };
 
-  const generateSerie = (orders: PublicOrder[]): Datum[] => {
+  const generateSerie = (orders: PublicOrder[]): Record<string, unknown>[] => {
     if (center === undefined) {
       return [];
     }
 
     let sumOrders: number = 0;
-    let serie: Datum[] = [];
+    let serie: Record<string, unknown>[] = [];
     orders.forEach((order) => {
       const lastSumOrders = sumOrders;
 
       sumOrders += (order.satoshis_now ?? 0) / 100000000;
-      const datum: Datum[] = [
+      const datum: Record<string, unknown>[] = [
         {
           // Vertical Line
           x: xType === 'base_price' ? order.base_price : order.premium,
@@ -204,21 +209,25 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
       serie = [...serie, ...datum];
     });
-    const inlineSerie = serie.filter((datum: Datum) => {
+    const inlineSerie = serie.filter((datum: Record<string, unknown>) => {
       return Number(datum.x) > center - xRange && Number(datum.x) < center + xRange;
     });
 
     return inlineSerie;
   };
 
-  const closeSerie = (serie: Datum[], limitBottom: number, limitTop: number): Datum[] => {
+  const closeSerie = (
+    serie: Record<string, unknown>[],
+    limitBottom: number,
+    limitTop: number,
+  ): Record<string, unknown>[] => {
     if (serie.length === 0) {
       return [];
     }
 
     // If the bottom is not 0, exdens the horizontal bottom line
     if (serie[0].y !== 0) {
-      const startingPoint: Datum = {
+      const startingPoint: Record<string, unknown> = {
         x: limitBottom,
         y: serie[0].y,
       };
@@ -226,7 +235,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     }
 
     // exdens the horizontal top line
-    const endingPoint: Datum = {
+    const endingPoint: Record<string, unknown> = {
       x: limitTop,
       y: serie[serie.length - 1].y,
     };
@@ -234,29 +243,27 @@ const DepthChart: React.FC<DepthChartProps> = ({
     return [...serie, endingPoint];
   };
 
-  const centerLine: CustomLayer = (props) => (
-    <path
-      key='center-line'
-      d={props.lineGenerator([
-        {
-          y: 0,
-          x: props.xScale(center ?? 0),
-        },
-        {
-          y: props.innerHeight,
-          x: props.xScale(center ?? 0),
-        },
-      ])}
-      fill='none'
-      stroke={getNivoScheme(theme).markers?.lineColor}
-      strokeWidth={getNivoScheme(theme).markers?.lineStrokeWidth}
-    />
-  );
+  const centerLine: React.FC<LineCustomSvgLayerProps<LineSeries>> = (props) => {
+    const pathD = props.lineGenerator([
+      { y: 0, x: props.xScale(center ?? 0) },
+      { y: props.innerHeight, x: props.xScale(center ?? 0) },
+    ]);
+    return (
+      <path
+        key='center-line'
+        d={pathD ?? undefined}
+        fill='none'
+        stroke={getNivoScheme(theme).markers?.lineColor}
+        strokeWidth={getNivoScheme(theme).markers?.lineStrokeWidth}
+      />
+    );
+  };
 
-  const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
-    pointTooltip: PointTooltipProps,
+  const generateTooltip: React.FunctionComponent<PointTooltipProps<LineSeries>> = (
+    pointTooltip: PointTooltipProps<LineSeries>,
   ) => {
-    const order: PublicOrder = pointTooltip.point.data.order;
+    const order: PublicOrder = (pointTooltip.point.data as Record<string, unknown>)
+      .order as PublicOrder;
     return <OrderTooltip order={order} />;
   };
 
@@ -276,23 +283,35 @@ const DepthChart: React.FC<DepthChartProps> = ({
       return `${value}%`;
     }
   };
-  const formatAxisY = (value: number): string => `${value}₿`;
-  const handleOnClick: PointMouseHandler = (point: Point) => {
-    onOrderClicked(point.data?.order?.id, point.data?.order?.coordinatorShortAlias);
+  const formatAxisY = (value: number): string => `${value}`;
+  const handleOnClick: PointOrSliceMouseHandler<LineSeries> = (pointOrSlice): void => {
+    if ('data' in pointOrSlice) {
+      const point = pointOrSlice as Point<LineSeries>;
+      const data = point.data as Record<string, unknown>;
+      const order = data.order as PublicOrder | undefined;
+      onOrderClicked(order?.id ?? 0, order?.coordinatorShortAlias ?? '');
+    }
   };
 
   const em = theme.typography.fontSize;
-  return (
-    <Paper
-      elevation={elevation}
-      style={{
+  const containerStyle = fillContainer
+    ? ({
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      } as const)
+    : ({
         width: `${width}em`,
         height: `${height}em`,
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
-      }}
-    >
+      } as const);
+
+  return (
+    <Paper elevation={elevation} style={containerStyle}>
       <Paper
         variant='outlined'
         style={{
@@ -306,19 +325,28 @@ const DepthChart: React.FC<DepthChartProps> = ({
             style={{
               display: 'flex',
               justifyContent: 'center',
-              paddingTop: `${height / 2}em`,
+              paddingTop: fillContainer ? '20%' : `${height / 2}em`,
             }}
           >
             <CircularProgress />
           </div>
         ) : (
-          <Grid container alignItems='center' direction='column'>
+          <Grid
+            container
+
+            sx={{
+              height: '100%',
+              flexWrap: 'nowrap',
+              alignItems: 'center',
+              flexDirection: 'column',
+            }}
+          >
             <Grid
               container
               direction='row'
-              justifyContent='space-between'
-              alignItems='center'
-              style={{ width: '100%' }}
+
+              style={{ width: '100%', flexShrink: 0 }}
+              sx={{ alignItems: 'center', justifyContent: 'space-between' }}
             >
               <Grid container style={{ paddingLeft: '1em', paddingTop: 3 }}>
                 <b>{t('Chart')}</b>
@@ -343,36 +371,45 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   </MenuItem>
                 </Select>
               </Grid>
-              <Grid container justifyContent='center' alignItems='center'>
-                <Grid item>
+              <Grid container sx={{ alignItems: 'center', justifyContent: 'center' }}>
+                <Grid>
                   <IconButton
                     onClick={() => {
                       setXRange(xRange + rangeSteps);
                     }}
                   >
-                    <RemoveCircleOutline />
+                    <RemoveCircleOutlineIcon />
                   </IconButton>
                 </Grid>
-                <Grid item>
-                  <Box justifyContent='center'>
+                <Grid>
+                  <Box sx={{ justifyContent: 'center' }}>
                     {xType === 'base_price'
-                      ? `${center} ${String(currencyDict[(currencyCode || 1) as keyof object])}`
+                      ? `${center} ${String(currencyDict[String(currencyCode || 1)])}`
                       : `${String(center.toPrecision(3))}%`}
                   </Box>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <IconButton
                     onClick={() => {
                       setXRange(xRange - rangeSteps);
                     }}
                     disabled={xRange <= 1}
                   >
-                    <AddCircleOutline />
+                    <AddCircleOutlineIcon />
                   </IconButton>
                 </Grid>
               </Grid>
             </Grid>
-            <Grid container style={{ height: `${height * 0.9}em`, width: '100%', padding: '1em' }}>
+            <Grid
+              container
+              style={{
+                height: fillContainer ? '100%' : `${height * 0.9}em`,
+                width: '100%',
+                padding: '1em',
+                flexGrow: 1,
+                minHeight: 0,
+              }}
+            >
               <ResponsiveLine
                 data={series}
                 enableArea={true}
@@ -384,6 +421,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 axisLeft={{
                   tickSize: 5,
                   format: formatAxisY,
+                  legend: 'BTC',
+                  legendOffset: -42,
+                  legendPosition: 'middle',
                 }}
                 axisBottom={{
                   tickSize: 5,
@@ -392,7 +432,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   format: formatAxisX,
                 }}
                 margin={{
-                  left: 3 * em,
+                  left: 3.5 * em,
                   right: 0.714 * em,
                   bottom:
                     xType === 'base_price'
@@ -413,7 +453,15 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   min: center - xRange,
                   max: center + xRange,
                 }}
-                layers={['axes', 'areas', 'crosshair', 'lines', centerLine, 'slices', 'mesh']}
+                layers={[
+                  'axes',
+                  'areas',
+                  'crosshair',
+                  'lines',
+                  centerLine as LineSvgLayer<LineSeries>,
+                  'slices',
+                  'mesh',
+                ]}
               />
             </Grid>
           </Grid>

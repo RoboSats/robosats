@@ -1,6 +1,7 @@
-import React, { StrictMode, Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import Main from './basic/Main';
+import BasicMain from './basic/Main';
+import ProMain from './pro/Main';
 import { CssBaseline, Snackbar, Alert } from '@mui/material';
 import HostAlert from './components/HostAlert';
 
@@ -14,7 +15,8 @@ import { GarageContextProvider } from './contexts/GarageContext';
 import { FederationContextProvider } from './contexts/FederationContext';
 
 const App = (): React.JSX.Element => {
-  const [client] = window.RobosatsSettings.split('-');
+  const [client, view] = window.RobosatsSettings.split('-');
+  const isPro = view === 'pro';
 
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -41,39 +43,37 @@ const App = (): React.JSX.Element => {
   };
 
   return (
-    <StrictMode>
-      <ErrorBoundary>
-        <Suspense fallback='loading'>
-          <I18nextProvider i18n={i18n}>
-            <AppContextProvider>
-              <FederationContextProvider>
-                <GarageContextProvider>
-                  <CssBaseline />
-                  {client !== 'mobile' && <HostAlert />}
-                  <Main />
+    <ErrorBoundary>
+      <Suspense fallback='loading'>
+        <I18nextProvider i18n={i18n}>
+          <AppContextProvider>
+            <FederationContextProvider>
+              <GarageContextProvider>
+                <CssBaseline />
+                {client !== 'mobile' && <HostAlert />}
+                {isPro ? <ProMain /> : <BasicMain />}
 
-                  <Snackbar
-                    open={errorOpen}
-                    autoHideDuration={6000}
+                <Snackbar
+                  open={errorOpen}
+                  autoHideDuration={6000}
+                  onClose={handleClose}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                  <Alert
                     onClose={handleClose}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    severity='error'
+                    sx={{ width: '100%' }}
+                    variant='filled'
                   >
-                    <Alert
-                      onClose={handleClose}
-                      severity='error'
-                      sx={{ width: '100%' }}
-                      variant='filled'
-                    >
-                      {errorMessage}
-                    </Alert>
-                  </Snackbar>
-                </GarageContextProvider>
-              </FederationContextProvider>
-            </AppContextProvider>
-          </I18nextProvider>
-        </Suspense>
-      </ErrorBoundary>
-    </StrictMode>
+                    {errorMessage}
+                  </Alert>
+                </Snackbar>
+              </GarageContextProvider>
+            </FederationContextProvider>
+          </AppContextProvider>
+        </I18nextProvider>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

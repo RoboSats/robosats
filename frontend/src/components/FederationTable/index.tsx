@@ -21,7 +21,7 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { Origin, type Coordinator } from '../../models';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import RobotAvatar from '../RobotAvatar';
-import { verifyCoordinatorToken } from '../../utils/nostr';
+
 import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { Origins } from '../../models/Coordinator.model';
 
@@ -29,12 +29,14 @@ interface FederationTableProps {
   maxWidth?: number;
   maxHeight?: number;
   fillContainer?: boolean;
+  showTitle?: boolean;
 }
 
 const FederationTable = ({
   maxWidth = 90,
   maxHeight = 50,
   fillContainer = false,
+  showTitle = true,
 }: FederationTableProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
@@ -43,13 +45,8 @@ const FederationTable = ({
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
-  const [pageSize, setPageSize] = useState<number>(0);
-  const [ratings, setRatings] = useState<Record<string, Record<string, number>>>(
-    federation.getCoordinators().reduce((acc, coord) => {
-      if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
-      return acc;
-    }, {}),
-  );
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 0 });
+
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
   const [error, setError] = useState<string>();
@@ -73,7 +70,7 @@ const FederationTable = ({
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.getCoordinator(alias)) {
-      const attributes: object = {
+      const attributes: Record<string, unknown> = {
         longAlias: alias,
         shortAlias: alias,
         federated: false,
@@ -97,48 +94,21 @@ const FederationTable = ({
 
   useEffect(() => {
     federation.loadInfo();
-    loadRatings();
+    federation.loadRatings();
   }, []);
 
   useEffect(() => {
     if (verifyRatings) {
-      loadRatings();
+      federation.loadRatings(true);
       setVerificationText(t('Reloading. Invalid ratings will be filtered.'));
     }
   }, [verifyRatings]);
 
   useEffect(() => {
     if (useDefaultPageSize) {
-      setPageSize(defaultPageSize);
+      setPaginationModel((prev) => ({ ...prev, pageSize: defaultPageSize }));
     }
   }, [federationUpdatedAt]);
-
-  const loadRatings: () => void = () => {
-    setRatings(
-      federation.getCoordinators().reduce((acc, coord) => {
-        if (coord.nostrHexPubkey) acc[coord.nostrHexPubkey] = {};
-        return acc;
-      }, {}),
-    );
-    federation.roboPool.subscribeRatings({
-      onevent: (event) => {
-        const coordinatorPubKey = event.tags.find((t) => t[0] === 'p')?.[1];
-        const verified = verifyRatings ? verifyCoordinatorToken(event) : true;
-        if (verified && coordinatorPubKey) {
-          const rating = event.tags.find((t) => t[0] === 'rating')?.[1];
-          if (rating) {
-            setRatings((prev) => {
-              prev[coordinatorPubKey][event.pubkey] = parseFloat(rating);
-              return prev;
-            });
-          }
-        }
-      },
-      oneose: () => {
-        if (verifyRatings) setVerificationText(t('Invalid ratings have been filtered.'));
-      },
-    });
-  };
 
   const localeText = {
     noResultsOverlayLabel: t('No coordinators found.'),
@@ -167,15 +137,16 @@ const FederationTable = ({
               left: '-0.3em',
               width: '50em',
               marginTop: '2px',
+              alignItems: 'center',
             }}
             wrap='nowrap'
             onClick={() => {
               onClickCoordinator(params.row.shortAlias);
             }}
-            alignItems='center'
+
             spacing={1}
           >
-            <Grid item>
+            <Grid>
               <RobotAvatar
                 shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
                 hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
@@ -185,7 +156,7 @@ const FederationTable = ({
               />
             </Grid>
             {!mobile ? (
-              <Grid item>
+              <Grid>
                 <Typography>{params.row.longAlias}</Typography>
               </Grid>
             ) : (
@@ -204,7 +175,7 @@ const FederationTable = ({
       width: mobile ? 60 : 180,
       renderCell: (params: { row: Coordinator }) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
-        const coordinatorRating = ratings[coordinator.nostrHexPubkey];
+        const coordinatorRating = federation.ratings[coordinator.nostrHexPubkey];
 
         if (!coordinatorRating) return <></>;
 
@@ -218,7 +189,11 @@ const FederationTable = ({
         return (
           <>
             {mobile ? (
-              <Grid container direction='column' alignItems='center' style={{ paddingTop: 10 }}>
+              <Grid
+                container
+                style={{ paddingTop: 10 }}
+                sx={{ alignItems: 'center', flexDirection: 'column' }}
+              >
                 <Typography>{`${parseFloat((average * 10).toFixed(1))}`}</Typography>
               </Grid>
             ) : (
@@ -338,11 +313,17 @@ const FederationTable = ({
     const selectedColumns: object[] = [];
     let width: number = 0;
 
-    for (const value of Object.values(columnSpecs)) {
+    interface ColSpec {
+      priority: number;
+      order: number;
+      normal: { width: number; object: (w: number, b: boolean) => object };
+      small?: { width: number; object: (w: number, b: boolean) => object };
+    }
+    for (const value of Object.values(columnSpecs) as ColSpec[]) {
       const colWidth = Number(
-        useSmall && Boolean(value.small) ? value.small.width : value.normal.width,
+        useSmall && value.small != null ? value.small.width : value.normal.width,
       );
-      const colObject = useSmall && Boolean(value.small) ? value.small.object : value.normal.object;
+      const colObject = useSmall && value.small != null ? value.small.object : value.normal.object;
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
@@ -354,11 +335,11 @@ const FederationTable = ({
 
     // sort columns by column.order value
     selectedColumns.sort(function (first, second) {
-      return first[1] - second[1];
+      return (first as [object, number])[1] - (second as [object, number])[1];
     });
 
     const columns: Array<GridColDef<GridValidRowModel>> = selectedColumns.map(function (item) {
-      return item[0];
+      return (item as [object, number])[0] as GridColDef<GridValidRowModel>;
     });
 
     return { columns, width: width * 0.9 };
@@ -397,40 +378,61 @@ const FederationTable = ({
     <Box
       sx={
         fillContainer
-          ? { width: '100%', height: '100%' }
-          : { width: `${width}em`, height: `${height}em`, overflow: 'auto' }
+          ? { width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }
+          : { width: `${width}em`, height: `${height}em`, overflow: 'auto', padding: '0 0.25em' }
       }
     >
-      <DataGrid
-        sx={headerStyleFix}
-        localeText={localeText}
-        style={{ maxHeight: `${height / 2}em` }}
-        rowHeight={3.714 * theme.typography.fontSize}
-        headerHeight={3.25 * theme.typography.fontSize}
-        rows={federation.getCoordinators()}
-        getRowId={(params: Coordinator) => params.shortAlias}
-        columns={columns}
-        checkboxSelection={false}
-        pageSize={pageSize}
-        rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
-        onPageSizeChange={(newPageSize) => {
-          setPageSize(newPageSize);
-          setUseDefaultPageSize(false);
-        }}
-        hideFooter={true}
-      />
+      {showTitle && (
+        <Box sx={{ p: 0.5, pb: 0.5 }}>
+          <Typography variant='h6' align='center'>
+            {t('Coordinators')}
+          </Typography>
+        </Box>
+      )}
+
+      <Box sx={{ flexGrow: 1, overflow: 'auto', width: '100%' }}>
+        <DataGrid
+          sx={{
+            ...headerStyleFix,
+            border: 0,
+            '& .MuiDataGrid-cell': {
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            },
+          }}
+          localeText={localeText}
+          style={{ maxHeight: fillContainer ? undefined : `${height / 2}em` }}
+          autoHeight={fillContainer}
+          rowHeight={3.714 * theme.typography.fontSize}
+          columnHeaderHeight={3.25 * theme.typography.fontSize}
+          rows={federation.getCoordinators()}
+          getRowId={(params: Coordinator) => params.shortAlias}
+          columns={columns as readonly GridColDef<Coordinator>[]}
+          checkboxSelection={false}
+          paginationModel={fillContainer ? { page: 0, pageSize: 100 } : paginationModel}
+          pageSizeOptions={
+            width < 22 ? [] : [0, paginationModel.pageSize, defaultPageSize * 2, 50, 100]
+          }
+          onPaginationModelChange={(newModel) => {
+            setPaginationModel(newModel);
+            setUseDefaultPageSize(false);
+          }}
+          hideFooter={true}
+        />
+      </Box>
 
       <Grid
-        item
+        container
         style={{
           display: 'flex',
           flexDirection: 'row',
           width: '100%',
           justifyContent: 'space-between',
+          padding: '0 0.25em 0.5em 0.25em',
+          flexShrink: 0,
         }}
       >
         <Button
-          sx={{ mt: '1em', width: '49%' }}
+          sx={{ mt: '0.5em', width: '49%' }}
           disabled={false}
           onClick={() => setOpenAddCoordinator(true)}
           variant='contained'
@@ -441,7 +443,7 @@ const FederationTable = ({
           {t('Add Coordinator')}
         </Button>
         <Button
-          sx={{ mt: '1em', width: '49%' }}
+          sx={{ mt: '0.5em', width: '49%' }}
           disabled={false}
           onClick={() => setVerifyRatings(true)}
           variant='contained'
@@ -452,11 +454,11 @@ const FederationTable = ({
           {t('Verify ratings')}
         </Button>
       </Grid>
-      <Grid item>
+      <Grid sx={{ px: 0.5, pb: 1 }}>
         <Typography
           variant='body2'
           color={verifcationText ? 'success.main' : 'warning.main'}
-          sx={{ mt: 2, fontWeight: 'bold' }}
+          sx={{ mt: 0, fontWeight: 'bold' }}
         >
           {verifcationText
             ? verifcationText
@@ -475,54 +477,56 @@ const FederationTable = ({
       >
         <DialogTitle>{t('Add coordinator')}</DialogTitle>
         <DialogContent>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
-            {error ?? (
-              <Grid item xs={12}>
+          <Grid
+            container
+            spacing={2}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2, minWidth: '18em' }}
+          >
+            {error && (
+              <Grid size={12}>
                 <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
                   {error}
                 </Typography>
               </Grid>
             )}
-            <Grid item xs={12}>
-              <Grid container direction='column' alignItems='center'>
-                <Grid item xs={4}>
-                  <TextField
-                    id='outlined-basic'
-                    label={t('Alias')}
-                    variant='outlined'
-                    size='medium'
-                    value={newAlias}
-                    onChange={(e) => {
-                      setNewAlias(e.target.value);
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6} padding={2}>
-                  <TextField
-                    id='outlined-basic'
-                    label={t('URL')}
-                    variant='outlined'
-                    size='medium'
-                    value={newUrl}
-                    onChange={(e) => {
-                      setNewUrl(e.target.value);
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={1}>
-                  <Button
-                    sx={{ maxHeight: 38, marginTop: 2.5 }}
-                    disabled={false}
-                    onClick={addCoordinator}
-                    variant='contained'
-                    color='primary'
-                    size='large'
-                    type='submit'
-                  >
-                    {t('Add coordinator')}
-                  </Button>
-                </Grid>
-              </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                id='outlined-alias'
+                label={t('Alias')}
+                variant='outlined'
+                size='medium'
+                value={newAlias}
+                onChange={(e) => {
+                  setNewAlias(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                id='outlined-url'
+                label={t('URL')}
+                variant='outlined'
+                size='medium'
+                value={newUrl}
+                onChange={(e) => {
+                  setNewUrl(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <Button
+                fullWidth
+                disabled={false}
+                onClick={addCoordinator}
+                variant='contained'
+                color='primary'
+                size='large'
+                type='submit'
+              >
+                {t('Add coordinator')}
+              </Button>
             </Grid>
           </Grid>
         </DialogContent>

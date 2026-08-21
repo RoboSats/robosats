@@ -23,15 +23,22 @@ export const ExpiredPrompt = ({
 
   return (
     <Grid container direction='row'>
-      <Grid item style={{ width: '100%' }}>
+      <Grid style={{ width: '100%' }}>
         <Typography variant='body2' align='center'>
           {t(order.expiry_message)}
         </Typography>
       </Grid>
+      {order.bad_request && (
+        <Grid style={{ width: '100%' }}>
+          <Typography variant='body2' align='center' color='error'>
+            {t(order.bad_request)}
+          </Typography>
+        </Grid>
+      )}
       {order.is_maker ? (
         <>
           {order.has_password && (
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Tooltip
                 placement='top'
                 enterTouchDelay={300}
@@ -47,11 +54,13 @@ export const ExpiredPrompt = ({
                   style={{ marginBottom: 8 }}
                   error={error}
                   required
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 4,
+                  slotProps={{
+                    htmlInput: {
+                      style: {
+                        textAlign: 'center',
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 4,
+                      },
                     },
                   }}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -62,7 +71,6 @@ export const ExpiredPrompt = ({
             </Grid>
           )}
           <Grid
-            item
             style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '8px' }}
           >
             <LoadingButton

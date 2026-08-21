@@ -79,7 +79,7 @@ const MapChart: React.FC<MapChartProps> = ({
               setUseTiles(true);
             }}
           >
-            {t('Accept')}
+            {t('Acknowledged')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -98,7 +98,6 @@ const MapChart: React.FC<MapChartProps> = ({
         ) : (
           <>
             <Grid
-              item
               style={{
                 height: '3.1em',
                 justifyContent: 'space-between',
