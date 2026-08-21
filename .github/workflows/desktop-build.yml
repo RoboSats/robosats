@@ -28,6 +28,8 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: desktopApp/package-lock.json
 
       - name: 'Download Basic main.js Artifact'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
@@ -91,7 +93,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd desktopApp
-          npm install
+          npm ci
 
       - name: Build for macOS
         run: |

@@ -64,7 +64,7 @@ App.tsx (entry via src/index.js)
 | `eslint.config.mjs`                          | ESLint 9 flat config; **ignores `**/index.js`** and PaymentMethods `code.js`                                                                                                                                                              |
 | `src/utils/currencies.ts`                    | Typed accessor for `static/assets/currencies.json` → `Record<string, string>`. **Import from here; never add `as Record<string, string>` casts inline.**                                                                                  |
 | `src/types/modules.d.ts`                     | Minimal stubs for `react-smooth-image` (SmoothImage) + `base-ex` (Base16/Base91). `src/types/webln.d.ts` adds `sendPaymentAsync` to `WebLNProvider` — absent from `@types/webln`, required for hold invoices.                             |
-| `Dockerfile` / `docker-compose.yml`          | node:18-bullseye-slim; `entrypoint.sh` shuffles `node_modules` via `/tmp` on first run; `CMD npm run build`; compose: `frontend` + `nginx` (host 8888:80)                                                                                 |
+| `Dockerfile` / `docker-compose.yml`          | node:22-bookworm-slim; `entrypoint.sh` shuffles `node_modules` via `/tmp` on first run; `CMD npm run build`; compose: `frontend` + `nginx` (host 8888:80)                                                                                 |
 
 ## `window.RobosatsSettings` Values
 
