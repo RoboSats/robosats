@@ -64,6 +64,7 @@ class RoboGenerator {
   };
 
   createWorker = (id: number): RoboWorker => {
+    // @ts-expect-error — webpack resolves this Worker URL at build time; tsc can't verify it
     const worker = new Worker(new URL('./robohash.worker.ts', import.meta.url));
 
     worker.onmessage = (event) => {

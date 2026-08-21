@@ -44,7 +44,7 @@ const CancelButton = ({
   return (
     <Box>
       {showCancelButton ? (
-        <Grid item style={{ paddingTop: '8px', display: 'flex', flexDirection: 'row' }}>
+        <Grid style={{ paddingTop: '8px', display: 'flex', flexDirection: 'row' }}>
           <Tooltip
             placement='top'
             enterTouchDelay={500}

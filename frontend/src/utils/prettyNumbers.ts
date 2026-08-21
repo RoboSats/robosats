@@ -1,4 +1,4 @@
-export const pn = (value?: number | null): string => {
+export const pn = (value?: number | string | null): string => {
   if (value === null || value === undefined) {
     return String();
   }

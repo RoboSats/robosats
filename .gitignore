@@ -657,6 +657,7 @@ web/static
 web/*.html
 nodeapp/static
 nodeapp/*.html
+nodeapp/ssl
 
 # Protocol Buffers
 api/lightning/*.proto

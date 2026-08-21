@@ -51,7 +51,7 @@ class RoboPool {
 
           connection.onMessage((event) => {
             this.messageHandlers.forEach((handler) => {
-              handler(url, event);
+              handler(url, event as unknown as MessageEvent<unknown>);
             });
           });
 
@@ -94,9 +94,9 @@ class RoboPool {
   };
 
   subscribeBook = (robosatsOnly: boolean, events: RoboPoolEvents): void => {
-    let scope = Object.values(defaultFederation);
+    let scope: Array<{ nostrHexPubkey?: string }> = Object.values(defaultFederation);
     if (!robosatsOnly) {
-      scope = [...scope, ...Object.values(thirdParties)];
+      scope = [...scope, ...(Object.values(thirdParties) as Array<{ nostrHexPubkey?: string }>)];
     }
     const authors = scope.map((f) => f.nostrHexPubkey).filter((item) => item !== undefined);
 
