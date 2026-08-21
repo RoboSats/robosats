@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
@@ -40,7 +40,7 @@ jobs:
 
       - name: 'Download Basic main.js Artifact for a release'
         if: inputs.semver != ''  # Only if fired as job in release.yml
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: desktop-main-static
           path: ${{ runner.temp }}/desktop-main-static-artifact
@@ -110,7 +110,7 @@ jobs:
 
       - name: 'Get Commit Hash'
         id: commit
-        uses: pr-mpt/actions-commit-hash@v3
+        uses: pr-mpt/actions-commit-hash@v4
 
       - name: Print semver
         run: echo The semver is ${{ github.event.inputs.semver }}
