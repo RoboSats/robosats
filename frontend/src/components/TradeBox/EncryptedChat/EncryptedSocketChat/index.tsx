@@ -51,6 +51,7 @@ interface Props {
   onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
+  blossomEnabled: boolean;
 }
 
 const EncryptedSocketChat: React.FC<Props> = ({
@@ -66,6 +67,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   onSendFile,
   peerPubKey,
   setPeerPubKey,
+  blossomEnabled,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -411,10 +413,18 @@ const EncryptedSocketChat: React.FC<Props> = ({
               accept='image/*'
               onChange={handleFileChange}
             />
-            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+            <Tooltip
+              title={
+                !blossomEnabled
+                  ? t('This coordinator does not offer image uploads')
+                  : peerPubKey === undefined
+                    ? t('Waiting for peer...')
+                    : ''
+              }
+            >
               <span>
                 <IconButton
-                  disabled={uploading || peerPubKey === undefined}
+                  disabled={uploading || peerPubKey === undefined || !blossomEnabled}
                   onClick={handleAttachClick}
                   color='primary'
                 >

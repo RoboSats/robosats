@@ -46,6 +46,7 @@ interface Props {
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
+  blossomEnabled: boolean;
 }
 
 const audioPath =
@@ -70,6 +71,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   onSendFile,
   setError,
   setLastIndex,
+  blossomEnabled,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -346,10 +348,18 @@ const EncryptedApiChat: React.FC<Props> = ({
               accept='image/*'
               onChange={handleFileChange}
             />
-            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+            <Tooltip
+              title={
+                !blossomEnabled
+                  ? t('This coordinator does not offer image uploads')
+                  : peerPubKey === undefined
+                    ? t('Waiting for peer...')
+                    : ''
+              }
+            >
               <span>
                 <IconButton
-                  disabled={uploading || peerPubKey === undefined}
+                  disabled={uploading || peerPubKey === undefined || !blossomEnabled}
                   onClick={handleAttachClick}
                   color='primary'
                 >

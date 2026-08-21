@@ -79,6 +79,7 @@ interface Props {
   ) => void;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
+  blossomEnabled: boolean;
 }
 
 export interface EncryptedChatMessage {
@@ -111,6 +112,7 @@ const EncryptedChat: React.FC<Props> = ({
   messages,
   peerPubKey,
   setPeerPubKey,
+  blossomEnabled,
 }: Props): React.JSX.Element => {
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -189,6 +191,10 @@ const EncryptedChat: React.FC<Props> = ({
   };
 
   const sendFile = async (file: File): Promise<void> => {
+    if (!blossomEnabled) {
+      setError('This coordinator does not offer image uploads');
+      return;
+    }
     const slot = garage.getSlot();
     const coordinator = federation.getCoordinator(order.shortAlias);
     const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
@@ -284,6 +290,7 @@ const EncryptedChat: React.FC<Props> = ({
       setError={setError}
       lastIndex={lastIndex}
       setLastIndex={setLastIndex}
+      blossomEnabled={blossomEnabled}
     />
   ) : (
     <EncryptedSocketChat
@@ -299,6 +306,7 @@ const EncryptedChat: React.FC<Props> = ({
       peerPubKey={peerPubKey}
       setPeerPubKey={setPeerPubKey}
       status={order.status}
+      blossomEnabled={blossomEnabled}
     />
   );
 };

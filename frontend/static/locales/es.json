@@ -622,6 +622,7 @@
   "#65": "Phrases in components/TradeBox/EncryptedChat/EncryptedApiChat/index.tsx",
   "File too large. Maximum size is 10MB.": "File too large. Maximum size is 10MB.",
   "Only image files are allowed.": "Only image files are allowed.",
+  "This coordinator does not offer image uploads": "This coordinator does not offer image uploads",
   "Type a message": "Escribe un mensaje",
   "Waiting for peer...": "Waiting for peer...",
   "[Loading Encrypted Image]": "[Loading Encrypted Image]",

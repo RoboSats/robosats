@@ -1249,6 +1249,9 @@ components:
           type: number
           format: double
           description: Swap fees to perform on-chain transaction (percent)
+        blossom_enabled:
+          type: boolean
+          description: Whether the coordinator offers encrypted image uploads via Blossom in chat
         version:
           $ref: '#/components/schemas/Version'
         notice_severity:
@@ -1285,6 +1288,7 @@ components:
       - swap_enabled
       - taker_fee
       - version
+      - blossom_enabled
     ListNotification:
       type: object
       properties:
