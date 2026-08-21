@@ -407,7 +407,7 @@ const MakerForm = ({
       (!makerHasAmountRange && maker.amount && maker.amount <= 0) ||
       maker.badPremiumText !== '' ||
       federation.getCoordinator(maker.coordinator)?.limits === undefined ||
-      typeof maker.premium !== 'number' ||
+      (maker.premium !== null && typeof maker.premium !== 'number') ||
       maker.paymentMethods.length === 0 ||
       maker.badDescription
     );
