@@ -414,10 +414,10 @@ const BookTable = ({
 
   const getOrderPrice = useCallback(
     (row: PublicOrder): number | null => {
-      const limits = federation.getLimits(row.coordinatorShortAlias);
-      const limitPrice = limits[row.currency.toString()]?.price;
+      const limits = federation.getLimits(row.coordinatorShortAlias ?? '');
+      const limitPrice = limits[(row.currency ?? 0).toString()]?.price;
       if (!limitPrice) return null;
-      const premium = parseFloat(row.premium);
+      const premium = parseFloat(row.premium ?? '0');
       return limitPrice * (1 + premium / 100);
     },
     [federation],
@@ -442,7 +442,7 @@ const BookTable = ({
         return price1 - price2;
       },
       renderCell: (params: { row: PublicOrder }) => {
-        const currencyCode = String(currencyDict[params.row.currency ?? 0]).toString()]);
+        const currencyCode = String(currencyDict[(params.row.currency ?? 0).toString()]);
         const price = getOrderPrice(params.row);
 
         return (
