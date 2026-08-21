@@ -21,12 +21,12 @@ export interface generatedKeyPair {
 export async function genKey(highEntropyToken: string): Promise<generatedKeyPair> {
   const d = new Date();
   const keyPair = await generateKey({
-    type: 'ecc', // Type of the key, defaults to ECC
-    curve: 'curve25519', // ECC curve name, defaults to curve25519
+    type: 'ecc' as const, // Type of the key, defaults to ECC
+    curve: 'curve25519Legacy' as const, // ECC curve name (curve25519Legacy in openpgp v6)
     userIDs: [{ name: 'RoboSats ID ' + sha256(sha256(highEntropyToken)) }], // Ideally it would be the avatar nickname, but the nickname is generated only after submission. The second SHA256 can be converted into the Nickname using nick_generator package.
     passphrase: highEntropyToken,
     format: 'armored',
-    date: d.setDate(d.getDate() - 1), // One day of offset. Helps reducing errors due to client's system time being in the future.
+    date: new Date(d.setDate(d.getDate() - 1)), // One day of offset. Helps reducing errors due to client's system time being in the future.
   });
 
   return {
@@ -55,7 +55,7 @@ export async function encryptMessage(
     message: await createMessage({ text: plaintextMessage }), // input as Message object, message must be string
     encryptionKeys: [ownPublicKey, peerPublicKey],
     signingKeys: privateKey, // optional
-    date: d.setDate(d.getDate() - 1), // One day of offset, avoids verification issue due to clock mismatch
+    date: new Date(d.setDate(d.getDate() - 1)), // One day of offset, avoids verification issue due to clock mismatch
   });
 
   return String(encryptedMessage); // '-----BEGIN PGP MESSAGE ... END PGP MESSAGE-----'

@@ -40,9 +40,7 @@ Both upstream names must match exactly what `locations.conf` references in `prox
 | `/testnet/{alias}/static/assets/avatars/` | `testnet_{alias}` | Coordinator avatar images (testnet) |
 | `/testnet/{alias}/api/` | `testnet_{alias}` | |
 | `/testnet/{alias}/ws/` | `testnet_{alias}` | |
-
-**Missing**: no `/testnet/{alias}/relay/` location in any coordinator config — testnet
-Nostr relay is unreachable through nodeapp.
+| `/testnet/{alias}/relay/` | `testnet_{alias}` | Nostr relay; same upgrade headers + `Origin $http_origin` + `Access-Control-Allow-Origin *` as the mainnet relay |
 
 ## CORS Policy
 - API and WS routes carry **no CORS headers** — all traffic is same-origin through Nginx;
@@ -76,9 +74,10 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   not a runtime-fetched list. Generating this config automatically from
   `federation.json` is a known improvement path but has not been implemented.
 - **Testnet support in nodeapp is best-effort.** Three of five coordinators (bazaar,
-  freedomsats, alice) share a single onion for mainnet and testnet; no testnet relay route
-  exists. Testnet is functionally degraded in this container — usable for API/WS only on
-  the coordinators with distinct testnet onions (temple, lake).
+  freedomsats, alice) share a single onion for mainnet and testnet, so their testnet
+  traffic (API, WS, and relay) hits the mainnet service — the coordinator must distinguish
+  them server-side. Only temple and lake have distinct testnet onions with a real testnet
+  relay.
 
 ## Traps
 - `coordinators/alice/upstreams.conf` comments say "Libre Bazaar" (copy-paste error) and
@@ -91,8 +90,9 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   completely unreachable in any running `:latest` container.**
 - All five `locations.conf` testnet avatar routes now use `/testnet/{alias}/...`
   consistent with the API/WS routes — fixed in this codebase.
-- No testnet `relay/` route exists in any coordinator config — testnet Nostr relay is
-  unreachable through nodeapp.
+- All five `locations.conf` now include a `/testnet/{alias}/relay/` route — fixed in this
+  codebase. For bazaar/freedomsats/alice the route proxies to the shared onion, so the
+  same relay serves mainnet and testnet events (the client filters by `network` tag).
 - `coordinators/freedomsats/upstreams.conf` comments say "Libre freedomsats" — another
   copy-paste artefact; functionally harmless but misleading.
 - Several `locations.conf` comments name the wrong coordinator (e.g., lake's testnet

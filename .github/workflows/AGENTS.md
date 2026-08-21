@@ -31,7 +31,7 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | `mobile-web.bundle` | `android/app/src/main/assets` | `android-build` |
 
 `frontend-build.yml` uses Node **16.17.0** + `NODE_OPTIONS=--max-old-space-size=4096`.
-All 5 uploads use `actions/upload-artifact@v4`.
+All 5 uploads use `actions/upload-artifact@v7`.
 
 ## Pre-release Fan-out (non-release only)
 When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
@@ -60,7 +60,7 @@ When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
 
 Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 `type=semver,pattern={{major}}.{{minor}}`, `type=sha,priority=100,format=short`,
-`type=raw,value=latest`. Uses `docker/metadata-action@v5` + `docker/build-push-action@v6`.
+`type=raw,value=latest`. Uses `docker/metadata-action@v6` + `docker/build-push-action@v7`.
 
 ## Android Build (`android-build.yml`)
 - Node: N/A; Gradle cache on `~/.gradle/caches`.
@@ -82,7 +82,7 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 
 ## lnproxy Sync (`lnproxy-sync.yml`)
 - Weekly (Sundays 12:00 UTC): curls live relay list → `node ./scripts/lnproxy-sync.js` →
-  `peter-evans/create-pull-request@v6` with branch `lnproxy-{date}`, `delete-branch: true`.
+  `peter-evans/create-pull-request@v8` with branch `lnproxy-{date}`, `delete-branch: true`.
 - **Never auto-commits to `main`** — always a PR so a maintainer reviews third-party data.
 
 ## Product Intent
@@ -117,7 +117,7 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 4. **Coverage artifact likely empty**: `integration-tests.yml` uploads `htmlcov/` from the
    runner host, but `coverage html` ran inside the `test-coordinator` Docker container —
    the host directory is empty.
-5. **Dead step in `android-build.yml`**: `kaisugi/action-regex-match@v1.0.1` on `github.ref`
+5. **Dead step in `android-build.yml`**: `kaisugi/action-regex-match@v1.0.2` on `github.ref`
    is run but its output is never consumed by any subsequent step.
 6. **Malformed pre-release APK asset names**: the non-release android path names assets with
    `github.ref` (e.g. `refs/tags/…`) — includes the `refs/…` prefix, producing invalid

@@ -495,7 +495,14 @@ const icons = {
   },
 };
 
-const PaymentIcon: React.FC = (props) => {
+interface PaymentIconProps {
+  width?: number;
+  height?: number;
+  icon?: string;
+  reversible?: boolean;
+}
+
+const PaymentIcon: React.FC<PaymentIconProps> = (props) => {
   const theme = useTheme();
   if (props.icon === undefined) {
     return null;
@@ -510,7 +517,7 @@ const PaymentIcon: React.FC = (props) => {
     return (
       <img
         {...props}
-        src={icons[props.icon].image}
+        src={(icons as Record<string, { title: string; image: string }>)[props.icon ?? ''].image}
         style={{
           border: props.reversible ? '2px solid red' : '',
           borderRadius: '23%',

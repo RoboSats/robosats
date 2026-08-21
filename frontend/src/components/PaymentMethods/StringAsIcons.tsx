@@ -2,9 +2,9 @@ import React, { CSSProperties, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PaymentIcon from './Icons';
 import { Tooltip } from '@mui/material';
-import { fiatMethods, swapMethods } from './MethodList';
+import { fiatMethods, swapMethods, type PaymentMethod } from './MethodList';
 
-const ns = [{ name: 'not specified', icon: 'notspecified' }];
+const ns: PaymentMethod[] = [{ name: 'not specified', icon: 'notspecified' }];
 const methods = ns.concat(swapMethods).concat(fiatMethods);
 
 interface StringAsIconsProps {

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Grid, Paper } from '@mui/material';
+import { Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import Coordinators from './Coordinators';
@@ -18,12 +18,8 @@ const SettingsPage = (): React.JSX.Element => {
         overflowX: 'clip',
       }}
     >
-      <Grid item xs={{ width: '100%' }}>
-        <SettingsForm />
-      </Grid>
-      <Grid item xs={{ width: '100%' }}>
-        <Coordinators />
-      </Grid>
+      <SettingsForm />
+      <Coordinators />
     </Paper>
   );
 };
