@@ -151,6 +151,11 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             Log.e(TAG, "Invalid UUID for getTorStatus: $uuid")
             return
         }
+        if (!isValidUrl(path)) {
+            Log.e(TAG, "Invalid or disallowed URL for openWS: $path")
+            rejectPromise(uuid, "Invalid URL")
+            return
+        }
 
         try {
             Log.d(TAG, "WebSocket opening: $path")
@@ -381,6 +386,11 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         if (!isValidUuid(uuid)) {
             Log.e(TAG, "Invalid UUID for sendRequest: $uuid")
             rejectPromise(uuid, "Invalid UUID")
+            return
+        }
+        if (!isValidUrl(url)) {
+            Log.e(TAG, "Invalid or disallowed URL for sendRequest: $url")
+            rejectPromise(uuid, "Invalid URL")
             return
         }
 
