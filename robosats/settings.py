@@ -174,7 +174,10 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "robosats.middleware.DisableCSRFMiddleware",
+    # CsrfViewMiddleware is active; DRF API views are individually exempt via
+    # APIView.as_view() which calls csrf_exempt internally.  The middleware is
+    # kept so that the Django admin retains full CSRF protection.
+    "django.middleware.csrf.CsrfViewMiddleware",
     "robosats.middleware.SplitAuthorizationHeaderMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "robosats.middleware.RobotTokenSHA256AuthenticationMiddleWare",

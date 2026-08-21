@@ -12,9 +12,13 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 import RobotAvatar from '../../../components/RobotAvatar';
-import { AppContext, type UseAppStoreType, closeAll } from '../../../contexts/AppContext';
+import {
+  AppContext,
+  type UseAppStoreType,
+  type Page,
+  closeAll,
+} from '../../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
-import { Page } from '..';
 
 interface DesktopBarProps {
   changePage: (newPage: Page) => void;
@@ -31,7 +35,7 @@ const DesktopBar = ({ changePage }: DesktopBarProps): React.JSX.Element => {
 
   const slot = garage.getSlot();
 
-  const onChange = function (_mouseEvent: React.MouseEvent, newPage: Page): void {
+  const onChange = function (_event: React.SyntheticEvent, newPage: Page): void {
     changePage(newPage);
   };
 
@@ -47,7 +51,7 @@ const DesktopBar = ({ changePage }: DesktopBarProps): React.JSX.Element => {
       }}
     >
       <Tabs
-        TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
+        slotProps={{ indicator: { sx: { height: '0.3em', position: 'absolute', top: 0 } } }}
         variant='fullWidth'
         value={page}
         indicatorColor={color}

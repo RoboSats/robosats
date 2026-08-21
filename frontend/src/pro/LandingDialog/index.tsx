@@ -18,7 +18,7 @@ const LandingDialog = ({ open, onClose }: Props): React.JSX.Element => {
 
       <DialogContent sx={{ height: '30em' }}>
         <Grid container sx={{ width: '100%', height: '100%' }}>
-          <Grid item xs={6} sx={{ padding: '1em', width: '100%', height: '100%' }}>
+          <Grid size={6} sx={{ padding: '1em', width: '100%', height: '100%' }}>
             <Box
               sx={{
                 width: '100%',
@@ -37,7 +37,7 @@ const LandingDialog = ({ open, onClose }: Props): React.JSX.Element => {
               </Typography>
             </Box>
           </Grid>
-          <Grid item xs={6} sx={{ padding: '1em', width: '100%', height: '100%' }}>
+          <Grid size={6} sx={{ padding: '1em', width: '100%', height: '100%' }}>
             <Box
               sx={{
                 width: '100%',

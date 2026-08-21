@@ -149,7 +149,7 @@ const OrderPage = (): React.JSX.Element => {
             {t(currentOrder.bad_request)}
           </Typography>
           {currentOrder?.bad_request?.includes('password') && (
-            <Grid item xs={6} style={{ width: '21em' }}>
+            <Grid size={6} style={{ width: '21em' }}>
               <Paper
                 elevation={12}
                 style={{
@@ -176,7 +176,7 @@ const OrderPage = (): React.JSX.Element => {
               style={{ width: '43em' }}
               sx={{ alignItems: 'flex-start', justifyContent: 'center' }}
             >
-              <Grid item xs={12} style={{ width: '42em' }}>
+              <Grid size={12} style={{ width: '42em' }}>
                 <Stepper activeStep={orderStep}>
                   {steps.map((label) => (
                     <Step key={label}>
@@ -185,7 +185,7 @@ const OrderPage = (): React.JSX.Element => {
                   ))}
                 </Stepper>
               </Grid>
-              <Grid item xs={6} style={{ width: '21em' }}>
+              <Grid size={6} style={{ width: '21em' }}>
                 <Paper
                   elevation={12}
                   style={{
@@ -197,7 +197,7 @@ const OrderPage = (): React.JSX.Element => {
                   {orderDetailsSpace}
                 </Paper>
               </Grid>
-              <Grid item xs={6} style={{ width: '21em' }}>
+              <Grid size={6} style={{ width: '21em' }}>
                 <Paper
                   elevation={12}
                   style={{

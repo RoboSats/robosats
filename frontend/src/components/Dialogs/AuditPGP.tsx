@@ -30,9 +30,14 @@ import { Order, Slot } from '../../models';
 import { nip19 } from 'nostr-tools';
 import { EncryptedChatMessage } from '../TradeBox/EncryptedChat';
 
-function CredentialTextfield(props): React.JSX.Element {
+function CredentialTextfield(props: {
+  tooltipTitle: string;
+  label: string;
+  value?: string;
+  copiedTitle?: string;
+}): React.JSX.Element {
   return (
-    <Grid item xs={12} sx={{ textAlign: 'center' }}>
+    <Grid size={12} sx={{ textAlign: 'center' }}>
       <Tooltip placement='top' enterTouchDelay={200} enterDelay={200} title={props.tooltipTitle}>
         <TextField
           sx={{ width: '100%', maxWidth: '550px' }}
@@ -41,18 +46,20 @@ function CredentialTextfield(props): React.JSX.Element {
           value={props.value}
           variant='filled'
           size='small'
-          InputProps={{
-            endAdornment: (
-              <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
-                <IconButton
-                  onClick={() => {
-                    systemClient.copyToClipboard(props.value);
-                  }}
-                >
-                  <ContentCopy />
-                </IconButton>
-              </Tooltip>
-            ),
+          slotProps={{
+            input: {
+              endAdornment: (
+                <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
+                  <IconButton
+                    onClick={() => {
+                      systemClient.copyToClipboard(props.value ?? '');
+                    }}
+                  >
+                    <ContentCopy />
+                  </IconButton>
+                </Tooltip>
+              ),
+            },
           }}
         />
       </Tooltip>
@@ -113,7 +120,7 @@ const AuditPGPDialog = ({
             )}
           </DialogContentText>
           <Grid container spacing={1} sx={{ flexDirection: 'column', textAlign: 'center' }}>
-            <Grid item xs={12} sx={{ textAlign: 'center' }}>
+            <Grid size={12} sx={{ textAlign: 'center' }}>
               <Button
                 component={Link}
                 target='_blank'
@@ -162,8 +169,8 @@ const AuditPGPDialog = ({
             />
 
             <br />
-            <Grid item xs={12} style={{ display: 'flex', flexDirection: 'row' }}>
-              <Grid item style={{ width: '50%' }}>
+            <Grid size={12} style={{ display: 'flex', flexDirection: 'row' }}>
+              <Grid style={{ width: '50%' }}>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={0}
@@ -200,7 +207,7 @@ const AuditPGPDialog = ({
               </Grid>
 
               {messages && (
-                <Grid item style={{ width: '50%' }}>
+                <Grid style={{ width: '50%' }}>
                   <Tooltip
                     placement='top'
                     enterTouchDelay={0}
@@ -276,8 +283,8 @@ const AuditPGPDialog = ({
             />
 
             <br />
-            <Grid item xs={12} style={{ display: 'flex', flexDirection: 'row' }}>
-              <Grid item style={{ width: '50%' }}>
+            <Grid size={12} style={{ display: 'flex', flexDirection: 'row' }}>
+              <Grid style={{ width: '50%' }}>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={0}
@@ -290,13 +297,13 @@ const AuditPGPDialog = ({
                     color='primary'
                     variant='contained'
                     onClick={() => {
-                      const object = {
+                      const object: Record<string, string> = {
                         own_public_key: nip19.npubEncode(slot?.nostrPubKey ?? ''),
                         private_key: slot?.nostrSecKey ? nip19.nsecEncode(slot?.nostrSecKey) : '',
                       };
 
                       if (order) {
-                        object.peer_public_key = nip19.npubEncode(
+                        object['peer_public_key'] = nip19.npubEncode(
                           order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
                         );
                       }
@@ -318,7 +325,7 @@ const AuditPGPDialog = ({
               </Grid>
 
               {messages && (
-                <Grid item style={{ width: '50%' }}>
+                <Grid style={{ width: '50%' }}>
                   <Tooltip
                     placement='top'
                     enterTouchDelay={0}

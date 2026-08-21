@@ -16,14 +16,14 @@ export const SendingSatsPrompt = (): React.JSX.Element => {
         padding: 1,
       }}
     >
-      <Grid item>
+      <Grid>
         <Typography variant='body2'>
           {t(
             'RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.',
           )}
         </Typography>
       </Grid>
-      <Grid item>
+      <Grid>
         <Typography variant='body2'>
           <b>{t('Taking too long?')}</b>{' '}
           {t(
@@ -31,7 +31,7 @@ export const SendingSatsPrompt = (): React.JSX.Element => {
           )}
         </Typography>
       </Grid>
-      <Grid item>
+      <Grid>
         <CircularProgress />
       </Grid>
     </Grid>

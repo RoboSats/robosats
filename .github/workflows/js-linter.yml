@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: 'Setup node'
         uses: actions/setup-node@v7
@@ -45,6 +45,11 @@ jobs:
         run: |
           cd frontend
           npm ci
+
+      - name: 'Run TypeScript type-check'
+        run: |
+          cd frontend
+          npm run typecheck
 
       - name: 'Run EsLint'
         run: |

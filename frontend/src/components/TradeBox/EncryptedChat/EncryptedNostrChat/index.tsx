@@ -269,7 +269,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
       spacing={0.5}
       sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item>
+      <Grid>
         <ChatHeader connected={Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
@@ -318,7 +318,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
               maxRows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  onButtonClicked(e);
+                  onButtonClicked(e as unknown as React.FormEvent<HTMLFormElement>);
                 }
               }}
               value={value}

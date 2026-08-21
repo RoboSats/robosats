@@ -32,7 +32,7 @@ import { ConfirmationDialog, F2fMapDialog } from '../Dialogs';
 import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 import { useBondEstimate } from '../../hooks/useBondEstimate';
 
@@ -91,7 +91,7 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
+    setCurrencyCode(currencyDict[String(fav.currency === 0 ? 1 : fav.currency)]);
   }, [federationUpdatedAt]);
 
   useEffect(() => {
@@ -108,8 +108,8 @@ const MakerForm = ({
       coordinator.loadLimits(() => {
         const newLimits = coordinator.limits;
         if (newLimits && Object.keys(newLimits).length !== 0) {
-          updateAmountLimits(newLimits, fav.currency, maker.premium);
-          updateCurrentPrice(newLimits, fav.currency, maker.premium);
+          updateAmountLimits(newLimits, fav.currency, maker.premium ?? 0);
+          updateCurrentPrice(newLimits, fav.currency, maker.premium ?? 0);
           setLimits(newLimits);
         }
       });
@@ -148,7 +148,7 @@ const MakerForm = ({
   };
 
   const handleCurrencyChange = function (newCurrency: number): void {
-    const currencyCode: string = currencyDict[newCurrency];
+    const currencyCode: string = currencyDict[String(newCurrency)];
     setCurrencyCode(currencyCode);
     setFav((prev) => {
       return {
@@ -157,22 +157,22 @@ const MakerForm = ({
         mode: newCurrency === 1000 ? 'swap' : 'fiat',
       };
     });
-    updateAmountLimits(limits, newCurrency, maker.premium);
-    updateCurrentPrice(limits, newCurrency, maker.premium);
+    updateAmountLimits(limits, newCurrency, maker.premium ?? 0);
+    updateCurrentPrice(limits, newCurrency, maker.premium ?? 0);
 
     if (makerHasAmountRange) {
       const minAmount = parseFloat(Number(limits[newCurrency].min_amount).toPrecision(2));
       const maxAmount = parseFloat(Number(limits[newCurrency].max_amount).toPrecision(2));
       if (
-        parseFloat(maker.minAmount) < minAmount ||
-        parseFloat(maker.minAmount) > maxAmount ||
-        parseFloat(maker.maxAmount) > maxAmount ||
-        parseFloat(maker.maxAmount) < minAmount
+        parseFloat(String(maker.minAmount ?? 0)) < minAmount ||
+        parseFloat(String(maker.minAmount ?? 0)) > maxAmount ||
+        parseFloat(String(maker.maxAmount ?? 0)) > maxAmount ||
+        parseFloat(String(maker.maxAmount ?? 0)) < minAmount
       ) {
         setMaker({
           ...maker,
-          minAmount: (maxAmount * 0.25).toPrecision(2),
-          maxAmount: (maxAmount * 0.75).toPrecision(2),
+          minAmount: parseFloat((maxAmount * 0.25).toPrecision(2)),
+          maxAmount: parseFloat((maxAmount * 0.75).toPrecision(2)),
         });
       }
     }
@@ -228,7 +228,7 @@ const MakerForm = ({
       updateAmountLimits(limits, fav.currency, premium);
       setMaker({
         ...maker,
-        premium: isNaN(newPremium) || value === '' ? '' : premium,
+        premium: isNaN(newPremium) || value === '' ? null : premium,
         badPremiumText,
       });
     };
@@ -338,7 +338,7 @@ const MakerForm = ({
     const index = fav.currency === 0 ? 1 : fav.currency;
     const minAmount =
       maker.amount !== null
-        ? (maker.amount / 2).toPrecision(2)
+        ? parseFloat((maker.amount / 2).toPrecision(2))
         : parseFloat(Number(limits[index].max_amount * 0.25).toPrecision(2));
     const maxAmount =
       maker.amount !== null
@@ -367,7 +367,7 @@ const MakerForm = ({
     const defaultRoutingBudget = 0.001;
     let label = t('Amount');
     let helper = '';
-    let swapSats = 0;
+    let swapSats: string | undefined = '0';
     if (fav.mode === 'swap') {
       if (fav.type === 1) {
         swapSats = computeSats({
@@ -494,7 +494,7 @@ const MakerForm = ({
     fav,
     federation,
     currentPrice,
-    federationUpdatedAt,
+    federationUpdatedAt: federationUpdatedAt ? Date.parse(federationUpdatedAt) : 0,
     amountRangeEnabled,
   });
 
@@ -519,21 +519,26 @@ const MakerForm = ({
                 ? t('Sell BTC for ')
                 : t('Swap out of LN ')}
           {fav.mode === 'fiat'
-            ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
-            : amountToString(
-                maker.amount * 100000000,
+            ? amountToString(
+                String(maker.amount ?? 0),
                 makerHasAmountRange,
-                maker.minAmount * 100000000,
-                maker.maxAmount * 100000000,
+                maker.minAmount ?? 0,
+                maker.maxAmount ?? 0,
+              )
+            : amountToString(
+                String((maker.amount ?? 0) * 100000000),
+                makerHasAmountRange,
+                (maker.minAmount ?? 0) * 100000000,
+                (maker.maxAmount ?? 0) * 100000000,
               )}
           {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
-          {maker.premium === 0
+          {(maker.premium ?? 0) === 0
             ? fav.mode === 'fiat'
               ? t(' at market price')
               : ''
-            : maker.premium > 0
+            : (maker.premium ?? 0) > 0
               ? t(' at a {{premium}}% premium', { premium: maker.premium })
-              : t(' at a {{discount}}% discount', { discount: -maker.premium })}
+              : t(' at a {{discount}}% discount', { discount: -(maker.premium ?? 0) })}
         </Typography>
         {bondAmount !== null && (
           <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5 }}>
@@ -581,9 +586,9 @@ const MakerForm = ({
         }}
         zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
       />
-      <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
+      <Collapse in={!collapseAll}>
         <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
-          <Grid item>
+          <Grid>
             <IconButton
               sx={{
                 width: '1.3em',
@@ -606,7 +611,7 @@ const MakerForm = ({
               </Tooltip>
             </IconButton>
           </Grid>
-          <Grid item>
+          <Grid>
             <Tooltip enterTouchDelay={0} placement='top' title={t('Enable advanced options')}>
               <div
                 style={{
@@ -634,14 +639,14 @@ const MakerForm = ({
 
       <Collapse in={!collapseAll}>
         <Grid container spacing={1} sx={{ alignItems: 'center', justifyContent: 'center' }}>
-          <Grid item>
+          <Grid>
             <Grid
               container
               direction='row'
               sx={{ alignItems: 'stretch', justifyContent: 'center' }}
             >
               <Collapse in={maker.advancedOptions} orientation='horizontal'>
-                <Grid item>
+                <Grid>
                   <FormControl>
                     <FormHelperText sx={{ textAlign: 'center' }}>{t('Swap?')}</FormHelperText>
                     <Checkbox
@@ -656,7 +661,7 @@ const MakerForm = ({
                 </Grid>
               </Collapse>
 
-              <Grid item>
+              <Grid>
                 <FormControl component='fieldset'>
                   <FormHelperText sx={{ textAlign: 'center' }}>
                     {`${fav.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')} *`}
@@ -738,7 +743,7 @@ const MakerForm = ({
             </Grid>
           </Grid>
 
-          <Grid item sx={{ width: '100%' }}>
+          <Grid sx={{ width: '100%' }}>
             <Collapse in={maker.advancedOptions}>
               <FormControlLabel
                 control={
@@ -770,7 +775,7 @@ const MakerForm = ({
             </Collapse>
             <Collapse in={!makerHasAmountRange}>
               <Grid container>
-                <Grid item sx={{ width: fav.mode === 'fiat' ? '50%' : '100%' }}>
+                <Grid sx={{ width: fav.mode === 'fiat' ? '50%' : '100%' }}>
                   <Tooltip
                     placement='top'
                     enterTouchDelay={500}
@@ -801,7 +806,7 @@ const MakerForm = ({
                               })
                             : null
                       }
-                      label={amountLabel.label}
+                      label={amountLabel?.label ?? t('Amount')}
                       required={true}
                       value={maker.amount ?? ''}
                       type='number'
@@ -812,13 +817,13 @@ const MakerForm = ({
                   </Tooltip>
                   {fav.mode === 'swap' && maker.amount ? (
                     <FormHelperText sx={{ textAlign: 'center' }}>
-                      {amountLabel.helper}
+                      {amountLabel?.helper}
                     </FormHelperText>
                   ) : null}
                 </Grid>
 
                 {fav.mode === 'fiat' ? (
-                  <Grid item sx={{ width: '50%' }}>
+                  <Grid sx={{ width: '50%' }}>
                     <Select
                       fullWidth
                       sx={{
@@ -831,7 +836,7 @@ const MakerForm = ({
                       }}
                       value={fav.currency === 0 ? 1 : fav.currency}
                       onChange={(e) => {
-                        handleCurrencyChange(e.target.value);
+                        handleCurrencyChange(Number(e.target.value));
                       }}
                     >
                       {Object.entries(currencyDict).map(([key, value]) => (
@@ -848,9 +853,9 @@ const MakerForm = ({
               </Grid>
             </Collapse>
           </Grid>
-          <Grid item sx={{ width: '100%' }}>
-            <Grid item sx={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
-              <Grid item sx={{ width: '80%' }}>
+          <Grid sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
+              <Grid sx={{ width: '80%' }}>
                 <AutocompletePayments
                   paymentMethods={maker.paymentMethods}
                   paymentMethodsText={maker.paymentMethodsText}
@@ -869,7 +874,7 @@ const MakerForm = ({
                   multiple={true}
                 />
               </Grid>
-              <Grid item sx={{ width: '20%' }}>
+              <Grid sx={{ width: '20%' }}>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={300}
@@ -910,7 +915,7 @@ const MakerForm = ({
           </Grid>
 
           {fav.mode === 'fiat' && (
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Tooltip enterTouchDelay={0} title={t('Add geolocation for a face to face trade')}>
                 <Button
                   size='large'
@@ -936,7 +941,7 @@ const MakerForm = ({
             </Grid>
           )}
 
-          <Grid item sx={{ width: '100%' }}>
+          <Grid sx={{ width: '100%' }}>
             <TextField
               fullWidth
               error={maker.badPremiumText !== ''}
@@ -944,20 +949,22 @@ const MakerForm = ({
               label={`${t('Premium over Market (%)')} *`}
               type='number'
               value={maker.premium ?? ''}
-              inputProps={{
-                min: -100,
-                max: 999,
-                style: {
-                  textAlign: 'center',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: '4px',
+              slotProps={{
+                htmlInput: {
+                  min: -100,
+                  max: 999,
+                  style: {
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: '4px',
+                  },
                 },
               }}
               onChange={handlePremiumChange}
             />
           </Grid>
           <Collapse in={maker.advancedOptions} sx={{ width: '100%' }}>
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Tooltip
                 placement='top'
                 enterTouchDelay={300}
@@ -968,14 +975,15 @@ const MakerForm = ({
                 <TextField
                   fullWidth
                   label={`${t('Description')}`}
-                  type='description'
                   value={maker.description ?? ''}
                   style={{ marginBottom: 8 }}
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 4,
+                  slotProps={{
+                    htmlInput: {
+                      style: {
+                        textAlign: 'center',
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 4,
+                      },
                     },
                   }}
                   onChange={handleDescriptionChange}
@@ -989,7 +997,7 @@ const MakerForm = ({
               </FormHelperText>
             )}
 
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Tooltip
                 placement='top'
                 enterTouchDelay={300}
@@ -1005,11 +1013,13 @@ const MakerForm = ({
                   type='password'
                   value={maker.password ?? ''}
                   style={{ marginBottom: 8 }}
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 4,
+                  slotProps={{
+                    htmlInput: {
+                      style: {
+                        textAlign: 'center',
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: 4,
+                      },
                     },
                   }}
                   onChange={handlePasswordChange}
@@ -1017,7 +1027,7 @@ const MakerForm = ({
               </Tooltip>
             </Grid>
 
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker
                   open={openPublicDuration}
@@ -1029,26 +1039,30 @@ const MakerForm = ({
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      InputProps: {
-                        style: {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '4px',
-                          marginBottom: 8,
+                      onClick: () => setOpenPublicDuration(true),
+                      slotProps: {
+                        input: {
+                          style: {
+                            backgroundColor: theme.palette.background.paper,
+                            borderRadius: '4px',
+                            marginBottom: 8,
+                          },
                         },
-                        onClick: () => setOpenPublicDuration(true),
                       },
                     },
                   }}
                   label={t('Public Duration (HH:mm)')}
                   value={maker.publicExpiryTime}
-                  onChange={handleChangePublicDuration}
+                  onChange={(value: unknown) => {
+                    if (value instanceof Date) handleChangePublicDuration(value);
+                  }}
                   minTime={new Date(0, 0, 0, 0, 10)}
                   maxTime={new Date(0, 0, 0, 23, 59)}
                 />
               </LocalizationProvider>
             </Grid>
 
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker
                   ampm={false}
@@ -1061,26 +1075,30 @@ const MakerForm = ({
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      InputProps: {
-                        style: {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '4px',
-                          marginBottom: 8,
+                      onClick: () => setOpenEscrowTimer(true),
+                      slotProps: {
+                        input: {
+                          style: {
+                            backgroundColor: theme.palette.background.paper,
+                            borderRadius: '4px',
+                            marginBottom: 8,
+                          },
                         },
-                        onClick: () => setOpenEscrowTimer(true),
                       },
                     },
                   }}
                   label={t('Escrow/Invoice Timer (HH:mm)')}
                   value={maker.escrowExpiryTime}
-                  onChange={handleChangeEscrowDuration}
+                  onChange={(value: unknown) => {
+                    if (value instanceof Date) handleChangeEscrowDuration(value);
+                  }}
                   minTime={new Date(0, 0, 0, 1, 0)}
                   maxTime={new Date(0, 0, 0, 10, 0)}
                 />
               </LocalizationProvider>
             </Grid>
 
-            <Grid item sx={{ width: '100%', marginBottom: '8px' }}>
+            <Grid sx={{ width: '100%', marginBottom: '8px' }}>
               <Box
                 sx={{
                   padding: '0.5em',
@@ -1099,7 +1117,6 @@ const MakerForm = ({
                   sx={{ alignItems: 'center', flexDirection: 'column' }}
                 >
                   <Grid
-                    item
                     sx={{
                       width: '100%',
                       display: 'flex',
@@ -1126,14 +1143,14 @@ const MakerForm = ({
                       </Typography>
                     </Tooltip>
                   </Grid>
-                  <Grid item sx={{ width: 'calc(100% - 2em)' }}>
+                  <Grid sx={{ width: 'calc(100% - 2em)' }}>
                     <Slider
                       sx={{ width: '100%', align: 'center' }}
                       aria-label='Bond Size (%)'
                       defaultValue={3}
                       value={maker.bondSize}
                       valueLabelDisplay='auto'
-                      valueLabelFormat={(x: string) => x + '%'}
+                      valueLabelFormat={(x: number) => x + '%'}
                       step={0.25}
                       marks={[
                         { value: 2, label: '2%' },
@@ -1143,8 +1160,11 @@ const MakerForm = ({
                       ]}
                       min={2}
                       max={15}
-                      onChange={(e) => {
-                        setMaker({ ...maker, bondSize: e.target.value });
+                      onChange={(_e, newValue) => {
+                        setMaker({
+                          ...maker,
+                          bondSize: Array.isArray(newValue) ? newValue[0] : newValue,
+                        });
                       }}
                     />
                   </Grid>
@@ -1165,18 +1185,18 @@ const MakerForm = ({
       />
 
       <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
-        <Grid item sx={{ marginBottom: '8px', marginTop: '8px' }}>
+        <Grid sx={{ marginBottom: '8px', marginTop: '8px' }}>
           <SummaryText />
         </Grid>
 
-        <Grid item>
+        <Grid>
           <Grid
             container
             direction='row'
             spacing={1}
             sx={{ alignItems: 'center', justifyItems: 'center' }}
           >
-            <Grid item>
+            <Grid>
               {/* conditions to disable the make button */}
               {disableSubmit ? (
                 <Tooltip enterTouchDelay={0} title={getDisabledMessage()}>
@@ -1199,7 +1219,7 @@ const MakerForm = ({
               )}
             </Grid>
             {collapseAll ? (
-              <Grid item>
+              <Grid>
                 <Collapse in={collapseAll} orientation='vertical'>
                   <IconButton onClick={onReset}>
                     <Tooltip
@@ -1218,7 +1238,7 @@ const MakerForm = ({
           </Grid>
         </Grid>
 
-        <Grid item>
+        <Grid>
           <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
             {badRequest}
           </Typography>

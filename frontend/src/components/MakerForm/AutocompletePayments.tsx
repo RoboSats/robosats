@@ -28,7 +28,7 @@ const Root = styled('div')(
 `,
 );
 
-const Label = styled('label')(
+const Label = styled('label')<{ error?: boolean; sx?: Record<string, unknown> }>(
   ({ theme, error, sx }) => `
   color: ${
     theme.palette.mode === 'dark'
@@ -42,7 +42,7 @@ const Label = styled('label')(
   pointer-events: none;
   position: relative;
   left: 1em;
-  top: ${String(sx?.top ?? '0.72em')};
+  top: ${String((sx as Record<string, unknown>)?.top ?? '0.72em')};
   maxHeight: 0em;
   height: 0em;
   white-space: no-wrap;
@@ -50,22 +50,22 @@ const Label = styled('label')(
 `,
 );
 
-const InputWrapper = styled('div')(
+const InputWrapper = styled('div')<{ error?: boolean; sx?: Record<string, unknown> }>(
   ({ theme, error, sx }) => `
-  min-height: ${String(sx.minHeight)};
-  max-height: ${String(sx.maxHeight)};
+  min-height: ${String((sx as Record<string, unknown>)?.minHeight ?? '2.9em')};
+  max-height: ${String((sx as Record<string, unknown>)?.maxHeight ?? '8.6em')};
   border: 1px solid ${
     theme.palette.mode === 'dark'
-      ? error === ''
+      ? error === true
         ? '#f44336'
         : '#434343'
-      : error === ''
+      : error === true
         ? '#dd0000'
         : '#c4c4c4'
   };
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
-  border-color: ${sx.borderColor !== undefined ? `border-color ${String(sx.borderColor)}` : ''}
+  border-color: ${(sx as Record<string, unknown>)?.borderColor !== undefined ? `border-color ${String((sx as Record<string, unknown>)?.borderColor)}` : ''}
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -77,7 +77,7 @@ const InputWrapper = styled('div')(
       theme.palette.mode === 'dark'
         ? error === true
           ? '#f44336'
-          : String(sx.hoverBorderColor)
+          : String((sx as Record<string, unknown>)?.hoverBorderColor ?? '#2f2f2f')
         : error === true
           ? '#dd0000'
           : '#2f2f2f'
@@ -118,7 +118,7 @@ interface TagProps {
   label: string;
   icon?: string;
   onDelete?: () => void;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
 }
 
 const Tag: React.FC<TagProps> = ({ label, icon, onDelete, onClick, ...other }) => {
@@ -139,11 +139,11 @@ const Tag: React.FC<TagProps> = ({ label, icon, onDelete, onClick, ...other }) =
   );
 };
 
-const StyledChip = styled(Chip)(
+const StyledChip = styled(Chip)<{ sx?: Record<string, unknown> }>(
   ({ theme, sx }) => `
   display: flex;
   align-items: center;
-  height: ${String(sx?.height ?? '1.6rem')};
+  height: ${String((sx as Record<string, unknown> | undefined)?.height ?? '1.6rem')};
   margin: 2px;
   line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
@@ -168,11 +168,11 @@ const StyledChip = styled(Chip)(
 `,
 );
 
-const StyledTag = styled(Tag)(
+const StyledTag = styled(Tag)<{ sx?: Record<string, unknown> }>(
   ({ theme, sx }) => `
   display: flex;
   align-items: center;
-  height: ${String(sx?.height ?? '1.6rem')};
+  height: ${String((sx as Record<string, unknown> | undefined)?.height ?? '1.6rem')};
   margin: 2px;
   line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
@@ -216,9 +216,9 @@ const ListHeader = styled('span')(
 `,
 );
 
-const Listbox = styled('ul')(
+const Listbox = styled('ul')<{ sx?: Record<string, unknown> }>(
   ({ theme, sx }) => `
-  width: ${String(sx?.width ?? '15.6em')};
+  width: ${String((sx as Record<string, unknown> | undefined)?.width ?? '15.6em')};
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
@@ -271,17 +271,18 @@ interface AutocompletePaymentsProps {
   setHasCustomPaymentMethod?: (value: boolean) => void;
   onAutocompleteChange: (value: string[]) => void;
   tooltipTitle: string;
-  labelProps: MUIStyledCommonProps;
-  tagProps: MUIStyledCommonProps;
-  listBoxProps: MUIStyledCommonProps;
+  labelProps?: MUIStyledCommonProps;
+  tagProps?: MUIStyledCommonProps;
+  listBoxProps?: MUIStyledCommonProps;
   error: boolean;
   label: string;
-  sx: SxProps<Theme>;
+  sx?: SxProps<Theme>;
   addNewButtonText: string;
   isFilter: boolean;
   multiple: boolean;
   optionsDisplayLimit?: number;
-  listHeaderText: string;
+  listHeaderText?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
@@ -331,7 +332,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     value,
     popupOpen,
     setAnchorEl,
-  } = useAutocomplete({
+  } = useAutocomplete<PaymentMethod, true, false, false>({
     id: 'payment-methods',
     multiple: true,
     value: selectedOptions,
@@ -339,7 +340,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     open: props.isFilter ? showFilterInput : undefined,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => {
-      if (e?.target) setVal(e?.target?.value ?? '');
+      if (e?.target) setVal((e?.target as HTMLInputElement)?.value ?? '');
     },
     onChange: (event, value) => {
       if (props.isFilter) setShowFilterInput(false);
@@ -422,7 +423,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                     key={index}
                     label={t(option.name)}
                     icon={option.icon}
-                    onClick={props.onClick}
+                    onClick={(e) => props.onClick?.(e)}
                     sx={{ height: '1.6rem', ...(props.tagProps ?? {}) }}
                     onDelete={() => {
                       const newValue = value.filter((_, i) => i !== index);
@@ -439,31 +440,50 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                 ) : null}
               </>
             ) : null}
-            {value.length > 0 && !props.multiple ? null : (
-              <input
-                ref={filterInputRef}
-                style={
-                  props.isFilter
-                    ? {
-                        position: 'absolute',
-                        backgroundColor: 'transparent',
-                        display: showFilterInput ? 'block' : 'none',
-                        width: '166px',
+            {value.length > 0 && !props.multiple
+              ? null
+              : (() => {
+                  const { ref: autocompleteRef, ...inputProps } = getInputProps();
+                  return (
+                    <input
+                      style={
+                        props.isFilter
+                          ? {
+                              position: 'absolute',
+                              backgroundColor: 'transparent',
+                              display: showFilterInput ? 'block' : 'none',
+                              width: '166px',
+                            }
+                          : {}
                       }
-                    : {}
-                }
-                {...getInputProps()}
-                value={val}
-                onBlur={() => {
-                  if (props.isFilter) setShowFilterInput(false);
-                }}
-              />
-            )}
+                      {...inputProps}
+                      ref={(el) => {
+                        (
+                          filterInputRef as React.MutableRefObject<HTMLInputElement | null>
+                        ).current = el;
+                        if (typeof autocompleteRef === 'function') {
+                          autocompleteRef(el);
+                        } else if (autocompleteRef != null) {
+                          (
+                            autocompleteRef as React.MutableRefObject<HTMLInputElement | null>
+                          ).current = el;
+                        }
+                      }}
+                      value={val}
+                      onBlur={() => {
+                        if (props.isFilter) setShowFilterInput(false);
+                      }}
+                    />
+                  );
+                })()}
           </InputWrapper>
         </div>
       </Tooltip>
       <Grow in={groupedOptions.length > 0}>
-        <Listbox sx={props.listBoxProps?.sx ?? undefined} {...getListboxProps()}>
+        <Listbox
+          sx={(props.listBoxProps?.sx ?? undefined) as Record<string, unknown> | undefined}
+          {...getListboxProps()}
+        >
           {props.listHeaderText ? (
             <div
               style={{

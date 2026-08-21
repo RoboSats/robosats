@@ -39,10 +39,10 @@ jobs:
 
     steps:
     - name: 'Checkout'
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
     - name: 'Download static files Artifact'
-      uses: dawidd6/action-download-artifact@v21
+      uses: dawidd6/action-download-artifact@v23
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
@@ -87,7 +87,7 @@ jobs:
         ROBOSATS_ENVS_FILE: ".env-sample"
 
     - name: 'Upload strfry image artifact'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: strfry-image-${{ github.run_id }}
         path: strfry-image.tar.gz
@@ -107,10 +107,10 @@ jobs:
 
     steps:
     - name: 'Checkout'
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
     - name: 'Download static files Artifact'
-      uses: dawidd6/action-download-artifact@v21
+      uses: dawidd6/action-download-artifact@v23
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
@@ -119,7 +119,7 @@ jobs:
         if_no_artifact_found: ignore
 
     - name: 'Download coordinator image artifact'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: backend-image-${{ github.run_id }}
 
@@ -127,7 +127,7 @@ jobs:
       run: docker load < backend-image.tar.gz
 
     - name: 'Download strfry image artifact'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: strfry-image-${{ github.run_id }}
 
@@ -139,7 +139,7 @@ jobs:
         sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
 
     - name: 'Compose Regtest Orchestration'
-      uses: isbang/compose-action@v2.4.0
+      uses: isbang/compose-action@v3.1.0
       with:
         compose-file: "./docker-tests.yml"
         down-flags: "--volumes"

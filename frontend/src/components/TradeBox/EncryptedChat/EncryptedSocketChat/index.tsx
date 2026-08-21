@@ -35,7 +35,9 @@ interface Props {
   takerHashId: string;
   makerHashId: string;
   messages: EncryptedChatMessage[];
-  setMessages: (messages: EncryptedChatMessage[]) => void;
+  setMessages: (
+    messages: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
+  ) => void;
   onSendMessage: (content: string, options: { skipCoordinator?: boolean }) => void;
   onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
@@ -126,7 +128,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       .open(
         `${url.replace(/^https?:\/\//, protocol)}/ws/chat/${
           order.id
-        }/?token_sha256_hex=${sha256(slot?.token)}`,
+        }/?token_sha256_hex=${sha256(slot?.token ?? '')}`,
       )
       .then((connection) => {
         setConnection(connection);
@@ -156,7 +158,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   };
 
   const onMessage: (message: object) => void = (message) => {
-    const dataFromServer = JSON.parse(message.data);
+    const dataFromServer = JSON.parse((message as { data: string }).data);
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
     if (dataFromServer != null && !receivedIndexes.includes(dataFromServer.index)) {
@@ -166,29 +168,40 @@ const EncryptedSocketChat: React.FC<Props> = ({
       if (
         connection != null &&
         dataFromServer.message.substring(0, 36) === `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
-        dataFromServer.message !== robot.pubKey
+        dataFromServer.message !== robot?.pubKey
       ) {
         setPeerPubKey(dataFromServer.message);
         connection.send(
           JSON.stringify({
             type: 'message',
             message: `-----SERVE HISTORY-----`,
-            nick: userNick,
+            nick: userNick ?? '',
           }),
         );
       }
       // If we receive an encrypted message
       else if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        const senderPubKey = dataFromServer.user_nick === userNick ? robot?.pubKey : peerPubKey;
+        if (!senderPubKey || !robot?.encPrivKey || !slot?.token) {
+          console.warn('[EncryptedSocketChat] skipping decrypt: missing keys or token', {
+            hasSenderPubKey: Boolean(senderPubKey),
+            hasEncPrivKey: Boolean(robot?.encPrivKey),
+            hasToken: Boolean(slot?.token),
+          });
+          return;
+        }
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
-          dataFromServer.user_nick === userNick ? robot.pubKey : peerPubKey,
+          senderPubKey,
           robot.encPrivKey,
           slot.token,
         ).then((decryptedData) => {
           setWaitingEcho(waitingEcho ? decryptedData.decryptedMessage !== lastSent : false);
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
-          setMessages((prev) => {
-            const existingMessage = prev.find((item) => item.index === dataFromServer.index);
+          setMessages((prev: EncryptedChatMessage[]) => {
+            const existingMessage = prev.find(
+              (item: EncryptedChatMessage) => item.index === dataFromServer.index,
+            );
             if (existingMessage != null) {
               return prev;
             } else {
@@ -225,7 +238,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
-    if (slot?.token !== undefined && value.includes(slot.token)) {
+    if (slot?.token != null && value.includes(slot.token ?? '')) {
       alert(
         `Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
@@ -233,6 +246,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     }
     // Else if message is not empty send message
     else if (value !== '') {
+      if (!robot?.pubKey || !peerPubKey || !robot?.encPrivKey || !slot?.token) return;
       setValue('');
       setWaitingEcho(true);
       setLastSent(value);
@@ -321,7 +335,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       spacing={0.5}
       sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item>
+      <Grid>
         <ChatHeader connected={connected && Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
@@ -372,7 +386,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
               maxRows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  onButtonClicked(e);
+                  onButtonClicked(e as unknown as React.FormEvent<HTMLFormElement>);
                 }
               }}
               value={value}

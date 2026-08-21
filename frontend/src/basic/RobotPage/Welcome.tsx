@@ -32,7 +32,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
 
       sx={{ alignItems: 'center', flexDirection: 'column', padding: 0.5, paddingTop: 2.2 }}
     >
-      <Grid item style={{ paddingTop: '2em', paddingBottom: '1.5em' }}>
+      <Grid style={{ paddingTop: '2em', paddingBottom: '1.5em' }}>
         <svg width={0} height={0}>
           <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
             <stop offset={0} stopColor={theme.palette.primary.main} />
@@ -47,8 +47,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
           }}
         />
         <Typography
-          lineHeight={0.82}
-          sx={{ position: 'relative', bottom: '0.3em' }}
+          sx={{ position: 'relative', bottom: '0.3em', lineHeight: 0.82 }}
           color='secondary'
           align='center'
           component='h6'
@@ -58,7 +57,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
         </Typography>
       </Grid>
 
-      <Grid item>
+      <Grid>
         <Box
           sx={{
             backgroundColor: 'background.paper',
@@ -75,12 +74,12 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
             spacing={1}
             sx={{ alignItems: 'center', flexDirection: 'column', padding: 1.5 }}
           >
-            <Grid item>
+            <Grid>
               <Typography align='center'>
                 {t('Create a new robot and learn to use RoboSats')}
               </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Button
                 size='large'
                 color='primary'
@@ -95,12 +94,12 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
               </Button>
             </Grid>
 
-            <Grid item>
+            <Grid>
               <Typography align='center'>
                 {t('Recover an existing robot using your token')}
               </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Button
                 size='large'
                 color='primary'
@@ -117,7 +116,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
           </Grid>
         </Box>
       </Grid>
-      <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
+      <Grid sx={{ position: 'relative', bottom: '0.5em' }}>
         <Button
           size='large'
           color='primary'
@@ -131,7 +130,7 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
           {t('Search for Orders')}
         </Button>
       </Grid>
-      <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
+      <Grid sx={{ position: 'relative', bottom: '0.5em' }}>
         <Button
           size='large'
           color='primary'

@@ -64,10 +64,10 @@ export const RoutingFailedPrompt = ({
           spacing={1}
           sx={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}
         >
-          <Grid item>
+          <Grid>
             <Typography>{t('Retrying!')}</Typography>
           </Grid>
-          <Grid item>
+          <Grid>
             <CircularProgress />
           </Grid>
         </Grid>
@@ -89,7 +89,7 @@ export const RoutingFailedPrompt = ({
           padding: 1,
         }}
       >
-        <Grid item>
+        <Grid>
           <Typography variant='body2'>
             {t(
               'Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.',
@@ -98,14 +98,14 @@ export const RoutingFailedPrompt = ({
         </Grid>
 
         {order.failure_reason != null ? (
-          <Grid item>
+          <Grid>
             <FailureReason failureReason={order.failure_reason} />
           </Grid>
         ) : (
           <></>
         )}
 
-        <Grid item>
+        <Grid>
           <LightningPayoutForm
             order={order}
             settings={settings}
@@ -129,10 +129,10 @@ export const RoutingFailedPrompt = ({
           padding: 1,
         }}
       >
-        <Grid item>
+        <Grid>
           <FailureReason failureReason={order.failure_reason} />
         </Grid>
-        <Grid item>
+        <Grid>
           <Typography variant='body2'>
             {t(
               'RoboSats will try to pay your invoice 3 times with a one minute pause in between. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.',
@@ -140,12 +140,12 @@ export const RoutingFailedPrompt = ({
           </Typography>
         </Grid>
         <div style={{ height: '0.6em' }} />
-        <Grid item>
+        <Grid>
           <Typography align='center'>
             <b>{t('Next attempt in')}</b>
           </Typography>
         </Grid>
-        <Grid item>
+        <Grid>
           <Countdown date={new Date(order.next_retry_time)} renderer={countdownRenderer} />
         </Grid>
       </Grid>

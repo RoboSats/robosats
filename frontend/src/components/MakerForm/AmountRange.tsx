@@ -13,7 +13,7 @@ import {
 
 import { FlagWithProps } from '../Icons';
 import RangeSlider from './RangeSlider';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { pn } from '../../utils';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
@@ -121,7 +121,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
   }, [minAmountError, maxAmountError]);
 
   return (
-    <Grid item xs={12}>
+    <Grid size={12}>
       <Box
         sx={{
           padding: '0.5em',
@@ -135,7 +135,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({
         }}
       >
         <Grid container spacing={0.5} sx={{ alignItems: 'center', flexDirection: 'column' }}>
-          <Grid item sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Grid sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
             <Typography
               sx={{
                 width: `${t('From').length * 0.56 + 0.6}em`,
@@ -226,7 +226,6 @@ const AmountRange: React.FC<AmountRangeProps> = ({
           </Grid>
 
           <Grid
-            item
             sx={{
               width: `calc(100% - ${Math.abs(Math.log10(amountLimits[1]) * 0.65) + 2}em)`,
             }}
@@ -236,9 +235,9 @@ const AmountRange: React.FC<AmountRangeProps> = ({
               value={[maker.minAmount ?? amountLimits[0], maker.maxAmount ?? amountLimits[1]]}
               step={(amountLimits[1] - amountLimits[0]) / 5000}
               valueLabelDisplay='auto'
-              components={{ Thumb: RangeThumbComponent }}
-              componentsProps={{
-                thumb: { style: { backgroundColor: theme.palette.background.paper } },
+              slots={{ thumb: RangeThumbComponent }}
+              slotProps={{
+                thumb: { style: { backgroundColor: theme.palette.background.paper } } as object,
               }}
               valueLabelFormat={(x) =>
                 pn(parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))) + ' ' + currencyCode

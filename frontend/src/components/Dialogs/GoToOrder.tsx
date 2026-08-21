@@ -60,11 +60,13 @@ const GoToOrder = ({ open, onClose }: Props): React.JSX.Element => {
             error={error}
             value={orderUrl}
             style={{ marginTop: 8 }}
-            inputProps={{
-              style: {
-                textAlign: 'center',
-                backgroundColor: theme.palette.background.paper,
-                borderRadius: 4,
+            slotProps={{
+              htmlInput: {
+                style: {
+                  textAlign: 'center',
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: 4,
+                },
               },
             }}
             onChange={(e) => setOrderUrl(e.target.value)}

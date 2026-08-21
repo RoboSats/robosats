@@ -14,7 +14,7 @@ import {
 import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { useTheme } from '@emotion/react';
+import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { Coordinator } from '../../models';
@@ -50,7 +50,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   }, [coordinatorAlias]);
 
   return (
-    <Grid item>
+    <Grid>
       <Grid sx={{ marginBottom: 1 }}>
         <Alert
           severity={
@@ -87,7 +87,6 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
         >
           <Grid container style={{ marginTop: 10, width: '100%' }}>
             <Grid
-              item
               sx={{
                 cursor: 'pointer',
                 position: 'relative',
@@ -100,7 +99,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 onClickCurrentCoordinator(coordinatorAlias);
               }}
             >
-              <Grid item>
+              <Grid>
                 <RobotAvatar
                   shortAlias={coordinatorAlias}
                   hashId={!coordinator?.federated ? coordinator?.mainnet.onion : undefined}
@@ -119,7 +118,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
               </Grid>
             </Grid>
 
-            <Grid item xs={{ width: '100%' }}>
+            <Grid>
               <Select
                 variant='standard'
                 fullWidth
@@ -149,9 +148,9 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
           </Grid>
         </Tooltip>
         <Grid container>
-          <Grid item>
-            <Stack direction='row' alignContent='center' spacing={2} style={{ flexGrow: 1 }}>
-              <Grid item>
+          <Grid>
+            <Stack direction='row' sx={{ alignItems: 'center', flexGrow: 1 }} spacing={2}>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}
@@ -171,7 +170,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   </Typography>
                 </Tooltip>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}
@@ -191,7 +190,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   </Typography>
                 </Tooltip>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}

@@ -85,24 +85,26 @@ const TokenInput = ({
             onPressEnter();
           }
         }}
-        InputProps={{
-          endAdornment: showCopy ? (
-            <Tooltip open={showCopied} title={t('Copied!')}>
-              <IconButton
-                autoFocus={autoFocusTarget === 'copyButton'}
-                color='inherit'
-                onClick={() => {
-                  systemClient.copyToClipboard(inputToken);
-                  setShowCopied(true);
-                  setTimeout(() => {
-                    setShowCopied(false);
-                  }, 1000);
-                }}
-              >
-                <ContentCopy sx={{ width: '1em', height: '1em' }} />
-              </IconButton>
-            </Tooltip>
-          ) : null,
+        slotProps={{
+          input: {
+            endAdornment: showCopy ? (
+              <Tooltip open={showCopied} title={t('Copied!')}>
+                <IconButton
+                  autoFocus={autoFocusTarget === 'copyButton'}
+                  color='inherit'
+                  onClick={() => {
+                    systemClient.copyToClipboard(inputToken);
+                    setShowCopied(true);
+                    setTimeout(() => {
+                      setShowCopied(false);
+                    }, 1000);
+                  }}
+                >
+                  <ContentCopy sx={{ width: '1em', height: '1em' }} />
+                </IconButton>
+              </Tooltip>
+            ) : null,
+          },
         }}
       />
     );

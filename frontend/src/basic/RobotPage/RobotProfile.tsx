@@ -17,7 +17,7 @@ import {
 import { Key, Bolt, Add, DeleteSweep, Download, Settings } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
-import { type Slot, type Robot } from '../../models';
+import { type Slot } from '../../models';
 import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
@@ -26,13 +26,10 @@ import { type UseFederationStoreType, FederationContext } from '../../contexts/F
 import { DeleteRobotConfirmationDialog } from '../../components/Dialogs';
 
 interface RobotProfileProps {
-  robot: Robot;
-  setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
   inputToken: string;
   setInputToken: (state: string) => void;
   width: number;
-  baseUrl: string;
 }
 
 const RobotProfile = ({
@@ -69,7 +66,7 @@ const RobotProfile = ({
     setInputToken(token);
   };
 
-  const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
+  const handleChangeSlot = (e: SelectChangeEvent<string>): void => {
     if (e?.target?.value) {
       garage.setCurrentSlot(e.target.value as string);
       setInputToken(garage.getSlot()?.token ?? '');
@@ -92,7 +89,6 @@ const RobotProfile = ({
   };
 
   const slot = garage.getSlot();
-  const robot = slot?.getRobot();
 
   return (
     <Grid
@@ -101,16 +97,12 @@ const RobotProfile = ({
       sx={{ alignItems: 'center', flexDirection: 'column', padding: 1, paddingTop: 2 }}
     >
       <Grid
-        item
         container
 
         spacing={1}
         sx={{ width: '100%', alignItems: 'center', flexDirection: 'column' }}
       >
-        <Grid
-          item
-          sx={{ height: '2.3em', position: 'relative', display: 'flex', flexDirection: 'row' }}
-        >
+        <Grid sx={{ height: '2.3em', position: 'relative', display: 'flex', flexDirection: 'row' }}>
           <IconButton
             color='primary'
             onClick={() => {
@@ -159,10 +151,9 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        <Grid item sx={{ width: `13.5em` }}>
+        <Grid sx={{ width: `13.5em` }}>
           <RobotAvatar
-            hashId={slot?.hashId}
-            error={!slot?.activeOrder?.id && Boolean(slot?.lastOrder?.id)}
+            hashId={slot?.hashId ?? undefined}
             smooth
             style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
             placeholderType='generating'
@@ -192,7 +183,7 @@ const RobotProfile = ({
         ) : null}
 
         {slot?.activeOrder ? (
-          <Grid item>
+          <Grid>
             <Button
               onClick={() => {
                 navigateToPage(
@@ -206,10 +197,10 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        <Grid item container direction='row' sx={{ alignItems: 'center' }}>
+        <Grid container direction='row' sx={{ alignItems: 'center' }}>
           {!slot?.activeOrder && slot?.lastOrder ? (
-            <Grid item container sx={{ alignItems: 'center', flexDirection: 'column' }}>
-              <Grid item>
+            <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
+              <Grid>
                 <Button
                   onClick={() => {
                     navigateToPage(
@@ -225,8 +216,8 @@ const RobotProfile = ({
           ) : null}
 
           {slot?.availableRewards !== null && (
-            <Grid item container sx={{ alignItems: 'center', flexDirection: 'column' }}>
-              <Grid item>
+            <Grid container sx={{ alignItems: 'center', flexDirection: 'column' }}>
+              <Grid>
                 <Button
                   onClick={() => {
                     setOpen({ ...closeAll, profile: !open.profile });
@@ -240,7 +231,7 @@ const RobotProfile = ({
         </Grid>
 
         {!slot?.activeOrder && !slot?.lastOrder && !slot?.loading ? (
-          <Grid item>{t('No existing orders found')}</Grid>
+          <Grid>{t('No existing orders found')}</Grid>
         ) : null}
 
         <Tooltip
@@ -252,7 +243,6 @@ const RobotProfile = ({
           )}
         >
           <Grid
-            item
             container
             direction='row'
 
@@ -270,7 +260,7 @@ const RobotProfile = ({
           </Grid>
         </Tooltip>
       </Grid>
-      <Grid item sx={{ width: '100%' }}>
+      <Grid sx={{ width: '100%' }}>
         <Box
           sx={{
             backgroundColor: 'background.paper',
@@ -284,7 +274,7 @@ const RobotProfile = ({
             spacing={2}
             sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
           >
-            <Grid item sx={{ width: '100%' }}>
+            <Grid sx={{ width: '100%' }}>
               <Grid container direction='row' sx={{ justifyContent: 'space-between' }}>
                 <Typography variant='caption'>{t('Robot Garage')}</Typography>
                 <Button
@@ -304,7 +294,7 @@ const RobotProfile = ({
                 inputProps={{
                   style: { textAlign: 'center' },
                 }}
-                value={loading ? 'loading' : garage.currentSlot}
+                value={loading ? 'loading' : (garage.currentSlot ?? '')}
                 onChange={handleChangeSlot}
               >
                 {loading ? (
@@ -314,7 +304,7 @@ const RobotProfile = ({
                 ) : (
                   Object.values(garage.slots).map((slot: Slot, index: number) => {
                     return (
-                      <MenuItem key={index} value={slot.token}>
+                      <MenuItem key={index} value={slot.token ?? ''}>
                         <Grid
                           container
                           direction='row'
@@ -323,16 +313,16 @@ const RobotProfile = ({
                           spacing={1}
                           sx={{ alignItems: 'center', justifyContent: 'flex-start' }}
                         >
-                          <Grid item>
+                          <Grid>
                             <RobotAvatar
-                              hashId={slot.hashId}
+                              hashId={slot.hashId ?? undefined}
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
                               small={true}
                             />
                           </Grid>
-                          <Grid item>
+                          <Grid>
                             <Typography variant={windowSize.width < 26 ? 'caption' : undefined}>
                               {slot?.nickname}
                             </Typography>
@@ -345,14 +335,8 @@ const RobotProfile = ({
               </Select>
             </Grid>
 
-            <Grid
-              item
-              container
-              direction='row'
-              width='100%'
-              sx={{ justifyContent: 'space-between' }}
-            >
-              <Grid item>
+            <Grid container direction='row' sx={{ width: '100%', justifyContent: 'space-between' }}>
+              <Grid>
                 <LoadingButton
                   loading={loading}
                   color='primary'
@@ -363,7 +347,7 @@ const RobotProfile = ({
                   {!mobileView && t('Add Robot')}
                 </LoadingButton>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Button
                   color='primary'
                   size='large'
@@ -376,7 +360,7 @@ const RobotProfile = ({
                   <Key />
                 </Button>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Button color='primary' onClick={handleDeleteRobot} size='large'>
                   <DeleteSweep />
                   {!mobileView && t('Delete Robot')}
@@ -391,7 +375,7 @@ const RobotProfile = ({
         open={deleteDialogOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        robotName={robot?.nickname}
+        robotName={slot?.nickname ?? undefined}
       />
     </Grid>
   );

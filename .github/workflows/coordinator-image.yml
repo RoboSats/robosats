@@ -15,13 +15,13 @@ jobs:
     name: 'Push Docker image to Docker Hub'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
     - name: 'Download Basic main.js Artifact'
       if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-      uses: dawidd6/action-download-artifact@v21
+      uses: dawidd6/action-download-artifact@v23
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
@@ -30,7 +30,7 @@ jobs:
 
     - name: 'Download Basic main.js Artifact for a release'
       if: inputs.semver != ''  # Only if fired as job in release.yml
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v8
       with:
         name: django-main-static
         path: frontend
@@ -55,7 +55,7 @@ jobs:
 
     - name: 'Get Commit Hash'
       id: commit
-      uses: pr-mpt/actions-commit-hash@v3
+      uses: pr-mpt/actions-commit-hash@v4
 
     - name: 'Save Commit Long Hash to TXT File'
       run: |

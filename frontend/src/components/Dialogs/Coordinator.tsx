@@ -100,7 +100,7 @@ const ContactButtons = ({
   return (
     <Grid container direction='row' sx={{ alignItems: 'center', justifyContent: 'center' }}>
       {nostr !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip
             title={
               <div>
@@ -137,11 +137,14 @@ const ContactButtons = ({
       )}
 
       {pgp && fingerprint && (
-        <Grid item>
+        <Grid>
           <Tooltip
             enterTouchDelay={0}
             enterNextDelay={2000}
-            title={t('Download PGP Pubkey. Fingerprint: ') + fingerprint.match(/.{1,4}/g).join(' ')}
+            title={
+              t('Download PGP Pubkey. Fingerprint: ') +
+              (fingerprint.match(/.{1,4}/g) ?? []).join(' ')
+            }
           >
             <IconButton component='a' target='_blank' href={pgp} rel='noreferrer'>
               <Key />
@@ -151,7 +154,7 @@ const ContactButtons = ({
       )}
 
       {email !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Send Email')}>
             <IconButton component='a' href={`mailto: ${email}`}>
               <Email />
@@ -161,7 +164,7 @@ const ContactButtons = ({
       )}
 
       {telegram !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Telegram')}>
             <IconButton
               component='a'
@@ -176,7 +179,7 @@ const ContactButtons = ({
       )}
 
       {twitter !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('X')}>
             <IconButton
               component='a'
@@ -191,7 +194,7 @@ const ContactButtons = ({
       )}
 
       {reddit !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Reddit')}>
             <IconButton
               component='a'
@@ -206,7 +209,7 @@ const ContactButtons = ({
       )}
 
       {website !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Website')}>
             <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
               <Language />
@@ -216,7 +219,7 @@ const ContactButtons = ({
       )}
 
       {matrix !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip
             title={
               <Typography variant='body2'>
@@ -241,7 +244,7 @@ const ContactButtons = ({
       )}
 
       {simplex !== undefined && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Simplex')}>
             <IconButton component='a' target='_blank' href={`${simplex}`} rel='noreferrer'>
               <SimplexIcon sx={{ width: '0.7em', height: '0.7em' }} />
@@ -283,7 +286,7 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
           </Typography>
         }
       >
-        <Grid item sx={{ filter: badges?.isFounder !== true ? 'grayscale(100%)' : undefined }}>
+        <Grid sx={{ filter: badges?.isFounder !== true ? 'grayscale(100%)' : undefined }}>
           <BadgeFounder sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -299,7 +302,6 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
         }
       >
         <Grid
-          item
           sx={{ filter: Number(badges?.donatesToDevFund) >= 20 ? undefined : 'grayscale(100%)' }}
         >
           <BadgeDevFund sx={sxProps} />
@@ -318,7 +320,7 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
           </Typography>
         }
       >
-        <Grid item sx={{ filter: badges?.hasGoodOpSec === true ? undefined : 'grayscale(100%)' }}>
+        <Grid sx={{ filter: badges?.hasGoodOpSec === true ? undefined : 'grayscale(100%)' }}>
           <BadgePrivacy sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -327,13 +329,13 @@ const BadgesHall = ({ badges, size_limit }: BadgesProps): React.JSX.Element => {
         {...tooltipProps}
         title={
           <Typography align='center' variant='body2'>
-            {size_limit > 3000000
+            {(size_limit ?? 0) > 3000000
               ? t('Large limits: the coordinator has large trade limits.')
               : t('Does not have large trade limits.')}
           </Typography>
         }
       >
-        <Grid item sx={{ filter: size_limit > 3000000 ? undefined : 'grayscale(100%)' }}>
+        <Grid sx={{ filter: (size_limit ?? 0) > 3000000 ? undefined : 'grayscale(100%)' }}>
           <BadgeLimits sx={sxProps} />
         </Grid>
       </Tooltip>
@@ -385,7 +387,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
         <List dense>
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid container sx={{ alignItems: 'center', flexDirection: 'column', padding: 0 }}>
-              <Grid item>
+              <Grid>
                 <RobotAvatar
                   shortAlias={coordinator?.federated ? coordinator?.shortAlias : undefined}
                   hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
@@ -393,13 +395,13 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   smooth={true}
                 />
               </Grid>
-              <Grid item>
+              <Grid>
                 <Typography align='center' variant='body2'>
                   <i>{String(coordinator?.motto)}</i>
                 </Typography>
               </Grid>
               <Grid container sx={{ alignItems: 'center', flexDirection: 'column', padding: 0 }}>
-                <Grid item>
+                <Grid>
                   <Rating
                     readOnly
                     precision={0.5}
@@ -413,7 +415,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   </Typography>
                 </Grid>
               </Grid>
-              <Grid item>
+              <Grid>
                 <ContactButtons {...coordinator?.contact} />
               </Grid>
             </Grid>
@@ -422,18 +424,18 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
           {['create'].includes(page) && (
             <>
               <ListItem {...listItemProps}>
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <Percent />
                 </ListItemIcon>
 
                 <Grid container>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <ListItemText secondary={t('Maker fee')}>
                       {((coordinator?.info?.maker_fee ?? 0) * 100).toFixed(3)}%
                     </ListItemText>
                   </Grid>
 
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <ListItemText secondary={t('Taker fee')}>
                       {((coordinator?.info?.taker_fee ?? 0) * 100).toFixed(3)}%
                     </ListItemText>
@@ -442,7 +444,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               </ListItem>
 
               <ListItem {...listItemProps}>
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <LinkIcon />
                 </ListItemIcon>
 
@@ -459,9 +461,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               <ListItem>
                 <Alert severity={coordinator?.info?.notice_severity} sx={{ width: '100%' }}>
                   <AlertTitle>{t('Coordinator Notice')}</AlertTitle>
-                  <div
-                    dangerouslySetInnerHTML={{ __html: coordinator?.info?.notice_message ?? '' }}
-                  />
+                  <Typography variant='body2'>{coordinator?.info?.notice_message ?? ''}</Typography>
                 </Alert>
               </ListItem>
             )}
@@ -470,19 +470,19 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
           </ListItem>
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Description />
             </ListItemIcon>
 
             <ListItemText
               primary={coordinator?.description}
-              primaryTypographyProps={{ sx: { maxWidth: '20em' } }}
+              slotProps={{ primary: { sx: { maxWidth: '20em' } } }}
               secondary={t('Coordinator description')}
             />
           </ListItem>
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Flag />
             </ListItemIcon>
 
@@ -492,27 +492,35 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
             />
           </ListItem>
 
-          {coordinator?.[settings.network] && (
+          {coordinator?.[settings.network ?? 'mainnet'] && (
             <ListItemButton
               target='_blank'
-              href={coordinator[settings.network][settings.selfhostedClient ? 'onion' : origin]}
+              href={
+                (coordinator as unknown as Record<string, Record<string, string>>)[
+                  settings.network ?? 'mainnet'
+                ]?.[settings.selfhostedClient ? 'onion' : origin] ?? ''
+              }
               rel='noreferrer'
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Web />
               </ListItemIcon>
               <ListItemText
                 secondary={t('Coordinator hosted web app')}
-                primaryTypographyProps={{
-                  style: {
-                    maxWidth: '20em',
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word',
+                slotProps={{
+                  primary: {
+                    style: {
+                      maxWidth: '20em',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                    },
                   },
                 }}
               >
                 {`${String(
-                  coordinator?.[settings.network][settings.selfhostedClient ? 'onion' : origin],
+                  (coordinator as unknown as Record<string, Record<string, string>>)?.[
+                    settings.network ?? 'mainnet'
+                  ]?.[settings.selfhostedClient ? 'onion' : origin] ?? '',
                 )}`}
               </ListItemText>
             </ListItemButton>
@@ -539,7 +547,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <List dense>
                     {Object.keys(coordinator?.policies).map((key, index) => (
                       <ListItem key={index} sx={{ maxWidth: '24em' }}>
-                        <ListItemIcon>{index + 1}</ListItemIcon>
+                        <ListItemIcon sx={{ minWidth: 56 }}>{index + 1}</ListItemIcon>
                         <ListItemText primary={key} secondary={coordinator?.policies[key]} />
                       </ListItem>
                     ))}
@@ -559,7 +567,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               <AccordionDetails sx={{ padding: 0 }}>
                 <List dense>
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Circle />
                     </ListItemIcon>
 
@@ -573,18 +581,18 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   <Divider />
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Percent />
                     </ListItemIcon>
 
                     <Grid container>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <ListItemText secondary={t('Maker fee')}>
                           {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
                         </ListItemText>
                       </Grid>
 
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <ListItemText secondary={t('Taker fee')}>
                           {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
                         </ListItemText>
@@ -596,20 +604,20 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {!coordinator?.info?.swap_enabled ? (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <LinkIcon />
                       </ListItemIcon>
 
                       <ListItemText
                         primary={t('Onchain payouts disabled')}
-                        primaryTypographyProps={{ color: 'red' }}
+                        slotProps={{ primary: { style: { color: 'red' } } }}
                         secondary={t('Current onchain payout status')}
                       />
                     </ListItem>
                   ) : (
                     <>
                       <ListItem {...listItemProps}>
-                        <ListItemIcon>
+                        <ListItemIcon sx={{ minWidth: 56 }}>
                           <LinkIcon />
                         </ListItemIcon>
 
@@ -620,7 +628,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                       </ListItem>
 
                       <ListItem {...listItemProps}>
-                        <ListItemIcon />
+                        <ListItemIcon sx={{ minWidth: 56 }} />
 
                         <ListItemText
                           primary={`${pn(
@@ -639,7 +647,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <VolunteerActivism />
                     </ListItemIcon>
 
@@ -652,7 +660,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Inventory />
                     </ListItemIcon>
 
@@ -665,7 +673,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Sell />
                     </ListItemIcon>
 
@@ -678,7 +686,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Book />
                     </ListItemIcon>
 
@@ -691,7 +699,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <SmartToy />
                     </ListItemIcon>
 
@@ -704,7 +712,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <PriceChange />
                     </ListItemIcon>
 
@@ -717,7 +725,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <ApiOutlined />
                     </ListItemIcon>
 
@@ -742,7 +750,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
               <AccordionDetails>
                 <List dense>
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <RoboSatsNoTextIcon
                         sx={{
                           width: '1.4em',
@@ -764,7 +772,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {coordinator?.info?.lnd_version !== undefined && (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <Bolt />
                       </ListItemIcon>
                       <ListItemText
@@ -776,7 +784,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {Boolean(coordinator?.info?.cln_version) && (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <Bolt />
                       </ListItemIcon>
                       <ListItemText
@@ -790,7 +798,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
                   {coordinator?.info?.network === 'testnet' ? (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <Dns />
                       </ListItemIcon>
                       <ListItemText secondary={`${t('LN Node')}: ${coordinator?.info?.node_alias}`}>
@@ -805,7 +813,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                     </ListItem>
                   ) : (
                     <ListItem {...listItemProps}>
-                      <ListItemIcon>
+                      <ListItemIcon sx={{ minWidth: 56 }}>
                         <AmbossIcon />
                       </ListItemIcon>
                       <ListItemText secondary={coordinator?.info?.node_alias}>
@@ -823,7 +831,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <GitHub />
                     </ListItemIcon>
                     <ListItemText secondary={t('Coordinator commit hash')}>
@@ -840,7 +848,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Equalizer />
                     </ListItemIcon>
                     <ListItemText secondary={t('24h contracted volume')}>
@@ -852,10 +860,9 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(parseFloat(coordinator?.info?.last_day_volume).toFixed(8))}
+                        {pn(parseFloat(String(coordinator?.info?.last_day_volume ?? 0)).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '0.6em', height: '0.6em' }}
-                          color={'text.secondary'}
+                          sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
                         />
                       </div>
                     </ListItemText>
@@ -864,7 +871,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                   <Divider />
 
                   <ListItem {...listItemProps}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 56 }}>
                       <Equalizer />
                     </ListItemIcon>
                     <ListItemText secondary={t('Lifetime contracted volume')}>
@@ -876,10 +883,9 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(parseFloat(coordinator?.info?.lifetime_volume).toFixed(8))}
+                        {pn(parseFloat(String(coordinator?.info?.lifetime_volume ?? 0)).toFixed(8))}
                         <BitcoinSignIcon
-                          sx={{ width: '0.6em', height: '0.6em' }}
-                          color={'text.secondary'}
+                          sx={{ width: '0.6em', height: '0.6em', color: 'text.secondary' }}
                         />
                       </div>
                     </ListItemText>

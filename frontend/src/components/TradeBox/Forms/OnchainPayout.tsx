@@ -39,7 +39,7 @@ export const OnchainPayoutForm = ({
   const invalidFee = onchain.miningFee < minMiningFee || onchain.miningFee > maxMiningFee;
   const costPerVByte = 280;
 
-  const handleMiningFeeChange = (e: React.ChangeEventHandler<HTMLInputElement>): void => {
+  const handleMiningFeeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const miningFee = Number(e.target.value);
     setOnchain({ ...onchain, miningFee });
   };
@@ -104,14 +104,14 @@ export const OnchainPayoutForm = ({
         </ListItem>
       </List>
 
-      <Grid item>
+      <Grid>
         <Grid
           container
           direction='row'
           spacing={0}
           sx={{ alignItems: 'flex-start', justifyContent: 'center' }}
         >
-          <Grid item xs={7}>
+          <Grid size={7}>
             <TextField
               error={onchain.badAddress !== ''}
               helperText={onchain.badAddress !== '' ? t(onchain.badAddress) : ''}
@@ -125,7 +125,7 @@ export const OnchainPayoutForm = ({
               }}
             />
           </Grid>
-          <Grid item xs={5}>
+          <Grid size={5}>
             <TextField
               error={invalidFee}
               helperText={invalidFee ? t('Invalid') : ''}
@@ -134,18 +134,20 @@ export const OnchainPayoutForm = ({
               fullWidth={true}
               value={onchain.miningFee}
               type='number'
-              inputProps={{
-                max: maxMiningFee,
-                min: minMiningFee,
-                style: { textAlign: 'center' },
+              slotProps={{
+                htmlInput: {
+                  max: maxMiningFee,
+                  min: minMiningFee,
+                  style: { textAlign: 'center' },
+                },
               }}
-              onChange={handleMiningFeeChange}
+              onChange={(e) => handleMiningFeeChange(e as React.ChangeEvent<HTMLInputElement>)}
             />
           </Grid>
         </Grid>
       </Grid>
 
-      <Grid item style={{ marginTop: 16 }}>
+      <Grid style={{ marginTop: 16 }}>
         <LoadingButton
           loading={loading}
           onClick={onClickSubmit}

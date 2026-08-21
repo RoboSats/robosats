@@ -35,7 +35,7 @@ const MoreTooltip = ({ children }: MoreTooltipProps): React.JSX.Element => {
           container
           sx={{ width: '2em', padding: '0em', justifyContent: 'center', flexDirection: 'column' }}
         >
-          <Grid item sx={{ position: 'relative', right: '0.4em' }}>
+          <Grid sx={{ position: 'relative', right: '0.4em' }}>
             <Tooltip enterTouchDelay={250} placement='left' title={t('RoboSats information')}>
               <IconButton
                 sx={{
@@ -50,7 +50,7 @@ const MoreTooltip = ({ children }: MoreTooltipProps): React.JSX.Element => {
             </Tooltip>
           </Grid>
 
-          <Grid item sx={{ position: 'relative', right: '0.4em' }}>
+          <Grid sx={{ position: 'relative', right: '0.4em' }}>
             <Tooltip enterTouchDelay={250} placement='left' title={t('Learn RoboSats')}>
               <IconButton
                 sx={{
@@ -65,7 +65,7 @@ const MoreTooltip = ({ children }: MoreTooltipProps): React.JSX.Element => {
             </Tooltip>
           </Grid>
 
-          <Grid item sx={{ position: 'relative', right: '0.4em' }}>
+          <Grid sx={{ position: 'relative', right: '0.4em' }}>
             <Tooltip
               enterTouchDelay={250}
               placement='left'
@@ -84,7 +84,7 @@ const MoreTooltip = ({ children }: MoreTooltipProps): React.JSX.Element => {
             </Tooltip>
           </Grid>
 
-          <Grid item sx={{ position: 'relative', right: '0.4em' }}>
+          <Grid sx={{ position: 'relative', right: '0.4em' }}>
             <Tooltip enterTouchDelay={250} placement='left' title={t('Exchange summary')}>
               <IconButton
                 sx={{
@@ -99,7 +99,7 @@ const MoreTooltip = ({ children }: MoreTooltipProps): React.JSX.Element => {
             </Tooltip>
           </Grid>
 
-          <Grid item sx={{ position: 'relative', right: '0.4em' }}>
+          <Grid sx={{ position: 'relative', right: '0.4em' }}>
             <Tooltip enterTouchDelay={250} placement='left' title={t('client for nerds')}>
               <IconButton
                 sx={{

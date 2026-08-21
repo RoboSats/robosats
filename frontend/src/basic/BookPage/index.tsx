@@ -33,7 +33,7 @@ const BookPage = (): React.JSX.Element => {
   const fontSize = theme.typography.fontSize;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    const thirdParty = thirdParties[shortAlias];
+    const thirdParty = (thirdParties as Record<string, unknown>)[shortAlias];
     if (thirdParty) {
       const thirdPartyOrder = Object.values(federation.book).find(
         (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,
@@ -49,7 +49,7 @@ const BookPage = (): React.JSX.Element => {
 
   const NavButtons = function (): React.JSX.Element {
     return (
-      <ButtonGroup variant='contained' color='inherit'>
+      <ButtonGroup fullWidth variant='contained' color='inherit'>
         {doubleView ? (
           <></>
         ) : (
@@ -116,7 +116,7 @@ const BookPage = (): React.JSX.Element => {
         }}
         thirdPartyOrder={thirdPartyOrder}
       />
-      <Grid item xs={12}>
+      <Grid size={12}>
         {doubleView ? (
           <Grid
             container
@@ -137,14 +137,14 @@ const BookPage = (): React.JSX.Element => {
               />
             </Grid>
             <Grid>
-              <Grid item style={{ marginBottom: 8 }}>
+              <Grid style={{ marginBottom: 8 }}>
                 <DepthChart
                   maxWidth={chartWidthEm} // EM units
                   maxHeight={(windowSize.height * 0.78) / 2 - 5 / fontSize} // EM units
                   onOrderClicked={onOrderClicked}
                 />
               </Grid>
-              <Grid item>
+              <Grid>
                 <MapChart
                   maxWidth={chartWidthEm} // EM units
                   maxHeight={(windowSize.height * 0.78) / 2 - 4 / fontSize} // EM units
@@ -177,7 +177,7 @@ const BookPage = (): React.JSX.Element => {
         )}
       </Grid>
 
-      <Grid item xs={12}>
+      <Grid size={12}>
         <NavButtons />
       </Grid>
     </Grid>

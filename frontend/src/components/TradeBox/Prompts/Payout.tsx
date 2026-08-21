@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
 
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order, type Settings } from '../../../models';
 import { pn } from '../../../utils';
@@ -55,15 +55,16 @@ export const PayoutPrompt = ({
         padding: 1,
       }}
     >
-      <Grid item>
+      <Grid>
         <Typography variant='body2'>
           {t(
             'Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.',
             {
               amountFiat: pn(
                 parseFloat(
-                  parseFloat(
-                    order.currency === 1000 ? order.amount * 100000000 : order.amount,
+                  (order.currency === 1000
+                    ? Number(order.amount ?? 0) * 100000000
+                    : Number(order.amount ?? 0)
                   ).toFixed(4),
                 ),
               ),
@@ -73,7 +74,7 @@ export const PayoutPrompt = ({
         </Typography>
       </Grid>
 
-      <Grid item>
+      <Grid>
         <ToggleButtonGroup
           size='medium'
           value={tab}
@@ -109,7 +110,7 @@ export const PayoutPrompt = ({
         </ToggleButtonGroup>
       </Grid>
 
-      <Grid item style={{ display: tab === 'lightning' ? '' : 'none' }}>
+      <Grid style={{ display: tab === 'lightning' ? '' : 'none' }}>
         <LightningPayoutForm
           order={order}
           settings={settings}
@@ -121,7 +122,7 @@ export const PayoutPrompt = ({
       </Grid>
 
       {/* ONCHAIN PAYOUT TAB */}
-      <Grid item style={{ display: tab === 'onchain' ? '' : 'none' }}>
+      <Grid style={{ display: tab === 'onchain' ? '' : 'none' }}>
         <OnchainPayoutForm
           order={order}
           loading={loadingOnchain}

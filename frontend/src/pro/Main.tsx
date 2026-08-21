@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import GridLayout, { type Layout } from 'react-grid-layout';
+import GridLayout, { type Layout, type LayoutItem, type EventCallback } from 'react-grid-layout';
 import { Grid, styled, useTheme } from '@mui/material';
 
 import {
@@ -10,8 +10,8 @@ import {
   SettingsWidget,
   FederationWidget,
 } from '../pro/Widgets';
-import ToolBar, { type WidgetInfo } from '../pro/ToolBar';
-import WidgetDrawer from '../pro/ToolBar/WidgetDrawer';
+import ToolBar from '../pro/ToolBar';
+import WidgetDrawer, { type WidgetInfo } from '../pro/ToolBar/WidgetDrawer';
 import LandingDialog from '../pro/LandingDialog';
 
 import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
@@ -94,27 +94,28 @@ const Main = (): React.JSX.Element => {
     setDrawerOpen((prev) => !prev);
   }, []);
 
-  const handleDragStop = useCallback(
-    (newLayout: Layout) => {
+  // v2 EventCallback: (layout, oldItem, newItem, placeholder, event, element)
+  const handleDragStop = useCallback<EventCallback>(
+    (newLayout) => {
       setLayout(newLayout);
       setIsDragging(false);
     },
     [setLayout],
   );
 
-  const handleResizeStop = useCallback(
-    (newLayout: Layout) => {
+  const handleResizeStop = useCallback<EventCallback>(
+    (newLayout) => {
       setLayout(newLayout);
       setIsDragging(false);
     },
     [setLayout],
   );
 
-  const handleDragStart = useCallback(() => {
+  const handleDragStart = useCallback<EventCallback>(() => {
     setIsDragging(true);
   }, []);
 
-  const handleResizeStart = useCallback(() => {
+  const handleResizeStart = useCallback<EventCallback>(() => {
     setIsDragging(true);
   }, []);
 
@@ -137,7 +138,7 @@ const Main = (): React.JSX.Element => {
       if (layout.some((item) => item.i === widget.id)) return;
 
       const pos = findNextPosition(widget.defaultSize.w, widget.defaultSize.h);
-      const newItem = {
+      const newItem: LayoutItem = {
         i: widget.id,
         x: pos.x,
         y: pos.y,
@@ -190,6 +191,9 @@ const Main = (): React.JSX.Element => {
 
   const currentWidgets = useMemo(() => layout.map((item) => item.i), [layout]);
 
+  const gridWidth = Number((windowSize.width / gridCellSize).toFixed()) * gridCellSize * em;
+  const gridCols = Number((windowSize.width / gridCellSize).toFixed());
+
   return (
     <Router>
       <Grid container sx={{ width: `${windowSize.width}em`, flexDirection: 'column' }}>
@@ -200,7 +204,7 @@ const Main = (): React.JSX.Element => {
           onAddWidget={handleAddWidget}
           onRemoveWidget={handleRemoveWidget}
         />
-        <Grid item>
+        <Grid>
           <ToolBar
             height={`${toolbarHeight}em`}
             layout={layout}
@@ -218,27 +222,31 @@ const Main = (): React.JSX.Element => {
           />
         </Grid>
 
-        <Grid item>
+        <Grid>
           <StyledRGL
             gridHeight={windowSize.height - toolbarHeight}
-            width={Number((windowSize.width / gridCellSize).toFixed()) * gridCellSize * em}
+            width={gridWidth}
             className='layout'
-            useCSSTransforms={true}
-            transformScale={1}
             layout={layout}
-            cols={Number((windowSize.width / gridCellSize).toFixed())}
-            margin={[0.5 * em, 0.5 * em]}
-            isDraggable={!isLocked}
-            isResizable={!isLocked}
+            gridConfig={{
+              cols: gridCols,
+              rowHeight: gridCellSize * em,
+              margin: [0.5 * em, 0.5 * em],
+            }}
+            dragConfig={{
+              enabled: !isLocked,
+              cancel: '.noDrag',
+            }}
+            resizeConfig={{
+              enabled: !isLocked,
+            }}
             isDragging={isDragging}
             isLocked={isLocked}
-            rowHeight={gridCellSize * em}
             autoSize={true}
             onDragStart={handleDragStart}
             onDragStop={handleDragStop}
             onResizeStart={handleResizeStart}
             onResizeStop={handleResizeStop}
-            draggableCancel='.noDrag'
           >
             {renderedWidgets}
           </StyledRGL>

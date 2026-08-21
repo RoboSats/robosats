@@ -88,7 +88,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     setDisable(Boolean(robot?.loading));
   }, [robot?.loading]);
 
-  const handleSubmitInvoiceClicked = (e: Event, rewardInvoice: string): void => {
+  const handleSubmitInvoiceClicked = (e: React.MouseEvent | Event, rewardInvoice: string): void => {
     setBadInvoice('');
     setShowRewardsSpinner(true);
 
@@ -96,10 +96,12 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot?.token).then(
         (signedInvoice) => {
           void robot.fetchReward(federation, signedInvoice).then((data) => {
-            setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
-            setWithdrawn(data.successful_withdrawal);
-            setOpenClaimRewards(!data.successful_withdrawal);
+            if (data != null) {
+              setBadInvoice(data.bad_invoice ?? '');
+              setWithdrawn(Boolean(data.successful_withdrawal));
+              setOpenClaimRewards(!data.successful_withdrawal);
+            }
           });
         },
       );
@@ -133,7 +135,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   return (
     <>
       <ListItemButton disabled={disabled} onClick={() => setOpenOptions(true)}>
-        <ListItemIcon>
+        <ListItemIcon sx={{ minWidth: 56 }}>
           <RobotAvatar
             shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
             hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
@@ -157,7 +159,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
           }
         />
         {(robot?.earnedRewards ?? 0) > 0 && (
-          <ListItemIcon>
+          <ListItemIcon sx={{ minWidth: 56 }}>
             <EmojiEvents />
           </ListItemIcon>
         )}
@@ -172,7 +174,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                 });
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <RobotAvatar
                   shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
                   hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
@@ -194,7 +196,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   onClose();
                 }}
               >
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <Badge badgeContent='' color='primary'>
                     <Numbers color='primary' />
                   </Badge>
@@ -216,7 +218,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   onClose();
                 }}
               >
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <Numbers color='primary' />
                 </ListItemIcon>
                 <ListItemText
@@ -228,7 +230,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
               </ListItemButton>
             ) : (
               <ListItem>
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <Numbers />
                 </ListItemIcon>
                 <ListItemText
@@ -250,7 +252,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
             />
 
             <ListItem>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Send />
               </ListItemIcon>
 
@@ -274,7 +276,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
 
             {/* Webhook Settings */}
             <ListItem>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Webhook />
               </ListItemIcon>
 
@@ -316,7 +318,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   {t('Receive notifications via HTTP POST to your own .onion server.')}
                 </Typography>
                 <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
-                  <Grid item>
+                  <Grid>
                     <TextField
                       fullWidth
                       label={t('Webhook URL (.onion only)')}
@@ -331,7 +333,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       helperText={webhookUrlError}
                     />
                   </Grid>
-                  <Grid item>
+                  <Grid>
                     <TextField
                       fullWidth
                       label={t('API Key (optional)')}
@@ -342,7 +344,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       type='password'
                     />
                   </Grid>
-                  <Grid item>
+                  <Grid>
                     <FormControlLabel
                       label={t('Enable webhook notifications')}
                       control={
@@ -368,7 +370,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
             </Dialog>
 
             <ListItem>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <UserNinjaIcon />
               </ListItemIcon>
 
@@ -380,7 +382,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                     "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",
                   )}
                 >
-                  <Grid item>
+                  <Grid>
                     <FormControlLabel
                       labelPlacement='end'
                       label={t('Use stealth invoices')}
@@ -399,18 +401,18 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
             </ListItem>
 
             <ListItem>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <EmojiEvents />
               </ListItemIcon>
 
               {!openClaimRewards ? (
                 <ListItemText secondary={t('Your compensations')}>
                   <Grid container sx={{ justifyContent: 'space-between' }}>
-                    <Grid item xs={9}>
+                    <Grid size={9}>
                       <Typography>{`${String(robot?.earnedRewards)} Sats`}</Typography>
                     </Grid>
 
-                    <Grid item xs={3}>
+                    <Grid size={3}>
                       <Button
                         disabled={robot?.earnedRewards === 0}
                         onClick={() => {
@@ -427,7 +429,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
               ) : (
                 <form noValidate style={{ maxWidth: 270 }}>
                   <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                    <Grid item style={{ display: 'flex', maxWidth: 160 }}>
+                    <Grid style={{ display: 'flex', maxWidth: 160 }}>
                       <TextField
                         error={Boolean(badInvoice)}
                         helperText={badInvoice ?? ''}
@@ -441,11 +443,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                         }}
                       />
                     </Grid>
-                    <Grid
-                      item
-                      style={{ display: 'flex', maxWidth: 80 }}
-                      sx={{ alignItems: 'stretch' }}
-                    >
+                    <Grid style={{ display: 'flex', maxWidth: 80 }} sx={{ alignItems: 'stretch' }}>
                       <Button
                         sx={{ maxHeight: 38 }}
                         disabled={rewardInvoice === ''}

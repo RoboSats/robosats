@@ -308,21 +308,21 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
     if (webln === undefined) {
       console.log('WebLN dialog will not be shown');
     } else if (order.is_maker && order.status === 0) {
-      webln.sendPaymentAsync(order.bond_invoice);
+      webln.sendPaymentAsync(order.bond_invoice ?? '');
       setOpen({ ...open, webln: true });
     } else if (order.is_taker && order.status === 3) {
-      webln.sendPaymentAsync(order.bond_invoice);
+      webln.sendPaymentAsync(order.bond_invoice ?? '');
       setOpen({ ...open, webln: true });
     } else if (order.is_seller && (order.status === 6 || order.status === 7)) {
-      webln.sendPaymentAsync(order.escrow_invoice);
+      webln.sendPaymentAsync(order.escrow_invoice ?? '');
       setOpen({ ...open, webln: true });
     } else if (order.is_buyer && (order.status === 6 || order.status === 8)) {
       setOpen({ ...open, webln: true });
       webln
-        .makeInvoice(() => lightning.amount)
+        .makeInvoice(lightning.amount)
         .then((invoice: object) => {
           if (invoice !== undefined) {
-            updateInvoice(invoice.paymentRequest);
+            updateInvoice((invoice as { paymentRequest: string }).paymentRequest);
             setOpen(closeAll);
           }
         })
@@ -593,7 +593,7 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
           baseContract.title = 'Trade finished!';
           baseContract.titleColor = 'success';
           baseContract.titleIcon = function () {
-            return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
+            return <Bolt sx={{ width: '1em', height: '1em' }} color='warning' />;
           };
           baseContract.prompt = function () {
             return (
@@ -616,7 +616,7 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         baseContract.title = 'Trade finished!';
         baseContract.titleColor = 'success';
         baseContract.titleIcon = function () {
-          return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
+          return <Bolt sx={{ width: '1em', height: '1em' }} color='warning' />;
         };
         baseContract.prompt = function () {
           return (
@@ -654,7 +654,7 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
           baseContract.title = 'Trade finished!';
           baseContract.titleColor = 'success';
           baseContract.titleIcon = function () {
-            return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
+            return <Bolt sx={{ width: '1em', height: '1em' }} color='warning' />;
           };
           baseContract.prompt = function () {
             return (
@@ -770,7 +770,7 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
           padding: 1,
         }}
       >
-        <Grid item>
+        <Grid>
           <Title
             order={currentOrder ?? null}
             text={contract?.title}
@@ -781,10 +781,10 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         </Grid>
         <Divider />
 
-        <Grid item>{contract?.prompt()}</Grid>
+        <Grid>{contract?.prompt()}</Grid>
 
         {contract?.bondStatus !== 'hide' ? (
-          <Grid item sx={{ width: '100%', mt: 1 }}>
+          <Grid sx={{ width: '100%', mt: 1 }}>
             <BondStatus status={contract?.bondStatus} isMaker={currentOrder?.is_maker ?? false} />
           </Grid>
         ) : (

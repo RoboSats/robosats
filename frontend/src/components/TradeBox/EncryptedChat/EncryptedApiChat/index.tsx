@@ -20,6 +20,12 @@ import { Send } from '@mui/icons-material';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { ParsedFileMessage, parseImageMetadataJson } from '../../../../utils/nip17File';
 
+interface ChatApiResponse {
+  peer_connected?: boolean;
+  peer_pubkey?: string;
+  messages?: ServerMessage[];
+}
+
 interface Props {
   order: Order;
   userNick: string;
@@ -30,7 +36,9 @@ interface Props {
   error: string;
   lastIndex: number;
   messages: EncryptedChatMessage[];
-  setMessages: (messages: EncryptedChatMessage[]) => void;
+  setMessages: (
+    messages: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
+  ) => void;
   onSendMessage: (content: string) => Promise<object | void>;
   onSendFile: (file: File) => Promise<void>;
   peerPubKey?: string;
@@ -107,11 +115,12 @@ const EncryptedApiChat: React.FC<Props> = ({
       .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
-      .then((results: object) => {
+      .then((raw) => {
+        const results = raw as ChatApiResponse | undefined;
         if (results != null) {
-          setPeerConnected(results.peer_connected);
-          setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
-          setServerMessages(results.messages);
+          setPeerConnected(results.peer_connected ?? false);
+          setPeerPubKey((results.peer_pubkey ?? '').split('\\').join('\n'));
+          setServerMessages(results.messages ?? []);
         }
       })
       .catch((error) => {
@@ -125,9 +134,18 @@ const EncryptedApiChat: React.FC<Props> = ({
     if (slot && robot && dataFromServer != null) {
       // If we receive an encrypted message
       if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+        const senderPubKey = dataFromServer.nick === userNick ? robot.pubKey : peerPubKey;
+        if (!senderPubKey || !robot.encPrivKey || !slot.token) {
+          console.warn('[EncryptedApiChat] skipping decrypt: missing keys or token', {
+            hasSenderPubKey: Boolean(senderPubKey),
+            hasEncPrivKey: Boolean(robot.encPrivKey),
+            hasToken: Boolean(slot.token),
+          });
+          return;
+        }
         void decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
-          dataFromServer.nick === userNick ? robot.pubKey : peerPubKey,
+          senderPubKey,
           robot.encPrivKey,
           slot.token,
         ).then((decryptedData) => {
@@ -178,9 +196,10 @@ const EncryptedApiChat: React.FC<Props> = ({
     } else {
       setWaitingEcho(true);
       onSendMessage(value)
-        .then((response) => {
+        .then((raw) => {
+          const response = raw as ChatApiResponse | undefined;
           if (response) {
-            setPeerConnected(response.peer_connected);
+            setPeerConnected(response.peer_connected ?? false);
             if (response.messages != null) {
               setServerMessages(response.messages);
             }
@@ -259,7 +278,7 @@ const EncryptedApiChat: React.FC<Props> = ({
       spacing={0.5}
       sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item>
+      <Grid>
         <ChatHeader connected={Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
@@ -310,7 +329,7 @@ const EncryptedApiChat: React.FC<Props> = ({
               maxRows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  onButtonClicked(e);
+                  onButtonClicked(e as unknown as React.FormEvent<HTMLFormElement>);
                 }
               }}
               value={value}
