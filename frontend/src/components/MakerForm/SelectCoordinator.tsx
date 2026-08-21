@@ -30,6 +30,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
 }) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const loadingCoordinators = !federation.devFundLoaded;
   const theme = useTheme();
   const { t } = useTranslation();
   const [coordinator, setCoordinator] = useState<Coordinator>();
@@ -132,6 +133,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 value={coordinatorAlias}
                 onChange={handleCoordinatorChange}
                 disableUnderline
+                disabled={loadingCoordinators}
               >
                 {federation.getCoordinators().map((coordinator): React.JSX.Element | null => {
                   let row: React.JSX.Element | null = null;

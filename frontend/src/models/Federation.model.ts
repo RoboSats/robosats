@@ -197,14 +197,14 @@ export class Federation {
       });
 
       const order = federationLottery(defaultFederation, overrides);
-      const reordered: Record<string, Coordinator> = {};
-      order.forEach((alias) => {
-        if (this.coordinators[alias]) reordered[alias] = this.coordinators[alias];
-      });
-      Object.keys(this.coordinators).forEach((alias) => {
-        if (!reordered[alias]) reordered[alias] = this.coordinators[alias];
-      });
-      this.coordinators = reordered;
+      const ordered = new Set(order);
+      const sorted = [
+        ...order.filter((alias) => this.coordinators[alias]),
+        ...Object.keys(this.coordinators).filter((alias) => !ordered.has(alias)),
+      ];
+      this.coordinators = Object.fromEntries(
+        sorted.map((alias) => [alias, this.coordinators[alias]]),
+      );
     }
 
     this.devFundLoaded = true;

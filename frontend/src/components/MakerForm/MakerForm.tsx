@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ButtonGroup,
@@ -66,8 +66,10 @@ const MakerForm = ({
   const { fav, setFav, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
-  const { maker, setMaker, garage, markCoordinatorPicked, resetCoordinatorPicked } =
+  const { maker, setMaker, garage } =
     useContext<UseGarageStoreType>(GarageContext);
+
+  const coordinatorAssignedRef = useRef(false);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -116,6 +118,12 @@ const MakerForm = ({
       });
     }
   };
+  useEffect(() => {
+    if (federation.devFundLoaded && !coordinatorAssignedRef.current) {
+      coordinatorAssignedRef.current = true;
+      setMaker((maker) => ({ ...maker, coordinator: federation.getCoordinatorsAlias()[0] }));
+    }
+  }, [federation.devFundLoaded]);
 
   const updateAmountLimits = function (
     limitList: LimitList,
@@ -418,7 +426,6 @@ const MakerForm = ({
     setFav((prev) => {
       return { ...prev, type: null, currency: 0, mode: 'fiat' };
     });
-    resetCoordinatorPicked();
     setMaker(defaultMaker);
     handleCurrencyChange(0);
     handlePaymentMethodChange([]);
@@ -1153,7 +1160,6 @@ const MakerForm = ({
       <SelectCoordinator
         coordinatorAlias={maker.coordinator}
         setCoordinatorAlias={(coordinatorAlias) => {
-          markCoordinatorPicked();
           setMaker((maker) => {
             return { ...maker, coordinator: coordinatorAlias };
           });

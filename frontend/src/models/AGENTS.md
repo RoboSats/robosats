@@ -60,9 +60,10 @@ the `GET /api/info/` request; concurrent callers awaiting the same coordinator r
 request (guarded by a private `_infoPromise`) instead of firing a duplicate. The promise
 always resolves (failures are logged, `info` stays `undefined`); refresh semantics are
 unchanged — once settled, a later call issues a fresh request. Sets `devFundLoaded = true` and fires the
-`onFederationUpdate` hook so the UI re-renders; `GarageContext` watches
-`federation.devFundLoaded` to re-derive the default host only if the user has not already
-picked one manually (`markCoordinatorPicked`/`resetCoordinatorPicked`).
+`onFederationUpdate` hook so the UI re-renders; `MakerForm` watches
+`federation.devFundLoaded` to derive the default host (selected coordinator) once live data
+arrives, and `SelectCoordinator` stays disabled until `devFundLoaded` is true so the default
+is never clobbered by a later shuffle.
 
 **Coordinator ratings**
 
