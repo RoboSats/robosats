@@ -21,6 +21,10 @@ on:
       - 'requirements.txt'
       - 'requirements_dev.txt'
       - 'Dockerfile'
+      - 'docker/**'
+      - 'tests/compose.env'
+      - 'docker-tests.yml'
+      - 'scripts/generate_grpc.sh'
 
 permissions:
   contents: read
@@ -101,8 +105,8 @@ jobs:
       max-parallel: 2
       matrix:
         python-tag: ['3.12.3-slim-bookworm']
-        lnd-version: ['v0.18.2-beta']
-        cln-version: ['v24.08']
+        lnd-version: ['v0.21.2-beta']
+        cln-version: ['v26.06.6']
         ln-vendor: ['LND', 'CLN']
 
     steps:
