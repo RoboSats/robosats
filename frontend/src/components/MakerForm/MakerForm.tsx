@@ -66,8 +66,7 @@ const MakerForm = ({
   const { fav, setFav, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
-  const { maker, setMaker, garage } =
-    useContext<UseGarageStoreType>(GarageContext);
+  const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const coordinatorAssignedRef = useRef(false);
 
