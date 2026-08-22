@@ -676,6 +676,8 @@ class InfoViewSchema:
             - Fees
               - maker and taker fees
               - on-chain swap fees
+            - Development fund
+              - devfund donation percentage
             """
         ),
         "responses": {
