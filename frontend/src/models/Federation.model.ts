@@ -15,6 +15,7 @@ import eventToPublicOrder from '../utils/nostr';
 import { verifyCoordinatorToken } from '../utils/nostr';
 import RoboPool from '../services/RoboPool';
 import { systemClient } from '../services/System';
+import { fetchDevFundProfiles } from '../services/DevFundProfile';
 
 type FederationHooks = 'onFederationUpdate';
 
@@ -86,6 +87,7 @@ export class Federation {
   public ratings: Record<string, Record<string, number>>;
   private ratingsLoaded: boolean;
   public loading: boolean;
+  public devFundLoaded: boolean = false;
   public connection: 'api' | 'nostr' | null;
   public network: 'testnet' | 'mainnet';
 
@@ -188,6 +190,39 @@ export class Federation {
         this.triggerHook('onFederationUpdate');
       },
     });
+  };
+
+  loadDevFund = async (): Promise<void> => {
+    const overrides = await fetchDevFundProfiles(this);
+
+    const feeOverrides: Record<string, number> = {};
+    Object.entries(this.coordinators).forEach(([alias, coor]) => {
+      if (
+        typeof coor.info?.maker_fee === 'number' &&
+        typeof coor.info?.taker_fee === 'number'
+      ) {
+        feeOverrides[alias] = coor.info.maker_fee + coor.info.taker_fee;
+      }
+    });
+
+    if (Object.keys(overrides).length > 0) {
+      Object.entries(overrides).forEach(([alias, pct]) => {
+        if (this.coordinators[alias]) this.coordinators[alias].badges.donatesToDevFund = pct;
+      });
+
+      const order = federationLottery(defaultFederation, overrides, feeOverrides);
+      const reordered: Record<string, Coordinator> = {};
+      order.forEach((alias) => {
+        if (this.coordinators[alias]) reordered[alias] = this.coordinators[alias];
+      });
+      Object.keys(this.coordinators).forEach((alias) => {
+        if (!reordered[alias]) reordered[alias] = this.coordinators[alias];
+      });
+      this.coordinators = reordered;
+    }
+
+    this.devFundLoaded = true;
+    this.triggerHook('onFederationUpdate');
   };
 
   addCoordinator = (

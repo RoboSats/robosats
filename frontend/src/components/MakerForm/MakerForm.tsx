@@ -66,7 +66,8 @@ const MakerForm = ({
   const { fav, setFav, settings, navigateToPage } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
-  const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { maker, setMaker, garage, markCoordinatorPicked, resetCoordinatorPicked } =
+    useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -417,6 +418,7 @@ const MakerForm = ({
     setFav((prev) => {
       return { ...prev, type: null, currency: 0, mode: 'fiat' };
     });
+    resetCoordinatorPicked();
     setMaker(defaultMaker);
     handleCurrencyChange(0);
     handlePaymentMethodChange([]);
@@ -1178,6 +1180,7 @@ const MakerForm = ({
       <SelectCoordinator
         coordinatorAlias={maker.coordinator}
         setCoordinatorAlias={(coordinatorAlias) => {
+          markCoordinatorPicked();
           setMaker((maker) => {
             return { ...maker, coordinator: coordinatorAlias };
           });
