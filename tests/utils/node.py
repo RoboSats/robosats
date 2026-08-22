@@ -216,8 +216,10 @@ def connect_to_node(node_name, node_id, ip_port):
             print("Peered robot node to coordinator node!")
             return response.json()
         else:
-            if "already connected to peer" in response.json()["message"]:
-                return response.json()
+            response_json = response.json()
+            error_text = response_json.get("message", "") or response_json.get("error", "")
+            if "already connected to peer" in error_text:
+                return response_json
             print(f"Could not peer coordinator node: {response.json()}")
             time.sleep(WAIT_STEP)
 

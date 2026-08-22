@@ -111,7 +111,7 @@ class TestGrpcProtoSymbols(unittest.TestCase):
         "node_pb2.ListpaysRequest",
         "node_pb2.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.IN",
         "node_pb2.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.OUT",
-        "node_pb2.ListpeerchannelsChannels.ListpeerchannelsChannelsState.CHANNELD_NORMAL",
+        "primitives_pb2.ChannelState.ChanneldNormal",
         "node_pb2.ListpeerchannelsRequest",
         "node_pb2.NewaddrRequest",
         "node_pb2.PayRequest",
