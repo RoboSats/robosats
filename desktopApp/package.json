@@ -1,6 +1,6 @@
 {
   "name": "desktop-app",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,18 +13,19 @@
   },
   "author": "",
   "license": "ISC",
-  "_comment": "Temporary override of @types/node to work around Electron v39 Node 22 typing issues (see electron#49213) , this may need to be removed once Electron fixes its Node 22 typings.",
   "overrides": {
-    "@types/node": "22.7.7"
+    "@xmldom/xmldom": "^0.8.13",
+    "minimatch": "^9.0.7",
+    "brace-expansion": "^1.1.18",
+    "@electron/universal": {
+      "minimatch": "^9.0.7",
+      "brace-expansion": "^1.1.18"
+    }
   },
   "devDependencies": {
-    "@electron/packager": "^18.3.2",
-    "electron": "^39.2.7",
-    "typescript": "^5.4.5"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.22.1"
+    "@electron/packager": "^20.3.0",
+    "electron": "^43.4.1",
+    "typescript": "^7.0.2"
   },
   "build": {
     "appId": "com.electron.robosats",

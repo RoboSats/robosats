@@ -14,8 +14,14 @@ function federationUrls(): string[] {
   };
 
   for (const key in defaultFederation) {
-    const mainnet = defaultFederation[key].mainnet;
-    const testnet = defaultFederation[key].testnet;
+    const fed = (
+      defaultFederation as unknown as Record<
+        string,
+        { mainnet?: Record<string, string>; testnet?: Record<string, string> }
+      >
+    )[key];
+    const mainnet = fed.mainnet;
+    const testnet = fed.testnet;
 
     // Add the URLs from the 'mainnet' and 'testnet' objects to the urls array
     // if these are onion or i2p addresses

@@ -11,7 +11,7 @@ import {
   Box,
 } from '@mui/material';
 import { type Order } from '../../../models';
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 import { pn } from '../../../utils';
 import { LoadingButton } from '@mui/lab';
 
@@ -31,9 +31,9 @@ export const ConfirmFiatReceivedDialog = ({
   onConfirmClick,
 }: ConfirmFiatReceivedDialogProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const currencyCode = currencies[order?.currency.toString()];
+  const currencyCode = currencies[(order?.currency ?? 0).toString()];
   const amount = pn(
-    parseFloat(parseFloat(order?.amount).toFixed(order?.currency === 1000 ? 8 : 4)),
+    parseFloat(parseFloat(String(order?.amount ?? 0)).toFixed(order?.currency === 1000 ? 8 : 4)),
   );
 
   return (

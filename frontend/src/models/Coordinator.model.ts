@@ -120,8 +120,26 @@ function calculateSizeLimit(inputDate: Date): number {
   return value;
 }
 
+export interface CoordinatorConfig {
+  longAlias: string;
+  shortAlias: string;
+  description: string;
+  federated?: boolean;
+  motto: string;
+  color: string;
+  established: string;
+  policies?: Record<string, string>;
+  contact?: Contact;
+  badges: Badges;
+  mainnet: Origins;
+  testnet: Origins;
+  mainnetNodesPubkeys?: string[];
+  testnetNodesPubkeys?: string[];
+  nostrHexPubkey: string;
+}
+
 export class Coordinator {
-  constructor(value: object, origin: Origin, settings: Settings, hostUrl: string) {
+  constructor(value: CoordinatorConfig, origin: Origin, settings: Settings, hostUrl: string) {
     const established = new Date(value.established);
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
@@ -131,7 +149,7 @@ export class Coordinator {
     this.color = value.color;
     this.size_limit = value.badges.isFounder ? 21 * 100000000 : calculateSizeLimit(established);
     this.established = established;
-    this.policies = value.policies;
+    this.policies = value.policies ?? {};
     this.contact = value.contact;
     this.badges = value.badges;
     this.mainnet = value.mainnet;
@@ -177,7 +195,8 @@ export class Coordinator {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = `${hostUrl}/${settings.network}/${this.shortAlias}`;
     } else {
-      this.url = String(this[settings.network]?.[origin]);
+      const network = settings.network ?? 'mainnet';
+      this.url = String(this[network]?.[origin]);
     }
   };
 
@@ -197,8 +216,9 @@ export class Coordinator {
 
     apiClient
       .get(this.url, `/api/book/`, undefined, true)
-      .then((data) => {
-        if (!data?.not_found) {
+      .then((raw) => {
+        const data = raw as (PublicOrder[] & { not_found?: boolean }) | null;
+        if (data != null && !data.not_found) {
           this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
             order.coordinatorShortAlias = this.shortAlias;
             return { ...book, [`${this.shortAlias}${order.id}`]: order };

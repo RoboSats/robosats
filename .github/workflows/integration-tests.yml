@@ -5,12 +5,22 @@ on:
   workflow_call:
   push:
     branches: [ "main" ]
-    paths: ["api/**", "chat/**", "control/**", "robosats/**"]
+    paths:
+      - "api/**"
+      - "chat/**"
+      - "control/**"
+      - "robosats/**"
+      - "requirements.txt"
+      - "requirements_dev.txt"
+      - "Dockerfile"
   pull_request:
     branches:
       - main
     paths:
       - '**.py'
+      - 'requirements.txt'
+      - 'requirements_dev.txt'
+      - 'Dockerfile'
 
 permissions:
   contents: read
@@ -21,8 +31,71 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-tag: ['3.12.3-slim-bookworm']
+
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v7
+
+    - name: 'Download static files Artifact'
+      uses: dawidd6/action-download-artifact@v23
+      with:
+        workflow: frontend-build.yml
+        workflow_conclusion: success
+        name: django-main-static
+        path: frontend
+        if_no_artifact_found: ignore
+
+    - name: Patch Dockerfile
+      run: |
+        sed -i "1s/FROM python:.*/FROM python:${{ matrix.python-tag }}/" Dockerfile
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+      with:
+        key: coordinator-docker-cache-${{ hashFiles('Dockerfile', 'requirements.txt', 'requirements_dev.txt', 'docker/strfry/Dockerfile') }}
+        restore-keys: |
+          coordinator-docker-cache-
+
+    - name: 'Build coordinator image'
+      run: docker compose -f docker-tests.yml build coordinator
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: 'Export coordinator image'
+      run: docker save backend-image | gzip > backend-image.tar.gz
+
+    - name: 'Upload coordinator image artifact'
+      uses: actions/upload-artifact@v7
+      with:
+        name: backend-image-${{ github.run_id }}
+        path: backend-image.tar.gz
+        retention-days: 1
+
+    - name: 'Build strfry image'
+      run: docker compose -f docker-tests.yml build strfry
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: 'Export strfry image'
+      run: docker save strfry-test | gzip > strfry-image.tar.gz
+      env:
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: 'Upload strfry image artifact'
+      uses: actions/upload-artifact@v7
+      with:
+        name: strfry-image-${{ github.run_id }}
+        path: strfry-image.tar.gz
+        retention-days: 1
+
   test:
     runs-on: ubuntu-latest
+    needs: build
     timeout-minutes: 30
     strategy:
       max-parallel: 2
@@ -34,30 +107,39 @@ jobs:
 
     steps:
     - name: 'Checkout'
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
     - name: 'Download static files Artifact'
-      uses: dawidd6/action-download-artifact@v11
+      uses: dawidd6/action-download-artifact@v23
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: django-main-static
         path: frontend
+        if_no_artifact_found: ignore
 
-    - name: Patch Dockerfile and .env-sample
+    - name: 'Download coordinator image artifact'
+      uses: actions/download-artifact@v8
+      with:
+        name: backend-image-${{ github.run_id }}
+
+    - name: 'Load coordinator image'
+      run: docker load < backend-image.tar.gz
+
+    - name: 'Download strfry image artifact'
+      uses: actions/download-artifact@v8
+      with:
+        name: strfry-image-${{ github.run_id }}
+
+    - name: 'Load strfry image'
+      run: docker load < strfry-image.tar.gz
+
+    - name: Patch .env-sample
       run: |
-        sed -i "1s/FROM python:.*/FROM python:${{ matrix.python-tag }}/" Dockerfile
         sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
 
-    - uses: satackey/action-docker-layer-caching@v0.0.11
-      continue-on-error: true
-      with:
-        key: coordinator-docker-cache-${{ hashFiles('Dockerfile', 'requirements.txt', 'requirements_dev.txt') }}-${{ matrix.ln-vendor }}
-        restore-keys: |
-          coordinator-docker-cache-
-
     - name: 'Compose Regtest Orchestration'
-      uses: isbang/compose-action@v2.4.0
+      uses: isbang/compose-action@v3.1.0
       with:
         compose-file: "./docker-tests.yml"
         down-flags: "--volumes"
@@ -67,6 +149,7 @@ jobs:
           redis
           coordinator-${{ matrix.ln-vendor }}
           robot-LND
+          strfry
           coordinator
       env:
         LND_VERSION: ${{ matrix.lnd-version }}
@@ -80,6 +163,27 @@ jobs:
           sleep 5
         done
 
+    - name: Wait for strfry relay
+      run: |
+        echo "Waiting for strfry relay on port 7778..."
+        for i in $(seq 1 30); do
+          # strfry responds with HTTP 426 (Upgrade Required) to plain HTTP —
+          # any response on port 7778 means the relay is accepting connections.
+          STATUS=$(docker exec test-coordinator curl -s -o /dev/null -w "%{http_code}" --max-time 2 http://127.0.0.1:7778 2>/dev/null || true)
+          if [ -n "$STATUS" ] && [ "$STATUS" != "000" ]; then
+            echo "strfry relay is up (HTTP $STATUS)"
+            exit 0
+          fi
+          echo "  attempt $i/30 — not ready, sleeping 2s..."
+          sleep 2
+        done
+        echo "=== strfry container logs ===" >&2
+        docker logs test-strfry >&2 || true
+        echo "=== strfry container state ===" >&2
+        docker inspect test-strfry --format '{{.State}}' >&2 || true
+        echo "ERROR: strfry relay did not come up within 60 seconds" >&2
+        exit 1
+
     - name: 'Run tests with coverage'
       run: |
         docker exec test-coordinator coverage run manage.py test
@@ -91,7 +195,7 @@ jobs:
         USE_TOR: False
 
     - name: 'Upload coverage report'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: coverage-report-${{ matrix.python-tag }}-${{ matrix.ln-vendor }}-${{ github.run_id }}
         path: htmlcov/

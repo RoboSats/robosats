@@ -9,7 +9,7 @@ import {
 } from '.';
 import defaultFederation from '../../static/federation.json';
 import { federationLottery, getHost } from '../utils';
-import { coordinatorDefaultValues } from './Coordinator.model';
+import { coordinatorDefaultValues, type CoordinatorConfig } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
 import eventToPublicOrder from '../utils/nostr';
 import { verifyCoordinatorToken } from '../utils/nostr';
@@ -21,8 +21,11 @@ type FederationHooks = 'onFederationUpdate';
 
 export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
-    const coordinators = Object.entries(defaultFederation).reduce(
-      (acc: Record<string, Coordinator>, [key, value]: [string, object]) => {
+    const federationEntries = Object.entries(defaultFederation) as Array<
+      [string, CoordinatorConfig]
+    >;
+    const coordinators = federationEntries.reduce(
+      (acc: Record<string, Coordinator>, [key, value]) => {
         acc[key] = new Coordinator(value, origin, settings, hostUrl);
         acc[key].federated = true;
         return acc;
@@ -32,7 +35,7 @@ export class Federation {
 
     this.coordinators = {};
     federationLottery().forEach((alias) => {
-      if (coordinators[alias]) this.coordinators[alias] = coordinators[alias];
+      if (coordinators[alias] !== undefined) this.coordinators[alias] = coordinators[alias];
     });
 
     this.exchange = {
@@ -62,7 +65,7 @@ export class Federation {
     const tesnetHost = Object.values(this.coordinators).find((coor) => {
       return Object.values(coor.testnet).includes(url);
     });
-    this.network = settings.network;
+    this.network = settings.network ?? 'mainnet';
     if (tesnetHost) this.network = 'testnet';
     this.connection = null;
     this.roboPool = new RoboPool(settings);
@@ -110,7 +113,7 @@ export class Federation {
     this.loading = true;
     this.book = {};
     this.exchange.loadingCache = this.roboPool.relays.length;
-    this.network = settings.network;
+    this.network = settings.network ?? 'mainnet';
 
     const coordinators = Object.values(this.coordinators);
     coordinators.forEach((c) => c.updateUrl(origin, settings, hostUrl));
@@ -220,7 +223,7 @@ export class Federation {
     const value = {
       ...coordinatorDefaultValues,
       ...attributes,
-    };
+    } as unknown as CoordinatorConfig;
     this.coordinators[value.shortAlias] = new Coordinator(value, origin, settings, hostUrl);
 
     if (this.coordinators[value.shortAlias].nostrHexPubkey) {

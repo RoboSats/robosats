@@ -28,13 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: 'Download Android Web.bundle Artifact (built frontend)'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v23
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
@@ -43,13 +43,13 @@ jobs:
 
       - name: 'Download main.js Artifact for a release'
         if: inputs.semver != ''  # Only if fired as job in release.yml
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: mobile-web.bundle
           path: android/app/src/main/assets
 
       - name: Cache gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
@@ -86,7 +86,7 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      - uses: kaisugi/action-regex-match@v1.0.1
+      - uses: kaisugi/action-regex-match@v1.0.2
         id: regex-match
         with:
           text: ${{ github.ref }}
@@ -95,12 +95,12 @@ jobs:
 
       - name: 'Get Commit Hash'
         id: commit
-        uses: pr-mpt/actions-commit-hash@v3
+        uses: pr-mpt/actions-commit-hash@v4
 
       # Create app-universal-release APK artifact asset for Release
       - name: 'Upload universal .apk Artifact'
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-universal-release.apk
           path: android/app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk
@@ -108,7 +108,7 @@ jobs:
       # Create app-arm64-v8a-release APK artifact asset for Release
       - name: 'Upload arm64-v8a .apk Artifact'
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-arm64-v8a-release.apk
           path: android/app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk
@@ -116,7 +116,7 @@ jobs:
       # Create app-armeabi-v7a-release APK artifact asset for Release
       - name: 'Upload armeabi-v7a .apk Artifact'
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-armeabi-v7a-release.apk
           path: android/app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk
@@ -124,7 +124,7 @@ jobs:
       # Create app-x86_64-release APK artifact asset for Release
       - name: 'Upload x86_64 .apk Artifact'
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-x86_64-release.apk
           path: android/app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk

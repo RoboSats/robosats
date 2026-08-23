@@ -142,9 +142,9 @@ const NotificationsDrawer = ({ show, setShow }: NotificationsDrawerProps): React
                 return b[1].created_at - a[1].created_at;
               })
               .map(([index, event]) => {
-                const coordinator: Coordinator = Object.values(defaultFederation).find(
+                const coordinator: Coordinator | undefined = Object.values(defaultFederation).find(
                   (c) => c.nostrHexPubkey === event.pubkey,
-                );
+                ) as Coordinator | undefined;
                 const nostrHexPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
                 const slot = garage.getSlotByNostrPubKey(nostrHexPubkey ?? '');
 

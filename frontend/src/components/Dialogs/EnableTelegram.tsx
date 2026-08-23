@@ -28,8 +28,8 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): Rea
   const theme = useTheme();
 
   const handleClickOpenBrowser = (): void => {
-    window.open(`https://t.me/${tgBotName}?start=${tgToken}`, '_blank').focus();
-    setOpenEnableTelegram(false);
+    window.open(`https://t.me/${tgBotName}?start=${tgToken}`, '_blank')?.focus();
+    onClose();
   };
 
   const handleOpenTG = (): void => {
@@ -45,8 +45,8 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): Rea
     >
       <DialogTitle id='open-dispute-dialog-title'>{t('Enable TG Notifications')}</DialogTitle>
       <DialogContent>
-        <Grid container justifyContent='center'>
-          <Grid item>
+        <Grid container sx={{ justifyContent: 'center' }}>
+          <Grid>
             <Box
               sx={{
                 width: 290,

@@ -1,4 +1,4 @@
-FROM node:18-bullseye-slim
+FROM node:22-bookworm-slim
 
 RUN mkdir -p /usr/src/frontend
 
@@ -14,7 +14,7 @@ COPY package.json package.json
 COPY package-lock.json package-lock.json
 
 # install packages
-RUN npm install
+RUN npm ci
 RUN mv node_modules /tmp/node_modules
 
 # copy entrypoint

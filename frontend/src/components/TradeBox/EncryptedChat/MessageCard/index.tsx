@@ -21,7 +21,9 @@ interface Props {
   isTaker: boolean;
   userConnected?: boolean;
   imageUrls: Record<number, string>;
-  setImageUrls: (imageUrls: Record<number, string>) => Record<number, string>;
+  setImageUrls: (
+    updater: Record<number, string> | ((prev: Record<number, string>) => Record<number, string>),
+  ) => void;
 }
 
 const MessageCard: React.FC<Props> = ({

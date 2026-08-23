@@ -58,11 +58,13 @@ App.tsx (entry via src/index.js)
 | `templates/frontend/basic.html` / `pro.html` | Build outputs — **never hand-edit**                                                                                                                                                                                                       |
 | `views.py`                                   | Django: renders `frontend/basic.html`/`pro.html` with `ONION_LOCATION`                                                                                                                                                                    |
 | `urls.py`                                    | Django routes: `""` (×2 same path), `create/`, `garage/`, `garage/<token>/`, `offers/`, `order/<shortAlias>/<int:orderId>/`, `settings/`, `pro/` — `shortAlias` is a frontend route parameter, not an API parameter (see `api/AGENTS.md`) |
-| `package.json`                               | `"dev"` = webpack --watch --progress --mode development (no HMR); `"build"` = webpack production; `"test"` = Jest 30 (not required, not ready); `"lint"`, `"lint:fix"`, `"format"` = ESLint/Prettier                                      |
+| `package.json`                               | `"dev"` = webpack --watch; `"build"` = webpack production; `"typecheck"` = `tsc --noEmit` (enforced by CI + pre-commit); `"lint"`, `"lint:fix"`, `"format"` = ESLint/Prettier                                                             |
 | `babel.config.json`                          | `@babel/preset-env, -react, -typescript`; `@babel/plugin-transform-runtime (regenerator:true)` — webpack babel-loader inlines the same presets redundantly                                                                                |
 | `tsconfig.json`                              | `noEmit:true, strict:true, jsx:react-jsx, allowImportingTsExtensions`; include `src/**/*` + `webpack.config.ts`; exclude `**/*.spec.ts` — type-check only, no emit                                                                        |
 | `eslint.config.mjs`                          | ESLint 9 flat config; **ignores `**/index.js`** and PaymentMethods `code.js`                                                                                                                                                              |
-| `Dockerfile` / `docker-compose.yml`          | node:18-bullseye-slim; `entrypoint.sh` shuffles `node_modules` via `/tmp` on first run; `CMD npm run build`; compose: `frontend` + `nginx` (host 8888:80, mounts `../web/nginx.conf` + `../web/coordinators/`)                            |
+| `src/utils/currencies.ts`                    | Typed accessor for `static/assets/currencies.json` → `Record<string, string>`. **Import from here; never add `as Record<string, string>` casts inline.**                                                                                  |
+| `src/types/modules.d.ts`                     | Minimal stubs for `react-smooth-image` (SmoothImage) + `base-ex` (Base16/Base91). `src/types/webln.d.ts` adds `sendPaymentAsync` to `WebLNProvider` — absent from `@types/webln`, required for hold invoices.                             |
+| `Dockerfile` / `docker-compose.yml`          | node:22-bookworm-slim; `entrypoint.sh` shuffles `node_modules` via `/tmp` on first run; `CMD npm run build`; compose: `frontend` + `nginx` (host 8888:80)                                                                                 |
 
 ## `window.RobosatsSettings` Values
 
@@ -122,11 +124,19 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - Babel handles TS transpile; `tsconfig.json` is type-check only. **Never add `ts-loader`.**
 - `templates/frontend/basic.html`/`pro.html`, `desktopApp/index.html`, `android/.../assets/index.html` are webpack outputs — **never hand-edit**.
 - Both `configNode` and `configAndroid` use `./static/frontend/` as relative `publicPath` for desktop/Android targets; only web/selfhosted/nodeapp targets use `/static/frontend/` (absolute). The relative path is **not** unique to desktop.
-- ESLint **ignores `**/index.js`\*\* — the webpack entry is unchecked by lint.
+- ESLint **ignores `**/index.js`** — the webpack entry is unchecked by lint.
 - `window.WebAssembly` gate in `index.ejs`: without WASM the `window.RobosatsSettings` global is **never set** and the app silently shows `.noscript-error` instead of loading. Required by `robo-identities-wasm` (`experiments.asyncWebAssembly: true`).
 - `static/frontend/` (JS bundle) is generated output living inside the source directory — **never hand-edit it**.
 - Django collectstatic outputs (`static/{rest_framework,admin,import_export,drf_spectacular_sidecar}/`) are also inside the tree (`.prettierignore` lists them) — not hand-editable.
 - `Settings.model.ts`'s `Language` union **duplicates `'pl'` and omits `'ja'`** — `ja` locale ships and resolves but is not a valid TypeScript `Language` type (latent type-safety bug).
+- **MUI v9 API**: `inputProps`/`PaperProps`/`primaryTypographyProps`/`imgProps`/`TabIndicatorProps`/`components+componentsProps` are **silently ignored** in MUI v9 — no warning, styling vanishes. Use `slotProps.{htmlInput,paper,primary,img,indicator}` / `slots`.
+- **`SvgIcon color` only accepts palette keys** (`action`, `primary`, …) — `color='text.secondary'` silently falls back to `inherit`. Use `sx={{ color: 'text.secondary' }}` instead.
+- **`pn()` accepts `string | number | null`** — pass `x.toFixed(8)` directly to preserve trailing zeros; converting to `Number()` first strips them.
+- **`PublicOrder.amount/min_amount/max_amount/premium/bond_size` are strings from API/Nostr; `Maker.amount/minAmount/maxAmount/premium/bondSize` are numbers.** MUI `e.target.value` is always a string — always coerce before storing to `Maker` or POSTing to the API.
+- **`federation.book` legitimately holds `undefined` values** (`loadBookNostr` writes `undefined` for out-of-network events) — always `.filter((o): o is PublicOrder => o != null)` before feeding to DataGrid `rows`.
+- **Encrypted-chat send/decrypt paths early-return when `robot.pubKey`/`peerPubKey`/`encPrivKey`/`slot.token` are missing.** In the socket path, the message index is recorded _before_ the guard, so a skipped message (e.g. missing `peerPubKey`) is never reprocessed once the key arrives.
+- **`utils/checkVer.ts` contains the live `getHigherVer`** (used by `Exchange.model.ts`). The previously dead copy in `aggregateInfo.ts` has been deleted — do not recreate it.
+- **`@nivo/theming`** is used by `NivoScheme/index.ts` and is an explicit dependency. It is NOT exported from `@nivo/core` — import `PartialTheme` directly from `@nivo/theming`.
 
 ## Constraints
 
@@ -137,3 +147,6 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - New locales: add to `static/locales/` AND to `src/i18n/Mobile.js` static imports together — Android bundle will be missing the locale otherwise.
 - Do not add one-active-order enforcement to take/create buttons — that is coordinator-side logic.
 - Do not add a token recovery UI — ephemeral robot identity is a product privacy invariant.
+- **Never store MUI event `e.target.value` directly into `Maker` fields or order payloads** — coerce to `number` first (bond size, premium, amounts, ratings, routing/lnproxy budgets are money-affecting).
+- **Never index `currencies.json`/`federation.json`/`thirdparties.json`/`lnproxies.json` with an inline `as Record<…>` cast** — use the typed accessor in `src/utils/currencies.ts` or equivalent.
+- `npm run typecheck` (`tsc --noEmit`) is enforced by CI (`js-linter.yml`) and a pre-commit hook — must remain green.

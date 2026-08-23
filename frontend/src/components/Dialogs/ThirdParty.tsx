@@ -45,9 +45,9 @@ const ContactButtons = ({
   const [client] = window.RobosatsSettings.split('-');
 
   return (
-    <Grid container direction='row' alignItems='center' justifyContent='center'>
+    <Grid container direction='row' sx={{ alignItems: 'center', justifyContent: 'center' }}>
       {nostr && (
-        <Grid item>
+        <Grid>
           <Tooltip
             title={
               <div>
@@ -84,7 +84,7 @@ const ContactButtons = ({
       )}
 
       {email && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Send Email')}>
             <IconButton component='a' href={`mailto: ${email}`}>
               <Email />
@@ -94,7 +94,7 @@ const ContactButtons = ({
       )}
 
       {telegram && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Telegram')}>
             <IconButton
               component='a'
@@ -109,7 +109,7 @@ const ContactButtons = ({
       )}
 
       {twitter && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('X')}>
             <IconButton
               component='a'
@@ -124,7 +124,7 @@ const ContactButtons = ({
       )}
 
       {reddit && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Reddit')}>
             <IconButton
               component='a'
@@ -139,7 +139,7 @@ const ContactButtons = ({
       )}
 
       {website && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Website')}>
             <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
               <Language />
@@ -149,7 +149,7 @@ const ContactButtons = ({
       )}
 
       {matrix && (
-        <Grid item>
+        <Grid>
           <Tooltip
             title={
               <Typography variant='body2'>
@@ -174,7 +174,7 @@ const ContactButtons = ({
       )}
 
       {simplex && (
-        <Grid item>
+        <Grid>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Simplex')}>
             <IconButton component='a' target='_blank' href={`${simplex}`} rel='noreferrer'>
               <SimplexIcon sx={{ width: '0.7em', height: '0.7em' }} />
@@ -189,10 +189,12 @@ const ContactButtons = ({
 const ThirdPartyDialog = ({ open = false, onClose, shortAlias }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const [thirdParty, setThirdParty] = useState<Coordinator>(thirdParties[shortAlias]);
+  const [thirdParty, setThirdParty] = useState<Coordinator>(
+    (thirdParties as unknown as Record<string, Coordinator>)[shortAlias],
+  );
 
   useEffect(() => {
-    setThirdParty(thirdParties[shortAlias]);
+    setThirdParty((thirdParties as unknown as Record<string, Coordinator>)[shortAlias]);
   }, [shortAlias]);
 
   useEffect(() => {
@@ -207,21 +209,21 @@ const ThirdPartyDialog = ({ open = false, onClose, shortAlias }: Props): React.J
         </Typography>
         <List dense>
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Grid container direction='column' alignItems='center' padding={0}>
-              <Grid item>
+            <Grid container sx={{ alignItems: 'center', flexDirection: 'column', padding: 0 }}>
+              <Grid>
                 <RobotAvatar
                   shortAlias={thirdParty?.shortAlias}
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}
                 />
               </Grid>
-              <Grid item>
+              <Grid>
                 <ContactButtons {...thirdParty?.contact} />
               </Grid>
             </Grid>
           </ListItem>
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Description />
             </ListItemIcon>
 

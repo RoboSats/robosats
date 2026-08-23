@@ -41,7 +41,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
     garage.fetchRobot(federation, garage.getSlot()?.token ?? '');
   };
 
-  const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
+  const handleChangeSlot = (e: SelectChangeEvent<string>): void => {
     if (e?.target?.value) {
       setLoading(true);
       loadRobot(e.target.value as string);
@@ -71,33 +71,31 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           </Typography>
           <Select
             fullWidth
-            inputProps={{
-              style: { textAlign: 'center' },
-            }}
-            value={garage.currentSlot}
+            sx={{ textAlign: 'center' }}
+            value={garage.currentSlot ?? ''}
             onChange={handleChangeSlot}
           >
             {Object.values(garage.slots).map((slot: Slot, index: number) => {
               return (
-                <MenuItem key={index} value={slot.token}>
+                <MenuItem key={index} value={slot.token ?? ''}>
                   <Grid
                     container
                     direction='row'
-                    justifyContent='flex-start'
-                    alignItems='center'
+
                     style={{ height: '2.8em' }}
                     spacing={1}
+                    sx={{ alignItems: 'center', justifyContent: 'flex-start' }}
                   >
-                    <Grid item>
+                    <Grid>
                       <RobotAvatar
-                        hashId={slot?.hashId}
+                        hashId={slot?.hashId ?? undefined}
                         smooth={true}
                         style={{ width: '2.6em', height: '2.6em' }}
                         placeholderType='loading'
                         small={true}
                       />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                       <Typography>{slot?.nickname}</Typography>
                     </Grid>
                   </Grid>
@@ -108,8 +106,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           {loading && <LinearProgress />}
 
           <Grid
-            item
-            xs={1}
+            size={1}
             style={{ width: '33%', display: 'flex', alignContent: 'center', margin: '8px 0' }}
           >
             <Button
