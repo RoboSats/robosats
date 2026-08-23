@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from decouple import config as decouple_config
+from django.core.cache import cache
 from django.test import RequestFactory, TestCase
 
 from api.views import InfoView
@@ -27,9 +28,19 @@ def _fake_config(devfund):
 
 
 class TestInfoView(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    def tearDown(self):
+        cache.clear()
+
     def _get_info(self, devfund):
+        cache.clear()
         with (
-            patch("api.views.get_robosats_commit", return_value="test-commit"),
+            patch(
+                "api.views.get_robosats_commit",
+                return_value="00000000000000000000 dev",
+            ),
             patch("api.views.config", side_effect=_fake_config(devfund)),
         ):
             request = RequestFactory().get("/api/info/")
