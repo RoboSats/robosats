@@ -65,3 +65,10 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 ## Gotchas
 
 - Modifications to api endpoint paths or coordinators requires updating /nodeapp
+- **CLN + holdinvoice version constraint**: `holdinvoice v4.0.0` (the committed binary in
+  `docker/cln/plugins/holdinvoice`) only supports **CLN up to v25.09.x**. Upgrading CLN
+  beyond v25.09.x will cause holdinvoice to fail silently — hold invoices never reach
+  ACCEPTED state and all invoice-locking (maker bond, taker bond, trade escrow) breaks in
+  both production and tests. Before upgrading CLN, verify a compatible holdinvoice release
+  exists at https://github.com/daywalker90/holdinvoice/releases and update the binary.
+  See `api/lightning/AGENTS.md` for full details.
