@@ -285,12 +285,14 @@ def pay_invoice(node_name, invoice):
             f"http://localhost:{node['port']}/v1/channels/transactions",
             json=data,
             headers=node["headers"],
-            # 0.15s is enough for LND to LND hodl ACCEPT
-            # CLN v26.06.6 + holdinvoice v4.0.0 needs more time to reach ACCEPTED state
-            timeout=0.2 if LNVENDOR == "LND" else 5,
+            # LND v0.21+ needs longer for HTLC to reach ACCEPTED on coordinator LND
+            # CLN + holdinvoice v4.0.0 needs even more time to reach ACCEPTED state
+            timeout=1 if LNVENDOR == "LND" else 5,
         )
     except ReadTimeout:
         # Request to pay hodl invoice has timed out: that's good!
+        # Give the node a moment to process the HTLC before follow_hold_invoices checks
+        time.sleep(0.5)
         return
 
 
