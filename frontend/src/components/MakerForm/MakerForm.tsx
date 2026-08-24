@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ButtonGroup,
@@ -68,8 +68,6 @@ const MakerForm = ({
   const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
-  const coordinatorAssignedRef = useRef(false);
-
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -118,8 +116,7 @@ const MakerForm = ({
     }
   };
   useEffect(() => {
-    if (federation.devFundLoaded && !coordinatorAssignedRef.current) {
-      coordinatorAssignedRef.current = true;
+    if (federation.devFundLoaded) {
       setMaker((maker) => ({ ...maker, coordinator: federation.getCoordinatorsAlias()[0] }));
     }
   }, [federation.devFundLoaded]);
