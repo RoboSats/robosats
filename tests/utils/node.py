@@ -281,7 +281,7 @@ def pay_invoice(node_name, invoice):
     node = get_node(node_name)
     data = {"payment_request": invoice}
     try:
-        requests.post(
+        response = requests.post(
             f"http://localhost:{node['port']}/v1/channels/transactions",
             json=data,
             headers=node["headers"],
@@ -289,8 +289,11 @@ def pay_invoice(node_name, invoice):
             # CLN + holdinvoice v4.0.0 needs even more time to reach ACCEPTED state
             timeout=1 if LNVENDOR == "LND" else 5,
         )
+        # If the request returns immediately (payment failed or resolved without timeout),
+        # log the response to help diagnose LND v0.21 behavior changes
+        print(f"pay_invoice returned without timeout: {response.status_code} {response.text[:200]}")
     except ReadTimeout:
-        # Request to pay hodl invoice has timed out: that's good!
+        # Request to pay hodl invoice has timed out: that's good — HTLC is being held!
         # Give the node a moment to process the HTLC before follow_hold_invoices checks
         time.sleep(0.5)
         return
