@@ -280,25 +280,23 @@ def pay_invoice(node_name, invoice):
     reset_mission_control(node_name)
     node = get_node(node_name)
     # /v1/channels/transactions was removed in LND v0.21; use /v2/router/send instead.
-    # /v2/router/send is a streaming endpoint — for hold invoices it keeps the connection
-    # open while the HTLC is in-flight, so the ReadTimeout fires as expected.
+    # /v2/router/send streams responses — for hold invoices the connection stays open
+    # while the HTLC is in-flight, so the socket read will block until the timeout
+    # fires, which raises ReadTimeout just like the old blocking endpoint did.
     data = {
         "payment_request": invoice,
         "timeout_seconds": 60,
         "fee_limit_sat": 10000,
     }
     try:
-        response = requests.post(
+        requests.post(
             f"http://localhost:{node['port']}/v2/router/send",
             json=data,
             headers=node["headers"],
             # LND v0.21+ needs longer for HTLC to reach ACCEPTED on coordinator LND
             # CLN + holdinvoice v4.0.0 needs even more time to reach ACCEPTED state
             timeout=1 if LNVENDOR == "LND" else 5,
-            stream=True,
         )
-        # Drain any immediate response bytes so we block until timeout or close
-        response.content
     except ReadTimeout:
         # Request to pay hodl invoice has timed out: that's good — HTLC is being held!
         # Give the node a moment to process the HTLC before follow_hold_invoices checks
