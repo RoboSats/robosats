@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
-    "electron": "^43.4.0",
+    "electron": "^43.4.1",
     "typescript": "^7.0.2"
   },
   "build": {
