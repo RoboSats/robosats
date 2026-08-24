@@ -5,7 +5,7 @@ import time
 import requests
 from decouple import config
 from requests.auth import HTTPBasicAuth
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ConnectionError, ReadTimeout
 
 LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 WAIT_STEP = 0.2
@@ -297,9 +297,11 @@ def pay_invoice(node_name, invoice):
             # CLN + holdinvoice v4.0.0 needs even more time to reach ACCEPTED state
             timeout=1 if LNVENDOR == "LND" else 5,
         )
-    except ReadTimeout:
-        # Request to pay hodl invoice has timed out: that's good — HTLC is being held!
-        # Give the node a moment to process the HTLC before follow_hold_invoices checks
+    except (ReadTimeout, ConnectionError):
+        # /v2/router/send uses chunked transfer encoding; a read timeout during body
+        # consumption raises ConnectionError (wrapping urllib3 ReadTimeoutError) instead
+        # of ReadTimeout. Both mean the HTLC is in-flight — that's the expected state.
+        # Give the node a moment to process the HTLC before follow_hold_invoices checks.
         time.sleep(0.5)
         return
 
