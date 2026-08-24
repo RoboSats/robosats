@@ -286,8 +286,8 @@ def pay_invoice(node_name, invoice):
             json=data,
             headers=node["headers"],
             # 0.15s is enough for LND to LND hodl ACCEPT
-            # 0.4s is enough for LND to CLN hodl ACCEPT
-            timeout=0.2 if LNVENDOR == "LND" else 1,
+            # CLN v26.06.6 + holdinvoice v4.0.0 needs more time to reach ACCEPTED state
+            timeout=0.2 if LNVENDOR == "LND" else 5,
         )
     except ReadTimeout:
         # Request to pay hodl invoice has timed out: that's good!

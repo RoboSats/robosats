@@ -106,7 +106,7 @@ jobs:
       matrix:
         python-tag: ['3.12.3-slim-bookworm']
         lnd-version: ['v0.21.2-beta']
-        cln-version: ['v26.06.6']
+        cln-version: ['v25.09.3']
         ln-vendor: ['LND', 'CLN']
 
     steps:

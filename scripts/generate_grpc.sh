@@ -11,8 +11,8 @@ curl --parallel -o lightning.proto https://raw.githubusercontent.com/lightningne
     -o signer.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/signrpc/signer.proto \
     -o verrpc.proto https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/verrpc/verrpc.proto \
     -o hold.proto https://raw.githubusercontent.com/daywalker90/holdinvoice/master/proto/hold.proto \
-    -o primitives.proto https://raw.githubusercontent.com/ElementsProject/lightning/v26.06.6/cln-grpc/proto/primitives.proto \
-    -o node.proto https://raw.githubusercontent.com/ElementsProject/lightning/v26.06.6/cln-grpc/proto/node.proto
+    -o primitives.proto https://raw.githubusercontent.com/ElementsProject/lightning/v25.09.3/cln-grpc/proto/primitives.proto \
+    -o node.proto https://raw.githubusercontent.com/ElementsProject/lightning/v25.09.3/cln-grpc/proto/node.proto
 
 echo -n "Done\nBuilding api from GRPC specs..."
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto invoices.proto router.proto signer.proto verrpc.proto
