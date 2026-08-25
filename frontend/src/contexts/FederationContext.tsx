@@ -104,6 +104,7 @@ export const FederationContextProvider = ({
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
     });
+    void federation.loadDevFund();
   }, []);
 
   useEffect(() => {
