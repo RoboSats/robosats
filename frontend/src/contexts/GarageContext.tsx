@@ -23,8 +23,6 @@ export interface UseGarageStoreType {
   setMaker: Dispatch<SetStateAction<Maker>>;
   setDelay: Dispatch<SetStateAction<number>>;
   fetchSlotActiveOrder: () => void;
-  markCoordinatorPicked: () => void;
-  resetCoordinatorPicked: () => void;
 }
 
 export const initialGarageContext: UseGarageStoreType = {
@@ -33,8 +31,6 @@ export const initialGarageContext: UseGarageStoreType = {
   setMaker: () => {},
   setDelay: () => {},
   fetchSlotActiveOrder: () => {},
-  markCoordinatorPicked: () => {},
-  resetCoordinatorPicked: () => {},
 };
 
 const defaultDelay = 5000;
@@ -75,18 +71,9 @@ export const GarageContextProvider = ({
   const [lastOrderCheckAt] = useState<number>(+new Date());
   const lastOrderCheckAtRef = useRef(lastOrderCheckAt);
   const [delay, setDelay] = useState<number>(defaultDelay);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
+  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | undefined>(() =>
     setInterval(() => null, delay),
   );
-  const coordinatorPickedRef = useRef(false);
-
-  const markCoordinatorPicked = (): void => {
-    coordinatorPickedRef.current = true;
-  };
-
-  const resetCoordinatorPicked = (): void => {
-    coordinatorPickedRef.current = false;
-  };
 
   const onSlotUpdated = (): void => {
     setSlotUpdatedAt(new Date().toISOString());
@@ -104,13 +91,6 @@ export const GarageContextProvider = ({
       clearTimeout(timer);
     };
   }, []);
-
-  useEffect(() => {
-    if (!federation.devFundLoaded || coordinatorPickedRef.current) return;
-    setMaker((maker) => {
-      return { ...maker, coordinator: federation.getCoordinatorsAlias()[0] };
-    }); // re-derive default MakerForm coordinator once live devfund data arrives
-  }, [federation.devFundLoaded]);
 
   useEffect(() => {
     const token = garage.getSlot()?.token;
@@ -164,8 +144,6 @@ export const GarageContextProvider = ({
         setMaker,
         setDelay,
         fetchSlotActiveOrder,
-        markCoordinatorPicked,
-        resetCoordinatorPicked,
       }}
     >
       {children}

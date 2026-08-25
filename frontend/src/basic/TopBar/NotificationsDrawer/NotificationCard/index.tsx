@@ -7,7 +7,7 @@ import { Coordinator } from '../../../../models';
 import RobotAvatar from '../../../../components/RobotAvatar';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { Grid } from '@mui/system';
+import { Grid } from '@mui/material';
 import { GarageContext, UseGarageStoreType } from '../../../../contexts/GarageContext';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -30,7 +30,7 @@ const NotificationCard: React.FC<Props> = ({ event, robotHashId, coordinator, se
     if (!coordinator) return <></>;
 
     return (
-      <Grid item style={{ display: 'flex', flexDirection: 'column' }}>
+      <Grid style={{ display: 'flex', flexDirection: 'column' }}>
         <RobotAvatar
           shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
           hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}

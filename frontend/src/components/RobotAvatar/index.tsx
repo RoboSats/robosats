@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
-import { Avatar, Badge, Tooltip } from '@mui/material';
+import { Avatar, Badge, Tooltip, type TooltipProps } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -19,7 +19,8 @@ interface Props {
   statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
   orderType?: number;
   tooltip?: string;
-  tooltipPosition?: string;
+  tooltipPosition?: TooltipProps['placement'];
+  baseUrl?: string;
   avatarClass?: string;
   onLoad?: () => void;
 }
@@ -149,10 +150,11 @@ const RobotAvatar: React.FC<Props> = ({
           style={style}
           alt={hashId ?? shortAlias ?? 'unknown'}
           src={avatarSrc}
-          imgProps={{
-            sx: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
-            style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
-            onLoad,
+          slotProps={{
+            img: {
+              style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
+              onLoad,
+            },
           }}
         />
       );

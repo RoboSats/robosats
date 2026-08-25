@@ -23,6 +23,8 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import org.json.JSONObject
 import java.io.IOException
+import java.net.MalformedURLException
+import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import okhttp3.Request.Builder as RequestBuilder
@@ -149,6 +151,11 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             Log.e(TAG, "Invalid UUID for getTorStatus: $uuid")
             return
         }
+        if (!isValidUrl(path)) {
+            Log.e(TAG, "Invalid or disallowed URL for openWS: $path")
+            rejectPromise(uuid, "Invalid URL")
+            return
+        }
 
         try {
             Log.d(TAG, "WebSocket opening: $path")
@@ -242,6 +249,11 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             rejectPromise(uuid, "Invalid UUID")
             return
         }
+        if (!isValidUrl(url)) {
+            Log.e(TAG, "Invalid or disallowed URL for sendBinary: $url")
+            rejectPromise(uuid, "Invalid URL")
+            return
+        }
 
         try {
             // Decode base64 to byte array
@@ -319,6 +331,11 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             rejectPromise(uuid, "Invalid UUID")
             return
         }
+        if (!isValidUrl(url)) {
+            Log.e(TAG, "Invalid or disallowed URL for getBinary: $url")
+            rejectPromise(uuid, "Invalid URL")
+            return
+        }
 
         try {
             // Create OkHttpClient
@@ -369,6 +386,11 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         if (!isValidUuid(uuid)) {
             Log.e(TAG, "Invalid UUID for sendRequest: $uuid")
             rejectPromise(uuid, "Invalid UUID")
+            return
+        }
+        if (!isValidUrl(url)) {
+            Log.e(TAG, "Invalid or disallowed URL for sendRequest: $url")
+            rejectPromise(uuid, "Invalid URL")
             return
         }
 
@@ -569,6 +591,35 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
         val encodedError = encodeForJavaScript(errorMessage)
         safeEvaluateJavascript("javascript:window.AndroidRobosats.onRejectPromise('$uuid', '$encodedError')")
+    }
+
+    /**
+     * Validates that a URL is safe to request from the native HTTP client.
+     * Accepts only http/https/ws/wss schemes and rejects private/loopback addresses
+     * (which would enable SSRF against local services on the device or local network).
+     * All coordinator traffic is routed through the Tor SOCKS proxy, so .onion hosts
+     * with http/https are legitimate.
+     */
+    private fun isValidUrl(rawUrl: String?): Boolean {
+        if (rawUrl.isNullOrBlank()) return false
+        return try {
+            val url = URL(rawUrl.trim())
+            val scheme = url.protocol.lowercase()
+            if (scheme !in setOf("http", "https", "ws", "wss")) return false
+            val host = url.host.lowercase()
+            // Block loopback and link-local addresses to prevent SSRF
+            if (host == "localhost") return false
+            val ipv4Loopback = Regex("""^127\.\d+\.\d+\.\d+$""")
+            val ipv4Private = Regex("""^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)""")
+            val ipv4LinkLocal = Regex("""^169\.254\.""")
+            if (ipv4Loopback.containsMatchIn(host)) return false
+            if (ipv4Private.containsMatchIn(host)) return false
+            if (ipv4LinkLocal.containsMatchIn(host)) return false
+            if (host == "::1" || host == "[::1]") return false
+            true
+        } catch (e: MalformedURLException) {
+            false
+        }
     }
 
     private fun isValidInput(input: String?): Boolean {

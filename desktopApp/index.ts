@@ -31,13 +31,13 @@ checkPlatformAndRunTor()
 
 
 // Listen for Tor process stdout data
-tor.stdout.on("data", (data: Buffer) => {
+tor!.stdout.on("data", (data: Buffer) => {
   const message = data.toString();
   console.log(`Data received: ${message}`);
 });
 
 // Listen for Tor process stderr data
-tor.stderr.on("data", (data: Buffer) => {
+tor!.stderr.on("data", (data: Buffer) => {
   console.error(`Error received: ${data.toString()}`);
   app.exit(1); // Exit the app if there's an error in the Tor process
 });

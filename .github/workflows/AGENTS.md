@@ -17,7 +17,7 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | `desktop-build.yml` | Build: Desktop | dispatch / workflow_call(`semver`) / push+PR `main paths:["desktopApp","frontend"]` | `desktop-main-static` | desktop zip artifacts (mac/linux/win) |
 | `release.yml` | Release | `push: tags: v*.*.*` | all build artifacts | Draft GitHub release + all APK/zip assets |
 | `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check (check-mode) |
-| `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v3`) |
+| `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v4`) |
 | `codeql.yml` | CodeQL Advanced | push/PR `main` / `schedule: Sun 21:27 UTC` | — | GitHub security alerts |
 | `lnproxy-sync.yml` | Sync lnproxy relays | `schedule: Sun 12:00 UTC` | live `lnproxy-webui2/assets/relays.json` | PR against `main` updating `frontend/static/lnproxies.json` |
 
@@ -31,7 +31,7 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | `mobile-web.bundle` | `android/app/src/main/assets` | `android-build` |
 
 `frontend-build.yml` uses Node **16.17.0** + `NODE_OPTIONS=--max-old-space-size=4096`.
-All 5 uploads use `actions/upload-artifact@v4`.
+All 5 uploads use `actions/upload-artifact@v7`.
 
 ## Pre-release Fan-out (non-release only)
 When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
@@ -43,7 +43,7 @@ When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
 - **Stack**: `docker-tests.yml` with services `bitcoind`, `postgres`, `redis`,
   `coordinator-LND`/`coordinator-CLN`, `robot-LND`, `coordinator` (health-polled).
 - **Matrix**: `python-tag: 3.12.3-slim-bookworm` × `ln-vendor: [LND, CLN]`;
-  `lnd-version: v0.18.2-beta`, `cln-version: v24.08`; `max-parallel: 2`; 30 min timeout.
+  `lnd-version: v0.21.2-beta`, `cln-version: v25.09.3`; `max-parallel: 2`; 30 min timeout.
 - **Patching**: `sed`-patches `Dockerfile` FROM line and `.env-sample LNVENDOR` before
   build; `ROBOSATS_ENVS_FILE=".env-sample"`, `DEVELOPMENT=True`, `USE_TOR=False`.
 - **Coverage**: `docker exec test-coordinator coverage run manage.py test` + `coverage report`
@@ -60,7 +60,7 @@ When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
 
 Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 `type=semver,pattern={{major}}.{{minor}}`, `type=sha,priority=100,format=short`,
-`type=raw,value=latest`. Uses `docker/metadata-action@v5` + `docker/build-push-action@v6`.
+`type=raw,value=latest`. Uses `docker/metadata-action@v6` + `docker/build-push-action@v7`.
 
 ## Android Build (`android-build.yml`)
 - Node: N/A; Gradle cache on `~/.gradle/caches`.
@@ -82,7 +82,7 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 
 ## lnproxy Sync (`lnproxy-sync.yml`)
 - Weekly (Sundays 12:00 UTC): curls live relay list → `node ./scripts/lnproxy-sync.js` →
-  `peter-evans/create-pull-request@v6` with branch `lnproxy-{date}`, `delete-branch: true`.
+  `peter-evans/create-pull-request@v8` with branch `lnproxy-{date}`, `delete-branch: true`.
 - **Never auto-commits to `main`** — always a PR so a maintainer reviews third-party data.
 
 ## Product Intent
@@ -117,15 +117,15 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 4. **Coverage artifact likely empty**: `integration-tests.yml` uploads `htmlcov/` from the
    runner host, but `coverage html` ran inside the `test-coordinator` Docker container —
    the host directory is empty.
-5. **Dead step in `android-build.yml`**: `kaisugi/action-regex-match@v1.0.1` on `github.ref`
+5. **Dead step in `android-build.yml`**: `kaisugi/action-regex-match@v1.0.2` on `github.ref`
    is run but its output is never consumed by any subsequent step.
 6. **Malformed pre-release APK asset names**: the non-release android path names assets with
    `github.ref` (e.g. `refs/tags/…`) — includes the `refs/…` prefix, producing invalid
    filenames. x86_64 APK is also omitted from this path.
 7. **`desktop-build.yml` never runs tsc**: `npm run compile` is not in the CI script; a
    stale committed `desktopApp/index.js` ships silently (see `desktopApp/AGENTS.md`).
-8. **`codeql.yml` uses `checkout@v4`** while all other workflows use `v5`; its `runs-on`
-   expression branches on `swift` (absent from the matrix → always falls through to default).
+8. **`codeql.yml` `runs-on`** expression branches on `swift` (absent from the matrix →
+   always falls through to default `ubuntu-latest`).
 
 ## Constraints
 - Never add a new build target without adding its artifact upload to `frontend-build.yml`

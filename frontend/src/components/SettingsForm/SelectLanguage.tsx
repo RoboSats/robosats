@@ -48,7 +48,7 @@ const SelectLanguage: React.FC<SelectLanguageProps> = ({ language, setLanguage }
   };
 
   const handleChangeLang = function (e: SelectChangeEvent): void {
-    setLanguage(e.target.value);
+    setLanguage(e.target.value as Language);
     void i18n.changeLanguage(e.target.value);
   };
 
@@ -64,10 +64,10 @@ const SelectLanguage: React.FC<SelectLanguageProps> = ({ language, setLanguage }
       {menuLanuguages.map((language, index) => (
         <MenuItem key={index} value={language.i18nCode}>
           <Grid container>
-            <Grid item style={{ width: '1.9em', position: 'relative', top: '0.15em' }}>
+            <Grid style={{ width: '1.9em', position: 'relative', top: '0.15em' }}>
               <language.flag {...flagProps} />
             </Grid>
-            <Grid item>
+            <Grid>
               <Typography variant='inherit'>{language.name}</Typography>
             </Grid>
           </Grid>

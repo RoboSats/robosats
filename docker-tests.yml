@@ -11,7 +11,6 @@
 # docker exec -it coordinator-LND lncli --network=regtest getinfo
 # docker exec -it robot-LND lncli --network=regtest --rpcserver localhost:10010 getinfo
 
-version: '3.9'
 services:
   bitcoind:
     image: ruimarinho/bitcoin-core:${BITCOIND_VERSION:-24.0.1}-alpine
@@ -28,6 +27,7 @@ services:
       - "5432:5432"
       - "6379:6379"
       - "7777:7777"
+      - "7778:7778"
     volumes:
       - bitcoin:/bitcoin/.bitcoin/
       - ./tests/bitcoind/entrypoint.sh:/entrypoint.sh
@@ -50,7 +50,7 @@ services:
       --listenonion=0
 
   coordinator-LND:
-    image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
+    image: lightninglabs/lnd:${LND_VERSION:-v0.21.2-beta}
     container_name: test-coordinator-LND
     restart: always
     volumes:
@@ -82,7 +82,7 @@ services:
     network_mode: service:bitcoind
 
   coordinator-CLN:
-    image: elementsproject/lightningd:${CLN_VERSION:-v24.08}
+    image: elementsproject/lightningd:${CLN_VERSION:-v25.09.3}
     restart: always
     container_name: test-coordinator-CLN
     environment:
@@ -97,7 +97,7 @@ services:
     network_mode: service:bitcoind
 
   robot-LND:
-    image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
+    image: lightninglabs/lnd:${LND_VERSION:-v0.21.2-beta}
     container_name: test-robot-LND
     restart: always
     volumes:
@@ -142,6 +142,7 @@ services:
       args:
         DEVELOPMENT: True
     image: backend-image
+    pull_policy: never
     container_name: test-coordinator
     restart: always
     environment:
@@ -180,6 +181,21 @@ services:
       POSTGRES_DB: 'postgres'
     network_mode: service:bitcoind
 
+  strfry:
+    build: ./docker/strfry
+    image: strfry-test
+    container_name: test-strfry
+    restart: always
+    entrypoint: ["/app/strfry", "--config", "/etc/strfry.conf", "relay"]
+    volumes:
+      - ./docker/strfry/strfry.conf:/etc/strfry.conf:ro
+      - strfry-db:/app/strfry-db
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    network_mode: service:bitcoind
+
   # celery-worker:
   #   image: backend-image
   #   pull_policy: never
@@ -212,3 +228,4 @@ volumes:
   lnd:
   cln:
   lndrobot:
+  strfry-db:

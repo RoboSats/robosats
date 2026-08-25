@@ -53,16 +53,17 @@ All prefs loaded **asynchronously** from `systemClient.getItem()` in the constru
 which reuses `Coordinator.loadInfo()` (no duplicate `/api/info/` requests),
 overwrites `badges.donatesToDevFund` with the live value for reachable coordinators, then
 re-runs `federationLottery` and reorders `this.coordinators` (the lottery order drives the
-default MakerForm host and the book sort).
+default MakerForm host and the book sort). Sets `devFundLoaded = true` and fires the
+`onFederationUpdate` hook so the UI re-renders; `MakerForm` watches
+`federation.devFundLoaded` to derive the default host (selected coordinator) once live data
+arrives, and `SelectCoordinator` stays disabled until `devFundLoaded` is true so the default
+is never clobbered by a later shuffle.
 
 **`Coordinator.loadInfo()` returns a shared in-flight `Promise`** — the first call issues
 the `GET /api/info/` request; concurrent callers awaiting the same coordinator reuse that
 request (guarded by a private `_infoPromise`) instead of firing a duplicate. The promise
 always resolves (failures are logged, `info` stays `undefined`); refresh semantics are
-unchanged — once settled, a later call issues a fresh request. Sets `devFundLoaded = true` and fires the
-`onFederationUpdate` hook so the UI re-renders; `GarageContext` watches
-`federation.devFundLoaded` to re-derive the default host only if the user has not already
-picked one manually (`markCoordinatorPicked`/`resetCoordinatorPicked`).
+unchanged — once settled, a later call issues a fresh request.
 
 **Coordinator ratings**
 
