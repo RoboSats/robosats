@@ -48,9 +48,13 @@ Called by `useBondEstimate`; not called directly by components.
 
 Returns coordinators in **randomised order weighted by DevFund donation % (capped at 50)**
 — an explicit donation-incentive mechanism, not a flat-neutral shuffle. Called at runtime
-to replace the seed order from `federation.json`. This randomisation is the mechanism
-that makes `fav.coordinator: 'robosats'` (the seed default) a transient legacy value —
-it is overwritten at runtime.
+to replace the seed order from `federation.json`. Signature
+`federationLottery(federation = defaultFederation, devfundOverrides = {})`: the static
+`badges.donatesToDevFund` is used as weight unless a **live override** (from
+`services/DevFundProfile.ts`, backed by each coordinator's `/api/info/` `devfund`) is
+provided. The value is clamped to `[0, 50]`. This randomisation is the mechanism that
+makes `fav.coordinator: 'robosats'` (the seed default) a transient legacy value — it is
+overwritten at runtime.
 
 ### `getHost.ts` / `getOrigin`
 

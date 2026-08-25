@@ -115,6 +115,11 @@ const MakerForm = ({
       });
     }
   };
+  useEffect(() => {
+    if (federation.devFundLoaded) {
+      setMaker((maker) => ({ ...maker, coordinator: federation.getCoordinatorsAlias()[0] }));
+    }
+  }, [federation.devFundLoaded]);
 
   const updateAmountLimits = function (
     limitList: LimitList,
