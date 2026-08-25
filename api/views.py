@@ -271,6 +271,14 @@ class OrderView(viewsets.ViewSet):
         if not data["is_participant"] and order.status == Order.Status.PUB:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
             data["satoshis_now"] = Logics.satoshis_now(order)
+            # Password-protected orders: redact location and description for non-participants
+            # so that the precise meeting point and extra details stay private until the
+            # password is provided at take-time.  payment_method is kept visible so that
+            # a potential taker can decide whether the trade suits them before committing.
+            if order.password is not None:
+                data["latitude"] = None
+                data["longitude"] = None
+                data["description"] = None
             return Response(data, status=status.HTTP_200_OK)
 
         # 4) If order is between public and WF2
@@ -749,19 +757,14 @@ class BookView(ListAPIView):
         cache_key = f"book:{currency}:{type}"
         book_data = cache.get(cache_key)
         if book_data is None:
+            # Always exclude password-protected orders from the public book.
             queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
 
             # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
-            if int(currency) == 0 and int(type) != 2:
-                queryset = Order.objects.filter(type=type, status=Order.Status.PUB)
-            elif int(type) == 2 and int(currency) != 0:
-                queryset = Order.objects.filter(
-                    currency=currency, status=Order.Status.PUB
-                )
-            elif not (int(currency) == 0 and int(type) == 2):
-                queryset = Order.objects.filter(
-                    currency=currency, type=type, status=Order.Status.PUB
-                )
+            if int(type) != 2:
+                queryset = queryset.filter(type=type)
+            if int(currency) != 0:
+                queryset = queryset.filter(currency=currency)
 
             if len(queryset) == 0:
                 return Response(
@@ -883,6 +886,9 @@ class InfoView(viewsets.ViewSet):
         context["node_alias"] = config("NODE_ALIAS")
         context["node_id"] = config("NODE_ID")
         context["network"] = config("NETWORK", cast=str, default="mainnet")
+        context["devfund"] = round(
+            float(config("DEVFUND", cast=float, default=0.2)) * 100, 2
+        )
         context["maker_fee"] = float(config("FEE")) * float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE")) * (
             1 - float(config("MAKER_FEE_SPLIT"))
