@@ -50,7 +50,7 @@ services:
       --listenonion=0
 
   coordinator-LND:
-    image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
+    image: lightninglabs/lnd:${LND_VERSION:-v0.21.2-beta}
     container_name: test-coordinator-LND
     restart: always
     volumes:
@@ -82,7 +82,7 @@ services:
     network_mode: service:bitcoind
 
   coordinator-CLN:
-    image: elementsproject/lightningd:${CLN_VERSION:-v24.08}
+    image: elementsproject/lightningd:${CLN_VERSION:-v25.09.3}
     restart: always
     container_name: test-coordinator-CLN
     environment:
@@ -97,7 +97,7 @@ services:
     network_mode: service:bitcoind
 
   robot-LND:
-    image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
+    image: lightninglabs/lnd:${LND_VERSION:-v0.21.2-beta}
     container_name: test-robot-LND
     restart: always
     volumes:

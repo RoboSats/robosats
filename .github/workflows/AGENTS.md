@@ -43,7 +43,7 @@ When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
 - **Stack**: `docker-tests.yml` with services `bitcoind`, `postgres`, `redis`,
   `coordinator-LND`/`coordinator-CLN`, `robot-LND`, `coordinator` (health-polled).
 - **Matrix**: `python-tag: 3.12.3-slim-bookworm` × `ln-vendor: [LND, CLN]`;
-  `lnd-version: v0.18.2-beta`, `cln-version: v24.08`; `max-parallel: 2`; 30 min timeout.
+  `lnd-version: v0.21.2-beta`, `cln-version: v25.09.3`; `max-parallel: 2`; 30 min timeout.
 - **Patching**: `sed`-patches `Dockerfile` FROM line and `.env-sample LNVENDOR` before
   build; `ROBOSATS_ENVS_FILE=".env-sample"`, `DEVELOPMENT=True`, `USE_TOR=False`.
 - **Coverage**: `docker exec test-coordinator coverage run manage.py test` + `coverage report`
