@@ -197,10 +197,7 @@ export class Federation {
 
     const feeOverrides: Record<string, number> = {};
     Object.entries(this.coordinators).forEach(([alias, coor]) => {
-      if (
-        typeof coor.info?.maker_fee === 'number' &&
-        typeof coor.info?.taker_fee === 'number'
-      ) {
+      if (typeof coor.info?.maker_fee === 'number' && typeof coor.info?.taker_fee === 'number') {
         feeOverrides[alias] = coor.info.maker_fee + coor.info.taker_fee;
       }
     });
