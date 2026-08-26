@@ -54,6 +54,9 @@ class InfoSerializer(serializers.Serializer):
     current_swap_fee_rate = serializers.FloatField(
         help_text="Swap fees to perform on-chain transaction (percent)"
     )
+    blossom_enabled = serializers.BooleanField(
+        help_text="Whether the coordinator offers encrypted image uploads via Blossom in chat"
+    )
     version = VersionSerializer()
     notice_severity = serializers.ChoiceField(
         choices=[
