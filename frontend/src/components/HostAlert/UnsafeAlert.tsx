@@ -4,22 +4,31 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import { getHost } from '../../utils';
 import defaultFederation from '../../../static/federation.json';
+// safeUrls is rebuilt from the live voted manifest each time the component module loads.
+type FedMap = Record<
+  string,
+  { mainnet?: Record<string, string>; testnet?: Record<string, string> }
+>;
 import { systemClient } from '../../services/System';
 
 function federationUrls(): string[] {
   const urls: string[] = [];
 
   const removeProtocol = (url: string): string => {
-    return url.replace(/^https?:\/\/|\/\/$/, '');
+    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   };
 
-  for (const key in defaultFederation) {
-    const fed = (
-      defaultFederation as unknown as Record<
-        string,
-        { mainnet?: Record<string, string>; testnet?: Record<string, string> }
-      >
-    )[key];
+  // Use the live voted manifest so voted-in coordinators' onions are in the safe list.
+  let liveFed: FedMap;
+  try {
+    const cached = systemClient.getSyncItem?.('federation_manifest');
+    liveFed = cached ? (JSON.parse(cached) as FedMap) : (defaultFederation as unknown as FedMap);
+  } catch {
+    liveFed = defaultFederation as unknown as FedMap;
+  }
+
+  for (const key in liveFed) {
+    const fed = liveFed[key];
     const mainnet = fed.mainnet;
     const testnet = fed.testnet;
 

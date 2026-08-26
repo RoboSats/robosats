@@ -15,6 +15,8 @@ RoboSats is a monorepo, arguably a messy one at the moment.
 
 We always try to keep a high level documentation of all involved workflows in coordinators and clients. Check the [docs](/development/docs.md)
 
+For the runtime federation discovery mechanism (how coordinators join/leave without an app release), see [federation-discovery.md](/development/federation-discovery.md).
+
 ## Start
 
 You can run the whole stack for local development following the [instructions](/development/setup.md)

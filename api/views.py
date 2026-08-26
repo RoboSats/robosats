@@ -1,3 +1,6 @@
+import hashlib
+import json
+import os
 from datetime import datetime, timedelta
 from hmac import compare_digest
 
@@ -32,6 +35,7 @@ from api.models import (
 from api.notifications import Notifications
 from api.oas_schemas import (
     BookViewSchema,
+    FederationViewSchema,
     HistoricalViewSchema,
     InfoViewSchema,
     LimitViewSchema,
@@ -822,6 +826,109 @@ class NotificationsView(ListAPIView):
             notification_data.append(data)
 
         return Response(notification_data, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------------------
+# Federation view
+# ---------------------------------------------------------------------------
+
+# Key attributes included in the normalized document that drives the vote.
+# Cosmetic fields (description, motto, color, policies, contact, badges) are
+# deliberately excluded so that a coordinator updating its copy does not create
+# a new "version" that splits the vote on irrelevant changes.
+_FEDERATION_KEY_ATTRS = (
+    "shortAlias",
+    "nostrHexPubkey",
+    "established",
+    "federated",
+    "mainnetNodesPubkeys",
+    "testnetNodesPubkeys",
+)
+_FEDERATION_NET_ATTRS = ("onion", "clearnet", "i2p")
+
+# Bundled fallback path (always present after collectstatic / image build)
+_BUNDLED_FEDERATION_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "frontend", "static", "federation.json"
+)
+
+
+def _normalize_federation(doc: dict) -> dict:
+    """Return a copy of *doc* containing only the key attributes used for hashing."""
+    out = {}
+    for alias, entry in doc.items():
+        normalized = {k: entry.get(k) for k in _FEDERATION_KEY_ATTRS}
+        for net in ("mainnet", "testnet"):
+            normalized[net] = {
+                k: (entry.get(net) or {}).get(k, "") for k in _FEDERATION_NET_ATTRS
+            }
+        out[alias] = normalized
+    return out
+
+
+def _canonical_hash(obj: dict) -> str:
+    """SHA-256 of the canonical (sorted-keys, no-whitespace) JSON representation."""
+    canonical = json.dumps(
+        obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _load_federation_doc() -> dict:
+    """
+    Load the federation JSON from FEDERATION_JSON_PATH (env var) if set and
+    valid, otherwise fall back to the bundled copy.  Returns the raw document
+    (full entries, not normalized) so the response includes all fields.
+    """
+    cached = cache.get("federation_doc")
+    if cached is not None:
+        return cached
+
+    path = config("FEDERATION_JSON_PATH", default="", cast=str).strip()
+    if not path:
+        path = _BUNDLED_FEDERATION_PATH
+
+    doc = None
+    if path and os.path.isfile(path):
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                candidate = json.load(fh)
+            # Basic schema validation: must be a non-empty dict of dicts each
+            # containing at least a shortAlias and a mainnet.onion address.
+            if isinstance(candidate, dict) and candidate:
+                for alias, entry in candidate.items():
+                    if not isinstance(entry, dict):
+                        raise ValueError(f"Entry '{alias}' is not a dict")
+                    if not entry.get("shortAlias"):
+                        raise ValueError(f"Entry '{alias}' missing shortAlias")
+                    onion = (entry.get("mainnet") or {}).get("onion", "")
+                    if not onion or ".onion" not in onion:
+                        raise ValueError(
+                            f"Entry '{alias}' missing valid mainnet onion address"
+                        )
+                doc = candidate
+        except Exception as exc:
+            print(
+                f"[FederationView] Failed to load {path}: {exc}. Falling back to bundled copy."
+            )
+
+    if doc is None:
+        with open(_BUNDLED_FEDERATION_PATH, "r", encoding="utf-8") as fh:
+            doc = json.load(fh)
+
+    # Cache for 5 minutes
+    cache.set("federation_doc", doc, 300)
+    return doc
+
+
+class FederationView(viewsets.ViewSet):
+    @extend_schema(**FederationViewSchema.get)
+    def get(self, request):
+        doc = _load_federation_doc()
+        normalized = _normalize_federation(doc)
+        coord_hash = _canonical_hash(normalized)
+        response_data = dict(doc)
+        response_data["coordinatorHash"] = coord_hash
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class InfoView(viewsets.ViewSet):

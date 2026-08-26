@@ -8,11 +8,14 @@ import {
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
+import { discoverFederation, type FederationDoc } from '../services/FederationDiscovery';
 import { federationLottery, getHost } from '../utils';
+import type { CoordinatorSeed } from '../utils/federationLottery';
 import { coordinatorDefaultValues, type CoordinatorConfig } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
-import eventToPublicOrder from '../utils/nostr';
+import eventToPublicOrder, { setLiveCoordinators } from '../utils/nostr';
 import { verifyCoordinatorToken } from '../utils/nostr';
+import { setFederationPubkeys } from '../services/RoboPool';
 import RoboPool from '../services/RoboPool';
 import { systemClient } from '../services/System';
 import { fetchDevFundProfiles } from '../services/DevFundProfile';
@@ -79,7 +82,15 @@ export class Federation {
     }
 
     this.coordinatorsRatingInit();
+    this.origin = origin;
+    this.settings = settings;
+    this.hostUrl = hostUrl;
   }
+
+  // Store constructor args for use in refreshFederationList
+  private origin: Origin;
+  private settings: Settings;
+  private hostUrl: string;
 
   private coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
@@ -94,6 +105,124 @@ export class Federation {
   public hooks: Record<FederationHooks, Array<() => void>>;
 
   public roboPool: RoboPool;
+
+  /**
+   * Fetches /api/federation/ from each active coordinator, votes on the
+   * canonical document, and rebuilds the coordinator map if the result
+   * differs from the current state.  Safe to call at any time; no-ops when
+   * fewer than 2 coordinators respond.
+   */
+  refreshFederationList = async (): Promise<void> => {
+    // Only fetch from coordinators the client is already connected to (the 3
+    // relays selected by RoboPool).  There is no point asking coordinators we
+    // are not talking to, and it avoids opening fresh Tor circuits just for
+    // the discovery poll.
+    const connectedRelays = new Set(this.roboPool.relays);
+    const connectedCoordinators = Object.values(this.coordinators).filter((c) =>
+      connectedRelays.has(c.getRelayUrl()),
+    );
+
+    const currentDoc = Object.fromEntries(
+      connectedCoordinators.map((c) => [
+        c.shortAlias,
+        {
+          shortAlias: c.shortAlias,
+          mainnet: c.mainnet,
+          testnet: c.testnet,
+        } as unknown as Record<string, unknown>,
+      ]),
+    ) as FederationDoc;
+
+    const { doc: winnerDoc, usedSeed } = await discoverFederation(
+      currentDoc,
+      this.network ?? 'mainnet',
+    );
+
+    // Always persist to cache so cold starts use the latest voted list
+    systemClient.setItem('federation_manifest', JSON.stringify(winnerDoc));
+
+    if (usedSeed) return; // Voted result equals the seed — no coordinator set change
+
+    // Diff: which aliases are added, kept, or removed
+    const currentAliases = new Set(Object.keys(this.coordinators));
+    const winnerAliases = new Set(Object.keys(winnerDoc));
+
+    const added = [...winnerAliases].filter((a) => !currentAliases.has(a));
+    const removed = [...currentAliases].filter((a) => !winnerAliases.has(a));
+
+    // No actual change in coordinator set — nothing to do beyond cache write above
+    if (added.length === 0 && removed.length === 0) return;
+
+    // Remove dropped coordinators
+    removed.forEach((alias) => {
+      this.coordinators[alias]?.disable();
+      delete this.coordinators[alias];
+    });
+
+    // Add new coordinators (preserve existing ones intact to avoid resetting their state)
+    added.forEach((alias) => {
+      const value = winnerDoc[alias];
+      const newCoord = new Coordinator(
+        value as unknown as CoordinatorConfig,
+        this.origin,
+        this.settings,
+        this.hostUrl,
+      );
+      newCoord.federated = true;
+      this.coordinators[alias] = newCoord;
+    });
+
+    // Re-sort according to lottery (preserving existing coordinator instances)
+    const discoveryDevfundOverrides: Record<string, number> = {};
+    Object.entries(winnerDoc).forEach(([alias, entry]) => {
+      if ((entry as Record<string, unknown>)._votedIn) discoveryDevfundOverrides[alias] = 0;
+    });
+    const sorted: Record<string, Coordinator> = {};
+    federationLottery(
+      winnerDoc as unknown as Record<string, CoordinatorSeed>,
+      discoveryDevfundOverrides,
+    ).forEach((alias) => {
+      if (this.coordinators[alias]) sorted[alias] = this.coordinators[alias];
+    });
+    this.coordinators = sorted;
+
+    this.exchange.totalCoordinators = Object.keys(this.coordinators).length;
+
+    // Register only the newly added coordinators
+    added.forEach((alias) => {
+      if (alias !== 'local' || this.hostUrl.includes('127.0.0.1:8000')) {
+        this.addCoordinator(this.origin, this.settings, this.hostUrl, this.coordinators[alias]);
+      }
+    });
+
+    // Update relay pool
+    Object.values(this.coordinators).forEach((c) =>
+      c.updateUrl(this.origin, this.settings, this.hostUrl),
+    );
+    this.roboPool.updateRelays(this.hostUrl, Object.values(this.coordinators));
+
+    // Push live coordinator list into the modules that still need it for
+    // Nostr event routing (nostr.ts) and REQ author filters (RoboPool).
+    const liveCoordEntries = Object.values(this.coordinators).map((c) => ({
+      shortAlias: c.shortAlias,
+      nostrHexPubkey: c.nostrHexPubkey,
+      federated: c.federated,
+    }));
+    setLiveCoordinators(liveCoordEntries);
+    setFederationPubkeys(liveCoordEntries.map((c) => c.nostrHexPubkey).filter(Boolean));
+
+    // Update Android notification relay list
+    if (this.settings.client === 'mobile') {
+      const federationUrls = Object.values(this.coordinators).map((c) => c.getRelayUrl());
+      const federationPubKeys = Object.values(this.coordinators).map((c) => c.nostrHexPubkey);
+      systemClient.setItem('federation_relays', JSON.stringify(federationUrls));
+      systemClient.setItem('federation_pubkeys', JSON.stringify(federationPubKeys));
+    }
+
+    this.coordinatorsRatingInit();
+    this.updateEnabledCoordinators();
+    this.triggerHook('onFederationUpdate');
+  };
 
   coordinatorsRatingInit = (): void => {
     Object.values(this.coordinators).forEach((coord) => {
@@ -118,6 +247,9 @@ export class Federation {
     const coordinators = Object.values(this.coordinators);
     coordinators.forEach((c) => c.updateUrl(origin, settings, hostUrl));
     this.roboPool.updateRelays(hostUrl, Object.values(this.coordinators));
+
+    // Relays are now populated — run federation discovery against connected coordinators.
+    void this.refreshFederationList();
 
     coordinators[0].loadLimits();
 

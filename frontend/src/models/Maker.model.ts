@@ -1,4 +1,22 @@
 import defaultFederation from '../../static/federation.json';
+import { systemClient } from '../services/System';
+
+/** Return coordinator aliases from the live voted manifest, falling back to the seed. */
+function getLiveFederationKeys(): string[] {
+  try {
+    const cached = systemClient.getSyncItem?.('federation_manifest');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && typeof parsed === 'object') {
+        const keys = Object.keys(parsed);
+        if (keys.length > 0) return keys;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return Object.keys(defaultFederation);
+}
 
 export interface Maker {
   advancedOptions: boolean;
@@ -28,10 +46,10 @@ export interface Maker {
 
 export const defaultMaker: Maker = {
   advancedOptions: false,
-  coordinator:
-    Object.keys(defaultFederation)[
-      Math.floor(Math.random() * Object.keys(defaultFederation).length)
-    ] ?? '',
+  coordinator: (() => {
+    const keys = getLiveFederationKeys();
+    return keys[Math.floor(Math.random() * keys.length)] ?? '';
+  })(),
   isExplicit: false,
   amount: null,
   paymentMethods: [],

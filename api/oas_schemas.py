@@ -653,6 +653,51 @@ class RobotViewSchema:
     }
 
 
+class FederationViewSchema:
+    get = {
+        "summary": "Get federation list",
+        "description": textwrap.dedent(
+            """
+            Returns the coordinator's own view of the RoboSats federation as a JSON
+            object whose keys are short coordinator aliases.
+
+            Each entry contains only the **identity and reachability attributes** used
+            by the client's majority-vote algorithm to determine the canonical federation
+            list at runtime.  Cosmetic fields (description, motto, policies, badges,
+            contact) are intentionally omitted so that a coordinator updating its copy
+            does not split the vote on irrelevant changes.
+
+            The response also includes a `coordinatorHash` field containing the
+            SHA-256 of the normalized, canonically-serialized federation document.
+            Clients can cross-check this against their own computation without needing
+            to re-canonicalize the full payload.
+
+            **Normalization**: only the following per-entry fields are hashed:
+            `shortAlias`, `nostrHexPubkey`, `established`, `federated`,
+            `mainnetNodesPubkeys`, `testnetNodesPubkeys`,
+            `mainnet.{onion,clearnet,i2p}`, `testnet.{onion,clearnet,i2p}`.
+
+            The serving coordinator reads its federation document from the path set by
+            the `FEDERATION_JSON_PATH` environment variable (defaults to the bundled
+            `frontend/static/federation.json`).  Operators can update that file at any
+            time to change their vote without a coordinator release.
+            """
+        ),
+        "responses": {
+            200: {
+                "type": "object",
+                "properties": {
+                    "coordinatorHash": {
+                        "type": "string",
+                        "description": "SHA-256 hex of the normalized canonical federation document",
+                    },
+                },
+                "additionalProperties": True,
+            },
+        },
+    }
+
+
 class InfoViewSchema:
     get = {
         "summary": "Get info",
