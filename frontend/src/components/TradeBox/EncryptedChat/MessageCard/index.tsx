@@ -72,7 +72,19 @@ const MessageCard: React.FC<Props> = ({
         return;
       }
 
-      const plaintext = await decryptFile(ciphertext, fileData.key, fileData.nonce);
+      const plaintextBuffer = await decryptFile(ciphertext, fileData.key, fileData.nonce);
+      const plaintext = new Uint8Array(plaintextBuffer);
+
+      // Defence-in-depth: verify the plaintext hash matches the sender's declared originalSha256.
+      // AEAD already guarantees integrity, but this confirms we decrypted the right content.
+      if (fileData.originalSha256) {
+        const plaintextValid = await verifyBlobHash(plaintext, fileData.originalSha256);
+        if (!plaintextValid) {
+          setImageError(t('Image content verification failed'));
+          return;
+        }
+      }
+
       const blob = new Blob([plaintext], { type: fileData.mimeType });
       const url = URL.createObjectURL(blob);
 

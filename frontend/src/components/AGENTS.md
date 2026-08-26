@@ -63,6 +63,7 @@ Order creation form. Key product rules enforced client-side (mirrors coordinator
 - Range order min/max amount validation
 - F2F orders require `latitude`/`longitude` — `<Map/>` picker shown
 - Duration defaults encode product policy
+- Coordinator selector (`SelectCoordinator`) disabled until live DevFund lottery completes (`federation.devFundLoaded`), and default coordinator is automatically assigned when loaded
 - `hasRobot={Boolean(garage.getSlot()?.hashId)}` gate — if no robot, `Confirmation.tsx`
   prompts to generate one (no order creation attempted). No separate one-active-order gate.
 

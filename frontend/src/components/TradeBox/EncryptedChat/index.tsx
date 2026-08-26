@@ -16,6 +16,60 @@ import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
 import { uploadToBlossom, computeSha256 } from '../../../utils/blossom';
 import { createFileMessage, type ParsedFileMessage } from '../../../utils/nip17File';
 
+/**
+ * Strip EXIF and other metadata by re-drawing the image onto a canvas and
+ * exporting it as a clean raster blob. Returns the sanitised File.
+ * Falls back to the original file if the canvas API is unavailable (e.g. Android WebView
+ * without canvas support).
+ */
+async function stripImageMetadata(file: File): Promise<File> {
+  return await new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+
+        // Prefer the original MIME type but only allow the safe allowlist types.
+        // GIF and WebP animations are flattened to a single frame — acceptable privacy trade-off.
+        const outputMime =
+          file.type === 'image/png' || file.type === 'image/gif' ? 'image/png' : 'image/jpeg';
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            resolve(new File([blob], file.name, { type: outputMime }));
+          },
+          outputMime,
+          0.92,
+        );
+      } catch {
+        resolve(file);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file);
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 interface Props {
   order: Order;
   chatOffset: number;
@@ -25,6 +79,7 @@ interface Props {
   ) => void;
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
+  blossomEnabled: boolean;
 }
 
 export interface EncryptedChatMessage {
@@ -57,6 +112,7 @@ const EncryptedChat: React.FC<Props> = ({
   messages,
   peerPubKey,
   setPeerPubKey,
+  blossomEnabled,
 }: Props): React.JSX.Element => {
   const { settings } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -135,6 +191,10 @@ const EncryptedChat: React.FC<Props> = ({
   };
 
   const sendFile = async (file: File): Promise<void> => {
+    if (!blossomEnabled) {
+      setError('This coordinator does not offer image uploads');
+      return;
+    }
     const slot = garage.getSlot();
     const coordinator = federation.getCoordinator(order.shortAlias);
     const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
@@ -144,7 +204,9 @@ const EncryptedChat: React.FC<Props> = ({
 
     try {
       const key = generateKey();
-      const fileBuffer = await file.arrayBuffer();
+      // Strip EXIF/metadata by re-encoding through canvas before encrypting.
+      const sanitisedFile = await stripImageMetadata(file);
+      const fileBuffer = await sanitisedFile.arrayBuffer();
       const fileUint8 = new Uint8Array(fileBuffer);
       const originalSha256 = await computeSha256(fileUint8);
 
@@ -153,7 +215,7 @@ const EncryptedChat: React.FC<Props> = ({
 
       const fileEvent = createFileMessage({
         url,
-        mimeType: file.type,
+        mimeType: sanitisedFile.type,
         key,
         nonce,
         sha256,
@@ -179,7 +241,7 @@ const EncryptedChat: React.FC<Props> = ({
         nonce: btoa(String.fromCharCode(...nonce)),
         sha256,
         originalSha256,
-        mimeType: file.type,
+        mimeType: sanitisedFile.type,
       });
       await sendToCoordinator(imageMetadata);
     } catch (error) {
@@ -228,6 +290,7 @@ const EncryptedChat: React.FC<Props> = ({
       setError={setError}
       lastIndex={lastIndex}
       setLastIndex={setLastIndex}
+      blossomEnabled={blossomEnabled}
     />
   ) : (
     <EncryptedSocketChat
@@ -243,6 +306,7 @@ const EncryptedChat: React.FC<Props> = ({
       peerPubKey={peerPubKey}
       setPeerPubKey={setPeerPubKey}
       status={order.status}
+      blossomEnabled={blossomEnabled}
     />
   );
 };

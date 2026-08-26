@@ -47,9 +47,15 @@ class InfoSerializer(serializers.Serializer):
     )
     maker_fee = serializers.FloatField(help_text="Exchange's set maker fee")
     taker_fee = serializers.FloatField(help_text="Exchange's set taker fee ")
+    devfund = serializers.FloatField(
+        help_text="Percentage of trade proceeds the coordinator donates to the development fund"
+    )
     bond_size = serializers.FloatField(help_text="Default bond size (percent)")
     current_swap_fee_rate = serializers.FloatField(
         help_text="Swap fees to perform on-chain transaction (percent)"
+    )
+    blossom_enabled = serializers.BooleanField(
+        help_text="Whether the coordinator offers encrypted image uploads via Blossom in chat"
     )
     version = VersionSerializer()
     notice_severity = serializers.ChoiceField(

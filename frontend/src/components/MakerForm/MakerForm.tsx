@@ -115,6 +115,11 @@ const MakerForm = ({
       });
     }
   };
+  useEffect(() => {
+    if (federation.devFundLoaded) {
+      setMaker((maker) => ({ ...maker, coordinator: federation.getCoordinatorsAlias()[0] }));
+    }
+  }, [federation.devFundLoaded]);
 
   const updateAmountLimits = function (
     limitList: LimitList,
@@ -407,7 +412,7 @@ const MakerForm = ({
       (!makerHasAmountRange && maker.amount && maker.amount <= 0) ||
       maker.badPremiumText !== '' ||
       federation.getCoordinator(maker.coordinator)?.limits === undefined ||
-      typeof maker.premium !== 'number' ||
+      (maker.premium !== null && typeof maker.premium !== 'number') ||
       maker.paymentMethods.length === 0 ||
       maker.badDescription
     );

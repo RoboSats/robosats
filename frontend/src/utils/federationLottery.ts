@@ -13,10 +13,24 @@
 
 import defaultFederation from '../../static/federation.json';
 
-export default function federationLottery(): string[] {
-  return Object.values(defaultFederation)
+interface CoordinatorSeed {
+  shortAlias: string;
+  badges: { donatesToDevFund?: number };
+}
+
+const DEFAULT_TOTAL_FEE = 0.002;
+
+export default function federationLottery(
+  federation: Record<string, CoordinatorSeed> = defaultFederation,
+  devfundOverrides: Record<string, number> = {},
+  feeOverrides: Record<string, number> = {},
+): string[] {
+  return Object.values(federation)
     .map((coor) => {
-      const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund || 0;
+      const rawDevfund = devfundOverrides[coor.shortAlias] ?? coor.badges?.donatesToDevFund ?? 0;
+      const devfund = Math.min(50, Math.max(0, rawDevfund));
+      const totalFee = feeOverrides[coor.shortAlias] ?? DEFAULT_TOTAL_FEE;
+      const chance = devfund * totalFee;
 
       return {
         shortAlias: coor.shortAlias,
