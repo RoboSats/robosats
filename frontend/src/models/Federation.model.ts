@@ -8,7 +8,12 @@ import {
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
-import { discoverFederation, type FederationDoc } from '../services/FederationDiscovery';
+import {
+  type FederationDoc,
+  getSeedHash,
+  voteOnHashes,
+  fetchAndVerifyDoc,
+} from '../services/FederationDiscovery';
 import { federationLottery, getHost } from '../utils';
 import type { CoordinatorSeed } from '../utils/federationLottery';
 import { coordinatorDefaultValues, type CoordinatorConfig } from './Coordinator.model';
@@ -116,47 +121,58 @@ export class Federation {
   public roboPool: RoboPool;
 
   /**
-   * Fetches /api/federation/ from each active coordinator, votes on the
-   * canonical document, and rebuilds the coordinator map if the result
-   * differs from the current state.  Safe to call at any time; no-ops when
-   * fewer than 2 coordinators respond.
+   * Hash-first federation discovery — called after loadDevFund() has populated
+   * coordinator.info for every coordinator (zero new requests in the common case).
+   *
+   * Phase A: read coordinator.info.federation_hash from already-fetched info.
+   * Phase B: vote on hashes with voteOnHashes().
+   * Phase C: only if the winning hash != seed hash, fetch /api/federation/ from
+   *          ONE coordinator that voted for the winner and verify its hash locally.
    */
   refreshFederationList = async (): Promise<void> => {
-    // Only fetch from coordinators the client is already connected to (the 3
-    // relays selected by RoboPool).  There is no point asking coordinators we
-    // are not talking to, and it avoids opening fresh Tor circuits just for
-    // the discovery poll.
-    const connectedRelays = new Set(this.roboPool.relays);
-    const connectedCoordinators = Object.values(this.coordinators).filter((c) =>
-      connectedRelays.has(c.getRelayUrl()),
-    );
+    // Phase A: collect hashes from all coordinators' already-loaded info.
+    // Coordinators without federation_hash (older versions) simply abstain.
+    const seedHash = await getSeedHash();
+    const coordHashes: string[] = [];
+    const coordByHash = new Map<string, Coordinator>(); // hash → first coordinator reporting it
 
-    const currentDoc = Object.fromEntries(
-      connectedCoordinators.map((c) => [
-        c.shortAlias,
-        {
-          shortAlias: c.shortAlias,
-          mainnet: c.mainnet,
-          testnet: c.testnet,
-        } as unknown as Record<string, unknown>,
-      ]),
-    ) as FederationDoc;
+    for (const coord of Object.values(this.coordinators)) {
+      const h = (coord.info as Record<string, unknown> | undefined)?.federation_hash;
+      if (typeof h === 'string' && h.length === 64) {
+        coordHashes.push(h);
+        if (!coordByHash.has(h)) coordByHash.set(h, coord);
+      }
+    }
 
-    const { doc: winnerDoc, usedSeed } = await discoverFederation(
-      currentDoc,
-      this.network ?? 'mainnet',
-    );
+    // Phase B: vote
+    const { winnerHash, usedSeed } = voteOnHashes(coordHashes, seedHash);
+
+    // Phase C: fetch the full document only when the winner differs from the seed
+    let winnerDoc: FederationDoc | null = null;
+    if (!usedSeed) {
+      const winnerCoord = coordByHash.get(winnerHash);
+      if (winnerCoord) {
+        const net = this.network ?? 'mainnet';
+        const onion =
+          (winnerCoord[net] as unknown as Record<string, string> | undefined)?.onion ?? '';
+        const baseUrl = onion.replace(/\/$/, '');
+        if (baseUrl) winnerDoc = await fetchAndVerifyDoc(baseUrl, winnerHash);
+      }
+    }
+
+    // If the vote said seed or the fetch+verify failed, keep the seed
+    const finalDoc: FederationDoc = winnerDoc ?? (defaultFederation as unknown as FederationDoc);
 
     // Update the static in-memory source of truth so all consumers read from here.
-    Federation.liveFedDoc = winnerDoc;
-    // Also persist for cold starts (Android / offline).
-    systemClient.setItem('federation_manifest', JSON.stringify(winnerDoc));
+    Federation.liveFedDoc = finalDoc;
+    // Persist for cold starts (Android / offline).
+    systemClient.setItem('federation_manifest', JSON.stringify(finalDoc));
 
-    if (usedSeed) return; // Voted result equals the seed — no coordinator set change
+    if (!winnerDoc) return; // seed won or fetch failed — no coordinator set change
 
     // Diff: which aliases are added, kept, or removed
     const currentAliases = new Set(Object.keys(this.coordinators));
-    const winnerAliases = new Set(Object.keys(winnerDoc));
+    const winnerAliases = new Set(Object.keys(finalDoc));
 
     const added = [...winnerAliases].filter((a) => !currentAliases.has(a));
     const removed = [...currentAliases].filter((a) => !winnerAliases.has(a));
@@ -172,7 +188,7 @@ export class Federation {
 
     // Add new coordinators (preserve existing ones intact to avoid resetting their state)
     added.forEach((alias) => {
-      const value = winnerDoc[alias];
+      const value = finalDoc[alias];
       const newCoord = new Coordinator(
         value as unknown as CoordinatorConfig,
         this.origin,
@@ -185,12 +201,12 @@ export class Federation {
 
     // Re-sort according to lottery (preserving existing coordinator instances)
     const discoveryDevfundOverrides: Record<string, number> = {};
-    Object.entries(winnerDoc).forEach(([alias, entry]) => {
+    Object.entries(finalDoc).forEach(([alias, entry]) => {
       if ((entry as Record<string, unknown>)._votedIn) discoveryDevfundOverrides[alias] = 0;
     });
     const sorted: Record<string, Coordinator> = {};
     federationLottery(
-      winnerDoc as unknown as Record<string, CoordinatorSeed>,
+      finalDoc as unknown as Record<string, CoordinatorSeed>,
       discoveryDevfundOverrides,
     ).forEach((alias) => {
       if (this.coordinators[alias]) sorted[alias] = this.coordinators[alias];
@@ -258,9 +274,6 @@ export class Federation {
     const coordinators = Object.values(this.coordinators);
     coordinators.forEach((c) => c.updateUrl(origin, settings, hostUrl));
     this.roboPool.updateRelays(hostUrl, Object.values(this.coordinators));
-
-    // Relays are now populated — run federation discovery against connected coordinators.
-    void this.refreshFederationList();
 
     coordinators[0].loadLimits();
 
@@ -363,6 +376,11 @@ export class Federation {
 
     this.devFundLoaded = true;
     this.triggerHook('onFederationUpdate');
+
+    // federation_hash is now populated on every coordinator's info — run the
+    // hash-first discovery. This is the only call site; zero extra requests
+    // in the common case (hashes read from already-fetched /api/info/ data).
+    void this.refreshFederationList();
   };
 
   addCoordinator = (

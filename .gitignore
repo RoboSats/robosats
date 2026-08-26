@@ -651,7 +651,6 @@ desktopApp/release-builds
 # frontend statics
 frontend/templates/frontend/*.html
 frontend/*.html
-api/static
 desktopApp/static
 desktopApp/*.html
 web/static

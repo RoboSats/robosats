@@ -846,21 +846,10 @@ _FEDERATION_KEY_ATTRS = (
 )
 _FEDERATION_NET_ATTRS = ("onion", "clearnet", "i2p")
 
-# Primary path: api/static/federation.json — written here by webpack's afterEmit
-# CopyFilesPlugin on every build, so the coordinator image always has an up-to-date
-# copy without relying on the frontend/static symlink.
-# Secondary fallback: frontend/static/federation.json — present in the source tree
-# and in dev environments before a webpack build has run.
-_API_STATIC_FEDERATION_PATH = os.path.join(
-    os.path.dirname(__file__), "static", "federation.json"
-)
-_BUNDLED_FEDERATION_PATH = (
-    _API_STATIC_FEDERATION_PATH
-    if os.path.isfile(_API_STATIC_FEDERATION_PATH)
-    else os.path.join(
-        os.path.dirname(__file__), "..", "frontend", "static", "federation.json"
-    )
-)
+# api/federation.json is committed to the repo and kept in sync with
+# frontend/static/federation.json by webpack's afterEmit CopyFilesPlugin.
+# Operators can override it via FEDERATION_JSON_PATH without a release.
+_BUNDLED_FEDERATION_PATH = os.path.join(os.path.dirname(__file__), "federation.json")
 
 
 def _normalize_federation(doc: dict) -> dict:
@@ -1029,6 +1018,13 @@ class InfoView(viewsets.ViewSet):
             )
         except BalanceLog.DoesNotExist:
             context["current_swap_fee_rate"] = 0
+
+        # federation_hash lets clients vote on the federation list using the hash
+        # from each coordinator's /api/info/ response — no separate /api/federation/
+        # request needed in the common case where the list hasn't changed.
+        context["federation_hash"] = _canonical_hash(
+            _normalize_federation(_load_federation_doc())
+        )
 
         cache.set("info", context, timeout=INFO_CACHE_TTL)
 

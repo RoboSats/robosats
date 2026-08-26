@@ -8,29 +8,55 @@ mechanism that removes that dependency after the one-time release shipping this 
 
 ---
 
-## Part 1 — Shipped design: `/api/federation/` + client majority vote
+## Part 1 — Shipped design: hash-first discovery
 
-### The vote
+### Performance
+
+The original design fetched the full `federation.json` from every coordinator (53 KB
+over Tor per poll). The shipped design reduces this to **zero bytes in the common case**
+by piggybacking on `/api/info/`, which is already polled for every coordinator by
+`loadDevFund()`.
 
 ```
-For each voter: parse → normalize → canonical JSON → SHA-256 → hash
+full document poll (original):  3 × 17,731 B = 53,193 B
+hash-first (no change):              3 × 64 B =    192 B  → 277× reduction
+hash-first (change detected):                   ~17,731 B  (one coordinator, once)
+```
 
-Step 1 — coordinator-only tally (client excluded):
-  single plurality  →  adopt that document
+### Three-phase flow
+
+**Phase A — zero new requests.**
+`/api/info/` now includes a `federation_hash` field (SHA-256 of the coordinator's
+normalized canonical federation document). `loadDevFund()` already fetches `/api/info/`
+from every enabled coordinator. `refreshFederationList()` is called at the end of
+`loadDevFund()`, after all coordinator info is populated, and simply reads
+`coordinator.info.federation_hash`. No new Tor circuits opened.
+
+**Phase B — vote on hashes (pure, no I/O).**
+```
+coordHashes = [hash reported by each coordinator that has federation_hash]
+seedHash    = canonicalHash(normalizeDoc(bundled federation.json))  [memoised]
+
+Step 1 — coordinator-only majority:
+  single plurality  →  winning hash decided
   tied              →  go to step 2
 
-Step 2 — coordinators are split, client breaks the tie by casting 2 votes
-          for the document it already holds (decides positively):
-  single plurality  →  adopt that document
-  still tied        →  client holds a 3rd version that breaks no bloc
-                        → keep client's bundled document (safe fallback)
+Step 2 — coordinators split, client casts 2 votes for its seed hash:
+  single plurality  →  winning hash decided
+  still tied        →  keep seed (client holds a 3rd version matching no bloc)
 
-Minimum quorum: ≥ 2 coordinator responses; else keep bundled unchanged.
+Minimum quorum: ≥ 2 coordinator hash responses; else keep seed.
 ```
 
-**Why coordinators go first:** the coordinator-only check in step 1 ensures the client
-can never override a coordinator majority. Its 2 votes only matter when coordinators
-are exactly split — which is the only case where the client *should* decide.
+**Phase C — fetch once on mismatch.**
+If the winning hash equals `seedHash` → done, nothing downloaded.
+If it differs → fetch `/api/federation/` from ONE coordinator that voted for the
+winning hash, recompute the hash locally, and require it to equal the winning hash.
+Mismatch → discard and keep seed. Stronger integrity than before: the document must
+hash to the value that was voted for, so a coordinator cannot serve a document
+different from what it committed to via `/api/info/`.
+
+### The vote
 
 ### Normalization (what gets hashed)
 
