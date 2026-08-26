@@ -21,10 +21,9 @@ jobs:
     - name: 'Validate federation.json files are in sync'
       shell: bash
       run: |
-        frontend_hash=$(jq --sort-keys . frontend/static/federation.json | sha256sum | cut -d' ' -f1)
-        api_hash=$(jq --sort-keys . api/federation.json | sha256sum | cut -d' ' -f1)
-        if [ "$frontend_hash" != "$api_hash" ]; then
+        if ! diff -q frontend/static/federation.json api/federation.json > /dev/null; then
           echo "ERROR: frontend/static/federation.json and api/federation.json are out of sync."
+          diff frontend/static/federation.json api/federation.json
           echo "  Run 'cd frontend && npm run build' to regenerate api/federation.json, then commit the result."
           exit 1
         fi
