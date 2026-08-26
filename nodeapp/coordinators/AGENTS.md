@@ -14,8 +14,8 @@ name — all three must match exactly.
 | lake | 104 | 1004 | ✅ yes | |
 | moon | 106 | 1006 | ✅ yes | |
 | bazaar | 107 | 1007 | ❌ same onion | testnet traffic hits mainnet service |
-| freedomsats | 108 | 1008 | ❌ same onion | **BUG**: port collision with alice — see Traps |
-| alice | 108 | 1008 | ❌ same onion | **BUG**: port collision with freedomsats; `upstreams.conf` wrongly points to 107/1007 |
+| eleuteria | 110 | 1010 | ❌ same onion | testnet traffic hits mainnet service |
+| alice | 109 | 1009 | ❌ same onion | testnet traffic hits mainnet service |
 
 Testnet port convention: mainnet port + 900 (e.g. 102 → 1002).
 
@@ -74,27 +74,16 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   not a runtime-fetched list. Generating this config automatically from
   `federation.json` is a known improvement path but has not been implemented.
 - **Testnet support in nodeapp is best-effort.** Three of five coordinators (bazaar,
-  freedomsats, alice) share a single onion for mainnet and testnet, so their testnet
-  traffic (API, WS, and relay) hits the mainnet service — the coordinator must distinguish
-  them server-side. Only temple and lake have distinct testnet onions with a real testnet
-  relay.
+  eleuteria, alice) share a single onion for mainnet and testnet, so their testnet traffic
+  (API, WS, and relay) hits the mainnet service — the coordinator must distinguish them
+  server-side. Only temple and lake have distinct testnet onions with a real testnet relay.
 
 ## Traps
-- `coordinators/alice/upstreams.conf` comments say "Libre Bazaar" (copy-paste error) and
-  its upstream servers point to `127.0.0.1:107/1007` (Bazaar's ports) instead of alice's
-  socat ports 108/1008 — alice API/WS traffic currently routes to Libre Bazaar. Fix pending
-  in an open PR; live in `:latest`.
-- `robosats-client.sh` assigns `mainnet_alice_port=108` and `mainnet_freedomsats_port=108`
-  — identical ports; the second socat process to bind will fail (`EADDRINUSE`). Fix pending
-  in the same PR; live in `:latest`. **Net effect: one of alice or freedomsats is
-  completely unreachable in any running `:latest` container.**
 - All five `locations.conf` testnet avatar routes now use `/testnet/{alias}/...`
   consistent with the API/WS routes — fixed in this codebase.
 - All five `locations.conf` now include a `/testnet/{alias}/relay/` route — fixed in this
-  codebase. For bazaar/freedomsats/alice the route proxies to the shared onion, so the
-  same relay serves mainnet and testnet events (the client filters by `network` tag).
-- `coordinators/freedomsats/upstreams.conf` comments say "Libre freedomsats" — another
-  copy-paste artefact; functionally harmless but misleading.
+  codebase. For bazaar/eleuteria/alice the route proxies to the shared onion, so the same
+  relay serves mainnet and testnet events (the client filters by `network` tag).
 - Several `locations.conf` comments name the wrong coordinator (e.g., lake's testnet
   section heading says "Freedomsats Coordinator Testnet Locations", bazaar's says
   "TheBigLake Coordinator Mainnet") — copy-paste artefacts; functionally harmless.

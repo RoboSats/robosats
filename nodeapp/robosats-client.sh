@@ -46,16 +46,16 @@ testnet_bazaar_socat="socat tcp4-LISTEN:${testnet_bazaar_port},reuseaddr,fork,ke
 
 
 ################################
-# Freedomsats
+# Eleuteria
 # Mainnet
-mainnet_freedomsats_onion=dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion
-mainnet_freedomsats_port=108
+mainnet_eleuteria_onion=ixiiqsuzt7hh5qxshiqwyewyh3gyygltbygqlvlyitg3gl3u2cemk3ad.onion
+mainnet_eleuteria_port=110
 # Testnet
-testnet_freedomsats_onion=dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion
-testnet_freedomsats_port=1008
+testnet_eleuteria_onion=ixiiqsuzt7hh5qxshiqwyewyh3gyygltbygqlvlyitg3gl3u2cemk3ad.onion
+testnet_eleuteria_port=1010
 # socat cmd
-mainnet_freedomsats_socat="socat tcp4-LISTEN:${mainnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_freedomsats_socat="socat tcp4-LISTEN:${testnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_eleuteria_socat="socat tcp4-LISTEN:${mainnet_eleuteria_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_eleuteria_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_eleuteria_socat="socat tcp4-LISTEN:${testnet_eleuteria_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_eleuteria_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
 # Alice
@@ -77,4 +77,4 @@ if [ ! -f /etc/nginx/ssl/server.crt ]; then
         -subj "/CN=robosats_client" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 fi
 
-$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_freedomsats_socat & $testnet_freedomsats_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx
+$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_eleuteria_socat & $testnet_eleuteria_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx
