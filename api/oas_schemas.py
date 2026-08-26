@@ -655,32 +655,27 @@ class RobotViewSchema:
 
 class FederationViewSchema:
     get = {
-        "summary": "Get federation list",
+        "summary": "Get full federation list",
         "description": textwrap.dedent(
             """
-            Returns the coordinator's own view of the RoboSats federation as a JSON
-            object whose keys are short coordinator aliases.
+            Returns the coordinator's full federation document — the same schema as
+            `api/federation.json` — plus a `coordinatorHash` field.
 
-            Each entry contains only the **identity and reachability attributes** used
-            by the client's majority-vote algorithm to determine the canonical federation
-            list at runtime.  Cosmetic fields (description, motto, policies, badges,
-            contact) are intentionally omitted so that a coordinator updating its copy
-            does not split the vote on irrelevant changes.
+            **This endpoint is only fetched by clients when the hash-based vote
+            (Phase B of federation discovery) produces a winning hash that differs
+            from the client's own bundled seed hash.**  In the common case where
+            nothing has changed the client never calls this endpoint at all; it
+            learns the hash via the `federation_hash` field on `/api/info/`.
 
-            The response also includes a `coordinatorHash` field containing the
-            SHA-256 of the normalized, canonically-serialized federation document.
-            Clients can cross-check this against their own computation without needing
-            to re-canonicalize the full payload.
+            The `coordinatorHash` field contains the SHA-256 of the normalized
+            canonical form of the document.  Clients recompute this locally after
+            receiving the response and reject the document if the hashes do not
+            match, ensuring the coordinator cannot serve a document that differs
+            from what it committed to via `/api/info/`.
 
-            **Normalization**: only the following per-entry fields are hashed:
-            `shortAlias`, `nostrHexPubkey`, `established`, `federated`,
-            `mainnetNodesPubkeys`, `testnetNodesPubkeys`,
-            `mainnet.{onion,clearnet,i2p}`, `testnet.{onion,clearnet,i2p}`.
-
-            The serving coordinator reads its federation document from the path set by
-            the `FEDERATION_JSON_PATH` environment variable (defaults to the bundled
-            `frontend/static/federation.json`).  Operators can update that file at any
-            time to change their vote without a coordinator release.
+            The coordinator reads its federation document from `FEDERATION_JSON_PATH`
+            (env var, defaults to `api/federation.json`).  Operators can update that
+            file at any time to change their federation vote without a release.
             """
         ),
         "responses": {
@@ -723,6 +718,12 @@ class InfoViewSchema:
               - on-chain swap fees
             - Development fund
               - devfund donation percentage
+            - Federation
+              - `federation_hash`: SHA-256 of this coordinator's normalized canonical
+                federation document.  Clients collect this from all coordinators and run
+                a majority vote to detect federation list changes without any additional
+                requests.  Only when the winning hash differs from the client's seed does
+                the client fetch `/api/federation/` once to obtain the full document.
             """
         ),
         "responses": {
