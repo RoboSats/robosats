@@ -18,14 +18,19 @@ interface CoordinatorSeed {
   badges: { donatesToDevFund?: number };
 }
 
+const DEFAULT_TOTAL_FEE = 0.002;
+
 export default function federationLottery(
   federation: Record<string, CoordinatorSeed> = defaultFederation,
   devfundOverrides: Record<string, number> = {},
+  feeOverrides: Record<string, number> = {},
 ): string[] {
   return Object.values(federation)
     .map((coor) => {
-      const raw = devfundOverrides[coor.shortAlias] ?? coor.badges?.donatesToDevFund ?? 0;
-      const chance = Math.min(50, Math.max(0, raw));
+      const rawDevfund = devfundOverrides[coor.shortAlias] ?? coor.badges?.donatesToDevFund ?? 0;
+      const devfund = Math.min(50, Math.max(0, rawDevfund));
+      const totalFee = feeOverrides[coor.shortAlias] ?? DEFAULT_TOTAL_FEE;
+      const chance = devfund * totalFee;
 
       return {
         shortAlias: coor.shortAlias,

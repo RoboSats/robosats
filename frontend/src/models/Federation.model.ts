@@ -194,12 +194,20 @@ export class Federation {
 
   loadDevFund = async (): Promise<void> => {
     const overrides = await fetchDevFundProfiles(this);
+
+    const feeOverrides: Record<string, number> = {};
+    Object.entries(this.coordinators).forEach(([alias, coor]) => {
+      if (typeof coor.info?.maker_fee === 'number' && typeof coor.info?.taker_fee === 'number') {
+        feeOverrides[alias] = coor.info.maker_fee + coor.info.taker_fee;
+      }
+    });
+
     if (Object.keys(overrides).length > 0) {
       Object.entries(overrides).forEach(([alias, pct]) => {
         if (this.coordinators[alias]) this.coordinators[alias].badges.donatesToDevFund = pct;
       });
 
-      const order = federationLottery(defaultFederation, overrides);
+      const order = federationLottery(defaultFederation, overrides, feeOverrides);
       const ordered = new Set(order);
       const sorted = [
         ...order.filter((alias) => this.coordinators[alias]),
