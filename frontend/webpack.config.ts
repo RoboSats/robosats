@@ -13,6 +13,9 @@ const outputPaths: string[] = [
   path.resolve(__dirname, '../nodeapp/static'),
   path.resolve(__dirname, '../desktopApp/static'),
   path.resolve(__dirname, '../web/static'),
+  // api/static receives federation.json so FederationView can serve it at
+  // /api/federation/ without depending on the frontend/static symlink.
+  path.resolve(__dirname, '../api/static'),
 ];
 
 const config: Configuration = {

@@ -1,6 +1,5 @@
-import defaultFederation from '../../static/federation.json';
 import { Origin } from '../models';
-import { systemClient } from '../services/System';
+import { Federation } from '../models/Federation.model';
 
 export const getHost = function (): string {
   const url =
@@ -8,20 +7,9 @@ export const getHost = function (): string {
   return url.split('/')[2];
 };
 
-/** Return a live federation document: voted manifest from cache, else the bundled seed. */
+/** Return the live federation document from the Federation model's static property. */
 function getLiveFederation(): Record<string, Record<string, Record<string, string>>> {
-  try {
-    const cached = systemClient.getSyncItem?.('federation_manifest');
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-        return parsed as Record<string, Record<string, Record<string, string>>>;
-      }
-    }
-  } catch {
-    // ignore parse errors — fall through to bundled seed
-  }
-  return defaultFederation as unknown as Record<string, Record<string, Record<string, string>>>;
+  return Federation.liveFedDoc as Record<string, Record<string, Record<string, string>>>;
 }
 
 export const getHostUrl = (network = 'mainnet'): string => {

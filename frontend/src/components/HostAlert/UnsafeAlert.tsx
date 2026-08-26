@@ -1,58 +1,19 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import { getHost } from '../../utils';
-import defaultFederation from '../../../static/federation.json';
-// safeUrls is rebuilt from the live voted manifest each time the component module loads.
-type FedMap = Record<
-  string,
-  { mainnet?: Record<string, string>; testnet?: Record<string, string> }
->;
 import { systemClient } from '../../services/System';
 
-function federationUrls(): string[] {
-  const urls: string[] = [];
-
-  const removeProtocol = (url: string): string => {
-    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-  };
-
-  // Use the live voted manifest so voted-in coordinators' onions are in the safe list.
-  let liveFed: FedMap;
-  try {
-    const cached = systemClient.getSyncItem?.('federation_manifest');
-    liveFed = cached ? (JSON.parse(cached) as FedMap) : (defaultFederation as unknown as FedMap);
-  } catch {
-    liveFed = defaultFederation as unknown as FedMap;
-  }
-
-  for (const key in liveFed) {
-    const fed = liveFed[key];
-    const mainnet = fed.mainnet;
-    const testnet = fed.testnet;
-
-    // Add the URLs from the 'mainnet' and 'testnet' objects to the urls array
-    // if these are onion or i2p addresses
-    for (const safeOrigin of ['onion', 'i2p']) {
-      if (mainnet?.[safeOrigin]) urls.push(removeProtocol(mainnet[safeOrigin]));
-      if (testnet?.[safeOrigin]) urls.push(removeProtocol(testnet[safeOrigin]));
-    }
-  }
-
-  // web hosted frontend without coordinator
-  urls.push('robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion');
-  return urls;
-}
-
-export const safeUrls = federationUrls();
+const removeProtocol = (url: string): string => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
 const UnsafeAlert = (): React.JSX.Element => {
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const [show, setShow] = useState<boolean>(false);
-
   const [unsafeClient, setUnsafeClient] = useState<boolean>(false);
 
   useEffect(() => {
@@ -61,14 +22,20 @@ const UnsafeAlert = (): React.JSX.Element => {
     });
   }, []);
 
-  const checkClient = (): void => {
-    const unsafe = !safeUrls.includes(getHost());
-    setUnsafeClient(unsafe);
-  };
-
   useEffect(() => {
-    checkClient();
-  }, []);
+    // Build safe URL list from the live coordinator list in the Federation model.
+    const safeUrls: string[] = federation.getCoordinators().flatMap((c) => {
+      const urls: string[] = [];
+      for (const net of [c.mainnet, c.testnet] as unknown as Array<Record<string, string>>) {
+        if (net?.onion) urls.push(removeProtocol(net.onion));
+        if (net?.i2p) urls.push(removeProtocol(net.i2p));
+      }
+      return urls;
+    });
+    // web hosted frontend without coordinator
+    safeUrls.push('robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion');
+    setUnsafeClient(!safeUrls.includes(getHost()));
+  }, [federation.getCoordinators().length]);
 
   if (hostUrl.endsWith('.onion') || !show) {
     return <></>;

@@ -846,9 +846,20 @@ _FEDERATION_KEY_ATTRS = (
 )
 _FEDERATION_NET_ATTRS = ("onion", "clearnet", "i2p")
 
-# Bundled fallback path (always present after collectstatic / image build)
-_BUNDLED_FEDERATION_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "frontend", "static", "federation.json"
+# Primary path: api/static/federation.json — written here by webpack's afterEmit
+# CopyFilesPlugin on every build, so the coordinator image always has an up-to-date
+# copy without relying on the frontend/static symlink.
+# Secondary fallback: frontend/static/federation.json — present in the source tree
+# and in dev environments before a webpack build has run.
+_API_STATIC_FEDERATION_PATH = os.path.join(
+    os.path.dirname(__file__), "static", "federation.json"
+)
+_BUNDLED_FEDERATION_PATH = (
+    _API_STATIC_FEDERATION_PATH
+    if os.path.isfile(_API_STATIC_FEDERATION_PATH)
+    else os.path.join(
+        os.path.dirname(__file__), "..", "frontend", "static", "federation.json"
+    )
 )
 
 

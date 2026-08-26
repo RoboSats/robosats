@@ -92,6 +92,15 @@ export class Federation {
   private settings: Settings;
   private hostUrl: string;
 
+  /**
+   * The voted (or seed) federation document, kept in sync after every
+   * successful discovery poll.  Static so modules that run before the
+   * Federation instance is available (e.g. getHost.ts on mobile bootstrap)
+   * can read it via Federation.liveFedDoc without needing the instance.
+   */
+  public static liveFedDoc: Record<string, Record<string, unknown>> =
+    defaultFederation as unknown as Record<string, Record<string, unknown>>;
+
   private coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
   public book: Record<string, PublicOrder | undefined>;
@@ -138,7 +147,9 @@ export class Federation {
       this.network ?? 'mainnet',
     );
 
-    // Always persist to cache so cold starts use the latest voted list
+    // Update the static in-memory source of truth so all consumers read from here.
+    Federation.liveFedDoc = winnerDoc;
+    // Also persist for cold starts (Android / offline).
     systemClient.setItem('federation_manifest', JSON.stringify(winnerDoc));
 
     if (usedSeed) return; // Voted result equals the seed — no coordinator set change
