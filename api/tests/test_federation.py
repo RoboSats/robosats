@@ -86,23 +86,30 @@ class FederationViewTest(TestCase):
         self.mock_cache.get.return_value = None
         self.addCleanup(cache_patcher.stop)
 
-    # 1. Happy path: bundled file is used when FEDERATION_JSON_PATH unset
+    # 1. Happy path: bundled file is returned as-is (no extra fields injected)
     @patch("api.views.config", return_value="")
     def test_returns_200_with_bundled_doc(self, _mock_cfg):
         resp = self._get()
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
-        self.assertIn("coordinatorHash", data)
-        self.assertEqual(len(data["coordinatorHash"]), 64)  # SHA-256 hex
+        # Response must be a plain federation document — no injected metadata fields.
+        self.assertNotIn("coordinatorHash", data)
+        self.assertNotIn("federation_hash", data)
+        # Must contain at least one coordinator entry.
+        self.assertTrue(len(data) > 0)
 
-    # 2. coordinatorHash matches the normalized canonical hash
+    # 2. Response is a valid federation document (federation_hash lives on /api/info/)
     @patch("api.views.config", return_value="")
-    def test_coordinator_hash_matches_normalized_doc(self, _mock_cfg):
+    def test_response_is_valid_federation_doc(self, _mock_cfg):
         resp = self._get()
         data = resp.json()
-        returned_hash = data.pop("coordinatorHash")
-        expected_hash = _canonical_hash(_normalize(data))
-        self.assertEqual(returned_hash, expected_hash)
+        for alias, entry in data.items():
+            self.assertIsInstance(entry, dict, f"Entry '{alias}' should be a dict")
+            self.assertEqual(entry.get("shortAlias"), alias)
+            onion = (entry.get("mainnet") or {}).get("onion", "")
+            self.assertIn(
+                ".onion", onion, f"Entry '{alias}' must have a mainnet onion address"
+            )
 
     # 3. FEDERATION_JSON_PATH — valid custom file is served
     def test_custom_federation_json_path_served(self):
@@ -142,7 +149,9 @@ class FederationViewTest(TestCase):
             with patch("api.views.config", side_effect=cfg_side):
                 resp = self._get()
             self.assertEqual(resp.status_code, 200)
-            self.assertIn("coordinatorHash", resp.json())
+            # Fallback to bundled copy — response is a valid federation doc, no extra fields.
+            self.assertNotIn("coordinatorHash", resp.json())
+            self.assertTrue(len(resp.json()) > 0)
         finally:
             os.unlink(tf_path)
 
@@ -174,7 +183,7 @@ class FederationViewTest(TestCase):
         finally:
             os.unlink(tf_path)
 
-    # 6. Cosmetic edits do NOT change coordinatorHash
+    # 6. Cosmetic edits do NOT change the normalized hash (used by /api/info/ federation_hash)
     def test_cosmetic_edits_do_not_change_hash(self):
         import copy
 
@@ -191,7 +200,7 @@ class FederationViewTest(TestCase):
             "Cosmetic edits must not change the normalized hash",
         )
 
-    # 7. Identity edits DO change coordinatorHash
+    # 7. Identity edits DO change the normalized hash
     def test_identity_edit_changes_hash(self):
         import copy
 

@@ -658,8 +658,8 @@ class FederationViewSchema:
         "summary": "Get full federation list",
         "description": textwrap.dedent(
             """
-            Returns the coordinator's full federation document — the same schema as
-            `api/federation.json` — plus a `coordinatorHash` field.
+            Returns the coordinator's full federation document — identical in schema
+            to `api/federation.json`.
 
             **This endpoint is only fetched by clients when the hash-based vote
             (Phase B of federation discovery) produces a winning hash that differs
@@ -667,11 +667,10 @@ class FederationViewSchema:
             nothing has changed the client never calls this endpoint at all; it
             learns the hash via the `federation_hash` field on `/api/info/`.
 
-            The `coordinatorHash` field contains the SHA-256 of the normalized
-            canonical form of the document.  Clients recompute this locally after
-            receiving the response and reject the document if the hashes do not
-            match, ensuring the coordinator cannot serve a document that differs
-            from what it committed to via `/api/info/`.
+            After receiving the document the client recomputes its canonical hash
+            locally and requires it to equal the winning hash from the vote, ensuring
+            the coordinator cannot serve a document that differs from what it
+            committed to via `/api/info/`.
 
             The coordinator reads its federation document from `FEDERATION_JSON_PATH`
             (env var, defaults to `api/federation.json`).  Operators can update that
@@ -681,12 +680,7 @@ class FederationViewSchema:
         "responses": {
             200: {
                 "type": "object",
-                "properties": {
-                    "coordinatorHash": {
-                        "type": "string",
-                        "description": "SHA-256 hex of the normalized canonical federation document",
-                    },
-                },
+                "description": "The federation document — identical in schema to api/federation.json.",
                 "additionalProperties": True,
             },
         },

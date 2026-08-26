@@ -138,8 +138,8 @@ export async function fetchAndVerifyDoc(
   try {
     const raw = await apiClient.get(baseUrl, '/api/federation/', undefined, true);
     if (!raw || typeof raw !== 'object') return null;
-    const { coordinatorHash: _h, ...docCandidate } = raw as Record<string, unknown>;
-    if (!isValidDoc(docCandidate)) return null;
+    if (!isValidDoc(raw)) return null;
+    const docCandidate = raw as FederationDoc;
     const actualHash = await canonicalHash(normalizeDoc(docCandidate as FederationDoc));
     if (actualHash !== expectedHash) {
       console.warn('[FederationDiscovery] hash mismatch from ' + baseUrl);

@@ -924,11 +924,7 @@ class FederationView(viewsets.ViewSet):
     @extend_schema(**FederationViewSchema.get)
     def get(self, request):
         doc = _load_federation_doc()
-        normalized = _normalize_federation(doc)
-        coord_hash = _canonical_hash(normalized)
-        response_data = dict(doc)
-        response_data["coordinatorHash"] = coord_hash
-        return Response(response_data, status=status.HTTP_200_OK)
+        return Response(doc, status=status.HTTP_200_OK)
 
 
 class InfoView(viewsets.ViewSet):
