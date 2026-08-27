@@ -559,6 +559,21 @@ class RobotViewSchema:
                         "nullable": True,
                         "description": "API key sent in X-API-Key header for webhook authentication",
                     },
+                    "nostr_forward_pubkey": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Nostr public key for forwarded notifications",
+                    },
+                    "nostr_forward_relay": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Private .onion relay for forwarded notifications",
+                    },
+                    "nostr_forward_enabled": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Whether Nostr forwarding is enabled",
+                    },
                 },
             },
         },
@@ -579,10 +594,10 @@ class RobotViewSchema:
     }
 
     put = {
-        "summary": "Update robot webhook settings",
+        "summary": "Update robot notification settings",
         "description": textwrap.dedent(
             """
-            Update the robot's webhook notification settings.
+            Update the robot's webhook and Nostr forwarding notification settings.
 
             Webhooks allow you to receive HTTP POST notifications to your own server
             when order events occur. **Only `.onion` URLs are accepted** for privacy.
@@ -597,8 +612,15 @@ class RobotViewSchema:
 
             If `webhook_api_key` is set, it will be sent in the `X-API-Key` header.
 
-            **Note:** Webhook is enabled automatically when a valid .onion URL is set.
-            A test notification will be sent when the webhook URL is configured.
+            A test notification is sent when the webhook URL changes or webhooks are
+            enabled.
+
+            Nostr forwarding requires a valid hex or npub public key and a `ws` or
+            `wss` `.onion` relay. Both are required when forwarding is enabled.
+
+            Providing the destination public key lets the coordinator associate it
+            with this robot. The relay sees the recipient public key. If it requires
+            NIP-42 authentication, it also sees the coordinator's public key.
             """
         ),
         "responses": {
@@ -619,6 +641,20 @@ class RobotViewSchema:
                         "nullable": True,
                         "description": "API key sent in X-API-Key header",
                     },
+                    "nostr_forward_pubkey": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Nostr public key for forwarded notifications",
+                    },
+                    "nostr_forward_relay": {
+                        "type": "string",
+                        "nullable": True,
+                        "description": "Private .onion relay for forwarded notifications",
+                    },
+                    "nostr_forward_enabled": {
+                        "type": "boolean",
+                        "description": "Whether Nostr forwarding is enabled",
+                    },
                 },
             },
             400: {
@@ -629,16 +665,29 @@ class RobotViewSchema:
                         "items": {"type": "string"},
                         "description": "Validation errors for webhook_url field",
                     },
+                    "nostr_forward_pubkey": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Validation errors for the Nostr public key",
+                    },
+                    "nostr_forward_relay": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Validation errors for the Nostr relay",
+                    },
                 },
             },
         },
         "examples": [
             OpenApiExample(
-                "Successfully updated webhook settings",
+                "Successfully updated notification settings",
                 value={
                     "webhook_url": "http://myserver.onion/webhook",
                     "webhook_enabled": True,
                     "webhook_api_key": "my-secret-key",
+                    "nostr_forward_pubkey": "npub16sfzpqkjrunmweeu4tj9z83pv4cwweqcnc5kyxctzdgpelng73zqms3kqr",
+                    "nostr_forward_relay": "ws://myrelay.onion",
+                    "nostr_forward_enabled": True,
                 },
                 status_codes=[200],
             ),

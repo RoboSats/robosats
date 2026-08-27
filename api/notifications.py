@@ -10,7 +10,10 @@ from api.models import (
     Notification,
 )
 from api.utils import get_session
-from api.tasks import nostr_send_notification_event
+from api.tasks import (
+    nostr_send_forward_notification_event,
+    nostr_send_notification_event,
+)
 
 logger = logging.getLogger("api.notifications")
 
@@ -48,6 +51,14 @@ class Notifications:
         self.save_message(order, robot, title, description)
         if robot.nostr_pubkey:
             nostr_send_notification_event.delay(
+                robot_id=robot.id, order_id=order.id, text=title
+            )
+        if (
+            robot.nostr_forward_enabled
+            and robot.nostr_forward_pubkey
+            and robot.nostr_forward_relay
+        ):
+            nostr_send_forward_notification_event.delay(
                 robot_id=robot.id, order_id=order.id, text=title
             )
         if robot.telegram_enabled:

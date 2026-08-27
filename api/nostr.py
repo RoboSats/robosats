@@ -1,21 +1,32 @@
-import pygeohash
+import asyncio
 import hashlib
+import logging
 import uuid
+from datetime import timedelta
 
-from secp256k1 import PrivateKey
+import pygeohash
 from asgiref.sync import sync_to_async
+from decouple import config
 from nostr_sdk import (
-    Keys,
     Client,
+    ClientBuilder,
     EventBuilder,
+    Keys,
     Kind,
-    Tag,
+    Proxy,
     PublicKey,
     RelayUrl,
+    SignerAuthenticator,
+    Tag,
     nip17_make_private_msg_async,
+    uniffi_set_event_loop,
 )
-from api.models import Order
-from decouple import config
+from secp256k1 import PrivateKey
+
+from api.models import Order, Robot
+from api.utils import TOR_PROXY, USE_TOR
+
+logger = logging.getLogger("api.nostr")
 
 
 class Nostr:
@@ -81,6 +92,71 @@ class Nostr:
         await client.send_event(gift_wrap)
         print("Nostr NOTIFICATION event sent")
 
+    async def send_forward_notification_event(self, robot, order, text):
+        """Sends an order notification to the robot's main Nostr account."""
+        if not robot.nostr_forward_enabled:
+            return False
+
+        rumor_extra_tags = [
+            Tag.parse(
+                [
+                    "order_id",
+                    f"{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                ]
+            ),
+            Tag.parse(["status", str(order.status)]),
+        ]
+        return await self.send_forward_event(robot, text, rumor_extra_tags)
+
+    async def send_forward_event(self, robot, text, rumor_extra_tags):
+        if config("NOSTR_NSEC", cast=str, default="") == "":
+            return False
+        if not robot.nostr_forward_pubkey or not robot.nostr_forward_relay:
+            return False
+        if not Robot.is_valid_onion_relay_url(robot.nostr_forward_relay):
+            return False
+
+        print("Sending nostr FORWARD event")
+
+        client = None
+        sent = False
+        uniffi_set_event_loop(asyncio.get_running_loop())
+        try:
+            keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+            client = self.initialize_forward_client(keys)
+            relay = RelayUrl.parse(robot.nostr_forward_relay)
+            await client.add_relay(relay)
+            await client.connect()
+            gift_wrap = await nip17_make_private_msg_async(
+                keys,
+                PublicKey.parse(robot.nostr_forward_pubkey),
+                text,
+                rumor_extra_tags=rumor_extra_tags,
+            )
+            output = await client.send_event(
+                gift_wrap, ok_timeout=timedelta(seconds=30)
+            )
+            if relay in output.success:
+                sent = True
+            else:
+                logger.error("Nostr forward event rejected for robot %s", robot.id)
+        except Exception:
+            logger.error("Nostr forward event failed for robot %s", robot.id)
+        finally:
+            if client is not None:
+                try:
+                    await client.disconnect()
+                except Exception:
+                    logger.error(
+                        "Nostr forward client disconnect failed for robot %s",
+                        robot.id,
+                    )
+            uniffi_set_event_loop(None)
+
+        if sent:
+            print("Nostr FORWARD event sent")
+        return sent
+
     async def initialize_client(self):
         # Initialize a bare client (no signer needed on the client itself)
         client = Client()
@@ -92,6 +168,12 @@ class Nostr:
         await client.connect()
 
         return client
+
+    def initialize_forward_client(self, keys):
+        builder = ClientBuilder().authenticator(SignerAuthenticator(keys))
+        if USE_TOR:
+            builder = builder.proxy(Proxy.onion(TOR_PROXY))
+        return builder.build()
 
     @sync_to_async
     def get_user_name(self, order):
