@@ -4,17 +4,26 @@ module.exports = {
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
-  // FederationDiscovery/index.ts imports apiClient only for Phase C (fetchAndVerifyDoc).
-  // We stub the api service to avoid pulling in uuid (ESM-only) and other
-  // platform-specific dependencies (Android bridge, WASM) that are irrelevant
-  // for the pure voting / hashing tests.
+  // Stub platform-specific singletons that pull in ESM-only packages (uuid,
+  // WebSocket Android bridge, WASM) that cannot run in a plain Node Jest env.
   moduleNameMapper: {
-    // Stub the whole api service barrel (and all sub-paths) so uuid (ESM-only)
-    // and Android bridge code don't get loaded in the Node test env.
+    // api service (uuid ESM via ApiAndroidClient)
     '<rootDir>/src/services/api(.*)': '<rootDir>/src/services/__mocks__/api.ts',
     '\\./(api|api/.*)$': '<rootDir>/src/services/__mocks__/api.ts',
     '\\.\\./(api|api/.*)$': '<rootDir>/src/services/__mocks__/api.ts',
     '\\.\\.\\./(services/api|services/api/.*)$': '<rootDir>/src/services/__mocks__/api.ts',
+
+    // Websocket service (uuid ESM via WebsocketAndroidClient)
+    '<rootDir>/src/services/Websocket(.*)': '<rootDir>/src/services/__mocks__/Websocket.ts',
+    '\\./(Websocket|Websocket/.*)$': '<rootDir>/src/services/__mocks__/Websocket.ts',
+    '\\.\\./(Websocket|Websocket/.*)$': '<rootDir>/src/services/__mocks__/Websocket.ts',
+
+    // @noble/curves — ESM-only, stub schnorr for nostr.ts
+    '^@noble/curves/(.*)$': '<rootDir>/src/__mocks__/noble-curves.ts',
+
+    // nostr-tools — use CJS build
+    '^nostr-tools$': '<rootDir>/node_modules/nostr-tools/lib/cjs/index.js',
+    '^nostr-tools/(.*)$': '<rootDir>/node_modules/nostr-tools/lib/cjs/$1',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 };
