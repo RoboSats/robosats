@@ -8,11 +8,21 @@ import {
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
+import {
+  type FederationDoc,
+  type CoordVote,
+  canonicalHash,
+  normalizeDoc,
+  voteOnHashes,
+  fetchAndVerifyDoc,
+} from '../services/FederationDiscovery';
 import { federationLottery, getHost } from '../utils';
+import type { CoordinatorSeed } from '../utils/federationLottery';
 import { coordinatorDefaultValues, type CoordinatorConfig } from './Coordinator.model';
 import { updateExchangeInfo } from './Exchange.model';
-import eventToPublicOrder from '../utils/nostr';
+import eventToPublicOrder, { setLiveCoordinators } from '../utils/nostr';
 import { verifyCoordinatorToken } from '../utils/nostr';
+import { setFederationPubkeys } from '../services/RoboPool';
 import RoboPool from '../services/RoboPool';
 import { systemClient } from '../services/System';
 import { fetchDevFundProfiles } from '../services/DevFundProfile';
@@ -79,7 +89,40 @@ export class Federation {
     }
 
     this.coordinatorsRatingInit();
+    this.origin = origin;
+    this.settings = settings;
+    this.hostUrl = hostUrl;
   }
+
+  // Store constructor args for use in refreshFederationList
+  private origin: Origin;
+  private settings: Settings;
+  private hostUrl: string;
+
+  /**
+   * The voted (or seed) federation document, kept in sync after every
+   * successful discovery poll.  Static so modules that run before the
+   * Federation instance is available (e.g. getHost.ts on mobile bootstrap)
+   * can read it via Federation.liveFedDoc without needing the instance.
+   *
+   * On cold start (mobile / offline) the persisted manifest written by
+   * refreshFederationList() is restored here so getHostUrl() can pick a
+   * valid onion from the last known-good list before the vote completes.
+   */
+  public static liveFedDoc: Record<string, Record<string, unknown>> = (() => {
+    try {
+      const stored = systemClient.getSyncItem?.('federation_manifest');
+      if (stored) {
+        const parsed = JSON.parse(stored) as Record<string, Record<string, unknown>>;
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore — fall through to seed
+    }
+    return defaultFederation as unknown as Record<string, Record<string, unknown>>;
+  })();
 
   private coordinators: Record<string, Coordinator>;
   public exchange: Exchange;
@@ -94,6 +137,246 @@ export class Federation {
   public hooks: Record<FederationHooks, Array<() => void>>;
 
   public roboPool: RoboPool;
+
+  /**
+   * The hash that won the seniority-weighted Phase B vote (strict >50% majority).
+   * Set to null when no majority is reached (indecision / quorum not met).
+   * Updated every time refreshFederationList() runs so the UI can colour the
+   * winning hash green in the coordinator list.
+   */
+  public majorityFederationHash: string | null = null;
+
+  /**
+   * Hash-first federation discovery — called after loadDevFund() has populated
+   * coordinator.info for every coordinator (zero new requests in the common case).
+   *
+   * Phase A: read coordinator.info.federation_hash from already-fetched info.
+   * Phase B: seniority-weighted vote — strict majority (>50% of total weight).
+   *          Dates are sourced only from the client's own trusted data:
+   *          (1) bundled seed, (2) persisted join-date ledger.
+   *          On indecision, the current trusted document is kept unchanged.
+   * Phase C: only if the winner hash differs from the current trusted doc hash,
+   *          fetch /api/federation/ from ONE coordinator that voted for the winner
+   *          and verify the hash locally.
+   */
+  refreshFederationList = async (): Promise<void> => {
+    // Phase A: collect votes from all coordinators' already-loaded info.
+    // Coordinators without federation_hash (older versions) simply abstain.
+    const votes: CoordVote[] = [];
+    const coordByHash = new Map<string, Coordinator>();
+
+    for (const coord of Object.values(this.coordinators)) {
+      const h = (coord.info as Record<string, unknown> | undefined)?.federation_hash;
+      if (typeof h === 'string' && h.length === 64) {
+        votes.push({ alias: coord.shortAlias, hash: h });
+        if (!coordByHash.has(h)) coordByHash.set(h, coord);
+      }
+    }
+
+    // Load the client's own join-date ledger (persisted by this method on
+    // successful adoption of a newcomer coordinator).
+    let joinDates: Record<string, string> = {};
+    try {
+      const stored = await systemClient.getItem('federation_join_dates');
+      if (stored) joinDates = JSON.parse(stored) as Record<string, string>;
+    } catch {
+      // Corrupted ledger — start fresh; seniority for all unknown = WEIGHT_MIN (safe)
+    }
+
+    // Phase B: seniority-weighted vote
+    // trustedDoc = Federation.liveFedDoc which is either the bundled seed (first
+    // boot) or the last successfully accepted document (cold-start restored).
+    const currentDoc = Federation.liveFedDoc as unknown as FederationDoc;
+    const { winnerHash } = voteOnHashes(votes, {
+      trustedDoc: currentDoc,
+      joinDates,
+    });
+
+    // Always record the majority result (or null) so the UI can highlight the
+    // winning hash even when no document update is required.
+    this.majorityFederationHash = winnerHash;
+    this.triggerHook('onFederationUpdate');
+
+    // No strict majority reached — keep the current trusted document as-is.
+    // "No decision" is always the safe direction.
+    if (winnerHash === null) return;
+
+    // Check whether the winner is actually different from the doc we already hold.
+    const currentHash = await canonicalHash(normalizeDoc(currentDoc));
+
+    // Phase C: fetch the full document only when the winner differs from current
+    let winnerDoc: FederationDoc | null = null;
+    if (winnerHash !== currentHash) {
+      const winnerCoord = coordByHash.get(winnerHash);
+      if (winnerCoord) {
+        const net = this.network ?? 'mainnet';
+        const onion =
+          (winnerCoord[net] as unknown as Record<string, string> | undefined)?.onion ?? '';
+        const baseUrl = onion.replace(/\/$/, '');
+        if (baseUrl) winnerDoc = await fetchAndVerifyDoc(baseUrl, winnerHash);
+      }
+    }
+
+    // Fetch failed or winner already matches current — nothing to apply
+    if (!winnerDoc) return;
+
+    // Stamp today's date into the join-date ledger for any alias that is absent
+    // from the bundled seed (newcomer coordinator). This is the ONLY place that
+    // writes to the ledger, ensuring the client's own observation of first-seen
+    // date is used for seniority — not any date claimed by the coordinator.
+    const seedDoc = defaultFederation as unknown as FederationDoc;
+    const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    let ledgerDirty = false;
+    for (const alias of Object.keys(winnerDoc)) {
+      if (!seedDoc[alias] && !joinDates[alias]) {
+        joinDates[alias] = today;
+        ledgerDirty = true;
+      }
+    }
+    if (ledgerDirty) {
+      systemClient.setItem('federation_join_dates', JSON.stringify(joinDates));
+    }
+
+    const finalDoc: FederationDoc = winnerDoc;
+
+    // Update the static in-memory source of truth so all consumers read from here.
+    Federation.liveFedDoc = finalDoc;
+    // Persist for cold starts (Android / offline).
+    systemClient.setItem('federation_manifest', JSON.stringify(finalDoc));
+
+    // Diff: which aliases are added, kept, or removed
+    const currentAliases = new Set(Object.keys(this.coordinators));
+    const winnerAliases = new Set(Object.keys(finalDoc));
+
+    const added = [...winnerAliases].filter((a) => !currentAliases.has(a));
+    const removed = [...currentAliases].filter((a) => !winnerAliases.has(a));
+
+    // Check for identity changes in coordinators that are in both sets.
+    // An identity change (onion, nostrHexPubkey, clearnet, i2p) does not
+    // change the alias set but does change the hash — we must update the
+    // live Coordinator instances so URL resolution and Nostr routing stay
+    // correct, then propagate to RoboPool / nostr.ts.
+    const identityFields = ['nostrHexPubkey', 'mainnet', 'testnet'] as const;
+    const identityChanged: string[] = [];
+    for (const alias of [...winnerAliases].filter((a) => currentAliases.has(a))) {
+      const winnerEntry = finalDoc[alias] as Record<string, unknown>;
+      const existing = this.coordinators[alias];
+      const hasChange = identityFields.some((field) => {
+        const newVal = winnerEntry[field];
+        const oldVal = (existing as unknown as Record<string, unknown>)[field];
+        return JSON.stringify(newVal) !== JSON.stringify(oldVal);
+      });
+      if (hasChange) identityChanged.push(alias);
+    }
+
+    // No actual change at all — nothing to do beyond cache write above
+    if (added.length === 0 && removed.length === 0 && identityChanged.length === 0) return;
+
+    // Update existing coordinators whose identity fields changed by replacing
+    // them with fresh instances (avoids manual field patching).
+    identityChanged.forEach((alias) => {
+      const value = finalDoc[alias];
+      const updated = new Coordinator(
+        value as unknown as CoordinatorConfig,
+        this.origin,
+        this.settings,
+        this.hostUrl,
+      );
+      updated.federated = true;
+      this.coordinators[alias] = updated;
+    });
+
+    // Remove dropped coordinators
+    removed.forEach((alias) => {
+      this.coordinators[alias]?.disable();
+      delete this.coordinators[alias];
+    });
+
+    // Add new coordinators (preserve existing ones intact to avoid resetting their state)
+    added.forEach((alias) => {
+      const value = finalDoc[alias];
+      const newCoord = new Coordinator(
+        value as unknown as CoordinatorConfig,
+        this.origin,
+        this.settings,
+        this.hostUrl,
+      );
+      newCoord.federated = true;
+      this.coordinators[alias] = newCoord;
+    });
+
+    // Re-sort according to lottery (preserving existing coordinator instances)
+    const discoveryDevfundOverrides: Record<string, number> = {};
+    Object.entries(finalDoc).forEach(([alias, entry]) => {
+      if ((entry as Record<string, unknown>)._votedIn) discoveryDevfundOverrides[alias] = 0;
+    });
+    const sorted: Record<string, Coordinator> = {};
+    federationLottery(
+      finalDoc as unknown as Record<string, CoordinatorSeed>,
+      discoveryDevfundOverrides,
+    ).forEach((alias) => {
+      if (this.coordinators[alias]) sorted[alias] = this.coordinators[alias];
+    });
+    this.coordinators = sorted;
+
+    this.exchange.totalCoordinators = Object.keys(this.coordinators).length;
+
+    // Register only the newly added coordinators
+    added.forEach((alias) => {
+      if (alias !== 'local' || this.hostUrl.includes('127.0.0.1:8000')) {
+        this.addCoordinator(this.origin, this.settings, this.hostUrl, this.coordinators[alias]);
+      }
+    });
+
+    // Update relay pool
+    Object.values(this.coordinators).forEach((c) =>
+      c.updateUrl(this.origin, this.settings, this.hostUrl),
+    );
+    this.roboPool.updateRelays(this.hostUrl, Object.values(this.coordinators));
+
+    // Push live coordinator list into the modules that still need it for
+    // Nostr event routing (nostr.ts) and REQ author filters (RoboPool).
+    const liveCoordEntries = Object.values(this.coordinators).map((c) => ({
+      shortAlias: c.shortAlias,
+      nostrHexPubkey: c.nostrHexPubkey,
+      federated: c.federated,
+    }));
+    setLiveCoordinators(liveCoordEntries);
+    setFederationPubkeys(liveCoordEntries.map((c) => c.nostrHexPubkey).filter(Boolean));
+
+    // Update Android notification relay list
+    if (this.settings.client === 'mobile') {
+      const federationUrls = Object.values(this.coordinators).map((c) => c.getRelayUrl());
+      const federationPubKeys = Object.values(this.coordinators).map((c) => c.nostrHexPubkey);
+      systemClient.setItem('federation_relays', JSON.stringify(federationUrls));
+      systemClient.setItem('federation_pubkeys', JSON.stringify(federationPubKeys));
+    }
+
+    this.coordinatorsRatingInit();
+    this.updateEnabledCoordinators();
+
+    // Reload the order book so it reflects the new coordinator set.
+    // Without this, removed coordinators' orders linger in the book and
+    // newly added coordinators contribute nothing until the user navigates away.
+    // In nostr mode roboPool.updateRelays() already closed the sockets, so the
+    // active subscribeBook REQ is gone — we must clear the book and re-subscribe.
+    if (this.connection === 'nostr') {
+      this.book = {};
+      this.loadBookNostr(false);
+    } else if (this.connection === 'api') {
+      void this.loadBook();
+    }
+
+    // New coordinators also need their info fetched (limits, fees, federation_hash)
+    // so they can participate in the next discovery vote and appear correctly in the UI.
+    added.forEach((alias) => {
+      this.coordinators[alias]?.loadInfo(() => {
+        this.onCoordinatorSaved();
+      });
+    });
+
+    this.triggerHook('onFederationUpdate');
+  };
 
   coordinatorsRatingInit = (): void => {
     Object.values(this.coordinators).forEach((coord) => {
@@ -220,6 +503,11 @@ export class Federation {
 
     this.devFundLoaded = true;
     this.triggerHook('onFederationUpdate');
+
+    // federation_hash is now populated on every coordinator's info — run the
+    // hash-first discovery. This is the only call site; zero extra requests
+    // in the common case (hashes read from already-fetched /api/info/ data).
+    void this.refreshFederationList();
   };
 
   addCoordinator = (

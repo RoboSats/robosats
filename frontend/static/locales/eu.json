@@ -386,6 +386,7 @@
   "Alias": "Alias",
   "Alias already exists": "Alias dagoeneko existitzen da",
   "Enabled": "Gaitua",
+  "Federation Hash": "Federation Hash",
   "Invalid Onion URL": "Onion ULR baliogabea",
   "No coordinators found.": "Ez da koordinatzailerik aurkitu.",
   "Rating": "Balorazioa",

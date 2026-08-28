@@ -386,6 +386,7 @@
   "Alias": "エイリアス",
   "Alias already exists": "エイリアスはすでに存在します",
   "Enabled": "有効",
+  "Federation Hash": "Federation Hash",
   "Invalid Onion URL": "無効なOnion URL",
   "No coordinators found.": "コーディネーターが見つかりませんでした。",
   "Rating": "評価",

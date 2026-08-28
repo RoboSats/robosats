@@ -386,6 +386,7 @@
   "Alias": "Псевдоним",
   "Alias already exists": "Псевдоним уже существует",
   "Enabled": "Включено",
+  "Federation Hash": "Federation Hash",
   "Invalid Onion URL": "Недействительный URL Onion",
   "No coordinators found.": "Координаторы не найдены.",
   "Rating": "Рейтинг",

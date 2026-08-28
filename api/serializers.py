@@ -69,6 +69,15 @@ class InfoSerializer(serializers.Serializer):
     )
     market_price_apis = serializers.CharField()
     notice_message = serializers.CharField()
+    federation_hash = serializers.CharField(
+        help_text=(
+            "SHA-256 of the normalized canonical federation document served by this coordinator. "
+            "Clients collect this hash from all coordinators via the already-polled /api/info/ "
+            "response and run a majority vote to determine the current federation list without "
+            "any additional requests. Only when the winning hash differs from the client's own "
+            "seed does the client fetch /api/federation/ once to obtain the full document."
+        )
+    )
 
 
 class ListOrderSerializer(serializers.ModelSerializer):

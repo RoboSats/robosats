@@ -386,6 +386,7 @@
   "Alias": "นามแฝง",
   "Alias already exists": "มีนามแฝงอยู่แล้ว",
   "Enabled": "เปิดการใช้งาน",
+  "Federation Hash": "Federation Hash",
   "Invalid Onion URL": "URL ของ Onion ไม่ถูกต้อง",
   "No coordinators found.": "ไม่พบผู้ประสานงาน",
   "Rating": "การจัดอันดับ",

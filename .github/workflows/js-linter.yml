@@ -61,6 +61,11 @@ jobs:
           cd frontend
           npm run format:check
 
+      - name: 'Run Jest unit tests'
+        run: |
+          cd frontend
+          npm test -- --no-coverage
+
       - name: 'Audit dependencies'
         # Checks for high/critical vulns in RoboSats deps only.
         # Excludes node_modules/npm/** — vulnerabilities inside npm's own

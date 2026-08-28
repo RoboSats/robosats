@@ -61,6 +61,10 @@ export interface Info {
   notice_message: string;
   market_price_apis: string;
   loading: boolean;
+  /** SHA-256 of this coordinator's normalized canonical federation document.
+   *  Used by the client's hash-first federation discovery (Phase A/B) to vote
+   *  on the current federation list without any additional requests. */
+  federation_hash?: string;
 }
 
 export type Origin = 'onion' | 'i2p' | 'clearnet';

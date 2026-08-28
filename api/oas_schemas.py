@@ -653,6 +653,40 @@ class RobotViewSchema:
     }
 
 
+class FederationViewSchema:
+    get = {
+        "summary": "Get full federation list",
+        "description": textwrap.dedent(
+            """
+            Returns the coordinator's full federation document — identical in schema
+            to `api/federation.json`.
+
+            **This endpoint is only fetched by clients when the hash-based vote
+            (Phase B of federation discovery) produces a winning hash that differs
+            from the client's own bundled seed hash.**  In the common case where
+            nothing has changed the client never calls this endpoint at all; it
+            learns the hash via the `federation_hash` field on `/api/info/`.
+
+            After receiving the document the client recomputes its canonical hash
+            locally and requires it to equal the winning hash from the vote, ensuring
+            the coordinator cannot serve a document that differs from what it
+            committed to via `/api/info/`.
+
+            The coordinator reads its federation document from `FEDERATION_JSON_PATH`
+            (env var, defaults to `api/federation.json`).  Operators can update that
+            file at any time to change their federation vote without a release.
+            """
+        ),
+        "responses": {
+            200: {
+                "type": "object",
+                "description": "The federation document — identical in schema to api/federation.json.",
+                "additionalProperties": True,
+            },
+        },
+    }
+
+
 class InfoViewSchema:
     get = {
         "summary": "Get info",
@@ -678,6 +712,12 @@ class InfoViewSchema:
               - on-chain swap fees
             - Development fund
               - devfund donation percentage
+            - Federation
+              - `federation_hash`: SHA-256 of this coordinator's normalized canonical
+                federation document.  Clients collect this from all coordinators and run
+                a majority vote to detect federation list changes without any additional
+                requests.  Only when the winning hash differs from the client's seed does
+                the client fetch `/api/federation/` once to obtain the full document.
             """
         ),
         "responses": {

@@ -13,9 +13,11 @@
 
 import defaultFederation from '../../static/federation.json';
 
-interface CoordinatorSeed {
+export interface CoordinatorSeed {
   shortAlias: string;
   badges: { donatesToDevFund?: number };
+  /** Set by FederationDiscovery on coordinators voted in but absent from the seed. */
+  _votedIn?: boolean;
 }
 
 const DEFAULT_TOTAL_FEE = 0.002;
@@ -27,7 +29,11 @@ export default function federationLottery(
 ): string[] {
   return Object.values(federation)
     .map((coor) => {
-      const rawDevfund = devfundOverrides[coor.shortAlias] ?? coor.badges?.donatesToDevFund ?? 0;
+      // Coordinators voted in from discovery but absent from the seed cannot
+      // self-declare a DevFund donation to game the lottery ordering.
+      const rawDevfund = coor._votedIn
+        ? 0
+        : (devfundOverrides[coor.shortAlias] ?? coor.badges?.donatesToDevFund ?? 0);
       const devfund = Math.min(50, Math.max(0, rawDevfund));
       const totalFee = feeOverrides[coor.shortAlias] ?? DEFAULT_TOTAL_FEE;
       const chance = devfund * totalFee;
