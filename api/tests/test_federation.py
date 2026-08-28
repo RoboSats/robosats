@@ -356,8 +356,37 @@ class FederationViewTest(TestCase):
         )
 
     # 12. /api/info/ exposes federation_hash as a 64-char hex string
-    @patch("api.views.config", return_value="")
-    def test_info_exposes_federation_hash(self, _mock_cfg):
+    @patch("api.views.get_robosats_commit", return_value="deadbeef")
+    @patch("api.views.get_cln_version", return_value="v24.11")
+    @patch("api.views.get_lnd_version", return_value="0.18.0")
+    @patch("api.views.config")
+    def test_info_exposes_federation_hash(
+        self, mock_cfg, _mock_lnd, _mock_cln, _mock_commit
+    ):
+        # Return sensible defaults so the view can convert all values without
+        # crashing.  Keys that require a numeric float get a string that parses;
+        # everything else gets an empty string.
+        _numeric_defaults = {
+            "DEVFUND": "0.2",
+            "FEE": "0.002",
+            "MAKER_FEE_SPLIT": "0.5",
+        }
+
+        def _cfg_side_effect(key, **kwargs):
+            if key in _numeric_defaults:
+                return _numeric_defaults[key]
+            cast = kwargs.get("cast")
+            default = kwargs.get("default")
+            if default is not None:
+                return default
+            if cast is bool:
+                return False
+            if cast is int:
+                return 0
+            return ""
+
+        mock_cfg.side_effect = _cfg_side_effect
+
         url = reverse("info")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
