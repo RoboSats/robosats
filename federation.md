@@ -51,6 +51,11 @@ Short list of what a coordinator is expected to do:
 ### How to become part of the Federation and be included in the RoboSats app?
 Simply open a new issue in GitHub and select the form "Coordinator Registration". You can **preview the [Coordinator Registration form here](https://github.com/RoboSats/robosats/blob/main/.github/ISSUE_TEMPLATE/coordinator_registration.yaml)** .
 
+Before going to production, your LN node should have:
+- Minimum of a total 6M sats capacity
+- Minimum 3 channels
+- A direct channel of any size to [robosats devfund node](https://lightningnetwork.plus/nodes/037ff12b6a4e4bcb4b944b6d20af08cdff61b3461c1dff0d00a88697414d891bc7)
+
 Coordinator registrations are **always OPEN** . All fields can be updated or completed later through pull requests. Don't worry about getting everything perfect initially. It's okay if your data policy, privacy policy, node ids, and endpoints aren't fully defined or are subject to change.
 
 ### How to run a RoboSats Coordinator?
