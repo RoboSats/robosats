@@ -15,6 +15,7 @@ name — all three must match exactly.
 | moon | 106 | 1006 | ✅ yes | |
 | bazaar | 107 | 1007 | ❌ same onion | testnet traffic hits mainnet service |
 | eleuteria | 110 | 1010 | ❌ same onion | testnet traffic hits mainnet service |
+| freeport | 111 | 1011 | ❌ same onion | testnet traffic hits mainnet service |
 | alice | 109 | 1009 | ❌ same onion | testnet traffic hits mainnet service |
 
 Testnet port convention: mainnet port + 900 (e.g. 102 → 1002).
@@ -73,17 +74,18 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   users deploy a known, auditable set of coordinators torified at the container level,
   not a runtime-fetched list. Generating this config automatically from
   `federation.json` is a known improvement path but has not been implemented.
-- **Testnet support in nodeapp is best-effort.** Three of five coordinators (bazaar,
-  eleuteria, alice) share a single onion for mainnet and testnet, so their testnet traffic
-  (API, WS, and relay) hits the mainnet service — the coordinator must distinguish them
-  server-side. Only temple and lake have distinct testnet onions with a real testnet relay.
+- **Testnet support in nodeapp is best-effort.** Four of six coordinators (bazaar,
+  eleuteria, freeport, alice) share a single onion for mainnet and testnet, so their
+  testnet traffic (API, WS, and relay) hits the mainnet service — the coordinator must
+  distinguish them server-side. Only temple and lake have distinct testnet onions with a
+  real testnet relay.
 
 ## Traps
-- All five `locations.conf` testnet avatar routes now use `/testnet/{alias}/...`
+- All six `locations.conf` testnet avatar routes now use `/testnet/{alias}/...`
   consistent with the API/WS routes — fixed in this codebase.
-- All five `locations.conf` now include a `/testnet/{alias}/relay/` route — fixed in this
-  codebase. For bazaar/eleuteria/alice the route proxies to the shared onion, so the same
-  relay serves mainnet and testnet events (the client filters by `network` tag).
+- All six `locations.conf` now include a `/testnet/{alias}/relay/` route — fixed in this
+  codebase. For bazaar/eleuteria/freeport/alice the route proxies to the shared onion, so
+  the same relay serves mainnet and testnet events (the client filters by `network` tag).
 - Several `locations.conf` comments name the wrong coordinator (e.g., lake's testnet
   section heading says "Freedomsats Coordinator Testnet Locations", bazaar's says
   "TheBigLake Coordinator Mainnet") — copy-paste artefacts; functionally harmless.

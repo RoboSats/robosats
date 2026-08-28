@@ -45,8 +45,12 @@
       "clearnet": "",
       "i2p": ""
     },
-    "mainnetNodesPubkeys": ["0226f31c5f3a8b48bbbb7aaa97a10effcfb445b5972a676955d5c095383d35a428"],
-    "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"],
+    "mainnetNodesPubkeys": [
+      "0226f31c5f3a8b48bbbb7aaa97a10effcfb445b5972a676955d5c095383d35a428"
+    ],
+    "testnetNodesPubkeys": [
+      "028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"
+    ],
     "federated": true
   },
   "lake": {
@@ -92,8 +96,12 @@
       "clearnet": "https://test.unsafe.thebiglake.org",
       "i2p": ""
     },
-    "mainnetNodesPubkeys": ["0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"],
-    "testnetNodesPubkeys": ["0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"],
+    "mainnetNodesPubkeys": [
+      "0385262f7e9e2eeeba1e7d6182a0efec98e79d01154b76189f3e0b88bcee279dd0"
+    ],
+    "testnetNodesPubkeys": [
+      "0355f8604df9ec4bee20a284f045f94e26cdd1fc5e15dee0716a5a5dfc7cd33b7c"
+    ],
     "federated": true
   },
   "bazaar": {
@@ -138,7 +146,9 @@
       "clearnet": null,
       "i2p": null
     },
-    "mainnetNodesPubkeys": ["03ab3468f06d3aac93992ef7ae79bce083e18617dc760f09ef687d7bca89667a15"],
+    "mainnetNodesPubkeys": [
+      "03ab3468f06d3aac93992ef7ae79bce083e18617dc760f09ef687d7bca89667a15"
+    ],
     "testnetNodesPubkeys": [],
     "federated": true
   },
@@ -184,7 +194,9 @@
       "clearnet": null,
       "i2p": null
     },
-    "mainnetNodesPubkeys": ["02580496598cf3e7bfe41c9b0721d1c90693d31d308364456dc30f0a22bf58ddd7"],
+    "mainnetNodesPubkeys": [
+      "02580496598cf3e7bfe41c9b0721d1c90693d31d308364456dc30f0a22bf58ddd7"
+    ],
     "testnetNodesPubkeys": [],
     "federated": true
   },
@@ -231,7 +243,55 @@
       "clearnet": null,
       "i2p": null
     },
-    "mainnetNodesPubkeys": ["03808d86fee8345c7b470f792f62e3a3cba78ad49d75d4623c8e27520c34f90d5b"],
+    "mainnetNodesPubkeys": [
+      "03808d86fee8345c7b470f792f62e3a3cba78ad49d75d4623c8e27520c34f90d5b"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "freeport": {
+    "longAlias": "FreePort",
+    "shortAlias": "freeport",
+    "identifier": "freeport",
+    "description": "Privacy-focused P2P Bitcoin exchange coordinator. Tor-only for maximum privacy.",
+    "motto": "Free trade, free ports, free people.",
+    "color": "#808080",
+    "established": "2026-08-28",
+    "nostrHexPubkey": null,
+    "contact": {
+      "email": "fp-coordinator@proton.me",
+      "telegram": null,
+      "simplex": null,
+      "pgp": "/static/federation/pgp/27099F12B8752D8267B6DFF28265E7B36362CF31.asc",
+      "nostr": null,
+      "website": null,
+      "matrix": null,
+      "fingerprint": "27099F12B8752D8267B6DFF28265E7B36362CF31"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy": "Tor-only coordinator. No KYC required. Dispute evidence handled confidentially and deleted after resolution. No user tracking or analytics.",
+      "Data Policy": "No data shared with or sold to third parties. Database cleared regularly except for active disputes. Coordinator operates exclusively over Tor.",
+      "Other Policies": "Max order size: 500,000 sats. Maker fee: 0.025%. Taker fee: 0.175%."
+    },
+    "mainnet": {
+      "onion": "http://2enoseg66hme76khjjn2qvrhipnzwgwa44mewgrdphrxbhzcxd2vdiqd.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "03230eea7d63303c3e54076f84745aeabf447e01a572e984e77b796665419d43cc"
+    ],
     "testnetNodesPubkeys": [],
     "federated": true
   }

@@ -248,5 +248,51 @@
     ],
     "testnetNodesPubkeys": [],
     "federated": true
+  },
+  "freeport": {
+    "longAlias": "FreePort",
+    "shortAlias": "freeport",
+    "identifier": "freeport",
+    "description": "Privacy-focused P2P Bitcoin exchange coordinator. Tor-only for maximum privacy.",
+    "motto": "Free trade, free ports, free people.",
+    "color": "#808080",
+    "established": "2026-08-28",
+    "nostrHexPubkey": null,
+    "contact": {
+      "email": "fp-coordinator@proton.me",
+      "telegram": null,
+      "simplex": null,
+      "pgp": "/static/federation/pgp/27099F12B8752D8267B6DFF28265E7B36362CF31.asc",
+      "nostr": null,
+      "website": null,
+      "matrix": null,
+      "fingerprint": "27099F12B8752D8267B6DFF28265E7B36362CF31"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy": "Tor-only coordinator. No KYC required. Dispute evidence handled confidentially and deleted after resolution. No user tracking or analytics.",
+      "Data Policy": "No data shared with or sold to third parties. Database cleared regularly except for active disputes. Coordinator operates exclusively over Tor.",
+      "Other Policies": "Max order size: 500,000 sats. Maker fee: 0.025%. Taker fee: 0.175%."
+    },
+    "mainnet": {
+      "onion": "http://2enoseg66hme76khjjn2qvrhipnzwgwa44mewgrdphrxbhzcxd2vdiqd.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "03230eea7d63303c3e54076f84745aeabf447e01a572e984e77b796665419d43cc"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
   }
 }
