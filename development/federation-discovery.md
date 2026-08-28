@@ -32,31 +32,73 @@ from every enabled coordinator. `refreshFederationList()` is called at the end o
 `loadDevFund()`, after all coordinator info is populated, and simply reads
 `coordinator.info.federation_hash`. No new Tor circuits opened.
 
-**Phase B — vote on hashes (pure, no I/O).**
+**Phase B — seniority-weighted vote (pure, no I/O).**
 ```
-coordHashes = [hash reported by each coordinator that has federation_hash]
-seedHash    = canonicalHash(normalizeDoc(bundled federation.json))  [memoised]
+votes = [{ alias, hash } for each coordinator that reported federation_hash]
 
-Step 1 — coordinator-only majority:
-  single plurality  →  winning hash decided
-  tied              →  go to step 2
+Minimum quorum: ≥ 2 votes; else → no decision (keep current doc).
 
-Step 2 — coordinators split, client casts 2 votes for its seed hash:
-  single plurality  →  winning hash decided
-  still tied        →  keep seed (client holds a 3rd version matching no bloc)
+For each voter:
+  weight = seniorityWeight(trustedEstablished(alias), oldestTrustedDate, now)
 
-Minimum quorum: ≥ 2 coordinator hash responses; else keep seed.
+  trustedEstablished priority (root of trust = client's own data only):
+    1. bundled seed date  (compiled into the app bundle — cannot be spoofed)
+    2. client's persisted join-date ledger  (federation_join_dates storage key)
+    3. null  → WEIGHT_MIN (1)
+
+  Piecewise linear, anchored on the oldest voter's trusted date:
+    age <  1 year  →  1 + floor(3 × age / ONE_YEAR)          [ramp 1 → 3]
+    age >= 1 year  →  4 + floor(6 × (age−1y) / (oldest−1y)) [ramp 4 → 10]
+
+  Special cases:
+    null / future-dated established  → WEIGHT_MIN (1)
+    all voters under 1 year old      → use lower ramp only (young federation)
+
+A hash wins only with STRICT MAJORITY: its total weight > 50% of all weight.
+On indecision (tie / quorum not met) → winnerHash = null.
+  The caller keeps the client's current trusted document unchanged.
+  "No decision" is always the safe direction — it never regresses.
 ```
 
 **Phase C — fetch once on mismatch.**
-If the winning hash equals `seedHash` → done, nothing downloaded.
+If the winning hash equals the current trusted doc's hash → done, nothing downloaded.
 If it differs → fetch `/api/federation/` from ONE coordinator that voted for the
 winning hash, recompute the hash locally, and require it to equal the winning hash.
-Mismatch → discard and keep seed. Stronger integrity than before: the document must
-hash to the value that was voted for, so a coordinator cannot serve a document
-different from what it committed to via `/api/info/`.
+Mismatch → discard, keep current. The document must hash to the voted value, so a
+coordinator cannot serve a doc different from what it committed to via `/api/info/`.
 
-### The vote
+### Seniority weight table (live federation, 2026-08-26)
+
+| Coordinator | Established  | Age    | Weight |
+|-------------|--------------|--------|--------|
+| temple      | 2023-12-02   | ~2.7y  | **10** |
+| lake        | 2023-12-30   | ~2.7y  | **9**  |
+| bazaar      | 2025-05-20   | ~1.3y  | **4**  |
+| freedomsats | 2025-06-30   | ~1.2y  | **4**  |
+| alice       | 2025-11-27   | ~0.75y | **3**  |
+| any sybil   | today        | ~0     | **1**  |
+
+Honest total ≈ 30. An attacker needs **16 fresh sybils** (weight 16 > 15, i.e. >50%)
+to force a change — vs. just 5 under the old equal-weight vote.
+
+### Sybil resistance — why established dates can't be spoofed
+
+Coordinator-served `established` fields are **never used** for weight computation.
+The only two trusted sources are:
+1. The bundled seed `federation.json` (compiled into the app at release time).
+2. The client's persisted `federation_join_dates` ledger (set locally when the
+   client *first accepts* a newcomer, regardless of what the doc claims).
+
+A sybil claiming `established: 2020` in its federation.json receives weight 1 on
+every client until the client has personally observed it for a full year.
+
+### Join-date ledger (`federation_join_dates`)
+
+Written by `refreshFederationList` on the first successful acceptance of each
+newcomer coordinator (alias absent from the bundled seed).  The ledger value is
+the client's local observation date — never a date from any served document.  This
+means seniority accumulates from the client's own clock, independently on each
+device, and is not transferable or spoofable.
 
 ### Normalization (what gets hashed)
 
@@ -69,19 +111,12 @@ Canonical serialization: parse → sort all keys recursively → compact JSON �
 SHA-256 hex. Verified on the live file: reordered+reindented produces the same hash;
 one character change produces a different hash.
 
-### Tie-break guarantee
+### Indecision is safe
 
-Normal join/leave = 2 document versions, client holds one of them.
-Exhaustive simulation (349,504 configurations, N=2..12): **zero ties** for all
-normal join/leave cases. Coordinators either have a majority (step 1 decides) or are
-split evenly (step 2: client casts 2 votes for its version, outnumbering the other side).
-
-The only unresolvable shape: coordinators split across ≥3 versions AND client holds a
-3rd that matches no bloc (stale-client edge case). Fallback: keep bundled.
-
-Key property: **coordinators always decide when they agree** — client's ×2 weight
-only activates when coordinators are already tied. New rule: 7.3% ties overall
-vs 10.6% under the old drop-client rule; both have 0 ties for the normal 2-version flow.
+When no hash reaches strict majority (fragmented vote, quorum not met, all weights
+equal), `voteOnHashes` returns `winnerHash = null` and `refreshFederationList` exits
+without touching the current document or the manifest.  The federation never regresses
+to a less-trusted state on indecision.
 
 ### Validation before a document can win
 
@@ -126,21 +161,23 @@ coordinator per network. This is intentional and **does not need to change**:
 
 | File | Change |
 |---|---|
-| `api/views.py` | `FederationView` + helpers |
+| `api/views.py` | `FederationView` + helpers (`_normalize_federation`, `_canonical_hash`, `_load_federation_doc`) |
 | `api/urls.py` | `path("federation/", ...)` |
 | `api/oas_schemas.py` | `FederationViewSchema` |
-| `api/tests/test_federation.py` | 9 unit tests |
+| `api/tests/test_federation.py` | 14 unit tests (incl. null-attr coercion, golden hash, `/api/info/` field, validator alignment) |
+| `api/federation.json` | Copy of `frontend/static/federation.json` (kept in sync by webpack + CI) |
 | `.env-sample` | `FEDERATION_JSON_PATH` |
-| `frontend/src/services/FederationDiscovery/index.ts` | vote / normalize / validate |
-| `frontend/src/models/Federation.model.ts` | `refreshFederationList` |
-| `frontend/src/contexts/FederationContext.tsx` | calls `refreshFederationList` |
+| `frontend/src/services/FederationDiscovery/index.ts` | seniority-weighted vote / normalize / validate / fetch+verify |
+| `frontend/src/services/FederationDiscovery/__tests__/index.test.ts` | frontend unit tests (golden hash, null coercion, weight math, sybil-attack, vote logic, validation) |
+| `frontend/src/models/Federation.model.ts` | `refreshFederationList` + join-date ledger + `liveFedDoc` cold-start bootstrap |
 | `frontend/src/utils/federationLottery.ts` | `_votedIn` guard via `devfundOverrides` |
 | `frontend/src/utils/nostr.ts` | `liveCoordinators` + `setLiveCoordinators` |
 | `frontend/src/services/RoboPool/index.ts` | `liveFederationPubkeys` + `setFederationPubkeys` |
-| `frontend/src/utils/getHost.ts` | reads live manifest from `systemClient` for mobile bootstrap |
-| `frontend/src/models/Maker.model.ts` | default coordinator from live manifest |
-| `frontend/src/components/HostAlert/UnsafeAlert.tsx` | `safeUrls` from live manifest |
+| `frontend/src/utils/getHost.ts` | reads `Federation.liveFedDoc` for mobile bootstrap |
+| `frontend/src/components/HostAlert/UnsafeAlert.tsx` | `safeUrls` from live coordinator list |
 | `frontend/src/basic/TopBar/NotificationsDrawer/index.tsx` | coordinator lookup via `federation.getCoordinators()` |
+| `frontend/webpack.config.ts` | copies `frontend/static/federation.json` → `api/federation.json` on build |
+| `.github/workflows/release.yml` | CI check: federation.json files are in sync |
 
 ---
 

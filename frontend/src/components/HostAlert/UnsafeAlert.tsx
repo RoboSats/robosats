@@ -22,9 +22,13 @@ const UnsafeAlert = (): React.JSX.Element => {
     });
   }, []);
 
+  // Derive the coordinator list outside the effect so it is a stable reference
+  // in the dependency array (avoids calling a function inside deps which ESLint
+  // flags and which misses same-count alias swaps after a federation update).
+  const coordinators = federation.getCoordinators();
   useEffect(() => {
     // Build safe URL list from the live coordinator list in the Federation model.
-    const safeUrls: string[] = federation.getCoordinators().flatMap((c) => {
+    const safeUrls: string[] = coordinators.flatMap((c) => {
       const urls: string[] = [];
       for (const net of [c.mainnet, c.testnet] as unknown as Array<Record<string, string>>) {
         if (net?.onion) urls.push(removeProtocol(net.onion));
@@ -35,7 +39,7 @@ const UnsafeAlert = (): React.JSX.Element => {
     // web hosted frontend without coordinator
     safeUrls.push('robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion');
     setUnsafeClient(!safeUrls.includes(getHost()));
-  }, [federation.getCoordinators().length]);
+  }, [coordinators]);
 
   if (hostUrl.endsWith('.onion') || !show) {
     return <></>;

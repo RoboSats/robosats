@@ -1,6 +1,8 @@
 import hashlib
 import json
+import logging
 import os
+import re
 from datetime import datetime, timedelta
 from hmac import compare_digest
 
@@ -852,14 +854,26 @@ _FEDERATION_NET_ATTRS = ("onion", "clearnet", "i2p")
 _BUNDLED_FEDERATION_PATH = os.path.join(os.path.dirname(__file__), "federation.json")
 
 
+logger = logging.getLogger(__name__)
+
+
 def _normalize_federation(doc: dict) -> dict:
-    """Return a copy of *doc* containing only the key attributes used for hashing."""
+    """Return a copy of *doc* containing only the key attributes used for hashing.
+
+    Net attrs (onion, clearnet, i2p) are coerced to empty string when absent
+    *or* explicitly null — some federation.json entries use JSON null for
+    missing addresses and both the backend and frontend must agree on this
+    normalization so their canonical hashes match.
+    """
     out = {}
     for alias, entry in doc.items():
         normalized = {k: entry.get(k) for k in _FEDERATION_KEY_ATTRS}
         for net in ("mainnet", "testnet"):
             normalized[net] = {
-                k: (entry.get(net) or {}).get(k, "") for k in _FEDERATION_NET_ATTRS
+                # Use `or ""` so that null values are coerced to "" just as
+                # the frontend does with `netObj[k] ?? ''`.
+                k: (entry.get(net) or {}).get(k) or ""
+                for k in _FEDERATION_NET_ATTRS
             }
         out[alias] = normalized
     return out
@@ -892,23 +906,34 @@ def _load_federation_doc() -> dict:
         try:
             with open(path, "r", encoding="utf-8") as fh:
                 candidate = json.load(fh)
-            # Basic schema validation: must be a non-empty dict of dicts each
-            # containing at least a shortAlias and a mainnet.onion address.
+            # Schema validation — aligned with the frontend isValidDoc() rules so
+            # that a document passing backend validation cannot be rejected by
+            # every client (which would cause a perpetual fetch-and-discard loop).
+            _ALIAS_RE = re.compile(r"^[a-z0-9]{1,20}$")
             if isinstance(candidate, dict) and candidate:
                 for alias, entry in candidate.items():
+                    if not _ALIAS_RE.match(alias):
+                        raise ValueError(
+                            f"Alias '{alias}' does not match /^[a-z0-9]{{1,20}}$/"
+                        )
                     if not isinstance(entry, dict):
                         raise ValueError(f"Entry '{alias}' is not a dict")
-                    if not entry.get("shortAlias"):
-                        raise ValueError(f"Entry '{alias}' missing shortAlias")
-                    onion = (entry.get("mainnet") or {}).get("onion", "")
-                    if not onion or ".onion" not in onion:
+                    if entry.get("shortAlias") != alias:
+                        raise ValueError(
+                            f"Entry '{alias}' shortAlias mismatch: "
+                            f"'{entry.get('shortAlias')}'"
+                        )
+                    onion = (entry.get("mainnet") or {}).get("onion") or ""
+                    if ".onion" not in onion:
                         raise ValueError(
                             f"Entry '{alias}' missing valid mainnet onion address"
                         )
                 doc = candidate
         except Exception as exc:
-            print(
-                f"[FederationView] Failed to load {path}: {exc}. Falling back to bundled copy."
+            logger.warning(
+                "[FederationView] Failed to load %s: %s. Falling back to bundled copy.",
+                path,
+                exc,
             )
 
     if doc is None:

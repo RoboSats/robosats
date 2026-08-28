@@ -386,6 +386,7 @@
   "Alias": "Přezdívka",
   "Alias already exists": "Přezdívka již existuje",
   "Enabled": "Povoleno",
+  "Federation Hash": "Federation Hash",
   "Invalid Onion URL": "Neplatná Onion URL",
   "No coordinators found.": "Nenalezeni žádní koordinátoři.",
   "Rating": "Hodnocení",

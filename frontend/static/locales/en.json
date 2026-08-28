@@ -386,6 +386,7 @@
   "Alias": "Alias",
   "Alias already exists": "Alias already exists",
   "Enabled": "Enabled",
+  "Federation Hash": "Federation Hash",
   "Invalid Onion URL": "Invalid Onion URL",
   "No coordinators found.": "No coordinators found.",
   "Rating": "Rating",

@@ -1,9 +1,10 @@
 /**
- * FederationDiscovery — hash-first design.
+ * FederationDiscovery — hash-first design with seniority-weighted voting.
  * See /development/federation-discovery.md for the full spec.
  *
  * Phase A: read coordinator.info.federation_hash (zero new requests).
- * Phase B: vote on hashes — coordinator majority, client x2 on tie.
+ * Phase B: seniority-weighted vote — strict majority (>50%) required to win;
+ *          on indecision the client keeps its current trusted doc unchanged.
  * Phase C: fetch /api/federation/ once on mismatch, verify hash locally.
  */
 
@@ -82,7 +83,10 @@ export function isValidDoc(doc: unknown): doc is FederationDoc {
   return true;
 }
 
-// Badge re-application from bundled seed
+// ---------------------------------------------------------------------------
+// Badge re-application from bundled seed (unchanged)
+// ---------------------------------------------------------------------------
+
 function reapplySeedBadges(doc: FederationDoc): FederationDoc {
   const seed = defaultFederation as unknown as FederationDoc;
   const out: FederationDoc = {};
@@ -102,35 +106,163 @@ function reapplySeedBadges(doc: FederationDoc): FederationDoc {
   return out;
 }
 
-// Phase B: vote on hashes (pure, no I/O)
+// ---------------------------------------------------------------------------
+// Phase B — seniority-weighted vote (pure, no I/O)
+// ---------------------------------------------------------------------------
+
+/** One coordinator's vote contribution. */
+export interface CoordVote {
+  alias: string;
+  hash: string;
+}
+
+export interface VoteOptions {
+  /**
+   * The client's own trusted federation document (bundled seed or the last
+   * accepted voted-in doc).  Used exclusively to look up established dates —
+   * we never trust a date that arrived from a coordinator-served doc.
+   */
+  trustedDoc: FederationDoc;
+  /**
+   * Client-side join-date ledger: alias → 'YYYY-MM-DD'.  Records the date the
+   * client first accepted a coordinator absent from the bundled seed.
+   */
+  joinDates: Record<string, string>;
+  /** Injected so tests can pin the clock. Defaults to new Date(). */
+  now?: Date;
+}
+
 export interface VoteResult {
-  winnerHash: string;
-  usedSeed: boolean;
+  /** Winning hash, or null when no strict majority was reached (keep current). */
+  winnerHash: string | null;
 }
 
-export function voteOnHashes(coordHashes: string[], seedHash: string): VoteResult {
-  if (coordHashes.length < 2) return { winnerHash: seedHash, usedSeed: true };
-  const buildCounts = (hs: string[]): Map<string, number> => {
-    const m = new Map<string, number>();
-    for (const h of hs) m.set(h, (m.get(h) ?? 0) + 1);
-    return m;
-  };
-  const tally = (counts: Map<string, number>): string | null => {
-    const max = Math.max(...counts.values());
-    const w = [...counts.entries()].filter(([, v]) => v === max).map(([k]) => k);
-    return w.length === 1 ? w[0] : null;
-  };
-  const coordCounts = buildCounts(coordHashes);
-  const w1 = tally(coordCounts);
-  if (w1 !== null) return { winnerHash: w1, usedSeed: w1 === seedHash };
-  const withClient = new Map(coordCounts);
-  withClient.set(seedHash, (withClient.get(seedHash) ?? 0) + 2);
-  const w2 = tally(withClient);
-  if (w2 !== null) return { winnerHash: w2, usedSeed: w2 === seedHash };
-  return { winnerHash: seedHash, usedSeed: true };
+// Weight constants
+export const WEIGHT_MIN = 1; // newcomer / unknown / future-dated
+export const WEIGHT_FLOOR = 4; // guaranteed after 1 full year of seniority
+export const WEIGHT_MAX = 10; // oldest coordinator
+export const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+/**
+ * Return a coordinator's trusted established date.
+ *
+ * Priority (root of trust = the client's own data):
+ *   1. Bundled seed federation.json (compiled into the app bundle at release —
+ *      not spoofable by any coordinator).
+ *   2. Client's persisted join-date ledger (recorded when a newcomer was first
+ *      accepted via a successful weighted vote).
+ *   3. null — unknown seniority; receives WEIGHT_MIN.
+ *
+ * A coordinator-served `established` field is intentionally ignored: if it
+ * were trusted, a sybil could backdate itself to maximise its vote weight.
+ */
+export function trustedEstablishedDate(
+  alias: string,
+  seedDoc: FederationDoc,
+  joinDates: Record<string, string>,
+): Date | null {
+  const seedEntry = seedDoc[alias] as Record<string, unknown> | undefined;
+  const seedDate = seedEntry?.established;
+  if (typeof seedDate === 'string' && seedDate.length > 0) {
+    const d = new Date(seedDate);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  const ledgerDate = joinDates[alias];
+  if (typeof ledgerDate === 'string' && ledgerDate.length > 0) {
+    const d = new Date(ledgerDate);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  return null;
 }
 
-// Phase C: fetch + verify on mismatch
+/**
+ * Compute seniority weight for a single coordinator.
+ *
+ * Piecewise linear, anchored on the oldest coordinator among all voters:
+ *
+ *   age <  1 year  →  1 + floor(3 × age / ONE_YEAR_MS)   [ramp 1 → 3]
+ *   age >= 1 year  →  4 + floor(6 × (age−1y) / (ageOldest−1y))  [ramp 4 → 10]
+ *
+ * Guarantees:
+ *   - null / future-dated established  → WEIGHT_MIN (1)
+ *   - at least 1 year old              → at least WEIGHT_FLOOR (4)
+ *   - oldest coordinator               → WEIGHT_MAX (10)
+ */
+export function seniorityWeight(
+  established: Date | null,
+  oldestEstablished: Date | null,
+  now: Date,
+): number {
+  if (!established || !oldestEstablished) return WEIGHT_MIN;
+
+  const ageMs = now.getTime() - established.getTime();
+  const ageOldestMs = now.getTime() - oldestEstablished.getTime();
+
+  if (ageMs < 0 || ageOldestMs <= 0) return WEIGHT_MIN;
+
+  if (ageMs < ONE_YEAR_MS) {
+    // First-year ramp: 1 → 3
+    return WEIGHT_MIN + Math.floor((WEIGHT_FLOOR - WEIGHT_MIN - 1) * (ageMs / ONE_YEAR_MS));
+  }
+
+  // Post-year segment: 4 → 10
+  if (ageOldestMs <= ONE_YEAR_MS) {
+    // Oldest is also under 1 year — young federation, everyone past 1 year
+    // gets the floor (degenerate edge case, practically unreachable).
+    return WEIGHT_FLOOR;
+  }
+
+  const seniorSpanMs = ageOldestMs - ONE_YEAR_MS; // > 0
+  const coordSeniorMs = ageMs - ONE_YEAR_MS; // ≥ 0
+  return WEIGHT_FLOOR + Math.floor((WEIGHT_MAX - WEIGHT_FLOOR) * (coordSeniorMs / seniorSpanMs));
+}
+
+/**
+ * Phase B — seniority-weighted vote on federation_hash values.
+ *
+ * Rules:
+ *   - Minimum quorum: ≥ 2 coordinator votes (older behaviour preserved).
+ *   - Each coordinator's vote carries a seniority weight (1–10).
+ *   - A hash wins only with strict majority: its weight > 50% of total weight.
+ *   - Indecision (tie / quorum not met) → winnerHash = null.
+ *     The caller keeps the client's current trusted document unchanged.
+ *     "No decision" is always the safe direction.
+ */
+export function voteOnHashes(votes: CoordVote[], options: VoteOptions): VoteResult {
+  const { trustedDoc, joinDates, now = new Date() } = options;
+
+  if (votes.length < 2) return { winnerHash: null };
+
+  const established = votes.map((v) => trustedEstablishedDate(v.alias, trustedDoc, joinDates));
+
+  const oldestEstablished = established.reduce<Date | null>((oldest, d) => {
+    if (!d) return oldest;
+    if (!oldest) return d;
+    return d.getTime() < oldest.getTime() ? d : oldest;
+  }, null);
+
+  const weightByHash = new Map<string, number>();
+  let totalWeight = 0;
+
+  votes.forEach((v, i) => {
+    const w = seniorityWeight(established[i], oldestEstablished, now);
+    weightByHash.set(v.hash, (weightByHash.get(v.hash) ?? 0) + w);
+    totalWeight += w;
+  });
+
+  for (const [hash, w] of weightByHash) {
+    if (w * 2 > totalWeight) return { winnerHash: hash };
+  }
+
+  return { winnerHash: null };
+}
+
+// ---------------------------------------------------------------------------
+// Phase C: fetch + verify on mismatch (unchanged)
+// ---------------------------------------------------------------------------
+
 export async function fetchAndVerifyDoc(
   baseUrl: string,
   expectedHash: string,

@@ -386,6 +386,7 @@
   "Alias": "别名",
   "Alias already exists": "别名已存在",
   "Enabled": "已启用",
+  "Federation Hash": "Federation Hash",
   "Invalid Onion URL": "无效的洋葱URL",
   "No coordinators found.": "未找到协调员。",
   "Rating": "评分",

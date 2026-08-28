@@ -25,6 +25,7 @@ const Coordinators = (): React.JSX.Element => {
         aria-labelledby='recovery-dialog-title'
         aria-describedby='recovery-description'
         fullWidth
+        maxWidth='md'
       >
         <DialogContent>
           <Grid
