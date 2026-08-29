@@ -16,6 +16,7 @@ name — all three must match exactly.
 | bazaar | 107 | 1007 | ❌ same onion | testnet traffic hits mainnet service |
 | eleuteria | 110 | 1010 | ❌ same onion | testnet traffic hits mainnet service |
 | freeport | 111 | 1011 | ❌ same onion | testnet traffic hits mainnet service |
+| ammanaya | 112 | 1012 | ❌ same onion | testnet traffic hits mainnet service |
 | alice | 109 | 1009 | ❌ same onion | testnet traffic hits mainnet service |
 
 Testnet port convention: mainnet port + 900 (e.g. 102 → 1002).

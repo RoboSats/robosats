@@ -257,13 +257,13 @@
     "motto": "Free trade, free ports, free people.",
     "color": "#808080",
     "established": "2026-08-28",
-    "nostrHexPubkey": null,
+    "nostrHexPubkey": "e489cdb0b24fa416a49b524625e0edab0f7235f3a0261a3cdfc64c4efdc14afd",
     "contact": {
       "email": "fp-coordinator@proton.me",
       "telegram": null,
       "simplex": null,
       "pgp": "/static/federation/pgp/27099F12B8752D8267B6DFF28265E7B36362CF31.asc",
-      "nostr": null,
+      "nostr": "npub1ujyumv9jf7jpdfym2frztc8d4v8hyd0n5qnp50xlcexyalwpft7s7gqfnw",
       "website": null,
       "matrix": null,
       "fingerprint": "27099F12B8752D8267B6DFF28265E7B36362CF31"
@@ -291,6 +291,53 @@
     },
     "mainnetNodesPubkeys": [
       "03230eea7d63303c3e54076f84745aeabf447e01a572e984e77b796665419d43cc"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "ammanaya": {
+    "longAlias": "Ammanaya",
+    "shortAlias": "ammanaya",
+    "identifier": "ammanaya",
+    "description": "Ammanaya is the ancestral goddess of fire — born to set your sats free. A privacy-first P2P Bitcoin Lightning coordinator committed to financial sovereignty, low fees, and seamless non-KYC trading. No surveillance, no compromise.",
+    "motto": "The fire that sets you free ⚡🔥",
+    "color": "#ff6b35",
+    "established": "2026-08-28",
+    "nostrHexPubkey": "91820b0fc7e52873a574208c7b4e9b8ae848ee25e5c03bac655c45d060995548",
+    "contact": {
+      "email": "pucot458KK@proton.me",
+      "telegram": "@ammanaya_bot",
+      "simplex": "https://smp1.simplexonflux.com/a#UmzW2iVe6cafc0G24FO-loxValRqfgBVCvXFSn6cypw",
+      "pgp": "/static/federation/pgp/2B48301741989AB0233278EF157C0F857A998CC0.asc",
+      "nostr": "npub1jxpqkr78u5588ft5yzx8kn5m3t5y3m39uhqrhtr9t3zaqcye24yql86vq2",
+      "website": null,
+      "matrix": null,
+      "fingerprint": "2B48301741989AB0233278EF157C0F857A998CC0"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 50,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy": "Ammanaya does not collect, store, or share any personal information. All trades are conducted through Tor. The coordinator only processes the minimum data required to facilitate P2P trades (order details, hold invoices). No logs are kept beyond what is necessary for active order processing and dispute resolution.",
+      "Data Policy": "No user data is shared with third parties under any circumstances. Dispute-related data is stored only for the duration of the dispute and permanently deleted upon resolution. The coordinator is accessible only through Tor.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://ammannjgzybw4qm2odmci7xgolh5grzijidacjxose5tthm375dcopad.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "02cd566293ad8c8fd55bf5c5be38df5fc0af2b445333b10cbbd8b8a7d4c7ed7fe3"
     ],
     "testnetNodesPubkeys": [],
     "federated": true

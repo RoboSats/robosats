@@ -70,6 +70,18 @@ mainnet_freeport_socat="socat tcp4-LISTEN:${mainnet_freeport_port},reuseaddr,for
 testnet_freeport_socat="socat tcp4-LISTEN:${testnet_freeport_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_freeport_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
+# Ammanaya
+# Mainnet
+mainnet_ammanaya_onion=ammannjgzybw4qm2odmci7xgolh5grzijidacjxose5tthm375dcopad.onion
+mainnet_ammanaya_port=112
+# Testnet
+testnet_ammanaya_onion=ammannjgzybw4qm2odmci7xgolh5grzijidacjxose5tthm375dcopad.onion
+testnet_ammanaya_port=1012
+# socat cmd
+mainnet_ammanaya_socat="socat tcp4-LISTEN:${mainnet_ammanaya_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_ammanaya_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_ammanaya_socat="socat tcp4-LISTEN:${testnet_ammanaya_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_ammanaya_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+
+################################
 # Alice
 # Mainnet
 mainnet_alice_onion=alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion
@@ -89,4 +101,4 @@ if [ ! -f /etc/nginx/ssl/server.crt ]; then
         -subj "/CN=robosats_client" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 fi
 
-$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_eleuteria_socat & $testnet_eleuteria_socat & $mainnet_freeport_socat & $testnet_freeport_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx
+$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_eleuteria_socat & $testnet_eleuteria_socat & $mainnet_freeport_socat & $testnet_freeport_socat & $mainnet_ammanaya_socat & $testnet_ammanaya_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx
