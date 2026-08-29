@@ -152,54 +152,6 @@
     "testnetNodesPubkeys": [],
     "federated": true
   },
-  "freedomsats": {
-    "longAlias": "FreedomSats",
-    "shortAlias": "freedomsats",
-    "identifier": "freedomsats",
-    "description": "A Decentralized, deflationary currency enthusiast. Hoping to add liquidity to a non-KYC means for purchasing and selling bitcoin. Robosats P2P solves many issues with the modern day fiat system, and FreedomSats is happy to aid in its decentralization. The focus of FreedomSats will be to ensure data privacy and uptime-consistency.",
-    "motto": "Liberty’s Network Above",
-    "color": "#5d2365",
-    "established": "2025-06-30",
-    "nostrHexPubkey": "ded3dc02a1a9b61ce59d11f496539cb3fd15f00326a16f47e5f8d76baba24bdb",
-    "contact": {
-      "email": "FreedomSatoshis@proton.me",
-      "telegram": "@freedomsats",
-      "simplex": "https://simplex.chat/contact#/?v=2-7&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FLjWY29_NGy7vujmzRCmnJocepWWMAk2D%23%2F%3Fv%3D1-4%26dh%3DMCowBQYDK2VuAyEAWRfXNPT2xQihjv0Ef2sV51J2YiAmboLcmE0adlEAv2c%253D%26q%3Dc%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
-      "pgp": "/static/federation/pgp/9D3D3BAF4744305EE3F0B837331AB575DD78D930.asc",
-      "nostr": "npub1mmfacq4p4xmpeevaz86fv5uuk073tuqry6sk73l9lrtkh2azf0dsykwxuj",
-      "website": null,
-      "fingerprint": "9D3D3BAF4744305EE3F0B837331AB575DD78D930"
-    },
-    "badges": {
-      "isFounder": false,
-      "donatesToDevFund": 20,
-      "hasGoodOpSec": true,
-      "hasLargeLimits": false
-    },
-    "policies": {
-      "Privacy Policy 1": "Dispute Evidence Submission: If a dispute arises, you will be asked to provide only the transaction-related documentation needed to evaluate your claim—for example, transaction IDs, payment‐confirmation screenshots, or other pertinent records. Please keep a record of all relevant information.",
-      "Privacy Policy 2": "Limited Retention Period: All sensitive data gathered for the purpose of resolving a dispute will be retained strictly for the duration of that process. Once the issue is fully resolved, this information will be irrevocably and securely deleted",
-      "Data Policy 1": "No Third-Party Data Sharing: RoboSats is deliberately designed to collect no user data—no IP addresses, geolocation, or personal identifiers—and will never share information with outside parties.",
-      "Data Policy 2": "Ephemeral Log Retention: All operational logs required to run the coordinator are automatically deleted after seven days, unless they’re essential for an active dispute.",
-      "Rule 1:": "Please do not share any personal information through the chat, if possible share as little revealing information as possible.",
-      "Rule 2:": "Email is provided for convenience but other means of communication are recommended. Like Nostr/SimpleX/Telegram"
-    },
-    "mainnet": {
-      "onion": "http://dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion",
-      "clearnet": null,
-      "i2p": null
-    },
-    "testnet": {
-      "onion": null,
-      "clearnet": null,
-      "i2p": null
-    },
-    "mainnetNodesPubkeys": [
-      "028059662c65626f3002290dd3151186bc1952726c03f56012406f3ceadb81cacc"
-    ],
-    "testnetNodesPubkeys": [],
-    "federated": true
-  },
   "alice": {
     "longAlias": "Alice",
     "shortAlias": "alice",
@@ -244,6 +196,148 @@
     },
     "mainnetNodesPubkeys": [
       "02580496598cf3e7bfe41c9b0721d1c90693d31d308364456dc30f0a22bf58ddd7"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "eleuteria": {
+    "longAlias": "Eleuteria",
+    "shortAlias": "eleuteria",
+    "identifier": "eleuteria",
+    "description": "Eleuteria is a privacy-focused, non-KYC RoboSats coordinator built around the principles of financial freedom, self-sovereignty and peer-to-peer Bitcoin. It provides a Tor-only environment where users can trade directly while minimizing unnecessary trust and exposure of personal information.",
+    "motto": "Coordinating privacy. Broadcasting freedom.",
+    "color": "#C58A32",
+    "established": "2026-08-26",
+    "nostrHexPubkey": "0f243ba69b7c7ffa73934bc7f5fa6586b8013afdc310d808b1ec2c2c98f1c219",
+    "contact": {
+      "email": "backsocks@proton.me",
+      "telegram": "@asyscom",
+      "simplex": "https://smp17.simplex.im/a#w2lbfI-Rbea5dukWc38CVDQEzLryz8q7p2C4NGEViNg",
+      "pgp": "/static/federation/pgp/546143E7584783759F6829AF6DA5626C8AF8DF61.asc",
+      "nostr": "npub1pujrhf5m03ll5uunf0rlt7n9s6uqzwhacvgdsz93askzex83cgvsukm9hf",
+      "website": null,
+      "matrix": null,
+      "fingerprint": "546143E7584783759F6829AF6DA5626C8AF8DF61"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 30,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy 1 — Evidence in Disputes": "In the event of a dispute, users will be asked to provide transaction-related evidence. This could include transaction IDs, screenshots of payment confirmations, or other pertinent transaction records. Personal information or unrelated transaction details should be redacted to maintain privacy.",
+      "Privacy Policy 2 — Short-term Storage": "Sensitive information related to disputes will be stored only for the duration necessary to resolve the issue. Once resolved, the data will be permanently deleted. For ease of use e-mail communications are permitted, but E2EE and decentralized platforms such as NOSTR and SIMPLEX are advised.",
+      "Data Policy 1 — No Third-Party Sharing": "Under no circumstances will user information be shared with third parties. Also because it is impossible to do so by design of Robosats architecture. Due to the decentralized and privacy-centric structure of RoboSats built on the Tor network, we are unable to collect or store user information, including but not limited to, the location of users. This design ensures maximum privacy and anonymity for our users.",
+      "Data Policy 2 — Short-term Storage": "Any log needed to operate the coordinator will be cleared after 7 days, unless strictly needed to process disputes. To ensure utmost privacy, the coordinator will be accessible only through Tor.",
+      "Rule 1:": " Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://ixiiqsuzt7hh5qxshiqwyewyh3gyygltbygqlvlyitg3gl3u2cemk3ad.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "03808d86fee8345c7b470f792f62e3a3cba78ad49d75d4623c8e27520c34f90d5b"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "freeport": {
+    "longAlias": "FreePort",
+    "shortAlias": "freeport",
+    "identifier": "freeport",
+    "description": "Privacy-focused P2P Bitcoin exchange coordinator. Tor-only for maximum privacy.",
+    "motto": "Free trade, free ports, free people.",
+    "color": "#808080",
+    "established": "2026-08-28",
+    "nostrHexPubkey": "e489cdb0b24fa416a49b524625e0edab0f7235f3a0261a3cdfc64c4efdc14afd",
+    "contact": {
+      "email": "fp-coordinator@proton.me",
+      "telegram": null,
+      "simplex": null,
+      "pgp": "/static/federation/pgp/27099F12B8752D8267B6DFF28265E7B36362CF31.asc",
+      "nostr": "npub1ujyumv9jf7jpdfym2frztc8d4v8hyd0n5qnp50xlcexyalwpft7s7gqfnw",
+      "website": null,
+      "matrix": null,
+      "fingerprint": "27099F12B8752D8267B6DFF28265E7B36362CF31"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy": "Tor-only coordinator. No KYC required. Dispute evidence handled confidentially and deleted after resolution. No user tracking or analytics.",
+      "Data Policy": "No data shared with or sold to third parties. Database cleared regularly except for active disputes. Coordinator operates exclusively over Tor.",
+      "Other Policies": "Max order size: 500,000 sats. Maker fee: 0.025%. Taker fee: 0.175%."
+    },
+    "mainnet": {
+      "onion": "http://2enoseg66hme76khjjn2qvrhipnzwgwa44mewgrdphrxbhzcxd2vdiqd.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "03230eea7d63303c3e54076f84745aeabf447e01a572e984e77b796665419d43cc"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
+  },
+  "ammanaya": {
+    "longAlias": "Ammanaya",
+    "shortAlias": "ammanaya",
+    "identifier": "ammanaya",
+    "description": "Ammanaya is the ancestral goddess of fire — born to set your sats free. A privacy-first P2P Bitcoin Lightning coordinator committed to financial sovereignty, low fees, and seamless non-KYC trading. No surveillance, no compromise.",
+    "motto": "The fire that sets you free ⚡🔥",
+    "color": "#ff6b35",
+    "established": "2026-08-28",
+    "nostrHexPubkey": "91820b0fc7e52873a574208c7b4e9b8ae848ee25e5c03bac655c45d060995548",
+    "contact": {
+      "email": "pucot458KK@proton.me",
+      "telegram": "@ammanaya_bot",
+      "simplex": "https://smp1.simplexonflux.com/a#UmzW2iVe6cafc0G24FO-loxValRqfgBVCvXFSn6cypw",
+      "pgp": "/static/federation/pgp/2B48301741989AB0233278EF157C0F857A998CC0.asc",
+      "nostr": "npub1jxpqkr78u5588ft5yzx8kn5m3t5y3m39uhqrhtr9t3zaqcye24yql86vq2",
+      "website": null,
+      "matrix": null,
+      "fingerprint": "2B48301741989AB0233278EF157C0F857A998CC0"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 50,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy": "Ammanaya does not collect, store, or share any personal information. All trades are conducted through Tor. The coordinator only processes the minimum data required to facilitate P2P trades (order details, hold invoices). No logs are kept beyond what is necessary for active order processing and dispute resolution.",
+      "Data Policy": "No user data is shared with third parties under any circumstances. Dispute-related data is stored only for the duration of the dispute and permanently deleted upon resolution. The coordinator is accessible only through Tor.",
+      "Rule 1:": "Do not share personal information through the chat, unless strictly needed for completing the trade.",
+      "Rule 2:": "Users are solely responsible for understanding and complying with their local laws and regulations regarding cryptocurrency transactions. By using this coordinator, you agree to ensure that your activities on the platform are lawful in your jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://ammannjgzybw4qm2odmci7xgolh5grzijidacjxose5tthm375dcopad.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "02cd566293ad8c8fd55bf5c5be38df5fc0af2b445333b10cbbd8b8a7d4c7ed7fe3"
     ],
     "testnetNodesPubkeys": [],
     "federated": true
