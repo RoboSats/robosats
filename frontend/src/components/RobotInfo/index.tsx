@@ -67,6 +67,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const [webhookEnabled, setWebhookEnabled] = useState<boolean>(false);
   const [webhookSaving, setWebhookSaving] = useState<boolean>(false);
   const [webhookUrlError, setWebhookUrlError] = useState<string>('');
+  const [webhookSaveError, setWebhookSaveError] = useState<string>('');
   const [openNostrForwardSettings, setOpenNostrForwardSettings] = useState<boolean>(false);
   const [nostrForwardPubkey, setNostrForwardPubkey] = useState<string>('');
   const [nostrForwardRelay, setNostrForwardRelay] = useState<string>('');
@@ -152,22 +153,32 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   };
 
   const handleSaveWebhookSettings = async (): Promise<void> => {
-    if (!robot) return;
+    if (!robot) {
+      setWebhookSaveError(t('Could not save webhook settings. Try again.'));
+      return;
+    }
 
     if (webhookUrl && !isValidOnionUrl(webhookUrl)) {
       setWebhookUrlError(t('URL must be a valid .onion address'));
+      setWebhookSaveError('');
       return;
     }
     setWebhookUrlError('');
+    setWebhookSaveError('');
 
     setWebhookSaving(true);
-    await robot.fetchWebhook(federation, {
+    const saved = await robot.fetchWebhook(federation, {
       webhook_url: webhookUrl || undefined,
       webhook_enabled: webhookEnabled,
       webhook_api_key: webhookApiKey || undefined,
     });
     setWebhookSaving(false);
-    setOpenWebhookSettings(false);
+
+    if (saved) {
+      setOpenWebhookSettings(false);
+    } else {
+      setWebhookSaveError(t('Could not save webhook settings. Try again.'));
+    }
   };
 
   const openNostrForwardDialog = (): void => {
@@ -378,6 +389,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   <Button
                     color='primary'
                     onClick={() => {
+                      setWebhookSaveError('');
                       setOpenWebhookSettings(true);
                     }}
                   >
@@ -388,6 +400,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   <Button
                     size='small'
                     onClick={() => {
+                      setWebhookSaveError('');
                       setOpenWebhookSettings(true);
                     }}
                   >
@@ -416,6 +429,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       onChange={(e) => {
                         setWebhookUrl(e.target.value);
                         setWebhookUrlError('');
+                        setWebhookSaveError('');
                       }}
                       size='small'
                       error={Boolean(webhookUrlError)}
@@ -428,7 +442,10 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       label={t('API Key (optional)')}
                       placeholder='Your secret API key'
                       value={webhookApiKey}
-                      onChange={(e) => setWebhookApiKey(e.target.value)}
+                      onChange={(e) => {
+                        setWebhookApiKey(e.target.value);
+                        setWebhookSaveError('');
+                      }}
                       size='small'
                       type='password'
                     />
@@ -439,12 +456,20 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       control={
                         <Switch
                           checked={webhookEnabled}
-                          onChange={(e) => setWebhookEnabled(e.target.checked)}
+                          onChange={(e) => {
+                            setWebhookEnabled(e.target.checked);
+                            setWebhookSaveError('');
+                          }}
                         />
                       }
                     />
                   </Grid>
                 </Grid>
+                {webhookSaveError && (
+                  <Alert severity='error' sx={{ mt: 2 }}>
+                    {webhookSaveError}
+                  </Alert>
+                )}
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setOpenWebhookSettings(false)}>{t('Cancel')}</Button>

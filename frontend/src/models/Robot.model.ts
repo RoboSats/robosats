@@ -30,9 +30,9 @@ interface RewardApiResponse {
 }
 
 interface WebhookApiResponse {
-  webhook_url?: string;
-  webhook_enabled?: boolean;
-  webhook_api_key?: string;
+  webhook_url: string | null;
+  webhook_enabled: boolean;
+  webhook_api_key: string | null;
 }
 
 interface NostrForwardSettings {
@@ -191,25 +191,34 @@ class Robot {
       webhook_enabled?: boolean;
       webhook_api_key?: string;
     },
-  ): Promise<void> => {
-    if (!federation) return;
-
+  ): Promise<boolean> => {
     const coordinator = federation.getCoordinator(this.shortAlias);
-    await apiClient
-      .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
-      .then((raw) => {
-        const data = raw as WebhookApiResponse | undefined;
-        if (data) {
-          this.update({
-            webhookUrl: data.webhook_url ?? this.webhookUrl,
-            webhookEnabled: data.webhook_enabled ?? this.webhookEnabled,
-            webhookApiKey: data.webhook_api_key ?? this.webhookApiKey,
-          });
-        }
-      })
-      .catch((e) => {
-        console.log(e);
+    if (!coordinator) return false;
+
+    try {
+      const raw = await apiClient.put(coordinator.url, '/api/robot/', settings, {
+        tokenSHA256: this.tokenSHA256,
       });
+      const data = raw as Partial<WebhookApiResponse> | undefined;
+      if (
+        !data ||
+        (typeof data.webhook_url !== 'string' && data.webhook_url !== null) ||
+        typeof data.webhook_enabled !== 'boolean' ||
+        (typeof data.webhook_api_key !== 'string' && data.webhook_api_key !== null)
+      ) {
+        return false;
+      }
+
+      this.update({
+        webhookUrl: data.webhook_url ?? '',
+        webhookEnabled: data.webhook_enabled,
+        webhookApiKey: data.webhook_api_key ?? '',
+      });
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   };
 
   saveNostrForward = async (

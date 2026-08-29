@@ -517,6 +517,7 @@
   "Claim": "請求する",
   "Configure Webhook": "Configure Webhook",
   "Could not save Nostr forwarding settings. Try again.": "Could not save Nostr forwarding settings. Try again.",
+  "Could not save webhook settings. Try again.": "Could not save webhook settings. Try again.",
   "Edit": "Edit",
   "Enable Nostr forwarding": "Enable Nostr forwarding",
   "Enable Telegram Notifications": "Telegram通知を有効にする",
