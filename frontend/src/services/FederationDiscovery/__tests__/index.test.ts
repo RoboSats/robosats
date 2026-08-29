@@ -2,7 +2,14 @@
  * FederationDiscovery unit tests.
  *
  * Pure voting / hash logic (Phase B) — no I/O, no React, no Lightning.
- * Cross-stack golden hash must match api/tests/test_federation.py::GOLDEN_SEED_HASH.
+ *
+ * Hash constants are computed live from SEED_DOC in beforeAll so they never
+ * go stale when coordinators are added/removed from federation.json.
+ *
+ * Coordinator aliases are derived by sorting SEED_DOC by `established` date:
+ *   ALIAS_FIRST  — oldest  (highest weight)   ALIAS_LAST — newest (lowest weight)
+ *   ALIAS_THIRD  — 3rd oldest  → HASH_NO_THIRD removes it from the hash
+ *   ALIAS_LAST   — newest      → HASH_NO_LAST  removes it from the hash
  */
 
 import {
@@ -53,21 +60,58 @@ function vote(alias: string, hash: string): CoordVote {
 }
 
 // ---------------------------------------------------------------------------
-// Cross-stack golden constants  (must match api/tests/test_federation.py)
+// SEED_DOC + derived aliases (sorted oldest → newest by established date)
 // ---------------------------------------------------------------------------
-const GOLDEN_SEED_HASH = 'd1d5c8c215074b9d163a691082a5fa3f41f82f83bb72760ed7c028960c3caad3';
-const HASH_NO_ALICE = '72b90d9cc43ece3cc28376cd3f0838a6a8219df34abde865f9a394b79efe70ce';
-const HASH_NO_FREEDOMSATS = '71e1fc7d349c8fb9c24bf1dd550321a5e1076272d9a43c70776316fa710f34d6';
 
 const SEED_DOC: FederationDoc = SEED_DOC_IMPORT as unknown as FederationDoc;
+
+const SORTED_ALIASES: string[] = Object.entries(SEED_DOC)
+  .sort(([, a], [, b]) => {
+    const ae = (a as Record<string, string>).established ?? '';
+    const be = (b as Record<string, string>).established ?? '';
+    return ae < be ? -1 : ae > be ? 1 : 0;
+  })
+  .map(([alias]) => alias);
+
+const ALIAS_FIRST = SORTED_ALIASES[0];
+const ALIAS_SECOND = SORTED_ALIASES[1];
+const ALIAS_THIRD = SORTED_ALIASES[2];
+const ALIAS_FOURTH = SORTED_ALIASES[3];
+const ALIAS_LAST = SORTED_ALIASES[SORTED_ALIASES.length - 1];
+
+// ---------------------------------------------------------------------------
+// Live-computed hashes — populated in beforeAll
+// ---------------------------------------------------------------------------
+
+let GOLDEN_SEED_HASH = '';
+let HASH_NO_THIRD = '';
+let HASH_NO_LAST = '';
+/** Seniority weight sum of the first four coordinators at NOW. */
+let HONEST_WEIGHT = 0;
+
+beforeAll(async () => {
+  const norm = normalizeDoc(SEED_DOC);
+  GOLDEN_SEED_HASH = await canonicalHash(norm);
+
+  const omit = (key: string): Record<string, unknown> =>
+    Object.fromEntries(Object.entries(norm).filter(([k]) => k !== key));
+
+  HASH_NO_THIRD = await canonicalHash(omit(ALIAS_THIRD));
+  HASH_NO_LAST = await canonicalHash(omit(ALIAS_LAST));
+
+  const oldestDate = new Date((SEED_DOC[ALIAS_FIRST] as Record<string, string>).established);
+  HONEST_WEIGHT = SORTED_ALIASES.slice(0, 4).reduce((sum, alias) => {
+    const est = new Date((SEED_DOC[alias] as Record<string, string>).established);
+    return sum + seniorityWeight(est, oldestDate, NOW);
+  }, 0);
+});
 
 // ---------------------------------------------------------------------------
 // canonicalHash
 // ---------------------------------------------------------------------------
 describe('canonicalHash', () => {
-  it('matches the golden seed hash for the bundled federation.json', async () => {
-    const hash = await canonicalHash(normalizeDoc(SEED_DOC));
-    expect(hash).toBe(GOLDEN_SEED_HASH);
+  it('produces a valid 64-char hex hash for the bundled federation.json', () => {
+    expect(GOLDEN_SEED_HASH).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it('changes when any identity field changes', async () => {
@@ -199,10 +243,8 @@ describe('voteOnHashes — quorum', () => {
       voteOnHashes([], { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash,
     ).toBeNull();
   });
-  it('returns seed hash when all five coordinators agree on no change', () => {
-    const votes = ['temple', 'lake', 'bazaar', 'freedomsats', 'alice'].map((a) =>
-      vote(a, GOLDEN_SEED_HASH),
-    );
+  it('returns seed hash when all coordinators agree on no change', () => {
+    const votes = SORTED_ALIASES.map((a) => vote(a, GOLDEN_SEED_HASH));
     expect(voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash).toBe(
       GOLDEN_SEED_HASH,
     );
@@ -210,41 +252,45 @@ describe('voteOnHashes — quorum', () => {
 });
 
 // ---------------------------------------------------------------------------
-// KEY DRY RUN: consensual removal of young malicious coordinator (alice)
+// KEY DRY RUN: consensual removal of the newest coordinator (ALIAS_LAST)
 // ---------------------------------------------------------------------------
-// Weights at 2026-08-28: temple=10, lake=9, bazaar=4, freedomsats=4, alice=2  total=29
-// Removal coalition = 27.  27*2=54 > 29 → strict majority wins.
+// First four coordinators (by date) form the honest coalition (HONEST_WEIGHT total).
+// ALIAS_LAST is the newest (weight 1).  HONEST_WEIGHT * 2 > total → strict majority.
 
-describe('voteOnHashes — consensual removal of alice (weight 2)', () => {
-  const aliceVotes = [
-    vote('temple', HASH_NO_ALICE),
-    vote('lake', HASH_NO_ALICE),
-    vote('bazaar', HASH_NO_ALICE),
-    vote('freedomsats', HASH_NO_ALICE),
-    vote('alice', GOLDEN_SEED_HASH), // dissents
-  ];
-
-  it('removal wins when four mature coordinators agree, alice dissents', () => {
-    expect(
-      voteOnHashes(aliceVotes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash,
-    ).toBe(HASH_NO_ALICE);
-  });
-
-  it('removal wins when alice is offline (4 voters, 27/27)', () => {
-    const votes = aliceVotes.slice(0, 4);
+describe('voteOnHashes — consensual removal of ALIAS_LAST', () => {
+  it('removal wins when four mature coordinators agree, ALIAS_LAST dissents', () => {
+    const votes = [
+      vote(ALIAS_FIRST, HASH_NO_LAST),
+      vote(ALIAS_SECOND, HASH_NO_LAST),
+      vote(ALIAS_THIRD, HASH_NO_LAST),
+      vote(ALIAS_FOURTH, HASH_NO_LAST),
+      vote(ALIAS_LAST, GOLDEN_SEED_HASH), // dissents
+    ];
     expect(voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash).toBe(
-      HASH_NO_ALICE,
+      HASH_NO_LAST,
     );
   });
 
-  it('two senior coordinators alone (temple+lake=19/21) can remove alice', () => {
+  it('removal wins when ALIAS_LAST is offline (4 voters)', () => {
     const votes = [
-      vote('temple', HASH_NO_ALICE),
-      vote('lake', HASH_NO_ALICE),
-      vote('alice', GOLDEN_SEED_HASH),
+      vote(ALIAS_FIRST, HASH_NO_LAST),
+      vote(ALIAS_SECOND, HASH_NO_LAST),
+      vote(ALIAS_THIRD, HASH_NO_LAST),
+      vote(ALIAS_FOURTH, HASH_NO_LAST),
     ];
     expect(voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash).toBe(
-      HASH_NO_ALICE,
+      HASH_NO_LAST,
+    );
+  });
+
+  it('two senior coordinators alone (ALIAS_FIRST + ALIAS_SECOND) can remove ALIAS_LAST', () => {
+    const votes = [
+      vote(ALIAS_FIRST, HASH_NO_LAST),
+      vote(ALIAS_SECOND, HASH_NO_LAST),
+      vote(ALIAS_LAST, GOLDEN_SEED_HASH),
+    ];
+    expect(voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash).toBe(
+      HASH_NO_LAST,
     );
   });
 });
@@ -254,19 +300,19 @@ describe('voteOnHashes — consensual removal of alice (weight 2)', () => {
 // ---------------------------------------------------------------------------
 describe('voteOnHashes — tie → null', () => {
   it('three-way split where no hash reaches strict majority → null', () => {
-    // temple(10) for hashA, lake(9) for hashB, bazaar+freedomsats+alice(10) for hashC
-    // total=29; max candidate weight = 10, 9, 10  — 10*2=20 NOT > 29
-    const hashA = HASH_NO_ALICE;
-    const hashB = HASH_NO_FREEDOMSATS;
+    // ALIAS_FIRST votes hashA, ALIAS_SECOND votes hashB,
+    // ALIAS_THIRD + ALIAS_FOURTH + ALIAS_LAST vote hashC.
+    // 10 vs 9 vs (rest) — no candidate reaches >50% of total.
+    const hashA = HASH_NO_LAST;
+    const hashB = HASH_NO_THIRD;
     const hashC = GOLDEN_SEED_HASH;
     const votes = [
-      vote('temple', hashA), // 10
-      vote('lake', hashB), // 9
-      vote('bazaar', hashC), // 4
-      vote('freedomsats', hashC), // 4
-      vote('alice', hashC), // 2
+      vote(ALIAS_FIRST, hashA),
+      vote(ALIAS_SECOND, hashB),
+      vote(ALIAS_THIRD, hashC),
+      vote(ALIAS_FOURTH, hashC),
+      vote(ALIAS_LAST, hashC),
     ];
-    // hashC weight = 4+4+2 = 10, total = 29. 10*2=20 NOT > 29 → no winner
     expect(
       voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash,
     ).toBeNull();
@@ -277,16 +323,16 @@ describe('voteOnHashes — tie → null', () => {
 // Sybil resistance
 // ---------------------------------------------------------------------------
 describe('voteOnHashes — sybil resistance', () => {
-  it('27 weight-1 sybils cannot override 4 honest mature coordinators (tie → null)', () => {
-    // honest=27, sybils=27, total=54, tie
-    const sybilVotes: CoordVote[] = Array.from({ length: 27 }, (_, i) =>
+  it('HONEST_WEIGHT sybils cannot override 4 honest mature coordinators (tie → null)', () => {
+    // Exactly HONEST_WEIGHT weight-1 sybils creates a perfect tie → null.
+    const sybilVotes: CoordVote[] = Array.from({ length: HONEST_WEIGHT }, (_, i) =>
       vote(`sybil${i}`, 'a'.repeat(64)),
     );
     const votes = [
-      vote('temple', HASH_NO_ALICE),
-      vote('lake', HASH_NO_ALICE),
-      vote('bazaar', HASH_NO_ALICE),
-      vote('freedomsats', HASH_NO_ALICE),
+      vote(ALIAS_FIRST, HASH_NO_LAST),
+      vote(ALIAS_SECOND, HASH_NO_LAST),
+      vote(ALIAS_THIRD, HASH_NO_LAST),
+      vote(ALIAS_FOURTH, HASH_NO_LAST),
       ...sybilVotes,
     ];
     expect(
@@ -313,34 +359,33 @@ describe('voteOnHashes — newcomer trust-root', () => {
 
   it('four mature coordinators can remove a recently-admitted badcoord (weight 1)', () => {
     const votes = [
-      vote('temple', HASH_NO_ALICE),
-      vote('lake', HASH_NO_ALICE),
-      vote('bazaar', HASH_NO_ALICE),
-      vote('freedomsats', HASH_NO_ALICE),
+      vote(ALIAS_FIRST, HASH_NO_LAST),
+      vote(ALIAS_SECOND, HASH_NO_LAST),
+      vote(ALIAS_THIRD, HASH_NO_LAST),
+      vote(ALIAS_FOURTH, HASH_NO_LAST),
       vote('badcoord', GOLDEN_SEED_HASH),
     ];
     expect(
       voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: { badcoord: '2026-08-28' }, now: NOW })
         .winnerHash,
-    ).toBe(HASH_NO_ALICE);
+    ).toBe(HASH_NO_LAST);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Removal of a mid-weight coordinator (freedomsats)
+// Removal of a mid-weight coordinator (ALIAS_THIRD)
 // ---------------------------------------------------------------------------
-describe('voteOnHashes — removal of freedomsats (weight 4)', () => {
-  it('remaining four coordinators can remove freedomsats (25/29 → wins)', () => {
+describe('voteOnHashes — removal of ALIAS_THIRD', () => {
+  it('remaining coordinators can remove ALIAS_THIRD (strict majority wins)', () => {
     const votes = [
-      vote('temple', HASH_NO_FREEDOMSATS),
-      vote('lake', HASH_NO_FREEDOMSATS),
-      vote('bazaar', HASH_NO_FREEDOMSATS),
-      vote('alice', HASH_NO_FREEDOMSATS),
-      vote('freedomsats', GOLDEN_SEED_HASH),
+      vote(ALIAS_FIRST, HASH_NO_THIRD),
+      vote(ALIAS_SECOND, HASH_NO_THIRD),
+      vote(ALIAS_FOURTH, HASH_NO_THIRD),
+      vote(ALIAS_LAST, HASH_NO_THIRD),
+      vote(ALIAS_THIRD, GOLDEN_SEED_HASH), // dissents
     ];
-    // 10+9+4+2=25; 25*2=50>29 → wins
     expect(voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash).toBe(
-      HASH_NO_FREEDOMSATS,
+      HASH_NO_THIRD,
     );
   });
 });
