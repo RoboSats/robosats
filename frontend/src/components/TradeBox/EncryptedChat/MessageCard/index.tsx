@@ -6,12 +6,27 @@ import { useTranslation } from 'react-i18next';
 import { isImageMimeType } from '../../../../utils/nip17File';
 import { downloadFromBlossom, verifyBlobHash } from '../../../../utils/blossom';
 import { decryptFile } from '../../../../utils/crypto/xchacha20';
-
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 import { type EncryptedChatMessage } from '..';
 import ImageLightbox from '../ImageLightbox';
+
+/**
+ * Convert a Uint8Array to a data: URL so it can be used as <img src> on any
+ * platform.  blob: URLs work in normal browser pages but are blocked when the
+ * document origin is file:// (Electron desktop, Android WebView) because the
+ * blob's origin is opaque and doesn't match the null file: origin.  A data:
+ * URL carries the bytes inline and has no cross-origin restriction.
+ */
+function bytesToDataUrl(bytes: Uint8Array, mimeType: string): string {
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return `data:${mimeType};base64,${btoa(binary)}`;
+}
 
 interface Props {
   message: EncryptedChatMessage;
@@ -45,14 +60,8 @@ const MessageCard: React.FC<Props> = ({
   const makerCardColor = theme.palette.mode === 'light' ? '#f2d5f6' : '#380d3f';
   const cardColor = isTaker ? takerCardColor : makerCardColor;
 
-  useEffect(() => {
-    // Cleanup blob URL on unmount
-    return () => {
-      if (imageUrls[message.index]) {
-        URL.revokeObjectURL(imageUrls[message.index]);
-      }
-    };
-  }, [imageUrls[message.index]]);
+  // No cleanup needed: images are stored as data: URLs (inline base64), not
+  // blob: URLs, so there is nothing to revoke.
 
   const handleImageLoad = async () => {
     if (imageUrls[message.index] || !message.fileMetadata || imageError) return;
@@ -85,13 +94,15 @@ const MessageCard: React.FC<Props> = ({
         }
       }
 
-      const blob = new Blob([plaintext], { type: fileData.mimeType });
-      const url = URL.createObjectURL(blob);
+      // Build a data: URL instead of a blob: URL.
+      // blob: URLs are blocked when the document origin is file:// (Electron
+      // desktop and Android WebView), because the blob's synthetic origin is
+      // opaque and does not match the null file: origin.  data: URLs carry the
+      // bytes inline and have no cross-origin restriction, matching the proven
+      // approach already used by RobotAvatar throughout the app.
+      const dataUrl = bytesToDataUrl(plaintext, fileData.mimeType);
 
-      setImageUrls((urls) => {
-        urls[message.index] = url;
-        return urls;
-      });
+      setImageUrls((prev) => ({ ...prev, [message.index]: dataUrl }));
     } catch (error) {
       console.error('Failed to load image:', error);
       setImageError(t('Failed to decrypt image'));

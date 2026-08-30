@@ -42,16 +42,31 @@ let tor = null;
 // Function to determine the current OS and find the appropriate Tor binary
 function checkPlatformAndRunTor() {
     const platform = os.platform();
+    // When packaged with --asar, child_process.spawn() cannot execute binaries
+    // from inside the .asar archive.  The 'tor' directory is kept on the real
+    // filesystem via --asar.unpackDir=tor (see package.json) and lives at
+    // <resources>/app.asar.unpacked/tor/.  Fall back to __dirname when running
+    // unpackaged (development / CI test).
+    const torBase = __dirname.includes('app.asar')
+        ? path.join(process.resourcesPath, 'app.asar.unpacked')
+        : __dirname;
     switch (platform) {
         case 'win32':
-            tor = (0, child_process_1.spawn)(path.join(__dirname, '/tor/tor-win/tor/tor.exe'));
+            tor = (0, child_process_1.spawn)(path.join(torBase, 'tor', 'tor-win', 'tor', 'tor.exe'));
             break;
         case 'darwin':
-            tor = (0, child_process_1.spawn)(path.join(__dirname, '/tor/tor-mac/tor/tor'));
+            tor = (0, child_process_1.spawn)(path.join(torBase, 'tor', 'tor-mac', 'tor', 'tor'));
             break;
-        case 'linux':
-            tor = (0, child_process_1.spawn)(path.join(__dirname, '/tor/tor-linux/tor/tor'));
+        case 'linux': {
+            const torDir = path.join(torBase, 'tor', 'tor-linux', 'tor');
+            // The bundled libevent/libssl/libcrypto live alongside the binary.
+            // LD_LIBRARY_PATH is required so the dynamic linker finds them instead
+            // of (possibly absent) system versions.
+            tor = (0, child_process_1.spawn)(path.join(torDir, 'tor'), [], {
+                env: Object.assign(Object.assign({}, process.env), { LD_LIBRARY_PATH: torDir }),
+            });
             break;
+        }
         default:
             throw new Error(`Unsupported platform: ${platform}`);
     }
