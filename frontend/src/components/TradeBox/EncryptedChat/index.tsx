@@ -19,16 +19,27 @@ import { createFileMessage, type ParsedFileMessage } from '../../../utils/nip17F
 /**
  * Strip EXIF and other metadata by re-drawing the image onto a canvas and
  * exporting it as a clean raster blob. Returns the sanitised File.
- * Falls back to the original file if the canvas API is unavailable (e.g. Android WebView
- * without canvas support).
+ * Falls back to the original file if the canvas API is unavailable.
+ *
+ * NOTE: we load the image via FileReader.readAsDataURL() rather than
+ * URL.createObjectURL() because blob: URLs are blocked when the document
+ * origin is file:// (Electron desktop and Android WebView).  A data: URL
+ * works on every platform.
  */
 async function stripImageMetadata(file: File): Promise<File> {
+  // Step 1 — read the file as a data: URL using FileReader (works on all platforms).
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+  // Step 2 — draw onto a canvas to strip EXIF and re-encode.
   return await new Promise((resolve) => {
     const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
 
     img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
       try {
         const canvas = document.createElement('canvas');
         canvas.width = img.naturalWidth;
@@ -62,11 +73,10 @@ async function stripImageMetadata(file: File): Promise<File> {
     };
 
     img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
       resolve(file);
     };
 
-    img.src = objectUrl;
+    img.src = dataUrl;
   });
 }
 
