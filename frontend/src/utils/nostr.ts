@@ -1,5 +1,5 @@
 import { type Event } from 'nostr-tools';
-import { schnorr } from '@noble/curves/secp256k1';
+import { schnorr } from '@noble/curves/secp256k1.js';
 import { type PublicOrder } from '../models';
 import { fromUnixTime } from 'date-fns';
 import Geohash from 'latlon-geohash';
@@ -7,6 +7,15 @@ import thirdParties from '../../static/thirdparties.json';
 import currencyDict from '../../static/assets/currencies.json';
 import defaultFederation from '../../static/federation.json';
 import hashStringToInteger from './stringToInteger';
+
+// Live coordinator list injected by Federation.model after each successful vote.
+// Starts from the bundled seed so the module works before any vote completes.
+type CoordEntry = { shortAlias: string; nostrHexPubkey: string; federated?: boolean };
+let liveCoordinators: CoordEntry[] = Object.values(defaultFederation) as CoordEntry[];
+
+export function setLiveCoordinators(coords: CoordEntry[]): void {
+  if (coords.length > 0) liveCoordinators = coords;
+}
 
 const eventToPublicOrder = (
   event: Event,
@@ -41,7 +50,8 @@ const eventToPublicOrder = (
   const dTag = event.tags.find((t) => t[0] === 'd') ?? [];
   const network = event.tags.find((t) => t[0] === 'network') ?? [];
   const platform = event.tags.find((t) => t[0] === 'y') ?? [];
-  const coordinator = [...Object.values(defaultFederation), ...Object.values(thirdParties)].find(
+  // Use the live coordinator list so voted-in coordinators' orders are not dropped.
+  const coordinator = [...liveCoordinators, ...Object.values(thirdParties)].find(
     (coord) => coord.nostrHexPubkey === event.pubkey,
   );
   if (!coordinator || statusTag[1] !== 'pending')

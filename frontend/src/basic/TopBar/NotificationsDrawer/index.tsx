@@ -9,7 +9,7 @@ import {
   SnackbarContent,
   useTheme,
 } from '@mui/material';
-import defaultFederation from '../../../../static/federation.json';
+
 import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { type Event } from 'nostr-tools';
 import { GarageContext, UseGarageStoreType } from '../../../contexts/GarageContext';
@@ -142,9 +142,10 @@ const NotificationsDrawer = ({ show, setShow }: NotificationsDrawerProps): React
                 return b[1].created_at - a[1].created_at;
               })
               .map(([index, event]) => {
-                const coordinator: Coordinator = Object.values(defaultFederation).find(
-                  (c) => c.nostrHexPubkey === event.pubkey,
-                );
+                // Use the live federation instance so voted-in coordinators are found.
+                const coordinator: Coordinator | undefined = federation
+                  .getCoordinators()
+                  .find((c) => c.nostrHexPubkey === event.pubkey);
                 const nostrHexPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
                 const slot = garage.getSlotByNostrPubKey(nostrHexPubkey ?? '');
 

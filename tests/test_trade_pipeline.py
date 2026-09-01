@@ -610,6 +610,89 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         trade.cancel_order()
 
+    def test_password_order_hidden_from_book(self):
+        """
+        Password-protected orders must not appear in /api/book/ regardless of
+        query-parameter combinations (type, currency filters).  This was a
+        regression where each filter branch rebuilt the queryset without the
+        password=None guard, leaking the order.
+        """
+        password = "secretpassword"
+        password_maker_form = maker_form_buy_with_range.copy()
+        password_maker_form["password"] = password
+
+        trade = Trade(self.client, maker_form=password_maker_form)
+        trade.publish_order()
+        self.assertEqual(trade.response.status_code, 200)
+
+        book_path = reverse("book")
+
+        # No filters — already worked correctly before the fix
+        response = self.client.get(book_path)
+        self.assertEqual(response.status_code, 404)
+
+        # ?type=0 — was the first broken branch
+        response = self.client.get(book_path, {"type": "0"})
+        self.assertEqual(response.status_code, 404)
+
+        # ?type=1
+        response = self.client.get(book_path, {"type": "1"})
+        self.assertEqual(response.status_code, 404)
+
+        # ?currency=1 — was the second broken branch
+        response = self.client.get(book_path, {"currency": "1"})
+        self.assertEqual(response.status_code, 404)
+
+        # ?currency=1&type=0 — was the third broken branch
+        response = self.client.get(book_path, {"currency": "1", "type": "0"})
+        self.assertEqual(response.status_code, 404)
+
+        trade.cancel_order()
+
+    def test_password_order_sensitive_fields_redacted_for_non_participant(self):
+        """
+        A non-participant fetching a password-protected public order via
+        GET /api/order/ must receive the basic order info needed to decide
+        whether to take it (has_password=True, amount, premium, bond_size …)
+        but must NOT receive payment_method, latitude, longitude or description.
+        Those fields are unlocked only after a successful take (password check
+        at the take action).
+        """
+        password = "secretpassword"
+        password_maker_form = maker_form_buy_with_range.copy()
+        password_maker_form["password"] = password
+        password_maker_form["latitude"] = 34.7455
+        password_maker_form["longitude"] = 135.503
+
+        trade = Trade(self.client, maker_form=password_maker_form)
+        trade.publish_order()
+        self.assertEqual(trade.response.status_code, 200)
+
+        # Non-participant GET (taker robot, not the maker)
+        trade.get_order(trade.taker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+
+        # Must signal that a password is required
+        self.assertTrue(data["has_password"])
+
+        # Location and description must be redacted (None) for non-participants
+        self.assertIsNone(data["latitude"])
+        self.assertIsNone(data["longitude"])
+        self.assertIsNone(data["description"])
+
+        # payment_method is kept visible so the taker can verify the trade suits them
+        self.assertIsNotNone(data["payment_method"])
+
+        # Other non-sensitive fields must still be present so the taker can evaluate
+        self.assertIn("min_amount", data)
+        self.assertIn("max_amount", data)
+        self.assertIn("premium", data)
+        self.assertIn("bond_size", data)
+        self.assertIn("satoshis_now", data)
+
+        trade.cancel_order()
+
     def test_make_and_take_order_multiple_takers(self):
         """
         Tests a trade from order creation to taken.
@@ -1957,6 +2040,80 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         trade.get_review(trade.taker_index)
         self.assertEqual(trade.response.status_code, 400)
+
+    def test_order_expires_after_undo_confirm_fiat_sent(self):
+        """
+        Tests that automatic dispute resolution is blocked when fiat was marked
+        sent and then reverted (undo_confirm). The fix for security issue F2
+        ensures that reverted_fiat_sent=True prevents auto-resolution even if
+        the taker never messaged, so the order must enter full DIS status.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        # Buyer (maker) confirms fiat sent → order moves to FSE
+        trade.confirm_fiat(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.FSE).label)
+        self.assertTrue(data["is_fiat_sent"])
+
+        # Buyer (maker) reverts the fiat-sent confirmation → order back to CHA,
+        # reverted_fiat_sent is now True
+        trade.undo_confirm_sent(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
+        self.assertFalse(data["is_fiat_sent"])
+
+        # Expire the order (no chat messages from either side)
+        order = Order.objects.get(id=trade.order_id)
+        order.expires_at = datetime.now()
+        order.save()
+
+        # Make orders expire — this calls open_dispute → automatic_dispute_resolution
+        trade.clean_orders()
+
+        trade.get_order()
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        # The fix: reverted_fiat_sent=True must block automatic resolution,
+        # so the order must be in full DIS status (not TLD/MLD).
+        self.assertEqual(
+            data["status"],
+            Order.Status.DIS,
+            "Order with reverted_fiat_sent must enter full DIS, not be auto-resolved",
+        )
+        self.assertTrue(data["is_disputed"])
+
+        self.assert_order_logs(data["id"])
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['maker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        response = self.client.get(reverse("notifications"), **taker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertEqual(notifications_data[0]["order_id"], trade.order_id)
+        self.assertEqual(
+            notifications_data[0]["title"],
+            f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
+        )
 
     def test_ticks(self):
         """

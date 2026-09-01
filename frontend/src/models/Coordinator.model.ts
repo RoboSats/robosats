@@ -47,18 +47,24 @@ export interface Info {
   version: Version;
   maker_fee: number;
   taker_fee: number;
+  devfund?: number;
   bond_size: number;
   min_order_size: number;
   max_order_size: number;
   swap_enabled: boolean;
   max_swap: number;
   current_swap_fee_rate: number;
+  blossom_enabled: boolean;
   network: 'mainnet' | 'testnet' | undefined;
   openUpdateClient: boolean;
   notice_severity: 'none' | 'warning' | 'error' | 'success' | 'info';
   notice_message: string;
   market_price_apis: string;
   loading: boolean;
+  /** SHA-256 of this coordinator's normalized canonical federation document.
+   *  Used by the client's hash-first federation discovery (Phase A/B) to vote
+   *  on the current federation list without any additional requests. */
+  federation_hash?: string;
 }
 
 export type Origin = 'onion' | 'i2p' | 'clearnet';
@@ -119,8 +125,26 @@ function calculateSizeLimit(inputDate: Date): number {
   return value;
 }
 
+export interface CoordinatorConfig {
+  longAlias: string;
+  shortAlias: string;
+  description: string;
+  federated?: boolean;
+  motto: string;
+  color: string;
+  established: string;
+  policies?: Record<string, string>;
+  contact?: Contact;
+  badges: Badges;
+  mainnet: Origins;
+  testnet: Origins;
+  mainnetNodesPubkeys?: string[];
+  testnetNodesPubkeys?: string[];
+  nostrHexPubkey: string;
+}
+
 export class Coordinator {
-  constructor(value: object, origin: Origin, settings: Settings, hostUrl: string) {
+  constructor(value: CoordinatorConfig, origin: Origin, settings: Settings, hostUrl: string) {
     const established = new Date(value.established);
     this.longAlias = value.longAlias;
     this.shortAlias = value.shortAlias;
@@ -130,7 +154,7 @@ export class Coordinator {
     this.color = value.color;
     this.size_limit = value.badges.isFounder ? 21 * 100000000 : calculateSizeLimit(established);
     this.established = established;
-    this.policies = value.policies;
+    this.policies = value.policies ?? {};
     this.contact = value.contact;
     this.badges = value.badges;
     this.mainnet = value.mainnet;
@@ -168,6 +192,7 @@ export class Coordinator {
   public loadingBook: boolean = false;
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = false;
+  private _infoPromise?: Promise<void> | undefined;
   public limits: LimitList = {};
   public loadingLimits: boolean = false;
 
@@ -175,7 +200,8 @@ export class Coordinator {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = `${hostUrl}/${settings.network}/${this.shortAlias}`;
     } else {
-      this.url = String(this[settings.network]?.[origin]);
+      const network = settings.network ?? 'mainnet';
+      this.url = String(this[network]?.[origin]);
     }
   };
 
@@ -195,8 +221,9 @@ export class Coordinator {
 
     apiClient
       .get(this.url, `/api/book/`, undefined, true)
-      .then((data) => {
-        if (!data?.not_found) {
+      .then((raw) => {
+        const data = raw as (PublicOrder[] & { not_found?: boolean }) | null;
+        if (data != null && !data.not_found) {
           this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
             order.coordinatorShortAlias = this.shortAlias;
             return { ...book, [`${this.shortAlias}${order.id}`]: order };
@@ -244,27 +271,38 @@ export class Coordinator {
       });
   };
 
-  loadInfo = (onDataLoad: () => void = () => {}): void => {
-    if (!this.enabled) return;
-    if (this.url === '') return;
-    if (this.loadingInfo) return;
+  loadInfo = (onDataLoad: () => void = () => {}): Promise<void> => {
+    if (!this.enabled) return Promise.resolve();
+    if (this.url === '') return Promise.resolve();
+
+    if (this._infoPromise) {
+      return this._infoPromise.then(() => {
+        if (this.info !== undefined) onDataLoad();
+      });
+    }
 
     this.loadingInfo = true;
 
-    apiClient
-      .get(this.url, `/api/info/`, undefined, true)
-      .then((data) => {
-        if (data !== null) {
-          this.info = data as Info;
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingInfo = false;
-      });
+    this._infoPromise = new Promise<void>((resolve) => {
+      apiClient
+        .get(this.url, `/api/info/`, undefined, true)
+        .then((data) => {
+          if (data !== null) {
+            this.info = data as Info;
+            onDataLoad();
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          this.loadingInfo = false;
+          this._infoPromise = undefined;
+          resolve();
+        });
+    });
+
+    return this._infoPromise;
   };
 
   enable = (onEnabled: () => void = () => {}): void => {

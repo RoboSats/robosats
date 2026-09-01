@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order } from '../../../models';
 import { pn, saveAsJson } from '../../../utils';
@@ -17,6 +17,10 @@ import EncryptedChat, { type EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
 import { type UseGarageStoreType, GarageContext } from '../../../contexts/GarageContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
 import { MoreHoriz, Key, Handshake, Balance } from '@mui/icons-material';
 import AuditPGPDialog from '../../Dialogs/AuditPGP';
 import { ExportIcon } from '../../Icons';
@@ -34,7 +38,9 @@ interface ChatPromptProps {
   onClickDispute: () => void;
   loadingDispute: boolean;
   messages: EncryptedChatMessage[];
-  setMessages: (state: EncryptedChatMessage[]) => void;
+  setMessages: (
+    state: EncryptedChatMessage[] | ((prev: EncryptedChatMessage[]) => EncryptedChatMessage[]),
+  ) => void;
 }
 
 export const ChatPrompt = ({
@@ -53,7 +59,11 @@ export const ChatPrompt = ({
 }: ChatPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { client, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
+
+  const coordinator = federation.getCoordinator(order.shortAlias ?? '');
+  const blossomEnabled: boolean = coordinator?.info?.blossom_enabled ?? false;
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -62,13 +72,15 @@ export const ChatPrompt = ({
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [enableCollaborativeButton, setEnableCollaborativeButton] = useState<boolean>(false);
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
-  const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
+  const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(
+    new Date(String(order.expires_at)),
+  );
   const [text, setText] = useState<string>('');
   const [openOrderOptions, setOpenOrderOptions] = useState<boolean>(false);
 
   const currencyCode: string = currencies[`${order.currency}`];
   const amount: string = pn(
-    Number(parseFloat(order.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4)),
+    Number(parseFloat(String(order.amount ?? 0)).toFixed(order.currency === 1000 ? 8 : 4)),
   );
 
   const disputeCountdownRenderer = function ({
@@ -86,9 +98,9 @@ export const ChatPrompt = ({
   useEffect(() => {
     // open dispute button enables 18h before expiry
     const now = Date.now();
-    const expiresAt = new Date(order.expires_at);
+    const expiresAt = new Date(String(order.expires_at));
     expiresAt.setHours(expiresAt.getHours() - 18);
-    setEnableDisputeButton(now > expiresAt);
+    setEnableDisputeButton(now > expiresAt.getTime());
     setEnableDisputeTime(expiresAt);
 
     if (order.status === 9) {
@@ -151,13 +163,16 @@ export const ChatPrompt = ({
   return (
     <Grid
       container
-      padding={0}
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0}
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexDirection: 'column',
+        padding: 0,
+      }}
     >
-      <Grid item style={{ mb: 1 }}>
+      <Grid sx={{ mb: 1 }}>
         <Typography variant='body2' align='center'>
           {text} <br />
           <>
@@ -173,7 +188,7 @@ export const ChatPrompt = ({
         </Typography>
       </Grid>
 
-      <Grid item>
+      <Grid>
         <EncryptedChat
           chatOffset={order.chat_last_index}
           order={order}
@@ -181,11 +196,11 @@ export const ChatPrompt = ({
           setMessages={setMessages}
           peerPubKey={peerPubKey}
           setPeerPubKey={setPeerPubKey}
+          blossomEnabled={blossomEnabled}
         />
       </Grid>
 
       <Grid
-        item
         direction='row'
         sx={{ width: '100%', display: 'flex', justifyContent: 'space-around', mt: 2.5 }}
       >
@@ -247,8 +262,12 @@ export const ChatPrompt = ({
         <DialogTitle>{t('Order options')}</DialogTitle>
         <DialogContent>
           <DialogContent>
-            <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
-              <Grid item xs={1} style={{ width: '100%' }}>
+            <Grid
+              container
+              spacing={1}
+              sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+            >
+              <Grid size={1} style={{ width: '100%' }}>
                 <Button
                   fullWidth
                   disabled={false}
@@ -262,7 +281,7 @@ export const ChatPrompt = ({
                 </Button>
               </Grid>
 
-              <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+              <Grid size={1} style={{ width: '100%', marginTop: 20 }}>
                 <Button
                   fullWidth
                   onClick={() =>
@@ -286,7 +305,7 @@ export const ChatPrompt = ({
                   />
                 }
               >
-                <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                <Grid size={1} style={{ width: '100%', marginTop: 20 }}>
                   <Button
                     fullWidth
                     loading={loadingDispute}
@@ -310,7 +329,7 @@ export const ChatPrompt = ({
                 enterTouchDelay={0}
                 title={t("Orders can't be cancelled if fiat has been sent.")}
               >
-                <Grid item xs={1} style={{ width: '100%', marginTop: 20 }}>
+                <Grid size={1} style={{ width: '100%', marginTop: 20 }}>
                   <Button
                     fullWidth
                     onClick={() => {

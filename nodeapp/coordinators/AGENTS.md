@@ -14,8 +14,10 @@ name — all three must match exactly.
 | lake | 104 | 1004 | ✅ yes | |
 | moon | 106 | 1006 | ✅ yes | |
 | bazaar | 107 | 1007 | ❌ same onion | testnet traffic hits mainnet service |
-| freedomsats | 108 | 1008 | ❌ same onion | **BUG**: port collision with alice — see Traps |
-| alice | 108 | 1008 | ❌ same onion | **BUG**: port collision with freedomsats; `upstreams.conf` wrongly points to 107/1007 |
+| eleuteria | 110 | 1010 | ❌ same onion | testnet traffic hits mainnet service |
+| freeport | 111 | 1011 | ❌ same onion | testnet traffic hits mainnet service |
+| ammanaya | 112 | 1012 | ❌ same onion | testnet traffic hits mainnet service |
+| alice | 109 | 1009 | ❌ same onion | testnet traffic hits mainnet service |
 
 Testnet port convention: mainnet port + 900 (e.g. 102 → 1002).
 
@@ -37,12 +39,10 @@ Both upstream names must match exactly what `locations.conf` references in `prox
 | `/mainnet/{alias}/api/` | `mainnet_{alias}` | REST API; WS upgrade headers set (`Upgrade`, `Connection "Upgrade"`, `Host $host`, `proxy_http_version 1.1`) |
 | `/mainnet/{alias}/ws/` | `mainnet_{alias}` | WebSocket; same upgrade headers |
 | `/mainnet/{alias}/relay/` | `mainnet_{alias}` | Nostr relay; also sets `Origin $http_origin` + `add_header Access-Control-Allow-Origin *` |
-| `/test/{alias}/static/assets/avatars/` | `testnet_{alias}` | **BUG**: prefix is `/test/` not `/testnet/` — typo in all six files; testnet avatar requests return 404 |
+| `/testnet/{alias}/static/assets/avatars/` | `testnet_{alias}` | Coordinator avatar images (testnet) |
 | `/testnet/{alias}/api/` | `testnet_{alias}` | |
 | `/testnet/{alias}/ws/` | `testnet_{alias}` | |
-
-**Missing**: no `/testnet/{alias}/relay/` location in any coordinator config — testnet
-Nostr relay is unreachable through nodeapp.
+| `/testnet/{alias}/relay/` | `testnet_{alias}` | Nostr relay; same upgrade headers + `Origin $http_origin` + `Access-Control-Allow-Origin *` as the mainnet relay |
 
 ## CORS Policy
 - API and WS routes carry **no CORS headers** — all traffic is same-origin through Nginx;
@@ -58,7 +58,7 @@ Nostr relay is unreachable through nodeapp.
 3. Create `coordinators/{alias}/upstreams.conf` (exact template above).
 4. Create `coordinators/{alias}/locations.conf` (copy a working coordinator's file,
    replace all occurrences of the old alias with the new one and update upstream names;
-   **do not copy alice or freedomsats** — they contain bugs).
+   prefer temple or lake as the source — they have distinct testnet onions and clean configs).
 5. Add two `include` lines in `nginx.conf`: one in the `http` block
    (`conf.d/{alias}/upstreams.conf`) and one in the `server` block
    (`conf.d/{alias}/locations.conf`).
@@ -75,26 +75,18 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   users deploy a known, auditable set of coordinators torified at the container level,
   not a runtime-fetched list. Generating this config automatically from
   `federation.json` is a known improvement path but has not been implemented.
-- **Testnet support in nodeapp is best-effort.** Three of six coordinators share a single
-  onion for mainnet and testnet; avatar routes have a path typo (404); no testnet relay
-  route exists. Testnet is functionally degraded in this container — usable for API/WS
-  only, on the three coordinators with distinct testnet onions.
+- **Testnet support in nodeapp is best-effort.** Four of six coordinators (bazaar,
+  eleuteria, freeport, alice) share a single onion for mainnet and testnet, so their
+  testnet traffic (API, WS, and relay) hits the mainnet service — the coordinator must
+  distinguish them server-side. Only temple and lake have distinct testnet onions with a
+  real testnet relay.
 
 ## Traps
-- `coordinators/alice/upstreams.conf` comments say "Libre Bazaar" (copy-paste error) and
-  its upstream servers point to `127.0.0.1:107/1007` (Bazaar's ports) instead of alice's
-  socat ports 108/1008 — alice API/WS traffic currently routes to Libre Bazaar. Fix pending
-  in an open PR; live in `:latest`.
-- `robosats-client.sh` assigns `mainnet_alice_port=108` and `mainnet_freedomsats_port=108`
-  — identical ports; the second socat process to bind will fail (`EADDRINUSE`). Fix pending
-  in the same PR; live in `:latest`. **Net effect: one of alice or freedomsats is
-  completely unreachable in any running `:latest` container.**
-- All six `locations.conf` testnet avatar location uses `location /test/{alias}/…` instead
-  of `/testnet/{alias}/…` — testnet avatar requests return 404 for all coordinators.
-- No testnet `relay/` route exists in any coordinator config — testnet Nostr relay is
-  unreachable through nodeapp.
-- `coordinators/freedomsats/upstreams.conf` comments say "Libre freedomsats" — another
-  copy-paste artefact; functionally harmless but misleading.
+- All six `locations.conf` testnet avatar routes now use `/testnet/{alias}/...`
+  consistent with the API/WS routes — fixed in this codebase.
+- All six `locations.conf` now include a `/testnet/{alias}/relay/` route — fixed in this
+  codebase. For bazaar/eleuteria/freeport/alice the route proxies to the shared onion, so
+  the same relay serves mainnet and testnet events (the client filters by `network` tag).
 - Several `locations.conf` comments name the wrong coordinator (e.g., lake's testnet
   section heading says "Freedomsats Coordinator Testnet Locations", bazaar's says
   "TheBigLake Coordinator Mainnet") — copy-paste artefacts; functionally harmless.
@@ -105,5 +97,5 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
 - Upstream names (`mainnet_{alias}`, `testnet_{alias}`) must match exactly in both
   `upstreams.conf` and `locations.conf` for the same coordinator.
 - Never duplicate the nginx include lines for the same coordinator in `nginx.conf`.
-- When copying an existing coordinator as a template, **do not use alice or freedomsats**
-  as the source — both contain bugs that would propagate to the new coordinator.
+- When copying an existing coordinator as a template, prefer temple or lake as the source
+  — they have distinct testnet onions and clean configs.

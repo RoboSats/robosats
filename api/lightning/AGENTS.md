@@ -24,9 +24,7 @@ class-definition time (also import time), reused by every call.
 - `validate_ln_invoice(cls, invoice, num_satoshis, routing_budget_ppm)` → **dict**
   `{valid, context, description, payment_hash, created_at, expires_at}`.
 - `pay_invoice(cls, lnpayment)` — **rewards-withdrawal payouts only** (sole caller:
-  `Logics.withdraw_rewards`). Returns `(bool, Optional[str] failure_reason)`. LND has one
-  fall-through branch that returns a bare `False` (not a 2-tuple) if the response stream
-  ends without SUCCEEDED/FAILED.
+  `Logics.withdraw_rewards`). Returns `(bool, Optional[str] failure_reason)` on all paths — consistent with CLN.
 - `follow_send_payment(cls, lnpayment, fee_limit_sat, timeout_seconds)` — **`fee_limit_sat`
   is absolute satoshis, not ppm** (converted by the caller in `tasks.py`). LND streams via
   `RouterStub.SendPaymentV2`; CLN polls `ListPays` in a loop with recursive retry.
@@ -106,12 +104,34 @@ before reaching this module. Retry **scheduling** (deciding *when* to dispatch) 
 ## Traps
 Both `settle_hold_invoice` and `cancel_return_hold_invoice` on LND detect success by
 checking `str(response) == ""` (an empty gRPC response), annotated `# TODO` in-code as
-fragile. `pay_invoice` on LND can return a bare `False` (1-tuple shape) instead of the
-expected `(bool, reason)` 2-tuple on one fall-through path — don't unpack blindly without
-checking length, or match CLN's consistent 2-tuple return instead.
+fragile. `pay_invoice` on LND returns a consistent `(bool, str|None)` 2-tuple on all paths
+(fixed). Do not re-add a bare `return False` or a broad `try/except` that re-credits
+`earned_rewards` on exceptions — see `api/AGENTS.md` Constraints for the exploit rationale.
+
+**LND v0.21+ `LookupInvoiceV2` behavioral change**: the `DEFAULT` lookup modifier no longer
+populates `response.htlcs`. `HTLC_SET_ONLY` must be explicitly passed in both
+`validate_hold_invoice_locked` and `lookup_invoice_status` to retrieve HTLC data (expiry
+height). Without it, `response.htlcs` is empty, causing an `IndexError` that is silently
+swallowed — bonds never reach LOCKED state.
+
+**CLN + holdinvoice version constraint**: The `holdinvoice` CLN plugin and CLN itself must
+be kept in sync. As of 2026-08, `holdinvoice v4.0.0` (the latest release) only supports
+**CLN up to v25.09.x**. Using CLN v26.06+ with holdinvoice v4.0.0 causes the plugin to fail
+silently — hold invoices never reach ACCEPTED state, breaking all invoice-locking in both
+production and tests. Before upgrading CLN, verify that a compatible holdinvoice release
+exists at https://github.com/daywalker90/holdinvoice/releases.
+
+**CLN `ChannelState` enum path**: since CLN v25.09, `ListpeerchannelsChannels.state` uses
+the shared top-level `ChannelState` enum from `primitives.proto` (not a nested
+`ListpeerchannelsChannelsState`). The correct comparison is
+`primitives__pb2.ChannelState.ChanneldNormal` (CamelCase value `2`). The old nested path
+no longer exists and raises `AttributeError` at runtime if referenced.
 
 ## Constraints
 Keep LND and CLN method signatures in lockstep — `node.py`'s aliasing assumes identical
 call signatures on both classes. Never call vendor gRPC stubs directly from `api/` —
 always go through `LNNode`. Don't assume `CONFI` is reachable; anything gating on it will
 never fire. Treat `pay_onchain`/broadcast code as irreversible once past the `MEMPO` flip.
+**Before upgrading CLN, check holdinvoice compatibility** — holdinvoice v4.0.0 supports
+CLN up to v25.09.x only. Upgrading CLN beyond the holdinvoice-supported range will silently
+break all hold invoice locking.

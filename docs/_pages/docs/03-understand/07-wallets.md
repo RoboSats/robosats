@@ -42,7 +42,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Mash](https://app.mash.com/wallet)|[Beta](https://mash.com/consumer-experience/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}|
 |[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[Valet](#valet-mobile)|[4.4.4](https://valet.finance/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
-|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
+|[Phoenix](#phoenix-mobile)|[2.7.15](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Zeus](#zeus-mobile-lnd-cln-eclair-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -115,7 +115,7 @@ Overall the wallet works exceptionally well with RoboSats. This self-custodial w
 Valet is a fork of SBW wallet with a unique feature for its support for "Hosted Channels technology", which allows users to receive Sats without having to open traditional lightning channels. However, users can also choose to manage their own channels by connecting to any Lightning node of their choice. Available for Android mobile devices.
 
 ### Phoenix (Mobile)
-This wallet does not support invoice lock.
+Works good overall. It does support invoice lock. It has also good UX. 
 
 ### SBW (Mobile)
 From 2.5 it doesn't support lightning anymore.

@@ -89,6 +89,8 @@ Input validation: `UUID_PATTERN` (hex UUID format) + `SAFE_STRING_PATTERN` (`[a-
 - WebSocket callbacks have **inconsistent casing**: `onWSMessage` (capital WS) vs `onWsError`/`onWsClose` (capital W, lowercase s). The private Kotlin function is `onWsMessage` — the JS-facing name differs. Frontend must match these exactly.
 - `allowUniversalAccessFromFileURLs = true` is required and intentional — do not remove it without confirming `.onion` requests still work.
 - `resolvePromise`/`rejectPromise` silently swallow invalid UUIDs (log only, no JS callback fired) — the frontend promise will hang if a UUID is malformed.
+- **`isValidUrl` uses `java.net.URL` for parsing, which has NO protocol handler for `ws://`/`wss://` — those schemes throw `MalformedURLException: unknown protocol: ws` and would silently reject every WebSocket URL.** The function normalises `ws→http` / `wss→https` before calling `URL()` solely for host/port extraction; the scheme allowlist check (`ws`/`wss` allowed) is still performed on the original string beforehand, so SSRF protections are fully preserved. **Do not refactor this back to passing the raw `ws(s)://` URL directly to `URL()`.**
+- `openWS` uses `readTimeout(0)` (disabled) + `pingInterval(30s)` on its `OkHttpClient`. A non-zero read timeout kills a quiet-but-alive WebSocket after the timeout fires; `0` disables it and the ping interval prevents NAT/firewall drops instead. Do not add a `readTimeout` back to the WebSocket client builder.
 
 ## Constraints
 - Never relax the fail-closed WebViewClient swap — the block-everything-first pattern is a deliberate security guarantee.

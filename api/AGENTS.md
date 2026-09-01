@@ -28,7 +28,7 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `/api/order/` | GET/POST | `OrderView` | GET reads state; POST is single dispatch (below) |
 | `/api/robot/` | GET/PUT | `RobotView` | Robot profile/settings |
 | `/api/book/` | GET | `BookView` | Public order book |
-| `/api/info/` | GET | `InfoView` | Coordinator info: version, fees, limits |
+| `/api/info/` | GET | `InfoView` | Coordinator info: version, fees, limits, `devfund` |
 | `/api/price/` | GET | `PriceView` | Current market rates |
 | `/api/limits/` | GET | `LimitView` | Min/max order size per currency |
 | `/api/reward/` | POST | `RewardView` | Claim `earned_rewards` via invoice |
@@ -38,6 +38,11 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `/api/chat/` | GET/POST | `chat.views.ChatView` | Owned by `chat/`, mounted here |
 | `/api/notifications/` | GET | `NotificationsView` | In-app notifications |
 | `/api/review/` | POST | `ReviewView` | Nostr-signed proof-of-trade token for coordinator rating |
+
+`GET /api/info/` exposes `devfund` (percentage, `DEVFUND` × 100) — the coordinator's real
+DevFund donation. Public, additive field; used by the frontend to live-overlay the
+federation lottery weight (`donatesToDevFund`) with the coordinator's actual value,
+falling back to `frontend/static/federation.json` when `/api/info/` is unreachable.
 
 No `shortAlias` param exists on `/api/order/` — do not invent one. **`POST /api/order/`**
 dispatches on `UpdateOrderSerializer.action`: `pause, take, update_invoice, update_address,
@@ -157,6 +162,13 @@ decade→field — 1000s→`bad_request` (default, incl. unlisted 6000s/7000s), 
 `bad_statement`, 3000s→`bad_invoice`, 4000s→`bad_address`, 5000s→`bad_summary`.
 `oas_schemas.py` reads bond/duration settings at **import time** — needs app reload on change.
 
+## Redis response caching (`views.py`)
+Public reads cached in Redis (`CACHES` default → `REDIS_URL`): `BookView` key `book:{currency}:{type}`
+TTL 10s (`BOOK_CACHE_TTL`, only HTTP 200 cached — 404 "no orders" is not), `InfoView` key `info`
+TTL 30s (`INFO_CACHE_TTL`), `PriceView` key `price` TTL 30s (`PRICE_CACHE_TTL`). No manual
+invalidation — short TTLs suffice; book staleness is invisible to clients because frontends
+update the live book via Nostr kind 38383, not `/api/book/`.
+
 ## `/api/review/` — coordinator rating token
 `ReviewView.post(request)`:
 1. Validates `{ pubkey }` via `ReviewSerializer`.
@@ -219,7 +231,9 @@ signs the raw UTF-8 bytes `f"{pubkey}{last_order.id}"` (not a 32-byte hash); the
 silently breaks verification on the other. `Order.objects.filter(...).last()` in
 `ReviewView` uses the **highest pk** (default ordering), not the most recently active order;
 a robot whose latest-by-pk order is not `SUC/MLD/TLD` will be blocked even if an earlier
-order was successful.
+order was successful. `PriceView` returns an **object** keyed by currency code, but its
+generated OpenAPI schema (`serializer_class`) declares `type: array` — so `assertResponse`/
+schema validation on `/api/price/` always fails; don't add it back to tests.
 
 ## Constraints
 Never settle `trade_escrow` before `order.is_fiat_sent` is confirmed by the buyer. Never
@@ -228,6 +242,9 @@ is ever a DB row. Admin dispute actions bypass `Logics` and move real funds — 
 carefully as `Logics` itself. Never add an `Order.Status` member without a `t_to_expire`
 entry. Don't add a cost to collaborative cancel, or a loser-penalty field to disputes beyond
 `num_disputes`, without confirming the product intent above first.
+
+**Do not** re-credit rewards — a user able to force repeated
+exceptions could restore rewards they already received (exploit).
 
 ## Rules
 

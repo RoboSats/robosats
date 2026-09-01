@@ -89,9 +89,10 @@ export const DisputePrompt = ({
       .get(url, `/api/chat/?order_id=${order.id}&offset=0`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
-      .then((results: object) => {
+      .then((results: object | undefined) => {
         if (results != null) {
-          void decryptMessages(results.messages, results.peer_pubkey.split('\\').join('\n'));
+          const r = results as { messages: ServerMessage[]; peer_pubkey?: string };
+          void decryptMessages(r.messages, (r.peer_pubkey ?? '').split('\\').join('\n'));
         }
       });
   }, []);
@@ -103,9 +104,18 @@ export const DisputePrompt = ({
     if (slot && robot) {
       for (const dataFromServer of serverMessages) {
         if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
+          const senderPubKey = dataFromServer.nick === slot.nickname ? robot.pubKey : peerPubKey;
+          if (!senderPubKey || !robot.encPrivKey || !slot.token) {
+            console.warn('[DisputePrompt] skipping decrypt: missing keys or token', {
+              hasSenderPubKey: Boolean(senderPubKey),
+              hasEncPrivKey: Boolean(robot.encPrivKey),
+              hasToken: Boolean(slot.token),
+            });
+            continue;
+          }
           const decryptedData = await decryptMessage(
             dataFromServer.message.split('\\').join('\n'),
-            dataFromServer.nick === slot.nickname ? robot.pubKey : peerPubKey,
+            senderPubKey,
             robot.encPrivKey,
             slot.token,
           );
@@ -127,16 +137,16 @@ export const DisputePrompt = ({
   };
 
   return (
-    <Grid container direction='column' style={{ width: '100%', padding: 16 }}>
-      <Grid item>
+    <Grid container style={{ width: '100%', padding: 16 }} sx={{ flexDirection: 'column' }}>
+      <Grid>
         <Typography variant='body2'>
           {t(
             'Please, submit your statement. Be clear and specific about what happened and provide the necessary evidence. You MUST provide a contact method: burner email, SimpleX incognito link or telegram (make sure to create a searchable username) to follow up with the dispute solver (your trade host/coordinator). Disputes are solved at the discretion of real robots (aka humans), so be as helpful as possible to ensure a fair outcome.',
           )}
         </Typography>
       </Grid>
-      <Grid item>
-        <Grid item xs={12}>
+      <Grid>
+        <Grid size={12}>
           <TextField
             error={dispute.badStatement !== ''}
             helperText={dispute.badStatement}
@@ -150,33 +160,37 @@ export const DisputePrompt = ({
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Select
             variant='standard'
             required
             fullWidth
             displayEmpty
-            placeholder={t('Contact method')}
             value={dispute.contactMethod}
             onChange={(e) => {
-              setDispute({ ...dispute, contactMethod: e.target.value });
+              setDispute({ ...dispute, contactMethod: String(e.target.value) });
             }}
-            renderValue={(value?: string) => {
-              if (!value) {
+            renderValue={(value: unknown) => {
+              const v = value as string;
+              if (!v) {
                 return <span style={{ color: 'gray' }}>{t('Select a contact method')}</span>;
               }
-              return value.charAt(0).toUpperCase() + value.slice(1);
+              return v.charAt(0).toUpperCase() + v.slice(1);
             }}
           >
             <MenuItem value='' disabled>
               {t('Select a contact method')}
             </MenuItem>
             {Object.keys(contactMethods).map((contact) => {
-              if (!contactMethods[contact] || contactMethods[contact] === '') return <></>;
+              if (
+                !(contactMethods as Record<string, string>)[contact] ||
+                (contactMethods as Record<string, string>)[contact] === ''
+              )
+                return <></>;
               if (['pgp', 'fingerprint', 'website'].includes(contact)) return <></>;
 
               return (
-                <MenuItem value={contact} key={contact}>
+                <MenuItem value={contact as string} key={contact}>
                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                     {contact.charAt(0).toUpperCase() + contact.slice(1)}
                   </div>
@@ -190,7 +204,7 @@ export const DisputePrompt = ({
             </MenuItem>
           </Select>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TextField
             error={dispute.badContact !== ''}
             helperText={dispute.badContact}
@@ -202,7 +216,7 @@ export const DisputePrompt = ({
             }}
           />
         </Grid>
-        <Grid item>
+        <Grid>
           <Tooltip
             enterTouchDelay={0}
             placement='top'
@@ -223,7 +237,7 @@ export const DisputePrompt = ({
             />
           </Tooltip>
         </Grid>
-        <Grid container sx={{ width: '100%' }} justifyContent='center'>
+        <Grid container sx={{ width: '100%', justifyContent: 'center' }}>
           <LoadingButton
             onClick={submitStatement}
             variant='contained'

@@ -364,11 +364,38 @@ class Order(models.Model):
         old_status = self.status
         self.status = new_status
         self.save(update_fields=["status"])
-        self.log(
-            f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
-        )
+
+        self.log_status_transition(old_status, new_status)
+
         if new_status == Order.Status.FAI:
             send_notification.delay(order_id=self.id, message="lightning_failed")
+
+    def transition_status(self, new_status, from_statuses):
+        """
+        Atomically transition the order to `new_status` only if its current
+        database status is one of `from_statuses`.
+
+        Returns True if the transition happened, False otherwise.
+        The in-memory `self.status` is kept in sync on success.
+        """
+        updated = Order.objects.filter(
+            pk=self.pk,
+            status__in=from_statuses,
+        ).update(status=new_status)
+
+        if updated == 1:
+            old_status = self.status
+            self.status = new_status
+            self.log_status_transition(old_status, new_status)
+            return True
+
+        return False
+
+    def log_status_transition(self, old_status, new_status):
+        if old_status != new_status:
+            self.log(
+                f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
+            )
 
 
 @receiver(pre_delete, sender=Order)

@@ -11,6 +11,7 @@ import {
   Grid,
   Rating,
   TextField,
+  Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -45,7 +46,7 @@ const FederationTable = ({
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const theme = useTheme();
-  const [pageSize, setPageSize] = useState<number>(0);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 0 });
 
   const [newAlias, setNewAlias] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
@@ -70,7 +71,7 @@ const FederationTable = ({
 
   const addNewCoordinator: (alias: string, url: string) => void = (alias, url) => {
     if (!federation.getCoordinator(alias)) {
-      const attributes: object = {
+      const attributes: Record<string, unknown> = {
         longAlias: alias,
         shortAlias: alias,
         federated: false,
@@ -106,7 +107,7 @@ const FederationTable = ({
 
   useEffect(() => {
     if (useDefaultPageSize) {
-      setPageSize(defaultPageSize);
+      setPaginationModel((prev) => ({ ...prev, pageSize: defaultPageSize }));
     }
   }, [federationUpdatedAt]);
 
@@ -137,15 +138,16 @@ const FederationTable = ({
               left: '-0.3em',
               width: '50em',
               marginTop: '2px',
+              alignItems: 'center',
             }}
             wrap='nowrap'
             onClick={() => {
               onClickCoordinator(params.row.shortAlias);
             }}
-            alignItems='center'
+
             spacing={1}
           >
-            <Grid item>
+            <Grid>
               <RobotAvatar
                 shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
                 hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
@@ -155,7 +157,7 @@ const FederationTable = ({
               />
             </Grid>
             {!mobile ? (
-              <Grid item>
+              <Grid>
                 <Typography>{params.row.longAlias}</Typography>
               </Grid>
             ) : (
@@ -188,7 +190,11 @@ const FederationTable = ({
         return (
           <>
             {mobile ? (
-              <Grid container direction='column' alignItems='center' style={{ paddingTop: 10 }}>
+              <Grid
+                container
+                style={{ paddingTop: 10 }}
+                sx={{ alignItems: 'center', flexDirection: 'column' }}
+              >
                 <Typography>{`${parseFloat((average * 10).toFixed(1))}`}</Typography>
               </Grid>
             ) : (
@@ -265,6 +271,45 @@ const FederationTable = ({
     [federationUpdatedAt],
   );
 
+  const hashObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'federationHash',
+        headerName: t('Federation Hash'),
+        width: width * fontSize,
+        renderCell: (params: { row: Coordinator }) => {
+          const coordinator = federation.getCoordinator(params.row.shortAlias);
+          const hash = coordinator.info?.federation_hash;
+
+          if (!hash) {
+            return (
+              <Typography variant='caption' color='text.disabled'>
+                {'-'}
+              </Typography>
+            );
+          }
+
+          const isMajority =
+            federation.majorityFederationHash !== null &&
+            hash === federation.majorityFederationHash;
+
+          return (
+            <Tooltip title={hash} placement='top'>
+              <Typography
+                variant='caption'
+                color={isMajority ? 'success.main' : 'text.secondary'}
+                sx={{ fontFamily: 'monospace', fontWeight: isMajority ? 'bold' : 'normal' }}
+              >
+                {hash.slice(0, 8)}
+              </Typography>
+            </Tooltip>
+          );
+        },
+      };
+    },
+    [federationUpdatedAt],
+  );
+
   const columnSpecs = {
     alias: {
       priority: 2,
@@ -298,6 +343,15 @@ const FederationTable = ({
         object: enabledObj,
       },
     },
+    hash: {
+      priority: 4,
+      order: 5,
+      hideOnMobile: true,
+      normal: {
+        width: 11,
+        object: hashObj,
+      },
+    },
   };
 
   const filteredColumns = function (): {
@@ -308,27 +362,35 @@ const FederationTable = ({
     const selectedColumns: object[] = [];
     let width: number = 0;
 
-    for (const value of Object.values(columnSpecs)) {
+    interface ColSpec {
+      priority: number;
+      order: number;
+      hideOnMobile?: boolean;
+      normal: { width: number; object: (w: number, b: boolean) => object };
+      small?: { width: number; object: (w: number, b: boolean) => object };
+    }
+    for (const value of Object.values(columnSpecs) as ColSpec[]) {
+      if (mobile && value.hideOnMobile) continue;
+
       const colWidth = Number(
-        useSmall && Boolean(value.small) ? value.small.width : value.normal.width,
+        useSmall && value.small != null ? value.small.width : value.normal.width,
       );
-      const colObject = useSmall && Boolean(value.small) ? value.small.object : value.normal.object;
+      const colObject = useSmall && value.small != null ? value.small.object : value.normal.object;
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
         selectedColumns.push([colObject(colWidth, false), value.order]);
-      } else {
-        selectedColumns.push([colObject(colWidth, true), value.order]);
       }
+      // columns that exceed maxWidth are simply not rendered
     }
 
     // sort columns by column.order value
     selectedColumns.sort(function (first, second) {
-      return first[1] - second[1];
+      return (first as [object, number])[1] - (second as [object, number])[1];
     });
 
     const columns: Array<GridColDef<GridValidRowModel>> = selectedColumns.map(function (item) {
-      return item[0];
+      return (item as [object, number])[0] as GridColDef<GridValidRowModel>;
     });
 
     return { columns, width: width * 0.9 };
@@ -392,15 +454,17 @@ const FederationTable = ({
           style={{ maxHeight: fillContainer ? undefined : `${height / 2}em` }}
           autoHeight={fillContainer}
           rowHeight={3.714 * theme.typography.fontSize}
-          headerHeight={3.25 * theme.typography.fontSize}
+          columnHeaderHeight={3.25 * theme.typography.fontSize}
           rows={federation.getCoordinators()}
           getRowId={(params: Coordinator) => params.shortAlias}
-          columns={columns}
+          columns={columns as readonly GridColDef<Coordinator>[]}
           checkboxSelection={false}
-          pageSize={fillContainer ? 100 : pageSize}
-          rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
-          onPageSizeChange={(newPageSize) => {
-            setPageSize(newPageSize);
+          paginationModel={fillContainer ? { page: 0, pageSize: 100 } : paginationModel}
+          pageSizeOptions={
+            width < 22 ? [] : [0, paginationModel.pageSize, defaultPageSize * 2, 50, 100]
+          }
+          onPaginationModelChange={(newModel) => {
+            setPaginationModel(newModel);
             setUseDefaultPageSize(false);
           }}
           hideFooter={true}
@@ -441,7 +505,7 @@ const FederationTable = ({
           {t('Verify ratings')}
         </Button>
       </Grid>
-      <Grid item sx={{ px: 0.5, pb: 1 }}>
+      <Grid sx={{ px: 0.5, pb: 1 }}>
         <Typography
           variant='body2'
           color={verifcationText ? 'success.main' : 'warning.main'}
@@ -464,54 +528,56 @@ const FederationTable = ({
       >
         <DialogTitle>{t('Add coordinator')}</DialogTitle>
         <DialogContent>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
-            {error ?? (
-              <Grid item xs={12}>
+          <Grid
+            container
+            spacing={2}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2, minWidth: '18em' }}
+          >
+            {error && (
+              <Grid size={12}>
                 <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
                   {error}
                 </Typography>
               </Grid>
             )}
-            <Grid item xs={12}>
-              <Grid container direction='column' alignItems='center'>
-                <Grid item xs={4}>
-                  <TextField
-                    id='outlined-basic'
-                    label={t('Alias')}
-                    variant='outlined'
-                    size='medium'
-                    value={newAlias}
-                    onChange={(e) => {
-                      setNewAlias(e.target.value);
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6} padding={2}>
-                  <TextField
-                    id='outlined-basic'
-                    label={t('URL')}
-                    variant='outlined'
-                    size='medium'
-                    value={newUrl}
-                    onChange={(e) => {
-                      setNewUrl(e.target.value);
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={1}>
-                  <Button
-                    sx={{ maxHeight: 38, marginTop: 2.5 }}
-                    disabled={false}
-                    onClick={addCoordinator}
-                    variant='contained'
-                    color='primary'
-                    size='large'
-                    type='submit'
-                  >
-                    {t('Add coordinator')}
-                  </Button>
-                </Grid>
-              </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                id='outlined-alias'
+                label={t('Alias')}
+                variant='outlined'
+                size='medium'
+                value={newAlias}
+                onChange={(e) => {
+                  setNewAlias(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                id='outlined-url'
+                label={t('URL')}
+                variant='outlined'
+                size='medium'
+                value={newUrl}
+                onChange={(e) => {
+                  setNewUrl(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid size={12} sx={{ width: '100%' }}>
+              <Button
+                fullWidth
+                disabled={false}
+                onClick={addCoordinator}
+                variant='contained'
+                color='primary'
+                size='large'
+                type='submit'
+              >
+                {t('Add coordinator')}
+              </Button>
             </Grid>
           </Grid>
         </DialogContent>

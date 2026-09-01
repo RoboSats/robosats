@@ -284,8 +284,11 @@ class LNDNode:
         """Checks if hold invoice is locked"""
         from api.models import LNPayment
 
+        # HTLC_SET_ONLY is required since LND v0.21 to populate response.htlcs;
+        # without it the default lookup returns an empty htlcs list.
         request = invoices_pb2.LookupInvoiceMsg(
-            payment_hash=bytes.fromhex(lnpayment.payment_hash)
+            payment_hash=bytes.fromhex(lnpayment.payment_hash),
+            lookup_modifier=invoices_pb2.LookupModifier.HTLC_SET_ONLY,
         )
         invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
         response = invoicesstub.LookupInvoiceV2(request)
@@ -327,9 +330,10 @@ class LNDNode:
         }
 
         try:
-            # this is similar to LNNnode.validate_hold_invoice_locked
+            # HTLC_SET_ONLY required since LND v0.21 to populate response.htlcs
             request = invoices_pb2.LookupInvoiceMsg(
-                payment_hash=bytes.fromhex(lnpayment.payment_hash)
+                payment_hash=bytes.fromhex(lnpayment.payment_hash),
+                lookup_modifier=invoices_pb2.LookupModifier.HTLC_SET_ONLY,
             )
             invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
             response = invoicesstub.LookupInvoiceV2(request)
@@ -520,7 +524,7 @@ class LNDNode:
                 lnpayment.save(update_fields=["fee", "status", "preimage"])
                 return True, None
 
-        return False
+        return False, "Payment stream ended without a final status"
 
     @classmethod
     def follow_send_payment(cls, lnpayment, fee_limit_sat, timeout_seconds):
@@ -546,11 +550,17 @@ class LNDNode:
             return
 
         def handle_response(response, was_in_transit=False):
+            from api.logics import Logics
+
+            if not order.transition_status(
+                Order.Status.PAY,
+                from_statuses=[Order.Status.PAY, Order.Status.FAI],
+            ):
+                return
+
             lnpayment.status = LNPayment.Status.FLIGHT
             lnpayment.in_flight = True
             lnpayment.save(update_fields=["in_flight", "status"])
-            order.update_status(Order.Status.PAY)
-            order.save(update_fields=["status"])
 
             if (
                 response.status == lightning_pb2.Payment.PaymentStatus.UNKNOWN
@@ -625,7 +635,7 @@ class LNDNode:
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save(update_fields=["status", "fee", "preimage"])
 
-                order.update_status(Order.Status.SUC)
+                Logics.complete_order(order)
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.SUC)
                 )

@@ -8,10 +8,10 @@ on:
         type: string
   push:
     branches: [ "main" ]
-    paths: [ "desktopApp", "frontend" ]
+    paths: [ "desktopApp/**", "frontend/**" ]
   pull_request:
     branches: [ "main" ]
-    paths: [ "desktopApp", "frontend" ]
+    paths: [ "desktopApp/**", "frontend/**" ]
 
 jobs:
   build-desktop:
@@ -20,54 +20,129 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
-          node-version: '16'
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: desktopApp/package-lock.json
+
+      - name: Cache Electron binary
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/electron
+          key: electron-${{ hashFiles('desktopApp/package-lock.json') }}
+          restore-keys: |
+            electron-
 
       - name: 'Download Basic main.js Artifact'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@57aa996fc1713cc1579039614f4645a7f4841fd4  # v23
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
           name: desktop-main-static
-          path: desktopApp
+          path: ${{ runner.temp }}/desktop-main-static-artifact
 
       - name: 'Download Basic main.js Artifact for a release'
         if: inputs.semver != ''  # Only if fired as job in release.yml
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: desktop-main-static
-          path: desktopApp
+          path: ${{ runner.temp }}/desktop-main-static-artifact
+
+      - name: 'Validate and promote artifact into desktopApp'
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/desktop-main-static-artifact
+        run: |
+          set -euo pipefail
+
+          # Artifact root must exist and contain exactly what the build produces
+          test -d "$ARTIFACT_DIR"
+          test -f "$ARTIFACT_DIR/index.html"
+          test -d "$ARTIFACT_DIR/static/frontend"
+
+          # Reject symlinks (zip-slip / path-escape vector)
+          if find "$ARTIFACT_DIR" -type l -print -quit | grep -q .; then
+            echo "::error::Artifact contains symlinks - refusing to promote"; exit 1
+          fi
+
+          # Reject non-regular, non-directory entries (devices, pipes, …)
+          if find "$ARTIFACT_DIR" ! -type d ! -type f -print -quit | grep -q .; then
+            echo "::error::Artifact contains non-regular files - refusing to promote"; exit 1
+          fi
+
+          # Reject hardlinks
+          if find "$ARTIFACT_DIR" -type f -links +1 -print -quit | grep -q .; then
+            echo "::error::Artifact contains hardlinked files - refusing to promote"; exit 1
+          fi
+
+          # Allow-list top-level entries: only index.html and static/ are expected.
+          # Anything else (index.js, package.json, tsconfig.json, tor/, assets/, dotfiles)
+          # is rejected outright to prevent overwriting committed workspace files.
+          shopt -s dotglob nullglob
+          for entry in "$ARTIFACT_DIR"/*; do
+            case "$(basename "$entry")" in
+              index.html|static) ;;
+              *) echo "::error::Unexpected entry in artifact: $(basename "$entry")"; exit 1 ;;
+            esac
+          done
+
+          # Promote only the approved paths into the workspace
+          mkdir -p desktopApp
+          rm -rf desktopApp/static
+          cp -f "$ARTIFACT_DIR/index.html" desktopApp/index.html
+          cp -R "$ARTIFACT_DIR/static"     desktopApp/static
 
       - name: Install dependencies
         run: |
           cd desktopApp
-          npm install
+          npm ci
+
+      - name: Pre-download Electron binary (with retry)
+        run: |
+          cd desktopApp
+          ELECTRON_VERSION=$(node -e "console.log(require('electron/package.json').version)")
+          echo "Pre-fetching Electron v${ELECTRON_VERSION}"
+          for attempt in 1 2 3; do
+            ELECTRON_VERSION="${ELECTRON_VERSION}" node -e "
+              const { download } = require('@electron/get');
+              download(process.env.ELECTRON_VERSION)
+                .then(p => { console.log('Cached at', p); process.exit(0); })
+                .catch(e => { console.error(e.message); process.exit(1); });
+            " && break
+            echo "Attempt ${attempt} failed, retrying in 10s..."
+            sleep 10
+          done
 
       - name: Build for macOS
+        env:
+          ELECTRON_GET_NO_PROGRESS: 'true'
         run: |
           cd desktopApp
           npm run package-mac
 
       - name: Build for Windows
+        env:
+          ELECTRON_GET_NO_PROGRESS: 'true'
         run: |
           cd desktopApp
           npm run package-win
 
       - name: Build for Linux
+        env:
+          ELECTRON_GET_NO_PROGRESS: 'true'
         run: |
           cd desktopApp
           npm run package-linux
 
       - name: 'Get Commit Hash'
         id: commit
-        uses: pr-mpt/actions-commit-hash@v3
+        uses: pr-mpt/actions-commit-hash@v4
 
       - name: Print semver
         run: echo The semver is ${{ github.event.inputs.semver }}
@@ -92,7 +167,7 @@ jobs:
 
       - name: Upload macOS Build Artifact
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -101,7 +176,7 @@ jobs:
 
       - name: Upload Windows Build Artifact
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -110,7 +185,7 @@ jobs:
 
       - name: Upload Linux Build Artifact
         if: inputs.semver != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -120,7 +195,7 @@ jobs:
       - name: Upload macOS Build Artifact
         id: upload-release-mac-zip-asset
         if: inputs.semver == ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -130,7 +205,7 @@ jobs:
       - name: Upload Windows Build Artifact
         id: upload-release-win-zip-asset
         if: inputs.semver == ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -140,7 +215,7 @@ jobs:
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
         if: inputs.semver == ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

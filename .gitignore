@@ -649,6 +649,7 @@ node
 desktopApp/release-builds
 
 # frontend statics
+*.html
 frontend/templates/frontend/*.html
 frontend/*.html
 desktopApp/static
@@ -657,6 +658,7 @@ web/static
 web/*.html
 nodeapp/static
 nodeapp/*.html
+nodeapp/ssl
 
 # Protocol Buffers
 api/lightning/*.proto

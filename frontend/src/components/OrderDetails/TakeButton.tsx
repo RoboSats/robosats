@@ -4,7 +4,7 @@ import { Box, Tooltip, Grid, TextField, useTheme, Typography, FormHelperText } f
 
 import Countdown from 'react-countdown';
 
-import currencies from '../../../static/assets/currencies.json';
+import currencies from '../../utils/currencies';
 
 import { type Order, type Info } from '../../models';
 import { ConfirmationDialog, OrderDescriptionDialog } from '../Dialogs';
@@ -91,7 +91,7 @@ const TakeButton = ({
     } else {
       return (
         <Tooltip enterTouchDelay={0} title={t('Wait until you can take an order')}>
-          <Grid container sx={{ width: '100%' }} padding={1} justifyContent='center'>
+          <Grid container sx={{ width: '100%', justifyContent: 'center', padding: 1 }}>
             <LoadingButton
               loading={loadingTake}
               disabled={true}
@@ -163,92 +163,94 @@ const TakeButton = ({
             },
           }}
         >
-          <Grid container direction='column' alignItems='center'>
-            <Grid
-              item
-              container
-              direction='row'
-              alignItems='flex-start'
-              justifyContent='space-evenly'
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                justifyContent: 'space-evenly',
+                width: '100%',
+              }}
             >
-              <Grid item>
-                <Tooltip
-                  placement='top'
-                  enterTouchDelay={500}
-                  enterDelay={700}
-                  enterNextDelay={2000}
-                  title={t('Enter amount of fiat to exchange for bitcoin')}
-                >
-                  <TextField
-                    error={takeAmount === '' ? false : invalidTakeAmount}
-                    helperText={amountHelperText}
-                    label={t('Amount {{currencyCode}}', { currencyCode })}
-                    size='small'
-                    type='number'
-                    required={true}
-                    value={takeAmount}
-                    inputProps={{
+              <Tooltip
+                placement='top'
+                enterTouchDelay={500}
+                enterDelay={700}
+                enterNextDelay={2000}
+                title={t('Enter amount of fiat to exchange for bitcoin')}
+                sx={{ flex: 1 }}
+              >
+                <TextField
+                  error={takeAmount === '' ? false : invalidTakeAmount}
+                  helperText={amountHelperText}
+                  label={t('Amount {{currencyCode}}', { currencyCode })}
+                  size='small'
+                  type='number'
+                  required={true}
+                  value={takeAmount}
+                  sx={{ flex: 1 }}
+                  slotProps={{
+                    htmlInput: {
                       min: currentOrder?.min_amount,
                       max: currentOrder?.max_amount,
                       style: { textAlign: 'center' },
-                    }}
-                    onChange={handleTakeAmountChange}
-                  />
+                    },
+                  }}
+                  onChange={handleTakeAmountChange}
+                />
+              </Tooltip>
+              <div
+                style={{
+                  display: invalidTakeAmount ? '' : 'none',
+                  flex: 1,
+                }}
+              >
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={0}
+                  enterDelay={500}
+                  enterNextDelay={1200}
+                  title={t('You must specify an amount first')}
+                >
+                  <div style={{ width: '100%' }}>
+                    <LoadingButton
+                      loading={loadingTake}
+                      sx={{ height: '2.8em', width: '100%', whiteSpace: 'nowrap' }}
+                      variant='outlined'
+                      color='primary'
+                      disabled={true}
+                    >
+                      {t('Take Order')}
+                    </LoadingButton>
+                  </div>
                 </Tooltip>
-              </Grid>
-              <Grid item>
-                <div
-                  style={{
-                    display: invalidTakeAmount ? '' : 'none',
-                  }}
+              </div>
+              <div
+                style={{
+                  display: invalidTakeAmount ? 'none' : '',
+                  flex: 1,
+                }}
+              >
+                <LoadingButton
+                  loading={loadingTake}
+                  sx={{ height: '2.8em', width: '100%', whiteSpace: 'nowrap' }}
+                  variant='outlined'
+                  color='primary'
+                  onClick={onTakeOrderClicked}
                 >
-                  <Tooltip
-                    placement='top'
-                    enterTouchDelay={0}
-                    enterDelay={500}
-                    enterNextDelay={1200}
-                    title={t('You must specify an amount first')}
-                  >
-                    <div>
-                      <LoadingButton
-                        loading={loadingTake}
-                        sx={{ height: '2.8em' }}
-                        variant='outlined'
-                        color='primary'
-                        disabled={true}
-                      >
-                        {t('Take Order')}
-                      </LoadingButton>
-                    </div>
-                  </Tooltip>
-                </div>
-                <div
-                  style={{
-                    display: invalidTakeAmount ? 'none' : '',
-                  }}
-                >
-                  <LoadingButton
-                    loading={loadingTake}
-                    sx={{ height: '2.8em' }}
-                    variant='outlined'
-                    color='primary'
-                    onClick={onTakeOrderClicked}
-                  >
-                    {t('Take Order')}
-                  </LoadingButton>
-                </div>
-              </Grid>
-            </Grid>
+                  {t('Take Order')}
+                </LoadingButton>
+              </div>
+            </Box>
             {satoshis !== '0' && satoshis !== '' && !invalidTakeAmount ? (
-              <Grid item>
-                <FormHelperText sx={{ position: 'relative', top: '0.15em' }}>
-                  {currentOrder?.type === 1
-                    ? t('You will receive {{satoshis}} Sats (Approx)', { satoshis })
-                    : t('You will send {{satoshis}} Sats (Approx)', { satoshis })}
-                </FormHelperText>
-              </Grid>
+              <FormHelperText sx={{ position: 'relative', top: '0.15em' }}>
+                {currentOrder?.type === 1
+                  ? t('You will receive {{satoshis}} Sats (Approx)', { satoshis })
+                  : t('You will send {{satoshis}} Sats (Approx)', { satoshis })}
+              </FormHelperText>
             ) : null}
-          </Grid>
+          </Box>
         </Box>
       );
     } else {

@@ -9,6 +9,7 @@ import {
   ListItemIcon,
   Divider,
   Grid,
+  Box,
   Collapse,
   useTheme,
   Typography,
@@ -26,7 +27,7 @@ import {
 
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
-import currencies from '../../../static/assets/currencies.json';
+import currencies from '../../utils/currencies';
 import {
   AccessTime,
   PriceChange,
@@ -41,12 +42,11 @@ import { fiatMethods, PaymentStringAsIcons, swapMethods } from '../../components
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { pn, amountToString, computeSats, statusBadgeColor } from '../../utils';
+import { pn, amountToString, btcToSatsString, computeSats, statusBadgeColor } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog, OrderDescriptionDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { Coordinator, type Order } from '../../models';
-import { Box } from '@mui/system';
 
 interface OrderDetailsProps {
   shortAlias: string;
@@ -82,28 +82,28 @@ const OrderDetails = ({
 
   useEffect(() => {
     if (!coordinator?.info) coordinator?.loadInfo();
-  }, [coordinator.shortAlias, coordinator.info]);
+  }, [coordinator?.shortAlias, coordinator?.info]);
 
   const amountString = useMemo(() => {
     if (currentOrder === null) return;
 
     if (currentOrder.currency === 1000) {
       return (
-        amountToString(
-          (currentOrder.amount * 100000000).toString(),
-          currentOrder.amount > 0 ? false : currentOrder.has_range,
-          currentOrder.min_amount * 100000000,
-          currentOrder.max_amount * 100000000,
+        btcToSatsString(
+          currentOrder.amount ?? 0,
+          (currentOrder.amount ?? 0) > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount ?? 0,
+          currentOrder.max_amount ?? 0,
         ) + ' Sats'
       );
     } else {
       return (
         amountToString(
-          currentOrder.amount?.toString(),
-          currentOrder.amount > 0 ? false : currentOrder.has_range,
-          currentOrder.min_amount,
-          currentOrder.max_amount,
-        ) + ` ${String(currencyCode)}`
+          currentOrder.amount?.toString() ?? '0',
+          (currentOrder.amount ?? 0) > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount ?? 0,
+          currentOrder.max_amount ?? 0,
+        ) + ` ${String(currencyCode ?? '')}`
       );
     }
   }, [currentOrder, currencyCode]);
@@ -184,15 +184,15 @@ const OrderDetails = ({
   const satsSummary = useMemo(() => {
     let send: string = '';
     let receive: string = '';
-    let sats: string = '';
+    let sats: string | undefined = '';
     const order = currentOrder;
 
     if (order === null) return {};
 
     const isBuyer = (order.type === 0 && order.is_maker) || (order.type === 1 && !order.is_maker);
     const tradeFee = order.is_maker
-      ? (coordinator.info?.maker_fee ?? 0)
-      : (coordinator.info?.taker_fee ?? 0);
+      ? (coordinator?.info?.maker_fee ?? 0)
+      : (coordinator?.info?.taker_fee ?? 0);
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
     const rate =
@@ -301,11 +301,11 @@ const OrderDetails = ({
             onClickCoordinator();
           }}
         >
-          <Grid container direction='row' justifyContent='center' alignItems='center'>
-            <Grid item sx={{ width: '20%' }}>
+          <Grid container direction='row' sx={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Grid sx={{ width: '20%' }}>
               <RobotAvatar
-                shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
-                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                shortAlias={coordinator?.federated ? coordinator.shortAlias : undefined}
+                hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                 small={true}
                 smooth={true}
                 style={{
@@ -314,11 +314,11 @@ const OrderDetails = ({
                 }}
               />
             </Grid>
-            <Grid item sx={{ width: '50%' }}>
-              <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
+            <Grid sx={{ width: '50%' }}>
+              <ListItemText primary={coordinator?.longAlias} secondary={t('Order host')} />
             </Grid>
             <ListItem style={{ width: '30%' }}>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Tag />
               </ListItemIcon>
               <ListItemText primary={currentOrder?.id} secondary={t('ID')} />
@@ -353,30 +353,28 @@ const OrderDetails = ({
             </Divider>
 
             <ListItem>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <div
                   style={{
                     zoom: 1.25,
                     opacity: 0.7,
-                    msZoom: 1.25,
-                    WebkitZoom: 1.25,
                     MozTransform: 'scale(1.25,1.25)',
                     MozTransformOrigin: 'left center',
                   }}
                 >
-                  <FlagWithProps code={currencyCode} width='1.2em' height='1.2em' />
+                  <FlagWithProps code={currencyCode ?? ''} width='1.2em' height='1.2em' />
                 </div>
               </ListItemIcon>
               <ListItemText
                 primary={amountString}
                 secondary={(currentOrder?.amount ?? 0) > 0 ? 'Amount' : 'Amount Range'}
               />
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <RobotAvatar
                   flipHorizontally
                   hashId={currentOrder.maker_hash_id}
                   statusColor={statusBadgeColor(currentOrder.maker_status)}
-                  tooltip={t(currentOrder.maker_status)}
+                  tooltip={t(currentOrder.maker_status ?? '')}
                 />
               </ListItemIcon>
             </ListItem>
@@ -406,7 +404,7 @@ const OrderDetails = ({
             <Divider />
 
             <ListItem sx={{ paddingBottom: 0 }}>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <Payments />
               </ListItemIcon>
               <ListItemText
@@ -423,7 +421,7 @@ const OrderDetails = ({
                 }
               />
               {currentOrder?.payment_method.includes('Cash F2F') && (
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <Tooltip enterTouchDelay={0} title={t('F2F location')}>
                     <div>
                       <IconButton
@@ -438,7 +436,7 @@ const OrderDetails = ({
                 </ListItemIcon>
               )}
               {currentOrder.description && currentOrder.description !== '' && (
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <IconButton
                     onClick={() => {
                       setOpenDescription(true);
@@ -449,7 +447,7 @@ const OrderDetails = ({
                 </ListItemIcon>
               )}
               {orderReversiblePaymentMethods.length > 0 && (
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 56 }}>
                   <IconButton
                     onClick={() => {
                       setOpenWarningDialog(true);
@@ -476,7 +474,7 @@ const OrderDetails = ({
 
             {/* If there is live Price and Premium data, show it. Otherwise show the order maker settings */}
             <ListItem>
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 56 }}>
                 <PriceChange />
               </ListItemIcon>
 
@@ -509,9 +507,13 @@ const OrderDetails = ({
             {/* if order is in a status that does not expire, do not show countdown */}
             <Collapse in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(currentOrder?.status ?? 0)}>
               <Divider />
-              <Grid container direction='row' justifyContent='center' alignItems='center'>
+              <Grid
+                container
+                direction='row'
+                sx={{ alignItems: 'center', justifyContent: 'center' }}
+              >
                 <ListItem style={{ width: '60%' }}>
-                  <ListItemIcon>
+                  <ListItemIcon sx={{ minWidth: 56 }}>
                     <AccessTime />
                   </ListItemIcon>
                   <ListItemText secondary={t('Expires in')}>
@@ -523,7 +525,7 @@ const OrderDetails = ({
                 </ListItem>
 
                 <ListItem style={{ width: '40%' }}>
-                  <ListItemIcon>
+                  <ListItemIcon sx={{ minWidth: 56 }}>
                     <HourglassTop />
                   </ListItemIcon>
                   <ListItemText
@@ -534,7 +536,7 @@ const OrderDetails = ({
               </Grid>
               <LinearDeterminate
                 totalSecsExp={currentOrder?.total_secs_exp ?? 0}
-                expiresAt={currentOrder?.expires_at ?? ''}
+                expiresAt={String(currentOrder?.expires_at ?? '')}
               />
             </Collapse>
           </>
@@ -556,18 +558,20 @@ const OrderDetails = ({
       )}
 
       {!currentOrder?.is_participant && currentOrder?.has_password && (
-        <Grid item style={{ width: '100%', padding: '0 16px' }}>
+        <Grid style={{ width: '100%', padding: '0 16px' }}>
           <TextField
             fullWidth
             label={`${t('Password')}`}
             type='password'
             value={password}
             style={{ marginBottom: 8 }}
-            inputProps={{
-              style: {
-                textAlign: 'center',
-                backgroundColor: theme.palette.background.paper,
-                borderRadius: 4,
+            slotProps={{
+              htmlInput: {
+                style: {
+                  textAlign: 'center',
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: 4,
+                },
               },
             }}
             onChange={(e) => onPasswordChange(e.target.value)}
@@ -576,12 +580,12 @@ const OrderDetails = ({
       )}
 
       {!currentOrder?.is_participant ? (
-        <Grid item style={{ width: '100%', padding: '8px' }}>
+        <Grid style={{ width: '100%', padding: '8px' }}>
           <TakeButton
             password={password}
             currentOrder={currentOrder}
             setCurrentOrder={setCurrentOrder}
-            info={coordinator.info}
+            info={coordinator?.info}
             onClickGenerateRobot={onClickGenerateRobot}
           />
         </Grid>

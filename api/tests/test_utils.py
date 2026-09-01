@@ -2,13 +2,15 @@ import shutil
 import subprocess
 import tempfile
 from datetime import timedelta
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import numpy as np
 from decouple import config
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
+from api.models import Robot
 from api.utils import (
     base91_to_hex,
     bitcoind_rpc,
@@ -20,11 +22,17 @@ from api.utils import (
     hex_to_base91,
     is_valid_token,
     render_order_logs,
+    robosats_commit_cache,
     validate_onchain_address,
     validate_pgp_keys,
     verify_signed_message,
     weighted_median,
 )
+
+
+def _read_robot_key(name: str) -> str:
+    with open(f"tests/robots/1/{name}") as file:
+        return file.read()
 
 
 def _gen_test_key(homedir: str, creation_date: str | None = None):
@@ -159,6 +167,10 @@ class TestUtils(TestCase):
         "builtins.open", new_callable=mock_open, read_data="00000000000000000000 dev"
     )
     def test_get_robosats_commit(self, mock_file):
+        # ring.dict caches results in-process; clear the cache so the function
+        # body actually runs and our builtins.open mock is exercised.
+        robosats_commit_cache.clear()
+
         # Call the get_robosats_commit function
         commit_hash = get_robosats_commit()
 
@@ -238,6 +250,119 @@ class TestUtils(TestCase):
             self.assertEqual(error["error_code"], 1056)
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
+
+    @patch("api.utils.gnupg.GPG")
+    def test_pgp_rejects_malformed_format(self, mock_gpg):
+        enc_priv_key = _read_robot_key("enc_priv_key")
+        malformed_keys = [
+            "",
+            "-----BEGIN PGP PUBLIC KEY BLOCK-----",
+            "a\nb\nc",
+            "-----BEGIN PGP PRIVATE KEY BLOCK-----\n\nAAAA\n=xxxx\n-----END PGP PRIVATE KEY BLOCK-----",
+            "-----BEGIN PGP PUBLIC KEY BLOCK-----\nAAAA\n=xxxx\n-----END PGP PUBLIC KEY BLOCK-----",
+            "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nnot!base64==\n=xxxx\n-----END PGP PUBLIC KEY BLOCK-----",
+        ]
+
+        for key in malformed_keys:
+            with self.subTest(key=key):
+                is_valid, error, returned_pub_key, returned_enc_priv_key = (
+                    validate_pgp_keys(key, enc_priv_key)
+                )
+                self.assertFalse(is_valid)
+                self.assertEqual(error["error_code"], 1034)
+                self.assertIsNone(returned_pub_key)
+                self.assertIsNone(returned_enc_priv_key)
+
+        mock_gpg.assert_not_called()
+
+    def test_pgp_duplicate_key_rejected(self):
+        pub_key = _read_robot_key("pub_key")
+        enc_priv_key = _read_robot_key("enc_priv_key")
+
+        user = User.objects.create_user(username="duplicate-robot")
+        user.robot.public_key = pub_key
+        user.robot.save(update_fields=["public_key"])
+        self.assertTrue(Robot.objects.filter(public_key=pub_key).exists())
+
+        is_valid, error, returned_pub_key, returned_enc_priv_key = validate_pgp_keys(
+            pub_key, enc_priv_key
+        )
+
+        self.assertFalse(is_valid)
+        self.assertEqual(error["error_code"], 1055)
+        self.assertIsNone(returned_pub_key)
+        self.assertIsNone(returned_enc_priv_key)
+
+    def _import_result(
+        self, imported=1, results=None, fingerprints=None, sec_imported=1
+    ):
+        result = MagicMock()
+        result.imported = imported
+        result.results = results if results is not None else []
+        result.fingerprints = fingerprints if fingerprints is not None else []
+        result.sec_imported = sec_imported
+        result.stderr = ""
+        result.returncode = 0
+        result.summary = ""
+        return result
+
+    @patch("api.utils.gnupg.GPG")
+    def test_pgp_pub_empty_results_no_crash(self, mock_gpg):
+        pub_key = _read_robot_key("pub_key")
+        enc_priv_key = _read_robot_key("enc_priv_key")
+        fingerprint = "A" * 40
+
+        gpg = mock_gpg.return_value
+        gpg.import_keys.side_effect = [
+            self._import_result(imported=0, results=[], fingerprints=[fingerprint]),
+            self._import_result(sec_imported=1, fingerprints=[fingerprint]),
+        ]
+        gpg.list_keys.return_value = [{"date": "0"}]
+
+        is_valid, error, returned_pub_key, _ = validate_pgp_keys(pub_key, enc_priv_key)
+
+        self.assertTrue(is_valid)
+        self.assertIsNone(error)
+        self.assertEqual(returned_pub_key, gpg.export_keys.return_value)
+
+    @patch("api.utils.gnupg.GPG")
+    def test_pgp_pub_empty_fingerprints_no_crash(self, mock_gpg):
+        pub_key = _read_robot_key("pub_key")
+        enc_priv_key = _read_robot_key("enc_priv_key")
+
+        gpg = mock_gpg.return_value
+        gpg.import_keys.side_effect = [
+            self._import_result(imported=1, results=[], fingerprints=[]),
+            self._import_result(sec_imported=1, fingerprints=["A" * 40]),
+        ]
+
+        is_valid, error, _, _ = validate_pgp_keys(pub_key, enc_priv_key)
+
+        self.assertTrue(is_valid)
+        self.assertIsNone(error)
+        gpg.list_keys.assert_not_called()
+        gpg.export_keys.assert_not_called()
+
+    @patch("api.utils.gnupg.GPG")
+    def test_pgp_priv_empty_results_no_crash(self, mock_gpg):
+        pub_key = _read_robot_key("pub_key")
+        enc_priv_key = _read_robot_key("enc_priv_key")
+
+        gpg = mock_gpg.return_value
+        gpg.import_keys.side_effect = [
+            self._import_result(imported=1, fingerprints=["A" * 40]),
+            self._import_result(sec_imported=0, results=[]),
+        ]
+        gpg.list_keys.return_value = [{"date": "0"}]
+
+        is_valid, error, returned_pub_key, returned_enc_priv_key = validate_pgp_keys(
+            pub_key, enc_priv_key
+        )
+
+        self.assertTrue(is_valid)
+        self.assertIsNone(error)
+        self.assertEqual(returned_pub_key, gpg.export_keys.return_value)
+        self.assertEqual(returned_enc_priv_key, enc_priv_key)
 
     def test_verify_signed_message(self):
         # Call the verify_signed_message function with a mock public key and a mock signed message

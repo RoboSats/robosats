@@ -4,6 +4,16 @@ import defaultFederation from '../../../static/federation.json';
 import { websocketClient, type WebsocketConnection, WebsocketState } from '../Websocket';
 import thirdParties from '../../../static/thirdparties.json';
 
+// Live coordinator pubkeys injected by Federation.model via setFederationPubkeys().
+// Starts from the bundled seed; updated after every successful federation vote.
+let liveFederationPubkeys: string[] = Object.values(defaultFederation)
+  .map((c) => c.nostrHexPubkey)
+  .filter(Boolean);
+
+export function setFederationPubkeys(pubkeys: string[]): void {
+  if (pubkeys.length > 0) liveFederationPubkeys = pubkeys;
+}
+
 interface RoboPoolEvents {
   onevent: (event: Event) => void;
   oneose: () => void;
@@ -51,7 +61,7 @@ class RoboPool {
 
           connection.onMessage((event) => {
             this.messageHandlers.forEach((handler) => {
-              handler(url, event);
+              handler(url, event as unknown as MessageEvent<unknown>);
             });
           });
 
@@ -94,11 +104,15 @@ class RoboPool {
   };
 
   subscribeBook = (robosatsOnly: boolean, events: RoboPoolEvents): void => {
-    let scope = Object.values(defaultFederation);
+    // Use the live coordinator list (updated after each federation vote).
+    // Fall back to the bundled seed via liveFederationPubkeys initializer.
+    let authors: string[] = [...liveFederationPubkeys];
     if (!robosatsOnly) {
-      scope = [...scope, ...Object.values(thirdParties)];
+      const thirdPartyPubkeys = (Object.values(thirdParties) as Array<{ nostrHexPubkey?: string }>)
+        .map((f) => f.nostrHexPubkey)
+        .filter((item): item is string => item !== undefined);
+      authors = [...authors, ...thirdPartyPubkeys];
     }
-    const authors = scope.map((f) => f.nostrHexPubkey).filter((item) => item !== undefined);
 
     const subscribeBook = 'subscribeBook';
 
@@ -130,11 +144,8 @@ class RoboPool {
   };
 
   subscribeRatings = (events: RoboPoolEvents, pubkeys?: string[], id?: string): string => {
-    const pubkeysFilter =
-      pubkeys ??
-      Object.values(defaultFederation)
-        .map((f) => f.nostrHexPubkey)
-        .filter((item) => item !== undefined);
+    // Use the live coordinator list; caller can still pass explicit pubkeys to override.
+    const pubkeysFilter = pubkeys ?? [...liveFederationPubkeys];
 
     const subscriptionId = `subscribeRatings${id ?? ''}`;
     const sixMonthsAgo = Math.floor(new Date().getTime() / 1000) - 6 * 30 * 24 * 60 * 60;

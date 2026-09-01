@@ -93,7 +93,13 @@ class Robot(models.Model):
 
     @staticmethod
     def is_valid_onion_url(url):
-        """Validates that the URL is a .onion address (Tor only)"""
+        """Validates that the URL is a valid http .onion address (Tor only).
+
+        Enforces:
+        - scheme must be 'http' (the only scheme Tor hidden services use for callbacks)
+        - hostname must end with '.onion' (no double-dots or tricks)
+        - hostname must not be empty
+        """
         if not url:
             return False
         try:
@@ -101,7 +107,12 @@ class Robot(models.Model):
 
             parsed = urlparse(url)
             hostname = parsed.hostname or ""
-            return hostname.endswith(".onion")
+            return (
+                parsed.scheme == "http"
+                and hostname.endswith(".onion")
+                and not hostname.endswith("..onion")
+                and len(hostname) > len(".onion")
+            )
         except Exception:
             return False
 

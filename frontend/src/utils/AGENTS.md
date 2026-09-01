@@ -8,34 +8,33 @@ One subdirectory: `crypto/`.
 
 ## File Map
 
-| File / Dir             | Key exports                                              | Notes                                                                      |
-| ---------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `aggregateInfo.ts`     | `aggregateInfo`                                          | Merges `/api/info` responses across coordinators                           |
-| `array.ts`             | misc array helpers                                       |                                                                            |
-| `blossom.ts`           | Blossom media-upload helpers                             | Used by chat image upload                                                  |
-| `bondCalculator.ts`    | `BondCalculatorProps`, `calculateBondAmount`             | Bond sats ↔ percent, delegates from `useBondEstimate`                     |
-| `checkVer.ts`          | `checkVer`                                               | Compares client version vs coordinator-reported `version`                  |
-| `computeSats.ts`       | `computeSats`                                            | Fiat ↔ sats conversion using current price + premium                      |
-| `crypto/`              | subdirectory                                             | Crypto helpers (entropy, hashing)                                          |
-| `federationLottery.ts` | `federationLottery`                                      | Randomises coordinator order weighted by DevFund donation % (capped at 50) |
-| `filterOrders.ts`      | `filterOrders`                                           | Applies book filter state to an order list                                 |
-| `getHost.ts`           | `getHost`, `getOrigin`                                   | Coordinator URL resolution per client type                                 |
-| `getRouter.ts`         | `getRouter`                                              | Returns the active React Router instance                                   |
-| `hexToBase91.ts`       | `hexToBase91`, `base91ToHex`                             | Token encoding helpers (match backend `api/utils.py`)                      |
-| `hexToRgb.ts`          | `hexToRgb`                                               | Colour conversion                                                          |
-| `index.ts`             | barrel re-exports                                        | All utils from one entry point                                             |
-| `match.ts`             | `matchOrder`                                             | Checks if a taker's offer matches a maker's order                          |
-| `nip17File.ts`         | `nip17File`                                              | NIP-17 file message helpers for Nostr chat                                 |
-| `nostr.ts`             | `eventToPublicOrder` (default), `verifyCoordinatorToken` | NIP-69 event → Order; coordinator token schnorr-verify                     |
-| `prettyNumbers.ts`     | `prettyNumbers`, `pn`                                    | Human-readable number formatting                                           |
-| `saveFile.ts`          | `saveFile`                                               | Browser file-save helper                                                   |
-| `settings.ts`          | `getSettings`, `getClientType`                           | Reads `window.RobosatsSettings`, returns typed Settings                    |
-| `statusBadgeColor.ts`  | `statusBadgeColor`                                       | Maps `Order.Status` → MUI badge colour                                     |
-| `stringToInteger.ts`   | `stringToInteger`                                        | Deterministic string → integer hash                                        |
-| `theme.ts`             | `getRobosatsTheme`                                       | MUI theme factory                                                          |
-| `token.ts`             | `genBase62Token`, `hexToBase62`, `validateToken`         | Robot token generation + validation                                        |
-| `webln.ts`             | WebLN helpers                                            | WebLN/Alby integration utilities                                           |
-| `weightedMean.ts`      | `weightedMean`                                           | Weighted average (used in price aggregation display)                       |
+| File / Dir             | Key exports                                              | Notes                                                                                                                                                        |
+| ---------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `array.ts`             | misc array helpers                                       |                                                                                                                                                              |
+| `blossom.ts`           | Blossom media-upload helpers                             | Used by chat image upload                                                                                                                                    |
+| `bondCalculator.ts`    | `BondCalculatorProps`, `calculateBondAmount`             | Bond sats ↔ percent, delegates from `useBondEstimate`                                                                                                        |
+| `checkVer.ts`          | `checkVer`, `getHigherVer`, `getClientVersion`           | Compares client version vs coordinator-reported `version`; **live** `getHigherVer` — do not edit the dead duplicate that was in `aggregateInfo.ts` (deleted) |
+| `computeSats.ts`       | `computeSats`                                            | Fiat ↔ sats conversion using current price + premium                                                                                                         |
+| `crypto/`              | subdirectory                                             | Crypto helpers (entropy, hashing)                                                                                                                            |
+| `federationLottery.ts` | `federationLottery`                                      | Randomises coordinator order weighted by DevFund donation % (capped at 50)                                                                                   |
+| `filterOrders.ts`      | `filterOrders`                                           | Applies book filter state to an order list                                                                                                                   |
+| `getHost.ts`           | `getHost`, `getOrigin`                                   | Coordinator URL resolution per client type                                                                                                                   |
+| `getRouter.ts`         | `getRouter`                                              | Returns the active React Router instance                                                                                                                     |
+| `hexToBase91.ts`       | `hexToBase91`, `base91ToHex`                             | Token encoding helpers (match backend `api/utils.py`)                                                                                                        |
+| `hexToRgb.ts`          | `hexToRgb`                                               | Colour conversion                                                                                                                                            |
+| `index.ts`             | barrel re-exports                                        | All utils from one entry point                                                                                                                               |
+| `match.ts`             | `matchOrder`                                             | Checks if a taker's offer matches a maker's order                                                                                                            |
+| `nip17File.ts`         | `nip17File`                                              | NIP-17 file message helpers for Nostr chat                                                                                                                   |
+| `nostr.ts`             | `eventToPublicOrder` (default), `verifyCoordinatorToken` | NIP-69 event → Order; coordinator token schnorr-verify                                                                                                       |
+| `prettyNumbers.ts`     | `prettyNumbers`, `pn`                                    | Human-readable number formatting                                                                                                                             |
+| `saveFile.ts`          | `saveFile`                                               | Browser file-save helper                                                                                                                                     |
+| `settings.ts`          | `getSettings`, `getClientType`                           | Reads `window.RobosatsSettings`, returns typed Settings                                                                                                      |
+| `statusBadgeColor.ts`  | `statusBadgeColor`                                       | Maps `Order.Status` → MUI badge colour                                                                                                                       |
+| `stringToInteger.ts`   | `stringToInteger`                                        | Deterministic string → integer hash                                                                                                                          |
+| `theme.ts`             | `getRobosatsTheme`                                       | MUI theme factory                                                                                                                                            |
+| `token.ts`             | `genBase62Token`, `hexToBase62`, `validateToken`         | Robot token generation + validation                                                                                                                          |
+| `webln.ts`             | WebLN helpers                                            | WebLN/Alby integration utilities                                                                                                                             |
+| `weightedMean.ts`      | `weightedMean`                                           | Weighted average (used in price aggregation display)                                                                                                         |
 
 ## Key modules
 
@@ -49,9 +48,13 @@ Called by `useBondEstimate`; not called directly by components.
 
 Returns coordinators in **randomised order weighted by DevFund donation % (capped at 50)**
 — an explicit donation-incentive mechanism, not a flat-neutral shuffle. Called at runtime
-to replace the seed order from `federation.json`. This randomisation is the mechanism
-that makes `fav.coordinator: 'robosats'` (the seed default) a transient legacy value —
-it is overwritten at runtime.
+to replace the seed order from `federation.json`. Signature
+`federationLottery(federation = defaultFederation, devfundOverrides = {})`: the static
+`badges.donatesToDevFund` is used as weight unless a **live override** (from
+`services/DevFundProfile.ts`, backed by each coordinator's `/api/info/` `devfund`) is
+provided. The value is clamped to `[0, 50]`. This randomisation is the mechanism that
+makes `fav.coordinator: 'robosats'` (the seed default) a transient legacy value — it is
+overwritten at runtime.
 
 ### `getHost.ts` / `getOrigin`
 

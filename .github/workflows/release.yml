@@ -15,9 +15,20 @@ jobs:
       semver: ${{ steps.validate.outputs.semver }}
     steps:
     - name: 'Checkout'
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha || github.ref }}
+    - name: 'Validate federation.json files are in sync'
+      shell: bash
+      run: |
+        if ! diff -q frontend/static/federation.json api/federation.json > /dev/null; then
+          echo "ERROR: frontend/static/federation.json and api/federation.json are out of sync."
+          diff frontend/static/federation.json api/federation.json
+          echo "  Run 'cd frontend && npm run build' to regenerate api/federation.json, then commit the result."
+          exit 1
+        fi
+        echo "federation.json files are in sync."
+
     - name: 'Validate versions match (tag, backend, frontend, Android)'
       id: validate
       shell: bash
@@ -89,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
@@ -99,7 +110,7 @@ jobs:
 
       - name: Release
         id: create-release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: release_notes.md
           generate_release_notes: true
@@ -107,7 +118,7 @@ jobs:
 
       # Upload app-universal-release APK artifact asset
       - name: 'Download universal APK Artifact'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: app-universal-release.apk
           path: .
@@ -125,7 +136,7 @@ jobs:
 
       # Upload app-arm64-v8a-release APK artifact asset
       - name: 'Download arm64-v8a APK Artifact'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: app-arm64-v8a-release.apk
           path: .
@@ -142,7 +153,7 @@ jobs:
 
       # Upload app-armeabi-v7a-release APK artifact asset
       - name: 'Download armeabi-v7a APK Artifact'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: app-armeabi-v7a-release.apk
           path: .
@@ -159,7 +170,7 @@ jobs:
 
       # Upload app-x86_64-release APK artifact asset
       - name: 'Download x86_64 APK Artifact'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: app-x86_64-release.apk
           path: .
@@ -176,7 +187,7 @@ jobs:
 
       # Upload macOS desktop artifact asset
       - name: 'Download macOS Build Artifact'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-mac-darwin-x64.zip
@@ -194,7 +205,7 @@ jobs:
 
       # Upload linux desktop artifact asset
       - name: 'Download linux Build Artifact'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-linux-x64.zip
@@ -212,7 +223,7 @@ jobs:
 
       # Upload Windows desktop artifact asset
       - name: 'Download Windows Build Artifact'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           path: .
           name: robosats-desktop-${{ needs.check-versions.outputs.semver }}-win32-ia32.zip
