@@ -308,3 +308,6 @@ MAX_BOND_SIZE = float(15)
 INVOICE_AND_ESCROW_DURATION = 180
 # Time to confirm chat and confirm fiat (time to Fiat Sent confirmation) HOURS
 FIAT_EXCHANGE_DURATION = 24
+
+# The name of the request header used for CSRF authentication.
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default=[])
