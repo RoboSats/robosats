@@ -1,3 +1,8 @@
+import hashlib
+import json
+import logging
+import os
+import re
 from datetime import datetime, timedelta
 from hmac import compare_digest
 
@@ -32,6 +37,7 @@ from api.models import (
 from api.notifications import Notifications
 from api.oas_schemas import (
     BookViewSchema,
+    FederationViewSchema,
     HistoricalViewSchema,
     InfoViewSchema,
     LimitViewSchema,
@@ -271,6 +277,14 @@ class OrderView(viewsets.ViewSet):
         if not data["is_participant"] and order.status == Order.Status.PUB:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
             data["satoshis_now"] = Logics.satoshis_now(order)
+            # Password-protected orders: redact location and description for non-participants
+            # so that the precise meeting point and extra details stay private until the
+            # password is provided at take-time.  payment_method is kept visible so that
+            # a potential taker can decide whether the trade suits them before committing.
+            if order.password is not None:
+                data["latitude"] = None
+                data["longitude"] = None
+                data["description"] = None
             return Response(data, status=status.HTTP_200_OK)
 
         # 4) If order is between public and WF2
@@ -742,19 +756,14 @@ class BookView(ListAPIView):
         cache_key = f"book:{currency}:{type}"
         book_data = cache.get(cache_key)
         if book_data is None:
+            # Always exclude password-protected orders from the public book.
             queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
 
             # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
-            if int(currency) == 0 and int(type) != 2:
-                queryset = Order.objects.filter(type=type, status=Order.Status.PUB)
-            elif int(type) == 2 and int(currency) != 0:
-                queryset = Order.objects.filter(
-                    currency=currency, status=Order.Status.PUB
-                )
-            elif not (int(currency) == 0 and int(type) == 2):
-                queryset = Order.objects.filter(
-                    currency=currency, type=type, status=Order.Status.PUB
-                )
+            if int(type) != 2:
+                queryset = queryset.filter(type=type)
+            if int(currency) != 0:
+                queryset = queryset.filter(currency=currency)
 
             if len(queryset) == 0:
                 return Response(
@@ -812,6 +821,128 @@ class NotificationsView(ListAPIView):
             notification_data.append(data)
 
         return Response(notification_data, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------------------
+# Federation view
+# ---------------------------------------------------------------------------
+
+# Key attributes included in the normalized document that drives the vote.
+# Cosmetic fields (description, motto, color, policies, contact, badges) are
+# deliberately excluded so that a coordinator updating its copy does not create
+# a new "version" that splits the vote on irrelevant changes.
+_FEDERATION_KEY_ATTRS = (
+    "shortAlias",
+    "nostrHexPubkey",
+    "established",
+    "federated",
+    "mainnetNodesPubkeys",
+    "testnetNodesPubkeys",
+)
+_FEDERATION_NET_ATTRS = ("onion", "clearnet", "i2p")
+
+# api/federation.json is committed to the repo and kept in sync with
+# frontend/static/federation.json by webpack's afterEmit CopyFilesPlugin.
+# Operators can override it via FEDERATION_JSON_PATH without a release.
+_BUNDLED_FEDERATION_PATH = os.path.join(os.path.dirname(__file__), "federation.json")
+
+
+logger = logging.getLogger(__name__)
+
+
+def _normalize_federation(doc: dict) -> dict:
+    """Return a copy of *doc* containing only the key attributes used for hashing.
+
+    Net attrs (onion, clearnet, i2p) are coerced to empty string when absent
+    *or* explicitly null — some federation.json entries use JSON null for
+    missing addresses and both the backend and frontend must agree on this
+    normalization so their canonical hashes match.
+    """
+    out = {}
+    for alias, entry in doc.items():
+        normalized = {k: entry.get(k) for k in _FEDERATION_KEY_ATTRS}
+        for net in ("mainnet", "testnet"):
+            normalized[net] = {
+                # Use `or ""` so that null values are coerced to "" just as
+                # the frontend does with `netObj[k] ?? ''`.
+                k: (entry.get(net) or {}).get(k) or ""
+                for k in _FEDERATION_NET_ATTRS
+            }
+        out[alias] = normalized
+    return out
+
+
+def _canonical_hash(obj: dict) -> str:
+    """SHA-256 of the canonical (sorted-keys, no-whitespace) JSON representation."""
+    canonical = json.dumps(
+        obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _load_federation_doc() -> dict:
+    """
+    Load the federation JSON from FEDERATION_JSON_PATH (env var) if set and
+    valid, otherwise fall back to the bundled copy.  Returns the raw document
+    (full entries, not normalized) so the response includes all fields.
+    """
+    cached = cache.get("federation_doc")
+    if cached is not None:
+        return cached
+
+    path = config("FEDERATION_JSON_PATH", default="", cast=str).strip()
+    if not path:
+        path = _BUNDLED_FEDERATION_PATH
+
+    doc = None
+    if path and os.path.isfile(path):
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                candidate = json.load(fh)
+            # Schema validation — aligned with the frontend isValidDoc() rules so
+            # that a document passing backend validation cannot be rejected by
+            # every client (which would cause a perpetual fetch-and-discard loop).
+            _ALIAS_RE = re.compile(r"^[a-z0-9]{1,20}$")
+            if isinstance(candidate, dict) and candidate:
+                for alias, entry in candidate.items():
+                    if not _ALIAS_RE.match(alias):
+                        raise ValueError(
+                            f"Alias '{alias}' does not match /^[a-z0-9]{{1,20}}$/"
+                        )
+                    if not isinstance(entry, dict):
+                        raise ValueError(f"Entry '{alias}' is not a dict")
+                    if entry.get("shortAlias") != alias:
+                        raise ValueError(
+                            f"Entry '{alias}' shortAlias mismatch: "
+                            f"'{entry.get('shortAlias')}'"
+                        )
+                    onion = (entry.get("mainnet") or {}).get("onion") or ""
+                    if ".onion" not in onion:
+                        raise ValueError(
+                            f"Entry '{alias}' missing valid mainnet onion address"
+                        )
+                doc = candidate
+        except Exception as exc:
+            logger.warning(
+                "[FederationView] Failed to load %s: %s. Falling back to bundled copy.",
+                path,
+                exc,
+            )
+
+    if doc is None:
+        with open(_BUNDLED_FEDERATION_PATH, "r", encoding="utf-8") as fh:
+            doc = json.load(fh)
+
+    # Cache for 5 minutes
+    cache.set("federation_doc", doc, 300)
+    return doc
+
+
+class FederationView(viewsets.ViewSet):
+    @extend_schema(**FederationViewSchema.get)
+    def get(self, request):
+        doc = _load_federation_doc()
+        return Response(doc, status=status.HTTP_200_OK)
 
 
 class InfoView(viewsets.ViewSet):
@@ -876,6 +1007,9 @@ class InfoView(viewsets.ViewSet):
         context["node_alias"] = config("NODE_ALIAS")
         context["node_id"] = config("NODE_ID")
         context["network"] = config("NETWORK", cast=str, default="mainnet")
+        context["devfund"] = round(
+            float(config("DEVFUND", cast=float, default=0.2)) * 100, 2
+        )
         context["maker_fee"] = float(config("FEE")) * float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE")) * (
             1 - float(config("MAKER_FEE_SPLIT"))
@@ -890,6 +1024,7 @@ class InfoView(viewsets.ViewSet):
         context["max_order_size"] = config("MAX_ORDER_SIZE", cast=int, default=250000)
         context["swap_enabled"] = not config("DISABLE_ONCHAIN", cast=bool, default=True)
         context["max_swap"] = config("MAX_SWAP_AMOUNT", cast=int, default=0)
+        context["blossom_enabled"] = config("BLOSSOM_ENABLED", cast=bool, default=False)
 
         try:
             context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(
@@ -897,6 +1032,13 @@ class InfoView(viewsets.ViewSet):
             )
         except BalanceLog.DoesNotExist:
             context["current_swap_fee_rate"] = 0
+
+        # federation_hash lets clients vote on the federation list using the hash
+        # from each coordinator's /api/info/ response — no separate /api/federation/
+        # request needed in the common case where the list hasn't changed.
+        context["federation_hash"] = _canonical_hash(
+            _normalize_federation(_load_federation_doc())
+        )
 
         cache.set("info", context, timeout=INFO_CACHE_TTL)
 

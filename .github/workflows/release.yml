@@ -18,6 +18,17 @@ jobs:
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha || github.ref }}
+    - name: 'Validate federation.json files are in sync'
+      shell: bash
+      run: |
+        if ! diff -q frontend/static/federation.json api/federation.json > /dev/null; then
+          echo "ERROR: frontend/static/federation.json and api/federation.json are out of sync."
+          diff frontend/static/federation.json api/federation.json
+          echo "  Run 'cd frontend && npm run build' to regenerate api/federation.json, then commit the result."
+          exit 1
+        fi
+        echo "federation.json files are in sync."
+
     - name: 'Validate versions match (tag, backend, frontend, Android)'
       id: validate
       shell: bash

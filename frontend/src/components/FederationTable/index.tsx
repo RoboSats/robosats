@@ -11,6 +11,7 @@ import {
   Grid,
   Rating,
   TextField,
+  Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
@@ -270,6 +271,45 @@ const FederationTable = ({
     [federationUpdatedAt],
   );
 
+  const hashObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'federationHash',
+        headerName: t('Federation Hash'),
+        width: width * fontSize,
+        renderCell: (params: { row: Coordinator }) => {
+          const coordinator = federation.getCoordinator(params.row.shortAlias);
+          const hash = coordinator.info?.federation_hash;
+
+          if (!hash) {
+            return (
+              <Typography variant='caption' color='text.disabled'>
+                {'-'}
+              </Typography>
+            );
+          }
+
+          const isMajority =
+            federation.majorityFederationHash !== null &&
+            hash === federation.majorityFederationHash;
+
+          return (
+            <Tooltip title={hash} placement='top'>
+              <Typography
+                variant='caption'
+                color={isMajority ? 'success.main' : 'text.secondary'}
+                sx={{ fontFamily: 'monospace', fontWeight: isMajority ? 'bold' : 'normal' }}
+              >
+                {hash.slice(0, 8)}
+              </Typography>
+            </Tooltip>
+          );
+        },
+      };
+    },
+    [federationUpdatedAt],
+  );
+
   const columnSpecs = {
     alias: {
       priority: 2,
@@ -303,6 +343,15 @@ const FederationTable = ({
         object: enabledObj,
       },
     },
+    hash: {
+      priority: 4,
+      order: 5,
+      hideOnMobile: true,
+      normal: {
+        width: 11,
+        object: hashObj,
+      },
+    },
   };
 
   const filteredColumns = function (): {
@@ -316,10 +365,13 @@ const FederationTable = ({
     interface ColSpec {
       priority: number;
       order: number;
+      hideOnMobile?: boolean;
       normal: { width: number; object: (w: number, b: boolean) => object };
       small?: { width: number; object: (w: number, b: boolean) => object };
     }
     for (const value of Object.values(columnSpecs) as ColSpec[]) {
+      if (mobile && value.hideOnMobile) continue;
+
       const colWidth = Number(
         useSmall && value.small != null ? value.small.width : value.normal.width,
       );
@@ -328,9 +380,8 @@ const FederationTable = ({
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
         selectedColumns.push([colObject(colWidth, false), value.order]);
-      } else {
-        selectedColumns.push([colObject(colWidth, true), value.order]);
       }
+      // columns that exceed maxWidth are simply not rendered
     }
 
     // sort columns by column.order value

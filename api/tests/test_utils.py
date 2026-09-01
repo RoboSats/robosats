@@ -22,6 +22,7 @@ from api.utils import (
     hex_to_base91,
     is_valid_token,
     objects_to_hyperlinks,
+    robosats_commit_cache,
     validate_onchain_address,
     validate_pgp_keys,
     verify_signed_message,
@@ -166,6 +167,10 @@ class TestUtils(TestCase):
         "builtins.open", new_callable=mock_open, read_data="00000000000000000000 dev"
     )
     def test_get_robosats_commit(self, mock_file):
+        # ring.dict caches results in-process; clear the cache so the function
+        # body actually runs and our builtins.open mock is exercised.
+        robosats_commit_cache.clear()
+
         # Call the get_robosats_commit function
         commit_hash = get_robosats_commit()
 

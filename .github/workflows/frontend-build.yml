@@ -41,7 +41,7 @@ jobs:
     - name: 'Install NPM Dependencies'
       run: |
         cd frontend
-        npm install
+        npm ci
     - name:  'Build'
       run: |
         export NODE_OPTIONS="--max-old-space-size=4096"
