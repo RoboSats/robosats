@@ -1,4 +1,5 @@
 # We use custom seeded UUID generation during testing
+import json
 import uuid
 
 from decimal import Decimal
@@ -294,7 +295,7 @@ class Order(models.Model):
     logs = models.TextField(
         max_length=80_000,
         null=True,
-        default="<thead><tr><b><th>Timestamp</th><th>Level</th><th>Event</th></b></tr></thead>",
+        default="[]",
         blank=True,
         editable=False,
     )
@@ -340,21 +341,21 @@ class Order(models.Model):
         return t_to_expire[status]
 
     def log(self, event="empty event", level="INFO"):
-        """
-        log() adds a new line to the Order.log field. We wrap it all in a
-        try/catch block since this function is called inside the main request->response
-        pipe and any error here would lead to a 500 response.
-        """
         if config("DISABLE_ORDER_LOGS", cast=bool, default=True):
             return
         try:
-            timestamp = timezone.now().replace(microsecond=0).isoformat()
-            level_in_tag = "" if level == "INFO" else "<b>"
-            level_out_tag = "" if level == "INFO" else "</b>"
-            self.logs = (
-                self.logs
-                + f"<tr><td>{timestamp}</td><td>{level_in_tag}{level}{level_out_tag}</td><td>{event}</td></tr>"
+            try:
+                entries = json.loads(self.logs)
+            except (json.JSONDecodeError, TypeError):
+                entries = []
+            entries.append(
+                {
+                    "timestamp": timezone.now().replace(microsecond=0).isoformat(),
+                    "level": level,
+                    "event": str(event),
+                }
             )
+            self.logs = json.dumps(entries)
             self.save(update_fields=["logs"])
         except Exception:
             pass
@@ -393,7 +394,7 @@ class Order(models.Model):
     def log_status_transition(self, old_status, new_status):
         if old_status != new_status:
             self.log(
-                f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
+                f"Order state went from {old_status}: *{Order.Status(old_status).label}* to {new_status}: *{Order.Status(new_status).label}*"
             )
 
 

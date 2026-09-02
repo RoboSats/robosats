@@ -1,3 +1,4 @@
+import html as html_lib
 import json
 import logging
 import re
@@ -563,30 +564,54 @@ def location_country(lon: float, lat: float) -> str:
     return "unknown"
 
 
-def objects_to_hyperlinks(logs: str) -> str:
+def render_order_logs(raw):
     """
-    Parses strings that have Object(ID,NAME) that match API models.
-    For example Robot(ID,NAME) will be parsed into
-    <b><a href="/coordinator/api/robot/ID/change}">NAME</a></b>
+    Renders Order.logs (a JSON-encoded string) as a safe HTML table.
 
-    Used to format pretty logs for the Order admin panel.
+    Safety: every field is html.escape()'d before any formatting is applied.
+    The two formatting rules (**bold** and Object(ID,NAME)) operate on
+    already-escaped text, so user data can never inject HTML.
     """
-    objects = ["LNPayment", "Robot", "Order", "OnchainPayment", "MarketTick"]
+    # Decode JSON. Old rows contain HTML (not JSON), so this will fail
+    # gracefully and we show "No logs were recorded".
     try:
+        entries = json.loads(raw) if raw else []
+    except (json.JSONDecodeError, TypeError):
+        entries = []
+
+    if not entries:
+        return "<b>No logs were recorded</b>"
+
+    objects = ["LNPayment", "Robot", "Order", "OnchainPayment", "MarketTick"]
+    rows = []
+
+    for entry in entries:
+        timestamp = html_lib.escape(str(entry.get("timestamp", "")))
+        level = html_lib.escape(str(entry.get("level", "")))
+        event = html_lib.escape(str(entry.get("event", "")))
+
+        # **bold** -> <b>bold</b>
+        event = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", event, flags=re.DOTALL)
+
+        # *italic* -> <i>italic</i>
+        event = re.sub(r"\*(.+?)\*", r"<i>\1</i>", event, flags=re.DOTALL)
+
+        # Object(ID,NAME) -> hyperlink
         for obj in objects:
-            logs = re.sub(
-                rf"{obj}\(([0-9a-fA-F\-A-F]+),\s*([^)]+)\)",
-                lambda m: (
-                    f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>'
-                ),
-                logs,
+            event = re.sub(
+                rf"{obj}\(([0-9a-fA-F\-]+),\s*([^)]+)\)",
+                rf'<b><a href="/coordinator/api/{obj.lower()}/\1">\2</a></b>',
+                event,
                 flags=re.DOTALL,
             )
 
-    except re.error as e:
-        print("Error occurred:", e.msg)
-        print("Pattern:", e.pattern)
-        print("Position:", e.pos)
-        logs = f"An error occurred while parsing the logs. Exception {e}"
+        rows.append(
+            f'<tr><td>{timestamp}</td><td>{level}</td><td>{event}</td></tr>'
+        )
 
-    return logs
+    header = (
+        '<thead><tr><b>'
+        '<th>Timestamp</th><th>Level</th><th>Event</th>'
+        '</b></tr></thead>'
+    )
+    return f'<table style="width:100%">{header}{"".join(rows)}</table>'
