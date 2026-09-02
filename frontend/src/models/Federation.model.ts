@@ -15,7 +15,10 @@ import {
   normalizeDoc,
   voteOnHashes,
   fetchAndVerifyDoc,
+  trustedEstablishedDate,
+  seniorityWeight,
 } from '../services/FederationDiscovery';
+
 import { federationLottery, getHost } from '../utils';
 import type { CoordinatorSeed } from '../utils/federationLottery';
 import { coordinatorDefaultValues, type CoordinatorConfig } from './Coordinator.model';
@@ -369,10 +372,13 @@ export class Federation {
 
     // New coordinators also need their info fetched (limits, fees, federation_hash)
     // so they can participate in the next discovery vote and appear correctly in the UI.
-    added.forEach((alias) => {
-      this.coordinators[alias]?.loadInfo(() => {
-        this.onCoordinatorSaved();
-      });
+    // Re-run the vote once all new infos are settled so the hash column stays accurate.
+    void Promise.allSettled(
+      added
+        .filter((alias) => this.coordinators[alias] !== undefined)
+        .map((alias) => this.coordinators[alias].loadInfo(() => this.onCoordinatorSaved())),
+    ).then(() => {
+      void this.refreshFederationList();
     });
 
     this.triggerHook('onFederationUpdate');
@@ -475,7 +481,77 @@ export class Federation {
     });
   };
 
+  /** Print a single consensus-check summary to the browser console. */
+  private logConsensus = (): void => {
+    const currentDoc = Federation.liveFedDoc as unknown as FederationDoc;
+
+    // Rebuild per-coordinator weights (same logic as voteOnHashes, pure/cheap).
+    const votes: Array<{ alias: string; hash: string }> = [];
+    for (const coord of Object.values(this.coordinators)) {
+      const h = (coord.info as Record<string, unknown> | undefined)?.federation_hash;
+      if (typeof h === 'string' && h.length === 64)
+        votes.push({ alias: coord.shortAlias, hash: h });
+    }
+
+    const now = new Date();
+    const established = votes.map((v) => trustedEstablishedDate(v.alias, currentDoc, {}));
+    const oldestEstablished = established.reduce<Date | null>((oldest, d) => {
+      if (!d) return oldest;
+      if (!oldest) return d;
+      return d.getTime() < oldest.getTime() ? d : oldest;
+    }, null);
+
+    const weightByHash = new Map<string, number>();
+    let totalWeight = 0;
+    const voterRows = votes.map((v, i) => {
+      const w = seniorityWeight(established[i], oldestEstablished, now);
+      weightByHash.set(v.hash, (weightByHash.get(v.hash) ?? 0) + w);
+      totalWeight += w;
+      return { alias: v.alias, hash: v.hash.slice(0, 8) + '…', weight: w };
+    });
+
+    const abstainers = Object.values(this.coordinators)
+      .filter((c) => {
+        const h = (c.info as Record<string, unknown> | undefined)?.federation_hash;
+        return !h || typeof h !== 'string' || h.length !== 64;
+      })
+      .map((c) => ({
+        alias: c.shortAlias,
+        reason: c.info === undefined ? 'info not loaded' : 'no federation_hash',
+      }));
+
+    const winnerHash = this.majorityFederationHash;
+    const hashRows = Array.from(weightByHash.entries()).map(([h, w]) => ({
+      hash: h.slice(0, 8) + '…',
+      weight: w,
+      pct: totalWeight > 0 ? ((w / totalWeight) * 100).toFixed(1) + '%' : '—',
+      winner: h === winnerHash,
+    }));
+
+    console.group('[FederationDiscovery] consensus check');
+    console.table(voterRows);
+    if (abstainers.length > 0) console.table(abstainers);
+    console.table(hashRows);
+    console.log(
+      winnerHash !== null
+        ? `✅ winner: ${winnerHash.slice(0, 8)}… (${weightByHash.get(winnerHash)}/${totalWeight} weight)`
+        : `❌ no majority — keeping current doc (${votes.length} voter(s), quorum needs ≥2)`,
+    );
+    console.groupEnd();
+  };
+
   loadDevFund = async (): Promise<void> => {
+    // Fetch /api/info/ for every coordinator first (in parallel, with the
+    // 15-second timeout inside fetchDevFundProfiles).  This guarantees that
+    // coordinator.info.federation_hash is populated before refreshFederationList()
+    // runs its vote — removing the previous race that caused the majority hash
+    // to never turn green even when all coordinators agreed.
+    await Promise.allSettled(
+      Object.values(this.coordinators)
+        .filter((c) => c.enabled && c.shortAlias !== 'local')
+        .map((c) => c.loadInfo()),
+    );
+
     const overrides = await fetchDevFundProfiles(this);
 
     const feeOverrides: Record<string, number> = {};
@@ -505,9 +581,10 @@ export class Federation {
     this.triggerHook('onFederationUpdate');
 
     // federation_hash is now populated on every coordinator's info — run the
-    // hash-first discovery. This is the only call site; zero extra requests
-    // in the common case (hashes read from already-fetched /api/info/ data).
-    void this.refreshFederationList();
+    // hash-first discovery. Zero extra requests in the common case (hashes read
+    // from already-fetched /api/info/ data). Awaited so we can log the result.
+    await this.refreshFederationList();
+    this.logConsensus();
   };
 
   addCoordinator = (
@@ -531,6 +608,14 @@ export class Federation {
     this.exchange.totalCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
     this.triggerHook('onFederationUpdate');
+
+    // Fetch info for the newly added coordinator so it can vote in the hash
+    // election and so its fees/limits appear immediately in the UI.
+    // Re-run the vote once the info arrives.
+    void this.coordinators[value.shortAlias].loadInfo(() => {
+      this.onCoordinatorSaved();
+      void this.refreshFederationList();
+    });
   };
 
   // Hooks

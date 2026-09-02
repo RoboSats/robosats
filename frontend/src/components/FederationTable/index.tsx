@@ -52,6 +52,7 @@ const FederationTable = ({
   const [newUrl, setNewUrl] = useState<string>('');
   const [error, setError] = useState<string>();
   const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
+  const [rows, setRows] = useState<Coordinator[]>(() => federation.getCoordinators());
   const [verifyRatings, setVerifyRatings] = useState(false);
   const [verifcationText, setVerificationText] = useState<string>();
   const [openAddCoordinator, setOpenAddCoordinator] = useState<boolean>(false);
@@ -94,7 +95,6 @@ const FederationTable = ({
   };
 
   useEffect(() => {
-    federation.loadInfo();
     federation.loadRatings();
   }, []);
 
@@ -109,6 +109,9 @@ const FederationTable = ({
     if (useDefaultPageSize) {
       setPaginationModel((prev) => ({ ...prev, pageSize: defaultPageSize }));
     }
+    // Spread into a new array so MUI DataGrid sees a reference change and
+    // re-renders cells — this is what makes majorityFederationHash turn green.
+    setRows([...federation.getCoordinators()]);
   }, [federationUpdatedAt]);
 
   const localeText = {
@@ -283,7 +286,7 @@ const FederationTable = ({
 
           if (!hash) {
             return (
-              <Typography variant='caption' color='text.disabled'>
+              <Typography variant='caption' sx={{ color: 'text.disabled' }}>
                 {'-'}
               </Typography>
             );
@@ -297,8 +300,11 @@ const FederationTable = ({
             <Tooltip title={hash} placement='top'>
               <Typography
                 variant='caption'
-                color={isMajority ? 'success.main' : 'text.secondary'}
-                sx={{ fontFamily: 'monospace', fontWeight: isMajority ? 'bold' : 'normal' }}
+                sx={{
+                  fontFamily: 'monospace',
+                  fontWeight: isMajority ? 'bold' : 'normal',
+                  color: isMajority ? 'success.main' : 'text.secondary',
+                }}
               >
                 {hash.slice(0, 8)}
               </Typography>
@@ -455,7 +461,7 @@ const FederationTable = ({
           autoHeight={fillContainer}
           rowHeight={3.714 * theme.typography.fontSize}
           columnHeaderHeight={3.25 * theme.typography.fontSize}
-          rows={federation.getCoordinators()}
+          rows={rows}
           getRowId={(params: Coordinator) => params.shortAlias}
           columns={columns as readonly GridColDef<Coordinator>[]}
           checkboxSelection={false}
