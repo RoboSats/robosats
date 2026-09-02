@@ -197,21 +197,12 @@ export class Coordinator {
   public loadingLimits: boolean = false;
 
   updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
-    let newUrl: string;
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
-      newUrl = `${hostUrl}/${settings.network}/${this.shortAlias}`;
+      this.url = `${hostUrl}/${settings.network}/${this.shortAlias}`;
     } else {
       const network = settings.network ?? 'mainnet';
-      newUrl = String(this[network]?.[origin]);
+      this.url = String(this[network]?.[origin]);
     }
-    // When the URL changes (network or origin switch) the cached info belongs to
-    // the old endpoint — clear it so the next loadInfo() re-fetches from the
-    // correct coordinator URL and the vote sees fresh hashes.
-    if (newUrl !== this.url) {
-      this.info = undefined;
-      this._infoLoadedAt = null;
-    }
-    this.url = newUrl;
   };
 
   generateAllMakerAvatars = async (): Promise<void> => {
@@ -280,29 +271,14 @@ export class Coordinator {
       });
   };
 
-  // How long (ms) a loaded info is considered fresh — re-fetch skipped within this window.
-  static readonly INFO_TTL_MS = 10 * 60 * 1000; // 10 minutes
-  private _infoLoadedAt: number | null = null;
-
   loadInfo = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
     if (this.url === '') return Promise.resolve();
 
-    // Deduplicate concurrent calls: join the in-flight promise.
     if (this._infoPromise) {
       return this._infoPromise.then(() => {
         if (this.info !== undefined) onDataLoad();
       });
-    }
-
-    // Skip re-fetch when data is still fresh — just invoke the callback.
-    if (
-      this.info !== undefined &&
-      this._infoLoadedAt !== null &&
-      Date.now() - this._infoLoadedAt < Coordinator.INFO_TTL_MS
-    ) {
-      onDataLoad();
-      return Promise.resolve();
     }
 
     this.loadingInfo = true;
@@ -313,7 +289,6 @@ export class Coordinator {
         .then((data) => {
           if (data !== null) {
             this.info = data as Info;
-            this._infoLoadedAt = Date.now();
             onDataLoad();
           }
         })
