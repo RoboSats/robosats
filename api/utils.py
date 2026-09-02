@@ -600,7 +600,7 @@ def render_order_logs(raw):
         for obj in objects:
             event = re.sub(
                 rf"{obj}\(([0-9a-fA-F\-]+),\s*([^)]+)\)",
-                rf'<b><a href="/coordinator/api/{obj.lower()}\/\1">\2</a></b>',
+                rf'<b><a href="/coordinator/api/{obj.lower()}/\1">\2</a></b>',
                 event,
                 flags=re.DOTALL,
             )
