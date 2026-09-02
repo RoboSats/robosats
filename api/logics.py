@@ -1694,7 +1694,8 @@ class Logics:
         and computes the coordinator revenue.
         """
         if not order.transition_status(
-            Order.Status.SUC, from_statuses=[Order.Status.FSE, Order.Status.PAY, Order.Status.FAI]
+            Order.Status.SUC,
+            from_statuses=[Order.Status.FSE, Order.Status.PAY, Order.Status.FAI],
         ):
             return
 
@@ -1916,11 +1917,24 @@ class Logics:
             user.robot.save(update_fields=["earned_rewards", "claimed_rewards"])
             return True, None
 
-        # If fails, adds the rewards again.
-        else:
+        # Re-fetch lnpayment to get the status written by pay_invoice.
+        lnpayment.refresh_from_db(fields=["status"])
+
+        # Only restore rewards when the node has confirmed the payment definitively
+        # failed (FAILRO). Any other outcome — stream ended without a final status
+        # (VALIDI, unchanged) or still in-flight (FLIGHT on CLN PENDING) — means the
+        # HTLC may still settle. Restoring rewards in that window would allow a second
+        # withdrawal against the same funds. The LNPayment row with its payment_hash
+        # stays in the DB; a retry with the same invoice is blocked by the duplicate-
+        # hash guard above (error 3004) until the hash is resolved or expires.
+        if lnpayment.status == LNPayment.Status.FAILRO:
             user.robot.earned_rewards = num_satoshis
             user.robot.save(update_fields=["earned_rewards"])
             return False, new_error(3005, {"failure_reason": failure_reason})
+
+        # Payment outcome is ambiguous (in-flight or stream ended without final status).
+        # Rewards remain at 0 until the payment resolves. The user should retry later.
+        return False, new_error(3006, {"failure_reason": failure_reason})
 
     @classmethod
     def compute_proceeds(cls, order):
