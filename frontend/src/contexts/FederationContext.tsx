@@ -117,6 +117,11 @@ export const FederationContextProvider = ({
     if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
       updateConnection(settings);
       loadNotifications();
+      // Re-fetch coordinator infos after a network/origin/tor change — updateUrl()
+      // already cleared stale info on any coordinator whose URL changed, so these
+      // calls go to the network.  Once all infos are settled, re-run the federation
+      // hash vote so the majority hash is computed with up-to-date data.
+      void federation.loadDevFund();
     }
   }, [settings.network, settings.useProxy, torStatus, settings.connection]);
 
