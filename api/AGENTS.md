@@ -16,6 +16,7 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `nostr.py` | `Nostr` — order events (kind 38383) + encrypted DMs |
 | `admin.py` | Django admin, incl. fund-moving dispute-resolution actions |
 | `utils.py` | Price aggregation, base91, PGP clearsign validation |
+| `mempool.py` | mempool.space fee fetch with hard subprocess deadline (Django-free module for `spawn`) |
 | `errors.py` | `new_error(code)` — decade-coded error responses |
 | `oas_schemas.py` | drf-spectacular overrides, reads live settings at import |
 
@@ -157,7 +158,11 @@ sight **auto-creates `User`+`Robot`**, nickname via `NickGenerator` (see
 ## Supporting modules
 `utils.py`: `get_exchange_rates` — median across `MARKET_PRICE_APIS` (env), skips
 `bitpay.com`/`criptoya.com` under `USE_TOR`, excludes `ARS` from blockchain.info; also
-`base91_to_hex`/`hex_to_base91`, `validate_pgp_keys`/`verify_signed_message`. `errors.py`:
+`base91_to_hex`/`hex_to_base91`, `validate_pgp_keys`/`verify_signed_message`,
+`get_minning_fee` (mempool.space → fallback `LNNode.estimate_fee`). `mempool.py`:
+`get_minning_fee`'s fetch runs in a spawned child with a hard `MEMPOOL_TIMEOUT` (default
+10s) deadline — kept Django-free so the spawned child never imports the model registry.
+`errors.py`:
 decade→field — 1000s→`bad_request` (default, incl. unlisted 6000s/7000s), 2000s→
 `bad_statement`, 3000s→`bad_invoice`, 4000s→`bad_address`, 5000s→`bad_summary`.
 `oas_schemas.py` reads bond/duration settings at **import time** — needs app reload on change.

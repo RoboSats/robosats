@@ -113,7 +113,10 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
             )
 
     except Exception as e:
-        print(e)
+        logger.warning(
+            "Falling back to LN fee estimator after mempool fetch failed (%s)",
+            type(e).__name__,
+        )
         # Fetch mining fee from LND/CLN instance
         if priority == "suggested":
             target_conf = config("SUGGESTED_TARGET_CONF", cast=int, default=2)
