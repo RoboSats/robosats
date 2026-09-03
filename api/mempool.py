@@ -43,7 +43,10 @@ def _fetch_mempool_fees() -> dict:
 
 
 def _put_mempool_fees_to_queue(q: multiprocessing.Queue) -> None:
-    q.put(_fetch_mempool_fees())
+    try:
+        q.put(_fetch_mempool_fees())
+    except Exception:
+        return
 
 
 def _mempool_fees_with_hard_timeout() -> dict:
