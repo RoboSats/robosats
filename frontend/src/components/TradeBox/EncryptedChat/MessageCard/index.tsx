@@ -4,7 +4,7 @@ import RobotAvatar from '../../../RobotAvatar';
 import { systemClient } from '../../../../services/System';
 import { useTranslation } from 'react-i18next';
 import { isImageMimeType } from '../../../../utils/nip17File';
-import { downloadFromBlossom, verifyBlobHash } from '../../../../utils/blossom';
+import { downloadFromBlossomWithFallback, verifyBlobHash } from '../../../../utils/blossom';
 import { decryptFile } from '../../../../utils/crypto/xchacha20';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -39,6 +39,14 @@ interface Props {
   setImageUrls: (
     updater: Record<number, string> | ((prev: Record<number, string>) => Record<number, string>),
   ) => void;
+  /**
+   * The receiver's own working URL for the coordinator that hosts the Blossom
+   * blob (e.g. `https://<nodeapp-ip>:12596/testnet/lake` or the onion base).
+   * Used to build a receiver-local download URL so we never depend on the
+   * absolute URL the *sender* embedded, which may be unreachable across
+   * different network topologies (nodeapp ↔ onion, onion ↔ clearnet, etc.).
+   */
+  coordinatorUrl?: string;
 }
 
 const MessageCard: React.FC<Props> = ({
@@ -50,6 +58,7 @@ const MessageCard: React.FC<Props> = ({
   makerHashId,
   imageUrls,
   setImageUrls,
+  coordinatorUrl,
 }) => {
   const [imageError, setImageError] = useState<string | null>(null);
   const [openLightbox, setOpenLightbox] = useState<boolean>(false);
@@ -73,7 +82,11 @@ const MessageCard: React.FC<Props> = ({
         return;
       }
 
-      const ciphertext = await downloadFromBlossom(fileData.url);
+      const ciphertext = await downloadFromBlossomWithFallback(
+        fileData.url,
+        fileData.sha256,
+        coordinatorUrl,
+      );
       const isValid = await verifyBlobHash(ciphertext, fileData.sha256);
 
       if (!isValid) {
