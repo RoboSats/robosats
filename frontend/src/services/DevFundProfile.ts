@@ -1,27 +1,21 @@
 import type { Coordinator, Federation } from '../models';
 
 const PROFILE_TTL = 30 * 60 * 1000;
-const PROBE_TIMEOUT = 15 * 1000;
 
 let cache: { key: string; at: number; map: Record<string, number> } | null = null;
-
-const isReachableUrl = (url: string | undefined): boolean =>
-  url !== undefined && url !== '' && url !== 'null' && url !== 'undefined';
 
 const readDevFund = (coordinator: Coordinator): number | undefined => {
   const devfund = coordinator.info?.devfund;
   return typeof devfund === 'number' && Number.isFinite(devfund) ? devfund : undefined;
 };
 
-const loadCoordinatorDevFund = async (coordinator: Coordinator): Promise<number | undefined> => {
-  if (readDevFund(coordinator) !== undefined) return readDevFund(coordinator);
-  await Promise.race([
-    coordinator.loadInfo(),
-    new Promise((resolve) => setTimeout(resolve, PROBE_TIMEOUT)),
-  ]);
-  return readDevFund(coordinator);
-};
-
+/**
+ * Reads already-loaded coordinator.info.devfund for each enabled coordinator.
+ * This must be called after loadCoordinatorData() has settled so that info is
+ * already populated — no HTTP requests are issued here.
+ * Coordinators without loaded info simply contribute no DevFund override and
+ * their badges.donatesToDevFund falls back to the static federation.json value.
+ */
 export const fetchDevFundProfiles = async (
   federation: Federation,
 ): Promise<Record<string, number>> => {
@@ -38,15 +32,10 @@ export const fetchDevFundProfiles = async (
   }
 
   const results: Record<string, number> = {};
-  await Promise.allSettled(
-    coordinators
-      .filter((coordinator) => isReachableUrl(coordinator.url))
-      .map((coordinator) =>
-        loadCoordinatorDevFund(coordinator).then((donatesToDevFund) => {
-          if (donatesToDevFund !== undefined) results[coordinator.shortAlias] = donatesToDevFund;
-        }),
-      ),
-  );
+  coordinators.forEach((coordinator) => {
+    const devFund = readDevFund(coordinator);
+    if (devFund !== undefined) results[coordinator.shortAlias] = devFund;
+  });
 
   cache = { key: urls, at: Date.now(), map: results };
   return results;

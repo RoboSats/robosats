@@ -47,7 +47,7 @@ export const FederationContextProvider = ({
     setFederationUpdatedAt,
     setNotificationsUpdatedAt,
   } = useContext<UseAppStoreType>(AppContext);
-  const { garage, setMaker } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [federation] = useState(new Federation(origin, settings, hostUrl));
   const [subscribedTokens, setSubscribedTokens] = React.useState<string[]>([]);
   const [notifications, setNotifications] = useState<Record<string, Map<string, Event[]>>>({});
@@ -98,13 +98,16 @@ export const FederationContextProvider = ({
   };
 
   useEffect(() => {
-    setMaker((maker) => {
-      return { ...maker, coordinator: federation.getCoordinatorsAlias()[0] };
-    }); // default MakerForm coordinator is decided via sorted lottery
     federation.registerHook('onFederationUpdate', () => {
       setFederationUpdatedAt(new Date().toISOString());
     });
-    void federation.loadDevFund();
+    // Kick off the initial connection — loads coordinator data, DevFund, and
+    // federation discovery. The settings-change effect below handles subsequent
+    // changes but does NOT fire on the very first mount if all values are already
+    // at their defaults (network/connection/torStatus don't change).
+    if (client !== 'mobile' || torStatus === 'ON' || !settings.useProxy) {
+      updateConnection(settings);
+    }
   }, []);
 
   useEffect(() => {
