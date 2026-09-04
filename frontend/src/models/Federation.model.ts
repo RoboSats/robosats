@@ -15,6 +15,8 @@ import {
   normalizeDoc,
   voteOnHashes,
   fetchAndVerifyDoc,
+  trustedEstablishedDate,
+  seniorityWeight,
 } from '../services/FederationDiscovery';
 import { federationLottery, getHost } from '../utils';
 import type { CoordinatorSeed } from '../utils/federationLottery';
@@ -28,6 +30,23 @@ import { systemClient } from '../services/System';
 import { fetchDevFundProfiles } from '../services/DevFundProfile';
 
 type FederationHooks = 'onFederationUpdate';
+
+/** Per-coordinator request timeout for the generic initialization phase.
+ *  Keeps parity with the old DevFund PROBE_TIMEOUT (15 s).
+ *  An unreachable coordinator's promise is replaced with `undefined` after
+ *  this interval so the rest of the batch is never blocked. */
+const COORDINATOR_REQUEST_TIMEOUT_MS = 15_000;
+
+/** Races `promise` against a silent timeout. The timeout resolves to
+ *  `undefined`; the original promise continues running and will resolve
+ *  or reject on its own — this only unblocks the batch-level await. */
+const withTimeout = <T>(promise: Promise<T>): Promise<T | undefined> =>
+  Promise.race([
+    promise,
+    new Promise<undefined>((resolve) =>
+      setTimeout(() => resolve(undefined), COORDINATOR_REQUEST_TIMEOUT_MS),
+    ),
+  ]);
 
 export class Federation {
   constructor(origin: Origin, settings: Settings, hostUrl: string) {
@@ -131,6 +150,12 @@ export class Federation {
   private ratingsLoaded: boolean;
   public loading: boolean;
   public devFundLoaded: boolean = false;
+  /** True once refreshFederationList() has fully settled (majority applied
+   *  or safe keep-current decision). The coordinator list is final at this
+   *  point — UI gates order creation/selection on this, not on per-coordinator
+   *  loading state, so users can never pick a coordinator that is about to be
+   *  removed by discovery. */
+  public federationListLoaded: boolean = false;
   public connection: 'api' | 'nostr' | null;
   public network: 'testnet' | 'mainnet';
 
@@ -199,7 +224,12 @@ export class Federation {
 
     // No strict majority reached — keep the current trusted document as-is.
     // "No decision" is always the safe direction.
-    if (winnerHash === null) return;
+    if (winnerHash === null) {
+      this.logConsensus();
+      this.federationListLoaded = true;
+      this.triggerHook('onFederationUpdate');
+      return;
+    }
 
     // Check whether the winner is actually different from the doc we already hold.
     const currentHash = await canonicalHash(normalizeDoc(currentDoc));
@@ -218,7 +248,12 @@ export class Federation {
     }
 
     // Fetch failed or winner already matches current — nothing to apply
-    if (!winnerDoc) return;
+    if (!winnerDoc) {
+      this.logConsensus();
+      this.federationListLoaded = true;
+      this.triggerHook('onFederationUpdate');
+      return;
+    }
 
     // Stamp today's date into the join-date ledger for any alias that is absent
     // from the bundled seed (newcomer coordinator). This is the ONLY place that
@@ -270,7 +305,11 @@ export class Federation {
     }
 
     // No actual change at all — nothing to do beyond cache write above
-    if (added.length === 0 && removed.length === 0 && identityChanged.length === 0) return;
+    if (added.length === 0 && removed.length === 0 && identityChanged.length === 0) {
+      this.federationListLoaded = true;
+      this.triggerHook('onFederationUpdate');
+      return;
+    }
 
     // Update existing coordinators whose identity fields changed by replacing
     // them with fresh instances (avoids manual field patching).
@@ -375,6 +414,9 @@ export class Federation {
       });
     });
 
+    this.logConsensus();
+
+    this.federationListLoaded = true;
     this.triggerHook('onFederationUpdate');
   };
 
@@ -392,23 +434,31 @@ export class Federation {
     hostUrl: string,
     coordinator: string,
   ): void => {
+    this.connectionGeneration += 1;
     this.connection = settings.connection;
     this.loading = true;
+    this.federationListLoaded = false;
     this.book = {};
     this.exchange.loadingCache = this.roboPool.relays.length;
     this.network = settings.network ?? 'mainnet';
 
     const coordinators = Object.values(this.coordinators);
-    coordinators.forEach((c) => c.updateUrl(origin, settings, hostUrl));
+    coordinators.forEach((c) => {
+      c.updateUrl(origin, settings, hostUrl);
+      // Clear stale data from the previous connection so old values don't vote
+      c.info = undefined;
+      c.limits = {};
+    });
     this.roboPool.updateRelays(hostUrl, Object.values(this.coordinators));
 
-    coordinators[0].loadLimits();
-
+    // Nostr book loading is fully independent — start immediately.
     if (this.connection === 'nostr') {
       this.loadBookNostr(coordinator !== 'any');
-    } else {
-      void this.loadBook();
     }
+
+    // Generic coordinator data + DevFund + discovery run in sequence,
+    // in parallel with Nostr relay loading above.
+    void this.loadCoordinatorData();
   };
 
   refreshBookHosts: (robosatsOnly: boolean) => void = (robosatsOnly) => {
@@ -429,7 +479,6 @@ export class Federation {
       },
       oneose: () => {
         this.exchange.loadingCache = this.exchange.loadingCache - 1;
-        this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
         this.updateExchange();
         this.triggerHook('onFederationUpdate');
       },
@@ -503,11 +552,6 @@ export class Federation {
 
     this.devFundLoaded = true;
     this.triggerHook('onFederationUpdate');
-
-    // federation_hash is now populated on every coordinator's info — run the
-    // hash-first discovery. This is the only call site; zero extra requests
-    // in the common case (hashes read from already-fetched /api/info/ data).
-    void this.refreshFederationList();
   };
 
   addCoordinator = (
@@ -555,12 +599,16 @@ export class Federation {
     }
     this.exchange.loadingCoordinators =
       this.exchange.loadingCoordinators < 1 ? 0 : this.exchange.loadingCoordinators - 1;
-    this.loading = this.exchange.loadingCache > 0 && this.exchange.loadingCoordinators > 0;
+    this.loading = this.exchange.loadingCoordinators > 0;
     this.updateExchange();
     this.triggerHook('onFederationUpdate');
   };
 
-  loadInfo = async (): Promise<void> => {
+  private _loadInfoPromise?: Promise<void>;
+
+  loadInfo = (): Promise<void> => {
+    if (this._loadInfoPromise) return this._loadInfoPromise;
+
     this.exchange.info = {
       num_public_buy_orders: 0,
       num_public_sell_orders: 0,
@@ -576,28 +624,94 @@ export class Federation {
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.updateEnabledCoordinators();
 
-    for (const coor of Object.values(this.coordinators)) {
-      coor.loadInfo(() => {
-        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
-        this.onCoordinatorSaved();
-      });
-    }
+    this._loadInfoPromise = Promise.allSettled(
+      Object.values(this.coordinators).map((coor) =>
+        withTimeout(
+          coor.loadInfo(() => {
+            this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
+            this.onCoordinatorSaved();
+          }),
+        ),
+      ),
+    ).then(() => {
+      // Force-drain the counter so the loading spinner always clears even when
+      // some coordinators timed out without firing their onDataLoad callback.
+      this.exchange.loadingCoordinators = 0;
+      this.loading = false;
+      this.updateExchange();
+      this._loadInfoPromise = undefined;
+    });
+
+    return this._loadInfoPromise;
   };
 
-  loadBook = async (): Promise<void> => {
-    if (this.connection !== 'api') return;
+  private _loadBookPromise?: Promise<void>;
+
+  loadBook = (): Promise<void> => {
+    if (this.connection !== 'api') return Promise.resolve();
+    if (this._loadBookPromise) return this._loadBookPromise;
 
     this.book = {};
     this.loading = true;
     this.exchange.onlineCoordinators = 0;
     this.exchange.loadingCoordinators = Object.keys(this.coordinators).length;
     this.triggerHook('onFederationUpdate');
-    for (const coor of Object.values(this.coordinators)) {
-      coor.loadBook(() => {
-        this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
-        this.onCoordinatorSaved();
-      });
-    }
+
+    this._loadBookPromise = Promise.allSettled(
+      Object.values(this.coordinators).map((coor) =>
+        withTimeout(
+          coor.loadBook(() => {
+            this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
+            this.onCoordinatorSaved();
+          }),
+        ),
+      ),
+    ).then(() => {
+      // Force-drain the counter so the loading spinner always clears even when
+      // some coordinators timed out without firing their onDataLoad callback.
+      this.exchange.loadingCoordinators = 0;
+      this.loading = false;
+      this.updateExchange();
+      this._loadBookPromise = undefined;
+    });
+
+    return this._loadBookPromise;
+  };
+
+  loadLimits = (): Promise<void> => {
+    return Promise.allSettled(
+      Object.values(this.coordinators).map((coor) => withTimeout(coor.loadLimits())),
+    ).then(() => {});
+  };
+
+  /**
+   * Connection generation counter — incremented every time setConnection() runs.
+   * loadCoordinatorData() captures the generation at start; if it changes before
+   * the promise settles (user switched network/connection), the stale completion
+   * is silently discarded and discovery is not triggered.
+   */
+  private connectionGeneration = 0;
+
+  /**
+   * Generic startup initialization: fetches info and limits for every coordinator
+   * in parallel (and API book in API mode). Nostr relay/book loading is deliberately
+   * excluded — it runs independently via setConnection(). Only after this settles
+   * should loadDevFund() and refreshFederationList() be called.
+   */
+  loadCoordinatorData = async (): Promise<void> => {
+    const generation = this.connectionGeneration;
+
+    await Promise.all([
+      this.loadInfo(),
+      this.loadLimits(),
+      this.connection === 'api' ? this.loadBook() : Promise.resolve(),
+    ]);
+
+    // If the connection changed while we were loading, discard this stale completion.
+    if (this.connectionGeneration !== generation) return;
+
+    await this.loadDevFund();
+    await this.refreshFederationList();
   };
 
   updateExchange = (): void => {
@@ -644,6 +758,64 @@ export class Federation {
       (c) => c.enabled,
     ).length;
     this.triggerHook('onFederationUpdate');
+  };
+
+  private logConsensus = (): void => {
+    const currentDoc = Federation.liveFedDoc as unknown as FederationDoc;
+
+    // Rebuild per-coordinator weights (same logic as voteOnHashes, pure/cheap).
+    const votes: Array<{ alias: string; hash: string }> = [];
+    for (const coord of Object.values(this.coordinators)) {
+      const h = (coord.info as Record<string, unknown> | undefined)?.federation_hash;
+      if (typeof h === 'string' && h.length === 64)
+        votes.push({ alias: coord.shortAlias, hash: h });
+    }
+
+    const now = new Date();
+    const established = votes.map((v) => trustedEstablishedDate(v.alias, currentDoc, {}));
+    const oldestEstablished = established.reduce<Date | null>((oldest, d) => {
+      if (!d) return oldest;
+      if (!oldest) return d;
+      return d.getTime() < oldest.getTime() ? d : oldest;
+    }, null);
+
+    const weightByHash = new Map<string, number>();
+    let totalWeight = 0;
+    const voterRows = votes.map((v, i) => {
+      const w = seniorityWeight(established[i], oldestEstablished, now);
+      weightByHash.set(v.hash, (weightByHash.get(v.hash) ?? 0) + w);
+      totalWeight += w;
+      return { alias: v.alias, hash: v.hash.slice(0, 8) + '…', weight: w };
+    });
+
+    const abstainers = Object.values(this.coordinators)
+      .filter((c) => {
+        const h = (c.info as Record<string, unknown> | undefined)?.federation_hash;
+        return !h || typeof h !== 'string' || h.length !== 64;
+      })
+      .map((c) => ({
+        alias: c.shortAlias,
+        reason: c.info === undefined ? 'info not loaded' : 'no federation_hash',
+      }));
+
+    const winnerHash = this.majorityFederationHash;
+    const hashRows = Array.from(weightByHash.entries()).map(([h, w]) => ({
+      hash: h.slice(0, 8) + '…',
+      weight: w,
+      pct: totalWeight > 0 ? ((w / totalWeight) * 100).toFixed(1) + '%' : '—',
+      winner: h === winnerHash,
+    }));
+
+    console.group('[FederationDiscovery] consensus check');
+    console.table(voterRows);
+    if (abstainers.length > 0) console.table(abstainers);
+    console.table(hashRows);
+    console.log(
+      winnerHash !== null
+        ? `✅ winner: ${winnerHash.slice(0, 8)}… (${weightByHash.get(winnerHash)}/${totalWeight} weight)`
+        : `❌ no majority — keeping current doc (${votes.length} voter(s), quorum needs ≥2)`,
+    );
+    console.groupEnd();
   };
 }
 
