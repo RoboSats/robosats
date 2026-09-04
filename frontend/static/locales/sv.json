@@ -617,6 +617,7 @@
   "Images are end-to-end encrypted, but they retain their original metadata (like GPS location). The recipient will be able to see this information. Please remove any sensitive data before uploading.": "Images are end-to-end encrypted, but they retain their original metadata (like GPS location). The recipient will be able to see this information. Please remove any sensitive data before uploading.",
   "Sensitive Data": "Sensitive Data",
   "#64": "Phrases in components/TradeBox/EncryptedChat/index.tsx",
+  "Cannot send file: missing keys or peer not connected": "Cannot send file: missing keys or peer not connected",
   "Canvas access is blocked. In Tor Browser, click the canvas icon in the address bar and allow canvas extraction, then try again.": "Canvas access is blocked. In Tor Browser, click the canvas icon in the address bar and allow canvas extraction, then try again.",
   "#65": "Phrases in components/TradeBox/EncryptedChat/ChatHeader/index.tsx",
   "...waiting": "...väntar",
