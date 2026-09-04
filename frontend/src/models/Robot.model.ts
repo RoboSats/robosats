@@ -19,6 +19,9 @@ interface RobotApiResponse {
   webhook_url?: string;
   webhook_enabled?: boolean;
   webhook_api_key?: string;
+  nostr_forward_pubkey?: string | null;
+  nostr_forward_relay?: string | null;
+  nostr_forward_enabled?: boolean;
 }
 
 interface RewardApiResponse {
@@ -27,9 +30,15 @@ interface RewardApiResponse {
 }
 
 interface WebhookApiResponse {
-  webhook_url?: string;
-  webhook_enabled?: boolean;
-  webhook_api_key?: string;
+  webhook_url: string | null;
+  webhook_enabled: boolean;
+  webhook_api_key: string | null;
+}
+
+interface NostrForwardSettings {
+  nostr_forward_pubkey: string | null;
+  nostr_forward_relay: string | null;
+  nostr_forward_enabled: boolean;
 }
 
 interface ReviewApiResponse {
@@ -64,6 +73,9 @@ class Robot {
   public webhookUrl: string = '';
   public webhookEnabled: boolean = false;
   public webhookApiKey: string = '';
+  public nostrForwardPubkey: string = '';
+  public nostrForwardRelay: string = '';
+  public nostrForwardEnabled: boolean = false;
 
   update = (attributes: object): void => {
     Object.assign(this, attributes);
@@ -119,6 +131,9 @@ class Robot {
           webhookUrl: data.webhook_url ?? '',
           webhookEnabled: data.webhook_enabled ?? false,
           webhookApiKey: data.webhook_api_key ?? '',
+          nostrForwardPubkey: data.nostr_forward_pubkey ?? '',
+          nostrForwardRelay: data.nostr_forward_relay ?? '',
+          nostrForwardEnabled: data.nostr_forward_enabled ?? false,
         });
       })
       .catch((e) => {
@@ -176,25 +191,67 @@ class Robot {
       webhook_enabled?: boolean;
       webhook_api_key?: string;
     },
-  ): Promise<void> => {
-    if (!federation) return;
-
+  ): Promise<boolean> => {
     const coordinator = federation.getCoordinator(this.shortAlias);
-    await apiClient
-      .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
-      .then((raw) => {
-        const data = raw as WebhookApiResponse | undefined;
-        if (data) {
-          this.update({
-            webhookUrl: data.webhook_url ?? this.webhookUrl,
-            webhookEnabled: data.webhook_enabled ?? this.webhookEnabled,
-            webhookApiKey: data.webhook_api_key ?? this.webhookApiKey,
-          });
-        }
-      })
-      .catch((e) => {
-        console.log(e);
+    if (!coordinator) return false;
+
+    try {
+      const raw = await apiClient.put(coordinator.url, '/api/robot/', settings, {
+        tokenSHA256: this.tokenSHA256,
       });
+      const data = raw as Partial<WebhookApiResponse> | undefined;
+      if (
+        !data ||
+        (typeof data.webhook_url !== 'string' && data.webhook_url !== null) ||
+        typeof data.webhook_enabled !== 'boolean' ||
+        (typeof data.webhook_api_key !== 'string' && data.webhook_api_key !== null)
+      ) {
+        return false;
+      }
+
+      this.update({
+        webhookUrl: data.webhook_url ?? '',
+        webhookEnabled: data.webhook_enabled,
+        webhookApiKey: data.webhook_api_key ?? '',
+      });
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  };
+
+  saveNostrForward = async (
+    federation: Federation,
+    settings: NostrForwardSettings,
+  ): Promise<boolean> => {
+    const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator) return false;
+
+    try {
+      const raw = await apiClient.put(coordinator.url, '/api/robot/', settings, {
+        tokenSHA256: this.tokenSHA256,
+      });
+      const data = raw as Partial<NostrForwardSettings> | undefined;
+      if (
+        !data ||
+        (typeof data.nostr_forward_pubkey !== 'string' && data.nostr_forward_pubkey !== null) ||
+        (typeof data.nostr_forward_relay !== 'string' && data.nostr_forward_relay !== null) ||
+        typeof data.nostr_forward_enabled !== 'boolean'
+      ) {
+        return false;
+      }
+
+      this.update({
+        nostrForwardPubkey: data.nostr_forward_pubkey ?? '',
+        nostrForwardRelay: data.nostr_forward_relay ?? '',
+        nostrForwardEnabled: data.nostr_forward_enabled,
+      });
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   };
 
   loadReviewToken = (
