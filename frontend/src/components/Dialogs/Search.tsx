@@ -128,7 +128,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                         <Button
                           color='primary'
                           onClick={() => {
-                            setFav({ ...fav, mode: 'swap', type: 1 });
+                            setFav({ ...fav, mode: 'swap', type: 1, currency: 1000 });
                             setStep('3');
                           }}
                         >
@@ -138,7 +138,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                         <Button
                           color='secondary'
                           onClick={() => {
-                            setFav({ ...fav, mode: 'swap', type: 0 });
+                            setFav({ ...fav, mode: 'swap', type: 0, currency: 1000 });
                             setStep('3');
                           }}
                         >
