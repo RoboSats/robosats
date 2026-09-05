@@ -7,6 +7,7 @@ from decouple import config
 TOR_PROXY = config("TOR_PROXY", default="127.0.0.1:9050")
 USE_TOR = config("USE_TOR", cast=bool, default=True)
 MEMPOOL_TIMEOUT = config("MEMPOOL_TIMEOUT", cast=float, default=10.0)
+MEMPOOL_API_URL = config("MEMPOOL_API_URL", default="https://mempool.space")
 
 
 def get_session():
@@ -34,8 +35,9 @@ def _fetch_mempool_fees() -> dict:
     }
     """
     session = get_session()
+    url = f"{MEMPOOL_API_URL.rstrip('/')}/api/v1/fees/recommended"
     response = session.get(
-        "https://mempool.space/api/v1/fees/recommended",
+        url,
         timeout=(MEMPOOL_TIMEOUT, MEMPOOL_TIMEOUT),
     )
     response.raise_for_status()  # Raises stored HTTPError, if one occurred

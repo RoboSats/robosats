@@ -161,7 +161,8 @@ sight **auto-creates `User`+`Robot`**, nickname via `NickGenerator` (see
 `base91_to_hex`/`hex_to_base91`, `validate_pgp_keys`/`verify_signed_message`,
 `get_minning_fee` (mempool.space → fallback `LNNode.estimate_fee`). `mempool.py`:
 `get_minning_fee`'s fetch runs in a spawned child with a hard `MEMPOOL_TIMEOUT` (default
-10s) deadline — kept Django-free so the spawned child never imports the model registry.
+10s) deadline against `MEMPOOL_API_URL` (default `https://mempool.space`, `.onion` configurable) —
+kept Django-free so the spawned child never imports the model registry.
 `errors.py`:
 decade→field — 1000s→`bad_request` (default, incl. unlisted 6000s/7000s), 2000s→
 `bad_statement`, 3000s→`bad_invoice`, 4000s→`bad_address`, 5000s→`bad_summary`.

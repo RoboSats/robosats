@@ -154,6 +154,7 @@ class TestUtils(TestCase):
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
 
+    @patch("api.mempool.MEMPOOL_API_URL", "http://mempool.onion")
     @patch("api.mempool.get_session")
     def test_fetch_mempool_fees(self, mock_get_session):
         mock_response = Mock()
@@ -165,7 +166,7 @@ class TestUtils(TestCase):
 
         self.assertEqual(data, {"fastestFee": 55, "economyFee": 12})
         mock_session.get.assert_called_once_with(
-            "https://mempool.space/api/v1/fees/recommended",
+            "http://mempool.onion/api/v1/fees/recommended",
             timeout=(10.0, 10.0),
         )
         mock_response.raise_for_status.assert_called_once()
