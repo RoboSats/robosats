@@ -211,11 +211,11 @@
     "nostrHexPubkey": "0f243ba69b7c7ffa73934bc7f5fa6586b8013afdc310d808b1ec2c2c98f1c219",
     "contact": {
       "email": "backsocks@proton.me",
-      "telegram": "@asyscom",
+      "telegram": "@eleuteriacoordinator",
       "simplex": "https://smp17.simplex.im/a#w2lbfI-Rbea5dukWc38CVDQEzLryz8q7p2C4NGEViNg",
       "pgp": "/static/federation/pgp/546143E7584783759F6829AF6DA5626C8AF8DF61.asc",
       "nostr": "npub1pujrhf5m03ll5uunf0rlt7n9s6uqzwhacvgdsz93askzex83cgvsukm9hf",
-      "website": null,
+      "website": "https://eleuteria-robosat.github.io",
       "matrix": null,
       "fingerprint": "546143E7584783759F6829AF6DA5626C8AF8DF61"
     },
@@ -239,7 +239,7 @@
       "i2p": null
     },
     "testnet": {
-      "onion": null,
+      "onion": http://kfpwwlt2x6kzeor7gbrwjeokdztlkqzyhc4grg7zkeko4bh5b6s24oid.onion,
       "clearnet": null,
       "i2p": null
     },
