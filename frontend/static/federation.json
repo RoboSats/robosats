@@ -239,14 +239,16 @@
       "i2p": null
     },
     "testnet": {
-      "onion": http://kfpwwlt2x6kzeor7gbrwjeokdztlkqzyhc4grg7zkeko4bh5b6s24oid.onion,
+      "onion": "http://kfpwwlt2x6kzeor7gbrwjeokdztlkqzyhc4grg7zkeko4bh5b6s24oid.onion",
       "clearnet": null,
       "i2p": null
     },
     "mainnetNodesPubkeys": [
       "03808d86fee8345c7b470f792f62e3a3cba78ad49d75d4623c8e27520c34f90d5b"
     ],
-    "testnetNodesPubkeys": [],
+    "testnetNodesPubkeys": [
+      "03beb591288aa9266364493a0e820ffce39b37b0a555871824609e7fe38efc2b1e"
+    ],
     "federated": true
   },
   "freeport": {
