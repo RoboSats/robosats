@@ -270,15 +270,16 @@ const EncryptedChat: React.FC<Props> = ({
 
   const sendFile = async (file: File): Promise<void> => {
     if (!blossomEnabled) {
-      setError('This coordinator does not offer image uploads');
-      return;
+      throw new Error('This coordinator does not offer image uploads');
     }
     const slot = garage.getSlot();
     const coordinator = federation.getCoordinator(order.shortAlias);
     const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
     const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
 
-    if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey || !coordinator) return;
+    if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey || !coordinator) {
+      throw new Error(t('Cannot send file: missing keys or peer not connected'));
+    }
 
     // Preflight: verify canvas readback is allowed before stripping EXIF.
     // Tor Browser (and hardened browsers) block canvas extraction behind a
@@ -287,12 +288,11 @@ const EncryptedChat: React.FC<Props> = ({
     // Abort and show a clear error so the user can grant the permission first.
     const canvasOk = await isCanvasReadbackAllowed();
     if (!canvasOk) {
-      setError(
+      throw new Error(
         t(
           'Canvas access is blocked. In Tor Browser, click the canvas icon in the address bar and allow canvas extraction, then try again.',
         ),
       );
-      return;
     }
 
     try {
@@ -339,7 +339,7 @@ const EncryptedChat: React.FC<Props> = ({
       await sendToCoordinator(imageMetadata);
     } catch (error) {
       console.error('File upload error:', error);
-      setError(error instanceof Error ? error.message : 'File upload failed');
+      throw error instanceof Error ? error : new Error('File upload failed');
     }
   };
 
