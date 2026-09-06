@@ -47,6 +47,7 @@ interface Props {
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
   blossomEnabled: boolean;
+  coordinatorUrl?: string;
 }
 
 const audioPath =
@@ -72,6 +73,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   setError,
   setLastIndex,
   blossomEnabled,
+  coordinatorUrl,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -308,6 +310,7 @@ const EncryptedApiChat: React.FC<Props> = ({
                   makerHashId={makerHashId}
                   imageUrls={imageUrls}
                   setImageUrls={setImageUrls}
+                  coordinatorUrl={coordinatorUrl}
                 />
               </li>
             );

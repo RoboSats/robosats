@@ -277,9 +277,8 @@ const FederationTable = ({
         field: 'federationHash',
         headerName: t('Federation Hash'),
         width: width * fontSize,
-        renderCell: (params: { row: Coordinator }) => {
-          const coordinator = federation.getCoordinator(params.row.shortAlias);
-          const hash = coordinator.info?.federation_hash;
+        renderCell: (params: { row: Coordinator & { isMajorityHash: boolean } }) => {
+          const hash = params.row.info?.federation_hash;
 
           if (!hash) {
             return (
@@ -289,9 +288,7 @@ const FederationTable = ({
             );
           }
 
-          const isMajority =
-            federation.majorityFederationHash !== null &&
-            hash === federation.majorityFederationHash;
+          const isMajority = params.row.isMajorityHash;
 
           return (
             <Tooltip title={hash} placement='top'>
@@ -440,7 +437,6 @@ const FederationTable = ({
           </Typography>
         </Box>
       )}
-
       <Box sx={{ flexGrow: 1, overflow: 'auto', width: '100%' }}>
         <DataGrid
           sx={{
@@ -455,7 +451,12 @@ const FederationTable = ({
           autoHeight={fillContainer}
           rowHeight={3.714 * theme.typography.fontSize}
           columnHeaderHeight={3.25 * theme.typography.fontSize}
-          rows={federation.getCoordinators()}
+          rows={federation.getCoordinators().map((c) => ({
+            ...c,
+            isMajorityHash:
+              c.info?.federation_hash != null &&
+              c.info.federation_hash === federation.majorityFederationHash,
+          }))}
           getRowId={(params: Coordinator) => params.shortAlias}
           columns={columns as readonly GridColDef<Coordinator>[]}
           checkboxSelection={false}
@@ -470,7 +471,6 @@ const FederationTable = ({
           hideFooter={true}
         />
       </Box>
-
       <Grid
         container
         style={{

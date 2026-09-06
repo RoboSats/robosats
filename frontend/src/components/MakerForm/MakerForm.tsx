@@ -104,22 +104,32 @@ const MakerForm = ({
       slot?.fetchActiveOrder(federation);
 
       const coordinator = federation.getCoordinator(maker.coordinator);
-      coordinator.loadInfo();
-      coordinator.loadLimits(() => {
-        const newLimits = coordinator.limits;
-        if (newLimits && Object.keys(newLimits).length !== 0) {
-          updateAmountLimits(newLimits, fav.currency, maker.premium ?? 0);
-          updateCurrentPrice(newLimits, fav.currency, maker.premium ?? 0);
-          setLimits(newLimits);
-        }
-      });
+      const existingLimits = coordinator.limits;
+      if (existingLimits && Object.keys(existingLimits).length > 0) {
+        // Limits already loaded by loadCoordinatorData() — update local state directly.
+        updateAmountLimits(existingLimits, fav.currency, maker.premium ?? 0);
+        updateCurrentPrice(existingLimits, fav.currency, maker.premium ?? 0);
+        setLimits(existingLimits);
+      } else {
+        // Fallback: coordinator was unreachable at startup — try again now.
+        coordinator.loadLimits(() => {
+          const newLimits = coordinator.limits;
+          if (newLimits && Object.keys(newLimits).length !== 0) {
+            updateAmountLimits(newLimits, fav.currency, maker.premium ?? 0);
+            updateCurrentPrice(newLimits, fav.currency, maker.premium ?? 0);
+            setLimits(newLimits);
+          }
+        });
+      }
     }
   };
   useEffect(() => {
-    if (federation.devFundLoaded) {
+    // Set the default coordinator only once discovery has settled: at that
+    // point the lottery order is final and removed coordinators are gone.
+    if (federation.federationListLoaded) {
       setMaker((maker) => ({ ...maker, coordinator: federation.getCoordinatorsAlias()[0] }));
     }
-  }, [federation.devFundLoaded]);
+  }, [federation.federationListLoaded]);
 
   const updateAmountLimits = function (
     limitList: LimitList,
@@ -402,6 +412,7 @@ const MakerForm = ({
 
   const disableSubmit = useMemo(() => {
     return (
+      !federation.federationListLoaded ||
       fav.type == null ||
       (!makerHasAmountRange &&
         maker.amount &&
@@ -411,7 +422,7 @@ const MakerForm = ({
       (makerHasAmountRange && hasRangeError) ||
       (!makerHasAmountRange && maker.amount && maker.amount <= 0) ||
       maker.badPremiumText !== '' ||
-      federation.getCoordinator(maker.coordinator)?.limits === undefined ||
+      Object.keys(federation.getCoordinator(maker.coordinator)?.limits ?? {}).length === 0 ||
       (maker.premium !== null && typeof maker.premium !== 'number') ||
       maker.paymentMethods.length === 0 ||
       maker.badDescription
@@ -451,6 +462,9 @@ const MakerForm = ({
   const currencyFormatter = new Intl.NumberFormat(settings.language);
 
   const getDisabledMessage = () => {
+    if (!federation.federationListLoaded) {
+      return t('Loading coordinator list...');
+    }
     if (currentPrice === undefined) {
       return t('The Bitcoin price is not synchronized.');
     }
@@ -479,8 +493,8 @@ const MakerForm = ({
     if (maker.badPremiumText !== '') {
       return t('The premium is not valid.');
     }
-    if (federation.getCoordinator(maker.coordinator)?.limits === undefined) {
-      return t('The coordinator is not available.');
+    if (Object.keys(federation.getCoordinator(maker.coordinator)?.limits ?? {}).length === 0) {
+      return t('The coordinator limits are not available.');
     }
     if (typeof maker.premium !== 'number') {
       return t('The premium must be a number.');
@@ -627,11 +641,11 @@ const MakerForm = ({
               >
                 <Switch
                   size='small'
-                  disabled={Object.keys(limits).length === 0}
+                  disabled={!federation.federationListLoaded || Object.keys(limits).length === 0}
                   checked={maker.advancedOptions}
                   onChange={handleClickAdvanced}
                 />
-                {Object.keys(limits).length === 0 ? (
+                {!federation.federationListLoaded || Object.keys(limits).length === 0 ? (
                   <CircularProgress size={15} style={{ marginLeft: 7 }} />
                 ) : (
                   <SelfImprovement sx={{ color: 'text.secondary' }} />
