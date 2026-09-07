@@ -372,9 +372,7 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
 
   useEffect(() => {
     if (open) {
-      const coordinator = federation.getCoordinator(shortAlias ?? '');
       federation.loadRatings();
-      if (!coordinator.info) coordinator?.loadInfo();
     }
   }, [open]);
 

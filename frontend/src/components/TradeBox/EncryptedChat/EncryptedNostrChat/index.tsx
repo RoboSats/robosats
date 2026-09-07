@@ -42,6 +42,7 @@ interface Props {
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
+  coordinatorUrl?: string;
 }
 
 const audioPath =
@@ -64,6 +65,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
   onSendFile,
   setError,
   setLastIndex,
+  coordinatorUrl,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -295,6 +297,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
                   makerHashId={makerHashId}
                   imageUrls={imageUrls}
                   setImageUrls={setImageUrls}
+                  coordinatorUrl={coordinatorUrl}
                 />
               </li>
             );
