@@ -22,7 +22,7 @@ export async function genKey(highEntropyToken: string): Promise<generatedKeyPair
   const d = new Date();
   const keyPair = await generateKey({
     type: 'ecc' as const, // Type of the key, defaults to ECC
-    curve: 'curve25519Legacy' as const, // ECC curve name (curve25519Legacy in openpgp v6)
+    curve: 'curve25519' as const, // ECC curve name
     userIDs: [{ name: 'RoboSats ID ' + sha256(sha256(highEntropyToken)) }], // Ideally it would be the avatar nickname, but the nickname is generated only after submission. The second SHA256 can be converted into the Nickname using nick_generator package.
     passphrase: highEntropyToken,
     format: 'armored',
