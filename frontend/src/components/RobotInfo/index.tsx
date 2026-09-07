@@ -18,15 +18,19 @@ import {
   TextField,
   CircularProgress,
   Dialog,
+  DialogTitle,
   DialogContent,
   DialogActions,
+  Alert,
 } from '@mui/material';
 import { Numbers, Send, EmojiEvents, Webhook } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { nip19 } from 'nostr-tools';
+import { isHex32 } from 'nostr-tools/utils';
 import { Robot, type Coordinator } from '../../models';
 import { useTranslation } from 'react-i18next';
 import { EnableTelegramDialog } from '../Dialogs';
-import { UserNinjaIcon } from '../Icons';
+import { NostrIcon, UserNinjaIcon } from '../Icons';
 
 import { signCleartextMessage } from '../../pgp';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
@@ -63,12 +67,47 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const [webhookEnabled, setWebhookEnabled] = useState<boolean>(false);
   const [webhookSaving, setWebhookSaving] = useState<boolean>(false);
   const [webhookUrlError, setWebhookUrlError] = useState<string>('');
+  const [webhookSaveError, setWebhookSaveError] = useState<string>('');
+  const [openNostrForwardSettings, setOpenNostrForwardSettings] = useState<boolean>(false);
+  const [nostrForwardPubkey, setNostrForwardPubkey] = useState<string>('');
+  const [nostrForwardRelay, setNostrForwardRelay] = useState<string>('');
+  const [nostrForwardEnabled, setNostrForwardEnabled] = useState<boolean>(false);
+  const [nostrForwardSaving, setNostrForwardSaving] = useState<boolean>(false);
+  const [nostrForwardPubkeyError, setNostrForwardPubkeyError] = useState<string>('');
+  const [nostrForwardRelayError, setNostrForwardRelayError] = useState<string>('');
+  const [nostrForwardSaveError, setNostrForwardSaveError] = useState<string>('');
 
   const isValidOnionUrl = (url: string): boolean => {
     if (!url) return true;
     try {
       const parsed = new URL(url);
       return parsed.hostname.endsWith('.onion');
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidNostrPubkey = (pubkey: string): boolean => {
+    if (isHex32(pubkey.toLowerCase())) return true;
+
+    try {
+      const decoded = nip19.decode(pubkey);
+      return decoded.type === 'npub' && isHex32(decoded.data);
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidOnionRelayUrl = (relay: string): boolean => {
+    try {
+      const parsed = new URL(relay);
+      const hostname = parsed.hostname;
+      return (
+        ['ws:', 'wss:'].includes(parsed.protocol) &&
+        hostname.endsWith('.onion') &&
+        !hostname.includes('..') &&
+        hostname.length > '.onion'.length
+      );
     } catch {
       return false;
     }
@@ -114,22 +153,83 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   };
 
   const handleSaveWebhookSettings = async (): Promise<void> => {
-    if (!robot) return;
+    if (!robot) {
+      setWebhookSaveError(t('Could not save webhook settings. Try again.'));
+      return;
+    }
 
     if (webhookUrl && !isValidOnionUrl(webhookUrl)) {
       setWebhookUrlError(t('URL must be a valid .onion address'));
+      setWebhookSaveError('');
       return;
     }
     setWebhookUrlError('');
+    setWebhookSaveError('');
 
     setWebhookSaving(true);
-    await robot.fetchWebhook(federation, {
+    const saved = await robot.fetchWebhook(federation, {
       webhook_url: webhookUrl || undefined,
       webhook_enabled: webhookEnabled,
       webhook_api_key: webhookApiKey || undefined,
     });
     setWebhookSaving(false);
-    setOpenWebhookSettings(false);
+
+    if (saved) {
+      setOpenWebhookSettings(false);
+    } else {
+      setWebhookSaveError(t('Could not save webhook settings. Try again.'));
+    }
+  };
+
+  const openNostrForwardDialog = (): void => {
+    setNostrForwardPubkey(robot?.nostrForwardPubkey ?? '');
+    setNostrForwardRelay(robot?.nostrForwardRelay ?? '');
+    setNostrForwardEnabled(robot?.nostrForwardEnabled ?? false);
+    setNostrForwardPubkeyError('');
+    setNostrForwardRelayError('');
+    setNostrForwardSaveError('');
+    setOpenNostrForwardSettings(true);
+  };
+
+  const closeNostrForwardDialog = (): void => {
+    if (!nostrForwardSaving) setOpenNostrForwardSettings(false);
+  };
+
+  const handleSaveNostrForwardSettings = async (): Promise<void> => {
+    if (!robot) {
+      setNostrForwardSaveError(t('Could not save Nostr forwarding settings. Try again.'));
+      return;
+    }
+
+    const pubkey = nostrForwardPubkey.trim();
+    const relay = nostrForwardRelay.trim();
+    const pubkeyInvalid =
+      (pubkey !== '' && !isValidNostrPubkey(pubkey)) || (nostrForwardEnabled && pubkey === '');
+    const relayInvalid =
+      (relay !== '' && !isValidOnionRelayUrl(relay)) || (nostrForwardEnabled && relay === '');
+
+    setNostrForwardPubkeyError(
+      pubkeyInvalid ? t('Enter a valid npub or 64 character hex public key') : '',
+    );
+    setNostrForwardRelayError(
+      relayInvalid ? t('Enter a valid ws:// or wss:// .onion relay URL') : '',
+    );
+    setNostrForwardSaveError('');
+    if (pubkeyInvalid || relayInvalid) return;
+
+    setNostrForwardSaving(true);
+    const saved = await robot.saveNostrForward(federation, {
+      nostr_forward_pubkey: pubkey || null,
+      nostr_forward_relay: relay || null,
+      nostr_forward_enabled: nostrForwardEnabled,
+    });
+    setNostrForwardSaving(false);
+
+    if (saved) {
+      setOpenNostrForwardSettings(false);
+    } else {
+      setNostrForwardSaveError(t('Could not save Nostr forwarding settings. Try again.'));
+    }
   };
 
   return (
@@ -289,6 +389,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   <Button
                     color='primary'
                     onClick={() => {
+                      setWebhookSaveError('');
                       setOpenWebhookSettings(true);
                     }}
                   >
@@ -299,6 +400,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   <Button
                     size='small'
                     onClick={() => {
+                      setWebhookSaveError('');
                       setOpenWebhookSettings(true);
                     }}
                   >
@@ -327,6 +429,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       onChange={(e) => {
                         setWebhookUrl(e.target.value);
                         setWebhookUrlError('');
+                        setWebhookSaveError('');
                       }}
                       size='small'
                       error={Boolean(webhookUrlError)}
@@ -339,7 +442,10 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       label={t('API Key (optional)')}
                       placeholder='Your secret API key'
                       value={webhookApiKey}
-                      onChange={(e) => setWebhookApiKey(e.target.value)}
+                      onChange={(e) => {
+                        setWebhookApiKey(e.target.value);
+                        setWebhookSaveError('');
+                      }}
                       size='small'
                       type='password'
                     />
@@ -350,12 +456,20 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       control={
                         <Switch
                           checked={webhookEnabled}
-                          onChange={(e) => setWebhookEnabled(e.target.checked)}
+                          onChange={(e) => {
+                            setWebhookEnabled(e.target.checked);
+                            setWebhookSaveError('');
+                          }}
                         />
                       }
                     />
                   </Grid>
                 </Grid>
+                {webhookSaveError && (
+                  <Alert severity='error' sx={{ mt: 2 }}>
+                    {webhookSaveError}
+                  </Alert>
+                )}
               </DialogContent>
               <DialogActions>
                 <Button onClick={() => setOpenWebhookSettings(false)}>{t('Cancel')}</Button>
@@ -367,6 +481,133 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                   {webhookSaving ? <CircularProgress size={20} /> : t('Save')}
                 </Button>
               </DialogActions>
+            </Dialog>
+
+            <ListItem>
+              <ListItemIcon sx={{ minWidth: 56 }}>
+                <NostrIcon />
+              </ListItemIcon>
+
+              <ListItemText>
+                {robot?.nostrForwardEnabled ? (
+                  <Typography color={theme.palette.success.main}>
+                    <b>{t('Nostr forwarding enabled')}</b>
+                  </Typography>
+                ) : (
+                  <Button color='primary' onClick={openNostrForwardDialog}>
+                    {t('Nostr forwarding')}
+                  </Button>
+                )}
+                {robot?.nostrForwardEnabled && (
+                  <Button size='small' onClick={openNostrForwardDialog}>
+                    {t('Edit')}
+                  </Button>
+                )}
+              </ListItemText>
+            </ListItem>
+
+            <Dialog
+              open={openNostrForwardSettings}
+              onClose={closeNostrForwardDialog}
+              aria-labelledby='nostr-forward-dialog-title'
+              aria-describedby='nostr-forward-description'
+            >
+              <DialogTitle id='nostr-forward-dialog-title'>{t('Nostr forwarding')}</DialogTitle>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleSaveNostrForwardSettings();
+                }}
+              >
+                <DialogContent>
+                  <Typography
+                    id='nostr-forward-description'
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ mb: 2 }}
+                  >
+                    {t(
+                      'Forward trade notifications to your main Nostr account through your own .onion relay. The coordinator can associate this robot with that account.',
+                    )}
+                  </Typography>
+                  <Grid container spacing={2} sx={{ flexDirection: 'column' }}>
+                    <Grid>
+                      <TextField
+                        fullWidth
+                        label={t('Main Nostr public key (npub or hex)')}
+                        value={nostrForwardPubkey}
+                        onChange={(event) => {
+                          setNostrForwardPubkey(event.target.value);
+                          setNostrForwardPubkeyError('');
+                          setNostrForwardSaveError('');
+                        }}
+                        size='small'
+                        error={Boolean(nostrForwardPubkeyError)}
+                        helperText={nostrForwardPubkeyError}
+                        disabled={nostrForwardSaving}
+                        slotProps={{
+                          htmlInput: { autoCapitalize: 'none', spellCheck: false },
+                        }}
+                      />
+                    </Grid>
+                    <Grid>
+                      <TextField
+                        fullWidth
+                        label={t('Relay URL (ws/wss .onion only)')}
+                        value={nostrForwardRelay}
+                        onChange={(event) => {
+                          setNostrForwardRelay(event.target.value);
+                          setNostrForwardRelayError('');
+                          setNostrForwardSaveError('');
+                        }}
+                        size='small'
+                        error={Boolean(nostrForwardRelayError)}
+                        helperText={nostrForwardRelayError}
+                        disabled={nostrForwardSaving}
+                        slotProps={{
+                          htmlInput: { autoCapitalize: 'none', spellCheck: false },
+                        }}
+                      />
+                    </Grid>
+                    <Grid>
+                      <FormControlLabel
+                        label={t('Enable Nostr forwarding')}
+                        control={
+                          <Switch
+                            checked={nostrForwardEnabled}
+                            onChange={(event) => {
+                              setNostrForwardEnabled(event.target.checked);
+                              if (!event.target.checked) {
+                                if (!nostrForwardPubkey.trim()) setNostrForwardPubkeyError('');
+                                if (!nostrForwardRelay.trim()) setNostrForwardRelayError('');
+                              }
+                              setNostrForwardSaveError('');
+                            }}
+                            disabled={nostrForwardSaving}
+                          />
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                  {nostrForwardSaveError && (
+                    <Alert severity='error' sx={{ mt: 2 }}>
+                      {nostrForwardSaveError}
+                    </Alert>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    type='button'
+                    onClick={closeNostrForwardDialog}
+                    disabled={nostrForwardSaving}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button type='submit' variant='contained' loading={nostrForwardSaving}>
+                    {t('Save')}
+                  </Button>
+                </DialogActions>
+              </form>
             </Dialog>
 
             <ListItem>

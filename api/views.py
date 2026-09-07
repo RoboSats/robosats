@@ -695,6 +695,9 @@ class RobotView(APIView):
         context["webhook_url"] = user.robot.webhook_url
         context["webhook_enabled"] = user.robot.webhook_enabled
         context["webhook_api_key"] = user.robot.webhook_api_key
+        context["nostr_forward_pubkey"] = user.robot.nostr_forward_pubkey
+        context["nostr_forward_relay"] = user.robot.nostr_forward_relay
+        context["nostr_forward_enabled"] = user.robot.nostr_forward_enabled
 
         context["last_login"] = user.last_login
 
@@ -723,7 +726,7 @@ class RobotView(APIView):
     @extend_schema(**RobotViewSchema.put)
     def put(self, request, format=None):
         """
-        Update robot's webhook settings.
+        Update robot notification settings.
         """
         robot = request.user.robot
         old_webhook_url = robot.webhook_url
