@@ -132,9 +132,27 @@ export interface VoteOptions {
   now?: Date;
 }
 
+export interface VoterRow {
+  alias: string;
+  /** First 8 hex chars + '…' for display. */
+  hash: string;
+  weight: number;
+}
+
 export interface VoteResult {
   /** Winning hash, or null when no strict majority was reached (keep current). */
   winnerHash: string | null;
+  /**
+   * Accumulated weight per full hash, computed during the ballot.
+   * Empty map when quorum was not met (< 2 votes).
+   */
+  weightByHash: Map<string, number>;
+  /** Sum of all voter weights. 0 when quorum was not met. */
+  totalWeight: number;
+  /** Per-voter rows in ballot order, ready to hand to console.table(). */
+  voterRows: VoterRow[];
+  /** The clock value used for all seniority calculations in this ballot. */
+  now: Date;
 }
 
 // Weight constants
@@ -233,7 +251,15 @@ export function seniorityWeight(
 export function voteOnHashes(votes: CoordVote[], options: VoteOptions): VoteResult {
   const { trustedDoc, joinDates, now = new Date() } = options;
 
-  if (votes.length < 2) return { winnerHash: null };
+  const emptyResult: VoteResult = {
+    winnerHash: null,
+    weightByHash: new Map(),
+    totalWeight: 0,
+    voterRows: [],
+    now,
+  };
+
+  if (votes.length < 2) return emptyResult;
 
   const established = votes.map((v) => trustedEstablishedDate(v.alias, trustedDoc, joinDates));
 
@@ -246,17 +272,18 @@ export function voteOnHashes(votes: CoordVote[], options: VoteOptions): VoteResu
   const weightByHash = new Map<string, number>();
   let totalWeight = 0;
 
-  votes.forEach((v, i) => {
+  const voterRows: VoterRow[] = votes.map((v, i) => {
     const w = seniorityWeight(established[i], oldestEstablished, now);
     weightByHash.set(v.hash, (weightByHash.get(v.hash) ?? 0) + w);
     totalWeight += w;
+    return { alias: v.alias, hash: v.hash.slice(0, 8) + '…', weight: w };
   });
 
   for (const [hash, w] of weightByHash) {
-    if (w * 2 > totalWeight) return { winnerHash: hash };
+    if (w * 2 > totalWeight) return { winnerHash: hash, weightByHash, totalWeight, voterRows, now };
   }
 
-  return { winnerHash: null };
+  return { winnerHash: null, weightByHash, totalWeight, voterRows, now };
 }
 
 // ---------------------------------------------------------------------------
@@ -269,16 +296,25 @@ export async function fetchAndVerifyDoc(
 ): Promise<FederationDoc | null> {
   try {
     const raw = await apiClient.get(baseUrl, '/api/federation/', undefined, true);
-    if (!raw || typeof raw !== 'object') return null;
-    if (!isValidDoc(raw)) return null;
+    if (!raw || typeof raw !== 'object') {
+      console.warn(`[FederationDiscovery] empty/non-object response from ${baseUrl}`);
+      return null;
+    }
+    if (!isValidDoc(raw)) {
+      console.warn(`[FederationDiscovery] invalid doc schema from ${baseUrl}`);
+      return null;
+    }
     const docCandidate = raw as FederationDoc;
     const actualHash = await canonicalHash(normalizeDoc(docCandidate as FederationDoc));
     if (actualHash !== expectedHash) {
-      console.warn('[FederationDiscovery] hash mismatch from ' + baseUrl);
+      console.warn(
+        `[FederationDiscovery] hash mismatch from ${baseUrl}: got ${actualHash.slice(0, 8)}…, expected ${expectedHash.slice(0, 8)}…`,
+      );
       return null;
     }
     return reapplySeedBadges(docCandidate as FederationDoc);
-  } catch {
+  } catch (err) {
+    console.warn(`[FederationDiscovery] fetch failed from ${baseUrl}:`, err);
     return null;
   }
 }

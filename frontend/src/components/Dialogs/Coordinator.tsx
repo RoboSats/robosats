@@ -349,14 +349,16 @@ const CoordinatorDialog = ({ open = false, onClose, shortAlias }: Props): React.
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
-  const [coordinator, setCoordinator] = useState<Coordinator>(
+  const [coordinator, setCoordinator] = useState<Coordinator | undefined>(
     federation.getCoordinator(shortAlias ?? ''),
   );
 
   const { ratingCount, averageRating } = React.useMemo(() => {
-    const coordinatorRating = federation.ratings[coordinator?.nostrHexPubkey] || {};
+    const coordinatorRating =
+      (coordinator?.nostrHexPubkey ? federation.ratings[coordinator.nostrHexPubkey] : undefined) ??
+      {};
     const ratingCount = Object.keys(coordinatorRating).length;
-    const ratingSum = Object.values(coordinatorRating).reduce((a, b) => a + b, 0);
+    const ratingSum = Object.values(coordinatorRating).reduce<number>((a, b) => a + b, 0);
     const averageRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
     return { ratingCount, averageRating };
   }, [federationUpdatedAt, coordinator?.nostrHexPubkey, federation.ratings]);
