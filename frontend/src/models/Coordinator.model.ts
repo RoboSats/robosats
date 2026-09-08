@@ -47,18 +47,24 @@ export interface Info {
   version: Version;
   maker_fee: number;
   taker_fee: number;
+  devfund?: number;
   bond_size: number;
   min_order_size: number;
   max_order_size: number;
   swap_enabled: boolean;
   max_swap: number;
   current_swap_fee_rate: number;
+  blossom_enabled: boolean;
   network: 'mainnet' | 'testnet' | undefined;
   openUpdateClient: boolean;
   notice_severity: 'none' | 'warning' | 'error' | 'success' | 'info';
   notice_message: string;
   market_price_apis: string;
   loading: boolean;
+  /** SHA-256 of this coordinator's normalized canonical federation document.
+   *  Used by the client's hash-first federation discovery (Phase A/B) to vote
+   *  on the current federation list without any additional requests. */
+  federation_hash?: string;
 }
 
 export type Origin = 'onion' | 'i2p' | 'clearnet';
@@ -183,11 +189,14 @@ export class Coordinator {
 
   // These properties are fetched from coordinator API
   public book: Record<string, PublicOrder> = {};
-  public loadingBook: boolean = false;
+  public loadingBook: boolean = true;
   public info?: Info | undefined = undefined;
-  public loadingInfo: boolean = false;
+  public loadingInfo: boolean = true;
+  private _infoPromise?: Promise<void> | undefined;
+  private _limitsPromise?: Promise<void> | undefined;
+  private _bookPromise?: Promise<void> | undefined;
   public limits: LimitList = {};
-  public loadingLimits: boolean = false;
+  public loadingLimits: boolean = true;
 
   updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
@@ -204,87 +213,123 @@ export class Coordinator {
     }
   };
 
-  loadBook = (onDataLoad: () => void = () => {}): void => {
-    if (!this.enabled) return;
-    if (this.url === '') return;
-    if (this.loadingBook) return;
+  loadBook = (onDataLoad: () => void = () => {}): Promise<void> => {
+    if (!this.enabled) return Promise.resolve();
+    if (this.url === '') return Promise.resolve();
+
+    if (this._bookPromise) {
+      return this._bookPromise.then(() => {
+        onDataLoad();
+      });
+    }
 
     this.loadingBook = true;
     this.book = {};
 
-    apiClient
-      .get(this.url, `/api/book/`, undefined, true)
-      .then((raw) => {
-        const data = raw as (PublicOrder[] & { not_found?: boolean }) | null;
-        if (data != null && !data.not_found) {
-          this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
-            order.coordinatorShortAlias = this.shortAlias;
-            return { ...book, [`${this.shortAlias}${order.id}`]: order };
-          }, {});
-          void this.generateAllMakerAvatars();
-          onDataLoad();
-        } else {
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingBook = false;
-      });
+    this._bookPromise = new Promise<void>((resolve) => {
+      apiClient
+        .get(this.url, `/api/book/`, undefined, true)
+        .then((raw) => {
+          const data = raw as (PublicOrder[] & { not_found?: boolean }) | null;
+          if (data != null && !data.not_found) {
+            this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>(
+              (book, order) => {
+                order.coordinatorShortAlias = this.shortAlias;
+                return { ...book, [`${this.shortAlias}${order.id}`]: order };
+              },
+              {},
+            );
+            void this.generateAllMakerAvatars();
+            onDataLoad();
+          } else {
+            onDataLoad();
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          this.loadingBook = false;
+          this._bookPromise = undefined;
+          resolve();
+        });
+    });
+
+    return this._bookPromise;
   };
 
-  loadLimits = (onDataLoad: () => void = () => {}): void => {
-    if (!this.enabled) return;
-    if (this.url === '') return;
-    if (this.loadingLimits) return;
+  loadLimits = (onDataLoad: () => void = () => {}): Promise<void> => {
+    if (!this.enabled) return Promise.resolve();
+    if (this.url === '') return Promise.resolve();
+
+    if (this._limitsPromise) {
+      return this._limitsPromise.then(() => {
+        if (Object.keys(this.limits).length > 0) onDataLoad();
+      });
+    }
 
     this.loadingLimits = true;
 
-    apiClient
-      .get(this.url, `/api/limits/`, undefined, true)
-      .then((data) => {
-        if (data !== null) {
-          const newLimits = data as LimitList;
+    this._limitsPromise = new Promise<void>((resolve) => {
+      apiClient
+        .get(this.url, `/api/limits/`, undefined, true)
+        .then((data) => {
+          if (data !== null) {
+            const newLimits = data as LimitList;
 
-          for (const currency in this.limits) {
-            newLimits[currency] = compareUpdateLimit(this.limits[currency], newLimits[currency]);
+            for (const currency in this.limits) {
+              newLimits[currency] = compareUpdateLimit(this.limits[currency], newLimits[currency]);
+            }
+
+            this.limits = newLimits;
+            onDataLoad();
           }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          this.loadingLimits = false;
+          this._limitsPromise = undefined;
+          resolve();
+        });
+    });
 
-          this.limits = newLimits;
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingLimits = false;
-      });
+    return this._limitsPromise;
   };
 
-  loadInfo = (onDataLoad: () => void = () => {}): void => {
-    if (!this.enabled) return;
-    if (this.url === '') return;
-    if (this.loadingInfo) return;
+  loadInfo = (onDataLoad: () => void = () => {}): Promise<void> => {
+    if (!this.enabled) return Promise.resolve();
+    if (this.url === '') return Promise.resolve();
+
+    if (this._infoPromise) {
+      return this._infoPromise.then(() => {
+        if (this.info !== undefined) onDataLoad();
+      });
+    }
 
     this.loadingInfo = true;
 
-    apiClient
-      .get(this.url, `/api/info/`, undefined, true)
-      .then((data) => {
-        if (data !== null) {
-          this.info = data as Info;
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingInfo = false;
-      });
+    this._infoPromise = new Promise<void>((resolve) => {
+      apiClient
+        .get(this.url, `/api/info/`, undefined, true)
+        .then((data) => {
+          if (data !== null) {
+            this.info = data as Info;
+            onDataLoad();
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          this.loadingInfo = false;
+          this._infoPromise = undefined;
+          resolve();
+        });
+    });
+
+    return this._infoPromise;
   };
 
   enable = (onEnabled: () => void = () => {}): void => {

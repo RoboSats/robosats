@@ -17,6 +17,10 @@ import EncryptedChat, { type EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
 import { type UseGarageStoreType, GarageContext } from '../../../contexts/GarageContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
 import { MoreHoriz, Key, Handshake, Balance } from '@mui/icons-material';
 import AuditPGPDialog from '../../Dialogs/AuditPGP';
 import { ExportIcon } from '../../Icons';
@@ -55,7 +59,11 @@ export const ChatPrompt = ({
 }: ChatPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { client, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
+
+  const coordinator = federation.getCoordinator(order.shortAlias ?? '');
+  const blossomEnabled: boolean = coordinator?.info?.blossom_enabled ?? false;
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -188,6 +196,7 @@ export const ChatPrompt = ({
           setMessages={setMessages}
           peerPubKey={peerPubKey}
           setPeerPubKey={setPeerPubKey}
+          blossomEnabled={blossomEnabled}
         />
       </Grid>
 

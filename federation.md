@@ -51,6 +51,11 @@ Short list of what a coordinator is expected to do:
 ### How to become part of the Federation and be included in the RoboSats app?
 Simply open a new issue in GitHub and select the form "Coordinator Registration". You can **preview the [Coordinator Registration form here](https://github.com/RoboSats/robosats/blob/main/.github/ISSUE_TEMPLATE/coordinator_registration.yaml)** .
 
+Before going to production, your LN node should have:
+- Minimum of a total 6M sats capacity
+- Minimum 3 channels
+- A direct channel of any size to [robosats devfund node](https://lightningnetwork.plus/nodes/037ff12b6a4e4bcb4b944b6d20af08cdff61b3461c1dff0d00a88697414d891bc7)
+
 Coordinator registrations are **always OPEN** . All fields can be updated or completed later through pull requests. Don't worry about getting everything perfect initially. It's okay if your data policy, privacy policy, node ids, and endpoints aren't fully defined or are subject to change.
 
 ### How to run a RoboSats Coordinator?
@@ -73,6 +78,8 @@ As discussed above, a lightning node capable of coordinating hundreds of RoboSat
 Donations to the Development Fund (DevFund) are voluntary with no minimum amount. The default donation rate in the Coordinator backend is 20%, however, you can freely set this value to 0%. Regardless of the amount a coordinator donates for development, all coordinators will be included in the client app.
 
 The coordinators that chose to stick with the default donation rate or higher will get to display a cool badge on their profiles. The RoboSats client app randomly sorts coordinators weighted by their DevFund donation value ([implementation here](https://github.com/RoboSats/robosats/blob/2262dc2af7110e86bb529f5075a19a50e16ade45/frontend/src/utils/federationLottery.ts#L27-L30)). Thus, the orders of the coordinators that contribute to the development have a higher chance to appear first in the Order book. Coordinators who contribute to the DevFund are also more likely to receive support if needed (note that unless the devs are under time constraints support is unlikely to be denied). These patron perks are the way developers say "thank you for your contribution!".
+
+The donation value used as lottery weight is **live**: coordinators expose their real `DEVFUND` percentage in `GET /api/info/` (`devfund` field), and the client probes all coordinators at startup, overriding the static `federation.json` badge when the coordinator is reachable. Unreachable coordinators (e.g. Tor-only on clearnet web) keep the static value as fallback. This way a coordinator changing their donation percentage is reflected in the client momentarily, without requiring a frontend rebuild.
 
 The RoboSats development team has an exciting roadmap ahead. However, once RoboSats is fully decentralized, the only source of funding for further development and maintaining the codebase will be donations (we do not accept venture-capital investments). Some of the exciting roadmap ahead:
 - [RoboSats PRO app](https://github.com/RoboSats/robosats/issues/177) (Intended for professional market makers. This client can manage many orders/robots in many coordinators at once.)

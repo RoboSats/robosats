@@ -41,13 +41,12 @@ const config: Configuration = {
   },
 };
 
-const configNode = (env: any, argv: { mode: string }): Configuration => {
+const configNode = (env: any, _argv: { mode: string }): Configuration => {
   return {
     ...config,
     output: {
       path: path.resolve(__dirname, 'static/frontend'),
-      filename:
-        argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
+      filename: `main.v${version}.[contenthash].js`,
       clean: true,
       publicPath: 'auto',
     },
@@ -146,8 +145,12 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
       {
         apply: (compiler: Compiler) => {
           compiler.hooks.afterEmit.tapAsync('CopyFilesPlugin', (_compilation, callback) => {
-            Promise.all(
-              outputPaths.map((outputPath) => {
+            const federationSrc = path.resolve(__dirname, 'static/federation.json');
+            const federationDest = path.resolve(__dirname, '../api/federation.json');
+
+            Promise.all([
+              // Copy the full static directory to each platform output path.
+              ...outputPaths.map((outputPath) => {
                 const sourceDir = path.resolve(__dirname, 'static');
                 return fs
                   .copy(sourceDir, outputPath)
@@ -158,7 +161,17 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
                     console.error(`Error copying files to ${outputPath}:`, err);
                   });
               }),
-            )
+              // Copy federation.json to api/ so the backend serves the same
+              // file that is committed to the repository.
+              fs
+                .copy(federationSrc, federationDest)
+                .then(() => {
+                  console.log(`federation.json copied to ${federationDest}`);
+                })
+                .catch((err) => {
+                  console.error(`Error copying federation.json to api/:`, err);
+                }),
+            ])
               .then(() => {
                 callback();
               })
@@ -170,7 +183,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
   };
 };
 
-const configAndroid = (env: any, argv: { mode: string }): Configuration => {
+const configAndroid = (env: any, _argv: { mode: string }): Configuration => {
   return {
     ...config,
     module: {
@@ -220,8 +233,7 @@ const configAndroid = (env: any, argv: { mode: string }): Configuration => {
     },
     output: {
       path: path.resolve(__dirname, '../android/app/src/main/assets/static/frontend'),
-      filename:
-        argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
+      filename: `main.v${version}.[contenthash].js`,
       clean: true,
       publicPath: 'auto',
     },

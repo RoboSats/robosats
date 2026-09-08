@@ -284,8 +284,11 @@ class LNDNode:
         """Checks if hold invoice is locked"""
         from api.models import LNPayment
 
+        # HTLC_SET_ONLY is required since LND v0.21 to populate response.htlcs;
+        # without it the default lookup returns an empty htlcs list.
         request = invoices_pb2.LookupInvoiceMsg(
-            payment_hash=bytes.fromhex(lnpayment.payment_hash)
+            payment_hash=bytes.fromhex(lnpayment.payment_hash),
+            lookup_modifier=invoices_pb2.LookupModifier.HTLC_SET_ONLY,
         )
         invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
         response = invoicesstub.LookupInvoiceV2(request)
@@ -327,9 +330,10 @@ class LNDNode:
         }
 
         try:
-            # this is similar to LNNnode.validate_hold_invoice_locked
+            # HTLC_SET_ONLY required since LND v0.21 to populate response.htlcs
             request = invoices_pb2.LookupInvoiceMsg(
-                payment_hash=bytes.fromhex(lnpayment.payment_hash)
+                payment_hash=bytes.fromhex(lnpayment.payment_hash),
+                lookup_modifier=invoices_pb2.LookupModifier.HTLC_SET_ONLY,
             )
             invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
             response = invoicesstub.LookupInvoiceV2(request)

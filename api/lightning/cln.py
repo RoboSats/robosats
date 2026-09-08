@@ -161,7 +161,7 @@ class CLNNode:
         for channel in response.channels:
             if (
                 channel.state
-                == node_pb2.ListpeerchannelsChannels.ListpeerchannelsChannelsState.CHANNELD_NORMAL
+                == primitives__pb2.ChannelState.ChanneldNormal
             ):
                 local_balance_sat += channel.to_us_msat.msat // 1_000
                 remote_balance_sat += (

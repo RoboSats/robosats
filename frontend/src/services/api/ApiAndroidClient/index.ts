@@ -121,7 +121,14 @@ class ApiAndroidClient implements ApiClient {
       }
 
       // binary to base64 for Android bridge
-      const base64Data = btoa(String.fromCharCode.apply(null, Array.from(data)));
+      // String.fromCharCode.apply() overflows V8's argument limit for arrays > ~65k bytes.
+      // Chunk the conversion to avoid the stack overflow.
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < data.length; i += chunkSize) {
+        binary += String.fromCharCode(...data.subarray(i, i + chunkSize));
+      }
+      const base64Data = btoa(binary);
 
       // Use dedicated sendBinary method for binary uploads
       const result = await new Promise<string>((resolve, reject) => {

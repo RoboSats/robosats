@@ -58,6 +58,8 @@ Also contains Python locale tooling:
 
 `federation.json` is the canonical, **maintainer-owned** coordinator seed list. Changes require a webpack rebuild to propagate into the bundle. It is imported at module load time in multiple places. `lnproxies.json` and `thirdparties.json` follow the same pattern — not user-configurable at runtime, propagated only via build.
 
+**DevFund badge is live-overlaid.** `badges.donatesToDevFund` in `federation.json` is the **static fallback** only. At startup the client probes every coordinator's `GET /api/info/` (`devfund` field, see `services/DevFundProfile.ts`) and, when reachable, overwrites the badge with the coordinator's real `DEVFUND` value before running the devfund-weighted lottery (`utils/federationLottery.ts`). Tor-only/unreachable coordinators (e.g. `clearnet: null` on clearnet web) keep the static value. Keep the static badge reasonably fresh via the coordinator registration template — it is now a fallback, not the source of truth.
+
 ## Traps
 
 - **`static/frontend/`** is generated — it lives inside a source directory, which is confusing. Never hand-edit it.

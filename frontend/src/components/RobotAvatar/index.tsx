@@ -73,6 +73,7 @@ const RobotAvatar: React.FC<Props> = ({
           ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
           : `file:///android_asset/static/assets/federation/avatars/${shortAlias}.webp`;
       setAvatarSrc(coordinatorAvatar);
+      setActiveBackground(false);
     } else {
       setActiveBackground(true);
     }
@@ -144,12 +145,15 @@ const RobotAvatar: React.FC<Props> = ({
         </div>
       );
     } else {
+      // When avatarSrc is not yet available, use the placeholder image data URL
+      // so the loading animation is shown instead of MUI's grey silhouette.
+      const src = avatarSrc ?? `data:${backgroundData.mime};base64,${backgroundData.data}`;
       return (
         <Avatar
           className={avatarClass}
           style={style}
           alt={hashId ?? shortAlias ?? 'unknown'}
-          src={avatarSrc}
+          src={src}
           slotProps={{
             img: {
               style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },

@@ -93,6 +93,15 @@ body:
       placeholder: e.g. "#000000"
     validations:
       required: false
+  - type: input
+    id: npub
+    attributes:
+      label: Nostr Pubkey 
+      description: |
+        Your coordinator nostr npub. (Derived pubkey from the value set to NOSTR_NSEC)
+      placeholder: e.g. "npub..."
+    validations:
+      required: true
 
   # Development Funding
   - type: markdown
@@ -272,10 +281,10 @@ body:
     id: nostr
     attributes:
       label: "4. Nostr"
-      description: "Public contact method #4: Website."
+      description: "Public contact method #4: Nostr."
       placeholder: "e.g. npub..."
     validations:
-      required: false
+      required: true
   - type: input
     id: website
     attributes:

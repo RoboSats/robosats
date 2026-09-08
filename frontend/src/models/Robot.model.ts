@@ -79,8 +79,8 @@ class Robot {
       tokenSHA256,
       nostrPubkey,
       keys: {
-        pubKey: pubKey.split('\n').join('\\'),
-        encPrivKey: encPrivKey.split('\n').join('\\'),
+        pubKey: pubKey.replace(/\r\n?/g, '\n').split('\n').join('\\'),
+        encPrivKey: encPrivKey.replace(/\r\n?/g, '\n').split('\n').join('\\'),
       },
     };
   };

@@ -28,7 +28,7 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `/api/order/` | GET/POST | `OrderView` | GET reads state; POST is single dispatch (below) |
 | `/api/robot/` | GET/PUT | `RobotView` | Robot profile/settings |
 | `/api/book/` | GET | `BookView` | Public order book |
-| `/api/info/` | GET | `InfoView` | Coordinator info: version, fees, limits |
+| `/api/info/` | GET | `InfoView` | Coordinator info: version, fees, limits, `devfund` |
 | `/api/price/` | GET | `PriceView` | Current market rates |
 | `/api/limits/` | GET | `LimitView` | Min/max order size per currency |
 | `/api/reward/` | POST | `RewardView` | Claim `earned_rewards` via invoice |
@@ -38,6 +38,11 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `/api/chat/` | GET/POST | `chat.views.ChatView` | Owned by `chat/`, mounted here |
 | `/api/notifications/` | GET | `NotificationsView` | In-app notifications |
 | `/api/review/` | POST | `ReviewView` | Nostr-signed proof-of-trade token for coordinator rating |
+
+`GET /api/info/` exposes `devfund` (percentage, `DEVFUND` × 100) — the coordinator's real
+DevFund donation. Public, additive field; used by the frontend to live-overlay the
+federation lottery weight (`donatesToDevFund`) with the coordinator's actual value,
+falling back to `frontend/static/federation.json` when `/api/info/` is unreachable.
 
 No `shortAlias` param exists on `/api/order/` — do not invent one. **`POST /api/order/`**
 dispatches on `UpdateOrderSerializer.action`: `pause, take, update_invoice, update_address,

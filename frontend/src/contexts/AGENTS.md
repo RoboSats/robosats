@@ -34,6 +34,9 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
   button in `FederationTable` triggers `federation.loadRatings(true)` for on-demand
   cryptographic verification.
 - Exposes `coordinatorUpdatedAt`, `bookUpdatedAt` for consumers that need cache-busting.
+- Calls `void federation.loadDevFund()` on mount — probes every coordinator's live
+  `DEVFUND` via `/api/info/`, overrides the static federation badge, re-runs the lottery
+  and reorders `Federation.coordinators`.
 - Custom coordinator discovery (power-user `SettingsPage/Coordinators.tsx`) is supported
   but is an escape hatch, not a headline feature.
 
