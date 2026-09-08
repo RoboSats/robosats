@@ -167,7 +167,8 @@ const EncryptedNostrChat: React.FC<Props> = ({
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
     if (!shortAlias) return;
 
-    const url = federation.getCoordinator(shortAlias).url;
+    const url = federation.getCoordinator(shortAlias)?.url ?? '';
+    if (!url) return;
     apiClient
       .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex ?? 0}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',

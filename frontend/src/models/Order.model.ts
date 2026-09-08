@@ -216,6 +216,7 @@ class Order {
 
     if (slot) {
       const coordinator = federation.getCoordinator(this.shortAlias);
+      if (!coordinator) return this;
       const authHeaders = slot.getRobot()?.getAuthHeaders();
       if (!authHeaders) return this;
       const data = await apiClient
@@ -247,6 +248,7 @@ class Order {
 
       if (slot) {
         const coordinator = federation.getCoordinator(this.shortAlias);
+        if (!coordinator) return this;
         const data = await apiClient
           .post(coordinator.url, `/api/order/?order_id=${Number(this.id)}`, action, {
             tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '',
@@ -264,6 +266,7 @@ class Order {
     if (!slot) return this;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator) return this;
     const authHeaders = slot.getRobot()?.getAuthHeaders();
     if (!authHeaders) return this;
     const data = await apiClient

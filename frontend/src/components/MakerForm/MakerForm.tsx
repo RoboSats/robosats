@@ -104,6 +104,7 @@ const MakerForm = ({
       slot?.fetchActiveOrder(federation);
 
       const coordinator = federation.getCoordinator(maker.coordinator);
+      if (!coordinator) return;
       const existingLimits = coordinator.limits;
       if (existingLimits && Object.keys(existingLimits).length > 0) {
         // Limits already loaded by loadCoordinatorData() — update local state directly.
@@ -141,7 +142,7 @@ const MakerForm = ({
     let maxAmountLimit: number = limitList[index].max_amount * (1 + premium / 100);
 
     const coordinatorSizeLimit =
-      (federation.getCoordinator(maker.coordinator).size_limit / 100000000) *
+      ((federation.getCoordinator(maker.coordinator)?.size_limit ?? 0) / 100000000) *
       limitList[index].price;
     maxAmountLimit = Math.min(coordinatorSizeLimit, maxAmountLimit);
 
