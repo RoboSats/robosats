@@ -49,7 +49,7 @@ class WithdrawRewardsTest(TestCase):
 
     def setUp(self):
         self.invoice = "lnbc1..."
-        self.routing_budget_ppm = 1000
+        self.routing_budget_ppm = 20000  # 2% of 500 sats = 10 sats budget
         self.num_satoshis = 490  # earned_rewards(500) minus routing budget
 
     def _run_withdraw(self, user, pay_invoice_return, lnpayment_status_after):
