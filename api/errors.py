@@ -72,6 +72,7 @@ ERRORS = {
     3003: "You have not earned rewards",
     3004: "Give me a new invoice",
     3005: "Invoice payment failure: {failure_reason}",
+    3006: "Payment status is uncertain, your rewards will be restored once it resolves. Check back later.",
     # 4000 - Bad address
     4000: "You submitted an empty address",
     4001: "The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte",

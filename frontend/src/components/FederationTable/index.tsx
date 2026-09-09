@@ -149,8 +149,8 @@ const FederationTable = ({
           >
             <Grid>
               <RobotAvatar
-                shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
-                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                shortAlias={coordinator?.federated ? params.row.shortAlias : undefined}
+                hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 small={true}
@@ -176,7 +176,9 @@ const FederationTable = ({
       width: mobile ? 60 : 180,
       renderCell: (params: { row: Coordinator }) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
-        const coordinatorRating = federation.ratings[coordinator.nostrHexPubkey];
+        const coordinatorRating = coordinator
+          ? federation.ratings[coordinator.nostrHexPubkey]
+          : undefined;
 
         if (!coordinatorRating) return <></>;
 
@@ -396,7 +398,8 @@ const FederationTable = ({
   const { columns, width } = filteredColumns();
 
   const onEnableChange = function (shortAlias: string): void {
-    if (federation.getCoordinator(shortAlias).enabled === true) {
+    if (!federation.getCoordinator(shortAlias)) return;
+    if (federation.getCoordinator(shortAlias)?.enabled === true) {
       federation.disableCoordinator(shortAlias);
     } else {
       federation.enableCoordinator(shortAlias);

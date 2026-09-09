@@ -215,7 +215,7 @@ const EncryptedChat: React.FC<Props> = ({
     const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
     const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
 
-    if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey) return;
+    if (!coordinator || !slot?.nostrSecKey || !peerPublicKey || !ownPublicKey) return;
 
     try {
       const messageEvent: EventTemplate = {
@@ -242,7 +242,8 @@ const EncryptedChat: React.FC<Props> = ({
   const sendToCoordinator = async (content: string): Promise<object | void> => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
-    const url = federation.getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '').url;
+    const url =
+      federation.getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '')?.url ?? '';
 
     const encryptedMessage = await encryptMessage(
       content,

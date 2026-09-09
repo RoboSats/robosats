@@ -139,6 +139,7 @@ class Robot {
     if (!federation) return null;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator) return {};
     const data = (await apiClient
       .post(
         coordinator.url,
@@ -160,6 +161,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator) return;
     await apiClient
       .post(coordinator.url, '/api/stealth/', { wantsStealth }, { tokenSHA256: this.tokenSHA256 })
       .catch((e) => {
@@ -180,6 +182,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator) return;
     await apiClient
       .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
       .then((raw) => {
@@ -204,6 +207,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator) return;
     const body = {
       pubkey: this.nostrPubKey,
     };

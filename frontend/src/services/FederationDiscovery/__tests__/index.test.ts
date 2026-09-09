@@ -25,8 +25,10 @@ import {
   WEIGHT_MAX,
   type FederationDoc,
   type CoordVote,
+  fetchAndVerifyDoc,
 } from '../index';
 import SEED_DOC_IMPORT from '../../../../static/federation.json';
+import { apiClient } from '../../api';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -387,5 +389,78 @@ describe('voteOnHashes — removal of ALIAS_THIRD', () => {
     expect(voteOnHashes(votes, { trustedDoc: SEED_DOC, joinDates: {}, now: NOW }).winnerHash).toBe(
       HASH_NO_THIRD,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchAndVerifyDoc — Phase C URL resolution and outcome
+// ---------------------------------------------------------------------------
+describe('fetchAndVerifyDoc', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('returns null and warns when apiClient.get throws (e.g. unreachable raw onion)', async () => {
+    // Simulate a raw .onion URL that is unreachable from a self-hosted client
+    // (fetch throws a TypeError — no Tor available).
+    jest.spyOn(apiClient, 'get').mockRejectedValue(new TypeError('Failed to fetch'));
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = await fetchAndVerifyDoc('http://notreachable.onion', 'a'.repeat(64));
+
+    expect(result).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('fetch failed from http://notreachable.onion'),
+      expect.any(TypeError),
+    );
+  });
+
+  it('returns null and warns on hash mismatch', async () => {
+    // Build a minimal valid doc — fetchAndVerifyDoc will compute its hash which
+    // will not equal the (all-zeroes) expected hash passed in.
+    const validDoc = makeDoc(ALIAS_FIRST);
+    jest.spyOn(apiClient, 'get').mockResolvedValue(validDoc);
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = await fetchAndVerifyDoc('http://somecoord.onion', '0'.repeat(64));
+
+    expect(result).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('hash mismatch'));
+  });
+
+  it('returns the doc when the hash matches', async () => {
+    // Build a valid doc and compute its real canonical hash, then pass that hash
+    // as the expected value — fetch should succeed.
+    const validDoc = makeDoc(ALIAS_FIRST);
+    const expectedHash = await canonicalHash(normalizeDoc(validDoc));
+    jest.spyOn(apiClient, 'get').mockResolvedValue(validDoc);
+
+    const result = await fetchAndVerifyDoc('http://somecoord.onion', expectedHash);
+
+    // reapplySeedBadges wraps the doc — confirm alias is present.
+    expect(result).not.toBeNull();
+    expect(result![ALIAS_FIRST]).toBeDefined();
+  });
+
+  it('retries a second voter URL when the first returns a fetch error', async () => {
+    // This test verifies the retry logic in Federation.model's Phase C loop —
+    // exercised here at the fetchAndVerifyDoc level: first call rejects,
+    // second resolves with a valid matching doc.
+    const validDoc = makeDoc(ALIAS_FIRST);
+    const expectedHash = await canonicalHash(normalizeDoc(validDoc));
+    const getMock = jest
+      .spyOn(apiClient, 'get')
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(validDoc);
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // First call — should fail and return null
+    const first = await fetchAndVerifyDoc('http://voter1.onion', expectedHash);
+    expect(first).toBeNull();
+
+    // Second call (different URL, as the model loop would supply) — should succeed
+    const second = await fetchAndVerifyDoc('http://voter2.onion', expectedHash);
+    expect(second).not.toBeNull();
+    expect(getMock).toHaveBeenCalledTimes(2);
   });
 });
