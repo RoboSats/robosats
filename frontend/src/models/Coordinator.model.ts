@@ -203,7 +203,10 @@ export class Coordinator {
       this.url = `${hostUrl}/${settings.network}/${this.shortAlias}`;
     } else {
       const network = settings.network ?? 'mainnet';
-      this.url = String(this[network]?.[origin]);
+      // An entry may not have an address for this network/origin (e.g. testnet.onion is
+      // null) — keep the url empty instead of materializing 'null'/'undefined' strings.
+      const address = this[network]?.[origin];
+      this.url = address ? String(address) : '';
     }
   };
 
@@ -347,6 +350,7 @@ export class Coordinator {
   };
 
   getRelayUrl = (): string => {
+    if (!this.url) return '';
     const protocol = this.url.includes('https') ? 'wss://' : 'ws://';
     return this.url.replace(/^https?:\/\//, protocol) + '/relay/';
   };

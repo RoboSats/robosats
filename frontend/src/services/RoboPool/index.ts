@@ -35,13 +35,14 @@ class RoboPool {
   updateRelays = (hostUrl: string, coordinators: Coordinator[]) => {
     this.close();
     this.relays = [];
-    const federationRelays = coordinators.map((coord) => coord.getRelayUrl());
+    // Coordinators without an address for the current network/origin produce an
+    // empty relay URL — they must never enter the pool.
+    const federationRelays = coordinators.map((coord) => coord.getRelayUrl()).filter(Boolean);
     const hostRelay = federationRelays.find((relay) => relay.includes(hostUrl));
     if (hostRelay) this.relays.push(hostRelay);
 
-    while (this.relays.length < 3) {
-      const randomRelay =
-        federationRelays[Math.floor(Math.random() * Object.keys(federationRelays).length)];
+    while (this.relays.length < Math.min(3, federationRelays.length)) {
+      const randomRelay = federationRelays[Math.floor(Math.random() * federationRelays.length)];
       if (!this.relays.includes(randomRelay)) {
         this.relays.push(randomRelay);
       }

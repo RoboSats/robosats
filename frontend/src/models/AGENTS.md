@@ -107,6 +107,7 @@ as `avg × 5` stars + `(count)`.
 - `Order.Status` has 19 values (0–18); `TAK(3)` is **never persisted** by the backend — it's a view-layer projection. See `api/AGENTS.md`.
 - `Coordinator` fields are populated asynchronously after startup — components must handle the partial state (e.g., `limits` may be undefined until the first fetch).
 - `Garage` persistence relies on `systemClient` which is platform-specific (`SystemAndroidClient` uses Android Keystore; `SystemWebClient` uses `localStorage`). Never assume a specific storage implementation.
+- **`updateUrl`/`getRelayUrl` must never materialize `'null'`** — federation entries may have a null address for the current network/origin (e.g. `testnet.onion` is null for bazaar/alice/freeport/ammanaya). `String(null)` produced the url `'null'` and the relative relay `'null/relay/'`, which `ReconnectingWebSocket` resolved against the current page (`ws://<host>/<page>/null/relay/` → connection refused) while everything else kept working. `updateUrl` now stores `''` when no address exists (which also activates the `url === ''` guards in `loadBook`/`loadInfo`/`loadLimits`) and `getRelayUrl` returns `''`; `RoboPool.updateRelays` filters empty relays and caps the pool at `Math.min(3, available)` (the old loop also hung forever when fewer than 3 unique relays existed).
 
 ## Constraints
 
