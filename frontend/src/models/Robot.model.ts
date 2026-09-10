@@ -89,13 +89,22 @@ class Robot {
     const authHeaders = this.getAuthHeaders();
     const coordinator = federation.getCoordinator(this.shortAlias);
 
-    if (!authHeaders || !coordinator || !this.hasEnoughEntropy) return null;
+    if (!coordinator) {
+      // Coordinator removed from the live federation — unreachable; resolve the
+      // loading state (it defaults to true and nothing else would reset it here).
+      this.loading = false;
+      return null;
+    }
+
+    if (!authHeaders || !this.hasEnoughEntropy) return null;
 
     // A coordinator without an address for the current network/origin cannot serve
     // this robot — any order ids it holds are stale (possibly fetched against the
-    // wrong host by a previous bug), so clear them.
+    // wrong host by a previous bug), so clear them and resolve the loading state
+    // (it defaults to true and nothing else would ever reset it here).
     if (!coordinator.url) {
       this.update({ activeOrderId: null, lastOrderId: null });
+      this.loading = false;
       return this;
     }
 

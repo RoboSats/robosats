@@ -67,4 +67,15 @@ describe('Coordinator.updateUrl / getRelayUrl', () => {
     expect(coordinator.url).toBe('http://host.example/mainnet/test');
     expect(coordinator.getRelayUrl()).toBe('ws://host.example/mainnet/test/relay/');
   });
+
+  it('loaders resolve their loading flags when the coordinator has no url', async () => {
+    const coordinator = makeCoordinator('onion', makeSettings({ network: 'testnet' }));
+    expect(coordinator.url).toBe('');
+    await coordinator.loadInfo();
+    await coordinator.loadLimits();
+    await coordinator.loadBook();
+    expect(coordinator.loadingInfo).toBe(false);
+    expect(coordinator.loadingLimits).toBe(false);
+    expect(coordinator.loadingBook).toBe(false);
+  });
 });

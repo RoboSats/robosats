@@ -36,13 +36,22 @@ describe('Robot.fetch — coordinator.url guard', () => {
     jest.clearAllMocks();
   });
 
-  it('clears stale order ids and skips the request when the coordinator has no url', async () => {
+  it('clears stale order ids, resolves loading and skips the request when the coordinator has no url', async () => {
     const spy = jest.spyOn(apiClient, 'get').mockResolvedValue(null);
     const robot = makeRobot();
     await robot.fetch(makeFederation(''));
     expect(spy).not.toHaveBeenCalled();
     expect(robot.lastOrderId).toBeNull();
     expect(robot.activeOrderId).toBeNull();
+    expect(robot.loading).toBe(false);
+  });
+
+  it('resolves loading for a coordinator missing from the federation', async () => {
+    const robot = makeRobot();
+    robot.shortAlias = 'ghost';
+    const result = await robot.fetch(makeFederation('http://testcoord.onion'));
+    expect(result).toBeNull();
+    expect(robot.loading).toBe(false);
   });
 
   it('requests the robot data from the coordinator url when available', async () => {

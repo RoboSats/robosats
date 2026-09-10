@@ -218,7 +218,12 @@ export class Coordinator {
 
   loadBook = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
-    if (this.url === '') return Promise.resolve();
+    if (this.url === '') {
+      // No address for this network/origin — resolve as unreachable, never keep
+      // the loading state pending (it defaults to true).
+      this.loadingBook = false;
+      return Promise.resolve();
+    }
 
     if (this._bookPromise) {
       return this._bookPromise.then(() => {
@@ -263,7 +268,10 @@ export class Coordinator {
 
   loadLimits = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
-    if (this.url === '') return Promise.resolve();
+    if (this.url === '') {
+      this.loadingLimits = false;
+      return Promise.resolve();
+    }
 
     if (this._limitsPromise) {
       return this._limitsPromise.then(() => {
@@ -303,7 +311,10 @@ export class Coordinator {
 
   loadInfo = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
-    if (this.url === '') return Promise.resolve();
+    if (this.url === '') {
+      this.loadingInfo = false;
+      return Promise.resolve();
+    }
 
     if (this._infoPromise) {
       return this._infoPromise.then(() => {
