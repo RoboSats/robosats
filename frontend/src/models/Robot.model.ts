@@ -91,6 +91,14 @@ class Robot {
 
     if (!authHeaders || !coordinator || !this.hasEnoughEntropy) return null;
 
+    // A coordinator without an address for the current network/origin cannot serve
+    // this robot — any order ids it holds are stale (possibly fetched against the
+    // wrong host by a previous bug), so clear them.
+    if (!coordinator.url) {
+      this.update({ activeOrderId: null, lastOrderId: null });
+      return this;
+    }
+
     this.loading = true;
 
     await apiClient
@@ -139,7 +147,7 @@ class Robot {
     if (!federation) return null;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
-    if (!coordinator) return {};
+    if (!coordinator || !coordinator.url) return {};
     const data = (await apiClient
       .post(
         coordinator.url,
@@ -161,7 +169,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
-    if (!coordinator) return;
+    if (!coordinator || !coordinator.url) return;
     await apiClient
       .post(coordinator.url, '/api/stealth/', { wantsStealth }, { tokenSHA256: this.tokenSHA256 })
       .catch((e) => {
@@ -182,7 +190,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
-    if (!coordinator) return;
+    if (!coordinator || !coordinator.url) return;
     await apiClient
       .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
       .then((raw) => {
@@ -207,7 +215,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
-    if (!coordinator) return;
+    if (!coordinator || !coordinator.url) return;
     const body = {
       pubkey: this.nostrPubKey,
     };
