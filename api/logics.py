@@ -323,6 +323,8 @@ class Logics:
 
             send_notification.delay(order_id=order.id, message="order_expired_untaken")
 
+            nostr_send_order_event.delay(order_id=order.id)
+
             order.log("Order expired while public or paused")
             order.log("Maker bond was <b>unlocked</b>")
 
@@ -1011,6 +1013,48 @@ class Logics:
         return False, None
 
     @classmethod
+    def close_public_order(
+        cls, order, actor="maker", notification_message="public_order_cancelled"
+    ):
+        """Closes a Public/Paused order: unlocks the maker bond, expires
+        every pending pretaker bond, notifies and republishes the Nostr
+        event. Shared by the maker's own cancel flow and the coordinator's
+        admin action."""
+
+        # Return the maker bond. If this fails, the order is left untouched.
+        if not cls.return_bond(order.maker_bond):
+            return False, None
+
+        # Atomically flip PUB/PAU -> UCA. If the status is no longer
+        # PUB/PAU (e.g. a taker locked the bond concurrently and the
+        # contract was formalized), do not clobber the live contract.
+        if not order.transition_status(
+            Order.Status.UCA,
+            from_statuses=[Order.Status.PUB, Order.Status.PAU],
+        ):
+            return False, None
+
+        order.log(f"Order cancelled by {actor} while public or paused")
+        order.log("Maker bond was <b>unlocked</b>")
+
+        take_orders_queryset = TakeOrder.objects.filter(order=order)
+        for idx, take_order in enumerate(take_orders_queryset):
+            order.log("Pretaker bond was <b>unlocked</b>")
+            try:
+                cls.take_order_expires(take_order)
+            except Exception as e:
+                order.log(
+                    f"Failed to expire TakeOrder({take_order.id}): {e}",
+                    level="ERROR",
+                )
+
+        send_notification.delay(order_id=order.id, message=notification_message)
+
+        nostr_send_order_event.delay(order_id=order.id)
+
+        return True, None
+
+    @classmethod
     def cancel_order(cls, order, user, cancel_status=None):
         # If cancel status is specified, do no cancel the order
         # if it is not the correct one.
@@ -1061,23 +1105,11 @@ class Logics:
                 # to prevent DDOS on the LN node and order book. If not strict, maker is returned
                 # the bond (more user friendly).
                 # Return the maker bond (Maker gets returned the bond for cancelling public order)
-                if cls.return_bond(order.maker_bond):
-                    order.update_status(Order.Status.UCA)
-
-                    order.log("Order cancelled by maker while public or paused")
-                    order.log("Maker bond was <b>unlocked</b>")
-
-                    take_orders_queryset = TakeOrder.objects.filter(order=order)
-                    for idx, take_order in enumerate(take_orders_queryset):
-                        order.log("Pretaker bond was <b>unlocked</b>")
-                        cls.take_order_expires(take_order)
-
-                    send_notification.delay(
-                        order_id=order.id, message="public_order_cancelled"
-                    )
-                    nostr_send_order_event.delay(order_id=order.id)
-
+                valid, _ = cls.close_public_order(order)
+                if valid:
                     return True, None
+                # Fall through to the generic error, as when the
+                # bond could not be unlocked before the refactor.
             else:
                 # 2.b) When pretaker cancels before bond
                 # LNPayment "take_order" is expired
