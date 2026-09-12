@@ -41,7 +41,7 @@ jobs:
 
       - name: 'Download Basic main.js Artifact'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@57aa996fc1713cc1579039614f4645a7f4841fd4  # v23
+        uses: dawidd6/action-download-artifact@d63b86af1b34672e53c440b1b83979861906bad7  # v24
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
@@ -158,7 +158,7 @@ jobs:
       - name: Create Windows ZIP file
         run: |
           cd desktopApp/release-builds
-          zip -r Robosats-win32-ia32.zip Robosats-win32-ia32
+          zip -r Robosats-win32-x64.zip Robosats-win32-x64
 
       - name: Create Linux ZIP file
         run: |
@@ -180,8 +180,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-win32-ia32.zip
-          name: robosats-desktop-${{ inputs.semver }}-win32-ia32.zip
+          path: desktopApp/release-builds/Robosats-win32-x64.zip
+          name: robosats-desktop-${{ inputs.semver }}-win32-x64.zip
 
       - name: Upload Linux Build Artifact
         if: inputs.semver != ''
@@ -209,8 +209,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: desktopApp/release-builds/Robosats-win32-ia32.zip
-          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-ia32.zip
+          path: desktopApp/release-builds/Robosats-win32-x64.zip
+          name: robosats-desktop-${{ steps.commit.outputs.short }}-win32-x64.zip
 
       - name: Upload Linux Build Artifact
         id: upload-release-linux-zip-asset
