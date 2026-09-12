@@ -82,7 +82,7 @@ cd desktopApp && npm run compile   # tsc → index.js + index.js.map; commit the
 **Package** (after bundle + compile):
 ```bash
 npm run package-linux  # → release-builds/Robosats-linux-x64/
-npm run package-win    # → release-builds/Robosats-win32-ia32/
+npm run package-win    # → release-builds/Robosats-win32-x64/
 npm run package-mac    # → release-builds/Robosats-darwin-x64/
 ```
 All use `npx @electron/packager . Robosats --overwrite --out=release-builds`.
@@ -95,7 +95,7 @@ All use `npx @electron/packager . Robosats --overwrite --out=release-builds`.
    `package-win`, `package-linux` (all three cross-compiled on Linux); **never runs
    `npm run compile`**; zips each `release-builds/` tree.
 3. `.github/workflows/release.yml` — `needs: [frontend-build, desktop-build]`; uploads
-   `robosats-desktop-{semver}-{mac-darwin-x64|linux-x64|win32-ia32}.{short_sha}.zip`.
+   `robosats-desktop-{semver}-{mac-darwin-x64|linux-x64|win32-x64}.{short_sha}.zip`.
 
 ## Product Intent
 - **Tor is mandatory and non-optional** — there is no clearnet mode, no system-Tor
