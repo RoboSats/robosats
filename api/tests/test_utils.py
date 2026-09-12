@@ -11,16 +11,19 @@ from django.test import TestCase
 from django.utils import timezone
 
 from api.models import Robot
+from api.mempool import _fetch_mempool_fees
 from api.utils import (
     base91_to_hex,
     bitcoind_rpc,
     get_cln_version,
     get_exchange_rates,
     get_lnd_version,
+    get_minning_fee,
     get_robosats_commit,
     get_session,
     hex_to_base91,
     is_valid_token,
+    mining_fee,
     objects_to_hyperlinks,
     robosats_commit_cache,
     validate_onchain_address,
@@ -150,6 +153,45 @@ class TestUtils(TestCase):
         # Assert that the json method of the response object was called
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
+
+    @patch("api.mempool.MEMPOOL_API_URL", "http://mempool.onion")
+    @patch("api.mempool.get_session")
+    def test_fetch_mempool_fees(self, mock_get_session):
+        mock_response = Mock()
+        mock_response.json.return_value = {"fastestFee": 55, "economyFee": 12}
+        mock_session = mock_get_session.return_value
+        mock_session.get.return_value = mock_response
+
+        data = _fetch_mempool_fees()
+
+        self.assertEqual(data, {"fastestFee": 55, "economyFee": 12})
+        mock_session.get.assert_called_once_with(
+            "http://mempool.onion/api/v1/fees/recommended",
+            timeout=(10.0, 10.0),
+        )
+        mock_response.raise_for_status.assert_called_once()
+
+    @patch("api.utils._mempool_fees_with_hard_timeout")
+    def test_get_minning_fee_success(self, mock_hard_timeout):
+        mining_fee.clear()
+        mock_hard_timeout.return_value = {"fastestFee": 55, "economyFee": 12}
+
+        self.assertEqual(get_minning_fee("suggested", 1000), 55)
+        self.assertEqual(get_minning_fee("minimum", 1000), 12)
+
+    @patch("api.lightning.node.LNNode.estimate_fee")
+    @patch("api.utils._mempool_fees_with_hard_timeout")
+    def test_get_minning_fee_falls_back_on_timeout(
+        self, mock_hard_timeout, mock_estimate_fee
+    ):
+        mining_fee.clear()
+        mock_hard_timeout.side_effect = TimeoutError("timed out")
+        mock_estimate_fee.return_value = {"mining_fee_rate": 7}
+
+        value = get_minning_fee("suggested", 1000)
+
+        self.assertEqual(value, 7)
+        mock_estimate_fee.assert_called_once()
 
     if config("LNVENDOR", cast=str) == "LND":
 
