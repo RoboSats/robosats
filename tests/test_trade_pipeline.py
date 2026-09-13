@@ -6,10 +6,12 @@ from decouple import config
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from api.models import Currency, Order
-from api.tasks import cache_market
+from api.models import Currency, LNPayment, Order, TakeOrder
+from api.tasks import cache_market, send_notification
 from django.utils import timezone
 from django.contrib.admin.sites import AdminSite
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.test import RequestFactory
 from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
@@ -1389,6 +1391,100 @@ class TradeTest(BaseAPITestCase):
         data = trade.response.json()
         self.assertEqual(data["error_code"], 1043)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
+
+    @patch("api.logics.nostr_send_order_event")
+    @patch("api.tasks.send_notification.delay", send_notification)
+    def test_admin_cancel_public_order(self, nostr_mock):
+        """
+        Tests the coordinator's admin action that closes a public order
+        with a pending pretaker. The pretaker bond must be unlocked, the
+        maker bond returned, the maker notified and the Nostr event
+        republished.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        # Pretaker fetches the order: generates the taker bond hold invoice
+        trade.get_order(trade.taker_index)
+
+        order = Order.objects.get(id=trade.order_id)
+        take_order = TakeOrder.objects.get(order=order)
+        self.assertIsNotNone(take_order.taker_bond)
+        self.assertEqual(take_order.taker_bond.status, LNPayment.Status.INVGEN)
+
+        nostr_mock.reset_mock()
+
+        # Coordinator closes the public order from the admin
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.cancel_public_order(
+            request, Order.objects.filter(id=trade.order_id)
+        )
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.UCA)
+        self.assertEqual(order.maker_bond.status, LNPayment.Status.RETNED)
+
+        take_order.refresh_from_db()
+        self.assertEqual(take_order.taker_bond.status, LNPayment.Status.CANCEL)
+
+        nostr_mock.delay.assert_called_once_with(order_id=trade.order_id)
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertTrue(
+            any(
+                notification["order_id"] == trade.order_id
+                and "has been cancelled by the coordinator" in notification["title"]
+                for notification in notifications_data
+            ),
+            "Maker was not notified about the coordinator cancellation",
+        )
+
+    def test_admin_cancel_non_public_order(self):
+        """
+        The admin action must not touch orders that are not Public/Paused.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()  # Order is now WF2
+
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.cancel_public_order(
+            request, Order.objects.filter(id=trade.order_id)
+        )
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.WF2)
+        self.assertEqual(order.maker_bond.status, LNPayment.Status.LOCKED)
+
+    @patch("api.logics.nostr_send_order_event")
+    def test_expired_public_order_nostr_event(self, nostr_mock):
+        """
+        An untaken public order that expires must republish its Nostr
+        event so that federation clients drop it from the live order book.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        nostr_mock.reset_mock()
+
+        trade.expire_order()
+        trade.clean_orders()
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.EXP)
+        self.assertEqual(order.expiry_reason, Order.ExpiryReasons.NTAKEN)
+
+        nostr_mock.delay.assert_called_once_with(order_id=trade.order_id)
 
     def test_cancel_order_cancel_status(self):
         """
