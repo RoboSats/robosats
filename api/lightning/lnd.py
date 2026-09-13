@@ -199,7 +199,7 @@ class LNDNode:
                 onchainpayment.broadcasted = True
             onchainpayment.save(update_fields=["txid", "broadcasted"])
             onchainpayment.order_paid_TX.log(
-                f"TX OnchainPayment({onchainpayment.id},{response.txid}) in <b>mempool</b>"
+                f"TX OnchainPayment({onchainpayment.id},{response.txid}) in **mempool**"
             )
             return True
 
@@ -618,7 +618,7 @@ class LNDNode:
                     f"Order: {order.id} FAILED. Hash: {hash} Reason: {str_failure_reason}"
                 )
                 order.log(
-                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>failed</b>. Failure reason: {str_failure_reason})"
+                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) **failed**. Failure reason: {str_failure_reason})"
                 )
 
                 return {
@@ -642,7 +642,7 @@ class LNDNode:
                 order.save(update_fields=["expires_at"])
 
                 order.log(
-                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>succeeded</b>"
+                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) **succeeded**"
                 )
 
                 results = {"succeded": True}
@@ -688,7 +688,7 @@ class LNDNode:
                         order.save(update_fields=["expires_at"])
 
                         order.log(
-                            f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>had expired</b>"
+                            f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) **had expired**"
                         )
 
                         results = {

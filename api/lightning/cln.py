@@ -705,7 +705,7 @@ class CLNNode:
                     order.save(update_fields=["expires_at"])
 
                     order.log(
-                        f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>succeeded</b>"
+                        f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) **succeeded**"
                     )
 
                     results = {"succeded": True}
@@ -759,7 +759,7 @@ class CLNNode:
                             f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[status_code]}"
                         )
                         order.log(
-                            f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>failed</b>. Failure reason: {cls.payment_failure_context[status_code]}"
+                            f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) **failed**. Failure reason: {cls.payment_failure_context[status_code]}"
                         )
 
                         return {
@@ -796,7 +796,7 @@ class CLNNode:
                             order.save(update_fields=["expires_at"])
 
                             order.log(
-                                f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>had expired</b>"
+                                f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) **had expired**"
                             )
 
                             results = {
