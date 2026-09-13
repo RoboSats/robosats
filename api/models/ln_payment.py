@@ -30,6 +30,7 @@ class LNPayment(models.Model):
         FLIGHT = 7, "In flight"
         SUCCED = 8, "Succeeded"
         FAILRO = 9, "Routing failed"
+        QUEUED = 10, "Queued"
 
     class FailureReason(models.IntegerChoices):
         NOTYETF = 0, "Payment isn't failed (yet)"
