@@ -241,7 +241,7 @@ def get_exchange_rates(currencies):
                     if currency in criptoya_supported_currencies:
                         criptoya_exchanges = session.get(f"{api_url}/{currency}").json()
                         exchange_medians = [
-                            np.median([exchange["ask"], exchange["ask"]])
+                            np.median([exchange["ask"], exchange["bid"]])
                             for exchange in criptoya_exchanges.values()
                             if exchange["ask"] > 0 and exchange["bid"] > 0
                         ]
