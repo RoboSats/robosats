@@ -688,13 +688,13 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         if ((status === 17 && isMaker) || (status === 18 && !isMaker)) {
           baseContract.title = 'You have lost the dispute';
           baseContract.prompt = function () {
-            return <DisputeLoserPrompt />;
+            return <DisputeLoserPrompt order={order} />;
           };
           baseContract.bondStatus = 'settled';
         } else if ((status === 17 && !isMaker) || (status === 18 && isMaker)) {
           baseContract.title = 'You have won the dispute';
           baseContract.prompt = function () {
-            return <DisputeWinnerPrompt />;
+            return <DisputeWinnerPrompt order={order} />;
           };
         }
         break;
