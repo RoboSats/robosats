@@ -1,3 +1,5 @@
+import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -16,6 +18,7 @@ from api.utils import (
     bitcoind_rpc,
     get_cln_version,
     get_exchange_rates,
+    get_federation_short_alias,
     get_lnd_version,
     get_robosats_commit,
     get_session,
@@ -265,9 +268,12 @@ class TestUtils(TestCase):
 
         for key in malformed_keys:
             with self.subTest(key=key):
-                is_valid, error, returned_pub_key, returned_enc_priv_key = (
-                    validate_pgp_keys(key, enc_priv_key)
-                )
+                (
+                    is_valid,
+                    error,
+                    returned_pub_key,
+                    returned_enc_priv_key,
+                ) = validate_pgp_keys(key, enc_priv_key)
                 self.assertFalse(is_valid)
                 self.assertEqual(error["error_code"], 1034)
                 self.assertIsNone(returned_pub_key)
@@ -423,3 +429,119 @@ class TestUtils(TestCase):
         self.assertEqual(
             linked_logs, '<b><a href="/coordinator/api/robot/1">robot_name</a></b>'
         )
+
+
+class TestGetFederationShortAlias(TestCase):
+    """Unit-test the COORDINATOR_ALIAS → federation shortAlias resolver."""
+
+    def setUp(self):
+        get_federation_short_alias.cache_clear()
+        self._tmp_paths = []
+
+    def tearDown(self):
+        get_federation_short_alias.cache_clear()
+        for path in self._tmp_paths:
+            os.unlink(path)
+
+    def _write_doc(self, doc):
+        tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        json.dump(doc, tmp)
+        tmp.close()
+        self._tmp_paths.append(tmp.name)
+        return tmp.name
+
+    def _patch_config(self, mock_config, coordinator_alias, federation_path):
+        mock_config.side_effect = lambda key, **kw: {
+            "COORDINATOR_ALIAS": coordinator_alias,
+            "FEDERATION_JSON_PATH": federation_path,
+        }.get(key, kw.get("default", ""))
+
+    @patch("api.utils.config")
+    def test_key_match_returns_key(self, mock_config):
+        path = self._write_doc(
+            {"temple": {"shortAlias": "temple", "identifier": "templeofsats"}}
+        )
+        self._patch_config(mock_config, "temple", path)
+        self.assertEqual(get_federation_short_alias(), "temple")
+
+    @patch("api.utils.config")
+    def test_identifier_match_returns_short_alias(self, mock_config):
+        path = self._write_doc(
+            {"lake": {"shortAlias": "lake", "identifier": "thebiglake"}}
+        )
+        self._patch_config(mock_config, "TheBigLake", path)
+        self.assertEqual(get_federation_short_alias(), "lake")
+
+    @patch("api.utils.config")
+    def test_identifier_match_is_case_insensitive(self, mock_config):
+        path = self._write_doc(
+            {"temple": {"shortAlias": "temple", "identifier": "templeofsats"}}
+        )
+        self._patch_config(mock_config, "TempleOfSats", path)
+        self.assertEqual(get_federation_short_alias(), "temple")
+
+    @patch("api.utils.config")
+    def test_long_alias_match_ignores_spaces_and_case(self, mock_config):
+        path = self._write_doc(
+            {
+                "temple": {
+                    "shortAlias": "temple",
+                    "longAlias": "Temple of Sats",
+                    "identifier": "templeofsats",
+                }
+            }
+        )
+        self._patch_config(mock_config, "Temple Of Sats", path)
+        self.assertEqual(get_federation_short_alias(), "temple")
+
+    @patch("api.utils.config")
+    def test_long_alias_match_when_identifier_diverges(self, mock_config):
+        path = self._write_doc(
+            {
+                "bazaar": {
+                    "shortAlias": "bazaar",
+                    "longAlias": "LibreBazaar",
+                    "identifier": "bazaar",
+                }
+            }
+        )
+        self._patch_config(mock_config, "LibreBazaar", path)
+        self.assertEqual(get_federation_short_alias(), "bazaar")
+
+    @patch("api.utils._FEDERATION_BUNDLED_PATH", "/nonexistent/bundled.json")
+    @patch("api.utils.config")
+    def test_no_match_falls_back_to_raw_alias(self, mock_config):
+        path = self._write_doc(
+            {"bazaar": {"shortAlias": "bazaar", "identifier": "bazaar"}}
+        )
+        self._patch_config(mock_config, "unknowncoord", path)
+        self.assertEqual(get_federation_short_alias(), "unknowncoord")
+
+    @patch("api.utils.config")
+    def test_unset_federation_path_uses_bundled(self, mock_config):
+        bundled = self._write_doc(
+            {"lake": {"shortAlias": "lake", "identifier": "thebiglake"}}
+        )
+        self._patch_config(mock_config, "TheBigLake", "")
+        with patch("api.utils._FEDERATION_BUNDLED_PATH", bundled):
+            self.assertEqual(get_federation_short_alias(), "lake")
+
+    @patch("api.utils.config")
+    def test_invalid_custom_path_falls_back_to_bundled(self, mock_config):
+        bundled = self._write_doc(
+            {"lake": {"shortAlias": "lake", "identifier": "thebiglake"}}
+        )
+        self._patch_config(mock_config, "TheBigLake", "/nonexistent/custom.json")
+        with patch("api.utils._FEDERATION_BUNDLED_PATH", bundled):
+            self.assertEqual(get_federation_short_alias(), "lake")
+
+    @patch("api.utils._FEDERATION_BUNDLED_PATH", "/nonexistent/bundled.json")
+    @patch("api.utils.config")
+    def test_both_paths_invalid_falls_back_to_raw_alias(self, mock_config):
+        self._patch_config(mock_config, "somecoord", "/nonexistent/custom.json")
+        self.assertEqual(get_federation_short_alias(), "somecoord")
+
+    @patch("api.utils.config")
+    def test_empty_alias_returns_empty(self, mock_config):
+        self._patch_config(mock_config, "", "")
+        self.assertEqual(get_federation_short_alias(), "")

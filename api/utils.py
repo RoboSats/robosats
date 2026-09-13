@@ -1,5 +1,7 @@
+import functools
 import json
 import logging
+import os
 import re
 from datetime import datetime, timedelta
 from datetime import timezone as datetime_timezone
@@ -31,6 +33,49 @@ def get_session():
             "https": "socks5h://" + TOR_PROXY,
         }
     return session
+
+
+_FEDERATION_BUNDLED_PATH = os.path.join(os.path.dirname(__file__), "federation.json")
+
+
+def _federation_doc_paths() -> list[str]:
+    """Custom FEDERATION_JSON_PATH first, bundled copy as fallback — mirrors _load_federation_doc."""
+    paths = [config("FEDERATION_JSON_PATH", default="", cast=str).strip()]
+    paths.append(_FEDERATION_BUNDLED_PATH)
+    return [p for p in paths if p]
+
+
+@functools.lru_cache(maxsize=1)
+def get_federation_short_alias() -> str:
+    """
+    Resolves this coordinator's federation routing `shortAlias` from its
+    COORDINATOR_ALIAS env identity, which may differ from the `shortAlias`
+    used in /order/<shortAlias>/<orderId>/ URLs (e.g. 'LibreBazaar' → 'bazaar').
+    Matches (lowercased, space-stripped) against each entry's key,
+    `identifier` and `longAlias` in the federation document.
+    """
+    alias = config("COORDINATOR_ALIAS", cast=str, default="").lower().replace(" ", "")
+    if not alias:
+        return alias
+
+    for path in _federation_doc_paths():
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                doc = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            logger.warning(f"Could not load federation document '{path}': {e}")
+            continue
+
+        for key, entry in doc.items():
+            candidates = (
+                key,
+                str(entry.get("identifier", "")),
+                str(entry.get("longAlias", "")),
+            )
+            if alias in (c.lower().replace(" ", "") for c in candidates):
+                return key
+
+    return alias
 
 
 def bitcoind_rpc(method, params=None):

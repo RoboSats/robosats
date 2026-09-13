@@ -130,12 +130,23 @@ Traps for a dispatch bug). Message types: `welcome`, `order_published`,
 throttles on `CHAT_NOTIFICATION_TIMEGAP` min (env, default 5) since the prior chatroom
 message — except the first message, which always notifies. Webhooks restricted to
 `.onion` via `Robot.is_valid_onion_url` (`@staticmethod`, not a model constraint).
+Telegram descriptions embed `Notifications.order_url(order)` —
+`http://{HOST_NAME}/order/{shortAlias}/{order.id}` where `shortAlias` comes from
+`get_federation_short_alias()` (`api/utils.py`): `COORDINATOR_ALIAS` (normalized:
+lowercased, spaces stripped) matched against each federation entry's key, `identifier`
+and `longAlias` → entry `shortAlias`. Document loading mirrors `_load_federation_doc`
+(`views.py`): `FEDERATION_JSON_PATH` if set, bundled `api/federation.json` as fallback,
+raw-alias fallback if nothing resolves.
+Never emit `COORDINATOR_ALIAS` raw in order URLs/tags — it can diverge from the
+federation `shortAlias` (e.g. `templeofsats` vs `temple`) and the frontend cannot route it.
 
 ## Nostr (`nostr.py`)
 Order events (kind 38383), NIP-69 tags: `d, name, k, f, s, amt, fa, pm, premium, source,
 expiration, y, network, layer, bond, z` (+`g` only if lat/long set). `get_status_tag` is
 binary: `"pending"` only if `status==PUB`, else `"success"`. No order-id tag on the order
 event — `d` is `md5(COORDINATOR_ALIAS+order.id)` as UUID (DM event does carry `order_id`).
+The DM `order_id` tag and the `source` tag use `get_federation_short_alias()` (see
+Notifications above); `d` and `y` keep raw `COORDINATOR_ALIAS`.
 Password orders (`order.password is not None`) skipped before construction (see Product
 intent). DMs via `send_private_msg`; signs with `NOSTR_NSEC`; publishes to one self-hosted
 strfry relay (`STRFRY_HOST`/`STRFRY_PORT`) over plain `ws://`.
