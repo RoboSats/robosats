@@ -67,7 +67,7 @@ const OrderDetails = ({
   const theme = useTheme();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [coordinator, setCoordinator] = useState<Coordinator | null>(
-    federation.getCoordinator(shortAlias),
+    federation.getCoordinator(shortAlias) ?? null,
   );
   const [currencyCode, setCurrencyCode] = useState<string | null>();
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
@@ -76,7 +76,7 @@ const OrderDetails = ({
   const [openDescription, setOpenDescription] = useState<boolean>(false);
 
   useEffect(() => {
-    setCoordinator(federation.getCoordinator(shortAlias));
+    setCoordinator(federation.getCoordinator(shortAlias) ?? null);
     setCurrencyCode(currencies[(currentOrder?.currency ?? 1).toString()]);
   }, [currentOrder]);
 

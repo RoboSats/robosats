@@ -149,8 +149,8 @@ const FederationTable = ({
           >
             <Grid>
               <RobotAvatar
-                shortAlias={coordinator.federated ? params.row.shortAlias : undefined}
-                hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
+                shortAlias={coordinator?.federated ? params.row.shortAlias : undefined}
+                hashId={coordinator?.federated ? undefined : coordinator?.mainnet.onion}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 small={true}
@@ -176,7 +176,9 @@ const FederationTable = ({
       width: mobile ? 60 : 180,
       renderCell: (params: { row: Coordinator }) => {
         const coordinator = federation.getCoordinator(params.row.shortAlias);
-        const coordinatorRating = federation.ratings[coordinator.nostrHexPubkey];
+        const coordinatorRating = coordinator
+          ? federation.ratings[coordinator.nostrHexPubkey]
+          : undefined;
 
         if (!coordinatorRating) return <></>;
 
@@ -256,7 +258,10 @@ const FederationTable = ({
                 onClickCoordinator(params.row.shortAlias);
               }}
             >
-              {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
+              {!params.row.url ? (
+                // No address for the current network/origin — unreachable, not loading.
+                <LinkOff color='error' />
+              ) : Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
                 <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
               ) : params.row.limits !== undefined ? (
                 <Link color='success' />
@@ -396,7 +401,8 @@ const FederationTable = ({
   const { columns, width } = filteredColumns();
 
   const onEnableChange = function (shortAlias: string): void {
-    if (federation.getCoordinator(shortAlias).enabled === true) {
+    if (!federation.getCoordinator(shortAlias)) return;
+    if (federation.getCoordinator(shortAlias)?.enabled === true) {
       federation.disableCoordinator(shortAlias);
     } else {
       federation.enableCoordinator(shortAlias);

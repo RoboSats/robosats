@@ -24,14 +24,14 @@ Single-page application serving web, desktop, Android, and self-hosted clients. 
 
 ```
 webpack.config.ts (config array [configNode, configAndroid])
-  configNode  → static/frontend/main.v{ver}.[contenthash].js  (prod)
+  configNode  → static/frontend/main.v{ver}.[contenthash].js  (dev + prod)
                 HtmlWebpackPlugin (7 outputs from templates/frontend/index.ejs)
                   templates/frontend/basic.html + pro.html
                   ../nodeapp/basic.html + pro.html
                   ../desktopApp/index.html   (publicPath: ./static/frontend/, basePath: /)
                   ../web/basic.html + pro.html
   configAndroid → ../android/app/src/main/assets/index.html
-                  static/frontend/main.v{ver}.[contenthash].js (prod)
+                  static/frontend/main.v{ver}.[contenthash].js (dev + prod)
                   publicPath: ./static/frontend/
                   basePath: file:///android_asset/
   afterEmit CopyFilesPlugin: frontend/static → {nodeapp,desktopApp,web}/static
