@@ -1038,11 +1038,11 @@ class Logics:
             return False, None
 
         order.log(f"Order cancelled by {actor} while public or paused")
-        order.log("Maker bond was <b>unlocked</b>")
+        order.log("Maker bond was **unlocked**")
 
         take_orders_queryset = TakeOrder.objects.filter(order=order)
         for idx, take_order in enumerate(take_orders_queryset):
-            order.log("Pretaker bond was <b>unlocked</b>")
+            order.log("Pretaker bond was **unlocked**")
             try:
                 cls.take_order_expires(take_order)
             except Exception as e:
