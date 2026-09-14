@@ -1,5 +1,7 @@
+import functools
 import json
 import logging
+import os
 import re
 from datetime import datetime, timedelta
 from datetime import timezone as datetime_timezone
@@ -13,6 +15,7 @@ from decouple import config
 from django.utils import timezone
 
 from api.errors import new_error
+from api.mempool import _mempool_fees_with_hard_timeout
 from api.models import Robot
 
 logger = logging.getLogger("api.utils")
@@ -31,6 +34,49 @@ def get_session():
             "https": "socks5h://" + TOR_PROXY,
         }
     return session
+
+
+_FEDERATION_BUNDLED_PATH = os.path.join(os.path.dirname(__file__), "federation.json")
+
+
+def _federation_doc_paths() -> list[str]:
+    """Custom FEDERATION_JSON_PATH first, bundled copy as fallback — mirrors _load_federation_doc."""
+    paths = [config("FEDERATION_JSON_PATH", default="", cast=str).strip()]
+    paths.append(_FEDERATION_BUNDLED_PATH)
+    return [p for p in paths if p]
+
+
+@functools.lru_cache(maxsize=1)
+def get_federation_short_alias() -> str:
+    """
+    Resolves this coordinator's federation routing `shortAlias` from its
+    COORDINATOR_ALIAS env identity, which may differ from the `shortAlias`
+    used in /order/<shortAlias>/<orderId>/ URLs (e.g. 'LibreBazaar' → 'bazaar').
+    Matches (lowercased, space-stripped) against each entry's key,
+    `identifier` and `longAlias` in the federation document.
+    """
+    alias = config("COORDINATOR_ALIAS", cast=str, default="").lower().replace(" ", "")
+    if not alias:
+        return alias
+
+    for path in _federation_doc_paths():
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                doc = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            logger.warning(f"Could not load federation document '{path}': {e}")
+            continue
+
+        for key, entry in doc.items():
+            candidates = (
+                key,
+                str(entry.get("identifier", "")),
+                str(entry.get("longAlias", "")),
+            )
+            if alias in (c.lower().replace(" ", "") for c in candidates):
+                return key
+
+    return alias
 
 
 def bitcoind_rpc(method, params=None):
@@ -97,14 +143,8 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
 
     from api.lightning.node import LNNode
 
-    session = get_session()
-    mempool_url = "https://mempool.space"
-    api_path = "/api/v1/fees/recommended"
-
     try:
-        response = session.get(mempool_url + api_path)
-        response.raise_for_status()  # Raises stored HTTPError, if one occurred
-        data = response.json()
+        data = _mempool_fees_with_hard_timeout()
 
         if priority == "suggested":
             value = data.get("fastestFee")
@@ -118,7 +158,10 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
             )
 
     except Exception as e:
-        print(e)
+        logger.warning(
+            "Falling back to LN fee estimator after mempool fetch failed (%s)",
+            type(e).__name__,
+        )
         # Fetch mining fee from LND/CLN instance
         if priority == "suggested":
             target_conf = config("SUGGESTED_TARGET_CONF", cast=int, default=2)
