@@ -189,19 +189,24 @@ export class Coordinator {
 
   // These properties are fetched from coordinator API
   public book: Record<string, PublicOrder> = {};
-  public loadingBook: boolean = false;
+  public loadingBook: boolean = true;
   public info?: Info | undefined = undefined;
-  public loadingInfo: boolean = false;
+  public loadingInfo: boolean = true;
   private _infoPromise?: Promise<void> | undefined;
+  private _limitsPromise?: Promise<void> | undefined;
+  private _bookPromise?: Promise<void> | undefined;
   public limits: LimitList = {};
-  public loadingLimits: boolean = false;
+  public loadingLimits: boolean = true;
 
   updateUrl = (origin: Origin, settings: Settings, hostUrl: string): void => {
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = `${hostUrl}/${settings.network}/${this.shortAlias}`;
     } else {
       const network = settings.network ?? 'mainnet';
-      this.url = String(this[network]?.[origin]);
+      // An entry may not have an address for this network/origin (e.g. testnet.onion is
+      // null) — keep the url empty instead of materializing 'null'/'undefined' strings.
+      const address = this[network]?.[origin];
+      this.url = address ? String(address) : '';
     }
   };
 
@@ -211,69 +216,105 @@ export class Coordinator {
     }
   };
 
-  loadBook = (onDataLoad: () => void = () => {}): void => {
-    if (!this.enabled) return;
-    if (this.url === '') return;
-    if (this.loadingBook) return;
+  loadBook = (onDataLoad: () => void = () => {}): Promise<void> => {
+    if (!this.enabled) return Promise.resolve();
+    if (this.url === '') {
+      // No address for this network/origin — resolve as unreachable, never keep
+      // the loading state pending (it defaults to true).
+      this.loadingBook = false;
+      return Promise.resolve();
+    }
+
+    if (this._bookPromise) {
+      return this._bookPromise.then(() => {
+        onDataLoad();
+      });
+    }
 
     this.loadingBook = true;
     this.book = {};
 
-    apiClient
-      .get(this.url, `/api/book/`, undefined, true)
-      .then((raw) => {
-        const data = raw as (PublicOrder[] & { not_found?: boolean }) | null;
-        if (data != null && !data.not_found) {
-          this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>((book, order) => {
-            order.coordinatorShortAlias = this.shortAlias;
-            return { ...book, [`${this.shortAlias}${order.id}`]: order };
-          }, {});
-          void this.generateAllMakerAvatars();
-          onDataLoad();
-        } else {
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingBook = false;
-      });
+    this._bookPromise = new Promise<void>((resolve) => {
+      apiClient
+        .get(this.url, `/api/book/`, undefined, true)
+        .then((raw) => {
+          const data = raw as (PublicOrder[] & { not_found?: boolean }) | null;
+          if (data != null && !data.not_found) {
+            this.book = (data as PublicOrder[]).reduce<Record<string, PublicOrder>>(
+              (book, order) => {
+                order.coordinatorShortAlias = this.shortAlias;
+                return { ...book, [`${this.shortAlias}${order.id}`]: order };
+              },
+              {},
+            );
+            void this.generateAllMakerAvatars();
+            onDataLoad();
+          } else {
+            onDataLoad();
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          this.loadingBook = false;
+          this._bookPromise = undefined;
+          resolve();
+        });
+    });
+
+    return this._bookPromise;
   };
 
-  loadLimits = (onDataLoad: () => void = () => {}): void => {
-    if (!this.enabled) return;
-    if (this.url === '') return;
-    if (this.loadingLimits) return;
+  loadLimits = (onDataLoad: () => void = () => {}): Promise<void> => {
+    if (!this.enabled) return Promise.resolve();
+    if (this.url === '') {
+      this.loadingLimits = false;
+      return Promise.resolve();
+    }
+
+    if (this._limitsPromise) {
+      return this._limitsPromise.then(() => {
+        if (Object.keys(this.limits).length > 0) onDataLoad();
+      });
+    }
 
     this.loadingLimits = true;
 
-    apiClient
-      .get(this.url, `/api/limits/`, undefined, true)
-      .then((data) => {
-        if (data !== null) {
-          const newLimits = data as LimitList;
+    this._limitsPromise = new Promise<void>((resolve) => {
+      apiClient
+        .get(this.url, `/api/limits/`, undefined, true)
+        .then((data) => {
+          if (data !== null) {
+            const newLimits = data as LimitList;
 
-          for (const currency in this.limits) {
-            newLimits[currency] = compareUpdateLimit(this.limits[currency], newLimits[currency]);
+            for (const currency in this.limits) {
+              newLimits[currency] = compareUpdateLimit(this.limits[currency], newLimits[currency]);
+            }
+
+            this.limits = newLimits;
+            onDataLoad();
           }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          this.loadingLimits = false;
+          this._limitsPromise = undefined;
+          resolve();
+        });
+    });
 
-          this.limits = newLimits;
-          onDataLoad();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
-        this.loadingLimits = false;
-      });
+    return this._limitsPromise;
   };
 
   loadInfo = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
-    if (this.url === '') return Promise.resolve();
+    if (this.url === '') {
+      this.loadingInfo = false;
+      return Promise.resolve();
+    }
 
     if (this._infoPromise) {
       return this._infoPromise.then(() => {
@@ -320,6 +361,7 @@ export class Coordinator {
   };
 
   getRelayUrl = (): string => {
+    if (!this.url) return '';
     const protocol = this.url.includes('https') ? 'wss://' : 'ws://';
     return this.url.replace(/^https?:\/\//, protocol) + '/relay/';
   };

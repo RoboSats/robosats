@@ -148,7 +148,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
     fun openWS(uuid: String, path: String) {
         // Validate UUID
         if (!isValidUuid(uuid)) {
-            Log.e(TAG, "Invalid UUID for getTorStatus: $uuid")
+            Log.e(TAG, "Invalid UUID for openWS: $uuid")
             return
         }
         if (!isValidUrl(path)) {
@@ -160,9 +160,14 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         try {
             Log.d(TAG, "WebSocket opening: $path")
             // Create OkHttpClient
+            // readTimeout must be 0 (disabled) for long-lived WebSocket connections;
+            // a non-zero value causes OkHttp to kill the socket after the timeout
+            // fires during a quiet period.  A ping interval keeps the connection alive
+            // through NAT/firewall idle timeouts instead.
             var builder = Builder()
-                .connectTimeout(60, TimeUnit.SECONDS) // Set connection timeout
-                .readTimeout(120, TimeUnit.SECONDS) // Set read timeout
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(0, TimeUnit.SECONDS)
+                .pingInterval(30, TimeUnit.SECONDS)
 
             if (context.useProxy) {
                 builder = builder.proxy(getTorKmpObject().proxy)
@@ -172,7 +177,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
             // Create a request for the WebSocket connection
             val request: Request = RequestBuilder()
-                .url(path) // Replace with your WebSocket URL
+                .url(path)
                 .build()
 
 
@@ -180,14 +185,13 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             val listener: WebSocketListener = object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     Log.d(TAG, "WebSocket opened: " + response.message)
-                    resolvePromise(uuid, "true")
                     synchronized(webSockets) {
                         webSockets.put(
                             path,
                             webSocket
                         ) // Store the WebSocket instance with its URL
-                        resolvePromise(uuid, path)
                     }
+                    resolvePromise(uuid, path)
                 }
 
                 override fun onMessage(webSocket: WebSocket, text: String) {
@@ -599,13 +603,25 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
      * (which would enable SSRF against local services on the device or local network).
      * All coordinator traffic is routed through the Tor SOCKS proxy, so .onion hosts
      * with http/https are legitimate.
+     *
+     * NOTE: java.net.URL has no protocol handler for ws/wss and throws
+     * MalformedURLException for those schemes.  We normalise ws→http and wss→https
+     * solely for the purpose of parsing host/port; the original scheme is checked
+     * against the allowlist first so the SSRF protections remain intact.
      */
     private fun isValidUrl(rawUrl: String?): Boolean {
         if (rawUrl.isNullOrBlank()) return false
         return try {
-            val url = URL(rawUrl.trim())
-            val scheme = url.protocol.lowercase()
+            val trimmed = rawUrl.trim()
+            val scheme = trimmed.substringBefore("://").lowercase()
             if (scheme !in setOf("http", "https", "ws", "wss")) return false
+            // Normalise ws→http / wss→https so java.net.URL can parse the host/port.
+            val normalized = when (scheme) {
+                "ws"  -> "http://" + trimmed.removePrefix("ws://")
+                "wss" -> "https://" + trimmed.removePrefix("wss://")
+                else  -> trimmed
+            }
+            val url = URL(normalized)
             val host = url.host.lowercase()
             // Block loopback and link-local addresses to prevent SSRF
             if (host == "localhost") return false

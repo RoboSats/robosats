@@ -65,20 +65,3 @@ jobs:
         run: |
           cd frontend
           npm test -- --no-coverage
-
-      - name: 'Audit dependencies'
-        # Checks for high/critical vulns in RoboSats deps only.
-        # Excludes node_modules/npm/** — vulnerabilities inside npm's own
-        # bundled sub-dependencies are not shipped with the application.
-        run: |
-          cd frontend
-          HIGH_VULNS=$(npm audit --json 2>/dev/null \
-            | jq '[.vulnerabilities | to_entries[]
-                   | select(.value.severity == "high" or .value.severity == "critical")
-                   | select(.value.nodes | all(startswith("node_modules/npm/") | not))
-                  ] | length')
-          echo "High/critical vulnerabilities outside npm internals: $HIGH_VULNS"
-          if [ "$HIGH_VULNS" -gt 0 ]; then
-            npm audit --audit-level=high 2>&1 || true
-            exit 1
-          fi

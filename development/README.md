@@ -21,7 +21,7 @@ For the runtime federation discovery mechanism (how coordinators join/leave with
 
 You can run the whole stack for local development following the [instructions](/development/setup.md)
 
-Officially mantained docker orchestration for coordinators can be found in the repo [robosats-deploy](https://github.com/RoboSats/robosats-deploy)
+Officially maintained docker orchestration for coordinators can be found in the repo [robosats-deploy](https://github.com/RoboSats/robosats-deploy)
 
 ## Release
 
