@@ -37,6 +37,7 @@ const CancelButton = ({
 
   const copyOrderUrl = () => {
     const coordinator = federation.getCoordinator(order?.shortAlias ?? '');
+    if (!coordinator) return;
     const orderOriginUrl = `${coordinator.url}/order/${coordinator.shortAlias}/${order?.id}`;
     systemClient.copyToClipboard(orderOriginUrl);
   };
