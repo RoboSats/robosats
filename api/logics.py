@@ -1019,7 +1019,10 @@ class Logics:
         """Closes a Public/Paused order: unlocks the maker bond, expires
         every pending pretaker bond, notifies and republishes the Nostr
         event. Shared by the maker's own cancel flow and the coordinator's
-        admin action."""
+        admin action. Refuses orders that are not Public/Paused."""
+
+        if order.status not in [Order.Status.PUB, Order.Status.PAU]:
+            return False, None
 
         # Return the maker bond. If this fails, the order is left untouched.
         if not cls.return_bond(order.maker_bond):

@@ -20,6 +20,7 @@ from tests.utils.pgp import sign_message
 from tests.utils.trade import Trade, maker_form_buy_with_range
 
 from api.admin import OrderAdmin
+from api.logics import Logics
 
 
 def read_file(file_path):
@@ -1465,6 +1466,33 @@ class TradeTest(BaseAPITestCase):
         order = Order.objects.get(id=trade.order_id)
         self.assertEqual(order.status, Order.Status.WF2)
         self.assertEqual(order.maker_bond.status, LNPayment.Status.LOCKED)
+
+    @patch("api.logics.nostr_send_order_event")
+    def test_close_public_order_non_public(self, nostr_mock):
+        """
+        Logics.close_public_order must refuse orders that are not
+        Public/Paused when called directly: no bond is returned and
+        no Nostr event is republished.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()  # Order is now WF2
+
+        order = Order.objects.get(id=trade.order_id)
+        nostr_mock.reset_mock()  # Ignore events fired by the setup steps
+        success, _ = Logics.close_public_order(
+            order,
+            actor="coordinator",
+            notification_message="coordinator_cancelled",
+        )
+
+        self.assertFalse(success)
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.WF2)
+        self.assertEqual(order.maker_bond.status, LNPayment.Status.LOCKED)
+
+        nostr_mock.delay.assert_not_called()
 
     @patch("api.logics.nostr_send_order_event")
     def test_expired_public_order_nostr_event(self, nostr_mock):
