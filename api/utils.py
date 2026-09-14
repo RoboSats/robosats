@@ -13,6 +13,7 @@ from decouple import config
 from django.utils import timezone
 
 from api.errors import new_error
+from api.mempool import _mempool_fees_with_hard_timeout
 from api.models import Robot
 
 logger = logging.getLogger("api.utils")
@@ -97,14 +98,8 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
 
     from api.lightning.node import LNNode
 
-    session = get_session()
-    mempool_url = "https://mempool.space"
-    api_path = "/api/v1/fees/recommended"
-
     try:
-        response = session.get(mempool_url + api_path)
-        response.raise_for_status()  # Raises stored HTTPError, if one occurred
-        data = response.json()
+        data = _mempool_fees_with_hard_timeout()
 
         if priority == "suggested":
             value = data.get("fastestFee")
@@ -118,7 +113,10 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
             )
 
     except Exception as e:
-        print(e)
+        logger.warning(
+            "Falling back to LN fee estimator after mempool fetch failed (%s)",
+            type(e).__name__,
+        )
         # Fetch mining fee from LND/CLN instance
         if priority == "suggested":
             target_conf = config("SUGGESTED_TARGET_CONF", cast=int, default=2)
