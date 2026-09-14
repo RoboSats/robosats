@@ -118,14 +118,18 @@ const NotificationsDrawer = ({ show, setShow }: NotificationsDrawerProps): React
   };
 
   const handleOnClickSnak = () => {
-    const orderId = snakEvent?.tags.find((t) => t[0] === 'order_id')?.[1];
-    if (orderId) {
+    const orderTag = snakEvent?.tags.find((t) => t[0] === 'order_id')?.[1] ?? '';
+    const orderId = orderTag.split('/').pop();
+    if (orderId && snakEvent) {
+      const coordinator = federation
+        .getCoordinators()
+        .find((c) => c.nostrHexPubkey === snakEvent?.pubkey);
       const nostrHexPubkey = snakEvent.tags.find((t) => t[0] === 'p')?.[1];
       const slot = garage.getSlotByNostrPubKey(nostrHexPubkey ?? '');
-      if (slot?.token) {
+      if (coordinator && slot?.token) {
         setShow(false);
         garage.setCurrentSlot(slot.token);
-        navigateToPage(`order/${orderId}`, navigate);
+        navigateToPage(`order/${coordinator.shortAlias}/${orderId}`, navigate);
       }
     }
   };
