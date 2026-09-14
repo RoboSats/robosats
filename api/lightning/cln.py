@@ -159,10 +159,7 @@ class CLNNode:
         unsettled_local_balance = 0
         unsettled_remote_balance = 0
         for channel in response.channels:
-            if (
-                channel.state
-                == primitives__pb2.ChannelState.ChanneldNormal
-            ):
+            if channel.state == primitives__pb2.ChannelState.ChanneldNormal:
                 local_balance_sat += channel.to_us_msat.msat // 1_000
                 remote_balance_sat += (
                     channel.total_msat.msat - channel.to_us_msat.msat
@@ -359,6 +356,18 @@ class CLNNode:
         if response.state == hold_pb2.Holdstate.CANCELED:
             pass
         if response.state == hold_pb2.Holdstate.ACCEPTED:
+            # Defensive amount check: we want to cancel immediately if the
+            # locked amount is less than the invoice value (same policy as LND).
+            # However, the CLN holdinvoice plugin's HoldInvoiceLookupResponse
+            # proto does not expose per-HTLC amounts (only htlc_expiry), so a
+            # direct numeric comparison is not possible here.
+            # The plugin itself enforces this gate internally before transitioning
+            # Open→Accepted (sum(htlc.amount_msat) >= invoice.amount_msat, see
+            # daywalker90/holdinvoice src/hooks.rs Holdstate::Open arm), so
+            # ACCEPTED already guarantees full coverage by construction.
+            # If the plugin binary is ever replaced with a version that removes
+            # that check, extend this proto (hold.proto / HoldInvoiceLookupResponse)
+            # to expose per-HTLC amounts and add the cancellation logic here.
             lnpayment.expiry_height = response.htlc_expiry
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
