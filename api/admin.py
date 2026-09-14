@@ -3,14 +3,14 @@ from statistics import median
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group, User
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django_admin_relation_links import AdminChangeLinksMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import TokenProxy
 
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
-from api.utils import objects_to_hyperlinks
+from api.utils import render_order_logs
 from api.tasks import send_notification
 
 admin.site.unregister(Group)
@@ -130,16 +130,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     readonly_fields = ("reference", "_logs")
 
     def _logs(self, obj):
-        if not obj.logs:
-            return format_html("<b>No logs were recorded</b>")
-        with_hyperlinks = objects_to_hyperlinks(obj.logs)
-        try:
-            html_logs = format_html(
-                f'<table style="width: 100%">{with_hyperlinks}</table>'
-            )
-        except Exception as e:
-            html_logs = f"An error occurred while formatting the parsed logs as HTML. Exception {e}"
-        return html_logs
+        return mark_safe(render_order_logs(obj.logs))
 
     actions = [
         "cancel_public_order",
