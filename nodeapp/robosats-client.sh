@@ -44,7 +44,12 @@ mainnet_bazaar_socat="socat tcp4-LISTEN:${mainnet_bazaar_port},reuseaddr,fork,ke
 # Mainnet
 mainnet_eleuteria_onion=ixiiqsuzt7hh5qxshiqwyewyh3gyygltbygqlvlyitg3gl3u2cemk3ad.onion
 mainnet_eleuteria_port=110
+# Testnet
+testnet_eleuteria_onion=kfpwwlt2x6kzeor7gbrwjeokdztlkqzyhc4grg7zkeko4bh5b6s24oid.onion
+testnet_eleuteria_port=1010
+# socat cmd
 mainnet_eleuteria_socat="socat tcp4-LISTEN:${mainnet_eleuteria_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_eleuteria_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_eleuteria_socat="socat tcp4-LISTEN:${testnet_eleuteria_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_eleuteria_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
 # FreePort
@@ -75,4 +80,4 @@ if [ ! -f /etc/nginx/ssl/server.crt ]; then
         -subj "/CN=robosats_client" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 fi
 
-$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $mainnet_eleuteria_socat & $mainnet_freeport_socat & $mainnet_ammanaya_socat & $mainnet_alice_socat & nginx
+$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $mainnet_eleuteria_socat & $testnet_eleuteria_socat & $mainnet_freeport_socat & $mainnet_ammanaya_socat & $mainnet_alice_socat & nginx
