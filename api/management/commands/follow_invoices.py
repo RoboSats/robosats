@@ -228,7 +228,7 @@ class Command(BaseCommand):
                 # It is a maker bond => Publish order.
                 if hasattr(lnpayment, "order_made"):
                     self.stderr.write("Updating order with new Locked bond from maker")
-                    lnpayment.order_made.log("Maker bond <b>locked</b>")
+                    lnpayment.order_made.log("Maker bond **locked**")
                     Logics.publish_order(lnpayment.order_made)
                     send_notification.delay(
                         order_id=lnpayment.order_made.id, message="order_published"
@@ -242,7 +242,7 @@ class Command(BaseCommand):
                         self.stderr.write(
                             "Updating order with new Locked bond from taker"
                         )
-                        lnpayment.take_order.order.log("Taker bond <b>locked</b>")
+                        lnpayment.take_order.order.log("Taker bond **locked**")
                         Logics.finalize_contract(lnpayment.take_order)
                     else:
                         # It there was another taker already locked => cancel bond.
@@ -250,7 +250,7 @@ class Command(BaseCommand):
                             "Expiring take_order because order was already taken"
                         )
                         lnpayment.take_order.order.log(
-                            "Another taker bond is already locked, <b>Cancelling</b>"
+                            "Another taker bond is already locked, **Cancelling**"
                         )
                         Logics.take_order_expires(lnpayment.take_order)
 
@@ -259,7 +259,7 @@ class Command(BaseCommand):
                 # It is a trade escrow => move foward order status.
                 elif hasattr(lnpayment, "order_escrow"):
                     self.stderr.write("Updating order with new Locked escrow")
-                    lnpayment.order_escrow.log("Trade escrow <b>locked</b>")
+                    lnpayment.order_escrow.log("Trade escrow **locked**")
                     Logics.trade_escrow_received(lnpayment.order_escrow)
                     return
 

@@ -9,7 +9,7 @@ from api.models import (
     Order,
     Notification,
 )
-from api.utils import get_session
+from api.utils import get_federation_short_alias, get_session
 from api.tasks import nostr_send_notification_event
 
 logger = logging.getLogger("api.notifications")
@@ -40,6 +40,10 @@ class Notifications:
         context["webhook_url"] = user.robot.webhook_url or ""
 
         return context
+
+    def order_url(self, order):
+        """Builds the frontend order URL with the federation shortAlias route segment"""
+        return f"http://{self.site}/order/{get_federation_short_alias()}/{order.id}"
 
     def send_message(
         self, order, robot, title, description="", event_type="notification"
@@ -190,12 +194,10 @@ class Notifications:
         lang = order.maker.robot.telegram_lang_code
         if lang == "es":
             title = f"✅ Hey {order.maker.username} ¡Tu orden con ID {order.id} ha sido tomada por {order.taker.username}!🥳"
-            description = f"Visita http://{self.site}/order/{order.id} para continuar."
+            description = f"Visita {self.order_url(order)} para continuar."
         else:
             title = f"✅ Hey {order.maker.username}, your order was taken by {order.taker.username}!🥳"
-            description = (
-                f"Visit http://{self.site}/order/{order.id} to proceed with the trade."
-            )
+            description = f"Visit {self.order_url(order)} to proceed with the trade."
         self.send_message(order, order.maker.robot, title, description)
 
         lang = order.taker.robot.telegram_lang_code
@@ -212,10 +214,14 @@ class Notifications:
             lang = user.robot.telegram_lang_code
             if lang == "es":
                 title = f"✅ Hey {user.username}, el depósito de garantía y el recibo del comprador han sido recibidos. Es hora de enviar el dinero fiat."
-                description = f"Visita http://{self.site}/order/{order.id} para hablar con tu contraparte."
+                description = (
+                    f"Visita {self.order_url(order)} para hablar con tu contraparte."
+                )
             else:
                 title = f"✅ Hey {user.username}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat."
-                description = f"Visit http://{self.site}/order/{order.id} to talk with your counterpart."
+                description = (
+                    f"Visit {self.order_url(order)} to talk with your counterpart."
+                )
             self.send_message(order, user.robot, title, description)
         return
 
@@ -223,10 +229,10 @@ class Notifications:
         lang = order.maker.robot.telegram_lang_code
         if lang == "es":
             title = f"😪 Hey {order.maker.username}, tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot."
-            description = f"Visita http://{self.site}/order/{order.id} para renovarla."
+            description = f"Visita {self.order_url(order)} para renovarla."
         else:
             title = f"😪 Hey {order.maker.username}, your order with ID {order.id} has expired without a taker."
-            description = f"Visit http://{self.site}/order/{order.id} to renew it."
+            description = f"Visit {self.order_url(order)} to renew it."
         self.send_message(order, order.maker.robot, title, description)
         return
 
