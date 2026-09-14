@@ -15,7 +15,7 @@ export const DisputeLoserPrompt = ({ order }: DisputeLoserPromptProps): React.JS
   const { t } = useTranslation();
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const coordinator = federation.getCoordinator(order?.shortAlias ?? '');
-  const email = coordinator?.contact?.email || 'robosats@protonmail.com';
+  const email = coordinator?.contact?.email;
 
   return (
     <List dense={true}>
