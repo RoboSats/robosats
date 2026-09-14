@@ -53,6 +53,7 @@ def _make_order(status=Order.Status.CHA, is_swap=False):
     order.save = MagicMock()
     order.update_status = MagicMock()
     order.transition_status = MagicMock(return_value=True)
+    order.t_to_expire = MagicMock(return_value=3600)
     return order
 
 
