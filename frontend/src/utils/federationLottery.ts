@@ -13,25 +13,39 @@
 
 import defaultFederation from '../../static/federation.json';
 
-export default function federationLottery(): string[] {
-  // Create an array to store the coordinator short aliases and their corresponding weights (chance)
-  const coordinatorChance: Array<{ shortAlias: string; chance: number }> = [];
+export interface CoordinatorSeed {
+  shortAlias: string;
+  badges: { donatesToDevFund?: number };
+  /** Set by FederationDiscovery on coordinators voted in but absent from the seed. */
+  _votedIn?: boolean;
+}
 
-  // Convert the `federation` object into an array of {shortAlias, chance}
-  Object.values(defaultFederation).forEach((coor) => {
-    const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund;
-    coordinatorChance.push({ shortAlias: coor.shortAlias, chance });
-  });
+const DEFAULT_TOTAL_FEE = 0.002;
 
-  // Sort randomly the coordinatorChance array using weighted shuffling algorithm
-  const shuffledCoordinators = coordinatorChance.sort((a, b) => {
-    return Math.random() * b.chance - Math.random() * a.chance;
-  });
+export default function federationLottery(
+  federation: Record<string, CoordinatorSeed> = defaultFederation,
+  devfundOverrides: Record<string, number> = {},
+  feeOverrides: Record<string, number> = {},
+): string[] {
+  return Object.values(federation)
+    .map((coor) => {
+      // Coordinators voted in from discovery but absent from the seed cannot
+      // self-declare a DevFund donation to game the lottery ordering.
+      const rawDevfund = coor._votedIn
+        ? 0
+        : (devfundOverrides[coor.shortAlias] ?? coor.badges?.donatesToDevFund ?? 0);
+      const devfund = Math.min(50, Math.max(0, rawDevfund));
+      const totalFee = feeOverrides[coor.shortAlias] ?? DEFAULT_TOTAL_FEE;
+      const chance = devfund * totalFee;
 
-  // Extract the coordinator names from the shuffled array and return the result
-  const sortedCoordinators = shuffledCoordinators.map((coordinator) => coordinator.shortAlias);
-
-  return sortedCoordinators;
+      return {
+        shortAlias: coor.shortAlias,
+        weight: chance > 0 ? -Math.log(Math.random()) / chance : Number.POSITIVE_INFINITY,
+        tie: Math.random(), // Add a random tie-breaker to ensure fairness in case of equal chances
+      };
+    })
+    .sort((a, b) => a.weight - b.weight || a.tie - b.tie)
+    .map((coordinator) => coordinator.shortAlias);
 }
 
 // // Verification

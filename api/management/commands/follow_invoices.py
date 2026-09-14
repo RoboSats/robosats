@@ -178,7 +178,7 @@ class Command(BaseCommand):
             # Checks that this onchain payment is part of an order with a settled escrow
             if not hasattr(lnpayment, "order_paid_LN"):
                 self.stderr.write(f"Ln payment {str(lnpayment)} has no parent order!")
-                return
+                continue
             order = lnpayment.order_paid_LN
             if (
                 order.trade_escrow.status == LNPayment.Status.SETLED
@@ -198,7 +198,7 @@ class Command(BaseCommand):
                 self.stderr.write(
                     f"Onchain payment {str(onchainpayment)} has no parent order!"
                 )
-                return
+                continue
             order = onchainpayment.order_paid_TX
             if (
                 order.trade_escrow.status == LNPayment.Status.SETLED

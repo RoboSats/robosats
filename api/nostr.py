@@ -4,8 +4,18 @@ import uuid
 
 from secp256k1 import PrivateKey
 from asgiref.sync import sync_to_async
-from nostr_sdk import Keys, Client, EventBuilder, NostrSigner, Kind, Tag, PublicKey
+from nostr_sdk import (
+    Keys,
+    Client,
+    EventBuilder,
+    Kind,
+    Tag,
+    PublicKey,
+    RelayUrl,
+    nip17_make_private_msg_async,
+)
 from api.models import Order
+from api.utils import get_federation_short_alias
 from decouple import config
 
 
@@ -25,7 +35,7 @@ class Nostr:
         print("Sending nostr ORDER event")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        client = await self.initialize_client(keys)
+        client = await self.initialize_client()
 
         robot_name = await self.get_user_name(order)
         robot_hash_id = await self.get_robot_hash_id(order)
@@ -33,10 +43,11 @@ class Nostr:
 
         content = order.description if order.description is not None else ""
 
-        event = (
+        # Keys implements AsyncNostrSigner directly in nostr-sdk 0.45.0
+        event = await (
             EventBuilder(Kind(38383), content)
             .tags(self.generate_tags(order, robot_name, robot_hash_id, currency))
-            .sign_with_keys(keys)
+            .finalize_async(keys)
         )
         await client.send_event(event)
         print(f"Nostr ORDER event sent: {event.as_json()}")
@@ -49,30 +60,36 @@ class Nostr:
         print("Sending nostr NOTIFICATION event")
 
         keys = Keys.parse(config("NOSTR_NSEC", cast=str))
-        client = await self.initialize_client(keys)
+        client = await self.initialize_client()
 
-        tags = [
+        rumor_extra_tags = [
             Tag.parse(
                 [
                     "order_id",
-                    f"{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                    f"{get_federation_short_alias()}/{order.id}",
                 ]
             ),
             Tag.parse(["status", str(order.status)]),
         ]
 
-        await client.send_private_msg(PublicKey.parse(robot.nostr_pubkey), text, tags)
+        # Keys implements AsyncNostrSigner directly in nostr-sdk 0.45.0
+        gift_wrap = await nip17_make_private_msg_async(
+            keys,
+            PublicKey.parse(robot.nostr_pubkey),
+            text,
+            rumor_extra_tags=rumor_extra_tags,
+        )
+        await client.send_event(gift_wrap)
         print("Nostr NOTIFICATION event sent")
 
-    async def initialize_client(self, keys):
-        # Initialize with coordinator Keys
-        signer = NostrSigner.keys(keys)
-        client = Client(signer)
+    async def initialize_client(self):
+        # Initialize a bare client (no signer needed on the client itself)
+        client = Client()
 
         # Add relays and connect
         strfry_host = config("STRFRY_HOST", cast=str, default="localhost")
         strfry_port = config("STRFRY_PORT", cast=str, default="7778")
-        await client.add_relay(f"ws://{strfry_host}:{strfry_port}")
+        await client.add_relay(RelayUrl.parse(f"ws://{strfry_host}:{strfry_port}"))
         await client.connect()
 
         return client
@@ -114,7 +131,7 @@ class Nostr:
             Tag.parse(
                 [
                     "source",
-                    f"http://{config('HOST_NAME')}/order/{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                    f"http://{config('HOST_NAME')}/order/{get_federation_short_alias()}/{order.id}",
                 ]
             ),
             Tag.parse(

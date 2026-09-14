@@ -135,12 +135,14 @@ const WidgetDrawer: React.FC<WidgetDrawerProps> = ({
       anchor='right'
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: 320,
-          background: `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`,
-          backdropFilter: 'blur(10px)',
-          borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+      slotProps={{
+        paper: {
+          sx: {
+            width: 320,
+            background: `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+          },
         },
       }}
     >
@@ -156,7 +158,7 @@ const WidgetDrawer: React.FC<WidgetDrawerProps> = ({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Widgets sx={{ color: theme.palette.primary.main, fontSize: 28 }} />
-          <Typography variant='h6' fontWeight={600}>
+          <Typography variant='h6' sx={{ fontWeight: 600 }}>
             {t('Widgets')}
           </Typography>
         </Box>
@@ -191,7 +193,7 @@ const WidgetDrawer: React.FC<WidgetDrawerProps> = ({
           }}
         >
           <Checkbox checked={allWidgetsActive} size='small' sx={{ p: 0.5 }} />
-          <Typography variant='body2' fontWeight={500}>
+          <Typography variant='body2' sx={{ fontWeight: 500 }}>
             {t('Select All')}
           </Typography>
         </Paper>
@@ -261,8 +263,10 @@ const WidgetDrawer: React.FC<WidgetDrawerProps> = ({
                   <Box sx={{ flex: 1 }}>
                     <Typography
                       variant='subtitle2'
-                      fontWeight={600}
-                      sx={{ color: isActive ? theme.palette.primary.main : 'text.primary' }}
+                      sx={{
+                        fontWeight: 600,
+                        color: isActive ? theme.palette.primary.main : 'text.primary',
+                      }}
                     >
                       {t(widget.label)}
                     </Typography>

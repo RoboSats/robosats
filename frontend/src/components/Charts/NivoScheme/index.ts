@@ -1,4 +1,4 @@
-import { type Theme as NivoTheme } from '@nivo/core';
+import { type PartialTheme as NivoTheme } from '@nivo/theming';
 import { type Theme as MuiTheme } from '@mui/material/styles';
 
 export const getNivoScheme: (theme: MuiTheme) => NivoTheme = (theme) => {

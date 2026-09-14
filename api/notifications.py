@@ -1,3 +1,7 @@
+import json
+import logging
+import uuid
+from datetime import datetime, timezone
 from secrets import token_urlsafe
 
 from decouple import config
@@ -5,8 +9,10 @@ from api.models import (
     Order,
     Notification,
 )
-from api.utils import get_session
+from api.utils import get_federation_short_alias, get_session
 from api.tasks import nostr_send_notification_event
+
+logger = logging.getLogger("api.notifications")
 
 
 class Notifications:
@@ -16,7 +22,7 @@ class Notifications:
     site = config("HOST_NAME")
 
     def get_context(user):
-        """returns context needed to enable TG notifications"""
+        """returns context needed to enable TG and webhook notifications"""
         context = {}
         if user.robot.telegram_enabled:
             context["tg_enabled"] = True
@@ -30,10 +36,19 @@ class Notifications:
         context["tg_token"] = user.robot.telegram_token
         context["tg_bot_name"] = config("TELEGRAM_BOT_NAME")
 
+        context["webhook_enabled"] = user.robot.webhook_enabled
+        context["webhook_url"] = user.robot.webhook_url or ""
+
         return context
 
-    def send_message(self, order, robot, title, description=""):
-        """Save a message for a user and sends it to Telegram and/or Nostr"""
+    def order_url(self, order):
+        """Builds the frontend order URL with the federation shortAlias route segment"""
+        return f"http://{self.site}/order/{get_federation_short_alias()}/{order.id}"
+
+    def send_message(
+        self, order, robot, title, description="", event_type="notification"
+    ):
+        """Save a message for a user and sends it to Telegram, Nostr, and/or Webhook"""
         self.save_message(order, robot, title, description)
         if robot.nostr_pubkey:
             nostr_send_notification_event.delay(
@@ -41,6 +56,8 @@ class Notifications:
             )
         if robot.telegram_enabled:
             self.send_telegram_message(robot.telegram_chat_id, title, description)
+        if robot.webhook_enabled:
+            self.send_webhook_message(order, robot, title, description, event_type)
 
     def save_message(self, order, robot, title, description=""):
         """Save a message for a user"""
@@ -62,6 +79,104 @@ class Notifications:
             except Exception:
                 pass
 
+    def send_webhook_message(
+        self, order, robot, title, description="", event_type="notification"
+    ):
+        """Sends a webhook notification to the user's custom HTTP endpoint (Tor .onion only)"""
+        from api.models import Robot
+
+        webhook_url = robot.webhook_url
+        if not Robot.is_valid_onion_url(webhook_url):
+            logger.warning(
+                f"Webhook URL rejected: not a .onion address for robot {robot.id}"
+            )
+            return
+        payload = {
+            "event_type": event_type,
+            "event_id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "robot_hash_id": robot.hash_id,
+            "order": {
+                "id": order.id,
+                "type": "BUY" if order.type == Order.Types.BUY else "SELL",
+                "status": order.status,
+            },
+            "message": {
+                "title": title,
+                "description": description,
+            },
+            "metadata": {
+                "coordinator": config("COORDINATOR_ALIAS", cast=str, default="Unknown"),
+                "platform_version": config("VERSION", cast=str, default="Unknown"),
+            },
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        if robot.webhook_api_key:
+            headers["X-API-Key"] = robot.webhook_api_key
+
+        try:
+            response = self.session.post(
+                webhook_url,
+                data=json.dumps(payload),
+                headers=headers,
+                timeout=60,
+            )
+            response.raise_for_status()
+            logger.info(f"Webhook sent successfully to robot {robot.id}")
+        except Exception as e:
+            logger.error(f"Webhook failed for robot {robot.id}: {e}")
+
+    def send_webhook_test(self, robot):
+        """Sends a test webhook notification when webhook is first configured"""
+        from api.models import Robot
+
+        webhook_url = robot.webhook_url
+        if not Robot.is_valid_onion_url(webhook_url):
+            logger.warning(
+                f"Webhook test rejected: not a .onion address for robot {robot.id}"
+            )
+            return False
+
+        payload = {
+            "event_type": "webhook_test",
+            "event_id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "robot_hash_id": robot.hash_id,
+            "message": {
+                "title": f"🔔 Hey {robot.user.username}, your webhook is configured!",
+                "description": "You will receive notifications about your RoboSats orders.",
+            },
+            "metadata": {
+                "coordinator": config("COORDINATOR_ALIAS", cast=str, default="Unknown"),
+                "platform_version": config("VERSION", cast=str, default="Unknown"),
+            },
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        if robot.webhook_api_key:
+            headers["X-API-Key"] = robot.webhook_api_key
+
+        try:
+            response = self.session.post(
+                webhook_url,
+                data=json.dumps(payload),
+                headers=headers,
+                timeout=60,
+            )
+            response.raise_for_status()
+            logger.info(f"Webhook test sent successfully to robot {robot.id}")
+            return True
+        except Exception as e:
+            logger.error(f"Webhook test failed for robot {robot.id}: {e}")
+            return False
+
     def welcome(self, user):
         """User enabled Telegram Notifications"""
         lang = user.robot.telegram_lang_code
@@ -79,12 +194,10 @@ class Notifications:
         lang = order.maker.robot.telegram_lang_code
         if lang == "es":
             title = f"✅ Hey {order.maker.username} ¡Tu orden con ID {order.id} ha sido tomada por {order.taker.username}!🥳"
-            description = f"Visita http://{self.site}/order/{order.id} para continuar."
+            description = f"Visita {self.order_url(order)} para continuar."
         else:
             title = f"✅ Hey {order.maker.username}, your order was taken by {order.taker.username}!🥳"
-            description = (
-                f"Visit http://{self.site}/order/{order.id} to proceed with the trade."
-            )
+            description = f"Visit {self.order_url(order)} to proceed with the trade."
         self.send_message(order, order.maker.robot, title, description)
 
         lang = order.taker.robot.telegram_lang_code
@@ -101,10 +214,14 @@ class Notifications:
             lang = user.robot.telegram_lang_code
             if lang == "es":
                 title = f"✅ Hey {user.username}, el depósito de garantía y el recibo del comprador han sido recibidos. Es hora de enviar el dinero fiat."
-                description = f"Visita http://{self.site}/order/{order.id} para hablar con tu contraparte."
+                description = (
+                    f"Visita {self.order_url(order)} para hablar con tu contraparte."
+                )
             else:
                 title = f"✅ Hey {user.username}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat."
-                description = f"Visit http://{self.site}/order/{order.id} to talk with your counterpart."
+                description = (
+                    f"Visit {self.order_url(order)} to talk with your counterpart."
+                )
             self.send_message(order, user.robot, title, description)
         return
 
@@ -112,10 +229,10 @@ class Notifications:
         lang = order.maker.robot.telegram_lang_code
         if lang == "es":
             title = f"😪 Hey {order.maker.username}, tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot."
-            description = f"Visita http://{self.site}/order/{order.id} para renovarla."
+            description = f"Visita {self.order_url(order)} para renovarla."
         else:
             title = f"😪 Hey {order.maker.username}, your order with ID {order.id} has expired without a taker."
-            description = f"Visit http://{self.site}/order/{order.id} to renew it."
+            description = f"Visit {self.order_url(order)} to renew it."
         self.send_message(order, order.maker.robot, title, description)
         return
 

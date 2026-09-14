@@ -1,6 +1,5 @@
 import { sha256 } from 'js-sha256';
-import { sha256 as sha256Hash } from '@noble/hashes/sha256';
-import { sha512 } from '@noble/hashes/sha512';
+import { sha256 as sha256Hash, sha512 } from '@noble/hashes/sha2.js';
 import { Robot, Order, type Federation } from '.';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import { hexToBase91, validateTokenEntropy } from '../utils';
@@ -28,7 +27,8 @@ class Slot {
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
     const tokenSHA256 = hexToBase91(sha256(token));
 
-    const nostrSecKey = sha256Hash(sha512(this.token));
+    const tokenBytes = new TextEncoder().encode(this.token ?? '');
+    const nostrSecKey = sha256Hash(sha512(tokenBytes));
     this.nostrSecKey = nostrSecKey;
     const nostrPubKey = getPublicKey(this.nostrSecKey);
     this.nostrPubKey = nostrPubKey;

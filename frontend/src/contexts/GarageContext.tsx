@@ -71,7 +71,7 @@ export const GarageContextProvider = ({
   const [lastOrderCheckAt] = useState<number>(+new Date());
   const lastOrderCheckAtRef = useRef(lastOrderCheckAt);
   const [delay, setDelay] = useState<number>(defaultDelay);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
+  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | undefined>(() =>
     setInterval(() => null, delay),
   );
 

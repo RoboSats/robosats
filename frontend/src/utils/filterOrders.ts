@@ -2,9 +2,9 @@ import { type PublicOrder, type Favorites, type Federation } from '../models';
 import thirdParties from '../../static/thirdparties.json';
 
 interface AmountFilter {
-  amount: string;
-  minAmount: string;
-  maxAmount: string;
+  amount: string | number | null;
+  minAmount: string | number | null;
+  maxAmount: string | number | null;
   threshold: number;
 }
 
@@ -60,10 +60,11 @@ const filterByAmount = function (order: PublicOrder, filter: AmountFilter): bool
 };
 
 const filterByPremium = function (order: PublicOrder, premium: number): boolean {
+  const orderPremium = parseFloat(order.premium);
   if (order.type === 0) {
-    return order.premium >= premium;
+    return orderPremium >= premium;
   } else {
-    return order.premium <= premium;
+    return orderPremium <= premium;
   }
 };
 
@@ -103,7 +104,7 @@ const filterOrders = function ({
       hostChecks
     );
   });
-  return filteredOrders;
+  return filteredOrders.filter((o): o is PublicOrder => o != null);
 };
 
 export default filterOrders;

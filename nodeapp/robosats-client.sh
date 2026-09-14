@@ -33,53 +33,51 @@ mainnet_lake_socat="socat tcp4-LISTEN:${mainnet_lake_port},reuseaddr,fork,keepal
 testnet_lake_socat="socat tcp4-LISTEN:${testnet_lake_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_lake_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
-# Over the Moon
-# Mainnet
-mainnet_moon_onion=otmoonrndnrddqdlhu6b36heunmbyw3cgvadqo2oqeau3656wfv7fwad.onion
-mainnet_moon_port=106
-# Testnet
-testnet_moon_onion=otmtestgbj3kqo3nre6oksusuqfb4ids5zg2y5z2qza2jogeu67stwid.onion
-testnet_moon_port=1006
-# socat cmd
-mainnet_moon_socat="socat tcp4-LISTEN:${mainnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_moon_socat="socat tcp4-LISTEN:${testnet_moon_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_moon_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-
-################################
 # Libre Bazaar
 # Mainnet
 mainnet_bazaar_onion=librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion
 mainnet_bazaar_port=107
-# Testnet
-testnet_bazaar_onion=librebazovfmmkyi2jekraxsuso3mh622avuuzqpejixdl5dhuhb4tid.onion
-testnet_bazaar_port=1007
-# socat cmd
 mainnet_bazaar_socat="socat tcp4-LISTEN:${mainnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_bazaar_socat="socat tcp4-LISTEN:${testnet_bazaar_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_bazaar_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-
 
 ################################
-# Freedomsats
+# Eleuteria
 # Mainnet
-mainnet_freedomsats_onion=dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion
-mainnet_freedomsats_port=108
+mainnet_eleuteria_onion=ixiiqsuzt7hh5qxshiqwyewyh3gyygltbygqlvlyitg3gl3u2cemk3ad.onion
+mainnet_eleuteria_port=110
 # Testnet
-testnet_freedomsats_onion=dqmmejfmtlve7d4ccohk4usriifdtci6xk4wv7igxn2fyaduh25s6did.onion
-testnet_freedomsats_port=1008
+testnet_eleuteria_onion=kfpwwlt2x6kzeor7gbrwjeokdztlkqzyhc4grg7zkeko4bh5b6s24oid.onion
+testnet_eleuteria_port=1010
 # socat cmd
-mainnet_freedomsats_socat="socat tcp4-LISTEN:${mainnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_freedomsats_socat="socat tcp4-LISTEN:${testnet_freedomsats_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_freedomsats_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+mainnet_eleuteria_socat="socat tcp4-LISTEN:${mainnet_eleuteria_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_eleuteria_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_eleuteria_socat="socat tcp4-LISTEN:${testnet_eleuteria_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_eleuteria_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+
+################################
+# FreePort
+# Mainnet
+mainnet_freeport_onion=2enoseg66hme76khjjn2qvrhipnzwgwa44mewgrdphrxbhzcxd2vdiqd.onion
+mainnet_freeport_port=111
+mainnet_freeport_socat="socat tcp4-LISTEN:${mainnet_freeport_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_freeport_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+
+################################
+# Ammanaya
+# Mainnet
+mainnet_ammanaya_onion=ammannjgzybw4qm2odmci7xgolh5grzijidacjxose5tthm375dcopad.onion
+mainnet_ammanaya_port=112
+mainnet_ammanaya_socat="socat tcp4-LISTEN:${mainnet_ammanaya_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_ammanaya_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 ################################
 # Alice
 # Mainnet
 mainnet_alice_onion=alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion
-mainnet_alice_port=108
-# Testnet
-testnet_alice_onion=alice7bqexhtnkiqhtgkuwgtzzfkishw23ac4sfwpznrwlmnipxlomyd.onion
-testnet_alice_port=1008
-# socat cmd
+mainnet_alice_port=109
 mainnet_alice_socat="socat tcp4-LISTEN:${mainnet_alice_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_alice_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_alice_socat="socat tcp4-LISTEN:${testnet_alice_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${testnet_alice_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
 # RUN!
-$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_moon_socat & $testnet_moon_socat & $mainnet_bazaar_socat & $testnet_bazaar_socat & $mainnet_freedomsats_socat & $testnet_freedomsats_socat & $mainnet_alice_socat & $testnet_alice_socat & nginx
+mkdir -p /etc/nginx/ssl
+if [ ! -f /etc/nginx/ssl/server.crt ]; then
+    openssl req -x509 -nodes -newkey rsa:2048 -days 3650 \
+        -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt \
+        -subj "/CN=robosats_client" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+fi
+
+$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $mainnet_eleuteria_socat & $testnet_eleuteria_socat & $mainnet_freeport_socat & $mainnet_ammanaya_socat & $mainnet_alice_socat & nginx

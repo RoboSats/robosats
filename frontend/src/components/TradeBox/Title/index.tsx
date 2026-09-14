@@ -40,7 +40,7 @@ export const Title = ({
     >
       {icon()}
       <span>
-        <b>{t(text, variables)}</b> {order !== null && stepXofY(order)}
+        <b>{t(text, variables as Record<string, unknown>)}</b> {order !== null && stepXofY(order)}
       </span>
       {icon()}
     </Typography>

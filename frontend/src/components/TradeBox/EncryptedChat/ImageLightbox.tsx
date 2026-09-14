@@ -16,11 +16,13 @@ const ImageLightbox: React.FC<Props> = ({ open, onClose, imageUrl }) => {
       open={open}
       onClose={onClose}
       maxWidth='xl'
-      PaperProps={{
-        style: {
-          backgroundColor: 'transparent',
-          boxShadow: 'none',
-          overflow: 'hidden',
+      slotProps={{
+        paper: {
+          style: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            overflow: 'hidden',
+          },
         },
       }}
     >

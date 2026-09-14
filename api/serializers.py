@@ -2,7 +2,7 @@ from decouple import config
 from decimal import Decimal
 from rest_framework import serializers
 
-from .models import MarketTick, Order, Notification
+from .models import MarketTick, Order, Notification, Robot
 
 RETRY_TIME = int(config("RETRY_TIME"))
 
@@ -47,9 +47,15 @@ class InfoSerializer(serializers.Serializer):
     )
     maker_fee = serializers.FloatField(help_text="Exchange's set maker fee")
     taker_fee = serializers.FloatField(help_text="Exchange's set taker fee ")
+    devfund = serializers.FloatField(
+        help_text="Percentage of trade proceeds the coordinator donates to the development fund"
+    )
     bond_size = serializers.FloatField(help_text="Default bond size (percent)")
     current_swap_fee_rate = serializers.FloatField(
         help_text="Swap fees to perform on-chain transaction (percent)"
+    )
+    blossom_enabled = serializers.BooleanField(
+        help_text="Whether the coordinator offers encrypted image uploads via Blossom in chat"
     )
     version = VersionSerializer()
     notice_severity = serializers.ChoiceField(
@@ -63,6 +69,15 @@ class InfoSerializer(serializers.Serializer):
     )
     market_price_apis = serializers.CharField()
     notice_message = serializers.CharField()
+    federation_hash = serializers.CharField(
+        help_text=(
+            "SHA-256 of the normalized canonical federation document served by this coordinator. "
+            "Clients collect this hash from all coordinators via the already-polled /api/info/ "
+            "response and run a majority vote to determine the current federation list without "
+            "any additional requests. Only when the winning hash differs from the client's own "
+            "seed does the client fetch /api/federation/ once to obtain the full document."
+        )
+    )
 
 
 class ListOrderSerializer(serializers.ModelSerializer):
@@ -411,6 +426,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="Order description",
     )
+    bad_request = serializers.CharField(
+        required=False,
+        help_text="Error message when order is in a terminated state (e.g. cancelled)",
+    )
 
     class Meta:
         model = Order
@@ -497,6 +516,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "longitude",
             "chat_last_index",
             "description",
+            "bad_request",
         )
 
 
@@ -723,3 +743,25 @@ class ReviewSerializer(serializers.Serializer):
 
 class StealthSerializer(serializers.Serializer):
     wantsStealth = serializers.BooleanField()
+
+
+class UpdateRobotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Robot
+        fields = (
+            "webhook_url",
+            "webhook_enabled",
+            "webhook_api_key",
+        )
+        extra_kwargs = {
+            "webhook_url": {"required": False, "allow_null": True},
+            "webhook_enabled": {"required": False},
+            "webhook_api_key": {"required": False, "allow_null": True},
+        }
+
+    def validate_webhook_url(self, value):
+        if value and not Robot.is_valid_onion_url(value):
+            raise serializers.ValidationError(
+                "Webhook URL must be a Tor .onion address"
+            )
+        return value

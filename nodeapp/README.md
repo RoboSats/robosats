@@ -11,7 +11,28 @@ The container launches two processes: 1) A set of `socat` that will expose RoboS
 # Docker compose example
 You can run the client locally with the provided example orchestration. It has both, a TOR proxy container and the robosats client.
 `docker-compose -f docker-compose-example.yml up`
-Then just visit http://localhost:12596
+Then just visit https://localhost:12596
+
+# Why does my browser show a "Not secure" warning?
+
+The client is served over HTTPS with a self-signed certificate, generated
+automatically on the first start. Browsers only show the green padlock for
+certificates issued by well-known Certificate Authorities, so a self-signed
+certificate triggers the "Not secure" warning — even though the connection is
+**really encrypted**.
+
+This is expected for self-hosted apps and is **not** a sign of a security
+problem. Click "Advanced" → "Proceed" and the app works normally. If you type
+`http://localhost:12596` you are redirected automatically to `https://`.
+
+Your traffic is encrypted from the browser to your machine, and onward to the
+RoboSats coordinators it travels through Tor.
+
+### For advanced users
+
+To get a green padlock, sign the certificate with a local Certificate Authority
+trusted by your device (e.g. `mkcert`) or import the generated certificate from
+the `./ssl/` volume into your OS/browser trust store.
 
 # Why host your own RoboSats client
 

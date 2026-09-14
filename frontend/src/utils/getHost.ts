@@ -1,5 +1,5 @@
-import defaultFederation from '../../static/federation.json';
 import { Origin } from '../models';
+import { Federation } from '../models/Federation.model';
 
 export const getHost = function (): string {
   const url =
@@ -7,20 +7,29 @@ export const getHost = function (): string {
   return url.split('/')[2];
 };
 
+/** Return the live federation document from the Federation model's static property. */
+function getLiveFederation(): Record<string, Record<string, Record<string, string>>> {
+  return Federation.liveFedDoc as Record<string, Record<string, Record<string, string>>>;
+}
+
 export const getHostUrl = (network = 'mainnet'): string => {
   const [client] = window.RobosatsSettings.split('-');
-  const randomAlias =
-    Object.keys(defaultFederation)[
-      Math.floor(Math.random() * Object.keys(defaultFederation).length)
-    ];
-  let host: string = defaultFederation[randomAlias][network].onion;
-  let protocol: string = 'http:';
+  // For non-mobile clients the host comes from window.location, not the federation list.
   if (client !== 'mobile') {
-    host = getHost();
-    protocol = location.protocol;
+    return `${location.protocol}//${getHost()}`;
   }
-  const hostUrl = `${protocol}//${host}`;
-  return hostUrl;
+  // Mobile: pick a random onion from the live (voted) federation list.
+  const liveFed = getLiveFederation();
+  const aliases = Object.keys(liveFed);
+  const randomAlias = aliases[Math.floor(Math.random() * aliases.length)];
+  const fedEntry = liveFed[randomAlias];
+  const onionUrl = fedEntry?.[network]?.['onion'];
+  if (!onionUrl) {
+    console.warn(
+      `[getHostUrl] No onion URL found for coordinator "${randomAlias}" on network "${network}". Falling back to empty host.`,
+    );
+  }
+  return `http://${onionUrl ?? ''}`;
 };
 
 export const getOrigin = (network = 'mainnet'): Origin => {

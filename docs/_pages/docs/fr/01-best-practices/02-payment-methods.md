@@ -20,7 +20,7 @@ Remarque : ces indications sont modifiées à partir des <a href="https://bisq.w
 
 ### Pour l'acheteur et le vendeur de bitcoins
 
-  1. Assurez-vous de consulter la section <a href="https://github.com/RoboSats/robosats/blob/main/docs/fr/how-to-use.md">comment utiliser </a> avant de commencer à négocier.<br>
+  1. Assurez-vous de consulter la section <a href="/read/fr/">comment utiliser </a> avant de commencer à négocier.<br>
   2. Énoncer clairement l'accord afin d'éviter tout malentendu.<br>
   3. La méthode de paiement fiat devrait pouvoir être envoyée et reçue instantanément car la facture hodl a un délai d'expiration de 24 heures.<br>
 Si le délai d'expiration est dépassé, cela peut déclencher un litige et entraîner la perte de la caution.<br>

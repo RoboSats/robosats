@@ -21,8 +21,12 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
     <Box sx={{ flexGrow: 1 }}>
       <Bar
         position='fixed'
-        sx={{ top: 'auto', bottom: 0 }}
-        color={theme.palette.mode === 'dark' ? 'default' : 'white'}
+        color={theme.palette.mode === 'dark' ? 'default' : 'inherit'}
+        sx={{
+          top: 'auto',
+          bottom: 0,
+          ...(theme.palette.mode === 'light' && { backgroundColor: 'background.paper' }),
+        }}
       >
         <Toolbar style={{ display: 'flex', justifyContent: 'space-between', flexGrow: 1 }}>
           <Button

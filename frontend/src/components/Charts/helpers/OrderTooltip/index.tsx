@@ -3,7 +3,7 @@ import { Box, Grid, Paper } from '@mui/material';
 import { type PublicOrder } from '../../../../models';
 import RobotAvatar from '../../../RobotAvatar';
 import { amountToString, statusBadgeColor } from '../../../../utils';
-import currencyDict from '../../../../../static/assets/currencies.json';
+import currencyDict from '../../../../utils/currencies';
 import { PaymentStringAsIcons } from '../../../PaymentMethods';
 import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../../../contexts/AppContext';
@@ -25,23 +25,27 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
   const coordinatorAlias = order?.coordinatorShortAlias ?? '';
   const network = settings.network;
   const coordinator = federation.getCoordinator(coordinatorAlias);
-  const thirdParty = thirdParties[coordinatorAlias];
-  const baseUrl = coordinator?.[network]?.[origin] ?? '';
+  const thirdParty = (thirdParties as Record<string, { shortAlias?: string }>)[coordinatorAlias];
+  const baseUrl = (coordinator as unknown as Record<string, unknown>)?.[network ?? 'mainnet'] as
+    Record<string, string> | undefined;
+  const resolvedBaseUrl = baseUrl?.[origin] ?? '';
 
   return order ? (
     <Paper elevation={12} style={{ padding: 10, width: 150 }}>
-      <Grid container justifyContent='space-between'>
-        <Grid item xs={3}>
-          <Grid container justifyContent='center' alignItems='center'>
+      <Grid container sx={{ justifyContent: 'space-between' }}>
+        <Grid size={3}>
+          <Grid container sx={{ alignItems: 'center', justifyContent: 'center' }}>
             <RobotAvatar
               orderType={order.type}
               statusColor={
-                settings.connection === 'api' ? statusBadgeColor(order.maker_status) : undefined
+                settings.connection === 'api'
+                  ? statusBadgeColor(order.maker_status ?? '')
+                  : undefined
               }
-              tooltip={t(order.maker_status)}
-              baseUrl={baseUrl}
+              tooltip={t(order.maker_status ?? '')}
+              baseUrl={resolvedBaseUrl}
               small={true}
-              hashId={order.maker_hash_id}
+              hashId={order.maker_hash_id ?? undefined}
               coordinatorShortAlias={
                 thirdParty?.shortAlias ??
                 (coordinator?.federated ? coordinator?.shortAlias : undefined)
@@ -49,25 +53,31 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
             />
           </Grid>
         </Grid>
-        <Grid item xs={8}>
-          <Grid container direction='column' justifyContent='center' alignItems='flex-start'>
+        <Grid size={8}>
+          <Grid
+            container
+            sx={{ alignItems: 'flex-start', justifyContent: 'center', flexDirection: 'column' }}
+          >
             <Box>
               <Grid
                 container
-                direction='column'
-                justifyContent='flex-start'
-                alignItems='flex-start'
+
+                sx={{
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                  flexDirection: 'column',
+                }}
               >
-                <Grid item xs={12}>
+                <Grid size={12}>
                   {amountToString(
-                    order.amount,
+                    String(order.amount ?? 0),
                     order.has_range,
-                    order.min_amount,
-                    order.max_amount,
+                    Number(order.min_amount ?? 0),
+                    Number(order.max_amount ?? 0),
                   )}{' '}
-                  {currencyDict[order.currency]}
+                  {currencyDict[(order.currency ?? 0).toString()]}
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <PaymentStringAsIcons
                     othersText={t('Others')}
                     verbose={true}

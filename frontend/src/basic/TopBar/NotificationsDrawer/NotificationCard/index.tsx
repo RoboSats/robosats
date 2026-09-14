@@ -7,7 +7,7 @@ import { Coordinator } from '../../../../models';
 import RobotAvatar from '../../../../components/RobotAvatar';
 import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { Grid } from '@mui/system';
+import { Grid } from '@mui/material';
 import { GarageContext, UseGarageStoreType } from '../../../../contexts/GarageContext';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -30,7 +30,7 @@ const NotificationCard: React.FC<Props> = ({ event, robotHashId, coordinator, se
     if (!coordinator) return <></>;
 
     return (
-      <Grid item style={{ display: 'flex', flexDirection: 'column' }}>
+      <Grid style={{ display: 'flex', flexDirection: 'column' }}>
         <RobotAvatar
           shortAlias={coordinator.federated ? coordinator.shortAlias : undefined}
           hashId={coordinator.federated ? undefined : coordinator.mainnet.onion}
@@ -49,14 +49,15 @@ const NotificationCard: React.FC<Props> = ({ event, robotHashId, coordinator, se
   }, [coordinator]);
 
   const handleOnClick = () => {
-    const orderId = event.tags.find((t) => t[0] === 'order_id')?.[1];
-    if (orderId) {
+    const orderTag = event.tags.find((t) => t[0] === 'order_id')?.[1] ?? '';
+    const orderId = orderTag.split('/').pop();
+    if (orderId && coordinator) {
       const nostrHexPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
       const slot = garage.getSlotByNostrPubKey(nostrHexPubkey ?? '');
       if (slot?.token) {
         setShow(false);
         garage.setCurrentSlot(slot.token);
-        navigateToPage(`order/${orderId}`, navigate);
+        navigateToPage(`order/${coordinator.shortAlias}/${orderId}`, navigate);
       }
     }
   };

@@ -30,7 +30,7 @@ const DeleteRobotConfirmationDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
-        <Box display='flex' alignItems='center' gap={1}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Warning color='warning' />
           {t('Delete Robot?')}
         </Box>

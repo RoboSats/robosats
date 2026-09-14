@@ -13,12 +13,13 @@ import {
   Button,
   ButtonGroup,
   Select,
+  SelectChangeEvent,
   useTheme,
   MenuItem,
 } from '@mui/material';
 
 import { SwapCalls } from '@mui/icons-material';
-import currencyDict from '../../../static/assets/currencies.json';
+import currencyDict from '../../utils/currencies';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import { UseAppStoreType, AppContext, initialAppContext } from '../../contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
@@ -48,7 +49,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
     }
   }, [step]);
 
-  const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+  const handleCurrencyChange = function (e: SelectChangeEvent<number>): void {
     const currency = Number(e.target.value);
     setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
     setStep('3');
@@ -70,13 +71,21 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
             </AccordionSummary>
 
             <AccordionDetails>
-              <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
-                <Grid item>
+              <Grid
+                container
+                spacing={1}
+                sx={{ alignItems: 'center', flexDirection: 'column', padding: 1 }}
+              >
+                <Grid>
                   <Typography>{t('Are you looking to sell your Bitcoins or buy some?')}</Typography>
                 </Grid>
-                <Grid item>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
-                    <Grid item>
+                <Grid>
+                  <Grid
+                    container
+                    spacing={1}
+                    sx={{ alignItems: 'center', flexDirection: 'column' }}
+                  >
+                    <Grid>
                       <ButtonGroup variant='contained'>
                         <Button
                           color='secondary'
@@ -103,14 +112,18 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Typography>
                     {t('Do you want to swap from on-chain into Lightning or vice versa?')}
                   </Typography>
                 </Grid>
-                <Grid item>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
-                    <Grid item>
+                <Grid>
+                  <Grid
+                    container
+                    spacing={1}
+                    sx={{ alignItems: 'center', flexDirection: 'column' }}
+                  >
+                    <Grid>
                       <ButtonGroup variant='contained'>
                         <Button
                           color='primary'
@@ -148,13 +161,13 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Grid container direction='column' alignItems='center' spacing={1}>
-                <Grid item>
+              <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
+                <Grid>
                   <Typography>
                     {t('You can specify the currency you want to use for your trade.')}
                   </Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Select
                     autoWidth
                     sx={{
@@ -167,7 +180,7 @@ const SearchDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                         borderColor: 'text.primary',
                       },
                     }}
-                    size='large'
+                    size='medium'
                     label={t('Select Payment Currency')}
                     required={true}
                     value={fav.currency}

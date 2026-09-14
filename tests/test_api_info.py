@@ -14,6 +14,7 @@ BOND_SIZE = config("BOND_SIZE", cast=float, default=3)
 NOTICE_SEVERITY = config("NOTICE_SEVERITY", cast=str, default="none")
 MARKET_PRICE_APIS = config("MARKET_PRICE_APIS", cast=str, default="none")
 NOTICE_MESSAGE = config("NOTICE_MESSAGE", cast=str, default="")
+BLOSSOM_ENABLED = config("BLOSSOM_ENABLED", cast=bool, default=False)
 
 
 class APIInfoTest(BaseAPITestCase):
@@ -60,3 +61,4 @@ class APIInfoTest(BaseAPITestCase):
         self.assertEqual(data["notice_severity"], NOTICE_SEVERITY)
         self.assertEqual(data["notice_message"], NOTICE_MESSAGE)
         self.assertEqual(data["current_swap_fee_rate"], 0)
+        self.assertEqual(data["blossom_enabled"], BLOSSOM_ENABLED)

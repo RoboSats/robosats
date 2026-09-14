@@ -1,6 +1,10 @@
+import functools
 import json
 import logging
+import os
 import re
+from datetime import datetime, timedelta
+from datetime import timezone as datetime_timezone
 
 import gnupg
 import numpy as np
@@ -8,8 +12,11 @@ import requests
 import ring
 from base91 import decode, encode
 from decouple import config
+from django.utils import timezone
 
 from api.errors import new_error
+from api.mempool import _mempool_fees_with_hard_timeout
+from api.models import Robot
 
 logger = logging.getLogger("api.utils")
 
@@ -27,6 +34,49 @@ def get_session():
             "https": "socks5h://" + TOR_PROXY,
         }
     return session
+
+
+_FEDERATION_BUNDLED_PATH = os.path.join(os.path.dirname(__file__), "federation.json")
+
+
+def _federation_doc_paths() -> list[str]:
+    """Custom FEDERATION_JSON_PATH first, bundled copy as fallback — mirrors _load_federation_doc."""
+    paths = [config("FEDERATION_JSON_PATH", default="", cast=str).strip()]
+    paths.append(_FEDERATION_BUNDLED_PATH)
+    return [p for p in paths if p]
+
+
+@functools.lru_cache(maxsize=1)
+def get_federation_short_alias() -> str:
+    """
+    Resolves this coordinator's federation routing `shortAlias` from its
+    COORDINATOR_ALIAS env identity, which may differ from the `shortAlias`
+    used in /order/<shortAlias>/<orderId>/ URLs (e.g. 'LibreBazaar' → 'bazaar').
+    Matches (lowercased, space-stripped) against each entry's key,
+    `identifier` and `longAlias` in the federation document.
+    """
+    alias = config("COORDINATOR_ALIAS", cast=str, default="").lower().replace(" ", "")
+    if not alias:
+        return alias
+
+    for path in _federation_doc_paths():
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                doc = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            logger.warning(f"Could not load federation document '{path}': {e}")
+            continue
+
+        for key, entry in doc.items():
+            candidates = (
+                key,
+                str(entry.get("identifier", "")),
+                str(entry.get("longAlias", "")),
+            )
+            if alias in (c.lower().replace(" ", "") for c in candidates):
+                return key
+
+    return alias
 
 
 def bitcoind_rpc(method, params=None):
@@ -93,14 +143,8 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
 
     from api.lightning.node import LNNode
 
-    session = get_session()
-    mempool_url = "https://mempool.space"
-    api_path = "/api/v1/fees/recommended"
-
     try:
-        response = session.get(mempool_url + api_path)
-        response.raise_for_status()  # Raises stored HTTPError, if one occurred
-        data = response.json()
+        data = _mempool_fees_with_hard_timeout()
 
         if priority == "suggested":
             value = data.get("fastestFee")
@@ -114,7 +158,10 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
             )
 
     except Exception as e:
-        print(e)
+        logger.warning(
+            "Falling back to LN fee estimator after mempool fetch failed (%s)",
+            type(e).__name__,
+        )
         # Fetch mining fee from LND/CLN instance
         if priority == "suggested":
             target_conf = config("SUGGESTED_TARGET_CONF", cast=int, default=2)
@@ -356,20 +403,74 @@ def compute_avg_premium(queryset):
     return weighted_median_premium, total_volume
 
 
+_ARMOR_BODY_LINE = re.compile(r"^[A-Za-z0-9+/]+={0,2}$")
+
+
+def _is_well_formed_pgp_key(key_text: str) -> bool:
+    lines = key_text.strip().splitlines()
+    if len(lines) < 4:
+        return False
+    if not lines[0].startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
+        return False
+    if not lines[-1].startswith("-----END PGP PUBLIC KEY BLOCK-----"):
+        return False
+    try:
+        blank_idx = next(
+            i for i, line in enumerate(lines[1:-1], 1) if line.strip() == ""
+        )
+    except StopIteration:
+        return False
+    for line in lines[blank_idx + 1 : -1]:
+        if line.startswith("="):
+            continue
+        if not _ARMOR_BODY_LINE.match(line):
+            return False
+    return True
+
+
 def validate_pgp_keys(pub_key, enc_priv_key):
     """Validates PGP valid keys. Formats them in a way understandable by the frontend"""
-    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
 
     # Standardize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
     enc_priv_key = enc_priv_key.replace("\r\n", "\n").replace("\\", "\n")
     pub_key = pub_key.replace("\r\n", "\n").replace("\\", "\n")
+
+    if not _is_well_formed_pgp_key(pub_key):
+        return (
+            False,
+            new_error(
+                1034,
+                {
+                    "import_pub_result_stderr": "Invalid PGP key format",
+                    "import_pub_result_returncode": "",
+                    "import_pub_result_summary": "",
+                    "import_pub_result_results": str([]),
+                    "import_pub_result_imported": "0",
+                },
+            ),
+            None,
+            None,
+        )
+
+    if Robot.objects.filter(public_key=pub_key).exists():
+        return (
+            False,
+            new_error(1055),
+            None,
+            None,
+        )
+
+    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
 
     # Try to import the public key
     import_pub_result = gpg.import_keys(pub_key)
     if not import_pub_result.imported == 1:
         # If a robot is deleted and it is rebuilt with the same pubKey, the key will not be imported again
         # so we assert that the import error is "Not actually changed"
-        if "Not actually changed" not in import_pub_result.results[0]["text"]:
+        if (
+            import_pub_result.results
+            and "Not actually changed" not in import_pub_result.results[0]["text"]
+        ):
             return (
                 False,
                 new_error(
@@ -387,13 +488,32 @@ def validate_pgp_keys(pub_key, enc_priv_key):
                 None,
                 None,
             )
+    # Check key creation timestamp
+    if import_pub_result.fingerprints:
+        keys = gpg.list_keys(keys=import_pub_result.fingerprints[0])
+        if keys:
+            key_creation = datetime.fromtimestamp(
+                int(keys[0]["date"]), tz=datetime_timezone.utc
+            )
+            if key_creation > timezone.now() - timedelta(hours=12):
+                return (
+                    False,
+                    new_error(1056, {"key_creation_date": key_creation.isoformat()}),
+                    None,
+                    None,
+                )
+
     # Exports the public key again for uniform formatting.
-    pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
+    if import_pub_result.fingerprints:
+        pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
 
     # Try to import the encrypted private key (without passphrase)
     import_priv_result = gpg.import_keys(enc_priv_key)
     if not import_priv_result.sec_imported == 1:
-        if "Not actually changed" not in import_priv_result.results[0]["text"]:
+        if (
+            import_priv_result.results
+            and "Not actually changed" not in import_priv_result.results[0]["text"]
+        ):
             return (
                 False,
                 new_error(
@@ -499,7 +619,9 @@ def objects_to_hyperlinks(logs: str) -> str:
         for obj in objects:
             logs = re.sub(
                 rf"{obj}\(([0-9a-fA-F\-A-F]+),\s*([^)]+)\)",
-                lambda m: f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>',
+                lambda m: (
+                    f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>'
+                ),
                 logs,
                 flags=re.DOTALL,
             )

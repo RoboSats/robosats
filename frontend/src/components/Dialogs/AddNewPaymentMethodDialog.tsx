@@ -51,7 +51,7 @@ const AddNewPaymentMethodDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
-        <Box display='flex' alignItems='center' gap={1}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DashboardCustomizeIcon color='primary' />
           {t('Add custom payment method')}
         </Box>
@@ -67,7 +67,7 @@ const AddNewPaymentMethodDialog = ({
             {t('Use this free input to add any payment method you would like to offer.')}
           </Typography>
 
-          <Grid item style={{ width: '100%' }} sx={{ mt: 2 }}>
+          <Grid style={{ width: '100%' }} sx={{ mt: 2 }}>
             <TextField
               required={true}
               fullWidth

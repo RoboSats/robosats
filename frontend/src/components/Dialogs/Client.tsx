@@ -17,7 +17,7 @@ import PublicIcon from '@mui/icons-material/Public';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 import { RoboSatsNoTextIcon } from '../Icons';
-import { AppContext, type AppContextProps } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -26,7 +26,7 @@ interface Props {
 
 const ClientDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
   const { t } = useTranslation();
-  const { clientVersion } = useContext<AppContextProps>(AppContext);
+  const { clientVersion } = useContext<UseAppStoreType>(AppContext);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -39,7 +39,7 @@ const ClientDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
           <Divider />
 
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <RoboSatsNoTextIcon
                 sx={{ width: '1.4em', height: '1.4em', right: '0.2em', position: 'relative' }}
               />
@@ -49,7 +49,7 @@ const ClientDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
 
           <Divider />
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <PublicIcon />
             </ListItemIcon>
             <ListItemText

@@ -1,7 +1,7 @@
-import { requestProvider, type WeblnProvider } from 'webln';
+import { requestProvider, type WebLNProvider } from 'webln';
 
-const getWebln = async (): Promise<WeblnProvider> => {
-  const resultPromise = new Promise<WeblnProvider>((resolve, reject) => {
+const getWebln = async (): Promise<WebLNProvider> => {
+  const resultPromise = new Promise<WebLNProvider>((resolve, reject) => {
     requestProvider()
       .then((webln) => {
         if (webln != null) {

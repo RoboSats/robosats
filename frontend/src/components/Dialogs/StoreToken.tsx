@@ -51,18 +51,20 @@ const StoreTokenDialog = ({
             value={garage.getSlot()?.token}
             variant='filled'
             size='medium'
-            InputProps={{
-              endAdornment: (
-                <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-                  <IconButton
-                    onClick={() => {
-                      systemClient.copyToClipboard(garage.getSlot()?.token ?? '');
-                    }}
-                  >
-                    <ContentCopy color='primary' />
-                  </IconButton>
-                </Tooltip>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+                    <IconButton
+                      onClick={() => {
+                        systemClient.copyToClipboard(garage.getSlot()?.token ?? '');
+                      }}
+                    >
+                      <ContentCopy color='primary' />
+                    </IconButton>
+                  </Tooltip>
+                ),
+              },
             }}
           />
         </Grid>

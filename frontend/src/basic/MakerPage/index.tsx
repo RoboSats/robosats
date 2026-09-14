@@ -42,9 +42,9 @@ const MakerPage = (): React.JSX.Element => {
       premium: maker.premium ?? null,
       paymentMethods: maker.paymentMethods,
       amountFilter: {
-        amount: maker.amount,
-        minAmount: maker.minAmount,
-        maxAmount: maker.maxAmount,
+        amount: maker.amount ?? null,
+        minAmount: maker.minAmount ?? null,
+        maxAmount: maker.maxAmount ?? null,
         threshold: 0.7,
       },
     });
@@ -59,7 +59,7 @@ const MakerPage = (): React.JSX.Element => {
   ]);
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    const thirdParty = thirdParties[shortAlias];
+    const thirdParty = (thirdParties as Record<string, unknown>)[shortAlias];
     if (thirdParty) {
       const thirdPartyOrder = Object.values(federation.book).find(
         (o) => o?.id === id && o?.coordinatorShortAlias === shortAlias,
@@ -82,7 +82,7 @@ const MakerPage = (): React.JSX.Element => {
   const tableMaxHeight = Math.min(matches.length * 3.25 + 3, windowSize.height * 0.68);
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1}>
+    <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
       <VisitThirdParty
         open={openVisitThirdParty}
         onClose={() => {
@@ -109,13 +109,13 @@ const MakerPage = (): React.JSX.Element => {
             });
         }}
       />
-      <Grid item>
+      <Grid>
         <Collapse in={matches.length > 0 && showMatches}>
-          <Grid container direction='column' alignItems='center' spacing={1}>
-            <Grid item>
+          <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column' }}>
+            <Grid>
               <Typography variant='h5'>{t('Existing orders match yours!')}</Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <BookTable
                 orderList={matches}
                 maxWidth={tableMaxWidth} // EM units
@@ -130,7 +130,7 @@ const MakerPage = (): React.JSX.Element => {
           </Grid>
         </Collapse>
       </Grid>
-      <Grid item>
+      <Grid>
         <Paper
           elevation={12}
           style={{

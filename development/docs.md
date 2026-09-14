@@ -14,6 +14,8 @@ The `Garage` contains user's tokens separated by `Slots`. Every `Slot` stores th
 
 The `Federation` stores information from all available coordinators. All coordinators information is aggregated here: `book` for all orders and `exchange` for `Coordinator`'s meta data. When the Nostr connection is active, `book` is filled with orders from relays instead.
 
+The federation list is determined at runtime via a majority vote across coordinator-served `/api/federation/` endpoints — coordinators can join or leave without an app release. See [federation-discovery.md](/development/federation-discovery.md) for the full design.
+
 <div align="center">
   <img src="./assets/federation.png" width="500px">
 </div>

@@ -37,6 +37,9 @@ export interface TradeRobotSummary {
   sent_sats: number;
   received_fiat: number;
   trade_fee_sats: number;
+  trade_fee_percent: number;
+  bond_size_sats: number;
+  bond_size_percent: number;
   payment_hash?: string;
   preimage?: string;
   address?: string;
@@ -141,6 +144,9 @@ class Order {
     sent_sats: 0,
     received_fiat: 0,
     trade_fee_sats: 0,
+    trade_fee_percent: 0,
+    bond_size_sats: 0,
+    bond_size_percent: 0,
   };
 
   taker_summary: TradeRobotSummary = {
@@ -155,6 +161,9 @@ class Order {
     sent_sats: 0,
     received_fiat: 0,
     trade_fee_sats: 0,
+    trade_fee_percent: 0,
+    bond_size_sats: 0,
+    bond_size_percent: 0,
   };
 
   platform_summary: TradeCoordinatorSummary = {
@@ -207,6 +216,7 @@ class Order {
 
     if (slot) {
       const coordinator = federation.getCoordinator(this.shortAlias);
+      if (!coordinator || !coordinator.url) return this;
       const authHeaders = slot.getRobot()?.getAuthHeaders();
       if (!authHeaders) return this;
       const data = await apiClient
@@ -238,6 +248,7 @@ class Order {
 
       if (slot) {
         const coordinator = federation.getCoordinator(this.shortAlias);
+        if (!coordinator || !coordinator.url) return this;
         const data = await apiClient
           .post(coordinator.url, `/api/order/?order_id=${Number(this.id)}`, action, {
             tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '',
@@ -255,6 +266,7 @@ class Order {
     if (!slot) return this;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator || !coordinator.url) return this;
     const authHeaders = slot.getRobot()?.getAuthHeaders();
     if (!authHeaders) return this;
     const data = await apiClient

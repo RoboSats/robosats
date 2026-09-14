@@ -283,6 +283,8 @@ class NotificationsService : Service() {
         // Create intent to stop the service
         val stopIntent = Intent(this, NotificationsService::class.java).apply {
             action = ACTION_STOP_SERVICE
+            // Restrict delivery to this app's package to prevent implicit intent interception
+            setPackage(packageName)
         }
         val stopPendingIntent = PendingIntent.getService(
             this,
@@ -316,13 +318,18 @@ class NotificationsService : Service() {
         val orderId = event.firstTag("order_id")
 
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
+            action = "com.robosats.OPEN_ORDER"
             putExtra("order_id", orderId)
+            // Restrict delivery to this app's package to prevent implicit intent interception
+            setPackage(applicationContext.packageName)
         }
         val pendingIntent = PendingIntent.getActivity(
             applicationContext,
-            0,
+            // Use a unique request code per notification so each gets its own PendingIntent
+            // extras (order_id) rather than sharing a single reused PendingIntent
+            event.id.hashCode(),
             intent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val garageString = EncryptedStorage.getEncryptedStorage("garage_slots")

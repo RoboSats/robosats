@@ -45,6 +45,10 @@ class Robot(models.Model):
     # nostr
     nostr_pubkey = models.CharField(max_length=64, null=True, blank=True)
 
+    webhook_url = models.URLField(max_length=500, null=True, blank=True)
+    webhook_api_key = models.CharField(max_length=256, null=True, blank=True)
+    webhook_enabled = models.BooleanField(default=False, null=False)
+
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards
@@ -86,6 +90,31 @@ class Robot(models.Model):
     @receiver(post_save, sender=User)
     def save_user_robot(sender, instance, **kwargs):
         instance.robot.save()
+
+    @staticmethod
+    def is_valid_onion_url(url):
+        """Validates that the URL is a valid http .onion address (Tor only).
+
+        Enforces:
+        - scheme must be 'http' (the only scheme Tor hidden services use for callbacks)
+        - hostname must end with '.onion' (no double-dots or tricks)
+        - hostname must not be empty
+        """
+        if not url:
+            return False
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(url)
+            hostname = parsed.hostname or ""
+            return (
+                parsed.scheme == "http"
+                and hostname.endswith(".onion")
+                and not hostname.endswith("..onion")
+                and len(hostname) > len(".onion")
+            )
+        except Exception:
+            return False
 
     def __str__(self):
         return self.user.username

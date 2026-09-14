@@ -59,13 +59,25 @@ class Garage {
     const slotsDump: string = (await systemClient.getItem('garage_slots')) ?? '';
 
     if (slotsDump !== '') {
-      const rawSlots: Record<string, object> = JSON.parse(slotsDump);
-      Object.values(rawSlots).forEach((rawSlot: object) => {
+      interface RawRobotAttributes {
+        pubKey?: string;
+        encPrivKey?: string;
+      }
+      interface RawSlot {
+        token?: string;
+        robots?: Record<string, RawRobotAttributes>;
+        lastOrder?: object;
+        activeOrder?: object;
+      }
+      const rawSlots: Record<string, RawSlot> = JSON.parse(slotsDump);
+      Object.values(rawSlots).forEach((rawSlot: RawSlot) => {
         if (rawSlot?.token) {
-          const robotAttributes = Object.values(rawSlot.robots)[0] as object;
+          const robotAttributes: RawRobotAttributes = rawSlot.robots
+            ? (Object.values(rawSlot.robots)[0] ?? {})
+            : {};
           this.slots[rawSlot.token] = new Slot(
             rawSlot.token,
-            Object.keys(rawSlot.robots),
+            rawSlot.robots ? Object.keys(rawSlot.robots) : [],
             {
               pubKey: robotAttributes?.pubKey,
               encPrivKey: robotAttributes?.encPrivKey,
@@ -74,8 +86,8 @@ class Garage {
               this.triggerHook('onSlotUpdate');
             },
           );
-          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.lastOrder));
-          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.activeOrder));
+          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.lastOrder ?? {}));
+          this.slots[rawSlot.token].updateSlotFromOrder(new Order(rawSlot.activeOrder ?? {}));
         }
       });
 

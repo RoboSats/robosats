@@ -9,16 +9,20 @@ on:
     branches:
       - main
     paths:
-      - '**/*.js'
-      - '**/*.ts'
-      - '**/*.tsx'
-  pull_request_target:
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+  pull_request:
     branches:
       - main
     paths:
-      - '**/*.js'
-      - '**/*.ts'
-      - '**/*.tsx'
+      - 'frontend/**/*.js'
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
 
 jobs:
   run-linters:
@@ -27,14 +31,12 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+        uses: actions/checkout@v7
 
       - name: 'Setup node'
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
-          node-version: 18.20.8
+          node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -42,7 +44,12 @@ jobs:
       - name: 'Install NPM Dependencies'
         run: |
           cd frontend
-          npm install
+          npm ci
+
+      - name: 'Run TypeScript type-check'
+        run: |
+          cd frontend
+          npm run typecheck
 
       - name: 'Run EsLint'
         run: |
@@ -52,4 +59,9 @@ jobs:
       - name: 'Run Prettier'
         run: |
           cd frontend
-          npm run format
+          npm run format:check
+
+      - name: 'Run Jest unit tests'
+        run: |
+          cd frontend
+          npm test -- --no-coverage

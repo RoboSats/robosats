@@ -98,7 +98,6 @@ const MapChart: React.FC<MapChartProps> = ({
         ) : (
           <>
             <Grid
-              item
               style={{
                 height: '3.1em',
                 justifyContent: 'space-between',

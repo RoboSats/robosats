@@ -14,7 +14,7 @@ import {
 import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { useTheme } from '@emotion/react';
+import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { Coordinator } from '../../models';
@@ -30,6 +30,9 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
 }) => {
   const { setOpen } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  // Gate on the final federation hash: the selector stays disabled until
+  // discovery has settled and removed coordinators can no longer be picked.
+  const loadingCoordinators = !federation.federationListLoaded;
   const theme = useTheme();
   const { t } = useTranslation();
   const [coordinator, setCoordinator] = useState<Coordinator>();
@@ -50,7 +53,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   }, [coordinatorAlias]);
 
   return (
-    <Grid item>
+    <Grid>
       <Grid sx={{ marginBottom: 1 }}>
         <Alert
           severity={
@@ -58,11 +61,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
           }
           sx={{ marginTop: 2 }}
         >
-          {!coordinator?.loadingInfo
-            ? coordinator?.info?.swap_enabled
-              ? t('On-chain swaps.')
-              : t('Not on-chain swaps.')
-            : t('Loading coordinator info...')}
+          {coordinator?.info?.swap_enabled ? t('On-chain swaps.') : t('Not on-chain swaps.')}
         </Alert>
       </Grid>
       <Box
@@ -87,9 +86,8 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
         >
           <Grid container style={{ marginTop: 10, width: '100%' }}>
             <Grid
-              item
               sx={{
-                cursor: 'pointer',
+                cursor: loadingCoordinators ? 'default' : 'pointer',
                 position: 'relative',
                 left: '0.3em',
                 bottom: '0.1em',
@@ -97,61 +95,71 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                 width: '30%',
               }}
               onClick={() => {
-                onClickCurrentCoordinator(coordinatorAlias);
+                if (!loadingCoordinators) onClickCurrentCoordinator(coordinatorAlias);
               }}
             >
-              <Grid item>
-                <RobotAvatar
-                  shortAlias={coordinatorAlias}
-                  hashId={!coordinator?.federated ? coordinator?.mainnet.onion : undefined}
-                  style={{ width: '3em', height: '3em' }}
-                  smooth={true}
-                  flipHorizontally={false}
-                  small={true}
-                />
-                {(coordinator?.loadingInfo || coordinator?.loadingLimits) && (
-                  <CircularProgress
-                    size={49}
-                    thickness={5}
-                    style={{ marginTop: -48, position: 'absolute' }}
-                  />
+              <Grid>
+                {loadingCoordinators ? (
+                  <CircularProgress size={49} thickness={3} style={{ margin: '0.1em' }} />
+                ) : (
+                  <>
+                    <RobotAvatar
+                      shortAlias={coordinatorAlias}
+                      hashId={!coordinator?.federated ? coordinator?.mainnet.onion : undefined}
+                      style={{ width: '3em', height: '3em' }}
+                      smooth={true}
+                      flipHorizontally={false}
+                      small={true}
+                    />
+                  </>
                 )}
               </Grid>
             </Grid>
 
-            <Grid item xs={{ width: '100%' }}>
-              <Select
-                variant='standard'
-                fullWidth
-                required={true}
-                inputProps={{
-                  style: {
-                    textAlign: 'center',
-                  },
-                }}
-                value={coordinatorAlias}
-                onChange={handleCoordinatorChange}
-                disableUnderline
-              >
-                {federation.getCoordinators().map((coordinator): React.JSX.Element | null => {
-                  let row: React.JSX.Element | null = null;
-                  if (coordinator.enabled === true) {
-                    row = (
-                      <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>
-                        <Typography>{coordinator.longAlias}</Typography>
-                      </MenuItem>
-                    );
-                  }
-                  return row;
-                })}
-              </Select>
+            <Grid>
+              {loadingCoordinators ? (
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                  sx={{ textAlign: 'center', paddingTop: '0.6em' }}
+                >
+                  {t('Loading...')}
+                </Typography>
+              ) : (
+                <Select
+                  variant='standard'
+                  fullWidth
+                  required={true}
+                  inputProps={{
+                    style: {
+                      textAlign: 'center',
+                    },
+                  }}
+                  value={coordinatorAlias}
+                  onChange={handleCoordinatorChange}
+                  disableUnderline
+                  disabled={loadingCoordinators}
+                >
+                  {federation.getCoordinators().map((coordinator): React.JSX.Element | null => {
+                    let row: React.JSX.Element | null = null;
+                    if (coordinator.enabled === true) {
+                      row = (
+                        <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>
+                          <Typography>{coordinator.longAlias}</Typography>
+                        </MenuItem>
+                      );
+                    }
+                    return row;
+                  })}
+                </Select>
+              )}
             </Grid>
           </Grid>
         </Tooltip>
         <Grid container>
-          <Grid item>
-            <Stack direction='row' alignContent='center' spacing={2} style={{ flexGrow: 1 }}>
-              <Grid item>
+          <Grid>
+            <Stack direction='row' sx={{ alignItems: 'center', flexGrow: 1 }} spacing={2}>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}
@@ -171,7 +179,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   </Typography>
                 </Tooltip>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}
@@ -191,7 +199,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
                   </Typography>
                 </Tooltip>
               </Grid>
-              <Grid item>
+              <Grid>
                 <Tooltip
                   placement='top'
                   enterTouchDelay={500}

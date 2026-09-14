@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
-import { Avatar, Badge, Tooltip } from '@mui/material';
+import { Avatar, Badge, Tooltip, type TooltipProps } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
@@ -19,7 +19,8 @@ interface Props {
   statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
   orderType?: number;
   tooltip?: string;
-  tooltipPosition?: string;
+  tooltipPosition?: TooltipProps['placement'];
+  baseUrl?: string;
   avatarClass?: string;
   onLoad?: () => void;
 }
@@ -72,6 +73,7 @@ const RobotAvatar: React.FC<Props> = ({
           ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
           : `file:///android_asset/static/assets/federation/avatars/${shortAlias}.webp`;
       setAvatarSrc(coordinatorAvatar);
+      setActiveBackground(false);
     } else {
       setActiveBackground(true);
     }
@@ -143,16 +145,20 @@ const RobotAvatar: React.FC<Props> = ({
         </div>
       );
     } else {
+      // When avatarSrc is not yet available, use the placeholder image data URL
+      // so the loading animation is shown instead of MUI's grey silhouette.
+      const src = avatarSrc ?? `data:${backgroundData.mime};base64,${backgroundData.data}`;
       return (
         <Avatar
           className={avatarClass}
           style={style}
           alt={hashId ?? shortAlias ?? 'unknown'}
-          src={avatarSrc}
-          imgProps={{
-            sx: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
-            style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
-            onLoad,
+          src={src}
+          slotProps={{
+            img: {
+              style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
+              onLoad,
+            },
           }}
         />
       );

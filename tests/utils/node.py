@@ -5,7 +5,7 @@ import time
 import requests
 from decouple import config
 from requests.auth import HTTPBasicAuth
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ConnectionError, ReadTimeout
 
 LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 WAIT_STEP = 0.2
@@ -216,8 +216,10 @@ def connect_to_node(node_name, node_id, ip_port):
             print("Peered robot node to coordinator node!")
             return response.json()
         else:
-            if "already connected to peer" in response.json()["message"]:
-                return response.json()
+            response_json = response.json()
+            error_text = response_json.get("message", "") or response_json.get("error", "")
+            if "already connected to peer" in error_text:
+                return response_json
             print(f"Could not peer coordinator node: {response.json()}")
             time.sleep(WAIT_STEP)
 
@@ -277,18 +279,30 @@ def generate_blocks(address, num_blocks):
 def pay_invoice(node_name, invoice):
     reset_mission_control(node_name)
     node = get_node(node_name)
-    data = {"payment_request": invoice}
+    # /v1/channels/transactions was removed in LND v0.21; use /v2/router/send instead.
+    # /v2/router/send streams responses — for hold invoices the connection stays open
+    # while the HTLC is in-flight, so the socket read will block until the timeout
+    # fires, which raises ReadTimeout just like the old blocking endpoint did.
+    data = {
+        "payment_request": invoice,
+        "timeout_seconds": 60,
+        "fee_limit_sat": 10000,
+    }
     try:
         requests.post(
-            f"http://localhost:{node['port']}/v1/channels/transactions",
+            f"http://localhost:{node['port']}/v2/router/send",
             json=data,
             headers=node["headers"],
-            # 0.15s is enough for LND to LND hodl ACCEPT
-            # 0.4s is enough for LND to CLN hodl ACCEPT
-            timeout=0.2 if LNVENDOR == "LND" else 1,
+            # LND v0.21+ needs longer for HTLC to reach ACCEPTED on coordinator LND
+            # CLN + holdinvoice v4.0.0 needs even more time to reach ACCEPTED state
+            timeout=1 if LNVENDOR == "LND" else 5,
         )
-    except ReadTimeout:
-        # Request to pay hodl invoice has timed out: that's good!
+    except (ReadTimeout, ConnectionError):
+        # /v2/router/send uses chunked transfer encoding; a read timeout during body
+        # consumption raises ConnectionError (wrapping urllib3 ReadTimeoutError) instead
+        # of ReadTimeout. Both mean the HTLC is in-flight — that's the expected state.
+        # Give the node a moment to process the HTLC before follow_hold_invoices checks.
+        time.sleep(0.5)
         return
 
 

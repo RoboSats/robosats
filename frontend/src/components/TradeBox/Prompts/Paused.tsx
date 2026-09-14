@@ -27,7 +27,7 @@ export const PausedPrompt = ({
         </Typography>
       </ListItem>
 
-      <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+      <Grid size={12} style={{ display: 'flex', justifyContent: 'center' }}>
         <LoadingButton loading={pauseLoading} color='primary' onClick={onClickResumeOrder}>
           <PlayCircle sx={{ width: '1.6em', height: '1.6em' }} />
           {t('Unpause Order')}

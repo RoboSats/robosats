@@ -106,7 +106,10 @@ export function isFileMessage(event: { kind: number; tags: string[][] }): boolea
 }
 
 export function isImageMimeType(mimeType: string): boolean {
-  return mimeType.startsWith('image/');
+  // Allowlist only safe raster image types. SVG is excluded because it can contain
+  // external resource references (<image href="...">) that cause tracking requests.
+  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  return allowed.includes(mimeType);
 }
 
 export function parseImageMetadataJson(jsonStr: string): ParsedFileMessage | null {

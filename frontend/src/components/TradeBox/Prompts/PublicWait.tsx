@@ -12,13 +12,14 @@ import {
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
-import currencies from '../../../../static/assets/currencies.json';
+import currencies from '../../../utils/currencies';
 
 import { type Order } from '../../../models';
 import {
   FederationContext,
   type UseFederationStoreType,
 } from '../../../contexts/FederationContext';
+import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { PauseCircle, Storefront, Percent } from '@mui/icons-material';
 
 interface PublicWaitPrompProps {
@@ -33,7 +34,8 @@ export const PublicWaitPrompt = ({
   onClickPauseOrder,
 }: PublicWaitPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
 
   const currencyCode = currencies[order.currency.toString()];
 
@@ -97,9 +99,9 @@ export const PublicWaitPrompt = ({
       <Divider />
 
       <Grid container>
-        <Grid item xs={10}>
+        <Grid size={10}>
           <ListItem>
-            <ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 56 }}>
               <Storefront />
             </ListItemIcon>
             <ListItemText
@@ -111,7 +113,7 @@ export const PublicWaitPrompt = ({
           </ListItem>
         </Grid>
 
-        <Grid item xs={2}>
+        <Grid size={2}>
           <div style={{ position: 'relative', top: '0.5em', right: '1em' }}>
             <Tooltip
               placement='top'
@@ -132,7 +134,7 @@ export const PublicWaitPrompt = ({
 
       <Divider />
       <ListItem>
-        <ListItemIcon>
+        <ListItemIcon sx={{ minWidth: 56 }}>
           <Percent />
         </ListItemIcon>
         <ListItemText

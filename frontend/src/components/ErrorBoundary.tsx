@@ -42,7 +42,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             <b>Error message:</b> {this.state.error.message}
           </p>
           <p>
-            <b>Error cause:</b> {this.state.error.cause}
+            <b>Error cause:</b> {String(this.state.error.cause ?? '')}
           </p>
           <p>
             <b>Error component stack:</b> {this.state.errorInfo.componentStack}

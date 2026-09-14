@@ -1,3 +1,4 @@
+from decouple import config
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
@@ -16,6 +17,10 @@ def users_cleansing():
 
     from api.logics import Logics
 
+    import gnupg
+
+    gpg = gnupg.GPG(gnupghome=config("GNUPG_DIR", default=None))
+
     # Users who's last login has not been in the last 6 hours
     active_time_range = (timezone.now() - timedelta(hours=6), timezone.now())
     queryset = User.objects.filter(~Q(last_login__range=active_time_range))
@@ -30,6 +35,7 @@ def users_cleansing():
                 user.robot.earned_rewards > 0
                 or user.robot.claimed_rewards > 0
                 or user.robot.telegram_enabled is True
+                or user.robot.webhook_enabled is True
             ):
                 continue
             if not user.robot.total_contracts == 0:
@@ -38,6 +44,27 @@ def users_cleansing():
             if valid:
                 deleted_users.append(str(user))
                 user.delete()
+                # Delete also gpg keys
+                private_fpr = {
+                    key["fingerprint"] for key in
+                    gpg.scan_keys_mem(str(user.robot.encrypted_private_key))
+                }
+                for fpr in private_fpr:
+                    try:
+                        gpg.delete_keys(
+                            fpr, secret=True, expect_passphrase=False
+                        )
+                    except Exception as e:
+                        print(str(e))
+                public_fpr = {
+                    key["fingerprint"] for key in
+                    gpg.scan_keys_mem(str(user.robot.public_key))
+                }
+                for fpr in public_fpr:
+                    try:
+                        gpg.delete_keys(fpr, secret=False)
+                    except Exception as e:
+                        print(str(e))
         except Exception:
             pass
 

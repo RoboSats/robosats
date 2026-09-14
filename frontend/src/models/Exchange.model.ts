@@ -44,7 +44,9 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
       active_robots_today = Math.max(active_robots_today, coordinator.info.active_robots_today);
 
       aggregations.forEach((key: string) => {
-        info[key] = Number(info[key]) + Number(coordinator.info[key]);
+        (info as unknown as Record<string, unknown>)[key] =
+          Number((info as unknown as Record<string, unknown>)[key]) +
+          Number((coordinator.info as unknown as Record<string, unknown>)[key]);
       });
     }
   });

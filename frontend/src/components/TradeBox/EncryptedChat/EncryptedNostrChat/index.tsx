@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
 import { AttachFile } from '@mui/icons-material';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
-import { useTheme } from '@mui/system';
+import { useTheme } from '@mui/material';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ChatApiResponse } from '..';
@@ -42,6 +42,7 @@ interface Props {
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
+  coordinatorUrl?: string;
 }
 
 const audioPath =
@@ -64,6 +65,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
   onSendFile,
   setError,
   setLastIndex,
+  coordinatorUrl,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -165,7 +167,8 @@ const EncryptedNostrChat: React.FC<Props> = ({
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
     if (!shortAlias) return;
 
-    const url = federation.getCoordinator(shortAlias).url;
+    const url = federation.getCoordinator(shortAlias)?.url ?? '';
+    if (!url) return;
     apiClient
       .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex ?? 0}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
@@ -266,12 +269,11 @@ const EncryptedNostrChat: React.FC<Props> = ({
   return (
     <Grid
       container
-      direction='column'
-      justifyContent='flex-start'
-      alignItems='center'
+
       spacing={0.5}
+      sx={{ alignItems: 'center', justifyContent: 'flex-start', flexDirection: 'column' }}
     >
-      <Grid item>
+      <Grid>
         <ChatHeader connected={Boolean(peerPubKey)} peerConnected={peerConnected} />
         <Paper
           elevation={1}
@@ -296,6 +298,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
                   makerHashId={makerHashId}
                   imageUrls={imageUrls}
                   setImageUrls={setImageUrls}
+                  coordinatorUrl={coordinatorUrl}
                 />
               </li>
             );
@@ -308,7 +311,10 @@ const EncryptedNostrChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked} style={{ width: '100%' }}>
-          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%', marginTop: '8px' }}>
+          <Grid
+            style={{ display: 'flex', width: '100%', marginTop: '8px' }}
+            sx={{ alignItems: 'stretch' }}
+          >
             <TextField
               label={t('Type a message')}
               variant='standard'
@@ -317,7 +323,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
               maxRows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  onButtonClicked(e);
+                  onButtonClicked(e as unknown as React.FormEvent<HTMLFormElement>);
                 }
               }}
               value={value}

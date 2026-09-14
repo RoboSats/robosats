@@ -5,6 +5,7 @@ from chat.views import ChatView
 
 from .views import (
     BookView,
+    FederationView,
     HistoricalView,
     InfoView,
     LimitView,
@@ -40,4 +41,5 @@ urlpatterns = [
     path("chat/", ChatView.as_view({"get": "get", "post": "post"}), name="chat"),
     path("notifications/", NotificationsView.as_view(), name="notifications"),
     path("review/", ReviewView.as_view(), name="review"),
+    path("federation/", FederationView.as_view({"get": "get"}), name="federation"),
 ]

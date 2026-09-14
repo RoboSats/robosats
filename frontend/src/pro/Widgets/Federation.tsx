@@ -2,14 +2,14 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper, Box } from '@mui/material';
-import { type GridItem } from 'react-grid-layout';
+import { type LayoutItem } from 'react-grid-layout';
 import FederationTable from '../../components/FederationTable';
 
 const BASE_WIDTH = 550;
 const MIN_SCALE = 0.5;
 
 interface FederationWidgetProps {
-  layout: GridItem;
+  layout: LayoutItem | undefined;
   gridCellSize: number;
   style?: React.StyleHTMLAttributes<HTMLElement>;
   className?: string;

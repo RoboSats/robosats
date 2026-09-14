@@ -174,7 +174,10 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "robosats.middleware.DisableCSRFMiddleware",
+    # CsrfViewMiddleware is active; DRF API views are individually exempt via
+    # APIView.as_view() which calls csrf_exempt internally.  The middleware is
+    # kept so that the Django admin retains full CSRF protection.
+    "django.middleware.csrf.CsrfViewMiddleware",
     "robosats.middleware.SplitAuthorizationHeaderMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "robosats.middleware.RobotTokenSHA256AuthenticationMiddleWare",
@@ -254,7 +257,12 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [config("REDIS_URL")],
+            "hosts": [
+                {
+                    "address": config("REDIS_URL"),
+                    "socket_timeout": None,
+                }
+            ],
         },
     },
 }
@@ -300,3 +308,6 @@ MAX_BOND_SIZE = float(15)
 INVOICE_AND_ESCROW_DURATION = 180
 # Time to confirm chat and confirm fiat (time to Fiat Sent confirmation) HOURS
 FIAT_EXCHANGE_DURATION = 24
+
+# The name of the request header used for CSRF authentication.
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default=[])
