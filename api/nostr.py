@@ -15,6 +15,7 @@ from nostr_sdk import (
     nip17_make_private_msg_async,
 )
 from api.models import Order
+from api.utils import get_federation_short_alias
 from decouple import config
 
 
@@ -65,7 +66,7 @@ class Nostr:
             Tag.parse(
                 [
                     "order_id",
-                    f"{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                    f"{get_federation_short_alias()}/{order.id}",
                 ]
             ),
             Tag.parse(["status", str(order.status)]),
@@ -130,7 +131,7 @@ class Nostr:
             Tag.parse(
                 [
                     "source",
-                    f"http://{config('HOST_NAME')}/order/{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                    f"http://{config('HOST_NAME')}/order/{get_federation_short_alias()}/{order.id}",
                 ]
             ),
             Tag.parse(
