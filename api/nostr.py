@@ -21,13 +21,11 @@ from nostr_sdk import (
     nip17_make_private_msg_async,
     uniffi_set_event_loop,
 )
-from secp256k1 import PrivateKey
-
-from api.models import Order, Robot
-from api.utils import TOR_PROXY, USE_TOR
 
 logger = logging.getLogger("api.nostr")
 
+from api.models import Order
+from api.utils import get_federation_short_alias, TOR_PROXY, USE_TOR
 
 class Nostr:
     """Simple nostr events manager to be used as a cache system for clients"""
@@ -76,7 +74,7 @@ class Nostr:
             Tag.parse(
                 [
                     "order_id",
-                    f"{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                    f"{get_federation_short_alias()}/{order.id}",
                 ]
             ),
             Tag.parse(["status", str(order.status)]),
@@ -113,7 +111,8 @@ class Nostr:
             return False
         if not robot.nostr_forward_pubkey or not robot.nostr_forward_relay:
             return False
-        if not Robot.is_valid_onion_relay_url(robot.nostr_forward_relay):
+        if not 
+        .is_valid_onion_relay_url(robot.nostr_forward_relay):
             return False
 
         print("Sending nostr FORWARD event")
@@ -212,7 +211,7 @@ class Nostr:
             Tag.parse(
                 [
                     "source",
-                    f"http://{config('HOST_NAME')}/order/{config('COORDINATOR_ALIAS', cast=str).lower()}/{order.id}",
+                    f"http://{config('HOST_NAME')}/order/{get_federation_short_alias()}/{order.id}",
                 ]
             ),
             Tag.parse(

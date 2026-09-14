@@ -47,6 +47,7 @@ interface Props {
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
   blossomEnabled: boolean;
+  coordinatorUrl?: string;
 }
 
 const audioPath =
@@ -72,6 +73,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   setError,
   setLastIndex,
   blossomEnabled,
+  coordinatorUrl,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -113,7 +115,8 @@ const EncryptedApiChat: React.FC<Props> = ({
 
     if (!shortAlias) return;
 
-    const url = federation.getCoordinator(shortAlias).url;
+    const url = federation.getCoordinator(shortAlias)?.url ?? '';
+    if (!url) return;
     apiClient
       .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
@@ -308,6 +311,7 @@ const EncryptedApiChat: React.FC<Props> = ({
                   makerHashId={makerHashId}
                   imageUrls={imageUrls}
                   setImageUrls={setImageUrls}
+                  coordinatorUrl={coordinatorUrl}
                 />
               </li>
             );

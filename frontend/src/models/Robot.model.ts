@@ -101,7 +101,24 @@ class Robot {
     const authHeaders = this.getAuthHeaders();
     const coordinator = federation.getCoordinator(this.shortAlias);
 
-    if (!authHeaders || !coordinator || !this.hasEnoughEntropy) return null;
+    if (!coordinator) {
+      // Coordinator removed from the live federation — unreachable; resolve the
+      // loading state (it defaults to true and nothing else would reset it here).
+      this.loading = false;
+      return null;
+    }
+
+    if (!authHeaders || !this.hasEnoughEntropy) return null;
+
+    // A coordinator without an address for the current network/origin cannot serve
+    // this robot — any order ids it holds are stale (possibly fetched against the
+    // wrong host by a previous bug), so clear them and resolve the loading state
+    // (it defaults to true and nothing else would ever reset it here).
+    if (!coordinator.url) {
+      this.update({ activeOrderId: null, lastOrderId: null });
+      this.loading = false;
+      return this;
+    }
 
     this.loading = true;
 
@@ -154,6 +171,7 @@ class Robot {
     if (!federation) return null;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator || !coordinator.url) return {};
     const data = (await apiClient
       .post(
         coordinator.url,
@@ -175,6 +193,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator || !coordinator.url) return;
     await apiClient
       .post(coordinator.url, '/api/stealth/', { wantsStealth }, { tokenSHA256: this.tokenSHA256 })
       .catch((e) => {
@@ -226,7 +245,7 @@ class Robot {
     settings: NostrForwardSettings,
   ): Promise<boolean> => {
     const coordinator = federation.getCoordinator(this.shortAlias);
-    if (!coordinator) return false;
+    if (!coordinator || !coordinator.url) return false;
 
     try {
       const raw = await apiClient.put(coordinator.url, '/api/robot/', settings, {
@@ -261,6 +280,7 @@ class Robot {
     if (!federation) return;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
+    if (!coordinator || !coordinator.url) return;
     const body = {
       pubkey: this.nostrPubKey,
     };
