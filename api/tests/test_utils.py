@@ -26,8 +26,8 @@ from api.utils import (
     get_session,
     hex_to_base91,
     is_valid_token,
+    render_order_logs,
     mining_fee,
-    objects_to_hyperlinks,
     robosats_commit_cache,
     validate_onchain_address,
     validate_pgp_keys,
@@ -465,12 +465,38 @@ class TestUtils(TestCase):
         self.assertFalse(is_valid_token(invalid_token_2))
         self.assertFalse(is_valid_token(invalid_token_3))
 
-    def test_objects_to_hyperlinks(self):
-        logs = "Robot(1, robot_name)"
-        linked_logs = objects_to_hyperlinks(logs)
-        self.assertEqual(
-            linked_logs, '<b><a href="/coordinator/api/robot/1">robot_name</a></b>'
+    def test_render_order_logs(self):
+        import json
+
+        raw = json.dumps(
+            [
+                {
+                    "timestamp": "2026-01-01T00:00:00+00:00",
+                    "level": "INFO",
+                    "event": "Pre-Taken by Robot(1, robot_name) for 100 fiat units",
+                }
+            ]
         )
+        html_out = render_order_logs(raw)
+        self.assertIn(
+            '<b><a href="/coordinator/api/robot/1">robot_name</a></b>', html_out
+        )
+
+    def test_render_order_logs_escapes_html(self):
+        import json
+
+        raw = json.dumps(
+            [
+                {
+                    "timestamp": "2026-01-01T00:00:00+00:00",
+                    "level": "INFO",
+                    "event": "<script>alert(1)</script>",
+                }
+            ]
+        )
+        html_out = render_order_logs(raw)
+        self.assertNotIn("<script>", html_out)
+        self.assertIn("&lt;script&gt;", html_out)
 
 
 class TestGetFederationShortAlias(TestCase):
