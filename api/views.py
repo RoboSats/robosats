@@ -184,7 +184,9 @@ class MakerView(CreateAPIView):
             bond_size=bond_size,
             latitude=latitude,
             longitude=longitude,
-            password=password,
+            password=hashlib.sha256(password.encode()).hexdigest()
+            if password
+            else None,
             description=description,
         )
 
@@ -550,7 +552,14 @@ class OrderView(viewsets.ViewSet):
                     return Response(context, status=status.HTTP_409_CONFLICT)
 
                 if order.password is not None:
-                    if password is None or not compare_digest(order.password, password):
+                    submitted_hash = (
+                        hashlib.sha256(password.encode()).hexdigest()
+                        if password
+                        else None
+                    )
+                    if submitted_hash is None or not compare_digest(
+                        order.password, submitted_hash
+                    ):
                         return Response(
                             new_error(1045), status=status.HTTP_403_FORBIDDEN
                         )

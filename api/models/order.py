@@ -165,7 +165,8 @@ class Order(models.Model):
         blank=True,
     )
 
-    # optionally makers can set a password for the order to be taken
+    # optionally makers can set a password for the order to be taken.
+    # stored as a SHA-256 hex digest (64 chars); the raw password is never persisted.
     password = models.TextField(
         max_length=2000,
         null=True,
