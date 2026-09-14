@@ -16,6 +16,7 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `nostr.py` | `Nostr` — order events (kind 38383) + encrypted DMs |
 | `admin.py` | Django admin, incl. fund-moving dispute-resolution actions |
 | `utils.py` | Price aggregation, base91, PGP clearsign validation |
+| `mempool.py` | mempool.space fee fetch with hard subprocess deadline (Django-free module for `spawn`) |
 | `errors.py` | `new_error(code)` — decade-coded error responses |
 | `oas_schemas.py` | drf-spectacular overrides, reads live settings at import |
 
@@ -130,12 +131,23 @@ Traps for a dispatch bug). Message types: `welcome`, `order_published`,
 throttles on `CHAT_NOTIFICATION_TIMEGAP` min (env, default 5) since the prior chatroom
 message — except the first message, which always notifies. Webhooks restricted to
 `.onion` via `Robot.is_valid_onion_url` (`@staticmethod`, not a model constraint).
+Telegram descriptions embed `Notifications.order_url(order)` —
+`http://{HOST_NAME}/order/{shortAlias}/{order.id}` where `shortAlias` comes from
+`get_federation_short_alias()` (`api/utils.py`): `COORDINATOR_ALIAS` (normalized:
+lowercased, spaces stripped) matched against each federation entry's key, `identifier`
+and `longAlias` → entry `shortAlias`. Document loading mirrors `_load_federation_doc`
+(`views.py`): `FEDERATION_JSON_PATH` if set, bundled `api/federation.json` as fallback,
+raw-alias fallback if nothing resolves.
+Never emit `COORDINATOR_ALIAS` raw in order URLs/tags — it can diverge from the
+federation `shortAlias` (e.g. `templeofsats` vs `temple`) and the frontend cannot route it.
 
 ## Nostr (`nostr.py`)
 Order events (kind 38383), NIP-69 tags: `d, name, k, f, s, amt, fa, pm, premium, source,
 expiration, y, network, layer, bond, z` (+`g` only if lat/long set). `get_status_tag` is
 binary: `"pending"` only if `status==PUB`, else `"success"`. No order-id tag on the order
 event — `d` is `md5(COORDINATOR_ALIAS+order.id)` as UUID (DM event does carry `order_id`).
+The DM `order_id` tag and the `source` tag use `get_federation_short_alias()` (see
+Notifications above); `d` and `y` keep raw `COORDINATOR_ALIAS`.
 Password orders (`order.password is not None`) skipped before construction (see Product
 intent). DMs via `send_private_msg`; signs with `NOSTR_NSEC`; publishes to one self-hosted
 strfry relay (`STRFRY_HOST`/`STRFRY_PORT`) over plain `ws://`.
@@ -157,7 +169,12 @@ sight **auto-creates `User`+`Robot`**, nickname via `NickGenerator` (see
 ## Supporting modules
 `utils.py`: `get_exchange_rates` — median across `MARKET_PRICE_APIS` (env), skips
 `bitpay.com`/`criptoya.com` under `USE_TOR`, excludes `ARS` from blockchain.info; also
-`base91_to_hex`/`hex_to_base91`, `validate_pgp_keys`/`verify_signed_message`. `errors.py`:
+`base91_to_hex`/`hex_to_base91`, `validate_pgp_keys`/`verify_signed_message`,
+`get_minning_fee` (mempool.space → fallback `LNNode.estimate_fee`). `mempool.py`:
+`get_minning_fee`'s fetch runs in a spawned child with a hard `MEMPOOL_TIMEOUT` (default
+10s) deadline against `MEMPOOL_API_URL` (default `https://mempool.space`, `.onion` configurable) —
+kept Django-free so the spawned child never imports the model registry.
+`errors.py`:
 decade→field — 1000s→`bad_request` (default, incl. unlisted 6000s/7000s), 2000s→
 `bad_statement`, 3000s→`bad_invoice`, 4000s→`bad_address`, 5000s→`bad_summary`.
 `oas_schemas.py` reads bond/duration settings at **import time** — needs app reload on change.
