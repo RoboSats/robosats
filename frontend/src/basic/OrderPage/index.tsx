@@ -122,7 +122,7 @@ const OrderPage = (): React.JSX.Element => {
         onClose={() => {
           setAcknowledgedWarning(true);
         }}
-        longAlias={federation.getCoordinator(params.shortAlias ?? '')?.longAlias}
+        longAlias={federation.getCoordinator(params.shortAlias ?? '')?.longAlias ?? ''}
       />
       <NoRobotDialog
         open={openNoRobot}

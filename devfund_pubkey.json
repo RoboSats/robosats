@@ -1,6 +1,6 @@
 {
-  "mainnet": "037ff12b6a4e4bcb4b944b6d20af08cdff61b3461c1dff0d00a88697414d891bc7",
-  "mainnet_rpcserver": "robosats-devfund.m.voltageapp.io",
-  "mainnet_invoices_readonly_macaroon_hex": "0201036c6e640228030a10afe0d5e25ca0a9be87b47bc6cb5a31221201301a100a08696e766f69636573120472656164000006202686bde8e143447e3b4e5154ad0cde685100683d920ee4d26fb557554f91cca0",
-  "testnet": "03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"
+  "mainnet": "026e0ce05b8dac8782e588e5525b3ccf42937bad972967149b215c5b65fb4a3e2f",
+  "mainnet_rpcserver": "rpc.robosats.org",
+  "mainnet_invoices_readonly_macaroon_hex": "0201036c6e64023a030a1076fed800f19589f1946582edddfcb8871201331a220a03757269121b2f6c6e7270632e4c696768746e696e672f416464496e766f696365000006204b389ada45f355e8159f36159cbea3afce2d2bc4b517db63fda6e9845ccd5e0e",
+  "testnet": ""
 }

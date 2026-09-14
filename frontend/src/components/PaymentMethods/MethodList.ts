@@ -40,6 +40,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'DaviPlata', icon: 'daviplata', reversible: false },
   { name: 'Doordash USA GiftCard', icon: 'doordashus', reversible: false },
   { name: 'eBay Gift Card', icon: 'ebaygiftcard', reversible: false },
+  { name: 'Efectivo BBVA', icon: 'bbva', reversible: false },
   { name: 'Faster Payments', icon: 'faster', reversible: false },
   { name: 'Google Play Gift Code', icon: 'googleplay', reversible: false },
   { name: 'GoPay', icon: 'gopay', reversible: false },
