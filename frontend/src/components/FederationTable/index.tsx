@@ -258,7 +258,10 @@ const FederationTable = ({
                 onClickCoordinator(params.row.shortAlias);
               }}
             >
-              {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
+              {!params.row.url ? (
+                // No address for the current network/origin — unreachable, not loading.
+                <LinkOff color='error' />
+              ) : Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
                 <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
               ) : params.row.limits !== undefined ? (
                 <Link color='success' />

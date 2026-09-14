@@ -281,6 +281,9 @@ const EncryptedChat: React.FC<Props> = ({
     if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey || !coordinator) {
       throw new Error(t('Cannot send file: missing keys or peer not connected'));
     }
+    if (!coordinator.url) {
+      throw new Error(t('Cannot send file: coordinator is not reachable on this network'));
+    }
 
     // Preflight: verify canvas readback is allowed before stripping EXIF.
     // Tor Browser (and hardened browsers) block canvas extraction behind a

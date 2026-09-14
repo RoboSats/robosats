@@ -49,14 +49,15 @@ const NotificationCard: React.FC<Props> = ({ event, robotHashId, coordinator, se
   }, [coordinator]);
 
   const handleOnClick = () => {
-    const orderId = event.tags.find((t) => t[0] === 'order_id')?.[1];
-    if (orderId) {
+    const orderTag = event.tags.find((t) => t[0] === 'order_id')?.[1] ?? '';
+    const orderId = orderTag.split('/').pop();
+    if (orderId && coordinator) {
       const nostrHexPubkey = event.tags.find((t) => t[0] === 'p')?.[1];
       const slot = garage.getSlotByNostrPubKey(nostrHexPubkey ?? '');
       if (slot?.token) {
         setShow(false);
         garage.setCurrentSlot(slot.token);
-        navigateToPage(`order/${orderId}`, navigate);
+        navigateToPage(`order/${coordinator.shortAlias}/${orderId}`, navigate);
       }
     }
   };

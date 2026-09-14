@@ -58,7 +58,7 @@
     "style-loader": "^4.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "webpack": "^5.109.2",
+    "webpack": "^5.110.3",
     "webpack-cli": "^7.2.2"
   },
   "dependencies": {
