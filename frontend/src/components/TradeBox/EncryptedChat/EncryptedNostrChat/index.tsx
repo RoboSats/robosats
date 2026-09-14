@@ -42,6 +42,7 @@ interface Props {
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
+  coordinatorUrl?: string;
 }
 
 const audioPath =
@@ -64,6 +65,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
   onSendFile,
   setError,
   setLastIndex,
+  coordinatorUrl,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -165,7 +167,8 @@ const EncryptedNostrChat: React.FC<Props> = ({
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
     if (!shortAlias) return;
 
-    const url = federation.getCoordinator(shortAlias).url;
+    const url = federation.getCoordinator(shortAlias)?.url ?? '';
+    if (!url) return;
     apiClient
       .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex ?? 0}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
@@ -295,6 +298,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
                   makerHashId={makerHashId}
                   imageUrls={imageUrls}
                   setImageUrls={setImageUrls}
+                  coordinatorUrl={coordinatorUrl}
                 />
               </li>
             );

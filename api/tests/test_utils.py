@@ -1,3 +1,5 @@
+import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -11,17 +13,21 @@ from django.test import TestCase
 from django.utils import timezone
 
 from api.models import Robot
+from api.mempool import _fetch_mempool_fees
 from api.utils import (
     base91_to_hex,
     bitcoind_rpc,
     get_cln_version,
     get_exchange_rates,
+    get_federation_short_alias,
     get_lnd_version,
+    get_minning_fee,
     get_robosats_commit,
     get_session,
     hex_to_base91,
     is_valid_token,
     render_order_logs,
+    mining_fee,
     robosats_commit_cache,
     validate_onchain_address,
     validate_pgp_keys,
@@ -151,6 +157,45 @@ class TestUtils(TestCase):
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
 
+    @patch("api.mempool.MEMPOOL_API_URL", "http://mempool.onion")
+    @patch("api.mempool.get_session")
+    def test_fetch_mempool_fees(self, mock_get_session):
+        mock_response = Mock()
+        mock_response.json.return_value = {"fastestFee": 55, "economyFee": 12}
+        mock_session = mock_get_session.return_value
+        mock_session.get.return_value = mock_response
+
+        data = _fetch_mempool_fees()
+
+        self.assertEqual(data, {"fastestFee": 55, "economyFee": 12})
+        mock_session.get.assert_called_once_with(
+            "http://mempool.onion/api/v1/fees/recommended",
+            timeout=(10.0, 10.0),
+        )
+        mock_response.raise_for_status.assert_called_once()
+
+    @patch("api.utils._mempool_fees_with_hard_timeout")
+    def test_get_minning_fee_success(self, mock_hard_timeout):
+        mining_fee.clear()
+        mock_hard_timeout.return_value = {"fastestFee": 55, "economyFee": 12}
+
+        self.assertEqual(get_minning_fee("suggested", 1000), 55)
+        self.assertEqual(get_minning_fee("minimum", 1000), 12)
+
+    @patch("api.lightning.node.LNNode.estimate_fee")
+    @patch("api.utils._mempool_fees_with_hard_timeout")
+    def test_get_minning_fee_falls_back_on_timeout(
+        self, mock_hard_timeout, mock_estimate_fee
+    ):
+        mining_fee.clear()
+        mock_hard_timeout.side_effect = TimeoutError("timed out")
+        mock_estimate_fee.return_value = {"mining_fee_rate": 7}
+
+        value = get_minning_fee("suggested", 1000)
+
+        self.assertEqual(value, 7)
+        mock_estimate_fee.assert_called_once()
+
     if config("LNVENDOR", cast=str) == "LND":
 
         def test_get_lnd_version(self):
@@ -265,9 +310,12 @@ class TestUtils(TestCase):
 
         for key in malformed_keys:
             with self.subTest(key=key):
-                is_valid, error, returned_pub_key, returned_enc_priv_key = (
-                    validate_pgp_keys(key, enc_priv_key)
-                )
+                (
+                    is_valid,
+                    error,
+                    returned_pub_key,
+                    returned_enc_priv_key,
+                ) = validate_pgp_keys(key, enc_priv_key)
                 self.assertFalse(is_valid)
                 self.assertEqual(error["error_code"], 1034)
                 self.assertIsNone(returned_pub_key)
@@ -449,3 +497,119 @@ class TestUtils(TestCase):
         html_out = render_order_logs(raw)
         self.assertNotIn("<script>", html_out)
         self.assertIn("&lt;script&gt;", html_out)
+
+
+class TestGetFederationShortAlias(TestCase):
+    """Unit-test the COORDINATOR_ALIAS → federation shortAlias resolver."""
+
+    def setUp(self):
+        get_federation_short_alias.cache_clear()
+        self._tmp_paths = []
+
+    def tearDown(self):
+        get_federation_short_alias.cache_clear()
+        for path in self._tmp_paths:
+            os.unlink(path)
+
+    def _write_doc(self, doc):
+        tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        json.dump(doc, tmp)
+        tmp.close()
+        self._tmp_paths.append(tmp.name)
+        return tmp.name
+
+    def _patch_config(self, mock_config, coordinator_alias, federation_path):
+        mock_config.side_effect = lambda key, **kw: {
+            "COORDINATOR_ALIAS": coordinator_alias,
+            "FEDERATION_JSON_PATH": federation_path,
+        }.get(key, kw.get("default", ""))
+
+    @patch("api.utils.config")
+    def test_key_match_returns_key(self, mock_config):
+        path = self._write_doc(
+            {"temple": {"shortAlias": "temple", "identifier": "templeofsats"}}
+        )
+        self._patch_config(mock_config, "temple", path)
+        self.assertEqual(get_federation_short_alias(), "temple")
+
+    @patch("api.utils.config")
+    def test_identifier_match_returns_short_alias(self, mock_config):
+        path = self._write_doc(
+            {"lake": {"shortAlias": "lake", "identifier": "thebiglake"}}
+        )
+        self._patch_config(mock_config, "TheBigLake", path)
+        self.assertEqual(get_federation_short_alias(), "lake")
+
+    @patch("api.utils.config")
+    def test_identifier_match_is_case_insensitive(self, mock_config):
+        path = self._write_doc(
+            {"temple": {"shortAlias": "temple", "identifier": "templeofsats"}}
+        )
+        self._patch_config(mock_config, "TempleOfSats", path)
+        self.assertEqual(get_federation_short_alias(), "temple")
+
+    @patch("api.utils.config")
+    def test_long_alias_match_ignores_spaces_and_case(self, mock_config):
+        path = self._write_doc(
+            {
+                "temple": {
+                    "shortAlias": "temple",
+                    "longAlias": "Temple of Sats",
+                    "identifier": "templeofsats",
+                }
+            }
+        )
+        self._patch_config(mock_config, "Temple Of Sats", path)
+        self.assertEqual(get_federation_short_alias(), "temple")
+
+    @patch("api.utils.config")
+    def test_long_alias_match_when_identifier_diverges(self, mock_config):
+        path = self._write_doc(
+            {
+                "bazaar": {
+                    "shortAlias": "bazaar",
+                    "longAlias": "LibreBazaar",
+                    "identifier": "bazaar",
+                }
+            }
+        )
+        self._patch_config(mock_config, "LibreBazaar", path)
+        self.assertEqual(get_federation_short_alias(), "bazaar")
+
+    @patch("api.utils._FEDERATION_BUNDLED_PATH", "/nonexistent/bundled.json")
+    @patch("api.utils.config")
+    def test_no_match_falls_back_to_raw_alias(self, mock_config):
+        path = self._write_doc(
+            {"bazaar": {"shortAlias": "bazaar", "identifier": "bazaar"}}
+        )
+        self._patch_config(mock_config, "unknowncoord", path)
+        self.assertEqual(get_federation_short_alias(), "unknowncoord")
+
+    @patch("api.utils.config")
+    def test_unset_federation_path_uses_bundled(self, mock_config):
+        bundled = self._write_doc(
+            {"lake": {"shortAlias": "lake", "identifier": "thebiglake"}}
+        )
+        self._patch_config(mock_config, "TheBigLake", "")
+        with patch("api.utils._FEDERATION_BUNDLED_PATH", bundled):
+            self.assertEqual(get_federation_short_alias(), "lake")
+
+    @patch("api.utils.config")
+    def test_invalid_custom_path_falls_back_to_bundled(self, mock_config):
+        bundled = self._write_doc(
+            {"lake": {"shortAlias": "lake", "identifier": "thebiglake"}}
+        )
+        self._patch_config(mock_config, "TheBigLake", "/nonexistent/custom.json")
+        with patch("api.utils._FEDERATION_BUNDLED_PATH", bundled):
+            self.assertEqual(get_federation_short_alias(), "lake")
+
+    @patch("api.utils._FEDERATION_BUNDLED_PATH", "/nonexistent/bundled.json")
+    @patch("api.utils.config")
+    def test_both_paths_invalid_falls_back_to_raw_alias(self, mock_config):
+        self._patch_config(mock_config, "somecoord", "/nonexistent/custom.json")
+        self.assertEqual(get_federation_short_alias(), "somecoord")
+
+    @patch("api.utils.config")
+    def test_empty_alias_returns_empty(self, mock_config):
+        self._patch_config(mock_config, "", "")
+        self.assertEqual(get_federation_short_alias(), "")

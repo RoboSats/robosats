@@ -84,7 +84,8 @@ export const DisputePrompt = ({
   };
 
   useEffect(() => {
-    const url = federation.getCoordinator(shortAlias).url;
+    const url = federation.getCoordinator(shortAlias)?.url ?? '';
+    if (!url) return;
     apiClient
       .get(url, `/api/chat/?order_id=${order.id}&offset=0`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',

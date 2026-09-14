@@ -41,13 +41,12 @@ const config: Configuration = {
   },
 };
 
-const configNode = (env: any, argv: { mode: string }): Configuration => {
+const configNode = (env: any, _argv: { mode: string }): Configuration => {
   return {
     ...config,
     output: {
       path: path.resolve(__dirname, 'static/frontend'),
-      filename:
-        argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
+      filename: `main.v${version}.[contenthash].js`,
       clean: true,
       publicPath: 'auto',
     },
@@ -184,7 +183,7 @@ const configNode = (env: any, argv: { mode: string }): Configuration => {
   };
 };
 
-const configAndroid = (env: any, argv: { mode: string }): Configuration => {
+const configAndroid = (env: any, _argv: { mode: string }): Configuration => {
   return {
     ...config,
     module: {
@@ -234,8 +233,7 @@ const configAndroid = (env: any, argv: { mode: string }): Configuration => {
     },
     output: {
       path: path.resolve(__dirname, '../android/app/src/main/assets/static/frontend'),
-      filename:
-        argv.mode === 'production' ? `main.v${version}.[contenthash].js` : `main.v${version}.js`,
+      filename: `main.v${version}.[contenthash].js`,
       clean: true,
       publicPath: 'auto',
     },

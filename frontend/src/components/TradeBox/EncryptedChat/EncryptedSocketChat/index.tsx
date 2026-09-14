@@ -52,6 +52,7 @@ interface Props {
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
   blossomEnabled: boolean;
+  coordinatorUrl?: string;
 }
 
 const EncryptedSocketChat: React.FC<Props> = ({
@@ -68,6 +69,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   peerPubKey,
   setPeerPubKey,
   blossomEnabled,
+  coordinatorUrl,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -132,7 +134,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
     if (!slot?.token) return;
 
-    const url = federation.getCoordinator(order.shortAlias).url;
+    const url = federation.getCoordinator(order.shortAlias)?.url ?? '';
+    if (!url) return;
     const protocol = url.includes('https') ? 'wss://' : 'ws://';
 
     websocketClient
@@ -373,6 +376,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
                   makerHashId={makerHashId}
                   imageUrls={imageUrls}
                   setImageUrls={setImageUrls}
+                  coordinatorUrl={coordinatorUrl}
                 />
               </li>
             );
