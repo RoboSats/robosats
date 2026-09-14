@@ -183,6 +183,7 @@ class Command(BaseCommand):
             if (
                 order.trade_escrow.status == LNPayment.Status.SETLED
                 and order.is_swap is False
+                and order.status in [Order.Status.PAY, Order.Status.FAI]
             ):
                 follow_send_payment.delay(lnpayment.payment_hash)
 

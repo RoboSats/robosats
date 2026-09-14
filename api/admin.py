@@ -55,8 +55,20 @@ class ETokenAdmin(AdminChangeLinksMixin, TokenAdmin):
 class LNPaymentInline(admin.StackedInline):
     model = LNPayment
     can_delete = True
-    fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
-    readonly_fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
+    fields = (
+        "payment_hash",
+        "num_satoshis",
+        "status",
+        "routing_budget_sats",
+        "description",
+    )
+    readonly_fields = (
+        "payment_hash",
+        "num_satoshis",
+        "status",
+        "routing_budget_sats",
+        "description",
+    )
     show_change_link = True
     show_full_result_count = True
     extra = 0
@@ -183,6 +195,24 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.status in [Order.Status.DIS, Order.Status.WFR]
                 and order.is_disputed
             ):
+                payout_in_flight = False
+                if order.payout:
+                    payout_in_flight = order.payout.status in [
+                        LNPayment.Status.FLIGHT,
+                        LNPayment.Status.SUCCED,
+                    ]
+                if order.payout_tx:
+                    payout_in_flight = payout_in_flight or order.payout_tx.broadcasted
+
+                if payout_in_flight:
+                    self.message_user(
+                        request,
+                        f"Order {order.id}: payout is already in flight or completed — "
+                        "resolve manually after confirming the on-chain/LN outcome.",
+                        messages.ERROR,
+                    )
+                    continue
+
                 own_bond_sats = order.maker_bond.num_satoshis
                 if Logics.is_buyer(order, order.maker):
                     if order.is_swap:
@@ -221,6 +251,25 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.status in [Order.Status.DIS, Order.Status.WFR]
                 and order.is_disputed
             ):
+                # if the buyer payout is already in flight or succeeded.
+                payout_in_flight = False
+                if order.payout:
+                    payout_in_flight = order.payout.status in [
+                        LNPayment.Status.FLIGHT,
+                        LNPayment.Status.SUCCED,
+                    ]
+                if order.payout_tx:
+                    payout_in_flight = payout_in_flight or order.payout_tx.broadcasted
+
+                if payout_in_flight:
+                    self.message_user(
+                        request,
+                        f"Order {order.id}: payout is already in flight or completed — "
+                        "resolve manually after confirming the on-chain/LN outcome.",
+                        messages.ERROR,
+                    )
+                    continue
+
                 own_bond_sats = order.taker_bond.num_satoshis
                 if Logics.is_buyer(order, order.taker):
                     if order.is_swap:

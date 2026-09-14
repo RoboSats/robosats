@@ -292,146 +292,173 @@ class Logics:
             Order.Status.MLD,
         ]
 
-        # in any case, if order is_swap and there is an onchain_payment, cancel it.
-        if order.status not in does_not_expire:
-            cls.cancel_onchain_payment(order)
+        with transaction.atomic():
+            # Re-fetch under an exclusive row lock so that confirm_fiat /
+            # open_dispute / collaborative_cancel cannot interleave fund
+            # operations while we expire the order.
+            order = Order.objects.select_for_update().get(pk=order.pk)
 
-        if order.status in does_not_expire:
-            return False
+            # in any case, if order is_swap and there is an onchain_payment, cancel it.
+            if order.status not in does_not_expire:
+                cls.cancel_onchain_payment(order)
 
-        elif order.status == Order.Status.WFB:
-            order.update_status(Order.Status.EXP)
-            order.expiry_reason = Order.ExpiryReasons.NMBOND
-            cls.cancel_bond(order.maker_bond)
-            order.save(update_fields=["expiry_reason"])
+            if order.status in does_not_expire:
+                return False
 
-            order.log("Order expired while waiting for maker bond")
-            order.log("Maker bond was cancelled")
-
-            return True
-
-        elif order.status in [Order.Status.PUB, Order.Status.PAU]:
-            cls.return_bond(order.maker_bond)
-            order.update_status(Order.Status.EXP)
-            order.expiry_reason = Order.ExpiryReasons.NTAKEN
-
-            take_orders_queryset = TakeOrder.objects.filter(order=order)
-            for idx, take_order in enumerate(take_orders_queryset):
-                cls.take_order_expires(take_order)
-
-            order.save(update_fields=["expiry_reason"])
-
-            send_notification.delay(order_id=order.id, message="order_expired_untaken")
-
-            order.log("Order expired while public or paused")
-            order.log("Maker bond was **unlocked**")
-
-            return True
-
-        elif order.status == Order.Status.WF2:
-            """Weird case where an order expires and both participants
-            did not proceed with the contract. Likely the site was
-            down or there was a bug. Still bonds must be charged
-            to avoid service DDOS."""
-
-            cls.settle_bond(order.maker_bond)
-            cls.settle_bond(order.taker_bond)
-            cls.cancel_escrow(order)
-            order.update_status(Order.Status.EXP)
-            order.expiry_reason = Order.ExpiryReasons.NESINV
-            order.save(update_fields=["expiry_reason"])
-
-            order.log(
-                "Order expired while waiting for both buyer invoice and seller escrow"
-            )
-            order.log("Maker bond was **settled**")
-            order.log("Taker bond was **settled**")
-
-            return True
-
-        elif order.status == Order.Status.WFE:
-            maker_is_seller = cls.is_seller(order, order.maker)
-            # If maker is seller, settle the bond and order goes to expired
-            if maker_is_seller:
-                cls.settle_bond(order.maker_bond)
-                cls.return_bond(order.taker_bond)
-                # If seller is offline the escrow LNpayment does not exist
-                try:
-                    cls.cancel_escrow(order)
-                except Exception:
-                    pass
+            elif order.status == Order.Status.WFB:
                 order.update_status(Order.Status.EXP)
-                order.expiry_reason = Order.ExpiryReasons.NESCRO
+                order.expiry_reason = Order.ExpiryReasons.NMBOND
+                cls.cancel_bond(order.maker_bond)
                 order.save(update_fields=["expiry_reason"])
-                # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
-                order.log("Order expired while waiting for escrow of the maker/seller")
-                order.log("Maker bond was **settled**")
-                order.log("Taker bond was **unlocked**")
+                order.log("Order expired while waiting for maker bond")
+                order.log("Maker bond was cancelled")
 
                 return True
 
-            # If maker is buyer, settle the taker's bond order goes back to public
-            else:
-                cls.settle_bond(order.taker_bond)
-                # If seller is offline the escrow LNpayment does not even exist
-                try:
-                    cls.cancel_escrow(order)
-                except Exception:
-                    pass
-                taker_bond = order.taker_bond
-                cls.publish_order(order)
-                send_notification.delay(order_id=order.id, message="order_published")
-                # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
-
-                order.log("Order expired while waiting for escrow of the taker/seller")
-                order.log("Taker bond was **settled**")
-
-                return True
-
-        elif order.status == Order.Status.WFI:
-            # The trade could happen without a buyer invoice. However, this user
-            # is likely AFK; will probably desert the contract as well.
-
-            maker_is_buyer = cls.is_buyer(order, order.maker)
-            # If maker is buyer, settle the bond and order goes to expired
-            if maker_is_buyer:
-                cls.settle_bond(order.maker_bond)
-                cls.return_bond(order.taker_bond)
-                cls.return_escrow(order)
+            elif order.status in [Order.Status.PUB, Order.Status.PAU]:
+                cls.return_bond(order.maker_bond)
                 order.update_status(Order.Status.EXP)
-                order.expiry_reason = Order.ExpiryReasons.NINVOI
+                order.expiry_reason = Order.ExpiryReasons.NTAKEN
+
+                take_orders_queryset = TakeOrder.objects.filter(order=order)
+                for idx, take_order in enumerate(take_orders_queryset):
+                    cls.take_order_expires(take_order)
+
                 order.save(update_fields=["expiry_reason"])
-                # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
-                order.log("Order expired while waiting for invoice of the maker/buyer")
-                order.log("Maker bond was **settled**")
-                order.log("Taker bond was **unlocked**")
+                send_notification.delay(
+                    order_id=order.id, message="order_expired_untaken"
+                )
+
+                order.log("Order expired while public or paused")
+                order.log("Maker bond was <b>unlocked</b>")
 
                 return True
 
-            # If maker is seller settle the taker's bond, order goes back to public
-            else:
+            elif order.status == Order.Status.WF2:
+                """Weird case where an order expires and both participants
+                did not proceed with the contract. Likely the site was
+                down or there was a bug. Still bonds must be charged
+                to avoid service DDOS."""
+
+                cls.settle_bond(order.maker_bond)
                 cls.settle_bond(order.taker_bond)
-                cls.return_escrow(order)
-                taker_bond = order.taker_bond
-                cls.publish_order(order)
-                send_notification.delay(order_id=order.id, message="order_published")
-                # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
+                cls.cancel_escrow(order)
+                order.update_status(Order.Status.EXP)
+                order.expiry_reason = Order.ExpiryReasons.NESINV
+                order.save(update_fields=["expiry_reason"])
 
-                order.log("Order expired while waiting for invoice of the taker/buyer")
-                order.log("Taker bond was **settled**")
+                order.log(
+                    "Order expired while waiting for both buyer invoice and seller escrow"
+                )
+                order.log("Maker bond was <b>settled</b>")
+                order.log("Taker bond was <b>settled</b>")
 
                 return True
 
-        elif order.status in [Order.Status.CHA, Order.Status.FSE]:
-            # Another weird case. The time to confirm 'fiat sent or received' expired. Yet no dispute
-            # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat
-            # sent", we assume this is a dispute case by default.
+            elif order.status == Order.Status.WFE:
+                maker_is_seller = cls.is_seller(order, order.maker)
+                # If maker is seller, settle the bond and order goes to expired
+                if maker_is_seller:
+                    cls.settle_bond(order.maker_bond)
+                    cls.return_bond(order.taker_bond)
+                    # If seller is offline the escrow LNpayment does not exist
+                    try:
+                        cls.cancel_escrow(order)
+                    except Exception:
+                        pass
+                    order.update_status(Order.Status.EXP)
+                    order.expiry_reason = Order.ExpiryReasons.NESCRO
+                    order.save(update_fields=["expiry_reason"])
+                    # Reward taker with part of the maker bond
+                    cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
+
+                    order.log(
+                        "Order expired while waiting for escrow of the maker/seller"
+                    )
+                    order.log("Maker bond was <b>settled</b>")
+                    order.log("Taker bond was <b>unlocked</b>")
+
+                    return True
+
+                # If maker is buyer, settle the taker's bond order goes back to public
+                else:
+                    cls.settle_bond(order.taker_bond)
+                    # If seller is offline the escrow LNpayment does not even exist
+                    try:
+                        cls.cancel_escrow(order)
+                    except Exception:
+                        pass
+                    taker_bond = order.taker_bond
+                    cls.publish_order(order)
+                    send_notification.delay(
+                        order_id=order.id, message="order_published"
+                    )
+                    # Reward maker with part of the taker bond
+                    cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
+
+                    order.log(
+                        "Order expired while waiting for escrow of the taker/seller"
+                    )
+                    order.log("Taker bond was <b>settled</b>")
+
+                    return True
+
+            elif order.status == Order.Status.WFI:
+                # The trade could happen without a buyer invoice. However, this user
+                # is likely AFK; will probably desert the contract as well.
+
+                maker_is_buyer = cls.is_buyer(order, order.maker)
+                # If maker is buyer, settle the bond and order goes to expired
+                if maker_is_buyer:
+                    cls.settle_bond(order.maker_bond)
+                    cls.return_bond(order.taker_bond)
+                    cls.return_escrow(order)
+                    order.update_status(Order.Status.EXP)
+                    order.expiry_reason = Order.ExpiryReasons.NINVOI
+                    order.save(update_fields=["expiry_reason"])
+                    # Reward taker with part of the maker bond
+                    cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
+
+                    order.log(
+                        "Order expired while waiting for invoice of the maker/buyer"
+                    )
+                    order.log("Maker bond was <b>settled</b>")
+                    order.log("Taker bond was <b>unlocked</b>")
+
+                    return True
+
+                # If maker is seller settle the taker's bond, order goes back to public
+                else:
+                    cls.settle_bond(order.taker_bond)
+                    cls.return_escrow(order)
+                    taker_bond = order.taker_bond
+                    cls.publish_order(order)
+                    send_notification.delay(
+                        order_id=order.id, message="order_published"
+                    )
+                    # Reward maker with part of the taker bond
+                    cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
+
+                    order.log(
+                        "Order expired while waiting for invoice of the taker/buyer"
+                    )
+                    order.log("Taker bond was <b>settled</b>")
+
+                    return True
+
+            elif order.status in [Order.Status.CHA, Order.Status.FSE]:
+                # Another weird case. The time to confirm 'fiat sent or received' expired. Yet no dispute
+                # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat
+                # sent", we assume this is a dispute case by default.
+                # open_dispute acquires its own lock internally; release the
+                # current lock first (let the with-block commit) then call it.
+                pass
+
+        # CHA/FSE expiry: open dispute outside the lock so open_dispute can
+        # acquire its own SELECT FOR UPDATE cleanly on a fresh transaction.
+        if order.status in [Order.Status.CHA, Order.Status.FSE]:
             cls.open_dispute(order)
             order.log(
                 "Order expired during chat and a dispute was opened automatically"
@@ -487,8 +514,8 @@ class Logics:
             cls.settle_bond(order.taker_bond)
             order.update_status(Order.Status.DIS)
 
-            order.log("Maker bond was **settled**")
-            order.log("Taker bond was **settled**")
+            order.log("Maker bond was <b>settled</b>")
+            order.log("Taker bond was <b>settled</b>")
             order.log(
                 "No robot wrote in the chat, the dispute cannot be solved automatically"
             )
@@ -500,10 +527,10 @@ class Logics:
             order.update_status(Order.Status.MLD)
             cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
-            order.log("Maker bond was **settled**")
-            order.log("Taker bond was **unlocked**")
+            order.log("Maker bond was <b>settled</b>")
+            order.log("Taker bond was <b>unlocked</b>")
             order.log(
-                "**The dispute was solved automatically:** 'Maker lost dispute', the maker did not write in the chat"
+                "<b>The dispute was solved automatically:</b> 'Maker lost dispute', the maker did not write in the chat"
             )
 
         elif num_messages_taker == 0:
@@ -513,10 +540,10 @@ class Logics:
             order.update_status(Order.Status.TLD)
             cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
 
-            order.log("Maker bond was **unlocked**")
-            order.log("Taker bond was **settled**")
+            order.log("Maker bond was <b>unlocked</b>")
+            order.log("Taker bond was <b>settled</b>")
             order.log(
-                "**The dispute was solved automatically:** 'Taker lost dispute', the maker did not write in the chat"
+                "<b>The dispute was solved automatically:</b> 'Taker lost dispute', the maker did not write in the chat"
             )
         else:
             return False
@@ -537,52 +564,62 @@ class Logics:
         # for unresolved HTLCs) Dispute winner will have to submit a
         # new invoice for value of escrow + bond.
 
-        valid_status_open_dispute = [
-            Order.Status.CHA,
-            Order.Status.FSE,
-        ]
+        with transaction.atomic():
+            # Re-fetch under exclusive lock so confirm_fiat / order_expires /
+            # collaborative_cancel cannot interleave while we settle funds.
+            order = Order.objects.select_for_update().get(pk=order.pk)
 
-        if order.status not in valid_status_open_dispute:
-            return False, new_error(1013)
+            valid_status_open_dispute = [
+                Order.Status.CHA,
+                Order.Status.FSE,
+            ]
 
-        if order.expires_at and timezone.now() < order.expires_at - timedelta(hours=18):
-            return False, new_error(1054)
+            if order.status not in valid_status_open_dispute:
+                return False, new_error(1013)
 
-        automatically_solved = cls.automatic_dispute_resolution(order)
+            if order.expires_at and timezone.now() < order.expires_at - timedelta(
+                hours=18
+            ):
+                return False, new_error(1054)
 
-        if automatically_solved:
-            return True, None
+            automatically_solved = cls.automatic_dispute_resolution(order)
 
-        if not order.trade_escrow.status == LNPayment.Status.SETLED:
-            cls.settle_escrow(order)
-            cls.settle_bond(order.maker_bond)
-            cls.settle_bond(order.taker_bond)
+            if automatically_solved:
+                return True, None
 
-        order.is_disputed = True
-        order.update_status(Order.Status.DIS)
-        order.expires_at = timezone.now() + timedelta(
-            seconds=order.t_to_expire(Order.Status.DIS)
-        )
-        order.save(update_fields=["is_disputed", "expires_at"])
+            # settle_escrow / settle_bond are now idempotent: if confirm_fiat
+            # already settled the escrow before we acquired the lock the
+            # "already settled" grpc error is swallowed and True is returned.
+            if not order.trade_escrow.status == LNPayment.Status.SETLED:
+                cls.settle_escrow(order)
+                cls.settle_bond(order.maker_bond)
+                cls.settle_bond(order.taker_bond)
 
-        # User could be None if a dispute is open automatically due to time expiration.
-        if user is not None:
-            robot = user.robot
-            robot.num_disputes = robot.num_disputes + 1
-            if robot.orders_disputes_started is None:
-                robot.orders_disputes_started = str(order.id)
-            else:
-                disputes = list(robot.orders_disputes_started)
-                disputes.append(str(order.id))
-                robot.orders_disputes_started = disputes
-            robot.save(update_fields=["num_disputes", "orders_disputes_started"])
+            order.is_disputed = True
+            order.update_status(Order.Status.DIS)
+            order.expires_at = timezone.now() + timedelta(
+                seconds=order.t_to_expire(Order.Status.DIS)
+            )
+            order.save(update_fields=["is_disputed", "expires_at"])
+
+            # User could be None if a dispute is open automatically due to time expiration.
+            if user is not None:
+                robot = user.robot
+                robot.num_disputes = robot.num_disputes + 1
+                if robot.orders_disputes_started is None:
+                    robot.orders_disputes_started = str(order.id)
+                else:
+                    disputes = list(robot.orders_disputes_started)
+                    disputes.append(str(order.id))
+                    robot.orders_disputes_started = disputes
+                robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
         order.log(
             f"Dispute was opened {f'by Robot({user.robot.id},{user.username})' if user else ''}"
         )
-        order.log("Maker bond was **settled**")
-        order.log("Taker bond was **settled**")
+        order.log("Maker bond was <b>settled</b>")
+        order.log("Taker bond was <b>settled</b>")
 
         return True, None
 
@@ -1016,6 +1053,11 @@ class Logics:
         # if it is not the correct one.
         # This prevents the client from cancelling an order that
         # recently changed status.
+        #
+        # Note: the client-supplied cancel_status check is done on the
+        # pre-lock value here as a fast-path reject.  The definitive
+        # guard happens after we re-fetch the fresh row under the lock
+        # below.
         if cancel_status is not None:
             if order.status != cancel_status:
                 return False, new_error(
@@ -1036,172 +1078,190 @@ class Logics:
             Order.Status.MLD,
         ]
 
-        if order.status in do_not_cancel:
-            return False, new_error(1021)
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=order.pk)
 
-        # 1) When maker cancels before bond
-        # The order never shows up on the book and order
-        # status becomes "cancelled"
-        if order.status == Order.Status.WFB and order.maker == user:
-            cls.cancel_bond(order.maker_bond)
-            order.update_status(Order.Status.UCA)
+            # Re-validate cancel_status against the freshly-locked row.
+            if cancel_status is not None and order.status != cancel_status:
+                return False, new_error(
+                    1020, {"order_status": order.status, "cancel_status": cancel_status}
+                )
 
-            order.log("Order expired while waiting for maker bond")
-            order.log("Maker bond was cancelled")
+            if order.status in do_not_cancel:
+                return False, new_error(1021)
 
-            nostr_send_order_event.delay(order_id=order.id)
+            # 1) When maker cancels before bond
+            # The order never shows up on the book and order
+            # status becomes "cancelled"
+            if order.status == Order.Status.WFB and order.maker == user:
+                cls.cancel_bond(order.maker_bond)
+                order.update_status(Order.Status.UCA)
 
-            return True, None
+                order.log("Order expired while waiting for maker bond")
+                order.log("Maker bond was cancelled")
 
-        elif order.status in [Order.Status.PUB, Order.Status.PAU]:
-            if order.maker == user:
-                # 2.a) When maker cancels after bond
-                #
-                # The order disapears from book and goes to cancelled. If strict, maker is charged the bond
-                # to prevent DDOS on the LN node and order book. If not strict, maker is returned
-                # the bond (more user friendly).
-                # Return the maker bond (Maker gets returned the bond for cancelling public order)
-                if cls.return_bond(order.maker_bond):
-                    order.update_status(Order.Status.UCA)
+                nostr_send_order_event.delay(order_id=order.id)
 
-                    order.log("Order cancelled by maker while public or paused")
-                    order.log("Maker bond was **unlocked**")
+                return True, None
 
-                    take_orders_queryset = TakeOrder.objects.filter(order=order)
-                    for idx, take_order in enumerate(take_orders_queryset):
-                        order.log("Pretaker bond was **unlocked**")
-                        cls.take_order_expires(take_order)
+            elif order.status in [Order.Status.PUB, Order.Status.PAU]:
+                if order.maker == user:
+                    # 2.a) When maker cancels after bond
+                    #
+                    # The order disapears from book and goes to cancelled. If strict, maker is charged the bond
+                    # to prevent DDOS on the LN node and order book. If not strict, maker is returned
+                    # the bond (more user friendly).
+                    # Return the maker bond (Maker gets returned the bond for cancelling public order)
+                    if cls.return_bond(order.maker_bond):
+                        order.update_status(Order.Status.UCA)
 
-                    send_notification.delay(
-                        order_id=order.id, message="public_order_cancelled"
+                        order.log("Order cancelled by maker while public or paused")
+                        order.log("Maker bond was <b>unlocked</b>")
+
+                        take_orders_queryset = TakeOrder.objects.filter(order=order)
+                        for idx, take_order in enumerate(take_orders_queryset):
+                            order.log("Pretaker bond was <b>unlocked</b>")
+                            cls.take_order_expires(take_order)
+
+                        send_notification.delay(
+                            order_id=order.id, message="public_order_cancelled"
+                        )
+                        nostr_send_order_event.delay(order_id=order.id)
+
+                        return True, None
+                else:
+                    # 2.b) When pretaker cancels before bond
+                    # LNPayment "take_order" is expired
+                    take_order_query = TakeOrder.objects.filter(
+                        order=order, taker=user, expires_at__gt=timezone.now()
                     )
+
+                    if take_order_query.exists():
+                        take_order = take_order_query.first()
+                        # adds a timeout penalty
+                        cls.kick_taker(take_order)
+
+                        order.log("Taker cancelled before locking the bond")
+
+                        return True, None
+
+            # 4) When taker or maker cancel after bond (before escrow)
+            #
+            # The order goes into cancelled status if maker cancels.
+            # The order goes into the public book if taker cancels.
+            # In both cases there is a small fee.
+
+            # 4.a) When maker cancel after bond (before escrow)
+            # The order into cancelled status if maker cancels.
+            elif (
+                order.status in [Order.Status.WF2, Order.Status.WFE]
+                and order.maker == user
+            ):
+                # cancel onchain payment if existing
+                cls.cancel_onchain_payment(order)
+                # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
+                valid = cls.settle_bond(order.maker_bond)
+                cls.return_bond(order.taker_bond)  # returns taker bond
+                cls.cancel_escrow(order)
+
+                if valid:
+                    order.update_status(Order.Status.UCA)
+                    # Reward taker with part of the maker bond
+                    cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
+
+                    order.log("Maker cancelled before escrow was locked")
+                    order.log("Maker bond was <b>settled</b>")
+                    order.log("Taker bond was <b>unlocked</b>")
+
                     nostr_send_order_event.delay(order_id=order.id)
 
                     return True, None
-            else:
-                # 2.b) When pretaker cancels before bond
-                # LNPayment "take_order" is expired
-                take_order_query = TakeOrder.objects.filter(
-                    order=order, taker=user, expires_at__gt=timezone.now()
-                )
 
-                if take_order_query.exists():
-                    take_order = take_order_query.first()
-                    # adds a timeout penalty
-                    cls.kick_taker(take_order)
+            # 4.b) When taker cancel after bond (before escrow)
+            # The order into the public book if taker cancels.
+            elif (
+                order.status in [Order.Status.WF2, Order.Status.WFE]
+                and order.taker == user
+            ):
+                # cancel onchain payment if existing
+                cls.cancel_onchain_payment(order)
+                # Settle the taker bond (Taker loses the bond for canceling an ongoing trade)
+                valid = cls.settle_bond(order.taker_bond)
+                if valid:
+                    taker_bond = order.taker_bond
+                    cls.publish_order(order)
+                    send_notification.delay(
+                        order_id=order.id, message="order_published"
+                    )
+                    # Reward maker with part of the taker bond
+                    cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
 
-                    order.log("Taker cancelled before locking the bond")
+                    order.log("Taker cancelled before escrow was locked")
+                    order.log("Taker bond was <b>settled</b>")
+                    order.log("Maker bond was <b>unlocked</b>")
+
+                    nostr_send_order_event.delay(order_id=order.id)
 
                     return True, None
 
-        # 4) When taker or maker cancel after bond (before escrow)
-        #
-        # The order goes into cancelled status if maker cancels.
-        # The order goes into the public book if taker cancels.
-        # In both cases there is a small fee.
+            # 5) When trade collateral has been posted (after escrow)
+            #
+            # Always goes to CCA status. Collaboration is needed.
+            # When a user asks for cancel, 'order.m/t/aker_asked_cancel' goes True.
+            # When the second user asks for cancel. Order is totally cancelled.
+            # Must have a small cost for both parties to prevent node DDOS.
+            elif order.status in [Order.Status.WFI, Order.Status.CHA]:
+                # if the maker had asked, and now the taker does: cancel order, return everything
+                if order.maker_asked_cancel and user == order.taker:
+                    cls.collaborative_cancel(order)
+                    order.log(
+                        f"Taker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
+                    )
 
-        # 4.a) When maker cancel after bond (before escrow)
-        # The order into cancelled status if maker cancels.
-        elif (
-            order.status in [Order.Status.WF2, Order.Status.WFE] and order.maker == user
-        ):
-            # cancel onchain payment if existing
-            cls.cancel_onchain_payment(order)
-            # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
-            valid = cls.settle_bond(order.maker_bond)
-            cls.return_bond(order.taker_bond)  # returns taker bond
-            cls.cancel_escrow(order)
+                    nostr_send_order_event.delay(order_id=order.id)
 
-            if valid:
-                order.update_status(Order.Status.UCA)
-                # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
+                    return True, None
 
-                order.log("Maker cancelled before escrow was locked")
-                order.log("Maker bond was **settled**")
-                order.log("Taker bond was **unlocked**")
+                # if the taker had asked, and now the maker does: cancel order, return everything
+                elif order.taker_asked_cancel and user == order.maker:
+                    cls.collaborative_cancel(order)
+                    order.log(
+                        f"Maker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
+                    )
 
-                nostr_send_order_event.delay(order_id=order.id)
+                    nostr_send_order_event.delay(order_id=order.id)
 
-                return True, None
+                    return True, None
 
-        # 4.b) When taker cancel after bond (before escrow)
-        # The order into cancelled status if mtker cancels.
-        elif (
-            order.status in [Order.Status.WF2, Order.Status.WFE] and order.taker == user
-        ):
-            # cancel onchain payment if existing
-            cls.cancel_onchain_payment(order)
-            # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
-            valid = cls.settle_bond(order.taker_bond)
-            if valid:
-                taker_bond = order.taker_bond
-                cls.publish_order(order)
-                send_notification.delay(order_id=order.id, message="order_published")
-                # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
+                # Otherwise just make true the asked for cancel flags
+                elif user == order.taker:
+                    order.taker_asked_cancel = True
+                    order.save(update_fields=["taker_asked_cancel"])
+                    order.log(
+                        f"Taker Robot({user.robot.id},{user.username}) asked for collaborative cancellation"
+                    )
+                    return True, None
 
-                order.log("Taker cancelled before escrow was locked")
-                order.log("Taker bond was **settled**")
-                order.log("Maker bond was **unlocked**")
+                elif user == order.maker:
+                    order.maker_asked_cancel = True
+                    order.save(update_fields=["maker_asked_cancel"])
+                    order.log(
+                        f"Maker Robot({user.robot.id},{user.username}) asked for collaborative cancellation"
+                    )
+                    return True, None
 
-                nostr_send_order_event.delay(order_id=order.id)
-
-                return True, None
-
-        # 5) When trade collateral has been posted (after escrow)
-        #
-        # Always goes to CCA status. Collaboration is needed.
-        # When a user asks for cancel, 'order.m/t/aker_asked_cancel' goes True.
-        # When the second user asks for cancel. Order is totally cancelled.
-        # Must have a small cost for both parties to prevent node DDOS.
-        elif order.status in [Order.Status.WFI, Order.Status.CHA]:
-            # if the maker had asked, and now the taker does: cancel order, return everything
-            if order.maker_asked_cancel and user == order.taker:
-                cls.collaborative_cancel(order)
-                order.log(
-                    f"Taker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
-                )
-
-                nostr_send_order_event.delay(order_id=order.id)
-
-                return True, None
-
-            # if the taker had asked, and now the maker does: cancel order, return everything
-            elif order.taker_asked_cancel and user == order.maker:
-                cls.collaborative_cancel(order)
-                order.log(
-                    f"Maker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
-                )
-
-                nostr_send_order_event.delay(order_id=order.id)
-
-                return True, None
-
-            # Otherwise just make true the asked for cancel flags
-            elif user == order.taker:
-                order.taker_asked_cancel = True
-                order.save(update_fields=["taker_asked_cancel"])
-                order.log(
-                    f"Taker Robot({user.robot.id},{user.username}) asked for collaborative cancellation"
-                )
-                return True, None
-
-            elif user == order.maker:
-                order.maker_asked_cancel = True
-                order.save(update_fields=["maker_asked_cancel"])
-                order.log(
-                    f"Maker Robot({user.robot.id},{user.username}) asked for collaborative cancellation"
-                )
-                return True, None
-
-        order.log(
-            f"Cancel request was sent by Robot({user.robot.id},{user.username}) on an invalid status {order.status}: *{Order.Status(order.status).label}*"
-        )
-        return False, new_error(1021)
+            order.log(
+                f"Cancel request was sent by Robot({user.robot.id},{user.username}) on an invalid status {order.status}: <i>{Order.Status(order.status).label}</i>"
+            )
+            return False, new_error(1021)
 
     @classmethod
     def collaborative_cancel(cls, order):
+        # collaborative_cancel is always called from within cancel_order's
+        # transaction.atomic() block which already holds the row lock; we do
+        # not need a separate lock here.  The status guard below is the
+        # post-lock re-validation that prevents a racer (e.g. open_dispute or
+        # confirm_fiat) from having already moved the order before we act.
         if order.status not in [Order.Status.WFI, Order.Status.CHA]:
             return
         # cancel onchain payment if existing
@@ -1215,9 +1275,9 @@ class Logics:
         nostr_send_order_event.delay(order_id=order.id)
 
         order.log("Order was collaboratively cancelled")
-        order.log("Maker bond was **unlocked**")
-        order.log("Taker bond was **unlocked**")
-        order.log("Trade escrow was **unlocked**")
+        order.log("Maker bond was <b>unlocked</b>")
+        order.log("Taker bond was <b>unlocked</b>")
+        order.log("Trade escrow was <b>unlocked</b>")
 
         return
 
@@ -1341,46 +1401,58 @@ class Logics:
     def finalize_contract(cls, take_order):
         """When the taker locks the taker_bond
         the contract is final"""
-        order = take_order.order
 
-        order.taker = take_order.taker
-        order.taker_bond = take_order.taker_bond
+        with transaction.atomic():
+            # Lock the order row before checking status and writing.
+            # follow_invoices can call this concurrently for multiple takers;
+            # the post-lock PUB check ensures only the first wins.
+            order = Order.objects.select_for_update().get(pk=take_order.order.pk)
 
-        if order.has_range:
-            order.amount = take_order.amount
+            # If another taker already finalized the contract the order is no
+            # longer PUB.  Expire this take_order instead of overwriting the
+            # winning taker's data.
+            if order.status != Order.Status.PUB:
+                cls.take_order_expires(take_order)
+                return False
 
-        # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND!
-        # (This is the last update to "last_satoshis", it becomes the escrow amount next)
-        order.last_satoshis = cls.satoshis_now(order)
-        order.last_satoshis_time = timezone.now()
+            order.taker = take_order.taker
+            order.taker_bond = take_order.taker_bond
 
-        # With the bond confirmation the order is extended 'public_order_duration' hours
-        order.expires_at = timezone.now() + timedelta(
-            seconds=order.t_to_expire(Order.Status.WF2)
-        )
-        order.status = Order.Status.WF2
-        order.save(
-            update_fields=[
-                "status",
-                "taker",
-                "taker_bond",
-                "amount",
-                "last_satoshis",
-                "last_satoshis_time",
-                "expires_at",
-            ]
-        )
+            if order.has_range:
+                order.amount = take_order.amount
 
-        order.taker_bond.status = LNPayment.Status.LOCKED
-        order.taker_bond.save(update_fields=["status"])
+            # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND!
+            # (This is the last update to "last_satoshis", it becomes the escrow amount next)
+            order.last_satoshis = cls.satoshis_now(order)
+            order.last_satoshis_time = timezone.now()
 
-        # Both users robots are added one more contract // Unsafe can add more than once.
-        order.maker.robot.total_contracts += 1
-        order.taker.robot.total_contracts += 1
-        order.maker.robot.save(update_fields=["total_contracts"])
-        order.taker.robot.save(update_fields=["total_contracts"])
+            # With the bond confirmation the order is extended 'public_order_duration' hours
+            order.expires_at = timezone.now() + timedelta(
+                seconds=order.t_to_expire(Order.Status.WF2)
+            )
+            order.status = Order.Status.WF2
+            order.save(
+                update_fields=[
+                    "status",
+                    "taker",
+                    "taker_bond",
+                    "amount",
+                    "last_satoshis",
+                    "last_satoshis_time",
+                    "expires_at",
+                ]
+            )
 
-        take_order.delete()
+            order.taker_bond.status = LNPayment.Status.LOCKED
+            order.taker_bond.save(update_fields=["status"])
+
+            # Both users robots are added one more contract // Unsafe can add more than once.
+            order.maker.robot.total_contracts += 1
+            order.taker.robot.total_contracts += 1
+            order.maker.robot.save(update_fields=["total_contracts"])
+            order.taker.robot.save(update_fields=["total_contracts"])
+
+            take_order.delete()
 
         # Log a market tick
         try:
@@ -1395,7 +1467,7 @@ class Logics:
         nostr_send_order_event.delay(order_id=order.id)
 
         order.log(
-            f"**Contract formalized.** Maker: Robot({order.maker.robot.id},{order.maker}). Taker: Robot({order.taker.robot.id},{order.taker}). API median price {order.currency.exchange_rate} {dict(Currency.currency_choices)[order.currency.currency]}/BTC. Premium is {order.premium}%. Contract size {order.last_satoshis} Sats"
+            f"<b>Contract formalized.</b> Maker: Robot({order.maker.robot.id},{order.maker}). Taker: Robot({order.taker.robot.id},{order.taker}). API median price {order.currency.exchange_rate} {dict(Currency.currency_choices)[order.currency.currency]}/BTC. Premium is {order.premium}%. Contract size {order.last_satoshis} Sats"
         )
         return True
 
@@ -1571,39 +1643,107 @@ class Logics:
         }
 
     def settle_escrow(order):
-        """Settles the trade escrow hold invoice"""
-        if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
+        """Settles the trade escrow hold invoice.
+
+        Idempotent: if LND reports "invoice already settled" the escrow DB
+        record is updated to SETLED and True is returned so callers can
+        continue without raising.
+        """
+        try:
+            settled = LNNode.settle_hold_invoice(order.trade_escrow.preimage)
+        except Exception as e:
+            if "invoice already settled" in str(e):
+                settled = True
+            else:
+                raise
+        if settled:
             order.trade_escrow.status = LNPayment.Status.SETLED
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was **settled**")
+            order.log("Trade escrow was <b>settled</b>")
             return True
 
     def settle_bond(bond):
-        """Settles the bond hold invoice"""
-        if LNNode.settle_hold_invoice(bond.preimage):
+        """Settles the bond hold invoice.
+
+        Idempotent: "invoice already settled" is treated as success.
+        """
+        try:
+            settled = LNNode.settle_hold_invoice(bond.preimage)
+        except Exception as e:
+            if "invoice already settled" in str(e):
+                settled = True
+            else:
+                raise
+        if settled:
             bond.status = LNPayment.Status.SETLED
             bond.save(update_fields=["status"])
             return True
 
     def return_escrow(order):
-        """returns the trade escrow"""
-        if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
+        """Returns (cancels) the trade escrow hold invoice.
+
+        Idempotent: already-cancelled or already-settled escrows are
+        handled gracefully.
+        """
+        try:
+            returned = LNNode.cancel_return_hold_invoice(
+                order.trade_escrow.payment_hash
+            )
+        except Exception as e:
+            if "invoice already settled" in str(e):
+                order.trade_escrow.status = LNPayment.Status.SETLED
+                order.trade_escrow.save(update_fields=["status"])
+                order.log("Trade escrow was already <b>settled</b>")
+                return True
+            elif "invoice already canceled" in str(e):
+                order.trade_escrow.status = LNPayment.Status.RETNED
+                order.trade_escrow.save(update_fields=["status"])
+                order.log("Trade escrow was already <b>unlocked</b>")
+                return True
+            else:
+                raise
+        if returned:
             order.trade_escrow.status = LNPayment.Status.RETNED
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was **unlocked**")
+            order.log("Trade escrow was <b>unlocked</b>")
             return True
 
     def cancel_escrow(order):
-        """returns the trade escrow"""
-        # Same as return escrow, but used when the invoice was never LOCKED
-        if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
+        """Cancels the trade escrow (used when the invoice was never LOCKED).
+
+        Idempotent: already-cancelled or already-settled escrows are
+        handled gracefully.
+        """
+        # Same as return_escrow, but used when the invoice was never LOCKED
+        try:
+            cancelled = LNNode.cancel_return_hold_invoice(
+                order.trade_escrow.payment_hash
+            )
+        except Exception as e:
+            if "invoice already settled" in str(e):
+                order.trade_escrow.status = LNPayment.Status.SETLED
+                order.trade_escrow.save(update_fields=["status"])
+                order.log("Trade escrow was already <b>settled</b>")
+                return True
+            elif "invoice already canceled" in str(e):
+                order.trade_escrow.status = LNPayment.Status.CANCEL
+                order.trade_escrow.save(update_fields=["status"])
+                order.log("Trade escrow was already <b>cancelled</b>")
+                return True
+            else:
+                raise
+        if cancelled:
             order.trade_escrow.status = LNPayment.Status.CANCEL
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was **cancelled**")
+            order.log("Trade escrow was <b>cancelled</b>")
             return True
 
     def return_bond(bond):
-        """returns a bond"""
+        """Returns a bond hold invoice.
+
+        Idempotent: "invoice already settled" and "invoice already canceled"
+        both update the DB record and return True instead of raising.
+        """
         if bond is None:
             return
         try:
@@ -1614,6 +1754,10 @@ class Logics:
         except Exception as e:
             if "invoice already settled" in str(e):
                 bond.status = LNPayment.Status.SETLED
+                bond.save(update_fields=["status"])
+                return True
+            elif "invoice already canceled" in str(e):
+                bond.status = LNPayment.Status.RETNED
                 bond.save(update_fields=["status"])
                 return True
             else:
@@ -1627,7 +1771,7 @@ class Logics:
             order.payout_tx.save(update_fields=["status"])
 
             order.log(
-                f"Onchain payment OnchainPayment({order.payout_tx.id},{str(order.payout_tx)}) was **cancelled**"
+                f"Onchain payment OnchainPayment({order.payout_tx.id},{str(order.payout_tx)}) was <b>cancelled</b>"
             )
 
             return True
@@ -1635,8 +1779,12 @@ class Logics:
             return False
 
     def cancel_bond(bond):
-        """cancel a bond"""
-        # Same as return bond, but used when the invoice was never LOCKED
+        """Cancels a bond (used when the invoice was never LOCKED).
+
+        Idempotent: "invoice already settled" and "invoice already canceled"
+        both update the DB record and return True instead of raising.
+        """
+        # Same as return_bond, but used when the invoice was never LOCKED
         if bond is None:
             return True
         try:
@@ -1649,25 +1797,43 @@ class Logics:
                 bond.status = LNPayment.Status.SETLED
                 bond.save(update_fields=["status"])
                 return True
+            elif "invoice already canceled" in str(e):
+                bond.status = LNPayment.Status.CANCEL
+                bond.save(update_fields=["status"])
+                return True
             else:
                 raise e
 
     @classmethod
     def pay_buyer(cls, order):
-        """Pays buyer invoice or onchain address"""
+        """Pays buyer invoice or onchain address.
+
+        Uses transition_status() for the LN-payout path so that a losing racer
+        (e.g. order already moved to DIS by concurrent open_dispute) is a
+        no-op rather than overwriting the status unconditionally.
+        """
 
         # Pay to buyer invoice
         if not order.is_swap:
+            # Conditionally move to PAY only from valid pre-payment states.
+            # If a concurrent open_dispute already flipped the order to DIS,
+            # transition_status returns False and we abort — escrow is settled,
+            # bonds are returned, but the payout is NOT dispatched.
+            if not order.transition_status(
+                Order.Status.PAY,
+                from_statuses=[Order.Status.CHA, Order.Status.FSE],
+            ):
+                return False
+
             # Background process "follow_invoices" will try to pay this invoice until success
             order.payout.status = LNPayment.Status.FLIGHT
             order.payout.save(update_fields=["status"])
 
-            order.update_status(Order.Status.PAY)
             order.contract_finalization_time = timezone.now()
             order.save(update_fields=["contract_finalization_time"])
 
             send_notification.delay(order_id=order.id, message="trade_successful")
-            order.log("**Paying buyer invoice**")
+            order.log("<b>Paying buyer invoice</b>")
             return True
 
         # Pay onchain to address
@@ -1684,7 +1850,7 @@ class Logics:
                 order.save(update_fields=["contract_finalization_time"])
 
                 send_notification.delay(order_id=order.id, message="trade_successful")
-                order.log("**Paying buyer onchain address**")
+                order.log("<b>Paying buyer onchain address</b>")
                 return True
 
     @classmethod
@@ -1707,12 +1873,33 @@ class Logics:
         """If Order is in the CHAT states:
         If user is buyer: fiat_sent goes to true.
         If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!
+
+        The entire method runs inside a transaction with a SELECT FOR UPDATE lock
+        on the Order row so that concurrent calls from the seller, the expiry daemon
+        (clean_orders), and follow_invoices cannot interleave fund-moving operations.
         """
 
-        if order.status == Order.Status.CHA or order.status == Order.Status.FSE:
+        with transaction.atomic():
+            # Re-fetch the order under an exclusive row lock. Any concurrent
+            # call (open_dispute, order_expires, collaborative_cancel) that
+            # also holds this lock will complete first; we then see the updated
+            # status and bail out gracefully rather than double-settling.
+            order = Order.objects.select_for_update().get(pk=order.pk)
+
+            if order.status not in [Order.Status.CHA, Order.Status.FSE]:
+                return False, new_error(1029)
+
             # If buyer mark fiat sent
             if cls.is_buyer(order, user):
-                order.update_status(Order.Status.FSE)
+                # Conditional status move: no-ops if a racer already moved the
+                # order out of CHA (e.g. collaborative cancel). FSE is also an
+                # accepted source so re-confirming in FSE is still fine.
+                if not order.transition_status(
+                    Order.Status.FSE,
+                    from_statuses=[Order.Status.CHA, Order.Status.FSE],
+                ):
+                    return False, new_error(1057)
+
                 order.is_fiat_sent = True
                 order.save(update_fields=["is_fiat_sent"])
 
@@ -1733,41 +1920,50 @@ class Logics:
                     return False, new_error(1028)
 
                 # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
-                if cls.settle_escrow(order):
-                    order.trade_escrow.status = LNPayment.Status.SETLED
-                    order.trade_escrow.save(update_fields=["status"])
+                # settle_escrow is now idempotent: if a racer already settled
+                # it (e.g. open_dispute won the LN race) this returns True
+                # without raising, and we continue.
+                cls.settle_escrow(order)
 
-                # Double check the escrow is settled.
+                # Double check the escrow is settled before paying the buyer.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
                     # RETURN THE BONDS
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
-                    order.log("Taker bond was **unlocked**")
-                    order.log("Maker bond was **unlocked**")
+                    order.log("Taker bond was <b>unlocked</b>")
+                    order.log("Maker bond was <b>unlocked</b>")
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    cls.pay_buyer(order)
+                    # pay_buyer uses transition_status(PAY, from=[CHA, FSE])
+                    # internally; if a racer already moved to DIS this is a
+                    # no-op and we return the error to the seller.
+                    if not cls.pay_buyer(order):
+                        return False, new_error(1057)
 
                     return True, None
-
-        else:
-            return False, new_error(1029)
 
         return True, None
 
     @classmethod
     def undo_confirm_fiat_sent(cls, order, user):
-        """If Order is in the CHAT states:
-        If user is buyer: fiat_sent goes to true.
+        """If Order is in the FSE state, buyer can revert 'fiat sent'.
+
+        Locked to prevent reverting back from PAY/DIS on a stale read.
         """
         if not cls.is_buyer(order, user):
             return False, new_error(1030)
 
-        if order.status != Order.Status.FSE:
-            return False, new_error(1031)
-        order.update_status(Order.Status.CHA)
-        order.is_fiat_sent = False
-        order.reverted_fiat_sent = True
-        order.save(update_fields=["is_fiat_sent", "reverted_fiat_sent"])
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=order.pk)
+
+            if not order.transition_status(
+                Order.Status.CHA,
+                from_statuses=[Order.Status.FSE],
+            ):
+                return False, new_error(1031)
+
+            order.is_fiat_sent = False
+            order.reverted_fiat_sent = True
+            order.save(update_fields=["is_fiat_sent", "reverted_fiat_sent"])
 
         order.log(
             f"Buyer Robot({user.robot.id},{user.username}) reverted the confirmation of 'fiat sent'"
