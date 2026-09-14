@@ -203,7 +203,10 @@ export class Coordinator {
       this.url = `${hostUrl}/${settings.network}/${this.shortAlias}`;
     } else {
       const network = settings.network ?? 'mainnet';
-      this.url = String(this[network]?.[origin]);
+      // An entry may not have an address for this network/origin (e.g. testnet.onion is
+      // null) — keep the url empty instead of materializing 'null'/'undefined' strings.
+      const address = this[network]?.[origin];
+      this.url = address ? String(address) : '';
     }
   };
 
@@ -215,7 +218,12 @@ export class Coordinator {
 
   loadBook = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
-    if (this.url === '') return Promise.resolve();
+    if (this.url === '') {
+      // No address for this network/origin — resolve as unreachable, never keep
+      // the loading state pending (it defaults to true).
+      this.loadingBook = false;
+      return Promise.resolve();
+    }
 
     if (this._bookPromise) {
       return this._bookPromise.then(() => {
@@ -260,7 +268,10 @@ export class Coordinator {
 
   loadLimits = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
-    if (this.url === '') return Promise.resolve();
+    if (this.url === '') {
+      this.loadingLimits = false;
+      return Promise.resolve();
+    }
 
     if (this._limitsPromise) {
       return this._limitsPromise.then(() => {
@@ -300,7 +311,10 @@ export class Coordinator {
 
   loadInfo = (onDataLoad: () => void = () => {}): Promise<void> => {
     if (!this.enabled) return Promise.resolve();
-    if (this.url === '') return Promise.resolve();
+    if (this.url === '') {
+      this.loadingInfo = false;
+      return Promise.resolve();
+    }
 
     if (this._infoPromise) {
       return this._infoPromise.then(() => {
@@ -347,6 +361,7 @@ export class Coordinator {
   };
 
   getRelayUrl = (): string => {
+    if (!this.url) return '';
     const protocol = this.url.includes('https') ? 'wss://' : 'ws://';
     return this.url.replace(/^https?:\/\//, protocol) + '/relay/';
   };
