@@ -657,41 +657,63 @@ class Logics:
         # Make sure no invoice payout is attached to order
         order.payout = None
 
-        # Create onchain_payment
-        onchain_payment = OnchainPayment.objects.create(receiver=user)
+        # The liquidity check and the new OnchainPayment creation must be
+        # serialized so that two concurrent swap offers cannot both read the
+        # same available balance and both succeed, overcommitting the wallet.
+        # select_for_update() on the pending-txs aggregate acquires a row lock
+        # on every matching OnchainPayment row for the duration of the
+        # transaction, forcing any other concurrent call to wait until this
+        # one commits before it reads its own pending_txs value.
+        with transaction.atomic():
+            # Compute a safer available onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
+            # Accounts for already committed outgoing TX for previous users.
+            # select_for_update() serializes concurrent swap-offer liquidity
+            # checks so two callers cannot both overcommit the same UTXOs.
+            pending_txs = (
+                (
+                    OnchainPayment.objects.select_for_update()
+                    .filter(
+                        status__in=[
+                            OnchainPayment.Status.VALID,
+                            OnchainPayment.Status.QUEUE,
+                        ]
+                    )
+                    .aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
+                )
+                or 0
+            )
 
-        # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
-        # Accounts for already committed outgoing TX for previous users.
-        confirmed = onchain_payment.balance.onchain_confirmed
-        # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
-        reserve = 300_000
-        pending_txs = OnchainPayment.objects.filter(
-            status__in=[OnchainPayment.Status.VALID, OnchainPayment.Status.QUEUE]
-        ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
+            # We need a BalanceLog snapshot to read confirmed balance; create it
+            # inside the transaction so the snapshot is consistent with the lock.
+            onchain_payment = OnchainPayment.objects.create(receiver=user)
 
-        if pending_txs is None:
-            pending_txs = 0
+            confirmed = onchain_payment.balance.onchain_confirmed
+            # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
+            reserve = 300_000
 
-        available_onchain = confirmed - reserve - pending_txs
-        if (
-            preliminary_amount > available_onchain
-        ):  # Not enough onchain balance to commit for this swap.
-            return False
+            available_onchain = confirmed - reserve - pending_txs
+            if (
+                preliminary_amount > available_onchain
+            ):  # Not enough onchain balance to commit for this swap.
+                onchain_payment.delete()
+                return False
 
-        suggested_mining_fee_rate = get_minning_fee("suggested", preliminary_amount)
+            suggested_mining_fee_rate = get_minning_fee("suggested", preliminary_amount)
 
-        # Hardcap mining fee suggested at 1000 sats/vbyte
-        if suggested_mining_fee_rate > 1000:
-            suggested_mining_fee_rate = 1000
+            # Hardcap mining fee suggested at 1000 sats/vbyte
+            if suggested_mining_fee_rate > 1000:
+                suggested_mining_fee_rate = 1000
 
-        onchain_payment.suggested_mining_fee_rate = max(2.05, suggested_mining_fee_rate)
-        onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(
-            onchain_payment.balance
-        )
-        onchain_payment.save()
+            onchain_payment.suggested_mining_fee_rate = max(
+                2.05, suggested_mining_fee_rate
+            )
+            onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(
+                onchain_payment.balance
+            )
+            onchain_payment.save()
 
-        order.payout_tx = onchain_payment
-        order.save(update_fields=["payout_tx"])
+            order.payout_tx = onchain_payment
+            order.save(update_fields=["payout_tx"])
 
         order.log(
             f"Empty OnchainPayment({order.payout_tx.id},{order.payout_tx}) was created. Available onchain balance is {available_onchain} Sats"

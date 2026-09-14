@@ -186,6 +186,7 @@ class CLNNode:
     @classmethod
     def pay_onchain(cls, onchainpayment, queue_code=5, on_mempool_code=2):
         """Send onchain transaction for buyer payouts"""
+        from api.models import OnchainPayment as OnchainPaymentModel
 
         if DISABLE_ONCHAIN or onchainpayment.sent_satoshis > MAX_SWAP_AMOUNT:
             return False
@@ -201,29 +202,37 @@ class CLNNode:
             minconf=int(not config("SPEND_UNCONFIRMED", default=False, cast=bool)),
         )
 
-        # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
+        # Random jitter so that two processes started at the same instant
+        # are unlikely to reach the DB claim below at exactly the same millisecond.
         delay = (
             secrets.randbelow(2**256) / (2**256) * 10
-        )  # Random uniform 0 to 5 secs with good entropy
+        )  # Random uniform 0 to 10 secs with good entropy
         if not config("TESTING", cast=bool, default=False):
             time.sleep(3 + delay)
 
-        if onchainpayment.status == queue_code:
-            # Changing the state to "MEMPO" should be atomic with SendCoins.
-            onchainpayment.status = on_mempool_code
-            onchainpayment.save(update_fields=["status"])
-            nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
-            response = nodestub.Withdraw(request)
+        # Atomic compare-and-swap: only the process that wins this UPDATE
+        # (claimed == 1) is allowed to broadcast. Any concurrent process that
+        # also fetched the same QUEUE payment will get claimed == 0 and bail out,
+        # preventing a double-broadcast regardless of how many follow_invoices
+        # workers are running simultaneously.
+        claimed = OnchainPaymentModel.objects.filter(
+            pk=onchainpayment.pk,
+            status=queue_code,
+        ).update(status=on_mempool_code)
 
-            if response.txid:
-                onchainpayment.txid = response.txid.hex()
-                onchainpayment.broadcasted = True
-            onchainpayment.save(update_fields=["txid", "broadcasted"])
-            return True
+        if claimed != 1:
+            # Another process already transitioned this payment, or it was
+            # cancelled between the query and now. Do not broadcast.
+            return False
 
-        elif onchainpayment.status == on_mempool_code:
-            # Bug, double payment attempted
-            return True
+        nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
+        response = nodestub.Withdraw(request)
+
+        if response.txid:
+            onchainpayment.txid = response.txid.hex()
+            onchainpayment.broadcasted = True
+        onchainpayment.save(update_fields=["txid", "broadcasted"])
+        return True
 
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
