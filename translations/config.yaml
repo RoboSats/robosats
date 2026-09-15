@@ -1,0 +1,120 @@
+# Localize Pipeline configuration for RoboSats
+# Translates frontend/static/locales/en.json -> the 16 target locale files.
+# API starter proposal; it differs from KoalaSat's earlier local-model preference.
+# Dormant without OPENAI_API_KEY. See translations/README.md before enabling.
+
+target_project_root: ".."
+input_folder: "frontend/static/locales"
+
+# RoboSats keeps one flat JSON file per locale (es.json, de.json, ...), so the
+# locale is the filename. English is the source of truth.
+localization_format: "json"
+localization_layout:
+  id: "locale_filename"
+  source_locale: "en"
+
+translation_source: "git"
+glossary_file_path: "glossary.json"
+
+project_context: >
+  Translate for RoboSats, a peer-to-peer Bitcoin and Lightning exchange that runs
+  privately over Tor. The audience is privacy-focused Bitcoiners. Keep UI labels
+  concise and consistent with widely used Bitcoin/Lightning terminology. RoboSats
+  has a playful identity built around "robots", a "garage", and a "token"; localize
+  those metaphor words naturally rather than leaving them in English, but never
+  translate protocol names, tickers, or brand names (see the brand glossary).
+  Strings use i18next interpolation of the form {{variable}} and may contain HTML
+  tags; both must be preserved exactly and never translated.
+
+# --- Model provider ---
+# This OpenAI pair was exercised through AISuite in the isolated Spanish smoke.
+# No provider fallback is configured. Anthropic or local inference would need an
+# explicit configuration change and separate compatibility/quality verification.
+model_provider: "aisuite"
+model_name: "gpt-4o-mini"
+review_model_name: "gpt-5.6-terra"
+review_reasoning_effort: "none"
+max_concurrent_api_calls: 5
+rate_limit_per_minute: 60
+
+dry_run: false
+process_all_files: false
+# The backlog includes existing English-identical values, not only missing keys.
+# Those are candidates; legitimate shared terms still need human review.
+retranslate_identical_source_strings: true
+
+# RoboSats uses pseudo-comment keys such as "#1": "Phrases in basic/Main.tsx" to
+# mark which source file a block of strings comes from. Their VALUES are file paths,
+# not user-facing text, so they must never be translated — only preserved verbatim.
+# Supported by the immutable pipeline revision pinned in the workflow.
+ignore_key_patterns:
+  - "^/#\\d+$"
+  # Exact nonlinguistic keys, identical in every upstream locale (2026-09-11).
+  # Ignored values are copied from source, so do not broaden to localized labels.
+  - '^/\{\{description\}\}$'
+  - '^/(?:RoboSats|PGP|nostr|X|ID|API)$'
+
+# Conservative safety gate: block a PR if too many strings come back identical to
+# English, or on reported pipeline/model/placeholder failures. Individual source
+# echoes are reverted and reported; they do not necessarily block publication.
+quality_gate:
+  source_identical_min_block_count: 5
+  source_identical_max_count: 20
+  source_identical_max_ratio: 0.30
+  block_on_pipeline_warnings: true
+
+# Proper nouns, protocols and tickers that must never be translated. Tune freely.
+brand_technical_glossary:
+  - RoboSats
+  - Bitcoin
+  - BTC
+  - sats
+  - satoshi
+  - Lightning
+  - Tor
+  - Nostr
+  - nostr
+  - PGP
+  - Testnet
+  - Mainnet
+
+# The 16 target locales, mirroring RoboSats' in-app language selector
+# (frontend/src/components/SettingsForm/SelectLanguage.tsx). English is the source
+# and is excluded. Codes match the on-disk filename stems (verified 2026-09-11),
+# including the uppercase-region Chinese files zh-SI.json / zh-TR.json.
+supported_locales:
+  - code: "es"
+    name: "Spanish"
+  - code: "de"
+    name: "German"
+  - code: "pl"
+    name: "Polish"
+  - code: "fr"
+    name: "French"
+  - code: "sw"
+    name: "Swahili"
+  - code: "ru"
+    name: "Russian"
+  - code: "ja"
+    name: "Japanese"
+  - code: "it"
+    name: "Italian"
+  - code: "pt"
+    name: "Portuguese"
+  # Region suffix is UPPERCASE on disk (zh-SI.json / zh-TR.json), even though the
+  # in-app i18next codes are lowercase (zh-si / zh-tr). The locale_filename layout
+  # matches the filename stem case-sensitively, so these MUST match the files.
+  - code: "zh-SI"
+    name: "Chinese (Simplified)"
+  - code: "zh-TR"
+    name: "Chinese (Traditional)"
+  - code: "sv"
+    name: "Swedish"
+  - code: "cs"
+    name: "Czech"
+  - code: "th"
+    name: "Thai"
+  - code: "ca"
+    name: "Catalan"
+  - code: "eu"
+    name: "Basque"
