@@ -80,14 +80,14 @@ in the generated PR report; an individual echo does not necessarily block the PR
 The gate blocks on configured thresholds and reported placeholder, skipped-file,
 or model failures, not every per-key warning.
 
-`{{var}}` interpolations are protected and parity-checked. At the pinned pipeline
-revision, numeric React-i18next `<N>` / `</N>` / `<N/>` component tags are preserved
-by prompt guidance only, not by the placeholder checker. Manually review
-`unsafe_alert`, `let_us_know_hot_to_improve`, and `open_dispute` in every selected
-locale; existing translations in `es`, `fr`, `pt`, `zh-SI`, `eu`, `it`, and `ja`
-already drop or change these tags. A
-generic fix is proposed in [pipeline PR #178](https://github.com/bisq-network/localize-pipeline/pull/178);
-this pin does not include it.
+`{{var}}` interpolations and numeric React-i18next `<N>` / `</N>` / `<N/>`
+component tags are protected and parity-checked in v0.1.21. The check compares
+exact token counts; it does not validate component nesting or rendered output.
+Existing translations in `es`, `fr`, `pt`, `zh-SI`, `eu`, `it`, and `ja` still
+have damaged tags in `unsafe_alert`, `let_us_know_hot_to_improve`, or
+`open_dispute`. Those need separate corrections and native-speaker review.
+The numeric-tag protection from [pipeline PR #178](https://github.com/bisq-network/localize-pipeline/pull/178)
+is included in this pin; installing the workflow does not repair existing files.
 Do not exclude these keys: exclusion copies English over existing translations.
 Neither these checks nor two model passes replace native-speaker review. The initial glossary is
 empty by design and should grow from agreed translator feedback.

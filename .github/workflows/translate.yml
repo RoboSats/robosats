@@ -58,8 +58,8 @@ jobs:
 
       - name: Translate and open a reviewable PR
         if: steps.guard.outputs.enabled == 'true'
-        # Stable main after v0.1.20, excluding pending Guardian work.
-        uses: bisq-network/localize-pipeline@ecda91f047b563575e8619bb38f586ec9a1a67c1
+        # v0.1.21, including numeric React-i18next tag protection.
+        uses: bisq-network/localize-pipeline@385a75b25931e1031f7840d7309632e7f98de26e
         with:
           config-file: "translations/config.yaml"
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
