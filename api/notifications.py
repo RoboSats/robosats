@@ -6,9 +6,11 @@ from secrets import token_urlsafe
 
 from decouple import config
 from api.models import (
+  
     Order,
     Notification,
 )
+
 from api.utils import get_federation_short_alias, get_session
 from api.tasks import nostr_send_notification_event
 
@@ -52,6 +54,14 @@ class Notifications:
         self.save_message(order, robot, title, description)
         if robot.nostr_pubkey:
             nostr_send_notification_event.delay(
+                robot_id=robot.id, order_id=order.id, text=title
+            )
+        if (
+            robot.nostr_forward_enabled
+            and robot.nostr_forward_pubkey
+            and robot.nostr_forward_relay
+        ):
+            nostr_send_forward_notification_event.delay(
                 robot_id=robot.id, order_id=order.id, text=title
             )
         if robot.telegram_enabled:

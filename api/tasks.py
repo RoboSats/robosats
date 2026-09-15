@@ -36,6 +36,7 @@ def users_cleansing():
                 or user.robot.claimed_rewards > 0
                 or user.robot.telegram_enabled is True
                 or user.robot.webhook_enabled is True
+                or user.robot.nostr_forward_enabled is True
             ):
                 continue
             if not user.robot.total_contracts == 0:
@@ -304,6 +305,23 @@ def nostr_send_notification_event(robot_id=None, order_id=None, text=None):
 
         nostr = Nostr()
         async_to_sync(nostr.send_notification_event)(robot, order, text)
+
+    return
+
+
+@shared_task(
+    name="nostr_send_forward_notification_event", ignore_result=True, time_limit=120
+)
+def nostr_send_forward_notification_event(robot_id=None, order_id=None, text=None):
+    if robot_id and order_id:
+        from api.models import Order, Robot
+        from api.nostr import Nostr
+
+        robot = Robot.objects.get(id=robot_id)
+        order = Order.objects.get(id=order_id)
+
+        nostr = Nostr()
+        async_to_sync(nostr.send_forward_notification_event)(robot, order, text)
 
     return
 
