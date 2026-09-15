@@ -307,6 +307,28 @@ class LNDNode:
             response.state == lightning_pb2.Invoice.InvoiceState.ACCEPTED
         ):  # ACCEPTED (LOCKED)
             lnpayment.expiry_height = response.htlcs[0].expiry_height
+
+            # Defensive amount check: the LN backend guarantees ACCEPTED only
+            # when the full invoice value is locked (LND raises ResultAmountTooLow
+            # before that threshold). We verify it here as an independent
+            # belt-and-braces guard against any future backend regression.
+            # If the locked amount is insufficient we immediately cancel the
+            # invoice so the HTLCs are returned to the sender and the invoice
+            # never advances the trade.
+            amt_locked_msat = sum(htlc.amt_msat for htlc in response.htlcs)
+            expected_msat = lnpayment.num_satoshis * 1_000
+            if amt_locked_msat < expected_msat:
+                print(
+                    f"ERROR: hold invoice {lnpayment.payment_hash} reported "
+                    f"ACCEPTED but locked amount {amt_locked_msat} msat is less "
+                    f"than invoice value {expected_msat} msat. "
+                    f"Cancelling invoice immediately."
+                )
+                cls.cancel_return_hold_invoice(lnpayment.payment_hash)
+                lnpayment.status = LNPayment.Status.CANCEL
+                lnpayment.save(update_fields=["status"])
+                return False
+
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
             return True
@@ -346,6 +368,29 @@ class LNDNode:
                 try:
                     for htlc in response.htlcs:
                         expiry_height = max(expiry_height, htlc.expiry_height)
+                except Exception:
+                    pass
+
+            # Defensive amount check on the ACCEPTED→LOCKED transition: verify
+            # the sum of all locked HTLCs actually covers the invoice value.
+            # LND's own ResultAmountTooLow guard makes under-payment impossible
+            # in practice, but we check independently as a belt-and-braces guard
+            # against future backend regressions.
+            # If the check fails the invoice is cancelled immediately so the
+            # HTLCs are returned to the sender and the trade never advances.
+            if status == LNPayment.Status.LOCKED:
+                try:
+                    amt_locked_msat = sum(htlc.amt_msat for htlc in response.htlcs)
+                    expected_msat = lnpayment.num_satoshis * 1_000
+                    if amt_locked_msat < expected_msat:
+                        print(
+                            f"ERROR: hold invoice {lnpayment.payment_hash} reported "
+                            f"ACCEPTED but locked amount {amt_locked_msat} msat is less "
+                            f"than invoice value {expected_msat} msat. "
+                            f"Cancelling invoice immediately."
+                        )
+                        cls.cancel_return_hold_invoice(lnpayment.payment_hash)
+                        status = LNPayment.Status.CANCEL
                 except Exception:
                     pass
 
