@@ -1704,12 +1704,11 @@ class Logics:
                 order.log("Trade escrow was already **settled**")
                 return True
             elif "invoice already canceled" in str(e):
-                order.trade_escrow.status = LNPayment.Status.RETNED
-                order.trade_escrow.save(update_fields=["status"])
-                order.log("Trade escrow was already **unlocked**")
+                returned = True
                 return True
             else:
                 raise
+
         if returned:
             order.trade_escrow.status = LNPayment.Status.RETNED
             order.trade_escrow.save(update_fields=["status"])
@@ -1734,9 +1733,7 @@ class Logics:
                 order.log("Trade escrow was already **settled**")
                 return True
             elif "invoice already canceled" in str(e):
-                order.trade_escrow.status = LNPayment.Status.CANCEL
-                order.trade_escrow.save(update_fields=["status"])
-                order.log("Trade escrow was already **cancelled**")
+                cancelled = True
                 return True
             else:
                 raise
