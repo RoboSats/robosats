@@ -1,0 +1,75 @@
+name: Translate
+
+# API-backed starter proposal, not approval of cloud inference by RoboSats.
+# Without OPENAI_API_KEY, the guard exits green before checkout or model calls.
+# Only trusted upstream main push/manual events may use the write token.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/static/locales/en.json"
+  workflow_dispatch:
+    inputs:
+      process_all_files:
+        description: "Force backfill selection within locale_filter_glob (review API cost first)"
+        type: boolean
+        default: true
+      locale_filter_glob:
+        description: "Locale filename glob: es.json for Spanish; *.json for all 16 locales"
+        type: string
+        required: true
+        default: "es.json"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: localize-robosats-translations
+  cancel-in-progress: false
+
+jobs:
+  translate:
+    if: github.repository == 'RoboSats/robosats' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      TRANSLATION_FILTER_GLOB: ${{ github.event_name == 'workflow_dispatch' && inputs.locale_filter_glob || '*.json' }}
+    steps:
+      - name: Check whether translation is enabled
+        id: guard
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -n "$OPENAI_API_KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::OPENAI_API_KEY not set — translation workflow is dormant. Add the secret to enable."
+          fi
+
+      - name: Checkout trusted main
+        if: steps.guard.outputs.enabled == 'true'
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Translate and open a reviewable PR
+        if: steps.guard.outputs.enabled == 'true'
+        # v0.1.21, including numeric React-i18next tag protection.
+        uses: bisq-network/localize-pipeline@385a75b25931e1031f7840d7309632e7f98de26e
+        with:
+          config-file: "translations/config.yaml"
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          diff-base: ${{ github.event.before }}
+          process-all-files: ${{ github.event_name == 'workflow_dispatch' && inputs.process_all_files || false }}
+          open-pr: "true"
+          # Each attempt gets a fresh branch; never replace a PR under review.
+          pr-branch: "localize/translations-${{ github.run_id }}-${{ github.run_attempt }}"
+          pr-title: "Update translations (AI-assisted; review required)"
+          commit-message: "Update translations"
+          github-token: ${{ github.token }}
+          # Default github-actions[bot] identity; no extra signing secret.
+          commit-signing-method: "none"
