@@ -160,15 +160,26 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         """
         for order in queryset:
             if order.status in [Order.Status.PUB, Order.Status.PAU]:
-                if Logics.return_bond(order.maker_bond):
-                    order.update_status(Order.Status.UCA)
+                try:
+                    success, _ = Logics.close_public_order(
+                        order,
+                        actor="coordinator",
+                        notification_message="coordinator_cancelled",
+                    )
+                except Exception as e:
+                    success = False
+                    self.message_user(
+                        request,
+                        f"Could not close {order.id}: {e}",
+                        messages.ERROR,
+                    )
+                    continue
+
+                if success:
                     self.message_user(
                         request,
                         f"Order {order.id} successfully closed",
                         messages.SUCCESS,
-                    )
-                    send_notification.delay(
-                        order_id=order.id, message="coordinator_cancelled"
                     )
                 else:
                     self.message_user(
