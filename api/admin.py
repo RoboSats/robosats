@@ -328,8 +328,25 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.taker.robot.earned_rewards = order.taker_bond.num_satoshis
                 order.taker.robot.save(update_fields=["earned_rewards"])
 
-                if not order.is_swap:
-                    order.update_status(Order.Status.PAY)
+                # Dispute timeouts cancel the onchain payout (order_expires ->
+                # cancel_onchain_payment). The stored address was validated
+                # when submitted and cannot change during a dispute, so
+                # re-activate the payout; refuse to pay if no address was
+                # ever validated.
+                if order.is_swap and order.payout_tx:
+                    if (
+                        order.payout_tx.address
+                        and order.payout_tx.status == OnchainPayment.Status.CANCE
+                    ):
+                        order.payout_tx.status = OnchainPayment.Status.VALID
+                        order.payout_tx.save(update_fields=["status"])
+
+                # Transition to PAY before initiating the payout. For onchain
+                # swaps, pay_buyer() -> complete_order() only transitions to
+                # SUC from [FSE, PAY, FAI]; dispute-resolved orders are in
+                # DIS/WFR and would otherwise stay stuck in the dispute state
+                # with proceeds never computed.
+                order.update_status(Order.Status.PAY)
 
                 paid = Logics.pay_buyer(order)
 
