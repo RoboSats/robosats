@@ -354,13 +354,8 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.taker.robot.earned_rewards = order.taker_bond.num_satoshis
                 order.taker.robot.save(update_fields=["earned_rewards"])
 
-                if order.is_swap:
-                    # For swap orders complete_order uses transition_status
-                    # internally (DIS/WFR accepted when is_disputed=True);
-                    # ensure the payout_tx is marked VALID so pay_buyer's
-                    # guard passes.
-                    order.payout_tx.status = OnchainPayment.Status.VALID
-                    order.payout_tx.save(update_fields=["status"])
+                if not order.is_swap:
+                    order.update_status(Order.Status.PAY)
 
                 paid = Logics.pay_buyer(order)
 
