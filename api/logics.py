@@ -298,6 +298,14 @@ class Logics:
             # operations while we expire the order.
             order = Order.objects.select_for_update().get(pk=order.pk)
 
+            # Post-lock expiry-time guard: a concurrent finalize_contract /
+            # confirm_fiat may have extended expires_at while we were waiting
+            # for the lock (e.g. a taker bond was just confirmed, pushing the
+            # order into WF2 with a fresh deadline).  Re-check under the lock
+            # to avoid settling funds on an order whose timer was just reset.
+            if order.expires_at is not None and order.expires_at > timezone.now():
+                return False
+
             # in any case, if order is_swap and there is an onchain_payment, cancel it.
             if order.status not in does_not_expire:
                 cls.cancel_onchain_payment(order)

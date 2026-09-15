@@ -1,6 +1,8 @@
+from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
+from django.utils import timezone
 
 from api.logics import Logics
 from api.models import LNPayment, Order
@@ -161,6 +163,68 @@ class PayBuyerTests(TestCase):
         self.assertTrue(result)
         self.assertEqual(order.payout.status, LNPayment.Status.FLIGHT)
 
+    # --- Finding 1: admin "successful trade" disputed order paths ---
+
+    def test_disputed_dis_includes_dis_in_from_statuses(self):
+        """
+        When is_disputed=True and order is in DIS, pay_buyer must pass DIS
+        inside from_statuses so that transition_status can succeed (admin path).
+        """
+        order = _make_order(status=Order.Status.DIS)
+        order.is_disputed = True
+        captured = {}
+
+        def fake_transition(new_status, from_statuses):
+            captured["from_statuses"] = from_statuses
+            order.status = new_status
+            return True
+
+        order.transition_status = fake_transition
+        with patch("api.tasks.send_notification.delay"):
+            result = Logics.pay_buyer(order)
+        self.assertTrue(result)
+        self.assertIn(Order.Status.DIS, captured["from_statuses"])
+
+    def test_disputed_wfr_includes_wfr_in_from_statuses(self):
+        """
+        When is_disputed=True and order is in WFR, pay_buyer must pass WFR
+        inside from_statuses (admin path for waiting-for-resolution orders).
+        """
+        order = _make_order(status=Order.Status.WFR)
+        order.is_disputed = True
+        captured = {}
+
+        def fake_transition(new_status, from_statuses):
+            captured["from_statuses"] = from_statuses
+            order.status = new_status
+            return True
+
+        order.transition_status = fake_transition
+        with patch("api.tasks.send_notification.delay"):
+            result = Logics.pay_buyer(order)
+        self.assertTrue(result)
+        self.assertIn(Order.Status.WFR, captured["from_statuses"])
+
+    def test_non_disputed_dis_does_not_include_dis_in_from_statuses(self):
+        """
+        When is_disputed=False (normal concurrent-dispute race), DIS must NOT
+        appear in from_statuses so the transition correctly fails and prevents
+        double-settlement.
+        """
+        order = _make_order(status=Order.Status.DIS)
+        order.is_disputed = False
+        captured = {}
+
+        def fake_transition(new_status, from_statuses):
+            captured["from_statuses"] = from_statuses
+            return False  # simulate the race: order already in DIS
+
+        order.transition_status = fake_transition
+        with patch("api.tasks.send_notification.delay"):
+            result = Logics.pay_buyer(order)
+        self.assertFalse(result)
+        self.assertNotIn(Order.Status.DIS, captured["from_statuses"])
+
 
 # ---------------------------------------------------------------------------
 # open_dispute
@@ -220,6 +284,49 @@ class OrderExpiresTests(TestCase):
 
     def test_no_op_when_suc(self):
         self.assertFalse(self._run(_make_order(status=Order.Status.SUC)))
+
+    # --- Finding 2: post-lock expiry-time guard ---
+
+    def test_no_op_when_expires_at_in_future(self):
+        """
+        After acquiring the DB lock, if expires_at is still in the future
+        (e.g. a concurrent finalize_contract just extended the deadline),
+        order_expires must bail out without settling any funds.
+        """
+        order = _make_order(status=Order.Status.PUB)
+        order.expires_at = timezone.now() + timedelta(hours=1)
+        result = self._run(order)
+        self.assertFalse(result)
+        # No fund-moving helpers should have been called
+        order.update_status.assert_not_called()
+
+    def test_proceeds_when_expires_at_in_past(self):
+        """
+        When expires_at is genuinely in the past under the lock, the expiry
+        should proceed normally (WFB → EXP as a simple representative case).
+        """
+        order = _make_order(status=Order.Status.WFB)
+        order.expires_at = timezone.now() - timedelta(seconds=1)
+        with (
+            patch("api.logics.Logics.cancel_bond"),
+            patch("api.logics.Logics.cancel_onchain_payment"),
+        ):
+            result = self._run(order)
+        self.assertTrue(result)
+
+    def test_proceeds_when_expires_at_is_none(self):
+        """
+        When expires_at is None (e.g. WFB orders before the timer is set),
+        the post-lock guard must be skipped entirely so expiry still fires.
+        """
+        order = _make_order(status=Order.Status.WFB)
+        order.expires_at = None
+        with (
+            patch("api.logics.Logics.cancel_bond"),
+            patch("api.logics.Logics.cancel_onchain_payment"),
+        ):
+            result = self._run(order)
+        self.assertTrue(result)
 
 
 # ---------------------------------------------------------------------------
