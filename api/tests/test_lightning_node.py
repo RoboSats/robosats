@@ -403,3 +403,259 @@ class TestLNDCancelReturnHoldInvoice(TestCase, _LNDInvoicesStubPatcher):
 
             LNDNode.cancel_return_hold_invoice(PAYMENT_HASH_HEX)
         stub.CancelInvoice.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# LND — shared helpers for amount-check tests
+# ---------------------------------------------------------------------------
+
+
+def _make_lnd_lnpayment(num_satoshis=100_000, payment_hash=PAYMENT_HASH_HEX):
+    """Return a minimal LNPayment-like mock for LND hold-invoice tests."""
+    from api.models import LNPayment
+
+    lnp = MagicMock(spec=LNPayment)
+    lnp.num_satoshis = num_satoshis
+    lnp.payment_hash = payment_hash
+    lnp.status = LNPayment.Status.INVGEN
+    lnp.expiry_height = 0
+    return lnp
+
+
+def _make_lnd_htlc(amt_msat, expiry_height=800_000):
+    """Return a mock InvoiceHTLC proto object."""
+    htlc = MagicMock()
+    htlc.amt_msat = amt_msat
+    htlc.expiry_height = expiry_height
+    return htlc
+
+
+def _make_lnd_lookup_response(state, htlcs):
+    """Return a mock LookupInvoiceV2 response."""
+    resp = MagicMock()
+    resp.state = state
+    resp.htlcs = htlcs
+    return resp
+
+
+def _make_lnd_stubs(lnd_state, htlcs):
+    """
+    Build and return (stub_instance, stub_cls_mock) with LookupInvoiceV2
+    and CancelInvoice pre-configured.
+    """
+    invoices_stub = MagicMock()
+    invoices_stub.LookupInvoiceV2.return_value = _make_lnd_lookup_response(
+        lnd_state, htlcs
+    )
+    cancel_resp = MagicMock()
+    cancel_resp.__str__ = lambda self: ""  # LND success = empty-string response
+    invoices_stub.CancelInvoice.return_value = cancel_resp
+    return invoices_stub, MagicMock(return_value=invoices_stub)
+
+
+# ---------------------------------------------------------------------------
+# LND — validate_hold_invoice_locked amount-check tests
+# ---------------------------------------------------------------------------
+
+
+class TestLNDValidateHoldInvoiceLockedAmountCheck(TestCase):
+    """
+    LNDNode.validate_hold_invoice_locked — defensive amount check.
+
+    When LND reports ACCEPTED but sum(htlc.amt_msat) < invoice value, the
+    method must call cancel_return_hold_invoice, set lnpayment.status=CANCEL,
+    save the lnpayment, and return False.  When the sum meets or exceeds the
+    invoice value it must set LOCKED and return True.
+    """
+
+    def _run(self, htlcs, num_satoshis=100_000):
+        lnp = _make_lnd_lnpayment(num_satoshis=num_satoshis)
+        invoices_stub, stub_cls = _make_lnd_stubs(LND_STATE_ACCEPTED, htlcs)
+        with patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", stub_cls):
+            from api.lightning.lnd import LNDNode
+
+            result = LNDNode.validate_hold_invoice_locked(lnp)
+        return result, lnp, invoices_stub
+
+    def test_underpaid_single_htlc_cancels_and_returns_false(self):
+        """Single HTLC with amount < invoice value must trigger cancellation."""
+        from api.models import LNPayment
+
+        htlcs = [_make_lnd_htlc(amt_msat=100_000 * 900)]  # 90 000 sat < 100 000 sat
+        result, lnp, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertFalse(result)
+        stub.CancelInvoice.assert_called_once()
+        self.assertEqual(lnp.status, LNPayment.Status.CANCEL)
+        lnp.save.assert_called()
+
+    def test_underpaid_single_htlc_does_not_set_locked(self):
+        """lnpayment.status must never become LOCKED on underpayment."""
+        from api.models import LNPayment
+
+        htlcs = [_make_lnd_htlc(amt_msat=1)]
+        _, lnp, _ = self._run(htlcs, num_satoshis=50_000)
+
+        self.assertNotEqual(lnp.status, LNPayment.Status.LOCKED)
+
+    def test_underpaid_mpp_partial_set_cancels(self):
+        """MPP HTLC set summing below the invoice value must be cancelled."""
+        from api.models import LNPayment
+
+        # Two HTLCs covering only 80 000 sat of a 100 000 sat invoice
+        htlcs = [
+            _make_lnd_htlc(amt_msat=40_000_000),
+            _make_lnd_htlc(amt_msat=40_000_000),
+        ]
+        result, lnp, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertFalse(result)
+        stub.CancelInvoice.assert_called_once()
+        self.assertEqual(lnp.status, LNPayment.Status.CANCEL)
+
+    def test_exact_amount_single_htlc_accepts(self):
+        """HTLC carrying exactly the invoice value must be accepted."""
+        from api.models import LNPayment
+
+        htlcs = [_make_lnd_htlc(amt_msat=100_000 * 1_000)]  # exact msat
+        result, lnp, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertTrue(result)
+        stub.CancelInvoice.assert_not_called()
+        self.assertEqual(lnp.status, LNPayment.Status.LOCKED)
+        lnp.save.assert_called()
+
+    def test_overpaid_single_htlc_accepts(self):
+        """HTLC carrying more than the invoice value must still be accepted."""
+        from api.models import LNPayment
+
+        htlcs = [_make_lnd_htlc(amt_msat=100_000 * 1_001)]  # 1 msat over
+        result, lnp, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertTrue(result)
+        stub.CancelInvoice.assert_not_called()
+        self.assertEqual(lnp.status, LNPayment.Status.LOCKED)
+
+    def test_exact_amount_mpp_set_accepts(self):
+        """MPP HTLC set summing exactly to the invoice value must be accepted."""
+        from api.models import LNPayment
+
+        htlcs = [
+            _make_lnd_htlc(amt_msat=50_000_000),  # 50 000 sat
+            _make_lnd_htlc(amt_msat=50_000_000),  # 50 000 sat
+        ]
+        result, lnp, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertTrue(result)
+        stub.CancelInvoice.assert_not_called()
+        self.assertEqual(lnp.status, LNPayment.Status.LOCKED)
+
+
+# ---------------------------------------------------------------------------
+# LND — lookup_invoice_status amount-check tests
+# ---------------------------------------------------------------------------
+
+
+class TestLNDLookupInvoiceStatusAmountCheck(TestCase):
+    """
+    LNDNode.lookup_invoice_status — defensive amount check on ACCEPTED state.
+
+    When LookupInvoiceV2 returns ACCEPTED but sum(htlc.amt_msat) < invoice
+    value, the method must call cancel_return_hold_invoice and return
+    status=CANCEL.  When the sum is sufficient, status must be LOCKED.
+    Non-ACCEPTED states (OPEN, SETTLED, CANCELED) must pass through unchanged
+    without any cancellation.
+    """
+
+    def _run(self, htlcs, num_satoshis=100_000, lnd_state=LND_STATE_ACCEPTED):
+        lnp = _make_lnd_lnpayment(num_satoshis=num_satoshis)
+        invoices_stub, stub_cls = _make_lnd_stubs(lnd_state, htlcs)
+        with patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", stub_cls):
+            from api.lightning.lnd import LNDNode
+
+            status, expiry_height = LNDNode.lookup_invoice_status(lnp)
+        return status, expiry_height, invoices_stub
+
+    def test_underpaid_single_htlc_returns_cancel(self):
+        """Underpaid ACCEPTED invoice must be cancelled; returned status is CANCEL."""
+        from api.models import LNPayment
+
+        # 50 000 sat locked against a 100 000 sat invoice
+        htlcs = [_make_lnd_htlc(amt_msat=50_000_000)]
+        status, _, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertEqual(status, LNPayment.Status.CANCEL)
+        stub.CancelInvoice.assert_called_once()
+
+    def test_underpaid_mpp_partial_set_returns_cancel(self):
+        """MPP set summing below invoice value must be cancelled."""
+        from api.models import LNPayment
+
+        htlcs = [
+            _make_lnd_htlc(amt_msat=30_000_000),
+            _make_lnd_htlc(amt_msat=30_000_000),
+        ]
+        status, _, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertEqual(status, LNPayment.Status.CANCEL)
+        stub.CancelInvoice.assert_called_once()
+
+    def test_exact_amount_htlc_returns_locked(self):
+        """Exact-amount HTLC must yield LOCKED status without cancellation."""
+        from api.models import LNPayment
+
+        htlcs = [_make_lnd_htlc(amt_msat=100_000 * 1_000)]
+        status, _, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertEqual(status, LNPayment.Status.LOCKED)
+        stub.CancelInvoice.assert_not_called()
+
+    def test_overpaid_htlc_returns_locked(self):
+        """Over-payment must yield LOCKED status without cancellation."""
+        from api.models import LNPayment
+
+        htlcs = [_make_lnd_htlc(amt_msat=100_000 * 1_001)]
+        status, _, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertEqual(status, LNPayment.Status.LOCKED)
+        stub.CancelInvoice.assert_not_called()
+
+    def test_exact_mpp_set_returns_locked(self):
+        """MPP HTLC set summing exactly to invoice value must yield LOCKED."""
+        from api.models import LNPayment
+
+        htlcs = [
+            _make_lnd_htlc(amt_msat=50_000_000),
+            _make_lnd_htlc(amt_msat=50_000_000),
+        ]
+        status, _, stub = self._run(htlcs, num_satoshis=100_000)
+
+        self.assertEqual(status, LNPayment.Status.LOCKED)
+        stub.CancelInvoice.assert_not_called()
+
+    def test_open_state_not_affected(self):
+        """OPEN state must be returned as INVGEN; amount check must not run."""
+        from api.models import LNPayment
+
+        status, _, stub = self._run(htlcs=[], lnd_state=LND_STATE_OPEN)
+
+        self.assertEqual(status, LNPayment.Status.INVGEN)
+        stub.CancelInvoice.assert_not_called()
+
+    def test_settled_state_not_affected(self):
+        """SETTLED state must be returned as SETLED; amount check must not run."""
+        from api.models import LNPayment
+
+        status, _, stub = self._run(htlcs=[], lnd_state=LND_STATE_SETTLED)
+
+        self.assertEqual(status, LNPayment.Status.SETLED)
+        stub.CancelInvoice.assert_not_called()
+
+    def test_canceled_state_not_affected(self):
+        """CANCELED state must be returned as CANCEL; no second cancellation."""
+        from api.models import LNPayment
+
+        status, _, stub = self._run(htlcs=[], lnd_state=LND_STATE_CANCELED)
+
+        self.assertEqual(status, LNPayment.Status.CANCEL)
+        stub.CancelInvoice.assert_not_called()
