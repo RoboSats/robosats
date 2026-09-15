@@ -55,8 +55,20 @@ class ETokenAdmin(AdminChangeLinksMixin, TokenAdmin):
 class LNPaymentInline(admin.StackedInline):
     model = LNPayment
     can_delete = True
-    fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
-    readonly_fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
+    fields = (
+        "payment_hash",
+        "num_satoshis",
+        "status",
+        "routing_budget_sats",
+        "description",
+    )
+    readonly_fields = (
+        "payment_hash",
+        "num_satoshis",
+        "status",
+        "routing_budget_sats",
+        "description",
+    )
     show_change_link = True
     show_full_result_count = True
     extra = 0
@@ -305,20 +317,23 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.taker.robot.earned_rewards = order.taker_bond.num_satoshis
                 order.taker.robot.save(update_fields=["earned_rewards"])
 
-                if order.is_swap:
-                    order.payout_tx.status = OnchainPayment.Status.VALID
-                    order.payout_tx.save(update_fields=["status"])
-                    order.update_status(Order.Status.SUC)
-                else:
+                if not order.is_swap:
                     order.update_status(Order.Status.PAY)
 
-                Logics.pay_buyer(order)
+                paid = Logics.pay_buyer(order)
 
-                self.message_user(
-                    request,
-                    f"Dispute of order {order.id} solved as successful trade",
-                    messages.SUCCESS,
-                )
+                if paid:
+                    self.message_user(
+                        request,
+                        f"Dispute of order {order.id} solved as successful trade",
+                        messages.SUCCESS,
+                    )
+                else:
+                    self.message_user(
+                        request,
+                        f"Order {order.id} payout could not be initiated: escrow is not settled or payout address is not validated",
+                        messages.ERROR,
+                    )
 
             else:
                 self.message_user(
