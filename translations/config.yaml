@@ -15,6 +15,9 @@ localization_layout:
 
 translation_source: "git"
 glossary_file_path: "glossary.json"
+# Existing RoboSats wording and matching Bisq 2 terms are starting guidance.
+# Allow grammatical inflection; these have not been approved as exact rules.
+translation_glossary_enforcement: "prompt-only"
 
 project_context: >
   Translate for RoboSats, a peer-to-peer Bitcoin and Lightning exchange that runs

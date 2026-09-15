@@ -1,1 +1,127 @@
-{}
+{
+  "ca": {
+    "bond": "Fiança",
+    "coordinator": "Coordinador",
+    "fee": "Comissió",
+    "garage": "Garatge",
+    "robot": "Robot",
+    "wallet": "Cartera"
+  },
+  "cs": {
+    "bond": "Kauce",
+    "coordinator": "Koordinátor",
+    "fee": "Poplatek",
+    "garage": "Garáž",
+    "robot": "Robot",
+    "trade": "Obchod"
+  },
+  "de": {
+    "bond": "Kaution",
+    "coordinator": "Koordinator",
+    "fee": "Gebühr",
+    "garage": "Garage",
+    "robot": "Roboter",
+    "trade": "Handel",
+    "wallet": "Wallet"
+  },
+  "es": {
+    "bond": "Fianza",
+    "coordinator": "Coordinador",
+    "fee": "Comisión",
+    "garage": "Garaje",
+    "robot": "Robot",
+    "trade": "Intercambio"
+  },
+  "eu": {
+    "bond": "Fidantza",
+    "coordinator": "Koordinatzailea",
+    "robot": "Robota"
+  },
+  "fr": {
+    "bond": "Caution",
+    "coordinator": "Coordinateur",
+    "fee": "Frais",
+    "garage": "Garage",
+    "robot": "Robot",
+    "wallet": "Portefeuille"
+  },
+  "it": {
+    "bond": "Cauzione",
+    "coordinator": "Coordinatore",
+    "fee": "Commissione",
+    "garage": "Garage",
+    "robot": "Robot",
+    "trade": "Scambio",
+    "wallet": "wallet"
+  },
+  "ja": {
+    "bond": "担保金",
+    "coordinator": "コーディネーター",
+    "fee": "手数料",
+    "garage": "ガレージ",
+    "robot": "ロボット",
+    "trade": "取引",
+    "wallet": "ウォレット"
+  },
+  "pl": {
+    "coordinator": "Koordynator",
+    "fee": "Opłata",
+    "garage": "Garaż",
+    "robot": "Robot",
+    "wallet": "Portfel"
+  },
+  "pt": {
+    "coordinator": "Coordenador",
+    "fee": "Taxa",
+    "garage": "Garagem",
+    "robot": "Robô",
+    "trade": "Negociação",
+    "wallet": "Carteira"
+  },
+  "ru": {
+    "bond": "Залог",
+    "coordinator": "Координатор",
+    "fee": "Комиссия",
+    "garage": "Гараж",
+    "robot": "Робот"
+  },
+  "sv": {
+    "coordinator": "Samordnare",
+    "fee": "Avgift",
+    "garage": "Garage",
+    "robot": "Robot",
+    "trade": "Handel",
+    "wallet": "Plånbok"
+  },
+  "sw": {
+    "bond": "Dhamana",
+    "coordinator": "Mratibu",
+    "fee": "Ada",
+    "garage": "Ghala",
+    "robot": "Roboti",
+    "trade": "Biashara"
+  },
+  "th": {
+    "coordinator": "ผู้ประสานงาน",
+    "fee": "ค่าธรรมเนียม",
+    "garage": "โรงรถ",
+    "robot": "หุ่นยนต์"
+  },
+  "zh-SI": {
+    "bond": "保证金",
+    "coordinator": "协调员",
+    "fee": "费用",
+    "garage": "车库",
+    "robot": "机器人",
+    "trade": "交易",
+    "wallet": "钱包"
+  },
+  "zh-TR": {
+    "bond": "保證金",
+    "fee": "費用",
+    "garage": "車庫",
+    "robot": "機器人",
+    "trade": "交易",
+    "wallet": "錢包"
+  }
+}

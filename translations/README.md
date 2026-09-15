@@ -89,12 +89,54 @@ have damaged tags in `unsafe_alert`, `let_us_know_hot_to_improve`, or
 The numeric-tag protection from [pipeline PR #178](https://github.com/bisq-network/localize-pipeline/pull/178)
 is included in this pin; installing the workflow does not repair existing files.
 Do not exclude these keys: exclusion copies English over existing translations.
-Neither these checks nor two model passes replace native-speaker review. The initial glossary is
-empty by design and should grow from agreed translator feedback.
+Neither these checks nor two model passes replace native-speaker review.
 
 The inspected snapshot has three existing interpolation-name errors in Catalan,
 Basque, and French. Those are separate corrections; installing the workflow does
 not by itself repair them.
+
+## Starting glossary
+
+`glossary.json` contains 93 term mappings across the 16 locales. They were
+selected from [existing RoboSats translations](https://github.com/RoboSats/robosats/tree/8f178476297333c83224bb7da467df8296069878/frontend/static/locales),
+with 31 matching entries taken from the
+[Bisq 2 glossary](https://github.com/bisq-network/localize-pipeline/blob/385a75b25931e1031f7840d7309632e7f98de26e/profiles/bisq/glossary.json).
+Every mapping has wording present in at least two distinct RoboSats messages
+whose English source uses that term. This provides evidence of existing usage;
+it does not establish that a native speaker has approved the choice.
+
+The entries cover `robot`, `garage`, `coordinator`, `bond`, `fee`, `trade`, and
+`wallet`, where the existing wording supports a choice. Coverage varies by
+locale. For example:
+
+| Locale | English term | Preferred wording | Source |
+| --- | --- | --- | --- |
+| German | fee | Gebühr | Bisq 2 and RoboSats |
+| French | wallet | Portefeuille | Bisq 2 and RoboSats |
+| Japanese | trade | 取引 | Bisq 2 and RoboSats |
+| Spanish | fee | Comisión | RoboSats; Bisq 2 uses Tarifa |
+| Italian | trade | Scambio | RoboSats; Bisq 2 uses Commercio |
+| Catalan | garage | Garatge | RoboSats' longer messages; the label is still English |
+
+Bisq's `zh-Hans` / `zh-Hant` entries were matched to `zh-SI` / `zh-TR`.
+The three Portuguese carryovers also agree between Bisq's `pt_BR` and `pt_PT`
+glossaries and RoboSats' `pt` messages. Basque entries come from RoboSats alone.
+Bisq-specific concepts and keys that do not occur in the English messages were
+left out.
+
+These are preferred terms for both translation and review. The config uses
+`translation_glossary_enforcement: "prompt-only"`, so it allows inflection and
+compounds instead of rejecting a translation for not containing the exact base
+word. For example, Czech `Robot` becomes `robota` in `Přidat robota`.
+Terminology compliance therefore needs human review. Interpolation and numeric
+tag checks remain enabled; brand guidance is configured separately.
+
+Some choices are left open: `order`, `maker`, and `taker`; `bond` in Polish,
+Portuguese, Swedish, and Thai; Basque `garage`; and Traditional Chinese
+`coordinator`. Existing labels, longer messages, or the trading meaning need
+reconciling before using them as glossary guidance. Keep these decisions in
+translator review rather than importing a different project's wording wholesale.
+Adding the glossary does not change any existing locale file.
 
 ## Other providers and local inference
 
