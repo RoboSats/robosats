@@ -2239,6 +2239,77 @@ class TradeTest(BaseAPITestCase):
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
+    def test_dispute_records_order_id_in_robot(self):
+        """
+        Tests that a user-opened dispute records the order ID in
+        Robot.orders_disputes_started as a comma-separated string of IDs
+        """
+        path = reverse("order")
+
+        # First dispute opened by the maker robot (field starts empty)
+        trade_a = Trade(self.client)
+        trade_a.publish_order()
+        trade_a.take_order()
+        trade_a.take_order_third()
+        trade_a.lock_taker_bond()
+        trade_a.lock_escrow(trade_a.taker_index)
+        trade_a.submit_payout_invoice(trade_a.maker_index)
+
+        # Disputes can only be opened within 18 hours of order expiry
+        order_a = Order.objects.get(id=trade_a.order_id)
+        self.assertEqual(order_a.status, Order.Status.CHA)
+        order_a.expires_at = timezone.now() + timedelta(hours=6)
+        order_a.save()
+
+        params = f"?order_id={trade_a.order_id}"
+        headers = trade_a.get_robot_auth(trade_a.maker_index)
+        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        self.assertEqual(response.status_code, 200)
+
+        order_a = Order.objects.get(id=trade_a.order_id)
+        self.assertEqual(order_a.status, Order.Status.DIS)
+        self.assertEqual(order_a.maker.robot.orders_disputes_started, str(order_a.id))
+
+        # Coordinator resolves the dispute from the admin (maker wins)
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.maker_wins(request, Order.objects.filter(id=trade_a.order_id))
+
+        order_a = Order.objects.get(id=trade_a.order_id)
+        self.assertEqual(order_a.status, Order.Status.TLD)
+
+        # Second dispute by the same robot appends the new order ID.
+        # The taker must be robot 2: its TakeOrder was deleted when it
+        # finalized trade A's contract, while robot 3's lingers unexpired
+        # (takers with a pending TakeOrder cannot take a new order).
+        trade_b = Trade(self.client)
+        trade_b.publish_order()
+        trade_b.take_order()
+        trade_b.take_order_third()
+        trade_b.lock_taker_bond()
+        trade_b.lock_escrow(trade_b.taker_index)
+        trade_b.submit_payout_invoice(trade_b.maker_index)
+
+        order_b = Order.objects.get(id=trade_b.order_id)
+        self.assertEqual(order_b.status, Order.Status.CHA)
+        order_b.expires_at = timezone.now() + timedelta(hours=6)
+        order_b.save()
+
+        params = f"?order_id={trade_b.order_id}"
+        headers = trade_b.get_robot_auth(trade_b.maker_index)
+        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        self.assertEqual(response.status_code, 200)
+
+        order_b = Order.objects.get(id=trade_b.order_id)
+        self.assertEqual(order_b.status, Order.Status.DIS)
+        self.assertEqual(
+            order_b.maker.robot.orders_disputes_started,
+            f"{trade_a.order_id},{trade_b.order_id}",
+        )
+        self.assertEqual(order_b.maker.robot.num_disputes, 2)
+
     def test_ticks(self):
         """
         Tests the historical ticks serving endpoint after creating a contract

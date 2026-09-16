@@ -571,12 +571,12 @@ class Logics:
         if user is not None:
             robot = user.robot
             robot.num_disputes = robot.num_disputes + 1
-            if robot.orders_disputes_started is None:
-                robot.orders_disputes_started = str(order.id)
+            if robot.orders_disputes_started:
+                robot.orders_disputes_started = (
+                    f"{robot.orders_disputes_started},{order.id}"
+                )
             else:
-                disputes = list(robot.orders_disputes_started)
-                disputes.append(str(order.id))
-                robot.orders_disputes_started = disputes
+                robot.orders_disputes_started = str(order.id)
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
