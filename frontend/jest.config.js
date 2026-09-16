@@ -4,6 +4,7 @@ module.exports = {
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
+  transformIgnorePatterns: ['node_modules/(?!(@noble|@scure|nostr-tools)/)'],
   // Stub platform-specific singletons that pull in ESM-only packages (uuid,
   // WebSocket Android bridge, WASM) that cannot run in a plain Node Jest env.
   moduleNameMapper: {
@@ -21,9 +22,6 @@ module.exports = {
     // Roboidentities service (robo-identities-wasm via RoboidentitiesWebClient)
     '\\.\\./(services/Roboidentities|services/Roboidentities/.*)$':
       '<rootDir>/src/services/__mocks__/Roboidentities.ts',
-
-    // @noble/curves — ESM-only, stub schnorr for nostr.ts
-    '^@noble/curves/(.*)$': '<rootDir>/src/__mocks__/noble-curves.ts',
 
     // nostr-tools — use CJS build
     '^nostr-tools$': '<rootDir>/node_modules/nostr-tools/lib/cjs/index.js',

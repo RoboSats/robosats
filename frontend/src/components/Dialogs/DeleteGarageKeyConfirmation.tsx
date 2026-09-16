@@ -28,7 +28,7 @@ const DeleteGarageKeyConfirmationDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
-        <Box display='flex' alignItems='center' gap={1}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Warning color='warning' />
           {t('Delete Garage Key?')}
         </Box>
@@ -37,7 +37,9 @@ const DeleteGarageKeyConfirmationDialog = ({
       <DialogContent>
         <DialogContentText component='div'>
           <Typography variant='body1' gutterBottom>
-            {t('Are you sure you want to permanently delete this Garage Key and ALL associated robots?')}
+            {t(
+              'Are you sure you want to permanently delete this Garage Key and ALL associated robots?',
+            )}
           </Typography>
 
           <Typography variant='body2' color='warning.main' sx={{ mt: 2, fontWeight: 'bold' }}>

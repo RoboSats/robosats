@@ -106,8 +106,12 @@ const GarageKeyOnboarding = ({
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
-            <Grid item>
+          <Grid
+            sx={{ flexDirection: 'column', alignItems: 'center', padding: 1 }}
+            container
+            spacing={1}
+          >
+            <Grid>
               <Typography>
                 {t(
                   'Your Garage Key is a master key that derives unlimited robot identities. Generate it once and use it forever.',
@@ -115,17 +119,21 @@ const GarageKeyOnboarding = ({
               </Typography>
             </Grid>
             {!generatedKey && !inputGarageKey ? (
-              <Grid item>
+              <Grid>
                 <Button autoFocus onClick={generateKey} variant='contained' size='large'>
                   <Key sx={{ mr: 1 }} />
                   {t('Generate Garage Key')}
                 </Button>
               </Grid>
             ) : (
-              <Grid item sx={{ width: '100%' }}>
+              <Grid sx={{ width: '100%' }}>
                 <Collapse in={generatedKey || !!inputGarageKey}>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
-                    <Grid item>
+                  <Grid
+                    sx={{ flexDirection: 'column', alignItems: 'center' }}
+                    container
+                    spacing={1}
+                  >
+                    <Grid>
                       <Alert variant='outlined' severity='info'>
                         <b>{`${t('Store it somewhere safe!')} `}</b>
                         {t(
@@ -133,7 +141,7 @@ const GarageKeyOnboarding = ({
                         )}
                       </Alert>
                     </Grid>
-                    <Grid item sx={{ width: '100%' }}>
+                    <Grid sx={{ width: '100%' }}>
                       <GarageKeyInput
                         loading={loading}
                         autoFocusTarget='copyButton'
@@ -142,7 +150,7 @@ const GarageKeyOnboarding = ({
                         editable={true}
                       />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                       <Typography variant='body2'>
                         {t('Or paste an existing Garage Key to recover your robots.')}
                         <Button size='small' onClick={generateKey}>
@@ -152,7 +160,7 @@ const GarageKeyOnboarding = ({
                       </Typography>
                     </Grid>
 
-                    <Grid item>
+                    <Grid>
                       <Button
                         onClick={handleContinueToStep2}
                         disabled={loading || !isValidKey}
@@ -178,8 +186,8 @@ const GarageKeyOnboarding = ({
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1}>
-            <Grid item>
+          <Grid sx={{ flexDirection: 'column', alignItems: 'center' }} container spacing={1}>
+            <Grid>
               <Typography>
                 {slot?.hashId ? (
                   t('This is your trading avatar')
@@ -192,7 +200,7 @@ const GarageKeyOnboarding = ({
               </Typography>
             </Grid>
 
-            <Grid item sx={{ width: '13.5em' }}>
+            <Grid sx={{ width: '13.5em' }}>
               <RobotAvatar
                 hashId={slot?.hashId ?? ''}
                 smooth={true}
@@ -210,7 +218,7 @@ const GarageKeyOnboarding = ({
             </Grid>
 
             {slot?.nickname ? (
-              <Grid item>
+              <Grid>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
                   <div
@@ -242,7 +250,7 @@ const GarageKeyOnboarding = ({
             ) : null}
 
             {garageKey ? (
-              <Grid item>
+              <Grid>
                 <AccountNavigator
                   accountIndex={garageKey.currentAccountIndex}
                   onPrevious={() => {
@@ -256,7 +264,7 @@ const GarageKeyOnboarding = ({
               </Grid>
             ) : null}
 
-            <Grid item>
+            <Grid>
               <Collapse in={!!slot?.hashId}>
                 <Button
                   onClick={() => {
@@ -281,8 +289,12 @@ const GarageKeyOnboarding = ({
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
-            <Grid item>
+          <Grid
+            sx={{ flexDirection: 'column', alignItems: 'center', padding: 1.5 }}
+            container
+            spacing={1}
+          >
+            <Grid>
               <Typography>
                 {t(
                   'RoboSats is a peer-to-peer marketplace. You can browse the public offers or create a new one.',
@@ -290,7 +302,7 @@ const GarageKeyOnboarding = ({
               </Typography>
             </Grid>
 
-            <Grid item>
+            <Grid>
               <ButtonGroup variant='contained'>
                 <Button
                   color='primary'
@@ -315,7 +327,7 @@ const GarageKeyOnboarding = ({
               </ButtonGroup>
             </Grid>
 
-            <Grid item>
+            <Grid>
               <Typography>
                 {`${t('If you need help on your RoboSats journey join our public support')} `}
                 <Link
@@ -328,7 +340,7 @@ const GarageKeyOnboarding = ({
                 {`, ${t('or visit the robot school for documentation.')} `}
               </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Button
                 component={Link}
                 href='https://learn.robosats.org'
@@ -342,7 +354,7 @@ const GarageKeyOnboarding = ({
                 <NewTabIcon sx={{ width: '0.8em' }} />
               </Button>
             </Grid>
-            <Grid item sx={{ position: 'relative', top: '0.6em' }}>
+            <Grid sx={{ position: 'relative', top: '0.6em' }}>
               <Button
                 color='inherit'
                 onClick={() => {
