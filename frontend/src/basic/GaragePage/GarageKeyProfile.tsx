@@ -27,13 +27,8 @@ interface GarageKeyProfileProps {
   width: number;
 }
 
-const GarageKeyProfile = ({
-  setView,
-  width,
-  setInputGarageKey,
-}: GarageKeyProfileProps) => {
-  const { setOpen, open, navigateToPage, slotUpdatedAt } =
-    useContext<UseAppStoreType>(AppContext);
+const GarageKeyProfile = ({ setView, width, setInputGarageKey }: GarageKeyProfileProps) => {
+  const { setOpen, open, navigateToPage, slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -85,17 +80,17 @@ const GarageKeyProfile = ({
 
   return (
     <>
-      <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
+      <Grid
+        sx={{ flexDirection: 'column', alignItems: 'center', padding: 1, paddingTop: 2 }}
+        container
+        spacing={1}
+      >
         <Grid
-          item
           container
-          direction='column'
-          alignItems='center'
           spacing={1}
-          sx={{ width: '100%' }}
+          sx={{ flexDirection: 'column', alignItems: 'center', width: '100%' }}
         >
           <Grid
-            item
             sx={{ height: '2.3em', position: 'relative', display: 'flex', flexDirection: 'row' }}
           >
             <IconButton
@@ -145,10 +140,12 @@ const GarageKeyProfile = ({
             )}
           </Grid>
 
-          <Grid item sx={{ width: `13.5em` }}>
+          <Grid sx={{ width: `13.5em` }}>
             <RobotAvatar
               hashId={slot?.hashId ?? undefined}
-              error={!slot?.activeOrder?.id && slot !== null && !slot.isReusable()}
+              statusColor={
+                !slot?.activeOrder?.id && slot !== null && !slot.isReusable() ? 'error' : undefined
+              }
               smooth
               style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
               placeholderType='generating'
@@ -161,7 +158,9 @@ const GarageKeyProfile = ({
               }}
               tooltip={
                 !slot?.activeOrder?.id && slot && !slot.isReusable()
-                  ? t('This robot has completed a trade. Navigate to a new account for fresh privacy.')
+                  ? t(
+                      'This robot has completed a trade. Navigate to a new account for fresh privacy.',
+                    )
                   : t('This is your trading avatar')
               }
               tooltipPosition='top'
@@ -169,7 +168,7 @@ const GarageKeyProfile = ({
           </Grid>
 
           {garageKey ? (
-            <Grid item>
+            <Grid>
               <AccountNavigator
                 accountIndex={garageKey.currentAccountIndex}
                 onPrevious={handlePreviousAccount}
@@ -180,14 +179,14 @@ const GarageKeyProfile = ({
           ) : null}
 
           {slot?.loading && !slot?.activeOrder ? (
-            <Grid item>
+            <Grid>
               <b>{t('Looking for orders!')}</b>
               <LinearProgress />
             </Grid>
           ) : null}
 
           {slot?.activeOrder ? (
-            <Grid item>
+            <Grid>
               <Button
                 onClick={() => {
                   navigateToPage(
@@ -201,10 +200,10 @@ const GarageKeyProfile = ({
             </Grid>
           ) : null}
 
-          <Grid item container direction='row' alignItems='center'>
+          <Grid sx={{ alignItems: 'center' }} container direction='row'>
             {!slot?.activeOrder && slot?.lastOrder ? (
-              <Grid item container direction='column' alignItems='center'>
-                <Grid item>
+              <Grid sx={{ flexDirection: 'column', alignItems: 'center' }} container>
+                <Grid>
                   <Button
                     onClick={() => {
                       navigateToPage(
@@ -220,8 +219,8 @@ const GarageKeyProfile = ({
             ) : null}
 
             {slot?.availableRewards !== null && (
-              <Grid item container direction='column' alignItems='center'>
-                <Grid item>
+              <Grid sx={{ flexDirection: 'column', alignItems: 'center' }} container>
+                <Grid>
                   <Button
                     onClick={() => {
                       setOpen({ ...closeAll, profile: !open.profile });
@@ -235,11 +234,11 @@ const GarageKeyProfile = ({
           </Grid>
 
           {!slot?.activeOrder && !slot?.lastOrder && !slot?.loading ? (
-            <Grid item>{t('No existing orders found')}</Grid>
+            <Grid>{t('No existing orders found')}</Grid>
           ) : null}
         </Grid>
 
-        <Grid item sx={{ width: '100%' }}>
+        <Grid sx={{ width: '100%' }}>
           <Box
             sx={{
               backgroundColor: 'background.paper',
@@ -248,8 +247,12 @@ const GarageKeyProfile = ({
               borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
             }}
           >
-            <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
-              <Grid item sx={{ width: '100%' }}>
+            <Grid
+              sx={{ flexDirection: 'column', alignItems: 'center', padding: 2 }}
+              container
+              spacing={2}
+            >
+              <Grid sx={{ width: '100%' }}>
                 <Typography variant='caption'>{t('Garage Key')}</Typography>
                 <GarageKeyInput
                   garageKey={garageKey?.encodedKey ?? ''}
@@ -259,7 +262,7 @@ const GarageKeyProfile = ({
                 />
               </Grid>
 
-              <Grid item container direction='row' justifyContent='center' width='100%'>
+              <Grid sx={{ justifyContent: 'center', width: '100%' }} container direction='row'>
                 <Tooltip title={t('Delete Garage Key and all robots')} placement='top'>
                   <Button color='error' onClick={handleDeleteGarageKey} size='large'>
                     <DeleteSweep />

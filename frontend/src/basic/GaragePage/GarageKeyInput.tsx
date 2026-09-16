@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  IconButton,
-  TextField,
-  Tooltip,
-  InputAdornment,
-  CircularProgress,
-} from '@mui/material';
+import { IconButton, TextField, Tooltip, InputAdornment, CircularProgress } from '@mui/material';
 import { ContentCopy, Check } from '@mui/icons-material';
 import { validateGarageKey } from '../../utils';
 
@@ -79,33 +73,35 @@ const GarageKeyInput = ({
       error={!!error && garageKey.length > 0}
       helperText={error && garageKey.length > 0 ? error : t('Store your Garage Key safely')}
       autoFocus={autoFocusTarget === 'textField'}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position='end'>
-            {loading ? (
-              <CircularProgress size={20} />
-            ) : (
-              <Tooltip
-                title={showCopied ? t('Copied!') : t('Copy')}
-                enterTouchDelay={0}
-                placement='top'
-              >
-                <IconButton
-                  autoFocus={autoFocusTarget === 'copyButton'}
-                  onClick={handleCopy}
-                  disabled={!garageKey}
+      slotProps={{
+        input: {
+          endAdornment: (
+            <InputAdornment position='end'>
+              {loading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <Tooltip
+                  title={showCopied ? t('Copied!') : t('Copy')}
+                  enterTouchDelay={0}
+                  placement='top'
                 >
-                  {showCopied ? <Check color='success' /> : <ContentCopy />}
-                </IconButton>
-              </Tooltip>
-            )}
-          </InputAdornment>
-        ),
-      }}
-      inputProps={{
-        style: {
-          fontFamily: 'monospace',
-          fontSize: '0.85em',
+                  <IconButton
+                    autoFocus={autoFocusTarget === 'copyButton'}
+                    onClick={handleCopy}
+                    disabled={!garageKey}
+                  >
+                    {showCopied ? <Check color='success' /> : <ContentCopy />}
+                  </IconButton>
+                </Tooltip>
+              )}
+            </InputAdornment>
+          ),
+        },
+        htmlInput: {
+          style: {
+            fontFamily: 'monospace',
+            fontSize: '0.85em',
+          },
         },
       }}
     />

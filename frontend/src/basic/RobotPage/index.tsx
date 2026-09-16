@@ -97,7 +97,7 @@ const RobotPage = (): React.JSX.Element => {
         overflowX: 'clip',
       }}
     >
-      <Stack direction='column' alignItems='center' spacing={1} sx={{ pt: 1.5, px: 1.5 }}>
+      <Stack direction='column' spacing={1} sx={{ alignItems: 'center', pt: 1.5, px: 1.5 }}>
         <ToggleButtonGroup
           sx={{ width: '100%' }}
           exclusive={true}
@@ -107,13 +107,13 @@ const RobotPage = (): React.JSX.Element => {
           }}
         >
           <ToggleButton value='garageKey' color='primary' sx={{ flexGrow: 1 }}>
-            <Stack direction='row' spacing={1} alignItems='center'>
+            <Stack sx={{ alignItems: 'center' }} direction='row' spacing={1}>
               <VpnKey />
               <span>{t('Garage Key')}</span>
             </Stack>
           </ToggleButton>
           <ToggleButton value='legacy' color='secondary' sx={{ flexGrow: 1 }}>
-            <Stack direction='row' spacing={1} alignItems='center'>
+            <Stack sx={{ alignItems: 'center' }} direction='row' spacing={1}>
               <SmartToy />
               <span>{t('Legacy')}</span>
             </Stack>
@@ -138,9 +138,7 @@ const RobotPage = (): React.JSX.Element => {
           {hasActiveData() && (
             <Alert severity='warning' sx={{ mt: 2 }}>
               {garage.getMode() === 'garageKey' && garage.getGarageKey()
-                ? t(
-                    'You have an active Garage Key. Make sure you have saved it before continuing!',
-                  )
+                ? t('You have an active Garage Key. Make sure you have saved it before continuing!')
                 : t(
                     'You have active robots. Make sure you have saved your tokens before continuing!',
                   )}

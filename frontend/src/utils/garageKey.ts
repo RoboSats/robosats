@@ -1,8 +1,7 @@
 import { bech32 } from '@scure/base';
 import { HDKey } from '@scure/bip32';
-import { sha256 } from '@noble/hashes/sha256';
-import { sha512 } from '@noble/hashes/sha512';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
+import { sha256, sha512 } from '@noble/hashes/sha2.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { getPublicKey } from 'nostr-tools';
 
 const GARAGE_KEY_PREFIX = 'robo';
@@ -37,7 +36,9 @@ export function decodeGarageKey(garageKey: string): Uint8Array {
   }
   const bytes = bech32.fromWords(decoded.words);
   if (bytes.length !== KEY_LENGTH) {
-    throw new Error(`Invalid key length after decoding: expected ${KEY_LENGTH}, got ${bytes.length}`);
+    throw new Error(
+      `Invalid key length after decoding: expected ${KEY_LENGTH}, got ${bytes.length}`,
+    );
   }
   return new Uint8Array(bytes);
 }
@@ -118,7 +119,7 @@ export function derivedKeyToToken(derivedKey: Uint8Array): string {
 
 export function getNostrSecKeyFromGarageKey(plainKey: Uint8Array): Uint8Array {
   const keyHex = bytesToHex(plainKey);
-  return sha256(sha512(keyHex));
+  return sha256(sha512(new TextEncoder().encode(keyHex)));
 }
 
 export function getNostrPubKeyFromGarageKey(plainKey: Uint8Array): string {
@@ -132,5 +133,5 @@ export function garageKeyToRobotToken(garageKey: string, accountIndex: number = 
   return derivedKeyToToken(derivedKey);
 }
 
-export { hexToBytes, };
+export { hexToBytes };
 export { bytesToHex };
