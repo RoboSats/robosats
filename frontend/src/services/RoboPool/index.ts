@@ -54,9 +54,17 @@ class RoboPool {
   private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
   private readonly notificationSubscriptions: Map<string, NotificationSubscriptionState> =
     new Map();
+  private notificationSubscriptionParams?: UpdateNotificationSubscriptionsParams;
+  private readonly notificationTimeouts = new Set<ReturnType<typeof setTimeout>>();
+  private readonly accountRecoverySubscriptions = new Map<
+    string,
+    { resubscribe: () => void; complete: () => void }
+  >();
 
   updateRelays = (hostUrl: string, coordinators: Coordinator[]) => {
-    this.close();
+    const notifications = this.notificationSubscriptionParams;
+    this.clearNotificationSubscriptions();
+    this.disconnect();
     this.relays = [];
     // Coordinators without an address for the current network/origin produce an
     // empty relay URL — they must never enter the pool.
@@ -71,9 +79,12 @@ class RoboPool {
       }
     }
     this.connect();
+    if (notifications) this.updateNotificationSubscriptions(notifications);
+    this.accountRecoverySubscriptions.forEach(({ resubscribe }) => resubscribe());
   };
 
   connect = (relays: string[] = this.relays): void => {
+    const sockets = this.webSockets;
     relays.forEach((url: string) => {
       if (Object.keys(this.webSockets).find((wUrl) => wUrl === url)) return;
 
@@ -81,9 +92,14 @@ class RoboPool {
 
       const connectRelay = (): void => {
         void websocketClient.open(url).then((connection) => {
+          if (sockets !== this.webSockets) {
+            connection.close();
+            return;
+          }
           console.log(`Connected to ${url}`);
 
           connection.onMessage((event) => {
+            if (sockets !== this.webSockets) return;
             this.messageHandlers.forEach((handler) => {
               handler(url, event as unknown as MessageEvent<unknown>);
             });
@@ -105,10 +121,17 @@ class RoboPool {
   };
 
   close = (): void => {
-    Object.values(this.webSockets).forEach((ws) => {
+    this.clearNotificationSubscriptions();
+    this.accountRecoverySubscriptions.forEach(({ complete }) => complete());
+    this.disconnect();
+  };
+
+  private disconnect = (): void => {
+    const sockets = this.webSockets;
+    this.webSockets = {};
+    Object.values(sockets).forEach((ws) => {
       ws?.close();
     });
-    this.webSockets = {};
   };
 
   private removeMessageHandler = (handler: (url: string, event: MessageEvent) => void): void => {
@@ -118,8 +141,10 @@ class RoboPool {
     }
   };
 
-  sendMessage = (message: string): void => {
+  sendMessage = (message: string, isActive?: () => boolean): void => {
+    const sockets = this.webSockets;
     const send = (url: string, message: string): void => {
+      if (sockets !== this.webSockets || (isActive && !isActive())) return;
       const ws = this.webSockets[url];
 
       if (!ws || ws.getReadyState() === WebsocketState.CONNECTING) {
@@ -207,6 +232,9 @@ class RoboPool {
   };
 
   clearNotificationSubscriptions = (): void => {
+    this.notificationSubscriptionParams = undefined;
+    this.notificationTimeouts.forEach((timeout) => clearTimeout(timeout));
+    this.notificationTimeouts.clear();
     this.notificationSubscriptions.forEach(({ subId, handler }) => {
       this.sendMessage(JSON.stringify(['CLOSE', subId]));
       this.removeMessageHandler(handler);
@@ -220,6 +248,7 @@ class RoboPool {
     events,
     options,
   }: UpdateNotificationSubscriptionsParams): void => {
+    this.notificationSubscriptionParams = { pubkeys, events, options };
     const targetPubkeys = Array.from(
       new Set(
         pubkeys.filter((pubkey): pubkey is string => typeof pubkey === 'string' && pubkey !== ''),
@@ -259,6 +288,7 @@ class RoboPool {
 
       if (eoseTimeout) {
         clearTimeout(eoseTimeout);
+        this.notificationTimeouts.delete(eoseTimeout);
         eoseTimeout = null;
       }
 
@@ -271,6 +301,7 @@ class RoboPool {
       eoseTimeout = setTimeout(() => {
         complete();
       }, eoseTimeoutMs);
+      this.notificationTimeouts.add(eoseTimeout);
     }
 
     toAdd.forEach((pubkey) => {
@@ -310,7 +341,10 @@ class RoboPool {
 
       this.messageHandlers.push(handler);
       this.notificationSubscriptions.set(pubkey, { subId, handler });
-      this.sendMessage(JSON.stringify(requestNotifications));
+      this.sendMessage(
+        JSON.stringify(requestNotifications),
+        () => this.notificationSubscriptions.get(pubkey)?.subId === subId,
+      );
     });
   };
 
@@ -336,7 +370,7 @@ class RoboPool {
   ): void => {
     const subscriptionId = `accountRecovery_${Math.random().toString(36).substring(7)}`;
     const eoseRelays = new Set<string>();
-    const expectedRelayCount = Object.keys(this.webSockets).length;
+    let expectedRelayCount = Object.keys(this.webSockets).length;
     const completeTimeoutMs = 5000;
     let completeTimeout: ReturnType<typeof setTimeout> | null = null;
     let isComplete = false;
@@ -353,6 +387,7 @@ class RoboPool {
 
       this.sendMessage(JSON.stringify(['CLOSE', subscriptionId]));
       this.removeMessageHandler(handler);
+      this.accountRecoverySubscriptions.delete(subscriptionId);
       onComplete();
     };
 
@@ -383,6 +418,8 @@ class RoboPool {
 
           try {
             const unwrappedEvent = nip59.unwrapEvent(wrappedEvent, nostrSecKey);
+            // Anyone can encrypt to our pubkey; only this key may author its recovery state.
+            if (unwrappedEvent.pubkey !== nostrPubKey) return;
             const recoveryData = parseAccountRecoveryEvent(unwrappedEvent as Event);
 
             if (recoveryData) {
@@ -398,20 +435,30 @@ class RoboPool {
             completeRecovery();
             return;
           }
-
-          if (!completeTimeout) {
-            completeTimeout = setTimeout(() => {
-              completeRecovery();
-            }, completeTimeoutMs);
-          }
         }
       } catch {
         // Ignore parse errors
       }
     };
 
+    const resubscribe = (): void => {
+      eoseRelays.clear();
+      expectedRelayCount = Object.keys(this.webSockets).length;
+      if (expectedRelayCount === 0) {
+        completeRecovery();
+      } else {
+        this.sendMessage(JSON.stringify(request), () => !isComplete);
+      }
+    };
+
     this.messageHandlers.push(handler);
-    this.sendMessage(JSON.stringify(request));
+    this.accountRecoverySubscriptions.set(subscriptionId, {
+      resubscribe,
+      complete: completeRecovery,
+    });
+    // Bound the whole recovery, including silent relays and pool replacements.
+    completeTimeout = setTimeout(completeRecovery, completeTimeoutMs);
+    resubscribe();
   };
 }
 
