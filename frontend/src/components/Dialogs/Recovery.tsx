@@ -1,6 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogContent, Typography, Button, Grid, Chip, Box, Alert, Snackbar } from '@mui/material';
+import {
+  Dialog,
+  DialogContent,
+  Typography,
+  Button,
+  Grid,
+  Chip,
+  Box,
+  Alert,
+  Snackbar,
+} from '@mui/material';
 import TokenInput from '../../basic/RobotPage/TokenInput';
 import Key from '@mui/icons-material/Key';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
@@ -47,7 +57,9 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
         const garageKeyValidation = validateGarageKey(recoveryToken);
         if (!garageKeyValidation.valid) {
           setErrorMessage(
-            t('Invalid garage key format. Please check your input or switch to Legacy mode in Settings.')
+            t(
+              'Invalid garage key format. Please check your input or switch to Legacy mode in Settings.',
+            ),
           );
           return;
         }
@@ -84,9 +96,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
       });
     } catch (e) {
       console.error('Error recovering robot:', e);
-      setErrorMessage(
-        t('Failed to recover robot. Please check your token and try again.')
-      );
+      setErrorMessage(t('Failed to recover robot. Please check your token and try again.'));
     }
   };
 
@@ -103,9 +113,13 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
         aria-describedby='recovery-description'
       >
         <DialogContent>
-          <Grid container spacing={1} sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}>
+          <Grid
+            container
+            spacing={1}
+            sx={{ alignItems: 'center', flexDirection: 'column', padding: 2 }}
+          >
             <Grid>
-              <Box display='flex' alignItems='center' justifyContent='center' gap={1}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                 <Typography variant='h5' align='center'>
                   {t('Robot recovery')}
                 </Typography>
@@ -120,8 +134,9 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
               <Typography align='center'>
                 {garage.getMode() === 'garageKey'
                   ? t('Enter your garage key (robo1...) to recover all your robot accounts.')
-                  : t('Enter your robot token to re-build your robot and gain access to its trades.')
-                }
+                  : t(
+                      'Enter your robot token to re-build your robot and gain access to its trades.',
+                    )}
               </Typography>
             </Grid>
             {errorMessage && (

@@ -89,7 +89,7 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
             {t('Your Robot')}
           </Typography>
           {!isLegacyMode && garageKey ? (
-            <Grid container direction='column' alignItems='center' spacing={1}>
+            <Grid sx={{ flexDirection: 'column', alignItems: 'center' }} container spacing={1}>
               <Grid>
                 <RobotAvatar
                   hashId={garage.getSlot()?.hashId ?? undefined}
@@ -124,10 +124,9 @@ const ProfileDialog = ({ open = false, onClose }: Props): React.JSX.Element => {
                 return (
                   <MenuItem key={index} value={slot.token ?? ''}>
                     <Grid
+                      sx={{ justifyContent: 'flex-start', alignItems: 'center' }}
                       container
                       direction='row'
-                      justifyContent='flex-start'
-                      alignItems='center'
                       style={{ height: '2.8em' }}
                       spacing={1}
                     >
