@@ -1,7 +1,7 @@
 name: Translate
 
 # API-backed starter proposal, not approval of cloud inference by RoboSats.
-# Without OPENAI_API_KEY, the guard exits green before checkout or model calls.
+# Without a key or endpoint variable, exit green before checkout or model calls.
 # Only trusted upstream main push/manual events may use the write token.
 on:
   push:
@@ -40,13 +40,14 @@ jobs:
         id: guard
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LOCALIZE_API_BASE_URL: ${{ vars.LOCALIZE_API_BASE_URL }}
         run: |
           set -euo pipefail
-          if [ -n "$OPENAI_API_KEY" ]; then
+          if [ -n "$OPENAI_API_KEY" ] || [ -n "$LOCALIZE_API_BASE_URL" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::OPENAI_API_KEY not set — translation workflow is dormant. Add the secret to enable."
+            echo "::notice::No provider configured — translation workflow is dormant. Set OPENAI_API_KEY or LOCALIZE_API_BASE_URL after reviewing the setup."
           fi
 
       - name: Checkout trusted main
@@ -63,6 +64,7 @@ jobs:
         with:
           config-file: "translations/config.yaml"
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          api-base-url: ${{ vars.LOCALIZE_API_BASE_URL }}
           diff-base: ${{ github.event.before }}
           process-all-files: ${{ github.event_name == 'workflow_dispatch' && inputs.process_all_files || false }}
           open-pr: "true"

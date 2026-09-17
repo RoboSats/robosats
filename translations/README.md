@@ -29,14 +29,17 @@ before activation.
    manual checkout normally selects no files.
 5. Review generated locale changes and quality reports before merging any output.
 
-Without the API key, the guard exits green before checkout or model calls.
+With neither an API key nor a `LOCALIZE_API_BASE_URL` repository variable, the
+guard exits green before checkout or model calls. Either one enables the job.
 PR-creation permissions are an additional requirement, not part of that guard:
 a configured API key can incur inference cost even if PR creation later fails.
-Removing the key stops future translation jobs; it does not cancel an active job.
+Remove both settings to stop future translation jobs; this does not cancel an
+active job.
 
 The workflow uses GitHub-hosted Ubuntu, the normal `GITHUB_TOKEN`, and default
 `github-actions[bot]` attribution. Generated commits are unsigned: no extra
-signing secret, personal token, operator runner, or local model service is required.
+signing secret, personal token, operator runner, or local model service is required
+for the hosted default.
 Projects requiring signed commits must explicitly configure and verify that
 separate policy before enabling publication.
 
@@ -144,10 +147,30 @@ No automatic provider fallback is configured. Anthropic is an explicit alternati
 that requires its own credential/model configuration and separate compatibility,
 format, and language-quality verification. It is not enabled by this starter.
 
-Local inference can be considered later with an operator-managed endpoint and
-appropriate runner/network setup. A GitHub-hosted runner's localhost does not
-reach a maintainer's machine. No local-model harness test is required for this
-API starter, and none is claimed.
+The default remains hosted OpenAI. Switching to local inference requires model
+configuration **and** the workflow endpoint setting, not just one config line:
+
+1. Operate an OpenAI-compatible endpoint (for example Ollama/vLLM) reachable from
+   the runner. A GitHub-hosted runner's localhost is not your machine. A private
+   endpoint may require a self-hosted runner/network change; do not expose an
+   unauthenticated model server publicly to make this work.
+2. Set `model_name` and `review_model_name` to IDs served by that endpoint, and
+   verify its supported request options and translation quality. AISuite can
+   route its OpenAI provider to a custom endpoint; no provider fallback is used.
+3. Set repository **variable** `LOCALIZE_API_BASE_URL` to its base URL including
+   `/v1`. The guard enables without a key and passes this through `api-base-url`
+   to `OPENAI_BASE_URL`, which overrides YAML `api_base_url`. A non-secret URL
+   belongs in a variable; never embed credentials in it. If your server needs
+   authentication, use the `OPENAI_API_KEY` secret for its token instead of a
+   hosted-provider key. Do not send a hosted key to a third-party endpoint.
+
+The commented YAML endpoint example is for local CLI runs; setting only YAML
+will not enable the Actions guard. A keyless local HTTP stub test of the pinned
+revision completed through both AISuite and the direct OpenAI-compatible SDK:
+each run made two translation requests and one review request, kept a valid
+interpolation, and rejected a response that dropped numeric tags. This verifies
+routing and validation, not Ollama/vLLM compatibility, language quality, or runner
+connectivity. Verify those on your intended deployment before activation.
 
 ## Optional Guardian
 
