@@ -117,8 +117,18 @@ and `api/models/AGENTS.md`'s **Trade economics**).
 registered name. `users_cleansing` deletes robots +12h old, never traded, no rewards/TG/
 webhook (see Product intent — ephemeral robots). On-demand (no beat entry):
 `follow_send_payment` (dispatched by `follow_invoices.py`), `send_devfund_donation`,
-`nostr_send_order_event`/`nostr_send_notification_event` (both registered `name=""`),
-`send_notification` (message-name router only).
+`send_community_donation`, `nostr_send_order_event`/`nostr_send_notification_event`
+(both registered `name=""`), `send_notification` (message-name router only).
+
+`send_devfund_donation` computes the community split first: if both `DEVFUND_COMMUNITY`
+(fraction 0–1, default `0`) and `DEVFUND_COMMUNITY_ADDRESS` (Lightning Address
+`user@domain`) are set, `int(total_donation × DEVFUND_COMMUNITY)` sats are peeled off and
+`send_community_donation.delay(...)` is dispatched in parallel; the remainder goes to the
+devfund keysend as usual.  `send_community_donation` resolves the Lightning Address via
+LNURL-pay (`api.utils.resolve_lightning_address`) and pays the resulting BOLT11 invoice
+with `LNNode.pay_invoice`, recording an `LNPayment` with concept `COMDONAT` (6).  Any
+failure in the community task (bad address, LNURL error, routing failure) is logged to the
+order and the task returns `False` silently — it never affects the devfund payment.
 
 ## Notifications (`notifications.py`)
 `send_notification` (`tasks.py`) is a pure message-name → `Notifications` method router.
