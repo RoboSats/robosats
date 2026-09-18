@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import { NostrIcon, SimplexIcon } from '../Icons';
+import { MatrixIcon, NostrIcon, SimplexIcon } from '../Icons';
 
 interface Props {
   open: boolean;
@@ -36,7 +36,7 @@ const CommunityDialog = ({ open = false, onClose }: Props): React.JSX.Element =>
         <Typography component='div' variant='body2'>
           <p>
             {t(
-              'Support is only offered via SimpleX. Join our community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!',
+              'Support is offered via SimpleX and Matrix. Join our community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!',
             )}
           </p>
         </Typography>
@@ -57,6 +57,24 @@ const CommunityDialog = ({ open = false, onClose }: Props): React.JSX.Element =>
             <ListItemText
               primary={t('Join RoboSats SimpleX group')}
               secondary={t('RoboSats main public support')}
+            />
+          </ListItemButton>
+
+          <Divider />
+
+          <ListItemButton
+            component='a'
+            target='_blank'
+            href='https://matrix.to/#/#robosatsorg:matrix.org'
+            rel='noreferrer'
+          >
+            <ListItemIcon sx={{ minWidth: 56 }}>
+              <MatrixIcon color='primary' sx={{ height: 32, width: 32 }} />
+            </ListItemIcon>
+
+            <ListItemText
+              primary={t('Join RoboSats on Matrix')}
+              secondary={t('RoboSats Matrix community')}
             />
           </ListItemButton>
 
