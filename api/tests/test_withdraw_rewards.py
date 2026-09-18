@@ -17,17 +17,15 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from api.errors import ERRORS
-from api.models import LNPayment, Robot
+from api.models import LNPayment
 
 
 def _make_user(earned_rewards: int = 500):
-    """Create a minimal in-memory user/robot double for testing."""
-    user = MagicMock(spec=User)
-    robot = MagicMock(spec=Robot)
-    robot.pk = 1
+    """Create a user with a reward balance."""
+    user = User.objects.create(username=f"reward-{User.objects.count()}")
+    robot = user.robot
     robot.earned_rewards = earned_rewards
-    robot.claimed_rewards = 0
-    user.robot = robot
+    robot.save(update_fields=["earned_rewards"])
     return user
 
 
@@ -43,14 +41,14 @@ class WithdrawRewardsTest(TestCase):
     """
     Tests for Logics.withdraw_rewards covering the three pay_invoice outcomes.
 
-    The atomic block and DB interactions are mocked so these run without a
-    full database / Lightning node.
+    Node responses and payment rows are mocked.
     """
 
     def setUp(self):
         self.invoice = "lnbc1..."
         self.routing_budget_ppm = 20000  # 2% of 500 sats = 10 sats budget
         self.num_satoshis = 490  # earned_rewards(500) minus routing budget
+        self.routing_budget_sats = 10
 
     def _run_withdraw(self, user, pay_invoice_return, lnpayment_status_after):
         """
@@ -81,20 +79,29 @@ class WithdrawRewardsTest(TestCase):
 
         with (
             patch("api.logics.transaction") as mock_tx,
-            patch("api.logics.Robot.objects") as mock_robot_qs,
+            patch("api.logics.Robot.objects.select_for_update") as mock_lock,
             patch("api.logics.LNPayment.objects") as mock_lnp_qs,
             patch("api.logics.User.objects") as mock_user_qs,
             patch(
                 "api.logics.LNNode.validate_ln_invoice", return_value=validate_result
+            ) as validate,
+            patch(
+                "api.logics.LNNode.pay_invoice", return_value=pay_invoice_return
+            ) as pay,
+            patch(
+                "api.logics.config",
+                side_effect=lambda key: {
+                    "PROPORTIONAL_ROUTING_FEE_LIMIT": 0.001,
+                    "MIN_FLAT_ROUTING_FEE_LIMIT_REWARD": 2,
+                }[key],
             ),
-            patch("api.logics.LNNode.pay_invoice", return_value=pay_invoice_return),
         ):
             # transaction.atomic() as context manager
             mock_tx.atomic.return_value.__enter__ = MagicMock(return_value=None)
             mock_tx.atomic.return_value.__exit__ = MagicMock(return_value=False)
 
             # select_for_update().get() returns the robot
-            mock_robot_qs.select_for_update.return_value.get.return_value = user.robot
+            mock_lock.return_value.get.return_value = user.robot
 
             # LNPayment.objects.create() returns our fake lnpayment
             mock_lnp_qs.create.return_value = lnp
@@ -104,7 +111,25 @@ class WithdrawRewardsTest(TestCase):
 
             from api.logics import Logics
 
-            return Logics.withdraw_rewards(user, self.invoice, self.routing_budget_ppm)
+            result = Logics.withdraw_rewards(
+                user, self.invoice, self.routing_budget_ppm
+            )
+            mock_lock.assert_called_once_with()
+            mock_lock.return_value.get.assert_called_once_with(pk=user.robot.pk)
+            validate.assert_called_once_with(
+                self.invoice,
+                self.num_satoshis,
+                self.routing_budget_ppm or 0,
+                routing_budget_sats=self.routing_budget_sats,
+            )
+            created = mock_lnp_qs.create.call_args.kwargs
+            self.assertEqual(
+                created["routing_budget_ppm"], self.routing_budget_ppm or 0
+            )
+            self.assertEqual(created["routing_budget_sats"], self.routing_budget_sats)
+            self.assertEqual(created["num_satoshis"], self.num_satoshis)
+            pay.assert_called_once_with(lnp)
+            return result
 
     # ------------------------------------------------------------------
     # Case 1: payment SUCCEEDED — rewards stay zeroed, claimed_rewards bumped
@@ -136,8 +161,105 @@ class WithdrawRewardsTest(TestCase):
         self.assertFalse(paid)
         self.assertIn("bad_invoice", error)
         self.assertEqual(error["error_code"], 3005)
-        # Rewards must be restored to the routing-budget-trimmed invoice amount.
-        self.assertEqual(user.robot.earned_rewards, self.num_satoshis)
+        self.assertEqual(user.robot.earned_rewards, 500)
+
+    def test_zero_budget_does_not_deduct_rewards(self):
+        self.routing_budget_ppm = 0
+        self.routing_budget_sats = 0
+        self.num_satoshis = 500
+        user = _make_user()
+
+        paid, error = self._run_withdraw(user, (True, None), LNPayment.Status.SUCCED)
+
+        self.assertTrue(paid)
+        self.assertIsNone(error)
+        self.assertEqual(user.robot.claimed_rewards, 500)
+
+    def test_omitted_budget_keeps_default_cap_without_deducting_rewards(self):
+        self.routing_budget_ppm = None
+        self.routing_budget_sats = 2
+        self.num_satoshis = 500
+        user = _make_user()
+
+        paid, error = self._run_withdraw(user, (True, None), LNPayment.Status.SUCCED)
+
+        self.assertTrue(paid)
+        self.assertIsNone(error)
+        self.assertEqual(user.robot.claimed_rewards, 500)
+
+    def test_empty_locked_balance_cannot_pay_again(self):
+        from api.logics import Logics
+
+        user = _make_user(earned_rewards=500)
+        locked_robot = _make_user(earned_rewards=0).robot
+        with (
+            patch("api.logics.Robot.objects") as robots,
+            patch("api.logics.LNNode.validate_ln_invoice") as validate,
+            patch("api.logics.LNNode.pay_invoice") as pay,
+        ):
+            robots.select_for_update.return_value.get.return_value = locked_robot
+            paid, error = Logics.withdraw_rewards(user, self.invoice, 20000)
+
+        self.assertFalse(paid)
+        self.assertEqual(error["error_code"], 3003)
+        validate.assert_not_called()
+        pay.assert_not_called()
+
+    def test_invalid_invoice_does_not_reserve_rewards(self):
+        from api.logics import Logics
+
+        user = _make_user()
+        with (
+            patch("api.logics.Robot.objects") as robots,
+            patch(
+                "api.logics.LNNode.validate_ln_invoice",
+                return_value={
+                    "valid": False,
+                    "context": {"bad_invoice": "Invalid invoice"},
+                },
+            ),
+            patch("api.logics.LNPayment.objects.create") as create,
+            patch("api.logics.LNNode.pay_invoice") as pay,
+        ):
+            robots.select_for_update.return_value.get.return_value = user.robot
+            paid, error = Logics.withdraw_rewards(user, self.invoice, 20000)
+
+        self.assertFalse(paid)
+        self.assertEqual(error["bad_invoice"], "Invalid invoice")
+        self.assertEqual(user.robot.earned_rewards, 500)
+        create.assert_not_called()
+        pay.assert_not_called()
+
+    def test_duplicate_invoice_does_not_reserve_rewards(self):
+        from api.logics import Logics
+
+        user = _make_user()
+        with (
+            patch("api.logics.Robot.objects") as robots,
+            patch("api.logics.User.objects.get"),
+            patch(
+                "api.logics.LNNode.validate_ln_invoice",
+                return_value={
+                    "valid": True,
+                    "description": "test",
+                    "payment_hash": "abc123",
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "expires_at": "2026-01-02T00:00:00Z",
+                },
+            ),
+            patch(
+                "api.logics.LNPayment.objects.create",
+                side_effect=Exception("Duplicate hash"),
+            ),
+            patch("api.logics.LNNode.pay_invoice") as pay,
+        ):
+            robots.select_for_update.return_value.get.return_value = user.robot
+            paid, error = Logics.withdraw_rewards(user, self.invoice, 20000)
+
+        self.assertFalse(paid)
+        self.assertEqual(error["error_code"], 3004)
+        self.assertEqual(user.robot.earned_rewards, 500)
+        pay.assert_not_called()
 
     # ------------------------------------------------------------------
     # Case 3: ambiguous — stream ended without final status (status stays

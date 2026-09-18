@@ -90,7 +90,6 @@ class LNPayment(models.Model):
             MaxValueValidator(100_000),
         ],
     )
-    # Routing budget in Sats. Only for reporting summaries.
     routing_budget_sats = models.DecimalField(
         max_digits=10, decimal_places=3, default=0, null=False, blank=False
     )
