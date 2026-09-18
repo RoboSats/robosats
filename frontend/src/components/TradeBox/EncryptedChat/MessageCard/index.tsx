@@ -245,11 +245,13 @@ const MessageCard: React.FC<Props> = ({
           </Tooltip>
         }
         subheader={renderMessageContent()}
-        subheaderTypographyProps={{
-          sx: {
-            wordWrap: 'break-word',
-            width: '13em',
-            textAlign: 'left',
+        slotProps={{
+          subheader: {
+            sx: {
+              overflowWrap: 'anywhere',
+              width: '13em',
+              textAlign: 'left',
+            },
           },
         }}
       />

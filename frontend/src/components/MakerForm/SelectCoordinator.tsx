@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import {
   Grid,
   Select,
@@ -9,7 +9,8 @@ import {
   type SelectChangeEvent,
   CircularProgress,
   Stack,
-  Alert,
+  Skeleton,
+  Chip,
 } from '@mui/material';
 import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
@@ -17,220 +18,195 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { Coordinator } from '../../models';
+import { type Coordinator } from '../../models';
 
 interface SelectCoordinatorProps {
   coordinatorAlias: string;
   setCoordinatorAlias: (coordinatorAlias: string) => void;
 }
 
+// Compact fee + swap row rendered both inside menu items and the closed selector
+const CoordinatorFeeRow = ({
+  coordinator,
+  t,
+}: {
+  coordinator: Coordinator;
+  t: (key: string) => string;
+}): React.JSX.Element => {
+  const info = coordinator.info;
+
+  if (coordinator.loadingInfo) {
+    return <Skeleton variant='text' width={120} height={16} />;
+  }
+
+  if (!info) {
+    return <></>;
+  }
+
+  return (
+    <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
+      <Tooltip placement='top' enterTouchDelay={500} enterDelay={700} title={t('Maker fee')}>
+        <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap' }}>
+          {t('Maker')[0]}&nbsp;{(info.maker_fee * 100).toFixed(3)}%
+        </Typography>
+      </Tooltip>
+      <Typography variant='caption' color='text.disabled'>
+        ·
+      </Typography>
+      <Tooltip placement='top' enterTouchDelay={500} enterDelay={700} title={t('Taker fee')}>
+        <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap' }}>
+          {t('Taker')[0]}&nbsp;{(info.taker_fee * 100).toFixed(3)}%
+        </Typography>
+      </Tooltip>
+      <Typography variant='caption' color='text.disabled'>
+        ·
+      </Typography>
+      <Tooltip
+        placement='top'
+        enterTouchDelay={500}
+        enterDelay={700}
+        title={info.swap_enabled ? t('Onchain payouts enabled') : t('Onchain payouts disabled')}
+      >
+        {info.swap_enabled ? (
+          <Chip
+            icon={<Link sx={{ fontSize: '0.85rem !important' }} />}
+            label={`${info.current_swap_fee_rate.toFixed(1)}%`}
+            size='small'
+            color='success'
+            variant='outlined'
+            sx={{ height: 16, fontSize: '0.65rem', '& .MuiChip-label': { px: 0.5 } }}
+          />
+        ) : (
+          <Link sx={{ fontSize: '0.85rem', color: 'text.disabled' }} />
+        )}
+      </Tooltip>
+    </Stack>
+  );
+};
+
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   coordinatorAlias,
   setCoordinatorAlias,
 }) => {
-  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { setOpen, federationUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   // Gate on the final federation hash: the selector stays disabled until
   // discovery has settled and removed coordinators can no longer be picked.
   const loadingCoordinators = !federation.federationListLoaded;
   const theme = useTheme();
   const { t } = useTranslation();
-  const [coordinator, setCoordinator] = useState<Coordinator>();
 
-  const onClickCurrentCoordinator = function (shortAlias: string): void {
-    setOpen((open) => {
-      return { ...open, coordinator: shortAlias };
-    });
+  // Reading federationUpdatedAt causes a re-render whenever coordinator info
+  // arrives (fees, swap status), so the selector and its options stay fresh.
+  void federationUpdatedAt;
+  const coordinator = federation.getCoordinator(coordinatorAlias);
+
+  const onClickCurrentCoordinator = (shortAlias: string): void => {
+    setOpen((open) => ({ ...open, coordinator: shortAlias }));
   };
 
   const handleCoordinatorChange = (e: SelectChangeEvent<string>): void => {
     setCoordinatorAlias(e.target.value);
   };
 
-  useEffect(() => {
-    const selectedCoordinator = federation.getCoordinator(coordinatorAlias);
-    if (selectedCoordinator) setCoordinator(selectedCoordinator);
-  }, [coordinatorAlias]);
-
   return (
-    <Grid>
-      <Grid sx={{ marginBottom: 1 }}>
-        <Alert
-          severity={
-            coordinator?.info ? (coordinator?.info?.swap_enabled ? 'success' : 'warning') : 'info'
-          }
-          sx={{ marginTop: 2 }}
+    <Box
+      sx={{
+        mt: 1,
+        backgroundColor: 'background.paper',
+        border: '1px solid',
+        borderRadius: '4px',
+        borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+        '&:hover': {
+          borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+        },
+        px: 1,
+        height: '64px',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <Grid container sx={{ alignItems: 'center' }} wrap='nowrap'>
+        {/* Clickable avatar → opens coordinator profile dialog */}
+        <Grid
+          sx={{ cursor: loadingCoordinators ? 'default' : 'pointer', flexShrink: 0, mr: 1 }}
+          onClick={() => {
+            if (!loadingCoordinators) onClickCurrentCoordinator(coordinatorAlias);
+          }}
         >
-          {coordinator?.info?.swap_enabled ? t('On-chain swaps.') : t('Not on-chain swaps.')}
-        </Alert>
-      </Grid>
-      <Box
-        sx={{
-          backgroundColor: 'background.paper',
-          border: '1px solid',
-          borderRadius: '4px',
-          borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-          '&:hover': {
-            borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-          },
-        }}
-      >
-        <Tooltip
-          placement='top'
-          enterTouchDelay={500}
-          enterDelay={700}
-          enterNextDelay={2000}
-          title={t(
-            'The provider the lightning and communication infrastructure. The host will be in charge of providing support and solving disputes. The trade fees are set by the host. Make sure to only select order hosts that you trust!',
+          {loadingCoordinators ? (
+            <CircularProgress size={36} thickness={3} />
+          ) : (
+            <RobotAvatar
+              shortAlias={coordinatorAlias}
+              hashId={!coordinator?.federated ? coordinator?.mainnet?.onion : undefined}
+              style={{ width: '2.4em', height: '2.4em' }}
+              smooth={true}
+              flipHorizontally={false}
+              small={true}
+            />
           )}
-        >
-          <Grid container style={{ marginTop: 10, width: '100%' }}>
-            <Grid
-              sx={{
-                cursor: loadingCoordinators ? 'default' : 'pointer',
-                position: 'relative',
-                left: '0.3em',
-                bottom: '0.1em',
-                marginBottom: 1,
-                width: '30%',
-              }}
-              onClick={() => {
-                if (!loadingCoordinators) onClickCurrentCoordinator(coordinatorAlias);
+        </Grid>
+
+        {/* Coordinator selector */}
+        <Grid sx={{ flexGrow: 1, minWidth: 0 }}>
+          {loadingCoordinators ? (
+            <Typography variant='body1' color='text.secondary'>
+              {t('Loading...')}
+            </Typography>
+          ) : (
+            <Select
+              variant='standard'
+              fullWidth
+              required
+              value={coordinatorAlias}
+              onChange={handleCoordinatorChange}
+              disableUnderline
+              disabled={loadingCoordinators}
+              renderValue={(value) => {
+                const selected = federation.getCoordinator(value);
+                return (
+                  <Stack spacing={0.25}>
+                    <Typography variant='body2' sx={{ fontWeight: 500 }} noWrap>
+                      {selected?.longAlias ?? value}
+                    </Typography>
+                    {selected != null && <CoordinatorFeeRow coordinator={selected} t={t} />}
+                  </Stack>
+                );
               }}
             >
-              <Grid>
-                {loadingCoordinators ? (
-                  <CircularProgress size={49} thickness={3} style={{ margin: '0.1em' }} />
-                ) : (
-                  <>
-                    <RobotAvatar
-                      shortAlias={coordinatorAlias}
-                      hashId={!coordinator?.federated ? coordinator?.mainnet.onion : undefined}
-                      style={{ width: '3em', height: '3em' }}
-                      smooth={true}
-                      flipHorizontally={false}
-                      small={true}
-                    />
-                  </>
-                )}
-              </Grid>
-            </Grid>
-
-            <Grid>
-              {loadingCoordinators ? (
-                <Typography
-                  variant='body1'
-                  color='text.secondary'
-                  sx={{ textAlign: 'center', paddingTop: '0.6em' }}
-                >
-                  {t('Loading...')}
-                </Typography>
-              ) : (
-                <Select
-                  variant='standard'
-                  fullWidth
-                  required={true}
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                    },
-                  }}
-                  value={coordinatorAlias}
-                  onChange={handleCoordinatorChange}
-                  disableUnderline
-                  disabled={loadingCoordinators}
-                >
-                  {federation.getCoordinators().map((coordinator): React.JSX.Element | null => {
-                    let row: React.JSX.Element | null = null;
-                    if (coordinator.enabled === true) {
-                      row = (
-                        <MenuItem key={coordinator.shortAlias} value={coordinator.shortAlias}>
-                          <Typography>{coordinator.longAlias}</Typography>
-                        </MenuItem>
-                      );
-                    }
-                    return row;
-                  })}
-                </Select>
-              )}
-            </Grid>
-          </Grid>
-        </Tooltip>
-        <Grid container>
-          <Grid>
-            <Stack direction='row' sx={{ alignItems: 'center', flexGrow: 1 }} spacing={2}>
-              <Grid>
-                <Tooltip
-                  placement='top'
-                  enterTouchDelay={500}
-                  enterDelay={700}
-                  enterNextDelay={2000}
-                  title={t('Maker fee')}
-                >
-                  <Typography
-                    color='text.secondary'
-                    variant='caption'
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    &nbsp;{t('Maker')[0]} {((coordinator?.info?.maker_fee ?? 0) * 100).toFixed(3)}%
-                  </Typography>
-                </Tooltip>
-              </Grid>
-              <Grid>
-                <Tooltip
-                  placement='top'
-                  enterTouchDelay={500}
-                  enterDelay={700}
-                  enterNextDelay={2000}
-                  title={t('Taker fee')}
-                >
-                  <Typography
-                    color='text.secondary'
-                    variant='caption'
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    &nbsp;{t('Taker')[0]} {((coordinator?.info?.taker_fee ?? 0) * 100).toFixed(3)}%
-                  </Typography>
-                </Tooltip>
-              </Grid>
-              <Grid>
-                <Tooltip
-                  placement='top'
-                  enterTouchDelay={500}
-                  enterDelay={700}
-                  enterNextDelay={2000}
-                  title={
-                    coordinator?.info?.swap_enabled
-                      ? t('Onchain payouts enabled')
-                      : t('Onchain payouts disabled')
-                  }
-                >
-                  <Typography
-                    color={coordinator?.info?.swap_enabled ? 'primary' : 'text.secondary'}
-                    variant='caption'
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Link sx={{ height: 16 }} />{' '}
-                    {coordinator?.info?.swap_enabled
-                      ? `${(coordinator?.info?.current_swap_fee_rate ?? 0).toFixed(1)}%`
-                      : t('Disabled')}
-                  </Typography>
-                </Tooltip>
-              </Grid>
-            </Stack>
-          </Grid>
+              {federation.getCoordinators().map((coor): React.JSX.Element | null => {
+                if (coor.enabled !== true) return null;
+                return (
+                  <MenuItem key={coor.shortAlias} value={coor.shortAlias}>
+                    <Stack
+                      direction='row'
+                      spacing={1}
+                      sx={{ alignItems: 'center', width: '100%', py: 0.5 }}
+                    >
+                      <RobotAvatar
+                        shortAlias={coor.shortAlias}
+                        hashId={!coor.federated ? coor.mainnet?.onion : undefined}
+                        style={{ width: '2em', height: '2em', flexShrink: 0 }}
+                        smooth={false}
+                        flipHorizontally={false}
+                        small={true}
+                      />
+                      <Stack spacing={0.1} sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography variant='body2' sx={{ fontWeight: 500 }} noWrap>
+                          {coor.longAlias}
+                        </Typography>
+                        <CoordinatorFeeRow coordinator={coor} t={t} />
+                      </Stack>
+                    </Stack>
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          )}
         </Grid>
-      </Box>
-    </Grid>
+      </Grid>
+    </Box>
   );
 };
 

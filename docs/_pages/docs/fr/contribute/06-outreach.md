@@ -19,7 +19,7 @@ The best we can do is reason with users of why they should value their privacy a
 
 Social media is a great opportunity for word-of-mouth advertising of RoboSats. If you had a great experience using RoboSats or have interesting insight to share about the project, please do say something! Shout it from the robo-heavens!
 
-For example, you could post on Nostr and tag the [RoboSats Nostr account](https://chachi.chat/groups.0xchat.com/925b1aa20cd1b68dd9a0130e35808d66772fe082cf3f95294dd5755c7ea1ed59) so that it can be shared with others!
+For example, you could post on Nostr and tag the [RoboSats Nostr account](https://njump.me/nprofile1qqsyx53h3h7ec4fwlspjq0kqec5gv54t7rc48xdtq6q4y94wsw4fnjqsg3jtv) so that it can be shared with others!
 
 Any help would be greatly appreciated in this sector! More order book liquidity attracts more users and thus more users get to take advantage of buying and selling bitcoin privately!
 

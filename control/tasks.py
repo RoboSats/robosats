@@ -1,6 +1,27 @@
 from celery import shared_task
 
 
+def outstanding_payout_sats(order):
+    """
+    Returns the Sats pending payout for an order, or None if no payout method
+    has been submitted yet.
+
+    An order pays out either over Lightning (`order.payout`, an LNPayment) or
+    on-chain (`order.payout_tx`, an OnchainPayment). Only one of the two is
+    ever used, and `order.is_swap` is the flag that records which one the buyer
+    actually chose: `update_invoice()` sets it False, `update_address()` sets it
+    True. Note that `payout_tx` may exist on a non-swap order, since it is
+    created speculatively while quoting the swap, so the flag - not the mere
+    presence of the object - is what decides.
+    """
+    payout = order.payout_tx if order.is_swap else order.payout
+
+    if payout is None:
+        return None
+
+    return payout.num_satoshis
+
+
 @shared_task(name="do_accounting", time_limit=60)
 def do_accounting():
     """
@@ -142,12 +163,15 @@ def do_accounting():
             pending_disputes = Order.objects.filter(
                 status__in=[Order.Status.DIS, Order.Status.WFR]
             )
-            if len(pending_disputes) > 0:
-                outstanding_pending_disputes = 0
-                for order in pending_disputes:
-                    outstanding_pending_disputes += order.payout.num_satoshis
-            else:
-                outstanding_pending_disputes = 0
+            outstanding_pending_disputes = 0
+            for order in pending_disputes:
+                num_satoshis = outstanding_payout_sats(order)
+                # An order can sit in dispute before a payout method was ever
+                # submitted. Skip it rather than aborting the whole run and
+                # leaving the day's AccountingDay row half written.
+                if num_satoshis is None:
+                    continue
+                outstanding_pending_disputes += num_satoshis
 
             accounted_day.outstanding_earned_rewards = Robot.objects.all().aggregate(
                 Sum("earned_rewards")
@@ -163,7 +187,7 @@ def do_accounting():
                 )
                 accounted_day.disputes = (
                     outstanding_pending_disputes
-                    - accounted_yesterday.outstanding_earned_rewards
+                    - accounted_yesterday.outstanding_pending_disputes
                 )
 
         # Close the loop
