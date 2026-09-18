@@ -3,12 +3,15 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from asgiref.sync import async_to_sync
-from django.test import SimpleTestCase
+from django.contrib.auth.models import User
+from django.test import SimpleTestCase, TestCase
 from nostr_sdk import RelayUrl
+from rest_framework.exceptions import ValidationError
 
 from api.models import Robot
 from api.nostr import Nostr
 from api.notifications import Notifications
+from api.serializers import UpdateRobotSerializer
 from api.tasks import users_cleansing
 
 TEST_NSEC = "nsec1w72q58pyng0fa8czqeyr4qvw5v58vegxeremqclshlncqns83cpsd2nmk9"
@@ -58,6 +61,78 @@ class TestNostrForwardValidation(SimpleTestCase):
         ):
             with self.subTest(relay=relay):
                 self.assertFalse(Robot.is_valid_onion_relay_url(relay))
+
+
+class TestRobotSettingsSave(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username="settings-robot")
+
+    def test_partial_and_empty_saves_preserve_current_reward_balances(self):
+        for data in ({"nostr_forward_pubkey": TEST_NPUB}, {}):
+            with self.subTest(data=data):
+                Robot.objects.filter(user=self.user).update(
+                    earned_rewards=500, claimed_rewards=0
+                )
+                stale = Robot.objects.get(user=self.user)
+                Robot.objects.filter(user=self.user).update(
+                    earned_rewards=100, claimed_rewards=490
+                )
+                serializer = UpdateRobotSerializer(stale, data=data, partial=True)
+
+                self.assertTrue(serializer.is_valid(), serializer.errors)
+                serializer.save()
+
+                robot = Robot.objects.get(user=self.user)
+                self.assertEqual(
+                    (robot.earned_rewards, robot.claimed_rewards), (100, 490)
+                )
+
+    def test_forwarding_save_preserves_other_concurrent_settings(self):
+        stale = Robot.objects.get(user=self.user)
+        Robot.objects.filter(user=self.user).update(webhook_api_key="new-key")
+        serializer = UpdateRobotSerializer(
+            stale, data={"nostr_forward_pubkey": TEST_NPUB}, partial=True
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+
+        self.assertEqual(serializer.data["webhook_api_key"], "new-key")
+        self.assertEqual(serializer.data["nostr_forward_pubkey"], TEST_NPUB)
+
+    def test_partial_forwarding_saves_revalidate_current_settings(self):
+        for first, second in (
+            ({"nostr_forward_enabled": True}, {"nostr_forward_pubkey": None}),
+            ({"nostr_forward_pubkey": None}, {"nostr_forward_enabled": True}),
+        ):
+            with self.subTest(first=first):
+                Robot.objects.filter(user=self.user).update(
+                    nostr_forward_enabled=False,
+                    nostr_forward_pubkey=TEST_NPUB,
+                    nostr_forward_relay=TEST_RELAY,
+                )
+                serializers = [
+                    UpdateRobotSerializer(
+                        Robot.objects.get(user=self.user), data=data, partial=True
+                    )
+                    for data in (first, second)
+                ]
+                for serializer in serializers:
+                    self.assertTrue(serializer.is_valid(), serializer.errors)
+
+                serializers[0].save()
+                with self.assertRaises(ValidationError):
+                    serializers[1].save()
+
+                robot = Robot.objects.get(user=self.user)
+                self.assertEqual(
+                    robot.nostr_forward_enabled,
+                    first.get("nostr_forward_enabled", False),
+                )
+                self.assertEqual(
+                    robot.nostr_forward_pubkey,
+                    first.get("nostr_forward_pubkey", TEST_NPUB),
+                )
 
 
 class TestNostrForwardFanout(SimpleTestCase):
@@ -148,7 +223,10 @@ class TestNostrForwardSender(SimpleTestCase):
 
     @patch("api.nostr.Robot.is_valid_onion_relay_url", return_value=True)
     @patch("api.nostr.config", side_effect=config_value)
-    def test_sender_uses_current_sdk_calls(self, mock_config, mock_validator):
+    @patch("api.nostr.get_federation_short_alias", return_value="temple")
+    def test_sender_uses_current_sdk_calls(
+        self, mock_short_alias, mock_config, mock_validator
+    ):
         client = self.make_client()
         keys = MagicMock()
         recipient = MagicMock()
@@ -187,7 +265,8 @@ class TestNostrForwardSender(SimpleTestCase):
         args = make_private_msg.await_args.args
         tags = make_private_msg.await_args.kwargs["rumor_extra_tags"]
         self.assertEqual(args, (keys, recipient, "Order updated"))
-        self.assertEqual(tags[0].to_vec(), ["order_id", "testcoord/42"])
+        mock_short_alias.assert_called_once_with()
+        self.assertEqual(tags[0].to_vec(), ["order_id", "temple/42"])
         self.assertEqual(tags[1].to_vec(), ["status", "3"])
 
     @patch("api.nostr.Robot.is_valid_onion_relay_url", return_value=True)
@@ -329,3 +408,94 @@ class TestNostrForwardSender(SimpleTestCase):
         proxy.onion.assert_not_called()
         authenticated_builder.proxy.assert_not_called()
         authenticated_builder.build.assert_called_once_with()
+
+
+class TestNostrLegacySender(SimpleTestCase):
+    def setUp(self):
+        self.nostr = Nostr()
+        self.client = SimpleNamespace(
+            add_relay=AsyncMock(), connect=AsyncMock(), send_event=AsyncMock()
+        )
+
+    def test_local_client_connects_to_the_configured_coordinator_relay(self):
+        with (
+            patch("api.nostr.Client", return_value=self.client) as client,
+            patch(
+                "api.nostr.config",
+                side_effect=lambda key, **kwargs: {
+                    "STRFRY_HOST": "coordinator-relay",
+                    "STRFRY_PORT": "7780",
+                }[key],
+            ),
+        ):
+            result = async_to_sync(self.nostr.initialize_client)()
+
+        client.assert_called_once_with()
+        self.client.add_relay.assert_awaited_once_with(
+            RelayUrl.parse("ws://coordinator-relay:7780")
+        )
+        self.client.connect.assert_awaited_once_with()
+        self.assertIs(result, self.client)
+
+    @patch("api.nostr.config", side_effect=config_value)
+    @patch("api.nostr.Keys.parse")
+    @patch("api.nostr.EventBuilder")
+    def test_order_sender_signs_and_publishes_the_existing_order_event(
+        self, event_builder, parse_keys, mock_config
+    ):
+        order = SimpleNamespace(
+            password=None,
+            description="Order description",
+            maker=SimpleNamespace(
+                username="RoboMaker", robot=SimpleNamespace(hash_id="robot-hash")
+            ),
+            currency="EUR",
+        )
+        finalize = AsyncMock(return_value=MagicMock())
+        event_builder.return_value.tags.return_value.finalize_async = finalize
+        with (
+            patch.object(
+                self.nostr, "initialize_client", new=AsyncMock(return_value=self.client)
+            ),
+            patch.object(self.nostr, "generate_tags", return_value=[]) as generate_tags,
+        ):
+            async_to_sync(self.nostr.send_order_event)(order)
+
+        parse_keys.assert_called_once_with(TEST_NSEC)
+        event_builder.assert_called_once()
+        kind, content = event_builder.call_args.args
+        self.assertEqual(kind.as_u16(), 38383)
+        self.assertEqual(content, "Order description")
+        generate_tags.assert_called_once_with(order, "RoboMaker", "robot-hash", "EUR")
+        event_builder.return_value.tags.assert_called_once_with([])
+        finalize.assert_awaited_once_with(parse_keys.return_value)
+        self.client.send_event.assert_awaited_once_with(finalize.return_value)
+
+    @patch("api.nostr.config", side_effect=config_value)
+    @patch("api.nostr.get_federation_short_alias", return_value="temple")
+    @patch("api.nostr.Keys.parse")
+    @patch("api.nostr.PublicKey.parse")
+    @patch("api.nostr.nip17_make_private_msg_async", new_callable=AsyncMock)
+    def test_local_notification_keeps_the_robot_recipient_and_routing_tags(
+        self, make_private_msg, parse_recipient, parse_keys, short_alias, mock_config
+    ):
+        with patch.object(
+            self.nostr, "initialize_client", new=AsyncMock(return_value=self.client)
+        ):
+            async_to_sync(self.nostr.send_notification_event)(
+                make_robot(), SimpleNamespace(id=42, status=3), "Order updated"
+            )
+
+        parse_keys.assert_called_once_with(TEST_NSEC)
+        parse_recipient.assert_called_once_with(TEST_NPUB)
+        make_private_msg.assert_awaited_once()
+        short_alias.assert_called_once_with()
+        self.assertEqual(
+            make_private_msg.await_args.args,
+            (parse_keys.return_value, parse_recipient.return_value, "Order updated"),
+        )
+        tags = make_private_msg.await_args.kwargs["rumor_extra_tags"]
+        self.assertEqual(
+            [tag.to_vec() for tag in tags], [["order_id", "temple/42"], ["status", "3"]]
+        )
+        self.client.send_event.assert_awaited_once_with(make_private_msg.return_value)

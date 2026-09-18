@@ -212,7 +212,7 @@ class Robot {
     },
   ): Promise<boolean> => {
     const coordinator = federation.getCoordinator(this.shortAlias);
-    if (!coordinator) return false;
+    if (!coordinator || !coordinator.url) return false;
 
     try {
       const raw = await apiClient.put(coordinator.url, '/api/robot/', settings, {

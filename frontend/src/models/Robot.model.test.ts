@@ -59,6 +59,33 @@ describe('Robot.fetchWebhook', () => {
     expect(robot.webhookEnabled).toBe(true);
     expect(robot.webhookApiKey).toBe('existing-key');
   });
+
+  it.each([undefined, { url: '' }])(
+    'skips an unavailable coordinator without changing local state (%#)',
+    async (coordinator) => {
+      const unavailableFederation = {
+        getCoordinator: () => coordinator,
+      } as unknown as Federation;
+      const robot = new Robot({
+        webhookUrl: 'http://existing.onion/webhook',
+        webhookEnabled: true,
+        webhookApiKey: 'existing-key',
+      });
+      mockPut.mockResolvedValue({
+        webhook_url: 'http://wrong-host.onion/webhook',
+        webhook_enabled: false,
+        webhook_api_key: 'replacement-key',
+      });
+
+      await expect(
+        robot.fetchWebhook(unavailableFederation, { webhook_enabled: false }),
+      ).resolves.toBe(false);
+      expect(mockPut).not.toHaveBeenCalled();
+      expect(robot.webhookUrl).toBe('http://existing.onion/webhook');
+      expect(robot.webhookEnabled).toBe(true);
+      expect(robot.webhookApiKey).toBe('existing-key');
+    },
+  );
 });
 
 describe('Robot.saveNostrForward', () => {

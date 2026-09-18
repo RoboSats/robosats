@@ -5,14 +5,16 @@ from datetime import datetime, timezone
 from secrets import token_urlsafe
 
 from decouple import config
+
 from api.models import (
-  
     Order,
     Notification,
 )
-
+from api.tasks import (
+    nostr_send_forward_notification_event,
+    nostr_send_notification_event,
+)
 from api.utils import get_federation_short_alias, get_session
-from api.tasks import nostr_send_notification_event
 
 logger = logging.getLogger("api.notifications")
 

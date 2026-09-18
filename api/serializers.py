@@ -1,5 +1,6 @@
 from decouple import config
 from decimal import Decimal
+from django.db import transaction
 from nostr_sdk import PublicKey
 from rest_framework import serializers
 from secp256k1 import PublicKey as Secp256k1PublicKey
@@ -748,6 +749,15 @@ class StealthSerializer(serializers.Serializer):
 
 
 class UpdateRobotSerializer(serializers.ModelSerializer):
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            self.instance = Robot.objects.select_for_update().get(pk=instance.pk)
+            validated_data = self.validate(validated_data)
+            # Only write submitted settings, never stale reward balances.
+            Robot.objects.filter(pk=instance.pk).update(**validated_data)
+            instance.refresh_from_db()
+        return instance
+
     class Meta:
         model = Robot
         fields = (
