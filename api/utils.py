@@ -177,33 +177,9 @@ def get_minning_fee(priority: str, preliminary_amount: int) -> int:
     return value
 
 
-devfund_pubkey = {}
-
-
-@ring.dict(devfund_pubkey, expire=3600)  # keeps in cache for 3600 seconds
-def get_devfund_pubkey(network: str) -> str:
-    """
-    network: (str) "mainnet" | "testnet";
-    Fetches devfund pubkey from `main` branch in the repository
-    fallback to hardcoded pubkey
-    """
-
-    session = get_session()
-    url = "https://raw.githubusercontent.com/RoboSats/robosats/main/devfund_pubkey.json"
-
-    try:
-        response = session.get(url)
-        response.raise_for_status()  # Raises stored HTTPError, if one occurred
-        value = response.json().get(network)
-        if len(value) != 66:
-            raise Exception()
-    except Exception as e:
-        print(e)
-        with open("devfund_pubkey.json", "r") as f:
-            data = json.load(f)
-            value = data.get(network)
-
-    return value
+def get_devfund_pubkey() -> str:
+    """Returns the devfund Lightning node pubkey from the DEVFUND_PUBKEY env variable."""
+    return config("DEVFUND_PUBKEY", cast=str, default="")
 
 
 lnurlp_metadata_cache = {}

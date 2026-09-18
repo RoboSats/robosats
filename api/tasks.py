@@ -131,7 +131,7 @@ def send_devfund_donation(order_id, proceeds, reason):
     from api.models import LNPayment, Order
     from api.utils import get_devfund_pubkey
 
-    target_pubkey = get_devfund_pubkey(config("NETWORK", cast=str))
+    target_pubkey = get_devfund_pubkey()
 
     order = Order.objects.get(id=order_id)
     coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")
