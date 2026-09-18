@@ -202,6 +202,10 @@ export const SuccessfulPrompt = ({
                   SimpleX
                 </Link>
                 {' / '}
+                <Link target='_blank' href='https://matrix.to/#/#robosatsorg:matrix.org'>
+                  Matrix
+                </Link>
+                {' / '}
                 <Link target='_blank' href='https://github.com/RoboSats/robosats/issues'>
                   Github
                 </Link>

@@ -329,7 +329,18 @@ export class Coordinator {
         .get(this.url, `/api/info/`, undefined, true)
         .then((data) => {
           if (data !== null) {
-            this.info = data as Info;
+            const raw = data as Info;
+            // Sanitize numeric fields that are used directly in arithmetic or
+            // method calls (.toFixed / .toPrecision) at render time.  A blind
+            // cast cannot catch a coordinator that replies with swap_enabled:true
+            // but omits / nulls current_swap_fee_rate — that would propagate a
+            // TypeError all the way up to the root ErrorBoundary and DoS the app.
+            this.info = {
+              ...raw,
+              maker_fee: Number(raw.maker_fee ?? 0),
+              taker_fee: Number(raw.taker_fee ?? 0),
+              current_swap_fee_rate: Number(raw.current_swap_fee_rate ?? 0),
+            };
             onDataLoad();
           }
         })
