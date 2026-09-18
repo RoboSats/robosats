@@ -3,14 +3,14 @@ from statistics import median
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group, User
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django_admin_relation_links import AdminChangeLinksMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import TokenProxy
 
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
-from api.utils import objects_to_hyperlinks
+from api.utils import render_order_logs
 from api.tasks import send_notification
 
 admin.site.unregister(Group)
@@ -55,8 +55,20 @@ class ETokenAdmin(AdminChangeLinksMixin, TokenAdmin):
 class LNPaymentInline(admin.StackedInline):
     model = LNPayment
     can_delete = True
-    fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
-    readonly_fields = ("payment_hash", "num_satoshis", "status", "routing_budget_sats", "description")
+    fields = (
+        "payment_hash",
+        "num_satoshis",
+        "status",
+        "routing_budget_sats",
+        "description",
+    )
+    readonly_fields = (
+        "payment_hash",
+        "num_satoshis",
+        "status",
+        "routing_budget_sats",
+        "description",
+    )
     show_change_link = True
     show_full_result_count = True
     extra = 0
@@ -130,16 +142,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     readonly_fields = ("reference", "_logs")
 
     def _logs(self, obj):
-        if not obj.logs:
-            return format_html("<b>No logs were recorded</b>")
-        with_hyperlinks = objects_to_hyperlinks(obj.logs)
-        try:
-            html_logs = format_html(
-                f'<table style="width: 100%">{with_hyperlinks}</table>'
-            )
-        except Exception as e:
-            html_logs = f"An error occurred while formatting the parsed logs as HTML. Exception {e}"
-        return html_logs
+        return mark_safe(render_order_logs(obj.logs))
 
     actions = [
         "cancel_public_order",
@@ -157,15 +160,26 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         """
         for order in queryset:
             if order.status in [Order.Status.PUB, Order.Status.PAU]:
-                if Logics.return_bond(order.maker_bond):
-                    order.update_status(Order.Status.UCA)
+                try:
+                    success, _ = Logics.close_public_order(
+                        order,
+                        actor="coordinator",
+                        notification_message="coordinator_cancelled",
+                    )
+                except Exception as e:
+                    success = False
+                    self.message_user(
+                        request,
+                        f"Could not close {order.id}: {e}",
+                        messages.ERROR,
+                    )
+                    continue
+
+                if success:
                     self.message_user(
                         request,
                         f"Order {order.id} successfully closed",
                         messages.SUCCESS,
-                    )
-                    send_notification.delay(
-                        order_id=order.id, message="coordinator_cancelled"
                     )
                 else:
                     self.message_user(
@@ -314,20 +328,40 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.taker.robot.earned_rewards = order.taker_bond.num_satoshis
                 order.taker.robot.save(update_fields=["earned_rewards"])
 
-                if order.is_swap:
-                    order.payout_tx.status = OnchainPayment.Status.VALID
-                    order.payout_tx.save(update_fields=["status"])
-                    order.update_status(Order.Status.SUC)
+                # Dispute timeouts cancel the onchain payout (order_expires ->
+                # cancel_onchain_payment). The stored address was validated
+                # when submitted and cannot change during a dispute, so
+                # re-activate the payout; refuse to pay if no address was
+                # ever validated.
+                if order.is_swap and order.payout_tx:
+                    if (
+                        order.payout_tx.address
+                        and order.payout_tx.status == OnchainPayment.Status.CANCE
+                    ):
+                        order.payout_tx.status = OnchainPayment.Status.VALID
+                        order.payout_tx.save(update_fields=["status"])
+
+                # Transition to PAY before initiating the payout. For onchain
+                # swaps, pay_buyer() -> complete_order() only transitions to
+                # SUC from [FSE, PAY, FAI]; dispute-resolved orders are in
+                # DIS/WFR and would otherwise stay stuck in the dispute state
+                # with proceeds never computed.
+                order.update_status(Order.Status.PAY)
+
+                paid = Logics.pay_buyer(order)
+
+                if paid:
+                    self.message_user(
+                        request,
+                        f"Dispute of order {order.id} solved as successful trade",
+                        messages.SUCCESS,
+                    )
                 else:
-                    order.update_status(Order.Status.PAY)
-
-                Logics.pay_buyer(order)
-
-                self.message_user(
-                    request,
-                    f"Dispute of order {order.id} solved as successful trade",
-                    messages.SUCCESS,
-                )
+                    self.message_user(
+                        request,
+                        f"Order {order.id} payout could not be initiated: escrow is not settled or payout address is not validated",
+                        messages.ERROR,
+                    )
 
             else:
                 self.message_user(

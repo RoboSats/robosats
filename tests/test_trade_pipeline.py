@@ -6,10 +6,12 @@ from decouple import config
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from api.models import Currency, Order
-from api.tasks import cache_market
+from api.models import Currency, LNPayment, OnchainPayment, Order, TakeOrder
+from api.tasks import cache_market, send_notification
 from django.utils import timezone
 from django.contrib.admin.sites import AdminSite
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.test import RequestFactory
 from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
@@ -18,6 +20,7 @@ from tests.utils.pgp import sign_message
 from tests.utils.trade import Trade, maker_form_buy_with_range
 
 from api.admin import OrderAdmin
+from api.logics import Logics
 
 
 def read_file(file_path):
@@ -1390,6 +1393,127 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(data["error_code"], 1043)
         self.assertEqual(data["bad_request"], "This order has been cancelled")
 
+    @patch("api.logics.nostr_send_order_event")
+    @patch("api.tasks.send_notification.delay", send_notification)
+    def test_admin_cancel_public_order(self, nostr_mock):
+        """
+        Tests the coordinator's admin action that closes a public order
+        with a pending pretaker. The pretaker bond must be unlocked, the
+        maker bond returned, the maker notified and the Nostr event
+        republished.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        # Pretaker fetches the order: generates the taker bond hold invoice
+        trade.get_order(trade.taker_index)
+
+        order = Order.objects.get(id=trade.order_id)
+        take_order = TakeOrder.objects.get(order=order)
+        self.assertIsNotNone(take_order.taker_bond)
+        self.assertEqual(take_order.taker_bond.status, LNPayment.Status.INVGEN)
+
+        nostr_mock.reset_mock()
+
+        # Coordinator closes the public order from the admin
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.cancel_public_order(
+            request, Order.objects.filter(id=trade.order_id)
+        )
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.UCA)
+        self.assertEqual(order.maker_bond.status, LNPayment.Status.RETNED)
+
+        take_order.refresh_from_db()
+        self.assertEqual(take_order.taker_bond.status, LNPayment.Status.CANCEL)
+
+        nostr_mock.delay.assert_called_once_with(order_id=trade.order_id)
+
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(reverse("notifications"), **maker_headers)
+        self.assertResponse(response)
+        notifications_data = list(response.json())
+        self.assertTrue(
+            any(
+                notification["order_id"] == trade.order_id
+                and "has been cancelled by the coordinator" in notification["title"]
+                for notification in notifications_data
+            ),
+            "Maker was not notified about the coordinator cancellation",
+        )
+
+    def test_admin_cancel_non_public_order(self):
+        """
+        The admin action must not touch orders that are not Public/Paused.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()  # Order is now WF2
+
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.cancel_public_order(
+            request, Order.objects.filter(id=trade.order_id)
+        )
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.WF2)
+        self.assertEqual(order.maker_bond.status, LNPayment.Status.LOCKED)
+
+    @patch("api.logics.nostr_send_order_event")
+    def test_close_public_order_non_public(self, nostr_mock):
+        """
+        Logics.close_public_order must refuse orders that are not
+        Public/Paused when called directly: no bond is returned and
+        no Nostr event is republished.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()  # Order is now WF2
+
+        order = Order.objects.get(id=trade.order_id)
+        nostr_mock.reset_mock()  # Ignore events fired by the setup steps
+        success, _ = Logics.close_public_order(
+            order,
+            actor="coordinator",
+            notification_message="coordinator_cancelled",
+        )
+
+        self.assertFalse(success)
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.WF2)
+        self.assertEqual(order.maker_bond.status, LNPayment.Status.LOCKED)
+
+        nostr_mock.delay.assert_not_called()
+
+    @patch("api.logics.nostr_send_order_event")
+    def test_expired_public_order_nostr_event(self, nostr_mock):
+        """
+        An untaken public order that expires must republish its Nostr
+        event so that federation clients drop it from the live order book.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        nostr_mock.reset_mock()
+
+        trade.expire_order()
+        trade.clean_orders()
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.EXP)
+        self.assertEqual(order.expiry_reason, Order.ExpiryReasons.NTAKEN)
+
+        nostr_mock.delay.assert_called_once_with(order_id=trade.order_id)
+
     def test_cancel_order_cancel_status(self):
         """
         Tests the cancellation of a public order using cancel_status.
@@ -2041,6 +2165,147 @@ class TradeTest(BaseAPITestCase):
         trade.get_review(trade.taker_index)
         self.assertEqual(trade.response.status_code, 400)
 
+    def test_admin_successful_trade_onchain(self):
+        """
+        Tests the coordinator's admin action that solves a dispute of an
+        onchain swap order as a successful trade. The order must leave the
+        dispute state, reach SUC with the payout queued for broadcast and
+        the coordinator proceeds computed. Regression test: the swap path
+        used to stay stuck in DIS because complete_order() only transitions
+        to SUC from [FSE, PAY, FAI]; and the onchain payout is cancelled by
+        the dispute timeout, so the admin action must re-activate the
+        validated address before paying.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_address(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+
+        # Expire the order in FSE: a dispute is opened and the escrow is settled
+        order = Order.objects.get(id=trade.order_id)
+        order.expires_at = datetime.now()
+        order.save()
+        trade.clean_orders()
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.DIS)
+        self.assertTrue(order.is_swap)
+        # Dispute timeouts cancel the onchain payout before opening the dispute
+        self.assertEqual(order.payout_tx.status, OnchainPayment.Status.CANCE)
+        self.assertIsNotNone(order.payout_tx.address)
+        self.assertEqual(order.trade_escrow.status, LNPayment.Status.SETLED)
+
+        # Coordinator resolves the dispute as a successful trade
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.successful_trade(request, Order.objects.filter(id=trade.order_id))
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.SUC)
+        expected_proceeds = int(
+            order.trade_escrow.num_satoshis
+            - (order.payout_tx.sent_satoshis + order.payout_tx.mining_fee_sats)
+        )
+        self.assertEqual(order.proceeds, expected_proceeds)
+        self.assertEqual(order.payout_tx.status, OnchainPayment.Status.QUEUE)
+        self.assertEqual(
+            order.maker.robot.earned_rewards, order.maker_bond.num_satoshis
+        )
+        self.assertEqual(
+            order.taker.robot.earned_rewards, order.taker_bond.num_satoshis
+        )
+        self.assertIsNotNone(order.contract_finalization_time)
+
+        # The queued onchain payout must be broadcast by follow_invoices
+        trade.process_payouts(mine_a_block=True)
+
+        order.refresh_from_db()
+        self.assertEqual(order.payout_tx.status, OnchainPayment.Status.MEMPO)
+        self.assertIsNotNone(order.payout_tx.txid)
+
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.SUC).label)
+        self.assertIsHash(data["maker_summary"]["txid"])
+
+        self.assert_order_logs(data["id"])
+
+    def test_admin_successful_trade_LN(self):
+        """
+        Mirror test for Lightning payout orders: the admin action must move
+        the disputed order to PAY with the buyer invoice in flight, and the
+        order reaches SUC once the Lightning payout succeeds.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+
+        # Expire the order in FSE: a dispute is opened and the escrow is settled
+        order = Order.objects.get(id=trade.order_id)
+        order.expires_at = datetime.now()
+        order.save()
+        trade.clean_orders()
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.DIS)
+        self.assertFalse(order.is_swap)
+        self.assertEqual(order.trade_escrow.status, LNPayment.Status.SETLED)
+
+        # Coordinator resolves the dispute as a successful trade
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.successful_trade(request, Order.objects.filter(id=trade.order_id))
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.PAY)
+        self.assertEqual(order.payout.status, LNPayment.Status.FLIGHT)
+        self.assertEqual(
+            order.maker.robot.earned_rewards, order.maker_bond.num_satoshis
+        )
+        self.assertEqual(
+            order.taker.robot.earned_rewards, order.taker_bond.num_satoshis
+        )
+        self.assertIsNotNone(order.contract_finalization_time)
+
+        # The in-flight invoice must be paid and the order completed
+        trade.process_payouts()
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.SUC)
+        self.assertEqual(order.payout.status, LNPayment.Status.SUCCED)
+        expected_proceeds = int(
+            order.trade_escrow.num_satoshis
+            - (order.payout.num_satoshis + order.payout.fee)
+        )
+        self.assertEqual(order.proceeds, expected_proceeds)
+
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.SUC).label)
+
+        self.assert_order_logs(data["id"])
+
     def test_order_expires_after_undo_confirm_fiat_sent(self):
         """
         Tests that automatic dispute resolution is blocked when fiat was marked
@@ -2114,6 +2379,77 @@ class TradeTest(BaseAPITestCase):
             notifications_data[0]["title"],
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
+
+    def test_dispute_records_order_id_in_robot(self):
+        """
+        Tests that a user-opened dispute records the order ID in
+        Robot.orders_disputes_started as a comma-separated string of IDs
+        """
+        path = reverse("order")
+
+        # First dispute opened by the maker robot (field starts empty)
+        trade_a = Trade(self.client)
+        trade_a.publish_order()
+        trade_a.take_order()
+        trade_a.take_order_third()
+        trade_a.lock_taker_bond()
+        trade_a.lock_escrow(trade_a.taker_index)
+        trade_a.submit_payout_invoice(trade_a.maker_index)
+
+        # Disputes can only be opened within 18 hours of order expiry
+        order_a = Order.objects.get(id=trade_a.order_id)
+        self.assertEqual(order_a.status, Order.Status.CHA)
+        order_a.expires_at = timezone.now() + timedelta(hours=6)
+        order_a.save()
+
+        params = f"?order_id={trade_a.order_id}"
+        headers = trade_a.get_robot_auth(trade_a.maker_index)
+        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        self.assertEqual(response.status_code, 200)
+
+        order_a = Order.objects.get(id=trade_a.order_id)
+        self.assertEqual(order_a.status, Order.Status.DIS)
+        self.assertEqual(order_a.maker.robot.orders_disputes_started, str(order_a.id))
+
+        # Coordinator resolves the dispute from the admin (maker wins)
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.maker_wins(request, Order.objects.filter(id=trade_a.order_id))
+
+        order_a = Order.objects.get(id=trade_a.order_id)
+        self.assertEqual(order_a.status, Order.Status.TLD)
+
+        # Second dispute by the same robot appends the new order ID.
+        # The taker must be robot 2: its TakeOrder was deleted when it
+        # finalized trade A's contract, while robot 3's lingers unexpired
+        # (takers with a pending TakeOrder cannot take a new order).
+        trade_b = Trade(self.client)
+        trade_b.publish_order()
+        trade_b.take_order()
+        trade_b.take_order_third()
+        trade_b.lock_taker_bond()
+        trade_b.lock_escrow(trade_b.taker_index)
+        trade_b.submit_payout_invoice(trade_b.maker_index)
+
+        order_b = Order.objects.get(id=trade_b.order_id)
+        self.assertEqual(order_b.status, Order.Status.CHA)
+        order_b.expires_at = timezone.now() + timedelta(hours=6)
+        order_b.save()
+
+        params = f"?order_id={trade_b.order_id}"
+        headers = trade_b.get_robot_auth(trade_b.maker_index)
+        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        self.assertEqual(response.status_code, 200)
+
+        order_b = Order.objects.get(id=trade_b.order_id)
+        self.assertEqual(order_b.status, Order.Status.DIS)
+        self.assertEqual(
+            order_b.maker.robot.orders_disputes_started,
+            f"{trade_a.order_id},{trade_b.order_id}",
+        )
+        self.assertEqual(order_b.maker.robot.num_disputes, 2)
 
     def test_ticks(self):
         """
