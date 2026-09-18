@@ -206,6 +206,26 @@ def get_devfund_pubkey(network: str) -> str:
     return value
 
 
+lnurlp_metadata_cache = {}
+
+
+@ring.dict(lnurlp_metadata_cache, expire=43200)  # keeps in cache for 12 hours
+def _fetch_lnurlp_metadata(lnurlp_url: str) -> dict:
+    """
+    GETs and returns the raw LNURL-pay metadata dict for *lnurlp_url*.
+    Cached per URL for 12 hours so repeated donations to the same Lightning
+    Address never hit the remote server more than once every 12 hours.
+    Raises ValueError on any network or HTTP error.
+    """
+    session = get_session()
+    try:
+        resp = session.get(lnurlp_url, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        raise ValueError(f"Failed to fetch LNURL-pay metadata from {lnurlp_url}: {e}")
+
+
 def resolve_lightning_address(
     address: str, num_satoshis: int, comment: str = ""
 ) -> str:
@@ -219,6 +239,7 @@ def resolve_lightning_address(
     Steps:
       1. Validate address format  (user@domain)
       2. GET https://{domain}/.well-known/lnurlp/{user}  →  LNURL-pay metadata
+         (cached per address for 12 hours via _fetch_lnurlp_metadata)
       3. Validate tag, minSendable / maxSendable bounds
       4. GET {callback}?amount={msat}[&comment=…]  →  bolt11 invoice
       5. Decode & verify the invoice amount matches num_satoshis exactly
@@ -232,15 +253,9 @@ def resolve_lightning_address(
     if not user or not domain or "." not in domain:
         raise ValueError(f"Invalid Lightning Address format: {address!r}")
 
-    # --- 2. fetch LNURL-pay metadata ---
-    session = get_session()
+    # --- 2. fetch LNURL-pay metadata (cached 12 h) ---
     lnurlp_url = f"https://{domain}/.well-known/lnurlp/{user}"
-    try:
-        resp = session.get(lnurlp_url, timeout=10)
-        resp.raise_for_status()
-        metadata = resp.json()
-    except Exception as e:
-        raise ValueError(f"Failed to fetch LNURL-pay metadata from {lnurlp_url}: {e}")
+    metadata = _fetch_lnurlp_metadata(lnurlp_url)
 
     # --- 3. validate metadata ---
     if metadata.get("tag") != "payRequest":
@@ -272,6 +287,7 @@ def resolve_lightning_address(
     if comment and comment_allowed and len(comment) <= int(comment_allowed):
         params["comment"] = comment
 
+    session = get_session()
     try:
         inv_resp = session.get(callback, params=params, timeout=10)
         inv_resp.raise_for_status()
