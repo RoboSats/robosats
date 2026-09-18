@@ -135,13 +135,23 @@ def send_devfund_donation(order_id, proceeds, reason):
 
     order = Order.objects.get(id=order_id)
     coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")
-    donation_fraction = min(1.0, max(0.00, config("DEVFUND", cast=float, default=0.2)))
-    community_fraction = min(
-        1.0, max(0.0, config("DEVFUND_COMMUNITY", cast=float, default=0.0))
-    )
+    donation_fraction = config("DEVFUND", cast=float, default=0.2)
+    community_fraction = config("DEVFUND_COMMUNITY", cast=float, default=0.0)
     community_address = config(
         "DEVFUND_COMMUNITY_ADDRESS", cast=str, default=""
     ).strip()
+
+    if not (0.0 <= donation_fraction <= 1.0):
+        order.log(
+            f"Devfund donation skipped: DEVFUND={donation_fraction} is out of range [0, 1]"
+        )
+        return False
+
+    if not (0.0 <= community_fraction <= 1.0):
+        order.log(
+            f"Devfund donation skipped: DEVFUND_COMMUNITY={community_fraction} is out of range [0, 1]"
+        )
+        return False
 
     total_donation_sats = int(proceeds * donation_fraction)
 
@@ -151,6 +161,11 @@ def send_devfund_donation(order_id, proceeds, reason):
         community_sats = int(total_donation_sats * community_fraction)
 
     devfund_sats = total_donation_sats - community_sats
+
+    # --- Community donation (parallel task) ---
+    # Dispatched first so it is independent of the devfund keysend outcome below.
+    if community_sats > 0:
+        send_community_donation.delay(order.id, community_sats, reason)
 
     # --- Devfund keysend ---
     if devfund_sats > 0:
@@ -183,10 +198,6 @@ def send_devfund_donation(order_id, proceeds, reason):
             f"Development fund donation LNPayment({lnpayment.payment_hash},{str(lnpayment)}) "
             f"was made via keysend for {devfund_sats} Sats"
         )
-
-    # --- Community donation (parallel task) ---
-    if community_sats > 0:
-        send_community_donation.delay(order.id, community_sats, reason)
 
     return True
 
@@ -262,6 +273,7 @@ def send_community_donation(order_id, num_satoshis, reason):
     lnpayment = LNPayment.objects.create(
         concept=LNPayment.Concepts.COMDONAT,
         type=LNPayment.Types.NORM,
+        status=LNPayment.Status.VALIDI,
         sender=escrow_user,
         invoice=invoice,
         payment_hash=payment_hash,

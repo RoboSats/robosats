@@ -330,16 +330,61 @@ class TestSendDevfundDonationSplit(TestCase):
         self.assertEqual(comm_calls[0][0][1], 500)
         self.assertEqual(keysend_calls[0][0][2], 1_500)
 
-    def test_community_fraction_clamped_to_one(self):
-        comm_calls, keysend_calls = _run_devfund_task(
-            {
-                "DEVFUND": 0.2,
-                "DEVFUND_COMMUNITY": 1.5,
-                "DEVFUND_COMMUNITY_ADDRESS": "community@example.com",
-            }
-        )
-        self.assertEqual(comm_calls[0][0][1], 2_000)
-        self.assertEqual(len(keysend_calls), 0)
+    def test_community_fraction_out_of_range_returns_false(self):
+        from api.tasks import send_devfund_donation
+
+        env = {
+            **_BASE_ENV,
+            "DEVFUND": 0.2,
+            "DEVFUND_COMMUNITY": 1.5,
+            "DEVFUND_COMMUNITY_ADDRESS": "community@example.com",
+        }
+        order_mock = MagicMock()
+        order_mock.id = 1
+
+        with (
+            patch("decouple.config", side_effect=_fake_config(env)),
+            patch("api.utils.get_devfund_pubkey", return_value="02" + "00" * 32),
+            patch("api.models.Order") as mock_order_cls,
+            patch("api.models.LNPayment"),
+            patch("django.contrib.auth.models.User"),
+            patch("api.lightning.node.LNNode"),
+            patch("api.tasks.send_community_donation") as mock_comm_task,
+        ):
+            mock_order_cls.objects.get.return_value = order_mock
+            result = send_devfund_donation(order_id=1, proceeds=10_000, reason="test")
+
+        self.assertFalse(result)
+        self.assertIn("out of range", order_mock.log.call_args[0][0])
+        mock_comm_task.delay.assert_not_called()
+
+    def test_devfund_fraction_out_of_range_returns_false(self):
+        from api.tasks import send_devfund_donation
+
+        env = {
+            **_BASE_ENV,
+            "DEVFUND": 1.5,
+            "DEVFUND_COMMUNITY": 0.25,
+            "DEVFUND_COMMUNITY_ADDRESS": "community@example.com",
+        }
+        order_mock = MagicMock()
+        order_mock.id = 1
+
+        with (
+            patch("decouple.config", side_effect=_fake_config(env)),
+            patch("api.utils.get_devfund_pubkey", return_value="02" + "00" * 32),
+            patch("api.models.Order") as mock_order_cls,
+            patch("api.models.LNPayment"),
+            patch("django.contrib.auth.models.User"),
+            patch("api.lightning.node.LNNode"),
+            patch("api.tasks.send_community_donation") as mock_comm_task,
+        ):
+            mock_order_cls.objects.get.return_value = order_mock
+            result = send_devfund_donation(order_id=1, proceeds=10_000, reason="test")
+
+        self.assertFalse(result)
+        self.assertIn("out of range", order_mock.log.call_args[0][0])
+        mock_comm_task.delay.assert_not_called()
 
     def test_community_skipped_when_address_missing(self):
         comm_calls, keysend_calls = _run_devfund_task(
@@ -347,6 +392,45 @@ class TestSendDevfundDonationSplit(TestCase):
         )
         self.assertEqual(len(comm_calls), 0)
         self.assertEqual(keysend_calls[0][0][2], 2_000)
+
+    def test_community_dispatched_even_when_keysend_fails(self):
+        """Regression: community task must be dispatched before the devfund keysend
+        so a routing failure on the devfund side never silently drops the community
+        payment."""
+        from api.tasks import send_devfund_donation
+
+        env = {
+            **_BASE_ENV,
+            "DEVFUND": 0.2,
+            "DEVFUND_COMMUNITY": 0.25,
+            "DEVFUND_COMMUNITY_ADDRESS": "community@example.com",
+        }
+        order_mock = MagicMock()
+        order_mock.id = 1
+
+        with (
+            patch("decouple.config", side_effect=_fake_config(env)),
+            patch("api.utils.get_devfund_pubkey", return_value="02" + "00" * 32),
+            patch("api.models.Order") as mock_order_cls,
+            patch("api.models.LNPayment") as mock_lnpayment_cls,
+            patch("django.contrib.auth.models.User") as mock_user_cls,
+            patch("api.lightning.node.LNNode") as mock_lnnode,
+            patch("api.tasks.send_community_donation") as mock_comm_task,
+        ):
+            mock_order_cls.objects.get.return_value = order_mock
+            mock_user_cls.objects.get.return_value = MagicMock()
+            # Devfund keysend fails
+            mock_lnnode.send_keysend.return_value = (False, {})
+            mock_lnpayment_cls.Concepts.DEVDONAT = 5
+            mock_lnpayment_cls.Types.KEYS = 2
+
+            result = send_devfund_donation(order_id=1, proceeds=10_000, reason="test")
+
+        # Task returned False (keysend failed) ...
+        self.assertFalse(result)
+        # ... but community donation was still dispatched with the right amount
+        self.assertEqual(len(mock_comm_task.delay.call_args_list), 1)
+        self.assertEqual(mock_comm_task.delay.call_args_list[0][0][1], 500)
 
 
 # ---------------------------------------------------------------------------
