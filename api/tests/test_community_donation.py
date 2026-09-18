@@ -15,8 +15,8 @@ where the name is *defined* (its source), not where it is imported from inside
 a function body:
 
   api.utils.LNNode          → "api.lightning.node.LNNode"
-  api.tasks.Order           → "api.models.order.Order"
-  api.tasks.LNPayment       → "api.models.ln_payment.LNPayment"
+  api.tasks.Order           → "api.models.Order"
+  api.tasks.LNPayment       → "api.models.LNPayment"
   api.tasks.User            → "django.contrib.auth.models.User"
   api.tasks.LNNode          → "api.lightning.node.LNNode"
   api.tasks.get_devfund_pubkey    → "api.utils.get_devfund_pubkey"
@@ -283,9 +283,9 @@ def _run_devfund_task(env_extra, proceeds=10_000, reason="test"):
         patch("decouple.config", side_effect=_fake_config(env)),
         # get_devfund_pubkey is imported locally; patch at its definition
         patch("api.utils.get_devfund_pubkey", return_value="02" + "00" * 32),
-        # Order / LNPayment imported locally from api.models.*; patch at source
-        patch("api.models.order.Order") as mock_order_cls,
-        patch("api.models.ln_payment.LNPayment") as mock_lnpayment_cls,
+        # Order / LNPayment: task does "from api.models import …"; patch the package re-export
+        patch("api.models.Order") as mock_order_cls,
+        patch("api.models.LNPayment") as mock_lnpayment_cls,
         # User imported locally from django.contrib.auth.models
         patch("django.contrib.auth.models.User") as mock_user_cls,
         # LNNode imported locally from api.lightning.node
@@ -378,10 +378,10 @@ def _run_comm_task(
 
     with (
         patch("decouple.config", side_effect=_fake_config(env)),
-        patch("api.models.order.Order") as mock_order_cls,
+        patch("api.models.Order") as mock_order_cls,
         patch("django.contrib.auth.models.User") as mock_user_cls,
         patch("api.lightning.node.LNNode") as mock_lnnode,
-        patch("api.models.ln_payment.LNPayment") as mock_lnpayment_cls,
+        patch("api.models.LNPayment") as mock_lnpayment_cls,
         patch(
             "api.utils.resolve_lightning_address",
             side_effect=resolve_side,
@@ -421,7 +421,7 @@ class TestSendCommunityDonation(TestCase):
                 "decouple.config",
                 side_effect=_fake_config({"DEVFUND_COMMUNITY_ADDRESS": ""}),
             ),
-            patch("api.models.order.Order") as mock_order_cls,
+            patch("api.models.Order") as mock_order_cls,
         ):
             mock_order_cls.objects.get.return_value = order_mock
             result = send_community_donation(1, 1_000, "test")
@@ -448,7 +448,7 @@ class TestSendCommunityDonation(TestCase):
         order_mock = MagicMock()
         with (
             patch("decouple.config", side_effect=_fake_config(_COMM_BASE_ENV)),
-            patch("api.models.order.Order") as mock_order_cls,
+            patch("api.models.Order") as mock_order_cls,
         ):
             mock_order_cls.objects.get.return_value = order_mock
             result = send_community_donation(1, 0, "test")
