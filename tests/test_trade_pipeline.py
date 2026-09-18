@@ -6,7 +6,7 @@ from decouple import config
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from api.models import Currency, LNPayment, Order, TakeOrder
+from api.models import Currency, LNPayment, OnchainPayment, Order, TakeOrder
 from api.tasks import cache_market, send_notification
 from django.utils import timezone
 from django.contrib.admin.sites import AdminSite
@@ -2164,6 +2164,147 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 400)
         trade.get_review(trade.taker_index)
         self.assertEqual(trade.response.status_code, 400)
+
+    def test_admin_successful_trade_onchain(self):
+        """
+        Tests the coordinator's admin action that solves a dispute of an
+        onchain swap order as a successful trade. The order must leave the
+        dispute state, reach SUC with the payout queued for broadcast and
+        the coordinator proceeds computed. Regression test: the swap path
+        used to stay stuck in DIS because complete_order() only transitions
+        to SUC from [FSE, PAY, FAI]; and the onchain payout is cancelled by
+        the dispute timeout, so the admin action must re-activate the
+        validated address before paying.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_address(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+
+        # Expire the order in FSE: a dispute is opened and the escrow is settled
+        order = Order.objects.get(id=trade.order_id)
+        order.expires_at = datetime.now()
+        order.save()
+        trade.clean_orders()
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.DIS)
+        self.assertTrue(order.is_swap)
+        # Dispute timeouts cancel the onchain payout before opening the dispute
+        self.assertEqual(order.payout_tx.status, OnchainPayment.Status.CANCE)
+        self.assertIsNotNone(order.payout_tx.address)
+        self.assertEqual(order.trade_escrow.status, LNPayment.Status.SETLED)
+
+        # Coordinator resolves the dispute as a successful trade
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.successful_trade(request, Order.objects.filter(id=trade.order_id))
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.SUC)
+        expected_proceeds = int(
+            order.trade_escrow.num_satoshis
+            - (order.payout_tx.sent_satoshis + order.payout_tx.mining_fee_sats)
+        )
+        self.assertEqual(order.proceeds, expected_proceeds)
+        self.assertEqual(order.payout_tx.status, OnchainPayment.Status.QUEUE)
+        self.assertEqual(
+            order.maker.robot.earned_rewards, order.maker_bond.num_satoshis
+        )
+        self.assertEqual(
+            order.taker.robot.earned_rewards, order.taker_bond.num_satoshis
+        )
+        self.assertIsNotNone(order.contract_finalization_time)
+
+        # The queued onchain payout must be broadcast by follow_invoices
+        trade.process_payouts(mine_a_block=True)
+
+        order.refresh_from_db()
+        self.assertEqual(order.payout_tx.status, OnchainPayment.Status.MEMPO)
+        self.assertIsNotNone(order.payout_tx.txid)
+
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.SUC).label)
+        self.assertIsHash(data["maker_summary"]["txid"])
+
+        self.assert_order_logs(data["id"])
+
+    def test_admin_successful_trade_LN(self):
+        """
+        Mirror test for Lightning payout orders: the admin action must move
+        the disputed order to PAY with the buyer invoice in flight, and the
+        order reaches SUC once the Lightning payout succeeds.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+
+        # Expire the order in FSE: a dispute is opened and the escrow is settled
+        order = Order.objects.get(id=trade.order_id)
+        order.expires_at = datetime.now()
+        order.save()
+        trade.clean_orders()
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.DIS)
+        self.assertFalse(order.is_swap)
+        self.assertEqual(order.trade_escrow.status, LNPayment.Status.SETLED)
+
+        # Coordinator resolves the dispute as a successful trade
+        request = RequestFactory().post("/")
+        request.session = "session"
+        setattr(request, "_messages", FallbackStorage(request))
+        order_admin = OrderAdmin(model=Order, admin_site=AdminSite())
+        order_admin.successful_trade(request, Order.objects.filter(id=trade.order_id))
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.PAY)
+        self.assertEqual(order.payout.status, LNPayment.Status.FLIGHT)
+        self.assertEqual(
+            order.maker.robot.earned_rewards, order.maker_bond.num_satoshis
+        )
+        self.assertEqual(
+            order.taker.robot.earned_rewards, order.taker_bond.num_satoshis
+        )
+        self.assertIsNotNone(order.contract_finalization_time)
+
+        # The in-flight invoice must be paid and the order completed
+        trade.process_payouts()
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.SUC)
+        self.assertEqual(order.payout.status, LNPayment.Status.SUCCED)
+        expected_proceeds = int(
+            order.trade_escrow.num_satoshis
+            - (order.payout.num_satoshis + order.payout.fee)
+        )
+        self.assertEqual(order.proceeds, expected_proceeds)
+
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.SUC).label)
+
+        self.assert_order_logs(data["id"])
 
     def test_order_expires_after_undo_confirm_fiat_sent(self):
         """
