@@ -5,6 +5,25 @@ Covers:
   - api.utils.resolve_lightning_address  (LNURL-pay flow)
   - api.tasks.send_devfund_donation      (split math + community task dispatch)
   - api.tasks.send_community_donation    (happy-path + failure branches)
+
+Patching strategy
+-----------------
+All imports inside the task/util functions are *lazy local imports*, so they are
+never bound at the calling module's scope.  unittest.mock requires the name to
+exist at the target module when patching.  The rule is: patch at the module
+where the name is *defined* (its source), not where it is imported from inside
+a function body:
+
+  api.utils.LNNode          → "api.lightning.node.LNNode"
+  api.tasks.Order           → "api.models.order.Order"
+  api.tasks.LNPayment       → "api.models.ln_payment.LNPayment"
+  api.tasks.User            → "django.contrib.auth.models.User"
+  api.tasks.LNNode          → "api.lightning.node.LNNode"
+  api.tasks.get_devfund_pubkey    → "api.utils.get_devfund_pubkey"
+  api.tasks.resolve_lightning_address → "api.utils.resolve_lightning_address"
+  api.tasks.send_community_donation   → "api.tasks.send_community_donation"
+  api.tasks.config / api.utils.config → "decouple.config"   (patched at each
+                                          module that imports it at the top)
 """
 
 from unittest.mock import MagicMock, patch
@@ -33,21 +52,6 @@ def _lnurlp_metadata(
     }
 
 
-def _mock_session(metadata, invoice_data):
-    """Session whose .get() returns metadata on the first call, invoice on the second."""
-    meta_resp = MagicMock()
-    meta_resp.json.return_value = metadata
-    meta_resp.raise_for_status = MagicMock()
-
-    inv_resp = MagicMock()
-    inv_resp.json.return_value = invoice_data
-    inv_resp.raise_for_status = MagicMock()
-
-    session = MagicMock()
-    session.get.side_effect = [meta_resp, inv_resp]
-    return session
-
-
 def _fake_config(env):
     def _inner(option, *args, **kwargs):
         if option in env:
@@ -68,11 +72,15 @@ class TestResolveLightningAddress(TestCase):
     ring cache layer is bypassed and tests remain independent of each other.
     The invoice-fetch (callback GET) still goes through get_session since it
     is not cached.
+
+    LNNode is imported inside resolve_lightning_address as:
+        from api.lightning.node import LNNode
+    so we patch it at its definition: "api.lightning.node.LNNode".
     """
 
     @patch("api.utils.get_session")
     @patch("api.utils._fetch_lnurlp_metadata")
-    @patch("api.utils.LNNode")
+    @patch("api.lightning.node.LNNode")
     def test_happy_path(self, mock_lnnode, mock_fetch_meta, mock_get_session):
         from api.utils import resolve_lightning_address
 
@@ -143,7 +151,7 @@ class TestResolveLightningAddress(TestCase):
 
     @patch("api.utils.get_session")
     @patch("api.utils._fetch_lnurlp_metadata")
-    @patch("api.utils.LNNode")
+    @patch("api.lightning.node.LNNode")
     def test_invoice_amount_mismatch(
         self, mock_lnnode, mock_fetch_meta, mock_get_session
     ):
@@ -162,7 +170,7 @@ class TestResolveLightningAddress(TestCase):
 
     @patch("api.utils.get_session")
     @patch("api.utils._fetch_lnurlp_metadata")
-    @patch("api.utils.LNNode")
+    @patch("api.lightning.node.LNNode")
     def test_comment_included_when_allowed(
         self, mock_lnnode, mock_fetch_meta, mock_get_session
     ):
@@ -186,7 +194,7 @@ class TestResolveLightningAddress(TestCase):
 
     @patch("api.utils.get_session")
     @patch("api.utils._fetch_lnurlp_metadata")
-    @patch("api.utils.LNNode")
+    @patch("api.lightning.node.LNNode")
     def test_comment_excluded_when_too_long(
         self, mock_lnnode, mock_fetch_meta, mock_get_session
     ):
@@ -226,7 +234,7 @@ class TestResolveLightningAddress(TestCase):
         with (
             patch("api.utils._fetch_lnurlp_metadata") as mock_fetch_meta,
             patch("api.utils.get_session", return_value=session_mock),
-            patch("api.utils.LNNode") as mock_lnnode,
+            patch("api.lightning.node.LNNode") as mock_lnnode,
         ):
             mock_fetch_meta.return_value = _lnurlp_metadata()
             mock_lnnode.decode_payreq.return_value = decoded
@@ -271,12 +279,18 @@ def _run_devfund_task(env_extra, proceeds=10_000, reason="test"):
     order_mock.id = 1
 
     with (
-        patch("api.tasks.config", side_effect=_fake_config(env)),
-        patch("api.tasks.get_devfund_pubkey", return_value="02" + "00" * 32),
-        patch("api.tasks.Order") as mock_order_cls,
-        patch("api.tasks.User") as mock_user_cls,
-        patch("api.tasks.LNNode") as mock_lnnode,
-        patch("api.tasks.LNPayment") as mock_lnpayment_cls,
+        # config is imported at api.tasks module scope: "from decouple import config"
+        patch("decouple.config", side_effect=_fake_config(env)),
+        # get_devfund_pubkey is imported locally; patch at its definition
+        patch("api.utils.get_devfund_pubkey", return_value="02" + "00" * 32),
+        # Order / LNPayment imported locally from api.models.*; patch at source
+        patch("api.models.order.Order") as mock_order_cls,
+        patch("api.models.ln_payment.LNPayment") as mock_lnpayment_cls,
+        # User imported locally from django.contrib.auth.models
+        patch("django.contrib.auth.models.User") as mock_user_cls,
+        # LNNode imported locally from api.lightning.node
+        patch("api.lightning.node.LNNode") as mock_lnnode,
+        # send_community_donation is a module-level name in api.tasks — patchable directly
         patch("api.tasks.send_community_donation") as mock_comm_task,
     ):
         mock_order_cls.objects.get.return_value = order_mock
@@ -363,13 +377,13 @@ def _run_comm_task(
     resolve_side = invoice_side_effect  # None → return_value used; Exception → raised
 
     with (
-        patch("api.tasks.config", side_effect=_fake_config(env)),
-        patch("api.tasks.Order") as mock_order_cls,
-        patch("api.tasks.User") as mock_user_cls,
-        patch("api.tasks.LNNode") as mock_lnnode,
-        patch("api.tasks.LNPayment") as mock_lnpayment_cls,
+        patch("decouple.config", side_effect=_fake_config(env)),
+        patch("api.models.order.Order") as mock_order_cls,
+        patch("django.contrib.auth.models.User") as mock_user_cls,
+        patch("api.lightning.node.LNNode") as mock_lnnode,
+        patch("api.models.ln_payment.LNPayment") as mock_lnpayment_cls,
         patch(
-            "api.tasks.resolve_lightning_address",
+            "api.utils.resolve_lightning_address",
             side_effect=resolve_side,
             return_value=None if resolve_side else "lnbc1000fake",
         ),
@@ -404,10 +418,10 @@ class TestSendCommunityDonation(TestCase):
         order_mock = MagicMock()
         with (
             patch(
-                "api.tasks.config",
+                "decouple.config",
                 side_effect=_fake_config({"DEVFUND_COMMUNITY_ADDRESS": ""}),
             ),
-            patch("api.tasks.Order") as mock_order_cls,
+            patch("api.models.order.Order") as mock_order_cls,
         ):
             mock_order_cls.objects.get.return_value = order_mock
             result = send_community_donation(1, 1_000, "test")
@@ -433,8 +447,8 @@ class TestSendCommunityDonation(TestCase):
 
         order_mock = MagicMock()
         with (
-            patch("api.tasks.config", side_effect=_fake_config(_COMM_BASE_ENV)),
-            patch("api.tasks.Order") as mock_order_cls,
+            patch("decouple.config", side_effect=_fake_config(_COMM_BASE_ENV)),
+            patch("api.models.order.Order") as mock_order_cls,
         ):
             mock_order_cls.objects.get.return_value = order_mock
             result = send_community_donation(1, 0, "test")
