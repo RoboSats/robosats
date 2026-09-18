@@ -12,6 +12,8 @@ from django.urls import reverse
 
 from tests.test_api import BaseAPITestCase
 
+TEST_NPUB = "npub16sfzpqkjrunmweeu4tj9z83pv4cwweqcnc5kyxctzdgpelng73zqms3kqr"
+
 
 def read_file(file_path):
     """Read a file and return its content."""
@@ -52,6 +54,17 @@ class RobotWebhookAPITest(BaseAPITestCase):
         self.assertIn("webhook_url", data)
         self.assertIn("webhook_enabled", data)
         self.assertIn("webhook_api_key", data)
+
+    def test_robot_get_includes_nostr_forward_fields(self):
+        path = reverse("robot")
+        response = self.client.get(path, **self.get_robot_auth())
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertIn("nostr_forward_pubkey", data)
+        self.assertIn("nostr_forward_relay", data)
+        self.assertIn("nostr_forward_enabled", data)
 
     @patch("api.notifications.Notifications.send_webhook_test")
     def test_robot_put_update_webhook_settings(self, mock_send_test):
@@ -123,3 +136,101 @@ class RobotWebhookAPITest(BaseAPITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
+
+    def test_robot_put_requires_complete_nostr_forward_config(self):
+        path = reverse("robot")
+        response = self.client.put(
+            path,
+            data={"nostr_forward_enabled": True},
+            content_type="application/json",
+            **self.get_robot_auth(),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            set(response.json()),
+            {"nostr_forward_pubkey", "nostr_forward_relay"},
+        )
+
+    def test_robot_put_rejects_invalid_nostr_forward_fields(self):
+        path = reverse("robot")
+        response = self.client.put(
+            path,
+            data={
+                "nostr_forward_pubkey": f"nPUB{TEST_NPUB[4:]}",
+                "nostr_forward_relay": "wss://relay.example.com",
+            },
+            content_type="application/json",
+            **self.get_robot_auth(),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            set(response.json()),
+            {"nostr_forward_pubkey", "nostr_forward_relay"},
+        )
+
+    def test_robot_put_rejects_off_curve_nostr_forward_pubkey(self):
+        path = reverse("robot")
+        response = self.client.put(
+            path,
+            data={"nostr_forward_pubkey": "f" * 64},
+            content_type="application/json",
+            **self.get_robot_auth(),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("nostr_forward_pubkey", response.json())
+
+    def test_robot_put_normalizes_uppercase_nostr_forward_pubkey(self):
+        path = reverse("robot")
+        pubkey = TEST_NPUB.upper()
+        update_data = {
+            "nostr_forward_pubkey": pubkey,
+            "nostr_forward_relay": "ws://testrelay.onion",
+            "nostr_forward_enabled": True,
+        }
+
+        response = self.client.put(
+            path,
+            data=update_data,
+            content_type="application/json",
+            **self.get_robot_auth(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertEqual(response.json()["nostr_forward_pubkey"], TEST_NPUB)
+
+    def test_robot_put_clears_disabled_nostr_forward_config(self):
+        path = reverse("robot")
+        pubkey = read_file(f"tests/robots/{self.robot_index}/nostr_pubkey").strip()
+        response = self.client.put(
+            path,
+            data={
+                "nostr_forward_pubkey": pubkey,
+                "nostr_forward_relay": "ws://testrelay.onion",
+                "nostr_forward_enabled": True,
+            },
+            content_type="application/json",
+            **self.get_robot_auth(),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.put(
+            path,
+            data={
+                "nostr_forward_pubkey": None,
+                "nostr_forward_relay": None,
+                "nostr_forward_enabled": False,
+            },
+            content_type="application/json",
+            **self.get_robot_auth(),
+        )
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertIsNone(data["nostr_forward_pubkey"])
+        self.assertIsNone(data["nostr_forward_relay"])
+        self.assertFalse(data["nostr_forward_enabled"])
