@@ -29,8 +29,11 @@ before activation.
    manual checkout normally selects no files.
 5. Review generated locale changes and quality reports before merging any output.
 
-With neither an API key nor a `LOCALIZE_API_BASE_URL` repository variable, the
-guard exits green before checkout or model calls. Either one enables the job.
+With neither an `OPENAI_API_KEY` secret nor an `OPENAI_BASE_URL` repository
+variable, the guard exits green before checkout or model calls. Either one
+enables the job. `OPENAI_BASE_URL` is declared in the workflow `env` so the
+provider endpoint is visible in the YAML; see
+[Other providers and local inference](#other-providers-and-local-inference).
 PR-creation permissions are an additional requirement, not part of that guard:
 a configured API key can incur inference cost even if PR creation later fails.
 Remove both settings to stop future translation jobs; this does not cancel an
@@ -147,22 +150,32 @@ No automatic provider fallback is configured. Anthropic is an explicit alternati
 that requires its own credential/model configuration and separate compatibility,
 format, and language-quality verification. It is not enabled by this starter.
 
-The default remains hosted OpenAI. Switching to local inference requires model
-configuration **and** the workflow endpoint setting, not just one config line:
+The default remains hosted OpenAI. The endpoint is a first-class workflow
+setting: `translate.yml` declares `OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}`
+in the job `env`. Empty means `https://api.openai.com/v1`. Any other
+OpenAI-compatible provider is a one-variable switch:
 
-1. Operate an OpenAI-compatible endpoint (for example Ollama/vLLM) reachable from
-   the runner. A GitHub-hosted runner's localhost is not your machine. A private
-   endpoint may require a self-hosted runner/network change; do not expose an
-   unauthenticated model server publicly to make this work.
-2. Set `model_name` and `review_model_name` to IDs served by that endpoint, and
-   verify its supported request options and translation quality. AISuite can
-   route its OpenAI provider to a custom endpoint; no provider fallback is used.
-3. Set repository **variable** `LOCALIZE_API_BASE_URL` to its base URL including
-   `/v1`. The guard enables without a key and passes this through `api-base-url`
-   to `OPENAI_BASE_URL`, which overrides YAML `api_base_url`. A non-secret URL
-   belongs in a variable; never embed credentials in it. If your server needs
-   authentication, use the `OPENAI_API_KEY` secret for its token instead of a
-   hosted-provider key. Do not send a hosted key to a third-party endpoint.
+1. Set repository **variable** `OPENAI_BASE_URL` to the provider's base URL
+   including `/v1`. The workflow passes it through the action's `api-base-url`
+   input, which exports `OPENAI_BASE_URL` to the pipeline and overrides YAML
+   `api_base_url`. A non-secret URL belongs in a variable; never embed
+   credentials in it.
+2. Put that provider's token in the `OPENAI_API_KEY` secret instead of an OpenAI
+   key. Do not send a hosted OpenAI key to a third-party endpoint. Some
+   endpoints accept no token at all; the guard enables on the variable alone.
+3. Set `model_name` and `review_model_name` in `config.yaml` to IDs served by
+   that endpoint, and verify its supported request options and translation
+   quality. AISuite routes its OpenAI provider to the custom endpoint; no
+   provider fallback is used.
+
+Local inference (for example Ollama/vLLM) is the same switch plus one
+constraint: the endpoint must be reachable **from the runner**. A GitHub-hosted
+runner's localhost is not your machine, so a private endpoint needs a
+self-hosted runner or a network-reachable host. Do not expose an
+unauthenticated model server publicly to make this work. On GitHub-hosted
+runners the honest privacy claim is: your own key, your own repository, one
+reviewable PR, and no third-party service holding the glossary or translation
+state; strings still travel to whichever endpoint the variable names.
 
 The commented YAML endpoint example is for local CLI runs; setting only YAML
 will not enable the Actions guard. A keyless local HTTP stub test of the pinned

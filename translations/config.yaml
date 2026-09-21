@@ -1,7 +1,7 @@
 # Localize Pipeline configuration for RoboSats
 # Translates frontend/static/locales/en.json -> the 16 target locale files.
 # API starter proposal; it differs from KoalaSat's earlier local-model preference.
-# Dormant without OPENAI_API_KEY or LOCALIZE_API_BASE_URL (repository variable).
+# Dormant without the OPENAI_API_KEY secret or OPENAI_BASE_URL repository variable.
 # See translations/README.md before enabling.
 
 target_project_root: ".."
@@ -34,8 +34,9 @@ project_context: >
 # This OpenAI pair was exercised through AISuite in the isolated Spanish smoke.
 # No provider fallback is configured. Anthropic or local inference would need an
 # explicit configuration change and separate compatibility/quality verification.
-# For local Ollama/vLLM: set served model IDs below and the workflow endpoint
-# variable LOCALIZE_API_BASE_URL; this optional YAML example is for local runs.
+# For another OpenAI-compatible provider or local Ollama/vLLM: set served model
+# IDs below and the OPENAI_BASE_URL repository variable read by the workflow env;
+# this optional YAML example is for local CLI runs only.
 # api_base_url: "http://127.0.0.1:11434/v1"
 model_provider: "aisuite"
 model_name: "gpt-4o-mini"
