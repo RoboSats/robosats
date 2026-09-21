@@ -30,6 +30,8 @@ from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
+from api.lightning.decoded import DecodedPayReq
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -90,9 +92,13 @@ class TestResolveLightningAddress(TestCase):
         inv_resp.json.return_value = {"pr": bolt11}
         inv_resp.raise_for_status = MagicMock()
         mock_get_session.return_value.get.return_value = inv_resp
-        decoded = MagicMock()
-        decoded.num_satoshis = 1_000
-        mock_lnnode.decode_payreq.return_value = decoded
+        mock_lnnode.decode_payreq.return_value = DecodedPayReq(
+            num_satoshis=1_000,
+            payment_hash="a" * 64,
+            created_at=0,
+            expiry=3600,
+            description="test",
+        )
         self.assertEqual(
             resolve_lightning_address("alice@example.com", 1_000, "hi"), bolt11
         )
@@ -162,9 +168,13 @@ class TestResolveLightningAddress(TestCase):
         inv_resp.json.return_value = {"pr": "lnbc_bad"}
         inv_resp.raise_for_status = MagicMock()
         mock_get_session.return_value.get.return_value = inv_resp
-        decoded = MagicMock()
-        decoded.num_satoshis = 500  # mismatch; we asked for 1000
-        mock_lnnode.decode_payreq.return_value = decoded
+        mock_lnnode.decode_payreq.return_value = DecodedPayReq(
+            num_satoshis=500,  # mismatch; we asked for 1000
+            payment_hash="a" * 64,
+            created_at=0,
+            expiry=3600,
+            description="test",
+        )
         with self.assertRaises(ValueError):
             resolve_lightning_address("alice@example.com", 1000)
 
@@ -184,9 +194,13 @@ class TestResolveLightningAddress(TestCase):
         session = MagicMock()
         session.get.return_value = inv_resp
         mock_get_session.return_value = session
-        decoded = MagicMock()
-        decoded.num_satoshis = 500
-        mock_lnnode.decode_payreq.return_value = decoded
+        mock_lnnode.decode_payreq.return_value = DecodedPayReq(
+            num_satoshis=500,
+            payment_hash="a" * 64,
+            created_at=0,
+            expiry=3600,
+            description="test",
+        )
         resolve_lightning_address("alice@example.com", 500, comment)
         # The only session.get call is the invoice callback; check comment forwarded
         params = session.get.call_args[1].get("params", {})
@@ -208,9 +222,13 @@ class TestResolveLightningAddress(TestCase):
         session = MagicMock()
         session.get.return_value = inv_resp
         mock_get_session.return_value = session
-        decoded = MagicMock()
-        decoded.num_satoshis = 500
-        mock_lnnode.decode_payreq.return_value = decoded
+        mock_lnnode.decode_payreq.return_value = DecodedPayReq(
+            num_satoshis=500,
+            payment_hash="a" * 64,
+            created_at=0,
+            expiry=3600,
+            description="test",
+        )
         resolve_lightning_address("alice@example.com", 500, comment)
         params = session.get.call_args[1].get("params", {})
         self.assertNotIn("comment", params)
@@ -228,16 +246,19 @@ class TestResolveLightningAddress(TestCase):
         session_mock = MagicMock()
         session_mock.get.return_value = inv_resp
 
-        decoded = MagicMock()
-        decoded.num_satoshis = 500
-
         with (
             patch("api.utils._fetch_lnurlp_metadata") as mock_fetch_meta,
             patch("api.utils.get_session", return_value=session_mock),
             patch("api.lightning.node.LNNode") as mock_lnnode,
         ):
             mock_fetch_meta.return_value = _lnurlp_metadata()
-            mock_lnnode.decode_payreq.return_value = decoded
+            mock_lnnode.decode_payreq.return_value = DecodedPayReq(
+                num_satoshis=500,
+                payment_hash="a" * 64,
+                created_at=0,
+                expiry=3600,
+                description="test",
+            )
 
             resolve_lightning_address("alice@example.com", 500)
             resolve_lightning_address("alice@example.com", 500)
@@ -475,10 +496,13 @@ def _run_comm_task(
         mock_order_cls.objects.get.return_value = order_mock
         mock_user_cls.objects.get.return_value = MagicMock()
 
-        decoded = MagicMock()
-        decoded.payment_hash = "c" * 64
-        decoded.expiry = 3600
-        mock_lnnode.decode_payreq.return_value = decoded
+        mock_lnnode.decode_payreq.return_value = DecodedPayReq(
+            num_satoshis=num_satoshis,
+            payment_hash="c" * 64,
+            created_at=0,
+            expiry=3600,
+            description="community donation test",
+        )
         mock_lnnode.pay_invoice.return_value = pay_result
 
         mock_lnpayment_cls.Concepts.COMDONAT = 6
