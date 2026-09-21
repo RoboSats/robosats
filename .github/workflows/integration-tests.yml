@@ -143,7 +143,7 @@ jobs:
         sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
 
     - name: 'Compose Regtest Orchestration'
-      uses: isbang/compose-action@v3.1.0
+      uses: isbang/compose-action@v3.2.0
       with:
         compose-file: "./docker-tests.yml"
         down-flags: "--volumes"
