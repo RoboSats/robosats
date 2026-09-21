@@ -46,19 +46,17 @@ def users_cleansing():
                 user.delete()
                 # Delete also gpg keys
                 private_fpr = {
-                    key["fingerprint"] for key in
-                    gpg.scan_keys_mem(str(user.robot.encrypted_private_key))
+                    key["fingerprint"]
+                    for key in gpg.scan_keys_mem(str(user.robot.encrypted_private_key))
                 }
                 for fpr in private_fpr:
                     try:
-                        gpg.delete_keys(
-                            fpr, secret=True, expect_passphrase=False
-                        )
+                        gpg.delete_keys(fpr, secret=True, expect_passphrase=False)
                     except Exception as e:
                         print(str(e))
                 public_fpr = {
-                    key["fingerprint"] for key in
-                    gpg.scan_keys_mem(str(user.robot.public_key))
+                    key["fingerprint"]
+                    for key in gpg.scan_keys_mem(str(user.robot.public_key))
                 }
                 for fpr in public_fpr:
                     try:
@@ -128,7 +126,7 @@ def send_devfund_donation(order_id, proceeds, reason):
     from api.models import LNPayment, Order
     from api.utils import get_devfund_pubkey
 
-    target_pubkey = get_devfund_pubkey(config("NETWORK", cast=str))
+    target_pubkey = get_devfund_pubkey()
 
     order = Order.objects.get(id=order_id)
     coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")

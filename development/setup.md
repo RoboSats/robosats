@@ -47,6 +47,47 @@ docker-compose restart
 ```
 Copy the `.env-sample` file into `.env` and check the environmental variables are right for your development.
 
+### Using a restricted LND macaroon
+
+Coordinator operators using LND do not need to give RoboSats access to the full `admin.macaroon`. LND supports macaroons restricted to individual RPC method URIs, allowing the coordinator to use only the RPC calls it needs.
+
+A restricted macaroon for the current RoboSats LND implementation can be created with:
+
+```bash
+lncli bakemacaroon \
+  --save_to=robosats.macaroon \
+  uri:/verrpc.Versioner/GetVersion \
+  uri:/lnrpc.Lightning/DecodePayReq \
+  uri:/lnrpc.Lightning/GetInfo \
+  uri:/lnrpc.Lightning/EstimateFee \
+  uri:/lnrpc.Lightning/WalletBalance \
+  uri:/lnrpc.Lightning/ChannelBalance \
+  uri:/lnrpc.Lightning/SendCoins \
+  uri:/invoicesrpc.Invoices/CancelInvoice \
+  uri:/invoicesrpc.Invoices/SettleInvoice \
+  uri:/invoicesrpc.Invoices/AddHoldInvoice \
+  uri:/invoicesrpc.Invoices/LookupInvoiceV2 \
+  uri:/routerrpc.Router/SendPaymentV2 \
+  uri:/routerrpc.Router/TrackPaymentV2 \
+  uri:/signrpc.Signer/SignMessage
+```
+
+Add the appropriate `--network` option if required by your LND setup.
+
+The resulting macaroon grants access only to the LND RPC methods currently used by RoboSats instead of the broader permissions available through `admin.macaroon`.
+
+If the macaroon is provided through `LND_MACAROON_BASE64`, encode the restricted macaroon without line wrapping:
+
+```bash
+base64 -w 0 robosats.macaroon
+```
+
+Use the resulting value as `LND_MACAROON_BASE64` in `.env`. Alternatively, configure `MACAROON_PATH` to point to the restricted macaroon file when using `LND_DIR`.
+
+The required RPC set can change as RoboSats adds or changes Lightning functionality. After upgrading RoboSats, check the LND integration and update the restricted macaroon if new RPC methods are required. A permission-denied RPC error after an upgrade can indicate that the macaroon no longer grants all required methods.
+
+Keep the macaroon private. Even though it has fewer privileges than `admin.macaroon`, it still authorizes operations involving the coordinator's Lightning wallet, invoices and payments.
+
 ## Running tests
 
 Build and run containers with the test specific configuration:
