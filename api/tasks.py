@@ -116,8 +116,13 @@ def follow_send_payment(hash):
 
 @shared_task(name="send_devfund_donation", time_limit=300, soft_time_limit=295)
 def send_devfund_donation(order_id, proceeds, reason):
-    """Sends a fraction of order.proceeds via keysend as
-    donation to the RoboSats Open Source project devfund.
+    """Sends a fraction of order.proceeds via keysend as donation to the
+    RoboSats Open Source project devfund.
+
+    When DEVFUND_COMMUNITY (0-1) and DEVFUND_COMMUNITY_ADDRESS are both set,
+    a share of the devfund donation equal to DEVFUND_COMMUNITY is split off
+    and paid in parallel (via a separate Celery task) to the community
+    Lightning Address.  The remainder goes to the devfund pubkey as usual.
     """
     from decouple import config
     from django.contrib.auth.models import User
@@ -130,37 +135,170 @@ def send_devfund_donation(order_id, proceeds, reason):
 
     order = Order.objects.get(id=order_id)
     coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")
-    donation_fraction = min(1.0, max(0.00, config("DEVFUND", cast=float, default=0.2)))
-    message = f"Devfund donation; {coordinator_alias}; {order}; {donation_fraction}; {reason};"
-    num_satoshis = int(proceeds * donation_fraction)
-    routing_budget_sats = int(max(5, num_satoshis * 0.000_1))
-    timeout = 280
-    sign = False
+    donation_fraction = config("DEVFUND", cast=float, default=0.2)
+    community_fraction = config("DEVFUND_COMMUNITY", cast=float, default=0.0)
+    community_address = config(
+        "DEVFUND_COMMUNITY_ADDRESS", cast=str, default=""
+    ).strip()
 
-    valid, keysend_payment = LNNode.send_keysend(
-        target_pubkey, message, num_satoshis, routing_budget_sats, timeout, sign
-    )
-    if not valid:
+    if not (0.0 <= donation_fraction <= 1.0):
+        order.log(
+            f"Devfund donation skipped: DEVFUND={donation_fraction} is out of range [0, 1]"
+        )
         return False
 
-    lnpayment = LNPayment.objects.create(
-        concept=LNPayment.Concepts.DEVDONAT,
-        type=LNPayment.Types.KEYS,
-        sender=User.objects.get(
-            username=config("ESCROW_USERNAME", cast=str, default="admin")
-        ),
-        invoice=f"Target pubkey: {target_pubkey}; At: {keysend_payment['created_at']}",
-        routing_budget_sats=routing_budget_sats,
-        description=message,
-        num_satoshis=num_satoshis,
-        order_donated=order,
-        **keysend_payment,
+    if not (0.0 <= community_fraction <= 1.0):
+        order.log(
+            f"Devfund donation skipped: DEVFUND_COMMUNITY={community_fraction} is out of range [0, 1]"
+        )
+        return False
+
+    total_donation_sats = int(proceeds * donation_fraction)
+
+    # Compute the community share and subtract it from the devfund amount.
+    community_sats = 0
+    if community_fraction > 0 and community_address and total_donation_sats > 0:
+        community_sats = int(total_donation_sats * community_fraction)
+
+    devfund_sats = total_donation_sats - community_sats
+
+    # --- Community donation (parallel task) ---
+    # Dispatched first so it is independent of the devfund keysend outcome below.
+    if community_sats > 0:
+        send_community_donation.delay(order.id, community_sats, reason)
+
+    # --- Devfund keysend ---
+    if devfund_sats > 0:
+        message = f"Devfund donation; {coordinator_alias}; {order}; {donation_fraction}; {reason};"
+        routing_budget_sats = int(max(5, devfund_sats * 0.000_1))
+        timeout = 280
+        sign = False
+
+        valid, keysend_payment = LNNode.send_keysend(
+            target_pubkey, message, devfund_sats, routing_budget_sats, timeout, sign
+        )
+        if not valid:
+            return False
+
+        lnpayment = LNPayment.objects.create(
+            concept=LNPayment.Concepts.DEVDONAT,
+            type=LNPayment.Types.KEYS,
+            sender=User.objects.get(
+                username=config("ESCROW_USERNAME", cast=str, default="admin")
+            ),
+            invoice=f"Target pubkey: {target_pubkey}; At: {keysend_payment['created_at']}",
+            routing_budget_sats=routing_budget_sats,
+            description=message,
+            num_satoshis=devfund_sats,
+            order_donated=order,
+            **keysend_payment,
+        )
+
+        order.log(
+            f"Development fund donation LNPayment({lnpayment.payment_hash},{str(lnpayment)}) "
+            f"was made via keysend for {devfund_sats} Sats"
+        )
+
+    return True
+
+
+@shared_task(name="send_community_donation", time_limit=120, soft_time_limit=115)
+def send_community_donation(order_id, num_satoshis, reason):
+    """Pays a community management Lightning Address via LNURL-pay.
+
+    Controlled by two ENV variables:
+      DEVFUND_COMMUNITY         - fraction of the devfund donation (0-1, default 0)
+      DEVFUND_COMMUNITY_ADDRESS - Lightning Address (user@domain)
+
+    Any failure (bad address, LNURL error, amount out of bounds, invoice mismatch,
+    payment failure) is logged to the order and the task returns False without
+    raising, so it never affects the devfund payment.
+    """
+    import datetime
+
+    from decouple import config
+    from django.contrib.auth.models import User
+    from django.utils import timezone
+
+    from api.lightning.node import LNNode
+    from api.models import LNPayment, Order
+    from api.utils import resolve_lightning_address
+
+    community_address = config(
+        "DEVFUND_COMMUNITY_ADDRESS", cast=str, default=""
+    ).strip()
+    coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")
+
+    order = Order.objects.get(id=order_id)
+
+    if not community_address:
+        order.log("Community donation skipped: DEVFUND_COMMUNITY_ADDRESS is not set")
+        return False
+
+    if num_satoshis <= 0:
+        order.log(
+            f"Community donation skipped: amount is {num_satoshis} Sats (non-positive)"
+        )
+        return False
+
+    comment = f"Community donation; {coordinator_alias}; {order}; {reason};"
+
+    # Resolve the Lightning Address to a bolt11 invoice
+    try:
+        invoice = resolve_lightning_address(community_address, num_satoshis, comment)
+    except ValueError as e:
+        order.log(f"Community donation failed (LNURL resolution error): {e}")
+        return False
+
+    # Decode to get payment_hash and expiry for the DB record
+    try:
+        decoded = LNNode.decode_payreq(invoice)
+        payment_hash = decoded.payment_hash
+        expires_at = timezone.now() + datetime.timedelta(seconds=int(decoded.expiry))
+    except Exception as e:
+        order.log(f"Community donation failed (invoice decode error): {e}")
+        return False
+
+    escrow_user = User.objects.get(
+        username=config("ESCROW_USERNAME", cast=str, default="admin")
+    )
+    routing_budget_sats = int(
+        max(
+            num_satoshis
+            * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT", default=0.001)),
+            float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD", default=2)),
+        )
     )
 
-    order.log(
-        f"Development fund donation LNPayment({lnpayment.payment_hash},{str(lnpayment)}) was made via keysend for {num_satoshis} Sats"
+    lnpayment = LNPayment.objects.create(
+        concept=LNPayment.Concepts.COMDONAT,
+        type=LNPayment.Types.NORM,
+        status=LNPayment.Status.VALIDI,
+        sender=escrow_user,
+        invoice=invoice,
+        payment_hash=payment_hash,
+        routing_budget_sats=routing_budget_sats,
+        description=comment,
+        num_satoshis=num_satoshis,
+        order_donated=order,
+        created_at=timezone.now(),
+        expires_at=expires_at,
     )
-    return True
+
+    success, failure_reason = LNNode.pay_invoice(lnpayment)
+
+    if success:
+        order.log(
+            f"Community donation LNPayment({lnpayment.payment_hash},{str(lnpayment)}) "
+            f"paid to {community_address} for {num_satoshis} Sats"
+        )
+        return True
+    else:
+        order.log(
+            f"Community donation LNPayment({lnpayment.payment_hash},{str(lnpayment)}) "
+            f"failed: {failure_reason}"
+        )
+        return False
 
 
 @shared_task(name="payments_cleansing", time_limit=600)
