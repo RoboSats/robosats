@@ -1,8 +1,11 @@
 import { sha256 } from 'js-sha256';
 import { sha256 as sha256Hash, sha512 } from '@noble/hashes/sha2.js';
-import { Robot, Order, type Federation } from '.';
+import Robot from './Robot.model';
+import Order from './Order.model';
+import type Federation from './Federation.model';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
-import { hexToBase91, validateTokenEntropy } from '../utils';
+import hexToBase91 from '../utils/hexToBase91';
+import { validateTokenEntropy } from '../utils/token';
 import { getPublicKey } from 'nostr-tools';
 
 class Slot {
@@ -92,6 +95,7 @@ class Slot {
       }),
     );
     this.loading = Object.values(this.robots).some((r) => r.loading);
+    this.onSlotUpdate();
   };
 
   updateSlotFromRobot = (robot: Robot | null): void => {
@@ -140,9 +144,13 @@ class Slot {
   // Orders
   fetchActiveOrder = async (federation: Federation): Promise<void> => {
     if (this.activeOrder) {
-      await this.activeOrder.fecth(federation, this);
+      const order = this.activeOrder;
+      const previousStatus = order.status;
+      await order.fecth(federation, this);
+      if (this.activeOrder !== order) return;
+      this.updateSlotFromOrder(order);
+      if (this.activeOrder && order.status !== previousStatus) this.onSlotUpdate();
     }
-    this.updateSlotFromOrder(this.activeOrder);
   };
 
   takeOrder = async (federation: Federation, order: Order, takeAmount: string): Promise<Order> => {
@@ -154,9 +162,11 @@ class Slot {
   makeOrder = async (federation: Federation, attributes: object): Promise<Order> => {
     const order = new Order(attributes);
     await order.make(federation, this);
-    if (!order?.bad_request) {
-      this.lastOrder = this.activeOrder;
-      this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
+    if (order.id > 0 && !order.bad_request) {
+      if (this.activeOrder) {
+        this.lastOrder = this.activeOrder;
+        this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
+      }
       this.activeOrder = order;
       this.onSlotUpdate();
     }
@@ -178,7 +188,10 @@ class Slot {
         const changed =
           this.activeOrder?.status !== previousStatus ||
           this.activeOrder?.bad_request !== previousBadRequest;
-        if (this.activeOrder?.bad_request) {
+        if (
+          this.activeOrder?.bad_request ||
+          [4, 5, 12, 14, 17, 18].includes(this.activeOrder.status)
+        ) {
           this.lastOrder = this.activeOrder;
           this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
           this.activeOrder = null;
@@ -186,8 +199,16 @@ class Slot {
         if (changed || this.activeOrder === null) {
           this.onSlotUpdate();
         }
-      } else if (newOrder?.is_participant && this.lastOrder?.id !== newOrder.id) {
-        this.activeOrder = newOrder;
+      } else if (
+        newOrder?.is_participant &&
+        (this.lastOrder?.id !== newOrder.id || this.lastOrder?.shortAlias !== newOrder.shortAlias)
+      ) {
+        if ([4, 5, 12, 14, 17, 18].includes(newOrder.status)) {
+          this.lastOrder = newOrder;
+          this.lastOrderStatusKnown = this.hasOrderDetails(newOrder);
+        } else {
+          this.activeOrder = newOrder;
+        }
         this.onSlotUpdate();
       }
     }
@@ -208,7 +229,11 @@ class Slot {
   };
 
   ensureLastOrderStatus = async (federation: Federation): Promise<void> => {
-    if (!this.lastOrder || this.lastOrderStatusKnown || this.activeOrder?.id === this.lastOrder.id) {
+    if (
+      !this.lastOrder ||
+      this.lastOrderStatusKnown ||
+      this.activeOrder?.id === this.lastOrder.id
+    ) {
       return;
     }
 
@@ -239,6 +264,8 @@ class Slot {
   };
 
   isReusable = (): boolean => {
+    if (this.activeOrder) return false;
+
     if (!this.lastOrder) {
       return true;
     }

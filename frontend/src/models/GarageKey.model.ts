@@ -7,8 +7,11 @@ import {
   derivedKeyToToken,
   getNostrSecKeyFromGarageKey,
   getNostrPubKeyFromGarageKey,
-} from '../utils';
+} from '../utils/garageKey';
 import { systemClient } from '../services/System';
+import { getPublicKey } from 'nostr-tools';
+import type RoboPool from '../services/RoboPool';
+import { getLegacyNostrSecKeyFromGarageKey, isValidAccountIndex } from '../utils/garageKey';
 
 const STORAGE_KEY = 'garage_key';
 const STORAGE_ACCOUNT_KEY = 'garage_key_account';
@@ -28,7 +31,7 @@ class GarageKey {
   private onUpdate: () => void;
 
   constructor(encodedKeyOrGenerate: string | 'generate', onUpdate?: () => void) {
-    this.onUpdate = onUpdate ?? (() => { });
+    this.onUpdate = onUpdate ?? (() => {});
 
     if (encodedKeyOrGenerate === 'generate') {
       this.encodedKey = generateGarageKey();
@@ -57,9 +60,7 @@ class GarageKey {
   };
 
   incrementAccount = (): number => {
-    this.currentAccountIndex += 1;
-    this.save();
-    this.onUpdate();
+    this.setAccountIndex(this.currentAccountIndex + 1);
     return this.currentAccountIndex;
   };
 
@@ -73,8 +74,8 @@ class GarageKey {
   };
 
   setAccountIndex = (index: number): void => {
-    if (index < 0 || !Number.isInteger(index)) {
-      throw new Error('Account index must be a non-negative integer');
+    if (!isValidAccountIndex(index)) {
+      throw new Error('Account index must be an integer between 0 and 2147483647');
     }
     this.currentAccountIndex = index;
     this.save();
@@ -83,6 +84,38 @@ class GarageKey {
 
   getNostrSecKey = (): Uint8Array => {
     return this.nostrSecKey;
+  };
+
+  recoverAccount = async (roboPool: RoboPool): Promise<void> => {
+    let latestAccountIndex = this.currentAccountIndex;
+    let latestCreatedAt = -1;
+
+    await Promise.all(
+      [this.nostrSecKey, getLegacyNostrSecKeyFromGarageKey(this.plainKey)].map(
+        (secret) =>
+          new Promise<void>((resolve) => {
+            roboPool.subscribeAccountRecovery(
+              getPublicKey(secret),
+              secret,
+              (accountIndex, createdAt) => {
+                if (!isValidAccountIndex(accountIndex)) return;
+                if (
+                  createdAt > latestCreatedAt ||
+                  (createdAt === latestCreatedAt && accountIndex > latestAccountIndex)
+                ) {
+                  latestCreatedAt = createdAt;
+                  latestAccountIndex = accountIndex;
+                }
+              },
+              resolve,
+            );
+          }),
+      ),
+    );
+
+    if (latestAccountIndex !== this.currentAccountIndex) {
+      this.setAccountIndex(latestAccountIndex);
+    }
   };
 
   getNostrPubKey = (): string => {
@@ -115,6 +148,7 @@ class GarageKey {
       if (!data.encodedKey) return null;
 
       const garageKey = new GarageKey(data.encodedKey, onUpdate);
+      if (!isValidAccountIndex(data.currentAccountIndex ?? 0)) return null;
       garageKey.currentAccountIndex = data.currentAccountIndex ?? 0;
       return garageKey;
     } catch (error) {
