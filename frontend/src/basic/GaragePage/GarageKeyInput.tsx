@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { IconButton, TextField, Tooltip, InputAdornment, CircularProgress } from '@mui/material';
 import { ContentCopy, Check } from '@mui/icons-material';
 import { validateGarageKey } from '../../utils';
+import { systemClient } from '../../services/System';
 
 interface GarageKeyInputProps {
   garageKey: string;
@@ -44,7 +45,7 @@ const GarageKeyInput = ({
 
   const handleCopy = (): void => {
     if (garageKey) {
-      void navigator.clipboard.writeText(garageKey);
+      systemClient.copyToClipboard(garageKey);
       setShowCopied(true);
       setTimeout(() => {
         setShowCopied(false);

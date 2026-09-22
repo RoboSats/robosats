@@ -29,10 +29,10 @@ export interface UseGarageStoreType {
 export const initialGarageContext: UseGarageStoreType = {
   garage: new Garage(),
   maker: defaultMaker,
-  setMaker: () => { },
-  setDelay: () => { },
-  fetchSlotActiveOrder: () => { },
-  recoverAccountFromRelays: async () => { },
+  setMaker: () => {},
+  setDelay: () => {},
+  fetchSlotActiveOrder: () => {},
+  recoverAccountFromRelays: async () => {},
 };
 
 const defaultDelay = 5000;
@@ -81,40 +81,8 @@ export const GarageContextProvider = ({
     setSlotUpdatedAt(new Date().toISOString());
   };
 
-  const recoverAccountFromRelays = (): Promise<void> => {
-    return new Promise((resolve) => {
-      const garageKey = garage.getGarageKey();
-      if (!garageKey || !federation.roboPool) {
-        resolve();
-        return;
-      }
-
-      let latestAccountIndex = garageKey.currentAccountIndex;
-      let latestCreatedAt = -1;
-
-      federation.roboPool.subscribeAccountRecovery(
-        garageKey.nostrPubKey,
-        garageKey.nostrSecKey,
-        (accountIndex, createdAt) => {
-          if (createdAt > latestCreatedAt) {
-            latestCreatedAt = createdAt;
-            latestAccountIndex = accountIndex;
-            return;
-          }
-
-          // Same-second writes are common; use index as deterministic tie-breaker.
-          if (createdAt === latestCreatedAt && accountIndex > latestAccountIndex) {
-            latestAccountIndex = accountIndex;
-          }
-        },
-        () => {
-          if (latestAccountIndex !== garageKey.currentAccountIndex) {
-            garageKey.setAccountIndex(latestAccountIndex);
-          }
-          resolve();
-        },
-      );
-    });
+  const recoverAccountFromRelays = async (): Promise<void> => {
+    await garage.getGarageKey()?.recoverAccount(federation.roboPool);
   };
 
   useEffect(() => {
@@ -126,12 +94,14 @@ export const GarageContextProvider = ({
     fetchSlotActiveOrder();
 
     // Wait for garage mode, key and slots before any auto-switch evaluation.
-    void Promise.all([garage.loadGarageKey(), garage.loadMode(), garage.waitForSlotsLoaded()]).then(() => {
-      if (garage.getMode() === 'garageKey' && garage.getGarageKey()) {
-        garage.resetManualNavigation();
-        void garage.ensureReusableSlot(federation, { source: 'auto' });
-      }
-    });
+    void Promise.all([garage.loadGarageKey(), garage.loadMode(), garage.waitForSlotsLoaded()]).then(
+      () => {
+        if (garage.getMode() === 'garageKey' && garage.getGarageKey()) {
+          garage.resetManualNavigation();
+          void garage.ensureReusableSlot(federation, { source: 'auto' });
+        }
+      },
+    );
 
     return () => {
       clearTimeout(timer);
@@ -155,7 +125,6 @@ export const GarageContextProvider = ({
     }
   }, [settings.network, settings.useProxy, torStatus, page]);
 
-
   const fetchSlotActiveOrder: () => void = () => {
     const slot = garage?.getSlot();
     if (slot?.activeOrder?.id) {
@@ -166,12 +135,16 @@ export const GarageContextProvider = ({
       if (pageRef.current !== 'order') delay = delay * 5;
       if (+new Date() - lastOrderCheckAtRef.current >= delay) {
         void slot.fetchActiveOrder(federation).finally(() => {
-          const order = slot.activeOrder;
+          const order = slot.activeOrder ?? slot.lastOrder;
           if (order && [14, 17, 18].includes(order.status)) {
             garage.resetManualNavigation();
           }
 
-          if (pageRef.current === 'garage' && garage.getMode() === 'garageKey' && garage.getGarageKey()) {
+          if (
+            pageRef.current === 'garage' &&
+            garage.getMode() === 'garageKey' &&
+            garage.getGarageKey()
+          ) {
             void garage.ensureReusableSlot(federation, { source: 'auto' });
           }
           lastOrderCheckAtRef.current = +new Date();

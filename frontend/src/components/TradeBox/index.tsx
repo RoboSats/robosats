@@ -178,8 +178,8 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
         password: password && password !== '' ? password : undefined,
       };
 
-      void slot
-        .makeOrder(federation, orderAttributes)
+      void garage
+        .makeOrderWithRecovery(federation, orderAttributes)
         .then((order: Order) => {
           if (order?.id) {
             setBadRequest(null);

@@ -256,14 +256,14 @@ const MakerForm = ({
     if (!disableRequest && maker.coordinator && slot) {
       setSubmittingRequest(true);
 
-       if (garage.garageKey && !slot.isReusable()) {
-         setBadRequest(
-           'This robot has completed a trade. Please navigate to a new account to create orders.',
-         );
-         setSubmittingRequest(false);
-         setOpenDialogs(false);
-         return;
-       }
+      if (garage.garageKey && !slot.isReusable()) {
+        setBadRequest(
+          'This robot has completed a trade. Please navigate to a new account to create orders.',
+        );
+        setSubmittingRequest(false);
+        setOpenDialogs(false);
+        return;
+      }
 
       const orderAttributes = {
         type: fav.type === 0 ? 1 : 0,
@@ -286,8 +286,8 @@ const MakerForm = ({
         description: maker.description ? maker.description : null,
       };
 
-      void slot
-        .makeOrder(federation, orderAttributes)
+      void garage
+        .makeOrderWithRecovery(federation, orderAttributes)
         .then((order: Order) => {
           if (order.id) {
             navigateToPage(`order/${order.shortAlias}/${order.id}`, navigate);
@@ -442,7 +442,15 @@ const MakerForm = ({
       maker.paymentMethods.length === 0 ||
       maker.badDescription
     );
-  }, [maker, maker.premium, amountLimits, federationUpdatedAt, fav.type, makerHasAmountRange, isLegacyMode]);
+  }, [
+    maker,
+    maker.premium,
+    amountLimits,
+    federationUpdatedAt,
+    fav.type,
+    makerHasAmountRange,
+    isLegacyMode,
+  ]);
 
   const clearMaker = function (): void {
     setFav((prev) => {

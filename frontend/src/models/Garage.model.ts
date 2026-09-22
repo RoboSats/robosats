@@ -1,7 +1,13 @@
-import { type Federation, Order } from '.';
+import type Federation from './Federation.model';
+import Order from './Order.model';
 import { genKey } from '../pgp';
 import { systemClient } from '../services/System';
-import { saveAsJson, createAccountRecoveryEvent, publishAccountRecoveryEvent } from '../utils';
+import saveAsJson from '../utils/saveFile';
+import {
+  createAccountRecoveryEvent,
+  publishAccountRecoveryEvent,
+  saveAccountRecovery,
+} from '../utils/accountRecovery';
 import Slot from './Slot.model';
 import GarageKey from './GarageKey.model';
 
@@ -53,15 +59,15 @@ class Garage {
     this.slots = {};
     this.currentSlot = null;
     this.garageKey = null;
-    this.mode = 'legacy'; // default mode
+    this.mode = 'legacy'; // Keep the transition default requested in the PR review.
     this.manualNavigationActive = false;
 
     this.hooks = {
       onSlotUpdate: [],
     };
 
-    this.loadMode();
     this.slotsLoaded = this.loadSlots();
+    void this.loadMode();
   }
 
   slots: Record<string, Slot>;
@@ -209,6 +215,7 @@ class Garage {
       return { switched: false, fromIndex: currentIndex, toIndex: currentIndex, reason: 'no_slot' };
     }
 
+    currentSlot.updateSlotFromOrder(currentSlot.activeOrder);
     if (currentSlot.activeOrder?.id) {
       return {
         switched: false,
@@ -316,8 +323,11 @@ class Garage {
 
   loadMode = async (): Promise<void> => {
     const savedMode = await systemClient.getItem(STORAGE_MODE_KEY);
+    // triggerHook persists slots: never save an incomplete garage during startup.
+    await this.waitForSlotsLoaded();
     if (savedMode === 'legacy' || savedMode === 'garageKey') {
       this.mode = savedMode;
+      this.triggerHook('onSlotUpdate');
     }
   };
 
@@ -343,6 +353,7 @@ class Garage {
   };
 
   loadGarageKey = async (): Promise<void> => {
+    await this.waitForSlotsLoaded();
     this.garageKey = await GarageKey.load(() => {
       this.triggerHook('onSlotUpdate');
     });
@@ -389,7 +400,10 @@ class Garage {
     this.setCurrentSlot(token);
   };
 
-  nextAccount = async (federation: Federation, source: EnsureReusableSource = 'manual'): Promise<void> => {
+  nextAccount = async (
+    federation: Federation,
+    source: EnsureReusableSource = 'manual',
+  ): Promise<void> => {
     if (!this.garageKey) {
       throw new Error('No garage key set');
     }
@@ -444,10 +458,7 @@ class Garage {
     const indexToPublish = accountIndex ?? this.garageKey.currentAccountIndex;
 
     try {
-      const event = createAccountRecoveryEvent(
-        this.garageKey.nostrSecKey,
-        indexToPublish,
-      );
+      const event = createAccountRecoveryEvent(this.garageKey.nostrSecKey, indexToPublish);
       publishAccountRecoveryEvent(event, federation.roboPool);
       console.log(`Published account recovery event for account ${indexToPublish}`);
     } catch (error) {
@@ -455,20 +466,25 @@ class Garage {
     }
   };
 
-  makeOrderWithRecovery = async (
-    federation: Federation,
-    attributes: object,
-  ): Promise<Order | null> => {
+  makeOrderWithRecovery = async (federation: Federation, attributes: object): Promise<Order> => {
     const slot = this.getSlot();
     if (!slot) {
-      console.error('No slot available');
-      return null;
+      throw new Error('No slot available');
     }
 
+    const garageKey =
+      this.mode === 'garageKey' && this.garageKey?.getCurrentRobotToken() === slot.token
+        ? this.garageKey
+        : null;
+    const accountIndex = garageKey?.currentAccountIndex ?? 0;
     const order = await slot.makeOrder(federation, attributes);
 
-    if (!order?.bad_request && this.garageKey) {
-      this.publishAccountRecovery(federation);
+    if (order.id > 0 && !order.bad_request && garageKey) {
+      try {
+        saveAccountRecovery(garageKey.nostrSecKey, accountIndex, federation.roboPool);
+      } catch (error) {
+        console.error('Failed to publish account recovery event:', error);
+      }
     }
 
     return order;
@@ -499,8 +515,7 @@ class Garage {
       }
     }
 
-    console.warn(`No unused account found in range ${startIndex}-${startIndex + maxSearch}`);
-    return startIndex + maxSearch;
+    throw new Error(`No unused account found in range ${startIndex}-${startIndex + maxSearch - 1}`);
   };
 
   isCurrentSlotUsed = (): boolean => {

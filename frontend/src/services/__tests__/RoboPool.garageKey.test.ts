@@ -3,12 +3,16 @@ import type { Coordinator, Settings } from '../../models';
 import { createAccountRecoveryEvent } from '../../utils/accountRecovery';
 import RoboPool from '../RoboPool';
 import { websocketClient, WebsocketState, type WebsocketConnection } from '../Websocket';
+import GarageKey from '../../models/GarageKey.model';
+import { getLegacyNostrSecKeyFromGarageKey } from '../../utils/garageKey';
+
+jest.mock('../System', () => ({ systemClient: { setItem: jest.fn() } }));
 
 const secret = new Uint8Array(32).fill(1);
 const pubkey = getPublicKey(secret);
 
 function relay() {
-  let onMessage: (message: object) => void = () => { };
+  let onMessage: (message: object) => void = () => {};
   const connection: WebsocketConnection = {
     send: jest.fn(),
     close: jest.fn(),
@@ -16,8 +20,8 @@ function relay() {
     onMessage: (callback) => {
       onMessage = callback;
     },
-    onError: () => { },
-    onClose: () => { },
+    onError: () => {},
+    onClose: () => {},
   };
   return {
     connection,
@@ -37,7 +41,7 @@ describe('Garage Key relay subscriptions', () => {
 
   beforeEach(async () => {
     jest.useFakeTimers();
-    jest.spyOn(console, 'log').mockImplementation(() => { });
+    jest.spyOn(console, 'log').mockImplementation(() => {});
     first = relay();
     second = relay();
     jest
@@ -61,6 +65,59 @@ describe('Garage Key relay subscriptions', () => {
     await Promise.resolve();
     jest.advanceTimersByTime(500);
   }
+
+  it.each(['legacy', 'current'])(
+    'recovers %s backups with the corrected derivation',
+    async (source) => {
+      const garageKey = new GarageKey(
+        'robo180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsg9czpj',
+      );
+      const legacySecret = getLegacyNostrSecKeyFromGarageKey(garageKey.plainKey);
+      const selectedSecret = source === 'legacy' ? legacySecret : garageKey.nostrSecKey;
+      const recovery = garageKey.recoverAccount(pool);
+      const requests = first.requests();
+      const request = requests.find(
+        ([, , filter]) => filter['#p'][0] === getPublicKey(selectedSecret),
+      );
+      first.receive('EVENT', request[1], createAccountRecoveryEvent(selectedSecret, 18));
+      requests.forEach(([, id]) => first.receive('EOSE', id));
+      await recovery;
+      expect(garageKey.currentAccountIndex).toBe(18);
+    },
+  );
+
+  it('chooses the latest inner timestamp across both derivations with an index tie-breaker', async () => {
+    const garageKey = new GarageKey(
+      'robo180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsg9czpj',
+    );
+    const legacySecret = getLegacyNostrSecKeyFromGarageKey(garageKey.plainKey);
+    const recovery = garageKey.recoverAccount(pool);
+    const requests = first.requests();
+    for (const [secret, account, createdAt] of [
+      [legacySecret, 30, 100],
+      [garageKey.nostrSecKey, 7, 101],
+      [legacySecret, 8, 101],
+    ] as const) {
+      const request = requests.find(([, , filter]) => filter['#p'][0] === getPublicKey(secret));
+      const event = nip59.wrapEvent(
+        {
+          kind: 30078,
+          created_at: createdAt,
+          content: '',
+          tags: [
+            ['d', 'robosats-garage-account'],
+            ['account', String(account)],
+          ],
+        },
+        secret,
+        getPublicKey(secret),
+      );
+      first.receive('EVENT', request[1], event);
+    }
+    requests.forEach(([, id]) => first.receive('EOSE', id));
+    await recovery;
+    expect(garageKey.currentAccountIndex).toBe(8);
+  });
 
   it('accepts self-authored recovery and rejects a valid gift wrap from another author', () => {
     const found = jest.fn();

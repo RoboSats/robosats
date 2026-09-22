@@ -77,8 +77,8 @@ export function deriveRobotKey(plainKey: Uint8Array, accountIndex: number): Uint
     throw new Error(`Invalid key length: expected ${KEY_LENGTH} bytes`);
   }
 
-  if (accountIndex < 0 || !Number.isInteger(accountIndex)) {
-    throw new Error('Account index must be a non-negative integer');
+  if (!isValidAccountIndex(accountIndex)) {
+    throw new Error('Account index must be an integer between 0 and 2147483647');
   }
 
   const seed = sha512(plainKey);
@@ -118,8 +118,17 @@ export function derivedKeyToToken(derivedKey: Uint8Array): string {
 }
 
 export function getNostrSecKeyFromGarageKey(plainKey: Uint8Array): Uint8Array {
+  return sha256(sha512(plainKey));
+}
+
+// Read compatibility for recovery events published before the raw-byte derivation fix.
+export function getLegacyNostrSecKeyFromGarageKey(plainKey: Uint8Array): Uint8Array {
   const keyHex = bytesToHex(plainKey);
   return sha256(sha512(new TextEncoder().encode(keyHex)));
+}
+
+export function isValidAccountIndex(index: number): boolean {
+  return Number.isInteger(index) && index >= 0 && index < 0x80000000;
 }
 
 export function getNostrPubKeyFromGarageKey(plainKey: Uint8Array): string {
