@@ -61,10 +61,17 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 
 - When creating/editing AGENTS.md files, follow .claude/references/agents-md.md for good practices.
 - Check /development docs for unclear business rules or entities relationships.
+- Before upgrading any library or infrastructure component, consult
+  `development/blocked-upgrades.md` — it lists every pinned version with its blocker.
+  See `development/AGENTS.md` for an overview of all developer reference docs.
 
 ## Gotchas
 
 - Modifications to api endpoint paths or coordinators requires updating /nodeapp
+- **Blocked / pinned upgrades**: several frontend (Babel, OpenPGP.js, ESLint, TypeScript)
+  and backend (Django, CLN) dependencies are pinned due to known breakage or missing
+  compatibility. Always read `development/blocked-upgrades.md` before bumping any
+  dependency version.
 - **CLN + holdinvoice version constraint**: `holdinvoice v4.0.0` (the committed binary in
   `docker/cln/plugins/holdinvoice`) only supports **CLN up to v25.09.x**. Upgrading CLN
   beyond v25.09.x will cause holdinvoice to fail silently — hold invoices never reach

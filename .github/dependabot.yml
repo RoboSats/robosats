@@ -16,6 +16,12 @@ updates:
       python-major:
         update-types: ["major"]
         patterns: ["django"]
+    ignore:
+      # Django 6.x blocked: django-cors-headers, django-celery-results and
+      # drf-spectacular do not declare Django 6.1 support yet.
+      # See development/blocked-upgrades.md
+      - dependency-name: "django"
+        update-types: ["version-update:semver-major"]
 
   # Frontend (frontend/package.json)
   - package-ecosystem: "npm"
@@ -38,6 +44,27 @@ updates:
         patterns: ["i18next*", "react-i18next"]
       frontend-mui:
         patterns: ["@mui/*", "@emotion/*"]
+    ignore:
+      # Blocked major upgrades — see development/blocked-upgrades.md
+      # OpenPGP v6 renamed curve25519 → curve25519Legacy, breaking robot key generation.
+      - dependency-name: "openpgp"
+        update-types: ["version-update:semver-major"]
+      # Babel 8 breaks the build; config incompatibilities not yet resolved.
+      - dependency-name: "@babel/*"
+        update-types: ["version-update:semver-major"]
+      # ESLint 10 config/plugin work not yet completed.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/*"
+        update-types: ["version-update:semver-major"]
+      # eslint-plugin-n ^18 and eslint-plugin-react-hooks ^7 require ESLint 10.
+      - dependency-name: "eslint-plugin-n"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-plugin-react-hooks"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7 is chained behind the ESLint 10 work landing first.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # Electron desktop app (desktopApp/package.json)
   - package-ecosystem: "npm"

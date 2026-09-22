@@ -182,6 +182,119 @@ def get_devfund_pubkey() -> str:
     return config("DEVFUND_PUBKEY", cast=str, default="")
 
 
+lnurlp_metadata_cache = {}
+
+
+@ring.dict(lnurlp_metadata_cache, expire=43200)  # keeps in cache for 12 hours
+def _fetch_lnurlp_metadata(lnurlp_url: str) -> dict:
+    """
+    GETs and returns the raw LNURL-pay metadata dict for *lnurlp_url*.
+    Cached per URL for 12 hours so repeated donations to the same Lightning
+    Address never hit the remote server more than once every 12 hours.
+    Raises ValueError on any network or HTTP error.
+    """
+    session = get_session()
+    try:
+        resp = session.get(lnurlp_url, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        raise ValueError(f"Failed to fetch LNURL-pay metadata from {lnurlp_url}: {e}")
+
+
+def resolve_lightning_address(
+    address: str, num_satoshis: int, comment: str = ""
+) -> str:
+    """
+    Resolves a Lightning Address (user@domain) via LNURL-pay and returns a
+    BOLT11 invoice for exactly *num_satoshis* sats.
+
+    Raises ValueError with a descriptive message on any validation failure so
+    the caller can log it and skip the payment without crashing.
+
+    Steps:
+      1. Validate address format  (user@domain)
+      2. GET https://{domain}/.well-known/lnurlp/{user}  →  LNURL-pay metadata
+         (cached per address for 12 hours via _fetch_lnurlp_metadata)
+      3. Validate tag, minSendable / maxSendable bounds
+      4. GET {callback}?amount={msat}[&comment=…]  →  bolt11 invoice
+      5. Decode & verify the invoice amount matches num_satoshis exactly
+    """
+    from api.lightning.node import LNNode
+
+    # --- 1. format check ---
+    if "@" not in address or address.count("@") != 1:
+        raise ValueError(f"Invalid Lightning Address format: {address!r}")
+    user, domain = address.split("@", 1)
+    if not user or not domain or "." not in domain:
+        raise ValueError(f"Invalid Lightning Address format: {address!r}")
+
+    # --- 2. fetch LNURL-pay metadata (cached 12 h) ---
+    lnurlp_url = f"https://{domain}/.well-known/lnurlp/{user}"
+    metadata = _fetch_lnurlp_metadata(lnurlp_url)
+
+    # --- 3. validate metadata ---
+    if metadata.get("tag") != "payRequest":
+        raise ValueError(
+            f"Unexpected LNURL-pay tag {metadata.get('tag')!r} for {address}"
+        )
+    callback = metadata.get("callback")
+    if not callback:
+        raise ValueError(f"No callback in LNURL-pay metadata for {address}")
+
+    min_sendable_msat = metadata.get("minSendable", 0)
+    max_sendable_msat = metadata.get("maxSendable", 0)
+    amount_msat = num_satoshis * 1000
+
+    if amount_msat < min_sendable_msat:
+        raise ValueError(
+            f"Amount {num_satoshis} sats ({amount_msat} msat) is below "
+            f"minSendable {min_sendable_msat} msat for {address}"
+        )
+    if max_sendable_msat > 0 and amount_msat > max_sendable_msat:
+        raise ValueError(
+            f"Amount {num_satoshis} sats ({amount_msat} msat) exceeds "
+            f"maxSendable {max_sendable_msat} msat for {address}"
+        )
+
+    # --- 4. request invoice ---
+    params: dict = {"amount": amount_msat}
+    comment_allowed = metadata.get("commentAllowed", 0)
+    if comment and comment_allowed and len(comment) <= int(comment_allowed):
+        params["comment"] = comment
+
+    session = get_session()
+    try:
+        inv_resp = session.get(callback, params=params, timeout=10)
+        inv_resp.raise_for_status()
+        inv_data = inv_resp.json()
+    except Exception as e:
+        raise ValueError(
+            f"Failed to fetch invoice from LNURL-pay callback for {address}: {e}"
+        )
+
+    invoice = inv_data.get("pr")
+    if not invoice:
+        raise ValueError(
+            f"No invoice (pr) in LNURL-pay callback response for {address}"
+        )
+
+    # --- 5. verify invoice amount ---
+    try:
+        decoded = LNNode.decode_payreq(invoice)
+        invoice_sats = int(decoded.num_satoshis)
+    except Exception as e:
+        raise ValueError(f"Failed to decode invoice from {address}: {e}")
+
+    if invoice_sats != num_satoshis:
+        raise ValueError(
+            f"Invoice amount mismatch for {address}: "
+            f"expected {num_satoshis} sats, got {invoice_sats} sats"
+        )
+
+    return invoice
+
+
 market_cache = {}
 
 
