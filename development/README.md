@@ -17,6 +17,8 @@ We always try to keep a high level documentation of all involved workflows in co
 
 For the runtime federation discovery mechanism (how coordinators join/leave without an app release), see [federation-discovery.md](/development/federation-discovery.md).
 
+For libraries and infrastructure components that are pinned and must not be upgraded without resolving the noted blockers, see [blocked-upgrades.md](/development/blocked-upgrades.md).
+
 ## Start
 
 You can run the whole stack for local development following the [instructions](/development/setup.md)

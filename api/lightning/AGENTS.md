@@ -41,8 +41,16 @@ class-definition time (also import time), reused by every call.
 - `get_info` / `newaddress` — **CLN-only** (no equivalent on LND).
 - `resetmc` — dead/commented-out on LND (not callable); on CLN it's live but always
   `return False` (no-op, comment: no gossip-store equivalent).
-- `wallet_balance()` / `channel_balance()` / `decode_payreq()` — identical shape both
-  vendors, 10s-cached via `@ring.dict`.
+- `wallet_balance()` / `channel_balance()` — identical shape both vendors, 10s-cached via
+  `@ring.dict`.
+- `decode_payreq(invoice)` → **`DecodedPayReq`** (from `api/lightning/decoded.py`).
+  Both vendors normalise their vendor-specific gRPC response into this shared dataclass
+  before returning, so every caller in `api/` is fully vendor-agnostic.
+  Fields: `num_satoshis` (int, sats), `payment_hash` (hex str), `created_at` (unix int),
+  `expiry` (int, seconds), `description` (str), `route_hints` (list of `list[HopHint]`).
+  CLN maps `amount_msat.msat // 1000 → num_satoshis` and `payment_hash.hex()`.
+  LND maps `num_satoshis` and `timestamp → created_at` directly.
+  Never access raw vendor protobuf fields on the return value — always use `DecodedPayReq`.
 
 ## `is_same_status` and the CANCEL/RETNED problem
 LND's invoice state has no distinct "returned" state — a genuinely cancelled invoice and

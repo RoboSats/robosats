@@ -136,7 +136,13 @@ they mutate — see `api/AGENTS.md` for the endpoint/state-machine context)
   `- (payout_tx.sent_satoshis + payout_tx.mining_fee_sats)`. Fires
   `send_devfund_donation.delay(order.id, new_proceeds, reason)`.
 - `send_devfund_donation` (`tasks.py`): donation fraction is env `DEVFUND`, clamped
-  `min(1.0, max(0.0, ...))`, default `0.2`; sent via `LNNode.send_keysend`.
+  `min(1.0, max(0.0, ...))`, default `0.2`; sent via `LNNode.send_keysend`.  When both
+  `DEVFUND_COMMUNITY` (fraction 0–1, default `0`) and `DEVFUND_COMMUNITY_ADDRESS`
+  (Lightning Address `user@domain`) are configured, `int(total_donation × DEVFUND_COMMUNITY)`
+  sats are split off and dispatched as a parallel `send_community_donation` Celery task
+  (LNURL-pay → BOLT11 → `LNNode.pay_invoice`; concept `COMDONAT = 6`). The remainder
+  goes to the devfund keysend unchanged. Any community payment failure is logged to the
+  order and swallowed — it does not affect the devfund keysend.
 - `add_slashed_rewards(order, slashed_bond, staked_bond)`: splits the slashed bond by env
   `SLASHED_BOND_REWARD_SPLIT` (default `0.5`) — reward fraction credits the waiting robot's
   `Robot.earned_rewards`, remainder credits `order.proceeds` (also donates). Range-order
