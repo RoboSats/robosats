@@ -1,12 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Box,
-  IconButton,
-  Typography,
-  Tooltip,
-  CircularProgress,
-} from '@mui/material';
+import { Box, IconButton, Typography, Tooltip, CircularProgress } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 interface AccountNavigatorProps {
@@ -66,11 +60,7 @@ const AccountNavigator = ({
 
       <Tooltip title={t('Next account')} placement='top'>
         <span>
-          <IconButton
-            onClick={onNext}
-            disabled={disabled || loading}
-            size='small'
-          >
+          <IconButton onClick={onNext} disabled={disabled || loading} size='small'>
             <ChevronRight />
           </IconButton>
         </span>
