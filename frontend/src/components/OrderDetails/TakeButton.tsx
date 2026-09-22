@@ -236,16 +236,16 @@ const TakeButton = ({
               >
                 <Tooltip title={isLegacyMode ? legacyDisabledTooltip : ''} placement='top'>
                   <span>
-                <LoadingButton
-                  loading={loadingTake}
-                  sx={{ height: '2.8em', width: '100%', whiteSpace: 'nowrap' }}
-                  variant='outlined'
-                  color='primary'
-                  disabled={isLegacyMode}
-                  onClick={onTakeOrderClicked}
-                >
-                  {t('Take Order')}
-                </LoadingButton>
+                    <LoadingButton
+                      loading={loadingTake}
+                      sx={{ height: '2.8em', width: '100%', whiteSpace: 'nowrap' }}
+                      variant='outlined'
+                      color='primary'
+                      disabled={isLegacyMode}
+                      onClick={onTakeOrderClicked}
+                    >
+                      {t('Take Order')}
+                    </LoadingButton>
                   </span>
                 </Tooltip>
               </div>

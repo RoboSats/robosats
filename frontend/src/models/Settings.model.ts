@@ -64,7 +64,6 @@ class BaseSettings {
     systemClient.getItem('settings_use_proxy').then((result) => {
       this.useProxy = client === 'mobile' && result !== 'false';
     });
-
   }
 
   getMode = (): 'light' | 'dark' => {
