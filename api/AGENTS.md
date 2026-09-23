@@ -15,7 +15,7 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `notifications.py` | `Notifications` — multi-channel fan-out |
 | `nostr.py` | `Nostr` — order events (kind 38383) + encrypted DMs |
 | `admin.py` | Django admin, incl. fund-moving dispute-resolution actions |
-| `utils.py` | Price aggregation, base91, PGP clearsign validation |
+| `utils.py` | Price aggregation, base91, PGP clearsign validation, LNURL-pay / Lightning Address resolution (`resolve_lightning_address`) |
 | `mempool.py` | mempool.space fee fetch with hard subprocess deadline (Django-free module for `spawn`) |
 | `errors.py` | `new_error(code)` — decade-coded error responses |
 | `oas_schemas.py` | drf-spectacular overrides, reads live settings at import |

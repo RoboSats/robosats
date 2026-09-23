@@ -1,7 +1,7 @@
 # /api/tests — mocked unit tests (agent reference)
 
-Two files: `test_errors.py`, `test_utils.py`. Plain Django `TestCase` (not DRF
-`APITestCase`) — no HTTP client cycle exercised. Every external call
+Three files: `test_errors.py`, `test_utils.py`, `test_community_donation.py`. Plain Django
+`TestCase` (not DRF `APITestCase`) — no HTTP client cycle exercised. Every external call
 (config lookups, HTTP session, file I/O) is mocked via `unittest.mock`. **Not** a live
 Lightning-node or live-HTTP suite.
 
@@ -15,6 +15,27 @@ Lightning-node or live-HTTP suite.
   exercised here, only the wrapper plumbing. `get_lnd_version`/`get_cln_version` are the one
   exception: gated by env `LNVENDOR` and unmocked, so they can touch a real node/binary if
   that env var happens to be set.
+- `test_community_donation.py`: covers the DevFund community split end-to-end in isolation
+  — `api.utils.resolve_lightning_address` (LNURL-pay flow: metadata fetch, bounds
+  validation, invoice request, amount verification), `api.tasks.send_devfund_donation`
+  (split math: fraction × total → community sats, remainder to keysend), and
+  `api.tasks.send_community_donation` (happy-path + all failure branches: bad address
+  format, LNURL error, routing failure). All failures in the community task must be swallowed
+  — the test asserts the devfund keysend still fires regardless.
+
+  **Patch-at-source convention** (important for adding future tests): all task/util
+  functions use *lazy local imports*, so `unittest.mock.patch` must target the name where
+  it is **defined**, not where it is called from inside a function body. Canonical mapping:
+
+  | Lazy import inside | Patch target |
+  |---|---|
+  | `api.tasks` → `Order`, `LNPayment` | `"api.models.Order"`, `"api.models.LNPayment"` |
+  | `api.tasks` → `User` | `"django.contrib.auth.models.User"` |
+  | `api.tasks` / `api.utils` → `LNNode` | `"api.lightning.node.LNNode"` |
+  | `api.tasks` → `get_devfund_pubkey` | `"api.utils.get_devfund_pubkey"` |
+  | `api.tasks` → `resolve_lightning_address` | `"api.utils.resolve_lightning_address"` |
+  | `api.tasks` → `send_community_donation` (delay) | `"api.tasks.send_community_donation"` |
+  | `api.tasks` / `api.utils` → `config` | `"decouple.config"` (patch at each module) |
 
 ## Contrast with root `/tests`
 `/home/koala/Workspace/robosats/tests/` (outside `api/`) is a **separate**, much heavier
