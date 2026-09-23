@@ -53,7 +53,7 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
 - **Testnet** (`settings_network`) is a first-class surface — toggling it changes which coordinator endpoints are used, not just a dev flag.
 - **`unsafeClient` / `HostAlert`** gated on `settings.unsafeClient` and `settings.selfhostedClient` — actively discourages clearnet web use in favour of Tor/desktop/mobile. Do not downplay or remove this gate.
 - **Mobile tor polling** exists solely because Android has an embedded Tor daemon whose status must be surfaced to the user before making API calls.
-- **Custom coordinators** (`selfhostedClient`, coordinators settings page) are a power-user escape hatch; federation neutrality for standard users is enforced by the random seed ordering in `federation.json`.
+- **Custom coordinators** (`selfhostedClient`, coordinators settings page) are a power-user escape hatch; coordinator order for standard users is randomised at runtime by `federationLottery`, weighted by DevFund donation % (capped at 50) — a donation-incentive mechanism, not a flat-neutral shuffle. The seed order in `federation.json` is only the starting point before the lottery runs.
 
 ## Traps
 

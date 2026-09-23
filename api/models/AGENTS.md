@@ -85,7 +85,7 @@ separate from the Django model. Do not conflate them.
 
 ## `LNPayment` (ln_payment.py)
 `payment_hash` is the **primary key**. `Types`: NORM(0)/HOLD(1)/KEYS(2). `Concepts`:
-MAKEBOND(0)/TAKEBOND(1)/TRESCROW(2)/PAYBUYER(3)/WITHREWA(4)/DEVDONAT(5). `Status` (all
+MAKEBOND(0)/TAKEBOND(1)/TRESCROW(2)/PAYBUYER(3)/WITHREWA(4)/DEVDONAT(5)/COMDONAT(6). `Status` (all
 6-char codes): INVGEN(0)/LOCKED(1)/**SETLED**(2)/**RETNED**(3)/CANCEL(4)/EXPIRE(5)/
 VALIDI(6)/FLIGHT(7)/SUCCED(8)/FAILRO(9) — `SETLED`/`RETNED`, not SETTLED/RETURNED.
 `FailureReason` (singular, exists): NOTYETF(0)/TIMEOUT(1)/NOROUTE(2)/NONRECO(3)/

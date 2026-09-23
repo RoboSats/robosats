@@ -30,7 +30,7 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 | `/.github` | CI/CD workflows, release orchestration, issue/PR templates, CODEOWNERS |
 
 ## Tech Stack
-- **Backend**: Python/Django 5.1, DRF, PostgreSQL, Redis, Celery, Django Channels (WebSocket)
+- **Backend**: Python/Django 5.2, DRF, PostgreSQL, Redis, Celery, Django Channels (WebSocket)
 - **Frontend**: React 19, TypeScript, Webpack 5, MUI, i18next, OpenPGP.js, nostr-tools
 - **Lightning**: LND or CLN via gRPC — selected by `LNVENDOR` env var
 - **Privacy**: Tor, PGP-encrypted chat, SHA256-hashed robot tokens

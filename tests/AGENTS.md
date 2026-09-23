@@ -23,6 +23,8 @@ Tests require `docker-tests.yml` stack running:
 | `test_api_limits.py` | `/api/limits/` endpoint |
 | `test_api_robot_webhook.py` | Robot webhook notification delivery |
 | `test_frontend_fetch.py` | Frontend asset serving |
+| `test_grpc_stubs.py` | gRPC stub generation / import sanity |
+| `test_nostr_relay.py` | Nostr relay connectivity and event filtering |
 
 ## Key Utilities (`utils/`)
 
