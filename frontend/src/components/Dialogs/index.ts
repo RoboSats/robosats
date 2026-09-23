@@ -14,4 +14,5 @@ export { default as F2fMapDialog } from './F2fMap';
 export { default as UpdateDialog } from './Update';
 export { default as WarningDialog } from './Warning';
 export { default as DeleteRobotConfirmationDialog } from './DeleteRobotConfirmation';
+export { default as DeleteGarageKeyConfirmationDialog } from './DeleteGarageKeyConfirmation';
 export { default as OrderDescriptionDialog } from './OrderDescription';

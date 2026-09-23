@@ -1,4 +1,5 @@
 export { default as BookPage } from './BookPage';
+export { default as GaragePage } from './GaragePage';
 export { default as MainDialogs } from './MainDialogs';
 export { default as MakerPage } from './MakerPage';
 export { default as NavBar } from './NavBar';
