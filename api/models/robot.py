@@ -87,10 +87,6 @@ class Robot(models.Model):
         if created:
             Robot.objects.create(user=instance)
 
-    @receiver(post_save, sender=User)
-    def save_user_robot(sender, instance, **kwargs):
-        instance.robot.save()
-
     @staticmethod
     def is_valid_onion_url(url):
         """Validates that the URL is a valid http .onion address (Tor only).

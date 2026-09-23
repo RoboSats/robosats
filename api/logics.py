@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from decouple import config, Csv
 from django.contrib.auth.models import User
-from django.db.models import Q, Sum
+from django.db.models import F, Q, Sum
 from django.utils import timezone
 from django.utils.html import format_html
 from django.db import transaction
@@ -1867,14 +1867,16 @@ class Logics:
 
         reward = int(slashed_satoshis * reward_fraction)
         rewarded_robot = staked_bond.sender.robot
-        rewarded_robot.earned_rewards += reward
-        rewarded_robot.save(update_fields=["earned_rewards"])
+        Robot.objects.filter(pk=rewarded_robot.pk).update(
+            earned_rewards=F("earned_rewards") + reward
+        )
 
         slashed_robot_log = ""
         if slashed_return > 100:
             slashed_robot = slashed_bond.sender.robot
-            slashed_robot.earned_rewards += slashed_return
-            slashed_robot.save(update_fields=["earned_rewards"])
+            Robot.objects.filter(pk=slashed_robot.pk).update(
+                earned_rewards=F("earned_rewards") + slashed_return
+            )
             slashed_robot_log = f"Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
 
         new_proceeds = int(slashed_satoshis * (1 - reward_fraction))
@@ -1896,28 +1898,28 @@ class Logics:
             if user.robot.earned_rewards < 1:
                 return False, new_error(3003)
 
-            num_satoshis = user.robot.earned_rewards
+            original_rewards = user.robot.earned_rewards
+            num_satoshis = original_rewards
 
             if routing_budget_ppm is not None and routing_budget_ppm is not False:
-                routing_budget_sats = float(num_satoshis) * (
-                    float(routing_budget_ppm) / 1_000_000
+                routing_budget_sats = original_rewards * routing_budget_ppm // 1_000_000
+                num_satoshis = (
+                    original_rewards * (1_000_000 - routing_budget_ppm) // 1_000_000
                 )
-                num_satoshis = int(num_satoshis - routing_budget_sats)
             else:
-                # start deprecate in the future
                 routing_budget_sats = int(
                     max(
                         num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                         float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
                     )
                 )  # 1000 ppm or 2 sats
-                routing_budget_ppm = (
-                    routing_budget_sats / float(num_satoshis)
-                ) * 1_000_000
-                # end deprecate
+                routing_budget_ppm = 0
 
             reward_payout = LNNode.validate_ln_invoice(
-                invoice, num_satoshis, routing_budget_ppm
+                invoice,
+                num_satoshis,
+                routing_budget_ppm,
+                routing_budget_sats=routing_budget_sats,
             )
 
             if not reward_payout["valid"]:
@@ -1936,6 +1938,8 @@ class Logics:
                     payment_hash=reward_payout["payment_hash"],
                     created_at=reward_payout["created_at"],
                     expires_at=reward_payout["expires_at"],
+                    routing_budget_ppm=routing_budget_ppm,
+                    routing_budget_sats=routing_budget_sats,
                 )
             # Might fail if payment_hash already exists in DB
             except Exception:
@@ -1947,28 +1951,24 @@ class Logics:
         # Pays the invoice.
         paid, failure_reason = LNNode.pay_invoice(lnpayment)
         if paid:
-            user.robot.earned_rewards = 0
-            user.robot.claimed_rewards += num_satoshis
-            user.robot.save(update_fields=["earned_rewards", "claimed_rewards"])
+            Robot.objects.filter(pk=user.robot.pk).update(
+                claimed_rewards=F("claimed_rewards") + num_satoshis
+            )
+            user.robot.refresh_from_db(fields=["earned_rewards", "claimed_rewards"])
             return True, None
 
         # Re-fetch lnpayment to get the status written by pay_invoice.
         lnpayment.refresh_from_db(fields=["status"])
 
-        # Only restore rewards when the node has confirmed the payment definitively
-        # failed (FAILRO). Any other outcome — stream ended without a final status
-        # (VALIDI, unchanged) or still in-flight (FLIGHT on CLN PENDING) — means the
-        # HTLC may still settle. Restoring rewards in that window would allow a second
-        # withdrawal against the same funds. The LNPayment row with its payment_hash
-        # stays in the DB; a retry with the same invoice is blocked by the duplicate-
-        # hash guard above (error 3004) until the hash is resolved or expires.
+        # Pending or unknown payments may still settle. Only a confirmed failure
+        # can refund the reserved rewards.
         if lnpayment.status == LNPayment.Status.FAILRO:
-            user.robot.earned_rewards = num_satoshis
-            user.robot.save(update_fields=["earned_rewards"])
+            Robot.objects.filter(pk=user.robot.pk).update(
+                earned_rewards=F("earned_rewards") + original_rewards
+            )
+            user.robot.refresh_from_db(fields=["earned_rewards", "claimed_rewards"])
             return False, new_error(3005, {"failure_reason": failure_reason})
 
-        # Payment outcome is ambiguous (in-flight or stream ended without final status).
-        # Rewards remain at 0 until the payment resolves. The user should retry later.
         return False, new_error(3006, {"failure_reason": failure_reason})
 
     @classmethod
