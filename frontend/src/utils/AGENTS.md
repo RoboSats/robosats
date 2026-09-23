@@ -8,33 +8,33 @@ One subdirectory: `crypto/`.
 
 ## File Map
 
-| File / Dir             | Key exports                                              | Notes                                                                                                                                                        |
-| ---------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `array.ts`             | misc array helpers                                       |                                                                                                                                                              |
-| `blossom.ts`           | Blossom media-upload helpers                             | Used by chat image upload                                                                                                                                    |
-| `bondCalculator.ts`    | `BondCalculatorProps`, `calculateBondAmount`             | Bond sats ↔ percent, delegates from `useBondEstimate`                                                                                                        |
-| `checkVer.ts`          | `checkVer`, `getHigherVer`, `getClientVersion`           | Compares client version vs coordinator-reported `version`; **live** `getHigherVer` — do not edit the dead duplicate that was in `aggregateInfo.ts` (deleted) |
-| `computeSats.ts`       | `computeSats`                                            | Fiat ↔ sats conversion using current price + premium                                                                                                         |
-| `crypto/`              | subdirectory                                             | Crypto helpers (entropy, hashing)                                                                                                                            |
-| `federationLottery.ts` | `federationLottery`                                      | Randomises coordinator order weighted by DevFund donation % (capped at 50)                                                                                   |
-| `filterOrders.ts`      | `filterOrders`                                           | Applies book filter state to an order list                                                                                                                   |
-| `getHost.ts`           | `getHost`, `getOrigin`                                   | Coordinator URL resolution per client type                                                                                                                   |
-| `getRouter.ts`         | `getRouter`                                              | Returns the active React Router instance                                                                                                                     |
-| `hexToBase91.ts`       | `hexToBase91`, `base91ToHex`                             | Token encoding helpers (match backend `api/utils.py`)                                                                                                        |
-| `hexToRgb.ts`          | `hexToRgb`                                               | Colour conversion                                                                                                                                            |
-| `index.ts`             | barrel re-exports                                        | All utils from one entry point                                                                                                                               |
-| `match.ts`             | `matchOrder`                                             | Checks if a taker's offer matches a maker's order                                                                                                            |
-| `nip17File.ts`         | `nip17File`                                              | NIP-17 file message helpers for Nostr chat                                                                                                                   |
-| `nostr.ts`             | `eventToPublicOrder` (default), `verifyCoordinatorToken` | NIP-69 event → Order; coordinator token schnorr-verify                                                                                                       |
-| `prettyNumbers.ts`     | `prettyNumbers`, `pn`                                    | Human-readable number formatting                                                                                                                             |
-| `saveFile.ts`          | `saveFile`                                               | Browser file-save helper                                                                                                                                     |
-| `settings.ts`          | `getSettings`, `getClientType`                           | Reads `window.RobosatsSettings`, returns typed Settings                                                                                                      |
-| `statusBadgeColor.ts`  | `statusBadgeColor`                                       | Maps `Order.Status` → MUI badge colour                                                                                                                       |
-| `stringToInteger.ts`   | `stringToInteger`                                        | Deterministic string → integer hash                                                                                                                          |
-| `theme.ts`             | `getRobosatsTheme`                                       | MUI theme factory                                                                                                                                            |
-| `token.ts`             | `genBase62Token`, `hexToBase62`, `validateToken`         | Robot token generation + validation                                                                                                                          |
-| `webln.ts`             | WebLN helpers                                            | WebLN/Alby integration utilities                                                                                                                             |
-| `weightedMean.ts`      | `weightedMean`                                           | Weighted average (used in price aggregation display)                                                                                                         |
+| File / Dir             | Key exports                                                                                                    | Notes                                                                                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `array.ts`             | misc array helpers                                                                                             |                                                                                                                                                              |
+| `blossom.ts`           | `uploadToBlossom`, `downloadFromBlossom`, `downloadFromBlossomWithFallback`, `verifyBlobHash`, `computeSha256` | Chat image E2E upload/download; uploads **ciphertext only** (see §Blossom below)                                                                             |
+| `bondCalculator.ts`    | `BondCalculatorProps`, `calculateBondAmount`                                                                   | Bond sats ↔ percent, delegates from `useBondEstimate`                                                                                                        |
+| `checkVer.ts`          | `checkVer`, `getHigherVer`, `getClientVersion`                                                                 | Compares client version vs coordinator-reported `version`; **live** `getHigherVer` — do not edit the dead duplicate that was in `aggregateInfo.ts` (deleted) |
+| `computeSats.ts`       | `computeSats`                                                                                                  | Fiat ↔ sats conversion using current price + premium                                                                                                         |
+| `crypto/xchacha20.ts`  | `encryptFile`, `decryptFile`, `generateKey`, `toBase64`, `fromBase64`                                          | XChaCha20-Poly1305 symmetric file encryption for chat images (`@noble/ciphers`)                                                                              |
+| `federationLottery.ts` | `federationLottery`                                                                                            | Randomises coordinator order weighted by DevFund donation % (capped at 50)                                                                                   |
+| `filterOrders.ts`      | `filterOrders`                                                                                                 | Applies book filter state to an order list                                                                                                                   |
+| `getHost.ts`           | `getHost`, `getOrigin`                                                                                         | Coordinator URL resolution per client type                                                                                                                   |
+| `getRouter.ts`         | `getRouter`                                                                                                    | Returns the active React Router instance                                                                                                                     |
+| `hexToBase91.ts`       | `hexToBase91`, `base91ToHex`                                                                                   | Token encoding helpers (match backend `api/utils.py`)                                                                                                        |
+| `hexToRgb.ts`          | `hexToRgb`                                                                                                     | Colour conversion                                                                                                                                            |
+| `index.ts`             | barrel re-exports                                                                                              | All utils from one entry point                                                                                                                               |
+| `match.ts`             | `matchOrder`                                                                                                   | Checks if a taker's offer matches a maker's order                                                                                                            |
+| `nip17File.ts`         | `nip17File`                                                                                                    | NIP-17 file message helpers for Nostr chat                                                                                                                   |
+| `nostr.ts`             | `eventToPublicOrder` (default), `verifyCoordinatorToken`                                                       | NIP-69 event → Order; coordinator token schnorr-verify                                                                                                       |
+| `prettyNumbers.ts`     | `prettyNumbers`, `pn`                                                                                          | Human-readable number formatting                                                                                                                             |
+| `saveFile.ts`          | `saveFile`                                                                                                     | Browser file-save helper                                                                                                                                     |
+| `settings.ts`          | `getSettings`, `getClientType`                                                                                 | Reads `window.RobosatsSettings`, returns typed Settings                                                                                                      |
+| `statusBadgeColor.ts`  | `statusBadgeColor`                                                                                             | Maps `Order.Status` → MUI badge colour                                                                                                                       |
+| `stringToInteger.ts`   | `stringToInteger`                                                                                              | Deterministic string → integer hash                                                                                                                          |
+| `theme.ts`             | `getRobosatsTheme`                                                                                             | MUI theme factory                                                                                                                                            |
+| `token.ts`             | `genBase62Token`, `hexToBase62`, `validateToken`                                                               | Robot token generation + validation                                                                                                                          |
+| `webln.ts`             | WebLN helpers                                                                                                  | WebLN/Alby integration utilities                                                                                                                             |
+| `weightedMean.ts`      | `weightedMean`                                                                                                 | Weighted average (used in price aggregation display)                                                                                                         |
 
 ## Key modules
 
@@ -76,6 +76,30 @@ Two exports:
   `schnorr.verify(sig, UTF8(${event.pubkey}${orderId}), coordinatorPubKey)`. Returns
   `false` on any error. Used by `Federation.model.loadRatings(verify=true)`.
 
+### `blossom.ts` — Chat image E2E encryption
+
+Chat images are **fully end-to-end encrypted** — the Blossom server (coordinator) stores
+only undecryptable ciphertext:
+
+1. **EXIF strip**: the image is re-encoded through a canvas before encryption to remove
+   metadata that could identify the sender.
+2. **`encryptFile(data, key?)`** (`crypto/xchacha20.ts`): encrypts with
+   **XChaCha20-Poly1305** (`@noble/ciphers`) using a random 32-byte key and 24-byte nonce
+   per file. Returns `{ ciphertext, nonce, key }`.
+3. **`uploadToBlossom(ciphertext, coordinatorUrl, nostrSecKey)`**: uploads **only the
+   ciphertext** (`Uint8Array`) to `/blossom/upload` on the coordinator. Authorization uses
+   a Nostr **kind-24242** auth event (signed with the robot's `nostrSecKey`, expiry 5 min,
+   `x` tag = SHA-256 of the ciphertext). Returns `{ url, sha256 }` where `url` is
+   `${coordinatorUrl}/blossom/${sha256}`.
+4. **Key transport**: the `key` and `nonce` are embedded inside the PGP-encrypted
+   `Message` (the normal text chat row) — so they are also E2E-encrypted and never
+   visible to the coordinator.
+5. **`downloadFromBlossomWithFallback(senderUrl, sha256, coordinatorUrl?)`**: tries the
+   receiver's local coordinator URL first (nodeapp always proxies `/mainnet|testnet/<alias>/blossom/`),
+   falls back to the sender's embedded absolute URL. Prevents cross-topology URL failures.
+6. **`verifyBlobHash(data, expectedSha256)`**: verifies the SHA-256 of the downloaded blob
+   matches what the sender committed to — prevents coordinator blob substitution.
+
 ### `token.ts`
 
 `genBase62Token()` — generates a new robot token (high-entropy random base62 string).
@@ -98,9 +122,15 @@ transmitted as base91). Must remain in sync with backend `api/utils.py`
 - **`nostr.ts` tag mapping must mirror `api/nostr.py`** — a mismatch silently drops
   orders from the book (they parse as missing required fields).
 - **`verifyCoordinatorToken` is opt-in by default** — `loadRatings(verify=false)` trusts
-  events without schnorr-checking, for performance on Tor. The "Verify ratings" button
-  triggers the full cryptographic pass. This is deliberate: freezing the UI for every
-  page load is worse UX than deferred verification.
+  the relay's own author filter for performance on Tor. Structural sybil resistance comes
+  from two Nostr protocol properties: (1) kind 31986 is a **replaceable event** — the relay
+  keeps only the latest per `pubkey + d-tag`, so each robot can submit at most one rating
+  per `{shortAlias}:{orderId}`; (2) the `sig` tag embeds the **coordinator's own schnorr
+  signature** of `${robotPubKey}${orderId}`, so only a robot that completed a real trade
+  (and received that token from the coordinator) can produce a valid event. The "Verify
+  ratings" button triggers `verifyCoordinatorToken` on every event, providing
+  cryptographic proof that neither a relay operator nor anyone without the coordinator's
+  `NOSTR_NSEC` tampered with the ratings.
 
 ## Traps
 

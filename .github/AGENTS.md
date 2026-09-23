@@ -12,6 +12,7 @@ feature requests). Contains no product code.
 | `ISSUE_TEMPLATE/` | Structured issue forms for federation, payment methods, bugs, features |
 | `CODEOWNERS` | Auto-assign reviewers; single rule `* @RoboSats/maintainers` |
 | `pull_request_template.md` | PR checklist; requires pre-commit install |
+| `dependabot.yml` | Grouped auto-update config; `ignore:` rules encode every blocked major upgrade from `development/blocked-upgrades.md` |
 
 Child doc: `workflows/AGENTS.md`
 
@@ -118,3 +119,6 @@ the project's only revenue source (no VC, no coordinator fees to the core team).
   config and frontend routes simultaneously.
 - Never add a coordinator whose `shortAlias` collides with an existing nodeapp port
   assignment — consult `nodeapp/coordinators/AGENTS.md` first.
+- When adding or removing an entry in `development/blocked-upgrades.md`, update the
+  corresponding `ignore:` rule in `dependabot.yml` in the **same PR** — these two files
+  must stay in sync so Dependabot cannot auto-propose a bump that is known to break.

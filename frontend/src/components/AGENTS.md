@@ -92,8 +92,11 @@ Also in `TradeBox/EncryptedChat/`:
 - `ImageLightbox.tsx` — full-screen image overlay for chat image messages
 - `PrivacyWarningDialog.tsx` — shown before first message, warns about metadata
 
-Messages are PGP-encrypted client-side before sending; the server stores ciphertext only.
-See `src/pgp/AGENTS.md` for encryption details.
+Text messages are PGP-encrypted client-side before sending; the server stores ciphertext only.
+See `src/pgp/AGENTS.md` for encryption details. **Image attachments are also E2E-encrypted**:
+EXIF-stripped → XChaCha20-Poly1305 encrypted → ciphertext-only upload to Blossom
+(`/blossom/upload`); the decryption key + nonce travel inside the PGP-encrypted message.
+See `src/utils/AGENTS.md §Blossom` and `chat/AGENTS.md §Image attachments` for the full flow.
 
 ## FederationTable
 
@@ -103,6 +106,25 @@ stars + `(count)`). Includes a **"Verify ratings"** button that triggers
 schnorr-verifies every signature, filtering out invalid ones. Warning text:
 _"Verifying all ratings might take some time; this window may freeze for a few seconds
 while the cryptographic certification is in progress."_
+
+**Ratings trust model**: kind 31986 is a **Nostr replaceable event** keyed by
+`pubkey` (the rating robot's secp256k1 pubkey, derived deterministically from its token)
+
+- `d` tag = `"{shortAlias}:{orderId}"`. Relays replace any older event with the same
+  author + `d` value, so exactly **one rating per robot per order** can exist — re-submitting
+  overwrites, not accumulates. Two structural guards enforce authenticity:
+
+1. **Coordinator signature (`sig` tag + `p` tag)**: the event carries the coordinator's
+   schnorr signature of `${robotPubKey}${orderId}` (signed with the coordinator's
+   `NOSTR_NSEC`). `loadRatings` only credits events whose `p` tag matches a known
+   coordinator pubkey. Without the coordinator's private key, neither the robot nor a
+   third party can forge a valid `sig` — so coordinator self-inflation via fake trades
+   is impossible.
+2. **"Verify ratings" button** (`loadRatings(verify=true)`): re-fetches events and runs
+   `verifyCoordinatorToken` — schnorr-verifies every `sig` tag against the coordinator
+   pubkey in the `p` tag, dropping any event that fails. The default unverified path
+   trusts the relay's author filter for performance (acceptable on Tor); the button is
+   the cryptographic fallback for users who want certainty. Do not remove it.
 
 ## HostAlert
 
