@@ -22,7 +22,7 @@ Note: This guidance is modified from Bisq's <a href="https://bisq.wiki/Trading_r
 
   1. Make sure to check out the <a href="/read/en/">How to use</a> section before begin trading.<br>
   2. State the agreement clearly to prevent misunderstanding.<br>
-  3. The fiat payment method should be able to send and receive instantly because the hodl invoice had an expiration time of 24 hours.<br>
+  3. The fiat payment method should be able to send and receive instantly because each contract step has an expiration timer.<br>  
 if the timer reaches the expiration, it could trigger a dispute and could lead to a loss of fidelity bond.<br>
   4. After the taker had taken the order, both sides should be ready to process to the next step before the timer expire.<br>
   5. Please be aware that no one can read the chat between you and your peer.
