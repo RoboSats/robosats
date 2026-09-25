@@ -30,40 +30,36 @@ RoboSats is focused on user friendliness. The platform is totally self-explanato
 
 This document has two complete walkthroughs: 1) as a buyer that takes an order and; 2) as a seller that makes an order. Given that the platform explains to the user exactly everything in the menus, we are going to dedicate some lines to some tricks and give tips for safe trading in between.
 
-## User Generation Home Page
-RoboSats help users preserve their privacy by using newly generated avatars in every trade. Avatars are super easy to generate!
-<div align="center">
-<img src="/assets/images/how-to-use/homepage-1.png"  width="370" />
-</div>
-
-RoboSats welcomes you right away with your unique robot avatar. The robot is deterministically generated based on the token you see below it. This token is all you need to recover the avatar in the future, so make sure to **back it up safely!**
-
-The tokens are generated in your own browser. However, if you do not trust your machine randomness, you can also input your own entropy token. *Note that low entropy tokens are not valid.*
-
-I was really not happy of being "HomelessCash"! :D So I just click on the dice icon to generate a new token and tap "Generate avatar" to get a new one
-
-<div align="center">
-<img src="/assets/images/how-to-use/homepage-2.png"  width="370" />
-</div>
-
-Ah, "JoyfulPain", so much better!! :)
-The token will live in your browser memory for some time, so you still might have a chance to copy it later by tapping in the profile icon in the bottom left corner. However, your browser will forget your token if you refresh or close it!
-
-<div align="center">
-<img src="/assets/images/how-to-use/homepage-3.png"  width="370" />
-</div>
-
-It is best to write it down in paper... but that's a lot of work!! Most often it is good enough to simply copy it to clipboard and save it somewhere else. **If your browser crashes, your phone battery dies, or you lose connection during trading, you will need the token to log in again and continue with the trade!**
-
-### Recovering a robot
-To recover a backed-up token, simply replace the token in the textbox and tap "Generate Robot". The site will greet you with "We found your Robot avatar. Welcome back!"
+## Garage Key and Robot Generation  
+RoboSats helps users preserve their privacy by using a newly generated robot avatar in every trade. All your robots are derived from a single **Garage Key**, one master key that generates unlimited deterministic accounts.  
+<div align="center">  
+<img src="/assets/images/how-to-use/homepage-1.png"  width="370" />  
+</div>  
+  
+RoboSats welcomes you by asking you to create or import your Garage Key. This key is all you need to recover your entire Garage in the future, so make sure to **back it up safely!** Write it down on paper or keep it in a password manager. Anyone with the key controls all your robots.  
+  
+The Garage Key is generated in your own browser. Once set, the app automatically derives the next free account and creates a fresh robot for every trade. No more saving a different token each time!  
+<div align="center">  
+<img src="/assets/images/how-to-use/homepage-2.png"  width="370" />  
+</div>  
+  
+In your profile you can browse your accounts with the Account Navigator: past robots, active robots and the next fresh identity. When a robot finishes a trade, that account is marked as used and the app nudges you to move to a new one. Robots that already traded cannot make or take new orders, protecting your privacy by default.  
+<div align="center">  
+<img src="/assets/images/how-to-use/homepage-3.png"  width="370" />  
+</div>  
+  
+**If your browser crashes, your phone battery dies, or you lose connection during trading, your Garage Key is all you need to log in again and continue the trade!**  
+  
+### Recovering your Garage  
+To recover, simply paste your Garage Key in the recovery screen. The app checks the Nostr relays, discovers your used accounts, and restores your robots automatically; including any robot with an active trade.  
+  
+### Legacy mode  
+If you updated from an older version, the app starts in **Legacy** view. This mode exists only to let you finish ongoing trades with your old per-robot tokens. "Create Order", "View Book" and the onboarding actions are disabled with explanatory messages. Finish your pending trades, then create your Garage Key.
 
 ## Trade
-
-In RoboSats you can make new orders or take orders made by others. To be an _order maker_ simply click on "Create Order" in the homepage. To take an order, click on "View Book" so you can explore the orders created by other robots.
+In RoboSats you can make new orders or take orders made by others. Your Garage automatically provides a fresh robot for each trade. To be an _order maker_ simply click on "Create Order". To take an order, click on "View Book" so you can explore the orders created by other robots.
 
 ### Exploring the Order Book
-
 We click on "View book" and have a look at the orders in the book page.
 
 <div align="center">
