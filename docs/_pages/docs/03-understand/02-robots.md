@@ -14,7 +14,7 @@ Your Garage is your collection of robot identities in RoboSats. It is controlled
   
 Each robot is generated from its own account derived from your Garage Key (Account #0, #1, #2...), so every trade gets a fresh, unlinkable identity automatically. Use this anonymous identity to begin making and taking orders with RoboSats!  
   
-Therefore, make sure to **safely store your Garage Key**. It is the only backup you need: anyone holding it controls all your robots, past and future — treat it like a seed phrase.
+Therefore, make sure to **safely store your Garage Key**. It is the only backup you need: anyone holding it controls all your robots, past and future. Treat it like a seed phrase.
 
 Remember to be concise but courteous when chatting with your robot peers!
 
@@ -32,11 +32,11 @@ RoboSats automatically rotates to a fresh robot after each completed trade to en
   
 Your Garage Key acts like a password for accessing all of your accounts: ongoing orders, active disputes and past robots. Please safely store it or risk losing access to your entire Garage.  
   
-Recovering your Garage is easy: paste your Garage Key in the recovery screen. The app consults the Nostr relays, discovers how many accounts you have used, and rebuilds every robot — no need to back up individual tokens.  
+Recovering your Garage is easy: paste your Garage Key in the recovery screen. The app consults the Nostr relays, discovers how many accounts you have used, and rebuilds every robot. No need to back up individual tokens.  
   
 While we may become fond of our one-time robot identity during the short time an order is made or taken, the app moves you on to a new avatar automatically. Think of all the great times you'll have making and taking orders with new robot identities!  
   
-As stated, robot re-use degrades privacy — so RoboSats simply does not allow it anymore.
+As stated, robot re-use degrades privacy so RoboSats simply does not allow it anymore.
 
 ## **Robot Construction Process**
 
