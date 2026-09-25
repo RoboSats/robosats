@@ -20,7 +20,7 @@ When browsing the order book, the bitcoin-fiat price of live orders you see are 
 
 If a fiat currency isn't available on RoboSats, then one can easily add a new currency by opening a pull request on [GitHub](https://github.com/RoboSats/robosats)!
 
-***The explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
+***The pricing method can be relative to the market rate or an **explicit price** in satoshis, as offered in the order form.*
 
 ## **Prices in Practice**
 
