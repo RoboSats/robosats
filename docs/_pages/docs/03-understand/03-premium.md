@@ -48,7 +48,7 @@ For example, you (buyer) find that the highest premium across existing orders as
 
 But your competing order makers might notice their existing order no longer has the highest premium on the order book and thus cancel their order to create a new one for some premium higher than yours... Watch out for a premium war!
 
-*Footnote: the explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
+*Sellers can set a relative premium over market rate or an explicit price in satoshis when creating the order.*
 
 ## **Why Have Premiums?**
 
