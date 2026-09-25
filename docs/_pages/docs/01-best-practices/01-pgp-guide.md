@@ -36,7 +36,7 @@ It will look like this:
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-1.png" width="450"/>
 </div>
 
-You will be prompt to enter the passphrase of the private key. We use our *supersecret* robot **token** to decrypt it, you are the only one who knows the robot token.
+You will be prompt to enter the passphrase of the private key. We use our *supersecret* robot account **token** to decrypt it. The token deterministically derived from your Garage Key for this specific robot, which only you know.
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-2.png" width="350"/>
@@ -75,7 +75,7 @@ By clicking on the "eye" icon, we can see the raw Armored ASCII PGP message. We 
     <img src="/assets/images/sensitive-data-PGP-guide/chat-2.png" width="320"/>
 </div>
 
-All that is left is decrypt the PGP message of our peer using our private key. It is very likely that GnuPG will ask us again for our *token* to decrypt our private key.
+All that is left is decrypt the PGP message of our peer using our private key. It is very likely that GnuPG will ask us again for our robot *account token* to decrypt our private key.
 
 ```
 echo "<paste_peer_message>" | gpg --decrypt
@@ -92,11 +92,11 @@ Voilà! Here it is. We can be guaranteed that:
 2. The message can only be decrypted by 2 private keys: our own key and our peer's key. **No one else can read it!** (marked in blue)
 3. The message **was signed by our peer**, it must be him. No one is infiltrated in this chat pretending to be your peer. (marked in green)
 
-Since messages are signed by the robots keeping the log our robot token is very useful in case of a dispute. If your peer tries to cheat on you and then lies to the staff that is in charge of solving the dispute, you can prove it! It is useful to export the full chat log as Json (click export button) or, at least conserve your robot token. With those you can provide very excellent evidence that he said something different in the private chat with you.
+Since messages are signed by the robots keeping the log our robot token is very useful in case of a dispute. If your peer tries to cheat on you and then lies to the staff that is in charge of solving the dispute, you can prove it! It is useful to export the full chat log as Json (click export button). And since your Garage Key regenerates every account token, keeping it safe means you will always be able to provide evidence of what was said in the private chat.
 
-The frontend application of RoboSats that runs on your browser does the job of encrypting, decrypting an verifying every message. But in this tutorial we have independently verified it works as intended: we have verified that **only the person with access to the robot token can read (decrypt) and sign messages** during a RoboSats trade.
-
-**ProTip:** In order to independently verify that your token is absolutely secret and never sent to a third party you will need to run a HTTP request packet sniffer. You can also check by yourself the [frontend source code](https://github.com/RoboSats/robosats/tree/main/frontend/src).
+The frontend application of RoboSats that runs on your browser does the job of encrypting, decrypting an verifying every message. But in this tutorial we have independently verified it works as intended: we have verified that **only the person holding the Garage Key can read (decrypt) and sign messages** during a RoboSats trade, since the account token that unlocks the PGP key is derived from it.  
+  
+**ProTip:** In order to independently verify that your Garage Key and account tokens are absolutely secret and never sent to a third party you will need to run a HTTP request packet sniffer. You can also check by yourself the [frontend source code](https://github.com/RoboSats/robosats/tree/main/frontend/src).  
 {: .notice--secondary}
 
 ## Legacy: Why encryption is needed?
