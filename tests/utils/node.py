@@ -1,6 +1,7 @@
 import codecs
 import sys
 import time
+import json
 
 import requests
 from decouple import config
@@ -156,6 +157,33 @@ def wait_nodes_sync():
 def wait_channels():
     wait_for_active_channels(LNVENDOR, "coordinator")
     wait_for_active_channels("LND", "robot")
+
+
+def send_coins(node_name, address, amount=0, send_all=False, spend_unconfirmed=False):
+    node = get_node(node_name)
+    data = {
+        "addr": address,
+        "amount": amount,
+        "send_all": send_all,
+        "spend_unconfirmed": spend_unconfirmed,
+    }
+
+    response = requests.post(
+        f'http://localhost:{node["port"]}/v1/transactions',
+        headers=node["headers"],
+        data=json.dumps(data),
+    )
+    return response.json()
+
+
+def send_all_coins_to_self(node_name):
+    address = create_address(node_name)
+    send_coins(node_name, address, send_all=True)
+
+
+def gen_blocks_to_confirm_pending(node_name):
+    address = create_address(node_name)
+    generate_blocks(address, 10)
 
 
 def set_up_regtest_network():
