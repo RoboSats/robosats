@@ -283,8 +283,6 @@ class Garage {
             encPrivKey: key.encryptedPrivateKeyArmored,
           };
 
-          if (!skipSelect) this.setCurrentSlot(token);
-
           this.slots[token] = new Slot(
             token,
             federation.getCoordinatorsAlias(),
@@ -293,7 +291,8 @@ class Garage {
               this.triggerHook('onSlotUpdate');
             },
           );
-          void this.fetchRobot(federation, token);
+          if (!skipSelect) this.setCurrentSlot(token);
+          await this.fetchRobot(federation, token);
           this.save();
         } catch (error) {
           console.error('Error:', error);
@@ -394,8 +393,12 @@ class Garage {
 
     const token = this.garageKey.deriveRobotToken(index);
 
-    await this.createRobot(federation, token);
-    await this.fetchRobot(federation, token);
+    if (this.getSlot(token)) {
+      this.setCurrentSlot(token);
+      await this.fetchRobot(federation, token);
+    } else {
+      await this.createRobot(federation, token);
+    }
     await this.getSlot(token)?.ensureLastOrderStatus(federation);
     this.setCurrentSlot(token);
   };

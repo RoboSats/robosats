@@ -829,7 +829,7 @@
   "The coordinator is not available.": "The coordinator is not available.",
   "Wait for the seller to confirm he has received the payment.": "Wait for the seller to confirm he has received the payment.",
   "Contact method": "Contact method",
-  "Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case by contacting your coordinator. If you think your coordinator was unfair, please fill a claim via email to robosats@protonmail.com": "Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case by contacting your coordinator. If you think your coordinator was unfair, please fill a claim via email to robosats@protonmail.com",
-  "You can claim the dispute resolution amount (escrow and fidelity bond) from your profile rewards. If there is anything the staff can help with, do not hesitate to contact to robosats@protonmail.com (or via your provided burner contact method).": "You can claim the dispute resolution amount (escrow and fidelity bond) from your profile rewards. If there is anything the staff can help with, do not hesitate to contact to robosats@protonmail.com (or via your provided burner contact method).",
-  "Switch to Garage Key mode to use this feature": "Switch to Garage Key mode to use this feature"
+  "Switch to Garage Key mode to use this feature": "Switch to Garage Key mode to use this feature",
+  "Recovering your robot. This may take a moment.": "Recovering your robot. This may take a moment.",
+  "This robot already has an active order. Navigate to a new account to create another order.": "This robot already has an active order. Navigate to a new account to create another order."
 }

@@ -258,7 +258,9 @@ const MakerForm = ({
 
       if (garage.garageKey && !slot.isReusable()) {
         setBadRequest(
-          'This robot has completed a trade. Please navigate to a new account to create orders.',
+          slot.activeOrder
+            ? 'This robot already has an active order. Navigate to a new account to create another order.'
+            : 'This robot has completed a trade. Please navigate to a new account to create orders.',
         );
         setSubmittingRequest(false);
         setOpenDialogs(false);

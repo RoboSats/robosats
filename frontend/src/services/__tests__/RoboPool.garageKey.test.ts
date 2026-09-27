@@ -173,6 +173,20 @@ describe('Garage Key relay subscriptions', () => {
     expect(complete).toHaveBeenCalledTimes(1);
   });
 
+  it('delivers notifications through a relay enforcing the NIP-01 subscription limit', () => {
+    const events = { onevent: jest.fn(), oneose: jest.fn() };
+    pool.updateNotificationSubscriptions({ pubkeys: [pubkey, 'b'.repeat(64)], events });
+    const requests = first.requests();
+    expect(new Set(requests.map(([, id]) => id)).size).toBe(2);
+    requests.forEach(([, id]) => {
+      expect(id.length).toBeLessThanOrEqual(64);
+      first.receive('EVENT', id, { kind: 1059 });
+      first.receive('EOSE', id);
+    });
+    expect(events.onevent).toHaveBeenCalledTimes(2);
+    expect(events.oneose).toHaveBeenCalledTimes(1);
+  });
+
   it('replays notifications on replacement, ignores old sockets and respects clearing', async () => {
     const events = { onevent: jest.fn(), oneose: jest.fn() };
     const params = { pubkeys: [pubkey], events };

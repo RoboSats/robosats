@@ -54,6 +54,7 @@ class RoboPool {
   private readonly messageHandlers: Array<(url: string, event: MessageEvent) => void> = [];
   private readonly notificationSubscriptions: Map<string, NotificationSubscriptionState> =
     new Map();
+  private notificationSubscriptionId = 0;
   private notificationSubscriptionParams?: UpdateNotificationSubscriptionsParams;
   private readonly notificationTimeouts = new Set<ReturnType<typeof setTimeout>>();
   private readonly accountRecoverySubscriptions = new Map<
@@ -305,7 +306,7 @@ class RoboPool {
     }
 
     toAdd.forEach((pubkey) => {
-      const subId = `subscribeNotification_${pubkey}_${Math.random().toString(36).substring(2, 9)}`;
+      const subId = `notification_${++this.notificationSubscriptionId}`;
       pendingSubIds.add(subId);
       eoseBySubscription.set(subId, new Set<string>());
 

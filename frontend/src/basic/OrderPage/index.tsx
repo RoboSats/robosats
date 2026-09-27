@@ -12,7 +12,7 @@ import {
   Step,
   StepLabel,
 } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
@@ -20,11 +20,38 @@ import OrderDetails from '../../components/OrderDetails';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { NoRobotDialog, WarningDialog } from '../../components/Dialogs';
-import { Order, type Slot } from '../../models';
+import { Order } from '../../models';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { genBase62Token } from '../../utils';
 
 const OrderPage = (): React.JSX.Element => {
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { navigateToPage } = useContext<UseAppStoreType>(AppContext);
+  const params = useParams();
+  const navigate = useNavigate();
+  const previousSlot = useRef(garage.currentSlot);
+  const switchedSlot = previousSlot.current !== garage.currentSlot;
+  const activeOrder = garage.getSlot()?.activeOrder;
+
+  useEffect(() => {
+    previousSlot.current = garage.currentSlot;
+    if (switchedSlot && activeOrder) {
+      navigateToPage(`order/${activeOrder.shortAlias}/${activeOrder.id}`, navigate);
+    }
+  }, [garage.currentSlot]);
+
+  if (
+    switchedSlot &&
+    activeOrder &&
+    (activeOrder.id !== Number(params.orderId) || activeOrder.shortAlias !== params.shortAlias)
+  ) {
+    return <CircularProgress />;
+  }
+
+  return <OrderPageContent key={`${garage.currentSlot}:${params.shortAlias}:${params.orderId}`} />;
+};
+
+const OrderPageContent = (): React.JSX.Element => {
   const {
     windowSize,
     setOpen,
@@ -37,7 +64,6 @@ const OrderPage = (): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const params = useParams();
-  const paramsRef = useRef(params);
 
   const doublePageWidth: number = 50;
   const maxHeight: number = (windowSize?.height - navbarHeight) * 0.85 - 3;
@@ -48,7 +74,7 @@ const OrderPage = (): React.JSX.Element => {
   const [orderStep, setOrderStep] = useState<number>(0);
 
   useEffect(() => {
-    paramsRef.current = params;
+    let cancelled = false;
     const shortAlias = params.shortAlias;
     const orderId = Number(params.orderId);
     const slot = garage.getSlot();
@@ -60,16 +86,18 @@ const OrderPage = (): React.JSX.Element => {
         order = slot.lastOrder;
       }
       void order.fecth(federation, slot).then((updatedOrder) => {
-        updateSlotFromOrder(updatedOrder, slot);
+        if (cancelled || garage.getSlot() !== slot) return;
+        setCurrentOrder(updatedOrder);
+        slot.updateSlotFromOrder(updatedOrder);
       });
     } else {
       setOpenNoRobot(true);
     }
 
     return () => {
-      setCurrentOrder(null);
+      cancelled = true;
     };
-  }, [params.orderId, openNoRobot, garage.currentSlot, slotUpdatedAt]);
+  }, [params.orderId, params.shortAlias, openNoRobot, garage.currentSlot, slotUpdatedAt]);
 
   useEffect(() => {
     if (!currentOrder) return;
@@ -85,16 +113,6 @@ const OrderPage = (): React.JSX.Element => {
       setOrderStep(5);
     }
   }, [currentOrder?.status]);
-
-  const updateSlotFromOrder = (updatedOrder: Order, slot: Slot): void => {
-    if (
-      Number(paramsRef.current.orderId) === updatedOrder.id &&
-      paramsRef.current.shortAlias === updatedOrder.shortAlias
-    ) {
-      setCurrentOrder(updatedOrder);
-      slot.updateSlotFromOrder(updatedOrder);
-    }
-  };
 
   const onClickCoordinator = function (): void {
     if (currentOrder?.shortAlias != null) {

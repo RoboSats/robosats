@@ -829,7 +829,5 @@
   "The coordinator is not available.": "ผู้ประสานงานไม่พร้อมใช้งาน",
   "Wait for the seller to confirm he has received the payment.": "รอให้ผู้ขายยืนยันว่าได้รับการชำระเงินแล้ว",
   "Contact method": "วิธีการติดต่อ",
-  "Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case by contacting your coordinator. If you think your coordinator was unfair, please fill a claim via email to robosats@protonmail.com": "คุณแพ้ข้อพิพาทแล้วน่าเสียดาย หากคุณคิดว่านี่เป็นข้อผิดพลาด คุณสามารถขอเปิดเคสใหม่โดยติดต่อผู้ประสานงานของคุณ ถ้าคุณคิดว่าผู้ประสานงานของคุณไม่เป็นธรรม กรุณากรอกข้อเรียกร้องทางอีเมลที่ robosats@protonmail.com",
-  "You can claim the dispute resolution amount (escrow and fidelity bond) from your profile rewards. If there is anything the staff can help with, do not hesitate to contact to robosats@protonmail.com (or via your provided burner contact method).": "คุณสามารถรับเหรียญที่ได้จากการแก้ไขข้อพิพาทได้ที่ส่วนรางวัลในโปรไฟล์ของคุณ (สำหรับเหรียญที่กักกันไว้ในกระบวนการซื้อขาย) และหากต้องการความช่วยเหลือเพิ่มเติม สามารถติดต่อผ่านทาง robosats@protonmail.com (หรือช่องทางติดต่อที่คุณให้ไว้ก่อนหน้านี้)",
   "Switch to Garage Key mode to use this feature": "Switch to Garage Key mode to use this feature"
 }

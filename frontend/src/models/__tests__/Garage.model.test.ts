@@ -155,3 +155,29 @@ it('keeps the requested legacy default and loads saved mode without overwriting 
     .mock.calls.filter(([name]) => name === 'garage_slots');
   expect(JSON.parse(saves[saves.length - 1][1])[token].token).toBe(token);
 });
+
+it('loads a recovered account only once and selects cached accounts before the refresh completes', async () => {
+  const { garage } = await garageWithSlot();
+  const get = jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+  await garage.createRobotFromGarageKey(federation, 1);
+  expect(get).toHaveBeenCalledTimes(1);
+  const accountOne = garage.getSlot();
+  await garage.createRobotFromGarageKey(federation, 0);
+  let finish: (value: object) => void = () => {};
+  let started: () => void = () => {};
+  const requestStarted = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  get.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+        started();
+      }),
+  );
+  const switching = garage.createRobotFromGarageKey(federation, 1);
+  await requestStarted;
+  expect(garage.getSlot()).toBe(accountOne);
+  finish({ earned_rewards: 0 });
+  await switching;
+});

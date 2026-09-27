@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
+  Alert,
   Button,
   Grid,
   LinearProgress,
@@ -147,7 +148,7 @@ const GarageKeyProfile = ({ setView, width, setInputGarageKey }: GarageKeyProfil
                 !slot?.activeOrder?.id && slot !== null && !slot.isReusable() ? 'error' : undefined
               }
               smooth
-              style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
+              style={{ width: '12.5em', height: '12.5em' }}
               placeholderType='generating'
               imageStyle={{
                 transform: '',
@@ -166,6 +167,16 @@ const GarageKeyProfile = ({ setView, width, setInputGarageKey }: GarageKeyProfil
               tooltipPosition='top'
             />
           </Grid>
+
+          {slot && !slot.activeOrder && !slot.isReusable() && (
+            <Grid sx={{ width: '100%' }}>
+              <Alert severity='info'>
+                {t(
+                  'This robot has completed a trade. Navigate to a new account for fresh privacy.',
+                )}
+              </Alert>
+            </Grid>
+          )}
 
           {garageKey ? (
             <Grid>

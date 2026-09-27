@@ -10,6 +10,7 @@ import {
   Box,
   Alert,
   Snackbar,
+  LinearProgress,
 } from '@mui/material';
 import TokenInput from '../../basic/RobotPage/TokenInput';
 import Key from '@mui/icons-material/Key';
@@ -30,6 +31,8 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
   const { garage, recoverAccountFromRelays } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [recoveryToken, setRecoveryToken] = useState<string>('');
+  const recoveringRef = React.useRef(false);
+  const [recovering, setRecovering] = useState(false);
   const [validToken, setValidToken] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [toastOpen, setToastOpen] = useState<boolean>(false);
@@ -48,6 +51,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
   }, [open.recovery]);
 
   const onClickRecover = async (): Promise<void> => {
+    if (recoveringRef.current) return;
     const currentMode = garage.getMode();
 
     setErrorMessage('');
@@ -64,6 +68,8 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
           return;
         }
 
+        recoveringRef.current = true;
+        setRecovering(true);
         const garageKey = new GarageKey(recoveryToken, () => {});
         garage.setGarageKey(garageKey);
         setInputToken(recoveryToken);
@@ -85,6 +91,8 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
 
         setView('profile');
       } else {
+        recoveringRef.current = true;
+        setRecovering(true);
         setInputToken(recoveryToken);
         await garage.createRobot(federation, recoveryToken);
 
@@ -97,6 +105,9 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
     } catch (e) {
       console.error('Error recovering robot:', e);
       setErrorMessage(t('Failed to recover robot. Please check your token and try again.'));
+    } finally {
+      recoveringRef.current = false;
+      setRecovering(false);
     }
   };
 
@@ -105,6 +116,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
       <Dialog
         open={open.recovery}
         onClose={() => {
+          if (recoveringRef.current) return;
           setOpen((open) => {
             return { ...open, recovery: false };
           });
@@ -149,6 +161,7 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
             <Grid style={{ width: '100%' }}>
               <TokenInput
                 fullWidth
+                editable={!recovering}
                 inputRef={textFieldRef}
                 showCopy={false}
                 inputToken={recoveryToken}
@@ -165,11 +178,19 @@ const RecoveryDialog = ({ setInputToken, setView }: Props): React.JSX.Element =>
                 }}
               />
             </Grid>
+            {recovering && (
+              <Grid sx={{ width: '100%' }} role='status'>
+                <Typography align='center'>
+                  {t('Recovering your robot. This may take a moment.')}
+                </Typography>
+                <LinearProgress />
+              </Grid>
+            )}
             <Grid>
               <Button
                 variant='contained'
                 size='large'
-                disabled={!validToken}
+                disabled={!validToken || recovering}
                 onClick={onClickRecover}
               >
                 <Key /> <div style={{ width: '0.5em' }} />
