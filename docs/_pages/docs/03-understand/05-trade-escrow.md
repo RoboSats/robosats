@@ -62,7 +62,7 @@ If you never received the fiat payment from the buyer, do not click "Confirm Fia
 
 The cheating robot will risk losing that dispute and consequently forfeit their bond. The entirety of the locked escrow is released and rewarded to the honest robot.
 
-Don't forget about your order! If your peer sent the fiat and the order timer expires before you confirm the fiat was received, then you will risk losing the following dispute which will in turn cause your bond to be forfeitted. Take care to remember your order and back up your robot’s unique token!
+Don't forget about your order! If your peer sent the fiat and the order timer expires before you confirm the fiat was received, then you will risk losing the following dispute which will in turn cause your bond to be forfeitted. Take care to remember your order and keep your Garage Key safely backed up. It alone can restore the robot running this trade.
 
 Due to the time limits involved in the order process, it is recommended to use instant fiat payment methods to avoid exceeding the expiry timer. Be aware of fiat payment methods that allow the buyer to contact their fiat institution and chargeback the transaction. It is recommended to use payment methods that are irreversible. Refer to [Best Practices > Payment Methods](/docs/payment-methods/) for additional information.
 

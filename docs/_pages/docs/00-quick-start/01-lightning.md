@@ -28,6 +28,6 @@ While very infrequent, it can happen that some intermediary routing node goes of
 
 When buying bitcoin (receiving Sats on LN), the invoice you provide can fail in routing and take many retries. RoboSats attempts to send the Sats three times and, if it fails, will request a new invoice to try again. Rinse and repeat until it sends! During this time, your funds are considered safe.
 
-In the event of such a scenario, securely back up your robot's private token and check back on your order payout from time to time. If the issue persists, do not hesitate to reach out to the [SimpleX support group](/contribute/code/#communication-channels) so that RoboSats staff can investigate.
+In the event of such a scenario, make sure your Garage Key is safely backed up and check back on your order payout from time to time. If the issue persists, do not hesitate to reach out to the [SimpleX support group](/contribute/code/#communication-channels) so that RoboSats staff can investigate.
 
 {% include improve %}
