@@ -6,6 +6,11 @@
 
 The `Garage` contains user's tokens separated by `Slots`. Every `Slot` stores the core data generated with the token and a set of `Robots`. Tokens should always be sent to all coordinators upon creation or recovery to ensure consistency and a good user experience.
 
+The `Garage` operates in one of two modes (`GarageMode`):
+
+- **`garageKey` mode** (primary): A 32-byte master secret (`GarageKey`, encoded as bech32 `robo1...`) deterministically derives unlimited robot identities using BIP32 (`m/44'/88'/{accountIndex}'/0` over `sha512(plainKey)` as seed). Each account index produces a unique robot token. The current account index is auto-advanced to an unused/reusable slot (`ensureReusableSlot`) after trades complete, and can be navigated manually. Account recovery is published to Nostr relays as NIP-59 gift-wrapped kind-30078 events keyed to the Garage Key's Nostr identity (`sha256(sha512(plainKey))`).
+- **`legacy` mode** (recovery-only): Each robot is identified by an ephemeral base62 token generated client-side. This mode is read-only — it only allows completing ongoing trades. New orders cannot be created in legacy mode.
+
 <div align="center">
   <img src="./assets/garage.png" width="500px">
 </div>

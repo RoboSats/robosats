@@ -44,8 +44,12 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
 
 - Manages `Garage` — a map of token→`Slot` (each Slot holds a `Robot` + optional active order).
 - Polls `slot.activeOrder` status using `statusToDelay[status]` — faster polling for active trade statuses, `defaultDelay` otherwise.
-- Exposes `garage.getSlot()` (current slot), `garage.getActiveOrderId()`.
+- Exposes `garage.getSlot()` (current slot), `garage.getActiveOrderId()`, `recoverAccountFromRelays()`.
 - **Single-active-order invariant** is coordinator-enforced; `slot.activeOrder` just surfaces what the coordinator reports. The garage does not prevent creating a second order client-side.
+- **garageKey mode startup sequence** (in mount `useEffect`): waits for `garage.loadGarageKey()`, `garage.loadMode()`, and `garage.waitForSlotsLoaded()` to all resolve, then calls `garage.ensureReusableSlot(federation, { source: 'auto' })` to auto-advance to the next reusable account. `manualNavigationActive` is reset before this call so the auto-switch can proceed.
+- **`ensureReusableSlot` triggers**: called on mount (after slots/key/mode loaded), on page change to `'garage'` (after robot fetch), and after `fetchSlotActiveOrder` completes when a trade reaches a terminal status (14/17/18 = SUC/MLD/TLD — these also call `garage.resetManualNavigation()`).
+- **`recoverAccountFromRelays()`**: calls `garage.getGarageKey()?.recoverAccount(federation.roboPool)` — exposed from context so `RecoveryDialog` and `GarageKeyOnboarding` can trigger relay-based account recovery without direct access to `RoboPool`.
+- **Notification subscription key**: `FederationContext` was updated to subscribe by Nostr pubkey (current slot + slots with active orders) rather than token strings. `clearNotificationSubscriptions()` is called before every relay/connection reset to prevent stale handlers.
 
 ## Product Intent
 
@@ -61,6 +65,8 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
 - `fav.coordinator: 'robosats'` default looks like a preference but is replaced at runtime; treating it as authoritative coordinator selection is wrong.
 - Settings are loaded **asynchronously** — components consuming `settings` must handle the initial default state before async load completes.
 - `torStatus` polling uses `window.AndroidAppRobosats` which is only defined on Android; calling it on web throws.
+- **GarageContext startup ordering**: `garage.loadGarageKey()`, `garage.loadMode()`, and `garage.waitForSlotsLoaded()` must all complete before calling `ensureReusableSlot`. Calling it earlier causes it to see an empty `slots` map and returns `'no_slot'` — the robot doesn't auto-advance as intended.
+- **`ensureReusableSlot` with `source: 'auto'` is suppressed when `manualNavigationActive = true`** — if the user has manually navigated, auto-switch is paused. Forgetting `resetManualNavigation()` after trade completion leaves the user stuck on the same account indefinitely.
 
 ## Constraints
 
@@ -68,3 +74,4 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
 - Never make `fav.coordinator: 'robosats'` a hard preference — federation neutrality is a product invariant.
 - Do not add a clearnet-first path that bypasses `unsafeClient` / `HostAlert`.
 - Do not add one-active-order client enforcement to `GarageContext` — that is coordinator logic.
+- Do not expose `RoboPool` directly from `GarageContext` — use `recoverAccountFromRelays()` which routes through `Garage` and `GarageKey`.
