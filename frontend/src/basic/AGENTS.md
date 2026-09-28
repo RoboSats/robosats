@@ -9,19 +9,20 @@ robot identity → offers → order → trade.
 
 ## File Map
 
-| File / Dir      | Role                                                                |
-| --------------- | ------------------------------------------------------------------- |
-| `Main.tsx`      | Root — renders `<NavBar/>` + `<Routes/>`, wraps in `<MainDialogs/>` |
-| `Routes.tsx`    | React Router hash-router: defines all page routes                   |
-| `index.ts`      | Barrel export of all pages + `MainDialogs`, `NavBar`                |
-| `BookPage/`     | Wraps `<BookTable/>` — browse/filter the order book                 |
-| `MakerPage/`    | Wraps `<MakerForm/>` — create a new order                           |
-| `NavBar/`       | Navigation bar (AppBar + mobile FAB logic)                          |
-| `OrderPage/`    | Wraps `<TradeBox/>` + `<OrderDetails/>` — live trade state          |
-| `RobotPage/`    | Garage — robot identity, active slot, token management              |
-| `SettingsPage/` | User preferences + custom coordinator (power-user)                  |
-| `TopBar/`       | Top-bar chrome used by some pages                                   |
-| `MainDialogs/`  | Global overlay dialogs (not page-routed)                            |
+| File / Dir      | Role                                                                                                |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| `Main.tsx`      | Root — renders `<NavBar/>` + `<Routes/>`, wraps in `<MainDialogs/>`                                 |
+| `Routes.tsx`    | React Router hash-router: defines all page routes; mode-based routing (see below)                   |
+| `index.ts`      | Barrel export of all pages + `MainDialogs`, `NavBar`                                                |
+| `BookPage/`     | Wraps `<BookTable/>` — browse/filter the order book                                                 |
+| `GaragePage/`   | Garage Key mode identity surface (welcome/onboarding/profile views, account navigator, mode toggle) |
+| `MakerPage/`    | Wraps `<MakerForm/>` — create a new order                                                           |
+| `NavBar/`       | Navigation bar (AppBar + mobile FAB logic); legacy-disabled buttons via `useLegacyMode`             |
+| `OrderPage/`    | Wraps `<TradeBox/>` + `<OrderDetails/>` — live trade state                                          |
+| `RobotPage/`    | **Legacy mode** garage surface — ephemeral-token identity, active slot, token management            |
+| `SettingsPage/` | User preferences + custom coordinator (power-user)                                                  |
+| `TopBar/`       | Top-bar chrome used by some pages                                                                   |
+| `MainDialogs/`  | Global overlay dialogs (not page-routed)                                                            |
 
 ## Routes (from `Routes.tsx`)
 
@@ -38,6 +39,18 @@ robot identity → offers → order → trade.
 
 There is **no `/coordinator` route** in BasicMain — coordinator info is exposed via
 dialogs and the Pro `Federation` widget.
+
+## Mode-Based Routing
+
+`Routes.tsx` selects the garage component based on `garage.mode`:
+
+```ts
+const GarageComponent = garage.mode === 'garageKey' ? GaragePage : RobotPage;
+```
+
+In **legacy mode**, `/offers` and `/create` render a `<Navigate to='/garage' replace/>` instead of their pages. The `isLegacyMode` value from `useLegacyMode()` controls this redirect and also disables navigation buttons in `AppBar`, `DesktopBar`, and `TopBar`.
+
+Mode switching (via the toggle in `GaragePage`/`RobotPage`) shows a confirmation dialog, then calls `garage.deleteGarageKey()` + `garage.delete()` + `garage.setMode(newMode)` — all garage data is wiped before switching.
 
 ## Android Deep-Link Handshake (`Routes.tsx`)
 
@@ -62,12 +75,20 @@ if (orderPath) {
 
 ## Page Components
 
-### `RobotPage` (Garage)
+### `GaragePage` (garageKey mode)
 
+- **Three views**: `welcome` (no key yet), `onboarding` (generate or paste a garage key, account-recovery from relays), `profile` (robot avatar, account navigator, garage key display/copy, delete action).
+- View transition: `welcome` → `onboarding` (on generate/paste) → `profile` (on key confirmed + slot loaded). `RecoveryDialog` (open.recovery) overrides view transitions.
+- `GarageKeyProfile` exposes `nextAccount` / `previousAccount` navigation, which sets `manualNavigationActive=true` in `Garage` to suppress auto-switch.
+- Mode toggle (Garage Key ↔ Legacy) shows a confirmation dialog warning about data loss; confirms by clearing all garage data and reloading the page at `/garage`.
+- `DeleteGarageKeyConfirmationDialog` requires explicit double-confirmation before permanently wiping the key.
+
+### `RobotPage` (legacy mode)
+
+- **Legacy-only surface** — shown only when `garage.mode === 'legacy'`. Has the same mode-toggle UI as `GaragePage`, with a persistent warning banner ("Legacy mode is only for recovering ongoing trades").
 - Displays the current robot (avatar, nickname, hash ID) from the active `Garage` slot.
 - Token generation creates a new slot; existing slots remain until explicitly removed.
-- **Token loss = no recovery** — there is no recovery UI; ephemeral identity is a product
-  privacy invariant.
+- **Ephemeral token** — tokens are not persisted as master secrets; losing the token loses access to incomplete trades. The `RecoveryDialog` in legacy mode accepts a robot token (not a garage key).
 - Shows "One active order #{{orderID}}" when `robot?.activeOrderId` is set.
 
 ### `OrderPage`
@@ -118,10 +139,11 @@ users always start at the robot identity screen — required before making any t
 
 ## Constraints
 
-- Never add a token recovery UI to `RobotPage` — ephemeral robot identity is a product
-  invariant.
+- **Never add order-creation flows to `RobotPage` (legacy)** — it is a read-only recovery surface. All new order UX lives in `GaragePage`.
 - Do not add one-active-order enforcement to navigation — surface `slot.activeOrder`
   as-is from the coordinator.
 - BasicMain pages must work correctly without `ProMain` being loaded — no cross-dependency.
 - Do not add a `/coordinator` route to BasicMain without product sign-off — coordinator
   details are surfaced through dialogs and the Pro `Federation` widget.
+- Mode switch must always clear both `garageKey` and slots (`garage.deleteGarageKey()` + `garage.delete()`) before calling `garage.setMode()` — partial state from the previous mode causes unpredictable account derivation.
+- `GaragePage` and `RobotPage` are rendered by `Routes.tsx` based on `garage.mode` — never import or render both unconditionally.

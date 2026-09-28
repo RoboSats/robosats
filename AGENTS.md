@@ -15,7 +15,7 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 | `/frontend` | React 19 + TypeScript SPA — web, desktop, Android WebView, self-hosted |
 | `/frontend/src/contexts` | Global React state: App, Garage, Federation contexts |
 | `/frontend/src/components` | UI components: TradeBox, BookTable, MakerForm, EncryptedChat |
-| `/frontend/src/models` | TypeScript models: Order, Robot, Slot, Garage, Federation, Coordinator |
+| `/frontend/src/models` | TypeScript models: Order, Robot, Slot, Garage, GarageKey, Federation, Coordinator |
 | `/frontend/src/services` | API client, WebSocket, Nostr relay, platform abstraction |
 | `/android` | Native Kotlin Android app (WebView bridge to frontend) |
 | `/desktopApp` | Electron wrapper around React frontend |

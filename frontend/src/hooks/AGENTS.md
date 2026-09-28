@@ -3,14 +3,14 @@
 ## Purpose
 
 Custom hooks that encapsulate derived computations consumed by BasicMain pages, ProMain
-panels, and shared components. The directory contains **one file**:
-`useBondEstimate.ts`.
+panels, and shared components.
 
 ## Hook Inventory
 
-| Hook              | File                 | Purpose                                                       |
-| ----------------- | -------------------- | ------------------------------------------------------------- |
-| `useBondEstimate` | `useBondEstimate.ts` | Estimates bond amount in sats from current maker/order params |
+| Hook              | File                 | Purpose                                                               |
+| ----------------- | -------------------- | --------------------------------------------------------------------- |
+| `useBondEstimate` | `useBondEstimate.ts` | Estimates bond amount in sats from current maker/order params         |
+| `useLegacyMode`   | `useLegacyMode.ts`   | Returns `isLegacyMode` + `legacyDisabledTooltip` from `GarageContext` |
 
 ## `useBondEstimate`
 
@@ -64,6 +64,23 @@ Returns `null` when `currentPrice` is unavailable (coordinator not yet contacted
 - **Bond estimate is display-only** — the real bond is computed by the coordinator at
   order-creation time; this hook just provides a visual preview in `MakerForm`.
 
+## `useLegacyMode`
+
+**Signature**
+
+```ts
+useLegacyMode(): { isLegacyMode: boolean; legacyDisabledTooltip: string }
+```
+
+Reads `garage.getMode()` from `GarageContext` and returns:
+
+- `isLegacyMode: true` when `garage.mode === 'legacy'` — used to disable UI elements that require garageKey mode.
+- `legacyDisabledTooltip` — translated string shown in `<Tooltip>` wrappers on disabled buttons.
+
+**Used by:** `AppBar` (Offers button, FAB), `DesktopBar`/`TopBar` (Create/Offers tabs), `MakerForm` (submit button), `TakeButton` (Take Order button), `Routes.tsx` (redirect from `/offers` and `/create` to `/garage`).
+
+**Product intent:** Legacy mode is read-only — users must complete any ongoing trades before they can create new orders. The hook is the single gate for this policy in the UI; never add a separate `garage.getMode() === 'legacy'` check in components — always use this hook.
+
 ## Traps
 
 - The 3% hardcoded fallback can drift from `api/settings.py`'s `DEFAULT_BOND_SIZE`.
@@ -75,5 +92,6 @@ Returns `null` when `currentPrice` is unavailable (coordinator not yet contacted
 ## Constraints
 
 - Keep the 3% fallback in sync with `api/settings.py`'s `DEFAULT_BOND_SIZE`.
-- Do not add network calls to this hook — price/coordinator data must flow in via props.
+- Do not add network calls to any hook — price/coordinator data must flow in via props.
 - Do not add one-active-order enforcement logic — surface coordinator state only.
+- Never inline `garage.getMode() === 'legacy'` in components — always consume `useLegacyMode()` so the disabled-tooltip and policy stay in one place.
