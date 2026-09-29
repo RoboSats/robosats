@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -15,6 +15,8 @@ import {
 import { systemClient } from '../../services/System';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+
+const GARAGE_KEY_ALERT_MAX_INDEX = 5;
 
 interface Props {
   open: boolean;
@@ -35,6 +37,17 @@ const StoreTokenDialog = ({
   const isGarageKeyMode = garage.getMode() === 'garageKey';
   const garageKey = garage.getGarageKey();
 
+  const shouldSkipGarageKeyAlert =
+    isGarageKeyMode &&
+    garageKey !== null &&
+    garageKey.currentAccountIndex > GARAGE_KEY_ALERT_MAX_INDEX;
+
+  useEffect(() => {
+    if (open && shouldSkipGarageKeyAlert) {
+      onClickDone();
+    }
+  }, [open, shouldSkipGarageKeyAlert]);
+
   const displayToken =
     isGarageKeyMode && garageKey ? garageKey.encodedKey : garage.getSlot()?.token;
 
@@ -49,7 +62,7 @@ const StoreTokenDialog = ({
       );
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open && !shouldSkipGarageKeyAlert} onClose={onClose}>
       <DialogTitle>{displayTitle}</DialogTitle>
 
       <DialogContent>
