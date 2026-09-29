@@ -36,6 +36,7 @@ interface StoredSlot {
   lastOrder?: Partial<Order> & { id?: number };
   activeOrder?: Partial<Order> & { id?: number };
   lastOrderStatusKnown?: boolean;
+  legacy?: boolean;
 }
 
 const hasStoredOrderDetails = (
@@ -139,6 +140,7 @@ class Garage {
             () => {
               this.triggerHook('onSlotUpdate');
             },
+            rawSlot.legacy ?? true,
           );
           if (rawSlot.lastOrder?.id) {
             this.slots[rawSlot.token].lastOrder = new Order(rawSlot.lastOrder);
@@ -270,35 +272,40 @@ class Garage {
   };
 
   // Robots
-  createRobot: (federation: Federation, token: string, skipSelect?: boolean) => Promise<void> =
-    async (federation, token, skipSelect) => {
-      if (!token) return;
+  createRobot: (
+    federation: Federation,
+    token: string,
+    skipSelect?: boolean,
+    legacy?: boolean,
+  ) => Promise<void> = async (federation, token, skipSelect, legacy = true) => {
+    if (!token) return;
 
-      if (this.getSlot(token) === null) {
-        try {
-          const key = await genKey(token);
-          const robotAttributes = {
-            token,
-            pubKey: key.publicKeyArmored,
-            encPrivKey: key.encryptedPrivateKeyArmored,
-          };
+    if (this.getSlot(token) === null) {
+      try {
+        const key = await genKey(token);
+        const robotAttributes = {
+          token,
+          pubKey: key.publicKeyArmored,
+          encPrivKey: key.encryptedPrivateKeyArmored,
+        };
 
-          this.slots[token] = new Slot(
-            token,
-            federation.getCoordinatorsAlias(),
-            robotAttributes,
-            () => {
-              this.triggerHook('onSlotUpdate');
-            },
-          );
-          if (!skipSelect) this.setCurrentSlot(token);
-          await this.fetchRobot(federation, token);
-          this.save();
-        } catch (error) {
-          console.error('Error:', error);
-        }
+        this.slots[token] = new Slot(
+          token,
+          federation.getCoordinatorsAlias(),
+          robotAttributes,
+          () => {
+            this.triggerHook('onSlotUpdate');
+          },
+          legacy,
+        );
+        if (!skipSelect) this.setCurrentSlot(token);
+        await this.fetchRobot(federation, token);
+        this.save();
+      } catch (error) {
+        console.error('Error:', error);
       }
-    };
+    }
+  };
 
   fetchRobot = async (federation: Federation, token: string): Promise<void> => {
     const slot = this.getSlot(token);
@@ -397,7 +404,7 @@ class Garage {
       this.setCurrentSlot(token);
       await this.fetchRobot(federation, token);
     } else {
-      await this.createRobot(federation, token);
+      await this.createRobot(federation, token, undefined, false);
     }
     await this.getSlot(token)?.ensureLastOrderStatus(federation);
     this.setCurrentSlot(token);

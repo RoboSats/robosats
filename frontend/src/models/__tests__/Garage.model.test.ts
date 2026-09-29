@@ -6,6 +6,9 @@ import Order from '../Order.model';
 import type Federation from '../Federation.model';
 import { apiClient } from '../../services/api';
 import { systemClient } from '../../services/System';
+import { deriveCoordinatorToken } from '../../utils/garageKey';
+import { sha256 } from 'js-sha256';
+import hexToBase91 from '../../utils/hexToBase91';
 
 jest.mock('../../services/System', () => ({
   systemClient: { getItem: jest.fn(), setItem: jest.fn(), deleteItem: jest.fn() },
@@ -154,6 +157,124 @@ it('keeps the requested legacy default and loads saved mode without overwriting 
     .mocked(systemClient.setItem)
     .mock.calls.filter(([name]) => name === 'garage_slots');
   expect(JSON.parse(saves[saves.length - 1][1])[token].token).toBe(token);
+});
+
+// ─── Per-coordinator bearer isolation ────────────────────────────────────────
+
+describe('Slot.legacy flag and per-coordinator bearer tokens', () => {
+  it('legacy slot: all coordinators share the same tokenSHA256', () => {
+    const token = new GarageKey(key).getCurrentRobotToken();
+    const slot = new Slot(token, ['coordA', 'coordB'], {}, jest.fn(), true);
+    const sha256A = slot.robots['coordA']?.tokenSHA256;
+    const sha256B = slot.robots['coordB']?.tokenSHA256;
+    expect(sha256A).toBeTruthy();
+    expect(sha256A).toBe(sha256B);
+    expect(slot.legacy).toBe(true);
+  });
+
+  it('legacy slot: tokenSHA256 matches base91(sha256(token))', () => {
+    const token = new GarageKey(key).getCurrentRobotToken();
+    const slot = new Slot(token, ['coordA'], {}, jest.fn(), true);
+    const expected = hexToBase91(sha256(token));
+    expect(slot.robots['coordA']?.tokenSHA256).toBe(expected);
+  });
+
+  it('non-legacy slot: coordinators get distinct tokenSHA256 values', () => {
+    const token = new GarageKey(key).getCurrentRobotToken();
+    const slot = new Slot(token, ['coordA', 'coordB'], {}, jest.fn(), false);
+    const sha256A = slot.robots['coordA']?.tokenSHA256;
+    const sha256B = slot.robots['coordB']?.tokenSHA256;
+    expect(sha256A).toBeTruthy();
+    expect(sha256B).toBeTruthy();
+    expect(sha256A).not.toBe(sha256B);
+    expect(slot.legacy).toBe(false);
+  });
+
+  it('non-legacy slot: tokenSHA256 matches the derived coordinator bearer', () => {
+    const token = new GarageKey(key).getCurrentRobotToken();
+    const slot = new Slot(token, ['coordA'], {}, jest.fn(), false);
+    const coordToken = deriveCoordinatorToken(token, 'coordA');
+    const expected = hexToBase91(sha256(coordToken));
+    expect(slot.robots['coordA']?.tokenSHA256).toBe(expected);
+  });
+
+  it('non-legacy slot: tokenSHA256Hex is the hex sha256 of the coordinator token', () => {
+    const token = new GarageKey(key).getCurrentRobotToken();
+    const slot = new Slot(token, ['coordA'], {}, jest.fn(), false);
+    const coordToken = deriveCoordinatorToken(token, 'coordA');
+    expect(slot.robots['coordA']?.tokenSHA256Hex).toBe(sha256(coordToken));
+  });
+
+  it('non-legacy slot: per-coordinator bearer differs from the base token sha256', () => {
+    const token = new GarageKey(key).getCurrentRobotToken();
+    const slot = new Slot(token, ['coordA'], {}, jest.fn(), false);
+    const baseBearer = hexToBase91(sha256(token));
+    expect(slot.robots['coordA']?.tokenSHA256).not.toBe(baseBearer);
+  });
+
+  it('createRobotFromGarageKey creates a non-legacy slot', async () => {
+    jest.mocked(systemClient.getItem).mockResolvedValue(undefined);
+    jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+    const garage = new Garage();
+    await garage.waitForSlotsLoaded();
+    garage.setMode('garageKey');
+    garage.setGarageKey(new GarageKey(key));
+    await garage.createRobotFromGarageKey(federation, 0);
+    const slot = garage.getSlot();
+    expect(slot).not.toBeNull();
+    expect(slot!.legacy).toBe(false);
+  });
+
+  it('legacy flag is persisted and restored through save/load', async () => {
+    let savedJson = '';
+    jest.mocked(systemClient.setItem).mockImplementation((name, value) => {
+      if (name === 'garage_slots') savedJson = value as string;
+    });
+    jest.mocked(systemClient.getItem).mockImplementation(async (name) => {
+      if (name === 'garage_slots') return savedJson || undefined;
+      return undefined;
+    });
+    jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+    // Create a non-legacy slot via createRobotFromGarageKey.
+    const garage1 = new Garage();
+    await garage1.waitForSlotsLoaded();
+    garage1.setMode('garageKey');
+    garage1.setGarageKey(new GarageKey(key));
+    await garage1.createRobotFromGarageKey(federation, 0);
+    const originalToken = garage1.getSlot()!.token!;
+    // Trigger explicit save so savedJson is populated with the legacy flag.
+    garage1.save();
+
+    // Load a fresh Garage from the saved JSON.
+    const garage2 = new Garage();
+    await garage2.waitForSlotsLoaded();
+    const restoredSlot = garage2.getSlot(originalToken);
+    expect(restoredSlot).not.toBeNull();
+    expect(restoredSlot!.legacy).toBe(false);
+    // Bearer must still be coordinator-specific after restore.
+    const coordToken = deriveCoordinatorToken(originalToken, 'test');
+    expect(restoredSlot!.robots['test']?.tokenSHA256).toBe(hexToBase91(sha256(coordToken)));
+  });
+
+  it('absent legacy field in stored JSON defaults to true (backwards compat)', async () => {
+    const token = new GarageKey(key).getCurrentRobotToken();
+    const storedJson = JSON.stringify({
+      [token]: { token, robots: { test: {} } },
+      // No "legacy" field — simulates a slot stored before this feature.
+    });
+    jest.mocked(systemClient.getItem).mockImplementation(async (name) => {
+      if (name === 'garage_slots') return storedJson;
+      return undefined;
+    });
+    const garage = new Garage();
+    await garage.waitForSlotsLoaded();
+    const slot = garage.getSlot(token);
+    expect(slot).not.toBeNull();
+    expect(slot!.legacy).toBe(true);
+    // Legacy bearer: base91(sha256(token)).
+    expect(slot!.robots['test']?.tokenSHA256).toBe(hexToBase91(sha256(token)));
+  });
 });
 
 it('loads a recovered account only once and selects cached accounts before the refresh completes', async () => {
