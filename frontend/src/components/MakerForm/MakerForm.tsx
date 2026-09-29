@@ -27,7 +27,7 @@ import { type LimitList, defaultMaker, type Order } from '../../models';
 
 import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ConfirmationDialog, F2fMapDialog } from '../Dialogs';
+import { ConfirmationDialog, F2fMapDialog, UsedRobotDialog } from '../Dialogs';
 
 import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
@@ -81,8 +81,10 @@ const MakerForm = ({
   const [addNewPaymentMethodOpen, setAddNewPaymentMethodOpen] = useState<boolean>(false);
   const [hasCustomPaymentMethod, setHasCustomPaymentMethod] = useState<boolean>(false);
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
+  const [openUsedRobotDialog, setOpenUsedRobotDialog] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
+  const [changingRobot, setChangingRobot] = useState<boolean>(false);
   const [amountRangeEnabled, setAmountRangeEnabled] = useState<boolean>(true);
   const [hasRangeError, setHasRangeError] = useState<boolean>(false);
   const [openPublicDuration, setOpenPublicDuration] = useState<boolean>(false);
@@ -250,6 +252,44 @@ const MakerForm = ({
       });
     };
 
+  const buildOrderAttributes = (): object => ({
+    type: fav.type === 0 ? 1 : 0,
+    currency: fav.currency === 0 ? 1 : fav.currency,
+    amount: makerHasAmountRange ? null : maker.amount,
+    has_range: makerHasAmountRange,
+    min_amount: makerHasAmountRange ? maker.minAmount : null,
+    max_amount: makerHasAmountRange ? maker.maxAmount : null,
+    payment_method: maker.paymentMethodsText === '' ? 'not specified' : maker.paymentMethodsText,
+    premium: !maker.premium ? 0 : maker.premium,
+    satoshis: null,
+    public_duration: maker.publicDuration,
+    escrow_duration: maker.escrowDuration,
+    bond_size: maker.bondSize,
+    latitude: maker.latitude,
+    longitude: maker.longitude,
+    shortAlias: maker.coordinator,
+    password: maker.password ? sha256(maker.password) : null,
+    description: maker.description ? maker.description : null,
+  });
+
+  const submitOrder = (): void => {
+    void garage
+      .makeOrderWithRecovery(federation, buildOrderAttributes())
+      .then((order: Order) => {
+        if (order.id) {
+          navigateToPage(`order/${order.shortAlias}/${order.id}`, navigate);
+          clearMaker();
+        } else if (order?.bad_request) {
+          setBadRequest(order?.bad_request);
+        }
+        setSubmittingRequest(false);
+      })
+      .catch(() => {
+        setBadRequest('Request error');
+        setSubmittingRequest(false);
+      });
+  };
+
   const handleCreateOrder = function (): void {
     const slot = garage.getSlot();
 
@@ -257,54 +297,39 @@ const MakerForm = ({
       setSubmittingRequest(true);
 
       if (garage.garageKey && !slot.isReusable()) {
-        setBadRequest(
-          slot.activeOrder
-            ? 'This robot already has an active order. Navigate to a new account to create another order.'
-            : 'This robot has completed a trade. Please navigate to a new account to create orders.',
-        );
         setSubmittingRequest(false);
         setOpenDialogs(false);
+        if (slot.activeOrder) {
+          setBadRequest(
+            'This robot already has an active order. Navigate to a new account to create another order.',
+          );
+        } else {
+          setOpenUsedRobotDialog(true);
+        }
         return;
       }
 
-      const orderAttributes = {
-        type: fav.type === 0 ? 1 : 0,
-        currency: fav.currency === 0 ? 1 : fav.currency,
-        amount: makerHasAmountRange ? null : maker.amount,
-        has_range: makerHasAmountRange,
-        min_amount: makerHasAmountRange ? maker.minAmount : null,
-        max_amount: makerHasAmountRange ? maker.maxAmount : null,
-        payment_method:
-          maker.paymentMethodsText === '' ? 'not specified' : maker.paymentMethodsText,
-        premium: !maker.premium ? 0 : maker.premium,
-        satoshis: null,
-        public_duration: maker.publicDuration,
-        escrow_duration: maker.escrowDuration,
-        bond_size: maker.bondSize,
-        latitude: maker.latitude,
-        longitude: maker.longitude,
-        shortAlias: maker.coordinator,
-        password: maker.password ? sha256(maker.password) : null,
-        description: maker.description ? maker.description : null,
-      };
-
-      void garage
-        .makeOrderWithRecovery(federation, orderAttributes)
-        .then((order: Order) => {
-          if (order.id) {
-            navigateToPage(`order/${order.shortAlias}/${order.id}`, navigate);
-            clearMaker();
-          } else if (order?.bad_request) {
-            setBadRequest(order?.bad_request);
-          }
-          setSubmittingRequest(false);
-        })
-        .catch(() => {
-          setBadRequest('Request error');
-          setSubmittingRequest(false);
-        });
+      submitOrder();
     }
     setOpenDialogs(false);
+  };
+
+  const handleChangeRobotAndCreate = (): void => {
+    setChangingRobot(true);
+    void garage
+      .ensureReusableSlot(federation, { source: 'manual', allowRelayPublish: true })
+      .then(() => {
+        setOpenUsedRobotDialog(false);
+        setSubmittingRequest(true);
+        submitOrder();
+      })
+      .catch(() => {
+        setBadRequest('Could not switch to a new robot. Please try again.');
+        setOpenUsedRobotDialog(false);
+      })
+      .finally(() => {
+        setChangingRobot(false);
+      });
   };
 
   const handleChangePublicDuration = function (date: Date): void {
@@ -632,6 +657,12 @@ const MakerForm = ({
           setOpenWorldmap(false);
         }}
         zoom={maker.latitude === 0 && maker.longitude === 0 ? 2 : 6}
+      />
+      <UsedRobotDialog
+        open={openUsedRobotDialog}
+        onClose={() => setOpenUsedRobotDialog(false)}
+        onChangeRobot={handleChangeRobotAndCreate}
+        loading={changingRobot}
       />
       <Collapse in={!collapseAll}>
         <Grid container spacing={0} sx={{ maxHeight: '1em', justifyContent: 'space-between' }}>
