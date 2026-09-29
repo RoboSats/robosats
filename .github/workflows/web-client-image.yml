@@ -11,10 +11,10 @@ on:
         type: string
   push:
     branches: [ "main" ]
-    paths: ["frontend", "web"]
+    paths: ["frontend/**", "web/**"]
   pull_request:
     branches: [ "main" ]
-    paths: ["frontend", "web"]
+    paths: ["frontend/**", "web/**"]
 
 jobs:
   push_to_registry:
