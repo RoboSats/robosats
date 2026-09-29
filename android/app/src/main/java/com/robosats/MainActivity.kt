@@ -37,6 +37,7 @@ import com.robosats.tor.TorKmp
 import com.robosats.tor.TorKmpManager
 import com.robosats.tor.TorKmpManager.getTorKmpObject
 import com.vitorpamplona.ammolite.service.HttpClientManager
+import java.util.regex.Pattern
 
 class MainActivity : AppCompatActivity() {
     private val requestCodePostNotifications: Int = 1
@@ -49,6 +50,60 @@ class MainActivity : AppCompatActivity() {
     private lateinit var intentData: String
     private lateinit var useOrbotButton: Button
     var useProxy: Boolean = true
+
+    /**
+     * Allowlist for the order_id Intent extra.
+     *
+     * Legitimate values come exclusively from the coordinator's Nostr NIP-17
+     * notification DM and have the form  <shortAlias>/<numericOrderId>
+     * (e.g. "temple/12345"). The pattern is intentionally strict:
+     *   - shortAlias : 1-64 ASCII alphanumeric / hyphen / underscore chars
+     *   - orderId    : 1-12 decimal digits
+     *
+     * Any string that does not match is silently discarded (logged at WARN).
+     * This prevents both a malicious co-installed app and a rogue federation
+     * coordinator from injecting arbitrary JavaScript via evaluateJavascript().
+     */
+    private val ORDER_PATH_PATTERN: Pattern =
+        Pattern.compile("^[A-Za-z0-9_-]{1,64}/[0-9]{1,12}$")
+
+    /**
+     * Reads and validates the "order_id" Intent extra.
+     *
+     * Returns the raw string if it matches ORDER_PATH_PATTERN, or an empty
+     * string if the extra is absent, blank, or does not match.  Centralising
+     * this logic means onCreate and onNewIntent stay in sync automatically.
+     */
+    private fun extractOrderPath(intent: Intent): String {
+        val raw = intent.getStringExtra("order_id") ?: return ""
+        if (raw.isBlank()) return ""
+        return if (ORDER_PATH_PATTERN.matcher(raw).matches()) {
+            raw
+        } else {
+            Log.w("DeepLink", "Rejected order_id extra — failed allowlist check: \"$raw\"")
+            ""
+        }
+    }
+
+    /**
+     * Escapes a string so it can be safely embedded inside a JavaScript
+     * single-quoted string literal used in evaluateJavascript().
+     *
+     * Mirrors the encodeForJavaScript() helper in WebAppInterface to ensure
+     * that even a value that somehow slips past the allowlist cannot break
+     * out of the surrounding JS string context.
+     */
+    private fun encodeForJavaScript(input: String): String =
+        input
+            .replace("\\", "\\\\")
+            .replace("'", "\\'")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+            .replace("<", "\\u003C")
+            .replace(">", "\\u003E")
+            .replace("&", "\\u0026")
 
     // File chooser callback
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
@@ -96,14 +151,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        val intent = intent
-        intentData = ""
-        if (intent != null) {
-            val orderId = intent.getStringExtra("order_id")
-            if (orderId?.isNotEmpty() == true) {
-                intentData = orderId
-            }
-        }
+        intentData = extractOrderPath(intent)
 
 
         val settingProxy = EncryptedStorage.getEncryptedStorage("settings_use_proxy")
@@ -118,11 +166,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent.let {
-            val orderId = intent.getStringExtra("order_id")
-            if (orderId?.isNotEmpty() == true) {
-                intentData = orderId
-            }
+        val newPath = extractOrderPath(intent)
+        if (newPath.isNotEmpty()) {
+            intentData = newPath
         }
     }
 
@@ -404,7 +450,12 @@ class MainActivity : AppCompatActivity() {
                     if (intentData != "") {
                         webView.post {
                             try {
-                                webView.evaluateJavascript("javascript:window.AndroidDataRobosats =  { navigateToPage: '$intentData' }", null)
+                                // encodeForJavaScript provides defence-in-depth: even if a
+                                // value somehow bypasses the ORDER_PATH_PATTERN allowlist in
+                                // extractOrderPath(), escaping quotes and control characters
+                                // here ensures it cannot break out of the JS string literal.
+                                val safeIntentData = encodeForJavaScript(intentData)
+                                webView.evaluateJavascript("javascript:window.AndroidDataRobosats = { navigateToPage: '$safeIntentData' }", null)
                             } catch (e: Exception) {
                                 Log.e("NavigateToPage", "Error evaluating JavaScript: $e")
                             }
