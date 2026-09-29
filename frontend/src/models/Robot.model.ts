@@ -24,6 +24,7 @@ interface RobotApiResponse {
 interface RewardApiResponse {
   successful_withdrawal?: boolean;
   bad_invoice?: string;
+  earned_rewards?: number;
 }
 
 interface WebhookApiResponse {
@@ -149,10 +150,8 @@ class Robot {
   fetchReward = async (
     federation: Federation,
     signedInvoice: string,
-  ): Promise<null | {
-    bad_invoice?: string;
-    successful_withdrawal?: boolean;
-  }> => {
+    routingBudgetPPM?: number,
+  ): Promise<null | RewardApiResponse> => {
     if (!federation) return null;
 
     const coordinator = federation.getCoordinator(this.shortAlias);
@@ -163,13 +162,15 @@ class Robot {
         '/api/reward/',
         {
           invoice: signedInvoice,
+          routing_budget_ppm: routingBudgetPPM,
         },
         { tokenSHA256: this.tokenSHA256 },
       )
       .catch((e) => {
         console.log(e);
       })) as RewardApiResponse | undefined;
-    this.earnedRewards = data?.successful_withdrawal === true ? 0 : this.earnedRewards;
+    this.earnedRewards =
+      data?.successful_withdrawal === true ? (data.earned_rewards ?? 0) : this.earnedRewards;
 
     return data ?? {};
   };
