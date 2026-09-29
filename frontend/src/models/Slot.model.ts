@@ -32,9 +32,6 @@ class Slot {
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
-    // Legacy slots share one bearer across all coordinators (old behaviour).
-    // Non-legacy (garage-key) slots derive a distinct bearer per coordinator so
-    // that a compromised coordinator cannot replay the token at another one.
     const sharedTokenSHA256Hex = sha256(token);
     const sharedTokenSHA256 = hexToBase91(sharedTokenSHA256Hex);
 
@@ -88,14 +85,6 @@ class Slot {
   nostrPubKey?: string;
   availableRewards: string | null = null;
   loading: boolean;
-  /**
-   * `true`  → legacy slot: one shared bearer for every coordinator (old behaviour).
-   * `false` → garage-key slot: per-coordinator bearer derived via
-   *           deriveCoordinatorToken(baseToken, shortAlias).
-   *
-   * This flag gates all coordinator-isolation logic and is persisted in
-   * StoredSlot so the correct mode is restored on reload.
-   */
   legacy: boolean;
 
   onSlotUpdate: () => void;
