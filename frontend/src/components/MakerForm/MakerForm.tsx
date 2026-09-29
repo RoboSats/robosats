@@ -82,6 +82,7 @@ const MakerForm = ({
   const [hasCustomPaymentMethod, setHasCustomPaymentMethod] = useState<boolean>(false);
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [openUsedRobotDialog, setOpenUsedRobotDialog] = useState<boolean>(false);
+  const [usedRobotHasActiveOrder, setUsedRobotHasActiveOrder] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
   const [changingRobot, setChangingRobot] = useState<boolean>(false);
@@ -299,13 +300,8 @@ const MakerForm = ({
       if (garage.garageKey && !slot.isReusable()) {
         setSubmittingRequest(false);
         setOpenDialogs(false);
-        if (slot.activeOrder) {
-          setBadRequest(
-            'This robot already has an active order. Navigate to a new account to create another order.',
-          );
-        } else {
-          setOpenUsedRobotDialog(true);
-        }
+        setUsedRobotHasActiveOrder(Boolean(slot.activeOrder));
+        setOpenUsedRobotDialog(true);
         return;
       }
 
@@ -316,8 +312,13 @@ const MakerForm = ({
 
   const handleChangeRobotAndCreate = (): void => {
     setChangingRobot(true);
+    const currentIndex = garage.getCurrentAccountIndex();
     void garage
-      .ensureReusableSlot(federation, { source: 'manual', allowRelayPublish: true })
+      .findNextUnusedAccount(federation, currentIndex + 1)
+      .then(async (nextIndex) => {
+        await garage.setAccountIndex(federation, nextIndex);
+        garage.publishAccountRecovery(federation, nextIndex);
+      })
       .then(() => {
         setOpenUsedRobotDialog(false);
         setSubmittingRequest(true);
@@ -660,6 +661,8 @@ const MakerForm = ({
       />
       <UsedRobotDialog
         open={openUsedRobotDialog}
+        action='make'
+        hasActiveOrder={usedRobotHasActiveOrder}
         onClose={() => setOpenUsedRobotDialog(false)}
         onChangeRobot={handleChangeRobotAndCreate}
         loading={changingRobot}
