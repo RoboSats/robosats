@@ -47,7 +47,7 @@ Security settings (non-obvious ones):
 User agent: `"AndroidRobosats"`. Service Workers disabled.
 
 On load: if `settings_notifications != "false"` → `startForegroundService(NotificationsService)`.
-Deep-link injection: `webView.evaluateJavascript("javascript:window.AndroidDataRobosats = { navigateToPage: '$intentData' }", null)`.
+Deep-link injection (sanitized): `intentData` is first validated by `extractOrderPath()` against `ORDER_PATH_PATTERN` (`^[A-Za-z0-9_-]{1,64}/[0-9]{1,12}$`), then escaped by `encodeForJavaScript()` before being interpolated into the JS string literal passed to `evaluateJavascript()`.
 
 ## Privacy teardown (`onDestroy`)
 Removes all cookies + flushes, clears cache/history/formData/sslPreferences, `WebStorage.deleteAllData()`, removes session cookies. Full wipe on every app close.
@@ -86,6 +86,7 @@ Input validation: `UUID_PATTERN` (hex UUID format) + `SAFE_STRING_PATTERN` (`[a-
 `companion object` — `var isOnMobileData`, `var isOnWifiData`; `updateNetworkCapabilities(networkCapabilities): Boolean` using `TRANSPORT_CELLULAR`/`TRANSPORT_WIFI`; returns `true` if network type changed.
 
 ## Traps
+- **Never reintroduce raw Intent-extra interpolation into `evaluateJavascript()`.** The `order_id` Intent extra is attacker-controlled (any co-installed app can `startActivity()` with arbitrary extras; a malicious coordinator can craft it via the Nostr `order_id` DM tag). All intent extras must pass through `extractOrderPath()` (allowlist) **and** `encodeForJavaScript()` (escaping) before reaching `evaluateJavascript()`. Both layers are required: the whitelist kills unknown payloads at intake; the escaping is defence-in-depth for any future loosening of the pattern.
 - WebSocket callbacks have **inconsistent casing**: `onWSMessage` (capital WS) vs `onWsError`/`onWsClose` (capital W, lowercase s). The private Kotlin function is `onWsMessage` — the JS-facing name differs. Frontend must match these exactly.
 - `allowUniversalAccessFromFileURLs = true` is required and intentional — do not remove it without confirming `.onion` requests still work.
 - `resolvePromise`/`rejectPromise` silently swallow invalid UUIDs (log only, no JS callback fired) — the frontend promise will hang if a UUID is malformed.
