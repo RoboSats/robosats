@@ -142,20 +142,6 @@ export function garageKeyToRobotToken(garageKey: string, accountIndex: number = 
   return derivedKeyToToken(derivedKey);
 }
 
-/**
- * Derives a per-coordinator bearer token from a robot's base token and the
- * coordinator's shortAlias.  Domain-separated so the output is distinct from
- * every other coordinator and from the base token itself, while remaining
- * fully deterministic (and therefore recoverable) from the garage key alone.
- *
- * Construction:
- *   sha256("robosats-coordinator-token:" + shortAlias + "|" + baseToken)
- *   → 32 raw bytes → derivedKeyToToken() → 36-char base62 string
- *
- * Security property: a coordinator that sees this token cannot derive the
- * bearer for any other coordinator, because SHA-256 pre-image resistance
- * means inverting the hash is infeasible.
- */
 export function deriveCoordinatorToken(baseToken: string, shortAlias: string): string {
   const preimage = `robosats-coordinator-token:${shortAlias}|${baseToken}`;
   const preimageBytes = new TextEncoder().encode(preimage);

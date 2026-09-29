@@ -129,10 +129,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
   const connectWebsocket = (): void => {
     const slot = garage.getSlot();
-    // For legacy slots tokenSHA256Hex === sha256(slot.token).
-    // For garage-key slots tokenSHA256Hex === sha256(coordToken) — the
-    // per-coordinator bearer — so the WS authenticates with the same
-    // credential as every other API call to this coordinator.
     const robot = slot?.getRobot(order.shortAlias);
 
     if (!slot?.token) return;
