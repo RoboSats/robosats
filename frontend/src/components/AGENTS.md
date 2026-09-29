@@ -9,25 +9,25 @@ book), `EncryptedChat` (three transport implementations), `RobotAvatar`, `RobotI
 
 ## Component Map
 
-| Directory / File    | Role                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------ |
-| `TradeBox/`         | Central trade UI — maps all 19 `Order.Status` values to user-facing prompts and actions          |
-| `MakerForm/`        | Order creation form — amount, currency, premium, payment method, duration, bond size             |
-| `BookTable/`        | Filterable, sortable order book table                                                            |
-| `OrderDetails/`     | Order summary card + `TakeButton`                                                                |
-| `EncryptedChat/`    | Chat UI — three transport implementations (see below)                                            |
-| `RobotAvatar/`      | Deterministic robot avatar; `placeholder.json` swapped for `placeholder_highres.json` on Android |
-| `RobotInfo/`        | Active order summary shown in robot profile; "One active order #{{orderID}}"                     |
-| `FederationTable/`  | Coordinator list table with ratings column, "Verify ratings" button                              |
-| `Dialogs/`          | Global confirmation dialogs — branches `hasRobot ? StoreTokenDialog : NoRobotDialog`             |
-| `HostAlert/`        | Clearnet-use warning suite — `index.tsx`, `SelfhostedAlert.tsx`, `UnsafeAlert.tsx`               |
-| `SettingsForm/`     | Settings form shared between BasicMain `SettingsPage` and ProMain `Settings` widget              |
-| `Charts/`           | Chart components (used by ProMain `Depth` widget)                                                |
-| `DataGrid/`         | Data grid wrapper                                                                                |
-| `Map/`              | Leaflet map component for F2F order geolocation picker                                           |
-| `PaymentMethods/`   | Payment method icons and display helpers                                                         |
-| `Icons/`            | Custom SVG icon components                                                                       |
-| `ErrorBoundary.tsx` | React error boundary for uncaught render errors                                                  |
+| Directory / File    | Role                                                                                                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TradeBox/`         | Central trade UI — maps all 19 `Order.Status` values to user-facing prompts and actions                                                                                                                 |
+| `MakerForm/`        | Order creation form — amount, currency, premium, payment method, duration, bond size; disabled in legacy mode via `useLegacyMode`; calls `garage.makeOrderWithRecovery` (not `slot.makeOrder` directly) |
+| `BookTable/`        | Filterable, sortable order book table                                                                                                                                                                   |
+| `OrderDetails/`     | Order summary card + `TakeButton`                                                                                                                                                                       |
+| `EncryptedChat/`    | Chat UI — three transport implementations (see below)                                                                                                                                                   |
+| `RobotAvatar/`      | Deterministic robot avatar; `placeholder.json` swapped for `placeholder_highres.json` on Android                                                                                                        |
+| `RobotInfo/`        | Active order summary shown in robot profile; "One active order #{{orderID}}"                                                                                                                            |
+| `FederationTable/`  | Coordinator list table with ratings column, "Verify ratings" button                                                                                                                                     |
+| `Dialogs/`          | Global confirmation dialogs — `Recovery` (mode-aware: garage key or robot token), `DeleteGarageKeyConfirmation`, `StoreToken`, `Profile`                                                                |
+| `HostAlert/`        | Clearnet-use warning suite — `index.tsx`, `SelfhostedAlert.tsx`, `UnsafeAlert.tsx`                                                                                                                      |
+| `SettingsForm/`     | Settings form shared between BasicMain `SettingsPage` and ProMain `Settings` widget                                                                                                                     |
+| `Charts/`           | Chart components (used by ProMain `Depth` widget)                                                                                                                                                       |
+| `DataGrid/`         | Data grid wrapper                                                                                                                                                                                       |
+| `Map/`              | Leaflet map component for F2F order geolocation picker                                                                                                                                                  |
+| `PaymentMethods/`   | Payment method icons and display helpers                                                                                                                                                                |
+| `Icons/`            | Custom SVG icon components                                                                                                                                                                              |
+| `ErrorBoundary.tsx` | React error boundary for uncaught render errors                                                                                                                                                         |
 
 There are **no `TorIndicator/` or `TradeSteps/` directories** — these do not exist.
 `NavBar` lives in `src/basic/NavBar/`, not in `components/`.
@@ -92,8 +92,11 @@ Also in `TradeBox/EncryptedChat/`:
 - `ImageLightbox.tsx` — full-screen image overlay for chat image messages
 - `PrivacyWarningDialog.tsx` — shown before first message, warns about metadata
 
-Messages are PGP-encrypted client-side before sending; the server stores ciphertext only.
-See `src/pgp/AGENTS.md` for encryption details.
+Text messages are PGP-encrypted client-side before sending; the server stores ciphertext only.
+See `src/pgp/AGENTS.md` for encryption details. **Image attachments are also E2E-encrypted**:
+EXIF-stripped → XChaCha20-Poly1305 encrypted → ciphertext-only upload to Blossom
+(`/blossom/upload`); the decryption key + nonce travel inside the PGP-encrypted message.
+See `src/utils/AGENTS.md §Blossom` and `chat/AGENTS.md §Image attachments` for the full flow.
 
 ## FederationTable
 
@@ -104,6 +107,25 @@ schnorr-verifies every signature, filtering out invalid ones. Warning text:
 _"Verifying all ratings might take some time; this window may freeze for a few seconds
 while the cryptographic certification is in progress."_
 
+**Ratings trust model**: kind 31986 is a **Nostr replaceable event** keyed by
+`pubkey` (the rating robot's secp256k1 pubkey, derived deterministically from its token)
+
+- `d` tag = `"{shortAlias}:{orderId}"`. Relays replace any older event with the same
+  author + `d` value, so exactly **one rating per robot per order** can exist — re-submitting
+  overwrites, not accumulates. Two structural guards enforce authenticity:
+
+1. **Coordinator signature (`sig` tag + `p` tag)**: the event carries the coordinator's
+   schnorr signature of `${robotPubKey}${orderId}` (signed with the coordinator's
+   `NOSTR_NSEC`). `loadRatings` only credits events whose `p` tag matches a known
+   coordinator pubkey. Without the coordinator's private key, neither the robot nor a
+   third party can forge a valid `sig` — so coordinator self-inflation via fake trades
+   is impossible.
+2. **"Verify ratings" button** (`loadRatings(verify=true)`): re-fetches events and runs
+   `verifyCoordinatorToken` — schnorr-verifies every `sig` tag against the coordinator
+   pubkey in the `p` tag, dropping any event that fails. The default unverified path
+   trusts the relay's author filter for performance (acceptable on Tor); the button is
+   the cryptographic fallback for users who want certainty. Do not remove it.
+
 ## HostAlert
 
 - `index.tsx` — selects which alert to show based on client type.
@@ -111,11 +133,17 @@ while the cryptographic certification is in progress."_
 - `SelfhostedAlert.tsx` — shown on selfhosted client.
   These are not bugs or over-engineering — they actively discourage clearnet use for privacy.
 
-## Dialogs / `Confirmation.tsx`
+## Dialogs
 
-`return hasRobot ? <StoreTokenDialog .../> : <NoRobotDialog .../>` — props: `onClickDone`,
-`hasRobot`, `onClickGenerateRobot`. The "generate robot" path is shown to any user without
-a robot in the current garage slot; it is not a one-active-order guard.
+**`Recovery.tsx`** — mode-aware recovery dialog (`open.recovery` in AppContext):
+
+- garageKey mode: validates bech32 `robo1...` garage key via `validateGarageKey`, constructs a `GarageKey` instance, calls `recoverAccountFromRelays()` + `garage.createRobotFromGarageKey()` + `garage.ensureReusableSlot()`, shows a toast if account index was advanced. Shows a `LinearProgress` during relay query.
+- Legacy mode: accepts a robot token and rebuilds the slot (old behaviour).
+- The mode chip in the dialog title reflects the current `garage.getMode()` value.
+
+**`DeleteGarageKeyConfirmation.tsx`** — explicit double-confirmation before `garage.deleteGarageKey()` + `garage.delete()`. Always requires this dialog — never call deleteGarageKey without user confirmation.
+
+`StoreToken`, `Profile` dialogs unchanged.
 
 ## Product Intent
 
@@ -150,5 +178,6 @@ a robot in the current garage slot; it is not a one-active-order guard.
 - Do not add one-active-order enforcement to `TakeButton` or `MakerForm` — coordinator logic.
 - Do not make `EncryptedNostrChat` the default transport until production-ready.
 - Keep `MakerForm` validation in sync with coordinator `/api/limits`.
-- Do not add a token recovery UI — ephemeral robot identity is a product invariant.
+- **Never bypass the `isReusable()` guard in `MakerForm` and `TakeButton`** — it is the client-side privacy boundary preventing a garageKey-mode robot with a completed trade from being reused. This guard only fires when `garage.garageKey` is set (no-op in legacy mode).
+- `Recovery.tsx` is the correct place for all token/key recovery UI — do not add inline recovery flows to `MakerForm`, `TakeButton`, or page components.
 - Do not add `TorIndicator/` or `TradeSteps/` — these components do not exist.

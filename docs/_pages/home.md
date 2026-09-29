@@ -44,7 +44,7 @@ feature_row:
   - image_path: /assets/images/misc/feature-private.png
     alt: "private"
     title: "Absolutely Private"
-    excerpt: "Best privacy practices by default.<br/> Simple and KYC-free. You will generate a random Robot avatar for a single use. The exchange is Tor-only.<br/>"
+    excerpt: "Best privacy practices by default.<br/> Simple and KYC-free. One Garage Key generates a fresh Robot avatar for every trade. The exchange is Tor-only.<br/>"
     url: "/docs/private/"
     btn_class: "btn--primary"
     btn_label: "Learn more"

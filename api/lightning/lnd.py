@@ -23,6 +23,7 @@ from . import (
     verrpc_pb2,
     verrpc_pb2_grpc,
 )
+from .decoded import DecodedPayReq, HopHint
 
 #######
 # Works with LND (c-lightning in the future for multi-vendor resilience)
@@ -92,12 +93,39 @@ class LNDNode:
 
     @classmethod
     def decode_payreq(cls, invoice):
-        """Decodes a lightning payment request (invoice)"""
+        """Decodes a lightning payment request (invoice).
+
+        Returns a ``DecodedPayReq`` so callers are fully vendor-agnostic.
+        LND's ``PayReq`` uses ``num_satoshis`` (int64), ``timestamp`` for
+        creation time, and ``route_hints[].hop_hints[]`` with plain-int fee
+        fields; this method normalises all of these to the shared schema.
+        """
         lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
         request = lightning_pb2.PayReqString(pay_req=invoice)
         response = lightningstub.DecodePayReq(request)
         log("lightning_pb2_grpc.DecodePayReq", request, response)
-        return response
+
+        # Normalise private route hints: LND uses route_hints[].hop_hints[]
+        # with plain-int fee fields; convert to HopHint dataclasses.
+        route_hints = []
+        for hinted_route in response.route_hints:
+            hops = [
+                HopHint(
+                    fee_base_msat=hop.fee_base_msat,
+                    fee_proportional_millionths=hop.fee_proportional_millionths,
+                )
+                for hop in hinted_route.hop_hints
+            ]
+            route_hints.append(hops)
+
+        return DecodedPayReq(
+            num_satoshis=response.num_satoshis,
+            payment_hash=response.payment_hash,
+            created_at=response.timestamp,
+            expiry=response.expiry,
+            description=response.description,
+            route_hints=route_hints,
+        )
 
     @classmethod
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
@@ -270,7 +298,7 @@ class LNDNode:
         hold_payment["preimage"] = preimage.hex()
         hold_payment["payment_hash"] = payreq_decoded.payment_hash
         hold_payment["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp)
+            datetime.fromtimestamp(payreq_decoded.created_at)
         )
         hold_payment["expires_at"] = hold_payment["created_at"] + timedelta(
             seconds=payreq_decoded.expiry
@@ -461,7 +489,7 @@ class LNDNode:
             for hinted_route in route_hints:
                 route_cost = 0
                 # ...add up the cost of every hinted hop...
-                for hop_hint in hinted_route.hop_hints:
+                for hop_hint in hinted_route:
                     route_cost += hop_hint.fee_base_msat / 1000
                     route_cost += (
                         hop_hint.fee_proportional_millionths * num_satoshis / 1_000_000
@@ -492,7 +520,7 @@ class LNDNode:
             return payout
 
         payout["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp)
+            datetime.fromtimestamp(payreq_decoded.created_at)
         )
         payout["expires_at"] = payout["created_at"] + timedelta(
             seconds=payreq_decoded.expiry

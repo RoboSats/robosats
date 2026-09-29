@@ -45,6 +45,28 @@ Encryption uses PGP (Curve25519) with robot's keypair:
 - Messages signed with sender's private key for authenticity verification
 - Private key stored encrypted with robot token as passphrase
 
+### Image attachments (Blossom)
+Chat image uploads are also end-to-end encrypted — the server stores only ciphertext:
+1. Image is re-encoded through a canvas to **strip EXIF/metadata** before encryption.
+2. Encrypted client-side with **XChaCha20-Poly1305** (`@noble/ciphers`, random 32-byte key
+   + 24-byte nonce per file). Only the ciphertext is uploaded to the coordinator's
+   `/blossom/upload`, authorised by a Nostr **kind-24242** auth event signed with the
+   robot's `nostrSecKey`.
+3. Blobs are **content-addressed by the SHA-256 of the ciphertext** — the coordinator
+   cannot link different uploads from the same robot.
+4. The decryption key and nonce travel inside the PGP-encrypted chat `Message` row —
+   never stored in plaintext on the server.
+
+See `frontend/src/utils/blossom.ts` and `frontend/src/utils/crypto/xchacha20.ts`.
+
+### Dispute evidence
+The chat's E2E encryption is compatible with coordinator dispute adjudication. On dispute,
+both parties **voluntarily provide the decrypted chat export alongside the original
+ciphertext**. The coordinator verifies the PGP signatures on the decrypted plaintext against
+each robot's stored `public_key` — cryptographically confirming the decrypted text is the
+authentic content of the encrypted messages, without the coordinator ever having held the
+private keys or seen the plaintext during the trade.
+
 ## Frontend Chat Implementations
 Three implementations in `frontend/src/components/TradeBox/EncryptedChat/`:
 1. **Socket** (`EncryptedSocketChat`) — WebSocket-based, preferred

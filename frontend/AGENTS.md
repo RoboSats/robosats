@@ -12,13 +12,13 @@ Single-page application serving web, desktop, Android, and self-hosted clients. 
 - `frontend/src/components/AGENTS.md` — shared UI components (TradeBox, MakerForm, EncryptedChat…)
 - `frontend/src/contexts/AGENTS.md` — AppContext, FederationContext, GarageContext, ThemeProvider
 - `frontend/src/geo/AGENTS.md` — GeoJSON web/Android split
-- `frontend/src/hooks/AGENTS.md` — custom React hooks (`useBondEstimate` — the only hook)
+- `frontend/src/hooks/AGENTS.md` — custom React hooks (`useBondEstimate`, `useLegacyMode`)
 - `frontend/src/i18n/AGENTS.md` — i18next setup, Web.js vs Mobile.js, 17 locales
-- `frontend/src/models/AGENTS.md` — TypeScript models (Order, Robot, Slot, Garage, Federation…)
+- `frontend/src/models/AGENTS.md` — TypeScript models (Order, Robot, Slot, Garage, GarageKey, Federation…)
 - `frontend/src/pgp/AGENTS.md` — OpenPGP key management and message encryption
 - `frontend/src/pro/AGENTS.md` — ProMain, grid layout, arbitrage views
 - `frontend/src/services/AGENTS.md` — API, WebSocket, System, Roboidentities singletons
-- `frontend/src/utils/AGENTS.md` — utility functions, bond calculator, federation helpers
+- `frontend/src/utils/AGENTS.md` — utility functions, bond calculator, federation helpers, garage-key crypto, account recovery
 
 ## Architecture
 
@@ -128,6 +128,8 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - `window.WebAssembly` gate in `index.ejs`: without WASM the `window.RobosatsSettings` global is **never set** and the app silently shows `.noscript-error` instead of loading. Required by `robo-identities-wasm` (`experiments.asyncWebAssembly: true`).
 - `static/frontend/` (JS bundle) is generated output living inside the source directory — **never hand-edit it**.
 - Django collectstatic outputs (`static/{rest_framework,admin,import_export,drf_spectacular_sidecar}/`) are also inside the tree (`.prettierignore` lists them) — not hand-editable.
+- **Garage mode** (`'legacy'` | `'garageKey'`) is persisted in `systemClient` under key `garage_mode` (default `'legacy'` during transition). Garage Key encoded string lives under `garage_key`; slots under `garage_slots`/`garage_current_slot`. Never read these raw — always go through `Garage.model` methods.
+- **`@scure/base` and `@scure/bip32`** used by `utils/garageKey.ts` are **transitive** dependencies pulled in by `nostr-tools` — they are not listed as direct dependencies in `package.json`. A `nostr-tools` major bump that drops `@scure/*` as a peer could silently break garage-key derivation at runtime without a compilation error. They should be promoted to direct dependencies.
 - `Settings.model.ts`'s `Language` union **duplicates `'pl'` and omits `'ja'`** — `ja` locale ships and resolves but is not a valid TypeScript `Language` type (latent type-safety bug).
 - **MUI v9 API**: `inputProps`/`PaperProps`/`primaryTypographyProps`/`imgProps`/`TabIndicatorProps`/`components+componentsProps` are **silently ignored** in MUI v9 — no warning, styling vanishes. Use `slotProps.{htmlInput,paper,primary,img,indicator}` / `slots`.
 - **`SvgIcon color` only accepts palette keys** (`action`, `primary`, …) — `color='text.secondary'` silently falls back to `inherit`. Use `sx={{ color: 'text.secondary' }}` instead.
@@ -146,7 +148,9 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - Never add a `desktop-pro` HTML entry without explicit product sign-off.
 - New locales: add to `static/locales/` AND to `src/i18n/Mobile.js` static imports together — Android bundle will be missing the locale otherwise.
 - Do not add one-active-order enforcement to take/create buttons — that is coordinator-side logic.
-- Do not add a token recovery UI — ephemeral robot identity is a product privacy invariant.
+- **Garage Key mode is the primary identity system** (`garage.mode === 'garageKey'`). Legacy mode is read-only recovery for in-progress trades only — never add new order-creation flows to legacy mode.
+- Ephemeral-token privacy invariant applies to **legacy mode only**: `genBase62Token` tokens are never persisted as a long-lived secret. In garageKey mode the Garage Key _is_ the persistent master secret — it must always be treated with equal privacy care.
+- Do not remove or bypass the `isReusable()` guard in `MakerForm` / `TakeButton` — it prevents robots with completed or active trades from being reused in garageKey mode (privacy boundary per account).
 - **Never store MUI event `e.target.value` directly into `Maker` fields or order payloads** — coerce to `number` first (bond size, premium, amounts, ratings, routing/lnproxy budgets are money-affecting).
 - **Never index `currencies.json`/`federation.json`/`thirdparties.json`/`lnproxies.json` with an inline `as Record<…>` cast** — use the typed accessor in `src/utils/currencies.ts` or equivalent.
 - `npm run typecheck` (`tsc --noEmit`) is enforced by CI (`js-linter.yml`) and a pre-commit hook — must remain green.

@@ -45,3 +45,5 @@ Garage → Slot → Robot, Federation → Coordinator, Order/MakerForm, and back
 - Keep `blocked-upgrades.md` updated in the same PR that attempts or reverts any dependency bump.
 - Do not remove a blocked-upgrade entry until the blocker is fully resolved and the upgrade
   has been successfully merged to `main`.
+- Whenever `blocked-upgrades.md` is updated, also update the corresponding `ignore:` rule
+  in `.github/dependabot.yml` in the same PR — both files must stay in sync.

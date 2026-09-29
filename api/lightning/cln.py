@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from . import hold_pb2, hold_pb2_grpc, node_pb2, node_pb2_grpc
 from . import primitives_pb2 as primitives__pb2
+from .decoded import DecodedPayReq, HopHint
 
 #######
 # Works with CLN
@@ -90,11 +91,49 @@ class CLNNode:
 
     @classmethod
     def decode_payreq(cls, invoice):
-        """Decodes a lightning payment request (invoice)"""
+        """Decodes a lightning payment request (invoice).
+
+        Returns a ``DecodedPayReq`` so callers are fully vendor-agnostic.
+        CLN's ``DecodeResponse`` stores the amount as ``amount_msat`` (an
+        ``Amount`` message with a ``msat`` field) and the payment hash as raw
+        ``bytes``; this method normalises both to the shared schema.
+        """
         nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
         request = node_pb2.DecodeRequest(string=invoice)
         response = nodestub.Decode(request)
-        return response
+
+        # amount_msat is optional in DecodeResponse; default to 0 msat (= 0 sats)
+        # when the invoice carries no explicit amount, mirroring LND's num_satoshis=0.
+        num_satoshis = (
+            int(response.amount_msat.msat // 1_000)
+            if response.HasField("amount_msat")
+            else 0
+        )
+
+        # payment_hash is bytes on CLN; normalise to lowercase hex string.
+        payment_hash = response.payment_hash.hex() if response.payment_hash else ""
+
+        # Normalise private route hints: CLN uses routes.hints[].hops[]
+        # with Amount sub-messages; flatten to plain-int HopHints.
+        route_hints = []
+        for hinted_route in response.routes.hints:
+            hops = [
+                HopHint(
+                    fee_base_msat=int(hop.fee_base_msat.msat),
+                    fee_proportional_millionths=hop.fee_proportional_millionths,
+                )
+                for hop in hinted_route.hops
+            ]
+            route_hints.append(hops)
+
+        return DecodedPayReq(
+            num_satoshis=num_satoshis,
+            payment_hash=payment_hash,
+            created_at=int(response.created_at),
+            expiry=int(response.expiry),
+            description=response.description,
+            route_hints=route_hints,
+        )
 
     @classmethod
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
@@ -472,7 +511,7 @@ class CLNNode:
 
         # Some wallet providers (e.g. Muun) force routing through a private channel with high fees >1500ppm
         # These payments will fail. So it is best to let the user know in advance this invoice is not valid.
-        route_hints = payreq_decoded.routes.hints
+        route_hints = payreq_decoded.route_hints
 
         # Max amount RoboSats will pay for routing
         if routing_budget_ppm == 0:
@@ -491,8 +530,8 @@ class CLNNode:
             for hinted_route in route_hints:
                 route_cost = 0
                 # ...add up the cost of every hinted hop...
-                for hop_hint in hinted_route.hops:
-                    route_cost += hop_hint.fee_base_msat.msat / 1_000
+                for hop_hint in hinted_route:
+                    route_cost += hop_hint.fee_base_msat / 1_000
                     route_cost += (
                         hop_hint.fee_proportional_millionths * num_satoshis / 1_000_000
                     )
@@ -507,13 +546,13 @@ class CLNNode:
                 }
                 return payout
 
-        if payreq_decoded.amount_msat.msat == 0:
+        if payreq_decoded.num_satoshis == 0:
             payout["context"] = {
                 "bad_invoice": "The invoice provided has no explicit amount"
             }
             return payout
 
-        if not payreq_decoded.amount_msat.msat // 1_000 == num_satoshis:
+        if not payreq_decoded.num_satoshis == num_satoshis:
             payout["context"] = {
                 "bad_invoice": "The invoice provided is not for "
                 + "{:,}".format(num_satoshis)
@@ -536,7 +575,7 @@ class CLNNode:
 
         payout["valid"] = True
         payout["description"] = payreq_decoded.description
-        payout["payment_hash"] = payreq_decoded.payment_hash.hex()
+        payout["payment_hash"] = payreq_decoded.payment_hash
 
         return payout
 

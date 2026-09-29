@@ -18,6 +18,7 @@ class LNPayment(models.Model):
         PAYBUYER = 3, "Payment to buyer"
         WITHREWA = 4, "Withdraw rewards"
         DEVDONAT = 5, "Devfund donation"
+        COMDONAT = 6, "Community donation"
 
     class Status(models.IntegerChoices):
         INVGEN = 0, "Generated"

@@ -41,8 +41,16 @@ class-definition time (also import time), reused by every call.
 - `get_info` / `newaddress` — **CLN-only** (no equivalent on LND).
 - `resetmc` — dead/commented-out on LND (not callable); on CLN it's live but always
   `return False` (no-op, comment: no gossip-store equivalent).
-- `wallet_balance()` / `channel_balance()` / `decode_payreq()` — identical shape both
-  vendors, 10s-cached via `@ring.dict`.
+- `wallet_balance()` / `channel_balance()` — identical shape both vendors, 10s-cached via
+  `@ring.dict`.
+- `decode_payreq(invoice)` → **`DecodedPayReq`** (from `api/lightning/decoded.py`).
+  Both vendors normalise their vendor-specific gRPC response into this shared dataclass
+  before returning, so every caller in `api/` is fully vendor-agnostic.
+  Fields: `num_satoshis` (int, sats), `payment_hash` (hex str), `created_at` (unix int),
+  `expiry` (int, seconds), `description` (str), `route_hints` (list of `list[HopHint]`).
+  CLN maps `amount_msat.msat // 1000 → num_satoshis` and `payment_hash.hex()`.
+  LND maps `num_satoshis` and `timestamp → created_at` directly.
+  Never access raw vendor protobuf fields on the return value — always use `DecodedPayReq`.
 
 ## `is_same_status` and the CANCEL/RETNED problem
 LND's invoice state has no distinct "returned" state — a genuinely cancelled invoice and
@@ -90,7 +98,14 @@ True`, flips `OnchainPayment.Status` to `VALID`. → `Logics.pay_buyer` flips it
 sufficient, then calls `LNNode.pay_onchain`, which flips `QUEUE → MEMPO` *before*
 broadcasting. **`OnchainPayment.Status.CONFI` is never written by any code path** — defined
 in the enum, only ever read/filtered (`views.py`, `control/tasks.py`) — there is no
-block-confirmation watcher in this codebase.
+block-confirmation watcher in this codebase. Additionally, there is **no automated
+recovery for swap transactions that are dropped from the mempool or remain stuck**. Because
+the trade escrow is settled to the coordinator *before* broadcast (at the `QUEUE → MEMPO`
+flip), a failed broadcast or mempool eviction leaves the buyer with nothing and the
+coordinator holding the escrow. Resolution in that scenario is entirely manual /
+operator-level (RBF, CPFP, rebroadcast, or manual refund coordinated out-of-band). This
+is a known operational gap with no incidents to date; treat `MEMPO`-and-onward as
+effectively irreversible from the codebase's perspective.
 
 ## Retry/timeout mechanics
 `follow_send_payment` runs as the Celery task of the same name with `time_limit=180,
