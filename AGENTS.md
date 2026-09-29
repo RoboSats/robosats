@@ -15,7 +15,7 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 | `/frontend` | React 19 + TypeScript SPA — web, desktop, Android WebView, self-hosted |
 | `/frontend/src/contexts` | Global React state: App, Garage, Federation contexts |
 | `/frontend/src/components` | UI components: TradeBox, BookTable, MakerForm, EncryptedChat |
-| `/frontend/src/models` | TypeScript models: Order, Robot, Slot, Garage, Federation, Coordinator |
+| `/frontend/src/models` | TypeScript models: Order, Robot, Slot, Garage, GarageKey, Federation, Coordinator |
 | `/frontend/src/services` | API client, WebSocket, Nostr relay, platform abstraction |
 | `/android` | Native Kotlin Android app (WebView bridge to frontend) |
 | `/desktopApp` | Electron wrapper around React frontend |
@@ -30,7 +30,7 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 | `/.github` | CI/CD workflows, release orchestration, issue/PR templates, CODEOWNERS |
 
 ## Tech Stack
-- **Backend**: Python/Django 5.1, DRF, PostgreSQL, Redis, Celery, Django Channels (WebSocket)
+- **Backend**: Python/Django 5.2, DRF, PostgreSQL, Redis, Celery, Django Channels (WebSocket)
 - **Frontend**: React 19, TypeScript, Webpack 5, MUI, i18next, OpenPGP.js, nostr-tools
 - **Lightning**: LND or CLN via gRPC — selected by `LNVENDOR` env var
 - **Privacy**: Tor, PGP-encrypted chat, SHA256-hashed robot tokens

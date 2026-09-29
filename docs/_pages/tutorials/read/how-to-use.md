@@ -1,6 +1,6 @@
 ---
 layout: single
-title: How to Use
+title: How to Use (v0.8.8)
 permalink: /read/en/
 toc: true
 toc_sticky: true
@@ -30,40 +30,36 @@ RoboSats is focused on user friendliness. The platform is totally self-explanato
 
 This document has two complete walkthroughs: 1) as a buyer that takes an order and; 2) as a seller that makes an order. Given that the platform explains to the user exactly everything in the menus, we are going to dedicate some lines to some tricks and give tips for safe trading in between.
 
-## User Generation Home Page
-RoboSats help users preserve their privacy by using newly generated avatars in every trade. Avatars are super easy to generate!
-<div align="center">
-<img src="/assets/images/how-to-use/homepage-1.png"  width="370" />
-</div>
-
-RoboSats welcomes you right away with your unique robot avatar. The robot is deterministically generated based on the token you see below it. This token is all you need to recover the avatar in the future, so make sure to **back it up safely!**
-
-The tokens are generated in your own browser. However, if you do not trust your machine randomness, you can also input your own entropy token. *Note that low entropy tokens are not valid.*
-
-I was really not happy of being "HomelessCash"! :D So I just click on the dice icon to generate a new token and tap "Generate avatar" to get a new one
-
-<div align="center">
-<img src="/assets/images/how-to-use/homepage-2.png"  width="370" />
-</div>
-
-Ah, "JoyfulPain", so much better!! :)
-The token will live in your browser memory for some time, so you still might have a chance to copy it later by tapping in the profile icon in the bottom left corner. However, your browser will forget your token if you refresh or close it!
-
-<div align="center">
-<img src="/assets/images/how-to-use/homepage-3.png"  width="370" />
-</div>
-
-It is best to write it down in paper... but that's a lot of work!! Most often it is good enough to simply copy it to clipboard and save it somewhere else. **If your browser crashes, your phone battery dies, or you lose connection during trading, you will need the token to log in again and continue with the trade!**
-
-### Recovering a robot
-To recover a backed-up token, simply replace the token in the textbox and tap "Generate Robot". The site will greet you with "We found your Robot avatar. Welcome back!"
+## Garage Key and Robot Generation  
+RoboSats helps users preserve their privacy by using a newly generated robot avatar in every trade. All your robots are derived from a single **Garage Key**, one master key that generates unlimited deterministic accounts.  
+<div align="center">  
+<img src="/assets/images/how-to-use/homepage-1.png"  width="370" />  
+</div>  
+  
+RoboSats welcomes you by asking you to create or import your Garage Key. This key is all you need to recover your entire Garage in the future, so make sure to **back it up safely!** Write it down on paper or keep it in a password manager. Anyone with the key controls all your robots.  
+  
+The Garage Key is generated in your own browser. Once set, the app automatically derives the next free account and creates a fresh robot for every trade. No more saving a different token each time!  
+<div align="center">  
+<img src="/assets/images/how-to-use/homepage-2.png"  width="370" />  
+</div>  
+  
+In your profile you can browse your accounts with the Account Navigator: past robots, active robots and the next fresh identity. When a robot finishes a trade, that account is marked as used and the app nudges you to move to a new one. Robots that already traded cannot make or take new orders, protecting your privacy by default.  
+<div align="center">  
+<img src="/assets/images/how-to-use/homepage-3.png"  width="370" />  
+</div>  
+  
+**If your browser crashes, your phone battery dies, or you lose connection during trading, your Garage Key is all you need to log in again and continue the trade!**  
+  
+### Recovering your Garage  
+To recover, simply paste your Garage Key in the recovery screen. The app checks the Nostr relays, discovers your used accounts, and restores your robots automatically; including any robot with an active trade.  
+  
+### Legacy mode  
+If you updated from an older version, the app starts in **Legacy** view. This mode exists only to let you finish ongoing trades with your old per-robot tokens. "Create Order", "View Book" and the onboarding actions are disabled with explanatory messages. Finish your pending trades, then create your Garage Key.
 
 ## Trade
-
-In RoboSats you can make new orders or take orders made by others. To be an _order maker_ simply click on "Create Order" in the homepage. To take an order, click on "View Book" so you can explore the orders created by other robots.
+In RoboSats you can make new orders or take orders made by others. Your Garage automatically provides a fresh robot for each trade. To be an _order maker_ simply click on "Create Order". To take an order, click on "View Book" so you can explore the orders created by other robots.
 
 ### Exploring the Order Book
-
 We click on "View book" and have a look at the orders in the book page.
 
 <div align="center">
@@ -105,7 +101,7 @@ You can also tap on any order to see the full order page:
 <img src="/assets/images/how-to-use/order-page-1.png"  width="370" />
 </div>
 
-Every order has an expiration counter. By default, in RoboSats v0.1.0 new orders will stay public in the book for {{site.robosats.hours_public_default}} hours.
+Every order has an expiration counter. By default, new orders will stay public in the book for {{site.robosats.hours_public_default}} hours.
 
 ### Walkthrough-1: Taking an order as a buyer
 
@@ -137,13 +133,15 @@ There is a time limit of 3 hours to submit the invoice (buyer) and lock the trad
 <img src="/assets/images/how-to-use/contract-box-4.png"  width="370" />
 </div>
 
-As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Only share the strictly needed information about yourself to not compromise your privacy. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
+As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Only share the strictly needed information about yourself to not compromise your privacy. The chat is end-to-end encrypted with each robot's PGP key — you can export the full log from the chat interface if you need evidence for a dispute.
+
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-5.png"  width="370" />
 </div>
 
-There is a time limit of {{site.robosats.hours_fiat_exchange}} hours to complete the fiat exchange. If the time runs out, the order will expire and a dispute will be opened automatically. To avoid order expiration, **use always instant fiat payment methods**. For example, sending cash by ordinary mail is slow and will always trigger a dispute in v0.1.0. In the future longer expiry times will be possible.
+There is a time limit of {{site.robosats.hours_fiat_exchange}} hours to complete the fiat exchange. If the time runs out, the order will expire and a dispute will be opened automatically. To avoid order expiration, **use always instant fiat payment methods**. Slow methods like sending cash by ordinary mail are very likely to trigger a dispute.
+
 
 As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button. After that, the seller will have to confirm the fiat was received. As soon as he confirms the trade is finished and you will be paid out to your lightning wallet. You might see that it is "sending satoshis to buyer" but usually it is so fast you will simply see this screen. Enjoy your sats!
 
@@ -169,7 +167,8 @@ We can create the order exactly has we want it. But mind that you need to publis
 
 In the maker page you are only required to enter the currency, order type (buy/sell) and amount. However, it is best practice to specify the payment methods you allow. It might be also helpful to set a premium/discount for your order to be taken faster. Remember that as a seller you can incentivze buyers to take your order by lowering the premium. If there are too many buyers, however, you can increase the premium to have a trading profit. Alternatively, you can set a fixed amount of Satoshis.
 
-*Limits: in Robosats v0.1.0 an order cannot be smaller than {{site.robosats.min_trade_limit}} Satoshis. It cannot be larger than {{site.robosats.max_trade_limit}} Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
+*Limits: in RoboSats an order cannot be smaller than {{site.robosats.min_trade_limit}} Satoshis. It cannot be larger than {{site.robosats.max_trade_limit}} Satoshis in order to avoid lightning routing failures.*
+
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-7.png"  width="370" />
@@ -191,7 +190,7 @@ In the contract tab you can also see how many other orders are public for the sa
 <img src="/assets/images/how-to-use/contract-box-9.png"  width="370" />
 </div>
 
-Hurray, someone took the order! They have 4 minutes to lock a taker fidelity bond, if they do not proceed, your order will be made public again automatically.
+Hurray, someone took the order! They have less than 4 minutes to lock a taker fidelity bond, if they do not proceed, your order will be made public again automatically.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-10.png"  width="370" />
@@ -203,7 +202,7 @@ As soon as the taker locks the bond, you will have to lock the trade escrow. Thi
 <img src="/assets/images/how-to-use/contract-box-11.png"  width="370" />
 </div>
 
-Once you lock the trade escrow and the buyer submit the payout invoice it is safe to send fiat! Share with the buyer the minimal information needed to send you fiat. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
+Once you lock the trade escrow and the buyer submit the payout invoice it is safe to send fiat! Share with the buyer the minimal information needed to send you fiat. 
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-12.png"  width="370" />
@@ -247,7 +246,8 @@ This is in fact not possible, as a dispute will be automatically open at expirat
 <img src="/assets/images/how-to-use/contract-box-17.png"  width="370" />
 </div>
 
-In RoboSats v0.1.0 the dispute pipeline is not fully implemented in the web. Therefore, most contact and resolution has to happen through alternative methods. Be sure to send a contact method to the staff. You will have to write down full statement of facts, remember that the staff cannot read your private chat to judge about what happened. It is useful to send images/screenshots. For maximum privacy, these can be encrypted via PGP key and uploaded into any anonymous file sharing system.
+When a dispute is opened, the app lets you submit your statement and a contact method so the staff can reach you. Write down a full statement of facts. The staff cannot read your private chat to judge what happened. It is useful to export the chat log (JSON) and attach images/screenshots; for maximum privacy these can be encrypted via PGP and uploaded to any anonymous file sharing system.
+
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-18.png"  width="370" />

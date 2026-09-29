@@ -44,7 +44,8 @@ Don't add a `Status` member without adding a `t_to_expire` entry for it.
 `maker_asked_cancel`/`taker_asked_cancel`, `is_fiat_sent`, `reverted_fiat_sent`,
 `is_disputed`, `maker_statement`/`taker_statement`, `is_swap` (LN payout=false / onchain
 address=true), `proceeds`, `maker_rated`/`taker_rated`,
-`maker_platform_rated`/`taker_platform_rated` (4 distinct rating bools, not 2), `logs`.
+`maker_platform_rated`/`taker_platform_rated` (4 distinct rating bools, not 2 — but see
+Traps: the platform-rated bools are dead), `logs`.
 
 **`fiat_exchange_duration` is not a field** — it's `settings.FIAT_EXCHANGE_DURATION`, read
 inside `t_to_expire`. Payment FKs (all OneToOne → `LNPayment` except `payout_tx`):
@@ -85,7 +86,7 @@ separate from the Django model. Do not conflate them.
 
 ## `LNPayment` (ln_payment.py)
 `payment_hash` is the **primary key**. `Types`: NORM(0)/HOLD(1)/KEYS(2). `Concepts`:
-MAKEBOND(0)/TAKEBOND(1)/TRESCROW(2)/PAYBUYER(3)/WITHREWA(4)/DEVDONAT(5). `Status` (all
+MAKEBOND(0)/TAKEBOND(1)/TRESCROW(2)/PAYBUYER(3)/WITHREWA(4)/DEVDONAT(5)/COMDONAT(6). `Status` (all
 6-char codes): INVGEN(0)/LOCKED(1)/**SETLED**(2)/**RETNED**(3)/CANCEL(4)/EXPIRE(5)/
 VALIDI(6)/FLIGHT(7)/SUCCED(8)/FAILRO(9) — `SETLED`/`RETNED`, not SETTLED/RETURNED.
 `FailureReason` (singular, exists): NOTYETF(0)/TIMEOUT(1)/NOROUTE(2)/NONRECO(3)/
@@ -166,13 +167,25 @@ not adds to, `earned_rewards` for both sides, then calls `Logics.pay_buyer`),
 `compute_median_trade_time` (reporting only, no mutation). None of these call through
 `Logics`'s bond/escrow guard methods — a change here is a direct field write moving funds.
 
+**Dispute resolution has no enforced time limit.** The coordinator holds custody of all
+funds (escrow + both bonds, settled at `open_dispute`) for as long as resolution takes.
+Once resolved, the winner's `earned_rewards` are credited and paid out via `withdraw_rewards`
+(winner submits a new invoice). There is no alternative payout path and no on-chain fallback
+for dispute winners; the payout route is deliberately flat to prevent fund-drain exploits.
+If routing fails on a large payout, the user contacts the coordinator directly — the
+coordinator resolves it manually using its full robot/order history.
+
 ## Traps
 `get_balance()` (§OnchainPayment above) returns a datetime, not a `BalanceLog` instance, as
 an FK default callable. `DISABLE_ORDER_LOGS` code/`.env-sample` defaults disagree (§Order).
 `MarketTick` still logs for orders that later expire/dispute — don't assume every tick maps
 to a `SUC` order. `admin.py`'s `maker_wins`/`taker_wins` both derive `own_bond_sats` from
 `order.maker_bond.num_satoshis` — verify which bond is actually intended before relying on
-`taker_wins` crediting the right amount.
+`taker_wins` crediting the right amount. `maker_platform_rated`/`taker_platform_rated` on
+`Order` are dead fields: defined in the model and migrations, but **never read or written
+by any application code** — `Logics.rate_platform` overwrites `Robot.platform_rating`
+unconditionally on every call, so there is no enforced one-rating-per-order constraint
+(robots are ephemeral so the blast radius is small, but be aware).
 
 ## Constraints
 Never add an `Order.Status` member without a `t_to_expire` entry. Never delete/rename a

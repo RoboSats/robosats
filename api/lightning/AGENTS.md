@@ -98,7 +98,14 @@ True`, flips `OnchainPayment.Status` to `VALID`. → `Logics.pay_buyer` flips it
 sufficient, then calls `LNNode.pay_onchain`, which flips `QUEUE → MEMPO` *before*
 broadcasting. **`OnchainPayment.Status.CONFI` is never written by any code path** — defined
 in the enum, only ever read/filtered (`views.py`, `control/tasks.py`) — there is no
-block-confirmation watcher in this codebase.
+block-confirmation watcher in this codebase. Additionally, there is **no automated
+recovery for swap transactions that are dropped from the mempool or remain stuck**. Because
+the trade escrow is settled to the coordinator *before* broadcast (at the `QUEUE → MEMPO`
+flip), a failed broadcast or mempool eviction leaves the buyer with nothing and the
+coordinator holding the escrow. Resolution in that scenario is entirely manual /
+operator-level (RBF, CPFP, rebroadcast, or manual refund coordinated out-of-band). This
+is a known operational gap with no incidents to date; treat `MEMPO`-and-onward as
+effectively irreversible from the codebase's perspective.
 
 ## Retry/timeout mechanics
 `follow_send_payment` runs as the Celery task of the same name with `time_limit=180,

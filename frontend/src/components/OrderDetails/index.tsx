@@ -47,6 +47,7 @@ import TakeButton from './TakeButton';
 import { F2fMapDialog, OrderDescriptionDialog } from '../Dialogs';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { Coordinator, type Order } from '../../models';
+import CoordinatorFeeRow from '../CoordinatorFeeRow';
 
 interface OrderDetailsProps {
   shortAlias: string;
@@ -325,26 +326,11 @@ const OrderDetails = ({
             </ListItem>
           </Grid>
         </ListItemButton>
-        <ListItem>
-          <Grid sx={{ marginBottom: 1, width: '100%' }}>
-            <Alert
-              severity={
-                coordinator?.info
-                  ? coordinator?.info?.swap_enabled
-                    ? 'success'
-                    : 'warning'
-                  : 'info'
-              }
-              style={{ width: '100%' }}
-            >
-              {!coordinator?.loadingInfo
-                ? coordinator?.info?.swap_enabled
-                  ? t('On-chain swaps.')
-                  : t('Not on-chain swaps.')
-                : t('Loading coordinator info...')}
-            </Alert>
-          </Grid>
-        </ListItem>
+        {coordinator != null && (
+          <ListItem sx={{ justifyContent: 'center', py: 0.5 }}>
+            <CoordinatorFeeRow coordinator={coordinator} t={t} fullWidth />
+          </ListItem>
+        )}
 
         {!currentOrder.bad_request && currentOrder.maker_hash_id && (
           <>

@@ -23,6 +23,7 @@ export interface UseGarageStoreType {
   setMaker: Dispatch<SetStateAction<Maker>>;
   setDelay: Dispatch<SetStateAction<number>>;
   fetchSlotActiveOrder: () => void;
+  recoverAccountFromRelays: () => Promise<void>;
 }
 
 export const initialGarageContext: UseGarageStoreType = {
@@ -31,6 +32,7 @@ export const initialGarageContext: UseGarageStoreType = {
   setMaker: () => {},
   setDelay: () => {},
   fetchSlotActiveOrder: () => {},
+  recoverAccountFromRelays: async () => {},
 };
 
 const defaultDelay = 5000;
@@ -79,6 +81,10 @@ export const GarageContextProvider = ({
     setSlotUpdatedAt(new Date().toISOString());
   };
 
+  const recoverAccountFromRelays = async (): Promise<void> => {
+    await garage.getGarageKey()?.recoverAccount(federation.roboPool);
+  };
+
   useEffect(() => {
     setMaker((maker) => {
       return { ...maker, coordinator: federation.getCoordinatorsAlias()[0] };
@@ -86,6 +92,16 @@ export const GarageContextProvider = ({
     garage.registerHook('onSlotUpdate', onSlotUpdated);
     clearInterval(timer);
     fetchSlotActiveOrder();
+
+    // Wait for garage mode, key and slots before any auto-switch evaluation.
+    void Promise.all([garage.loadGarageKey(), garage.loadMode(), garage.waitForSlotsLoaded()]).then(
+      () => {
+        if (garage.getMode() === 'garageKey' && garage.getGarageKey()) {
+          garage.resetManualNavigation();
+          void garage.ensureReusableSlot(federation, { source: 'auto' });
+        }
+      },
+    );
 
     return () => {
       clearTimeout(timer);
@@ -98,7 +114,11 @@ export const GarageContextProvider = ({
     if (pageRef.current !== page) {
       pageRef.current = page;
       if (token && page === 'garage') {
-        void garage.fetchRobot(federation, token);
+        void garage.fetchRobot(federation, token).then(() => {
+          if (garage.getMode() === 'garageKey' && garage.getGarageKey()) {
+            void garage.ensureReusableSlot(federation, { source: 'auto' });
+          }
+        });
       }
     } else if (token) {
       void garage.fetchRobot(federation, token);
@@ -115,6 +135,18 @@ export const GarageContextProvider = ({
       if (pageRef.current !== 'order') delay = delay * 5;
       if (+new Date() - lastOrderCheckAtRef.current >= delay) {
         void slot.fetchActiveOrder(federation).finally(() => {
+          const order = slot.activeOrder ?? slot.lastOrder;
+          if (order && [14, 17, 18].includes(order.status)) {
+            garage.resetManualNavigation();
+          }
+
+          if (
+            pageRef.current === 'garage' &&
+            garage.getMode() === 'garageKey' &&
+            garage.getGarageKey()
+          ) {
+            void garage.ensureReusableSlot(federation, { source: 'auto' });
+          }
           lastOrderCheckAtRef.current = +new Date();
           resetInterval();
         });
@@ -144,6 +176,7 @@ export const GarageContextProvider = ({
         setMaker,
         setDelay,
         fetchSlotActiveOrder,
+        recoverAccountFromRelays,
       }}
     >
       {children}
