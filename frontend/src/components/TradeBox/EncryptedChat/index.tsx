@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Order } from '../../../models';
 import EncryptedApiChat from './EncryptedApiChat';
-// import EncryptedNostrChat from './EncryptedNostrChat';
+import EncryptedNostrChat from './EncryptedNostrChat';
 import { type EventTemplate, nip59 } from 'nostr-tools';
 import { GarageContext, type UseGarageStoreType } from '../../../contexts/GarageContext';
 import {
@@ -12,7 +12,6 @@ import {
 import { encryptMessage } from '../../../pgp';
 import { apiClient } from '../../../services/api';
 import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
-import EncryptedSocketChat from './EncryptedSocketChat';
 import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
 import { uploadToBlossom, computeSha256 } from '../../../utils/blossom';
 import { createFileMessage, type ParsedFileMessage } from '../../../utils/nip17File';
@@ -347,29 +346,37 @@ const EncryptedChat: React.FC<Props> = ({
     }
   };
 
-  // Disabled: Using EncryptedSocketChat for all non-API modes
-  // if (settings.connection === 'nostr') {
-  //   return (
-  //     <EncryptedNostrChat
-  //       messages={messages}
-  //       setMessages={setMessages}
-  //       onSendMessage={onSendMessage}
-  //       onSendFile={sendFileToNostr}
-  //       order={order}
-  //       takerNick={order.taker_nick}
-  //       takerHashId={order.taker_hash_id}
-  //       makerHashId={order.maker_hash_id}
-  //       peerPubKey={peerPubKey}
-  //       setPeerPubKey={setPeerPubKey}
-  //       error={error}
-  //       setError={setError}
-  //       // lastIndex={lastIndex}
-  //       // setLastIndex={setLastIndex}
-  //     />
-  //   );
-  // }
+  const slot = garage.getSlot();
+  const nostrCapable =
+    Boolean(slot) &&
+    !slot?.legacy &&
+    Boolean(order.maker_nostr_pubkey) &&
+    Boolean(order.taker_nostr_pubkey);
 
-  return settings.connection === 'api' ? (
+  if (settings.connection === 'nostr' && nostrCapable) {
+    return (
+      <EncryptedNostrChat
+        messages={messages}
+        setMessages={setMessages}
+        onSendMessage={onSendMessage}
+        onSendFile={sendFile}
+        order={order}
+        takerNick={order.taker_nick}
+        takerHashId={order.taker_hash_id}
+        makerHashId={order.maker_hash_id}
+        peerPubKey={peerPubKey}
+        setPeerPubKey={setPeerPubKey}
+        error={error}
+        setError={setError}
+        lastIndex={lastIndex}
+        setLastIndex={setLastIndex}
+        blossomEnabled={blossomEnabled}
+        coordinatorUrl={coordinatorUrl}
+      />
+    );
+  }
+
+  return (
     <EncryptedApiChat
       messages={messages}
       setMessages={setMessages}
@@ -387,23 +394,6 @@ const EncryptedChat: React.FC<Props> = ({
       setError={setError}
       lastIndex={lastIndex}
       setLastIndex={setLastIndex}
-      blossomEnabled={blossomEnabled}
-      coordinatorUrl={coordinatorUrl}
-    />
-  ) : (
-    <EncryptedSocketChat
-      messages={messages}
-      setMessages={setMessages}
-      onSendMessage={onSendMessage}
-      onSendFile={sendFile}
-      order={order}
-      takerNick={order.taker_nick}
-      takerHashId={order.taker_hash_id}
-      makerHashId={order.maker_hash_id}
-      userNick={order.ur_nick}
-      peerPubKey={peerPubKey}
-      setPeerPubKey={setPeerPubKey}
-      status={order.status}
       blossomEnabled={blossomEnabled}
       coordinatorUrl={coordinatorUrl}
     />

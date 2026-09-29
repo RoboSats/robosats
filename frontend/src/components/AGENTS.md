@@ -9,25 +9,25 @@ book), `EncryptedChat` (three transport implementations), `RobotAvatar`, `RobotI
 
 ## Component Map
 
-| Directory / File    | Role                                                                                                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TradeBox/`         | Central trade UI — maps all 19 `Order.Status` values to user-facing prompts and actions                                                                                                                 |
-| `MakerForm/`        | Order creation form — amount, currency, premium, payment method, duration, bond size; disabled in legacy mode via `useLegacyMode`; calls `garage.makeOrderWithRecovery` (not `slot.makeOrder` directly) |
-| `BookTable/`        | Filterable, sortable order book table                                                                                                                                                                   |
-| `OrderDetails/`     | Order summary card + `TakeButton`                                                                                                                                                                       |
-| `EncryptedChat/`    | Chat UI — three transport implementations (see below)                                                                                                                                                   |
-| `RobotAvatar/`      | Deterministic robot avatar; `placeholder.json` swapped for `placeholder_highres.json` on Android                                                                                                        |
-| `RobotInfo/`        | Active order summary shown in robot profile; "One active order #{{orderID}}"                                                                                                                            |
-| `FederationTable/`  | Coordinator list table with ratings column, "Verify ratings" button                                                                                                                                     |
-| `Dialogs/`          | Global confirmation dialogs — `Recovery` (mode-aware: garage key or robot token), `DeleteGarageKeyConfirmation`, `StoreToken`, `Profile`                                                                |
-| `HostAlert/`        | Clearnet-use warning suite — `index.tsx`, `SelfhostedAlert.tsx`, `UnsafeAlert.tsx`                                                                                                                      |
-| `SettingsForm/`     | Settings form shared between BasicMain `SettingsPage` and ProMain `Settings` widget                                                                                                                     |
-| `Charts/`           | Chart components (used by ProMain `Depth` widget)                                                                                                                                                       |
-| `DataGrid/`         | Data grid wrapper                                                                                                                                                                                       |
-| `Map/`              | Leaflet map component for F2F order geolocation picker                                                                                                                                                  |
-| `PaymentMethods/`   | Payment method icons and display helpers                                                                                                                                                                |
-| `Icons/`            | Custom SVG icon components                                                                                                                                                                              |
-| `ErrorBoundary.tsx` | React error boundary for uncaught render errors                                                                                                                                                         |
+| Directory / File    | Role                                                                                                                                                                                                                         |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TradeBox/`         | Central trade UI — maps all 19 `Order.Status` values to user-facing prompts and actions                                                                                                                                      |
+| `MakerForm/`        | Order creation form — amount, currency, premium, payment method, duration, bond size; disabled in legacy mode via `useLegacyMode`; calls `garage.makeOrderWithRecovery` (not `slot.makeOrder` directly)                      |
+| `BookTable/`        | Filterable, sortable order book table                                                                                                                                                                                        |
+| `OrderDetails/`     | Order summary card + `TakeButton`                                                                                                                                                                                            |
+| `EncryptedChat/`    | Chat UI — two transport implementations: `EncryptedNostrChat` (NIP-17 gift-wrapped DMs, default for garageKey robots) and `EncryptedApiChat` (REST polling, used for legacy robots and when `settings.connection === 'api'`) |
+| `RobotAvatar/`      | Deterministic robot avatar; `placeholder.json` swapped for `placeholder_highres.json` on Android                                                                                                                             |
+| `RobotInfo/`        | Active order summary shown in robot profile; "One active order #{{orderID}}"                                                                                                                                                 |
+| `FederationTable/`  | Coordinator list table with ratings column, "Verify ratings" button                                                                                                                                                          |
+| `Dialogs/`          | Global confirmation dialogs — `Recovery` (mode-aware: garage key or robot token), `DeleteGarageKeyConfirmation`, `StoreToken`, `Profile`                                                                                     |
+| `HostAlert/`        | Clearnet-use warning suite — `index.tsx`, `SelfhostedAlert.tsx`, `UnsafeAlert.tsx`                                                                                                                                           |
+| `SettingsForm/`     | Settings form shared between BasicMain `SettingsPage` and ProMain `Settings` widget                                                                                                                                          |
+| `Charts/`           | Chart components (used by ProMain `Depth` widget)                                                                                                                                                                            |
+| `DataGrid/`         | Data grid wrapper                                                                                                                                                                                                            |
+| `Map/`              | Leaflet map component for F2F order geolocation picker                                                                                                                                                                       |
+| `PaymentMethods/`   | Payment method icons and display helpers                                                                                                                                                                                     |
+| `Icons/`            | Custom SVG icon components                                                                                                                                                                                                   |
+| `ErrorBoundary.tsx` | React error boundary for uncaught render errors                                                                                                                                                                              |
 
 There are **no `TorIndicator/` or `TradeSteps/` directories** — these do not exist.
 `NavBar` lives in `src/basic/NavBar/`, not in `components/`.
@@ -75,19 +75,20 @@ Order creation form. Key product rules enforced client-side (mirrors coordinator
 - **No client-side check for an existing active order** — the coordinator rejects a second
   order; the frontend surfaces this post-attempt.
 
-## EncryptedChat — Three Implementations
+## EncryptedChat — Two Implementations
 
 All in `TradeBox/EncryptedChat/`:
 
-| Component             | Transport                   | Status                                       |
-| --------------------- | --------------------------- | -------------------------------------------- |
-| `EncryptedSocketChat` | Django Channels WebSocket   | **Primary** — preferred                      |
-| `EncryptedApiChat`    | REST polling (`/api/chat/`) | Fallback when WebSocket unavailable          |
-| `EncryptedNostrChat`  | Nostr relay DMs             | **Under development** — not production-ready |
+| Component            | Transport                   | When used                                                                           |
+| -------------------- | --------------------------- | ----------------------------------------------------------------------------------- |
+| `EncryptedNostrChat` | Nostr relay NIP-17 DMs      | garageKey robot + both peers have Nostr pubkeys + `settings.connection === 'nostr'` |
+| `EncryptedApiChat`   | REST polling (`/api/chat/`) | Legacy robots, missing Nostr pubkeys, or `settings.connection === 'api'`            |
+
+`EncryptedChat/index.tsx` owns the routing decision — child components never switch transport themselves. The WebSocket chat (`EncryptedSocketChat`) has been removed from the frontend; the Django Channels backend (`/chat`) is kept for `EncryptedApiChat`.
 
 Also in `TradeBox/EncryptedChat/`:
 
-- `ChatHeader/` — shared header bar for all three implementations
+- `ChatHeader/` — shared header bar for both implementations
 - `MessageCard/` — message bubble component
 - `ImageLightbox.tsx` — full-screen image overlay for chat image messages
 - `PrivacyWarningDialog.tsx` — shown before first message, warns about metadata
@@ -156,8 +157,12 @@ while the cryptographic certification is in progress."_
 - **Platform rating vs coordinator rating are separate flows** — `rate_platform` updates
   the coordinator's `Robot.platform_rating` via REST; coordinator Nostr rating publishes
   a kind 31986 event to the Nostr relay. Both happen in `Successful.tsx`/`TradeBox`.
-- **Nostr chat is under development** — do not make `EncryptedNostrChat` the default
-  transport or present it as production-ready.
+- **Chat transport routing** — `EncryptedChat/index.tsx` selects the transport: garageKey
+  robots with both Nostr pubkeys set and `settings.connection === 'nostr'` use
+  `EncryptedNostrChat`; all other cases (legacy robots, missing pubkeys, or
+  `settings.connection === 'api'`) fall back to `EncryptedApiChat`. The WebSocket chat
+  (`EncryptedSocketChat`) has been removed from the frontend; the backend `/chat` Django
+  app (Channels consumer + REST) is kept for `EncryptedApiChat` and API compatibility.
 - **Password/private orders** (when `order.password` is set) are shared out-of-band via
   link+password — they never appear on the public book. `MakerForm` password field enables
   this flow.
@@ -166,8 +171,8 @@ while the cryptographic certification is in progress."_
 
 - `RobotAvatar` imports `placeholder.json` on web but `placeholder_highres.json` on Android
   (webpack `file-replace-loader`) — do not hard-code the placeholder path.
-- Chat transport selection is done by `TradeBox` — do not add UA-based transport switching
-  inside `EncryptedChat` components.
+- Chat transport selection is done by `EncryptedChat/index.tsx` — do not add transport
+  switching logic inside the individual `EncryptedApiChat` or `EncryptedNostrChat` components.
 - Coordinator rating widget is `disabled` unless `settings.connection === 'nostr'` — do
   not assume it is always interactive.
 - `FederationTable`'s "Verify ratings" can freeze the UI for several seconds on Tor — the
@@ -176,7 +181,6 @@ while the cryptographic certification is in progress."_
 ## Constraints
 
 - Do not add one-active-order enforcement to `TakeButton` or `MakerForm` — coordinator logic.
-- Do not make `EncryptedNostrChat` the default transport until production-ready.
 - Keep `MakerForm` validation in sync with coordinator `/api/limits`.
 - **Never bypass the `isReusable()` guard in `MakerForm` and `TakeButton`** — it is the client-side privacy boundary preventing a garageKey-mode robot with a completed trade from being reused. This guard only fires when `garage.garageKey` is set (no-op in legacy mode).
 - `Recovery.tsx` is the correct place for all token/key recovery UI — do not add inline recovery flows to `MakerForm`, `TakeButton`, or page components.
