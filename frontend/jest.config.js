@@ -1,6 +1,10 @@
 /** @type {import('jest').Config} */
 module.exports = {
   testEnvironment: 'node',
+  // Expose Web Crypto API as the bare `crypto` global that nostr-tools
+  // (@noble/hashes) and xchacha20.ts expect (Node 18+ has globalThis.crypto
+  // but doesn't auto-bind it as a global the way browsers do).
+  setupFiles: ['<rootDir>/jest.setup.js'],
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },

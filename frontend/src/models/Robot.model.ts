@@ -59,6 +59,11 @@ class Robot {
   public bitsEntropy?: number;
   public shannonEntropy?: number;
   public tokenSHA256: string = '';
+  /** Hex-encoded SHA-256 of the bearer token.  Used by the chat WebSocket
+   *  auth query-string (`?token_sha256_hex=…`).  For legacy slots this is
+   *  sha256(slot.token); for garage-key slots it is sha256(coordToken) where
+   *  coordToken is the per-coordinator derived token. */
+  public tokenSHA256Hex: string = '';
   public hasEnoughEntropy: boolean = false;
 
   public webhookUrl: string = '';
