@@ -1,0 +1,25 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        ("api", "0057_robot_webhook_enabled_alter_order_escrow_duration"),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name="robot",
+            name="nostr_forward_enabled",
+            field=models.BooleanField(default=False),
+        ),
+        migrations.AddField(
+            model_name="robot",
+            name="nostr_forward_pubkey",
+            field=models.CharField(blank=True, max_length=64, null=True),
+        ),
+        migrations.AddField(
+            model_name="robot",
+            name="nostr_forward_relay",
+            field=models.CharField(blank=True, max_length=500, null=True),
+        ),
+    ]
