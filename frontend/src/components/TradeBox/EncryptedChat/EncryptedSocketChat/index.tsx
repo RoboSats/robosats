@@ -19,7 +19,6 @@ import { useTheme } from '@mui/material';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
-import { sha256 } from 'js-sha256';
 import { type Order } from '../../../../models';
 import {
   type UseFederationStoreType,
@@ -130,7 +129,11 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
   const connectWebsocket = (): void => {
     const slot = garage.getSlot();
-    const robot = slot?.getRobot();
+    // For legacy slots tokenSHA256Hex === sha256(slot.token).
+    // For garage-key slots tokenSHA256Hex === sha256(coordToken) — the
+    // per-coordinator bearer — so the WS authenticates with the same
+    // credential as every other API call to this coordinator.
+    const robot = slot?.getRobot(order.shortAlias);
 
     if (!slot?.token) return;
 
@@ -142,7 +145,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       .open(
         `${url.replace(/^https?:\/\//, protocol)}/ws/chat/${
           order.id
-        }/?token_sha256_hex=${sha256(slot?.token ?? '')}`,
+        }/?token_sha256_hex=${robot?.tokenSHA256Hex ?? ''}`,
       )
       .then((connection) => {
         setConnection(connection);

@@ -30,17 +30,36 @@ TypeScript classes and types representing the core domain: `Order`, `Robot`, `Sl
 ```
 sha512(plainKey) → BIP32 master seed
   → m/44'/88'/{accountIndex}'/0 → derivedPrivKey
-  → base62(derivedPrivKey)[0..36] = robot token
+  → base62(derivedPrivKey)[0..36] = robot base token  (slot.token, PGP passphrase, never transmitted)
+
+Per-coordinator bearer (garage-key slots only):
+  sha256("robosats-coordinator-token:" + shortAlias + "|" + baseToken)
+  → 32 bytes → base62[0..36] = coordToken
+  → sha256(coordToken) → hex → base91 = tokenSHA256  (sent in Authorization header)
+  → sha256(coordToken) → hex             = tokenSHA256Hex (used for WebSocket auth)
+
 sha256(sha512(plainKey)) → GarageKey.nostrSecKey (Nostr identity for account recovery)
 ```
 
+**Security property**: a malicious/compromised coordinator only ever sees its own
+`tokenSHA256`. Replaying that credential at any other coordinator authenticates
+against a different, non-existent robot — blocking the bearer-replay / escrow-settlement
+attack. Legacy (non-garageKey) slots share a single bearer across all coordinators
+(old behaviour, unchanged).
+
 `currentAccountIndex` (0–2147483647) selects which robot is active; persisted in `systemClient` under `garage_key`.
+
+**`Slot.legacy: boolean`** (persisted in `StoredSlot.legacy`):
+
+- `true` (default, all legacy slots + any JSON without the field) → shared bearer.
+- `false` → per-coordinator bearer. Always `false` for slots created by `createRobotFromGarageKey`.
 
 **Key lifecycle methods on `Garage`:**
 
 | Method                                                          | Purpose                                                                                  |
 | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `createRobotFromGarageKey(federation, index?, autoFindUnused?)` | Derives token at index, creates/fetches slot, sets as current                            |
+| `createRobotFromGarageKey(federation, index?, autoFindUnused?)` | Derives token at index, creates/fetches slot (`legacy=false`), sets as current           |
+| `createRobot(federation, token, skipSelect?, legacy?)`          | Generic slot creation; defaults to `legacy=true`; pass `false` for garage-key slots      |
 | `ensureReusableSlot(federation, options)`                       | Auto-advances to next reusable account; suppressed when `manualNavigationActive=true`    |
 | `nextAccount(federation, source)` / `previousAccount`           | Manual index navigation; sets `manualNavigationActive=true` on `source='manual'`         |
 | `makeOrderWithRecovery(federation, attributes)`                 | Creates order + publishes Nostr account-recovery event (kind 30078, NIP-59 gift-wrapped) |
