@@ -264,19 +264,7 @@ class Slot {
   };
 
   isReusable = (): boolean => {
-    if (this.activeOrder) return false;
-
-    if (!this.lastOrder) {
-      return true;
-    }
-
-    if (!this.lastOrderStatusKnown) {
-      return false;
-    }
-
-    const reusableStatuses = [0, 1, 2, 4, 5];
-
-    return reusableStatuses.includes(this.lastOrder.status);
+    return !this.activeOrder && !this.lastOrder;
   };
 }
 

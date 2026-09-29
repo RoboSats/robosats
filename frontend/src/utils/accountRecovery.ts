@@ -54,7 +54,7 @@ export function parseAccountRecoveryEvent(event: Event): AccountRecoveryData | n
 
 export function publishAccountRecoveryEvent(event: Event, roboPool: RoboPool): void {
   roboPool.sendEvent(event);
-  console.log('Account recovery: Published event to relays');
+  console.log('Robot recovery: Published event to relays');
 }
 
 export function saveAccountRecovery(

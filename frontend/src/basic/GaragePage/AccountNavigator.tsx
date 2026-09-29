@@ -53,7 +53,7 @@ const AccountNavigator = ({
           <CircularProgress size={20} />
         ) : (
           <Typography variant='body1' sx={{ fontFamily: 'monospace' }}>
-            {t('Account')} #{accountIndex}
+            {t('Robot')} #{accountIndex}
           </Typography>
         )}
       </Box>
