@@ -105,6 +105,7 @@ export const fiatMethods: PaymentMethod[] = [
 export const swapMethods: PaymentMethod[] = [
   { name: 'On-Chain BTC', icon: 'onchain', reversible: false },
   { name: 'On-Chain w/ Stowaway', icon: 'stowaway', reversible: false },
+  { name: 'BTCB2', icon: 'btcb2', reversible: false },
   { name: 'RBTC', icon: 'rbtc', reversible: false },
   { name: 'LBTC', icon: 'lbtc', reversible: false },
   { name: 'WBTC', icon: 'wbtc', reversible: false },
