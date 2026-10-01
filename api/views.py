@@ -1105,7 +1105,13 @@ class RewardView(CreateAPIView):
             context["successful_withdrawal"] = False
             return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        return Response({"successful_withdrawal": True}, status.HTTP_200_OK)
+        return Response(
+            {
+                "successful_withdrawal": True,
+                "earned_rewards": request.user.robot.earned_rewards,
+            },
+            status.HTTP_200_OK,
+        )
 
 
 class PriceView(ListAPIView):

@@ -3,6 +3,7 @@ from statistics import median
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group, User
+from django.db.models import F
 from django.utils.html import mark_safe
 from django_admin_relation_links import AdminChangeLinksMixin
 from rest_framework.authtoken.admin import TokenAdmin
@@ -282,20 +283,17 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.status in [Order.Status.DIS, Order.Status.WFR]
                 and order.is_disputed
             ):
-                order.maker_bond.sender.robot.earned_rewards += (
-                    order.maker_bond.num_satoshis
-                )
-                order.maker_bond.sender.robot.save(update_fields=["earned_rewards"])
-
-                order.taker_bond.sender.robot.earned_rewards += (
-                    order.taker_bond.num_satoshis
+                Robot.objects.filter(pk=order.maker_bond.sender.robot.pk).update(
+                    earned_rewards=F("earned_rewards") + order.maker_bond.num_satoshis
                 )
 
-                order.taker_bond.sender.robot.save(update_fields=["earned_rewards"])
-                order.trade_escrow.sender.robot.earned_rewards += (
-                    order.trade_escrow.num_satoshis
+                Robot.objects.filter(pk=order.taker_bond.sender.robot.pk).update(
+                    earned_rewards=F("earned_rewards") + order.taker_bond.num_satoshis
                 )
-                order.trade_escrow.sender.robot.save(update_fields=["earned_rewards"])
+
+                Robot.objects.filter(pk=order.trade_escrow.sender.robot.pk).update(
+                    earned_rewards=F("earned_rewards") + order.trade_escrow.num_satoshis
+                )
 
                 order.update_status(Order.Status.CCA)
 

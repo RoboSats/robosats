@@ -705,7 +705,7 @@ class ClaimRewardSerializer(serializers.Serializer):
         help_text="A valid LN invoice with the reward amount to withdraw",
     )
     routing_budget_ppm = serializers.IntegerField(
-        default=0,
+        default=None,
         min_value=Decimal(0),
         max_value=100_001,
         allow_null=True,
@@ -746,6 +746,12 @@ class StealthSerializer(serializers.Serializer):
 
 
 class UpdateRobotSerializer(serializers.ModelSerializer):
+    def update(self, instance, validated_data):
+        # Only write submitted settings, never stale reward balances.
+        Robot.objects.filter(pk=instance.pk).update(**validated_data)
+        instance.refresh_from_db()
+        return instance
+
     class Meta:
         model = Robot
         fields = (
