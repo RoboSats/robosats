@@ -92,11 +92,11 @@ class LNPayment(models.Model):
         ],
     )
     routing_budget_sats = models.DecimalField(
-        max_digits=10, decimal_places=3, default=0, null=False, blank=False
+        max_digits=12, decimal_places=3, default=0, null=False, blank=False
     )
     # Fee in sats with mSats decimals fee_msat
     fee = models.DecimalField(
-        max_digits=10, decimal_places=3, default=0, null=False, blank=False
+        max_digits=12, decimal_places=3, default=0, null=False, blank=False
     )
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()

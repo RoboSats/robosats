@@ -3,7 +3,6 @@ import sys
 from contextlib import ExitStack
 from decimal import Decimal
 from importlib import import_module
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
@@ -12,6 +11,7 @@ from django.utils import timezone
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 import api.lightning
+from api.lightning.decoded import DecodedPayReq, HopHint
 from api.models import LNPayment, Robot
 from api.logics import ESCROW_USERNAME
 from api.serializers import ClaimRewardSerializer
@@ -19,26 +19,16 @@ from api.tests.test_lightning_node import _make_cln_import_patches
 from api.views import RewardView
 
 
-def _decoded_invoice(module, route_fee_msat):
+def _decoded_invoice(route_fee_msat=None):
     timestamp = int(timezone.now().timestamp())
-    decoded = SimpleNamespace(
+    return DecodedPayReq(
         num_satoshis=9990,
-        amount_msat=SimpleNamespace(msat=9990000),
-        timestamp=timestamp,
         created_at=timestamp,
         expiry=3600,
         description="Reward",
-        payment_hash=b"\xab" * 32,
+        payment_hash="ab" * 32,
+        route_hints=[] if route_fee_msat is None else [[HopHint(route_fee_msat, 0)]],
     )
-    hop = SimpleNamespace(fee_proportional_millionths=0)
-    if module.__name__.endswith("lnd"):
-        hop.fee_base_msat = route_fee_msat
-        decoded.route_hints = [SimpleNamespace(hop_hints=[hop])]
-        decoded.payment_hash = "ab" * 32
-    else:
-        hop.fee_base_msat = SimpleNamespace(msat=route_fee_msat)
-        decoded.routes = SimpleNamespace(hints=[SimpleNamespace(hops=[hop])])
-    return decoded
 
 
 class RewardRoutingBudgetTest(SimpleTestCase):
@@ -46,6 +36,7 @@ class RewardRoutingBudgetTest(SimpleTestCase):
         original_cln = sys.modules.get("api.lightning.cln")
         if original_cln is None:
             self.addCleanup(sys.modules.pop, "api.lightning.cln", None)
+        lnd = import_module("api.lightning.lnd")
         with ExitStack() as stack:
             stack.enter_context(
                 patch.object(
@@ -57,7 +48,6 @@ class RewardRoutingBudgetTest(SimpleTestCase):
             )
             for patcher in _make_cln_import_patches():
                 stack.enter_context(patcher)
-            lnd = import_module("api.lightning.lnd")
             cln = import_module("api.lightning.cln")
 
         self.nodes = ((lnd, lnd.LNDNode), (cln, cln.CLNNode))
@@ -101,7 +91,7 @@ class RewardRoutingBudgetTest(SimpleTestCase):
                 (0, 1, False),
             ):
                 with self.subTest(vendor=module.__name__, cap=cap, fee=route_fee_msat):
-                    decoded = _decoded_invoice(module, route_fee_msat)
+                    decoded = _decoded_invoice(route_fee_msat)
                     with patch.object(node, "decode_payreq", return_value=decoded):
                         result = node.validate_ln_invoice(
                             "lnbc1test",
@@ -114,7 +104,7 @@ class RewardRoutingBudgetTest(SimpleTestCase):
     def test_legacy_three_argument_validator_keeps_default_fee_cap(self):
         for module, node in self.nodes:
             with self.subTest(vendor=module.__name__):
-                decoded = _decoded_invoice(module, 9500)
+                decoded = _decoded_invoice(9500)
                 with (
                     patch.object(node, "decode_payreq", return_value=decoded),
                     patch.object(
@@ -164,11 +154,12 @@ class RewardBudgetSerializerTest(SimpleTestCase):
 class RewardPayoutCycleTest(TestCase):
     def test_api_to_node_and_balance_finalization(self):
         User.objects.get_or_create(username=ESCROW_USERNAME)
+        lnd_module = import_module("api.lightning.lnd")
         with ExitStack() as stack:
             for patcher in _make_cln_import_patches():
                 stack.enter_context(patcher)
             modules = (
-                import_module("api.lightning.lnd"),
+                lnd_module,
                 import_module("api.lightning.cln"),
             )
 
@@ -179,6 +170,7 @@ class RewardPayoutCycleTest(TestCase):
                 (10000, 1000, 9990, 10, "success", 0),
                 (10000, 300, 9997, 3, "success", 0),
                 (10001, 300, 9997, 3, "success", 0),
+                (100_000_000, 100000, 90_000_000, 10_000_000, "success", 0),
                 (10000, 1000, 9990, 10, "success", 100),
                 (10000, 0, 10000, 0, "success", 0),
                 (10000, None, 10000, 10, "success", 0),
@@ -197,11 +189,11 @@ class RewardPayoutCycleTest(TestCase):
                     user = User.objects.create(username=invoice)
                     user.robot.earned_rewards = earned
                     user.robot.save(update_fields=["earned_rewards"])
-                    decoded = _decoded_invoice(module, cap * 1000)
+                    decoded = _decoded_invoice()
                     decoded.num_satoshis = amount
-                    decoded.amount_msat.msat = amount * 1000
                     digest = hashlib.sha256(invoice.encode()).digest()
-                    decoded.payment_hash = digest.hex() if lnd else digest
+                    decoded.payment_hash = digest.hex()
+                    fee = cap if outcome == "success" else 0
                     payload = {"invoice": invoice}
                     if budget != "omitted":
                         payload["routing_budget_ppm"] = budget
@@ -223,7 +215,7 @@ class RewardPayoutCycleTest(TestCase):
                                         module.lightning_pb2.Payment.PaymentStatus,
                                         status,
                                     ),
-                                    fee_msat=0,
+                                    fee_msat=fee * 1000,
                                     payment_preimage=digest.hex(),
                                     failure_reason=2,
                                 )
@@ -248,7 +240,7 @@ class RewardPayoutCycleTest(TestCase):
                                 msat=amount * 1000
                             ),
                             amount_sent_msat=module.primitives__pb2.Amount(
-                                msat=amount * 1000
+                                msat=(amount + fee) * 1000
                             ),
                             payment_preimage=digest,
                         )
@@ -295,6 +287,7 @@ class RewardPayoutCycleTest(TestCase):
                     payment = LNPayment.objects.get(invoice=invoice)
                     self.assertEqual(payment.num_satoshis, amount)
                     self.assertEqual(payment.routing_budget_sats, Decimal(cap))
+                    self.assertEqual(payment.fee, Decimal(fee))
                     self.assertEqual(
                         payment.routing_budget_ppm,
                         budget if isinstance(budget, int) else 0,
