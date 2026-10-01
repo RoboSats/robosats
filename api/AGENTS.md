@@ -15,7 +15,7 @@ Child docs (load on demand): `api/models/AGENTS.md`, `api/lightning/AGENTS.md`,
 | `notifications.py` | `Notifications` — multi-channel fan-out |
 | `nostr.py` | `Nostr` — order events (kind 38383) + encrypted DMs |
 | `admin.py` | Django admin, incl. fund-moving dispute-resolution actions |
-| `utils.py` | Price aggregation, base91, PGP clearsign validation |
+| `utils.py` | Price aggregation, base91, PGP clearsign validation, LNURL-pay / Lightning Address resolution (`resolve_lightning_address`) |
 | `mempool.py` | mempool.space fee fetch with hard subprocess deadline (Django-free module for `spawn`) |
 | `errors.py` | `new_error(code)` — decade-coded error responses |
 | `oas_schemas.py` | drf-spectacular overrides, reads live settings at import |
@@ -236,6 +236,30 @@ anti-DDoS, not a reputation flag. Auto-opening a dispute on CHA/FSE timeout (ins
 auto-cancel) is a deliberate pro-safety default favoring human/coordinator review over
 automatic resolution once funds sit in escrow.
 
+**Dispute custody model** — opening a dispute is an immediate, irrevocable custody
+transfer: the trade escrow **and both bonds** are settled to the coordinator at dispute
+open (not at resolution). This happens at `open_dispute()` regardless of who triggered
+it (user action or CHA/FSE timeout). Rationale: disputes can take an unbounded amount of
+time, and unresolved HTLCs risk channel force-closures. Post-dispute, all user funds are a
+**pure coordinator IOU** — the winner is paid out only via `earned_rewards` →
+`withdraw_rewards` (winner submits a new invoice for escrow + bond value). The payout path
+is deliberately flat (no on-chain fallback, no alternative route for dispute winners): this
+prevents coordinator fund-drain exploits via forced routing failures. When routing fails
+on a large dispute payout, the user must contact the coordinator directly — the coordinator
+has full robot history and resolves it manually.
+
+**Dispute resolution has no time limit.** The 1-day `DIS` status expiry is an activity
+guard on the dispute itself, not an SLA for coordinator resolution. Federation trust rests
+on careful, unhurried dispute adjudication — disputes are never auto-rushed or auto-resolved
+against a user's favour once the coordinator has taken custody.
+
+**Both-silent auto-resolution** (`automatic_dispute_resolution`): if both parties wrote zero
+chat messages and fiat was never marked sent, the escrow is returned but both bonds are
+settled to the coordinator and **held indefinitely** — not split, not returned — until one
+of the peers appears and contacts the coordinator. This is consistent with the same trust
+stance: the coordinator cannot know who is at fault without evidence, so it holds the bonds
+as a neutral custodian rather than making an arbitrary automatic call.
+
 ## Traps
 Both nostr Celery tasks registered with empty `name=""`. `send_telegram_message` retries
 unbounded (`while True`/`except: pass`). `send_notification` routes
@@ -245,7 +269,7 @@ expects a `User` — likely dead/broken path. `dispute_statement` enforces **100
 chars** (errors 2001/2000) — narrower than `oas_schemas.py`'s "100–5000" and the
 serializer's `max_length=500_000`; `logics.py` is authoritative. `update_invoice`'s error
 3001 text claims "3 failed attempts" but code only checks `payout.status == EXPIRE`.
-`OnchainPayment.Status.CONFI` defined but never assigned. `successful_trade` **overwrites**
+`OnchainPayment.Status.CONFI` defined but never assigned (see on-chain swap gap below). `successful_trade` **overwrites**
 (not adds to) `earned_rewards` and also calls `Logics.pay_buyer` — unlike the other
 credit-only admin actions. Several `Logics` methods are plain functions with no `self`/
 `cls` (`is_buyer`, `is_seller`, `calc_sats`, `settle_bond`, `dispute_statement`) — adding
@@ -261,6 +285,12 @@ a robot whose latest-by-pk order is not `SUC/MLD/TLD` will be blocked even if an
 order was successful. `PriceView` returns an **object** keyed by currency code, but its
 generated OpenAPI schema (`serializer_class`) declares `type: array` — so `assertResponse`/
 schema validation on `/api/price/` always fails; don't add it back to tests.
+`rate_platform` (`Logics.rate_platform`) blindly overwrites `Robot.platform_rating` on every
+call — there is **no one-rating-per-order guard**. `Order` carries two dead boolean fields
+`maker_platform_rated`/`taker_platform_rated` that were designed to enforce this constraint
+but are **never read or written anywhere in the codebase** (only defined in the model and
+migrations). In practice the blast radius is small because robots are ephemeral (one per
+trade), but a robot can re-rate arbitrarily and the latest write wins.
 
 ## Constraints
 Never settle `trade_escrow` before `order.is_fiat_sent` is confirmed by the buyer. Never

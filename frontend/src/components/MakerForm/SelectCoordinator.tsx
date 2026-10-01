@@ -4,85 +4,22 @@ import {
   Select,
   MenuItem,
   Box,
-  Tooltip,
   Typography,
   type SelectChangeEvent,
   CircularProgress,
   Stack,
-  Skeleton,
-  Chip,
 } from '@mui/material';
-import { Link } from '@mui/icons-material';
 import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { type Coordinator } from '../../models';
+import CoordinatorFeeRow from '../CoordinatorFeeRow';
 
 interface SelectCoordinatorProps {
   coordinatorAlias: string;
   setCoordinatorAlias: (coordinatorAlias: string) => void;
 }
-
-// Compact fee + swap row rendered both inside menu items and the closed selector
-const CoordinatorFeeRow = ({
-  coordinator,
-  t,
-}: {
-  coordinator: Coordinator;
-  t: (key: string) => string;
-}): React.JSX.Element => {
-  const info = coordinator.info;
-
-  if (coordinator.loadingInfo) {
-    return <Skeleton variant='text' width={120} height={16} />;
-  }
-
-  if (!info) {
-    return <></>;
-  }
-
-  return (
-    <Stack direction='row' spacing={0.75} sx={{ alignItems: 'center' }}>
-      <Tooltip placement='top' enterTouchDelay={500} enterDelay={700} title={t('Maker fee')}>
-        <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap' }}>
-          {t('Maker')[0]}&nbsp;{(info.maker_fee * 100).toFixed(3)}%
-        </Typography>
-      </Tooltip>
-      <Typography variant='caption' color='text.disabled'>
-        ·
-      </Typography>
-      <Tooltip placement='top' enterTouchDelay={500} enterDelay={700} title={t('Taker fee')}>
-        <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap' }}>
-          {t('Taker')[0]}&nbsp;{(info.taker_fee * 100).toFixed(3)}%
-        </Typography>
-      </Tooltip>
-      <Typography variant='caption' color='text.disabled'>
-        ·
-      </Typography>
-      <Tooltip
-        placement='top'
-        enterTouchDelay={500}
-        enterDelay={700}
-        title={info.swap_enabled ? t('Onchain payouts enabled') : t('Onchain payouts disabled')}
-      >
-        {info.swap_enabled ? (
-          <Chip
-            icon={<Link sx={{ fontSize: '0.85rem !important' }} />}
-            label={`${info.current_swap_fee_rate.toFixed(1)}%`}
-            size='small'
-            color='success'
-            variant='outlined'
-            sx={{ height: 16, fontSize: '0.65rem', '& .MuiChip-label': { px: 0.5 } }}
-          />
-        ) : (
-          <Link sx={{ fontSize: '0.85rem', color: 'text.disabled' }} />
-        )}
-      </Tooltip>
-    </Stack>
-  );
-};
 
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({
   coordinatorAlias,

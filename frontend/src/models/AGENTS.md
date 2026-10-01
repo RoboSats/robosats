@@ -6,17 +6,58 @@ TypeScript classes and types representing the core domain: `Order`, `Robot`, `Sl
 
 ## Model Map
 
-| File                        | Key exports                                            | Notes                                                                                            |
-| --------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `Order.model.ts`            | `Order`, `Order.Status` (19 values 0–18), `Order.Type` | Mirrors backend `Order.Status` exactly                                                           |
-| `Robot.model.ts`            | `Robot`                                                | Robot identity + active order ref; `activeOrderId` links to `slot.activeOrder`                   |
-| `Slot.model.ts`             | `Slot`                                                 | One Slot per token — holds `Robot` + optional `activeOrder: Order`                               |
-| `Garage.model.ts`           | `Garage`                                               | Map of token→`Slot`; `getSlot()`, `getActiveOrderId()`                                           |
-| `Federation.model.ts`       | `Federation`                                           | Map of shortAlias→`Coordinator`; built from `federation.json` + live API data                    |
-| `Coordinator.model.ts`      | `Coordinator`                                          | Per-coordinator info: `alias`, `mainnet`/`testnet` endpoints, `info`, `limits`, `book`, `badges` |
-| `Settings.model.ts`         | `Settings`, `Language`, `Exchange`                     | User preferences; `Language` union has a known bug (see Traps)                                   |
-| `Maker.model.ts`            | `Maker`                                                | Order creation form state; validates against `currencies.json`                                   |
-| `LightningInvoice.model.ts` | `LightningInvoice`                                     | Parsed invoice fields                                                                            |
+| File                        | Key exports                                            | Notes                                                                                                |
+| --------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `Order.model.ts`            | `Order`, `Order.Status` (19 values 0–18), `Order.Type` | Mirrors backend `Order.Status` exactly                                                               |
+| `Robot.model.ts`            | `Robot`                                                | Robot identity + active order ref; `activeOrderId` links to `slot.activeOrder`                       |
+| `Slot.model.ts`             | `Slot`                                                 | One Slot per token — holds `Robot` + optional `activeOrder: Order`; `isReusable()` reusability check |
+| `Garage.model.ts`           | `Garage`, `GarageMode`                                 | Map of token→`Slot`; mode controller; account lifecycle management in garageKey mode                 |
+| `GarageKey.model.ts`        | `GarageKey`                                            | Master key: derives robot tokens + Nostr identity; persists encoded key + current account index      |
+| `Federation.model.ts`       | `Federation`                                           | Map of shortAlias→`Coordinator`; built from `federation.json` + live API data                        |
+| `Coordinator.model.ts`      | `Coordinator`                                          | Per-coordinator info: `alias`, `mainnet`/`testnet` endpoints, `info`, `limits`, `book`, `badges`     |
+| `Settings.model.ts`         | `Settings`, `Language`, `Exchange`                     | User preferences; `Language` union has a known bug (see Traps)                                       |
+| `Maker.model.ts`            | `Maker`                                                | Order creation form state; validates against `currencies.json`                                       |
+| `LightningInvoice.model.ts` | `LightningInvoice`                                     | Parsed invoice fields                                                                                |
+
+## Garage Modes & Account Lifecycle
+
+`Garage.mode: GarageMode` (`'legacy'` | `'garageKey'`, default `'legacy'`) controls which identity system is active. Both modes persist independently — changing mode clears all slots and the garage key.
+
+### garageKey mode
+
+`GarageKey` holds a 32-byte random master secret encoded as bech32 `robo1...` string. Derivation chain:
+
+```
+sha512(plainKey) → BIP32 master seed
+  → m/44'/88'/{accountIndex}'/0 → derivedPrivKey
+  → base62(derivedPrivKey)[0..36] = robot token
+sha256(sha512(plainKey)) → GarageKey.nostrSecKey (Nostr identity for account recovery)
+```
+
+`currentAccountIndex` (0–2147483647) selects which robot is active; persisted in `systemClient` under `garage_key`.
+
+**Key lifecycle methods on `Garage`:**
+
+| Method                                                          | Purpose                                                                                  |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `createRobotFromGarageKey(federation, index?, autoFindUnused?)` | Derives token at index, creates/fetches slot, sets as current                            |
+| `ensureReusableSlot(federation, options)`                       | Auto-advances to next reusable account; suppressed when `manualNavigationActive=true`    |
+| `nextAccount(federation, source)` / `previousAccount`           | Manual index navigation; sets `manualNavigationActive=true` on `source='manual'`         |
+| `makeOrderWithRecovery(federation, attributes)`                 | Creates order + publishes Nostr account-recovery event (kind 30078, NIP-59 gift-wrapped) |
+| `publishAccountRecovery(federation, index?)`                    | Publishes recovery event without creating an order                                       |
+| `findNextUnusedAccount(federation, startIndex)`                 | Scans up to 100 slots for first reusable; fetches last-order status when unknown         |
+| `loadGarageKey()` / `setGarageKey()` / `deleteGarageKey()`      | GarageKey persistence lifecycle                                                          |
+
+**`Slot.isReusable()`** returns `true` when: no active order AND (no last order OR last order status ∈ `[0,1,2,4,5]` = WFB/PUB/PAU/UCA/EXP). `lastOrderStatusKnown` gates this — slots with an unknown last-order status are conservatively **not** reusable until `ensureLastOrderStatus()` fetches the real status.
+
+**Account recovery flow** (Nostr):
+
+1. On order creation: `saveAccountRecovery(garageKey.nostrSecKey, accountIndex, roboPool)` publishes a gift-wrapped (NIP-59) kind-30078 event to relays (`d` tag `robosats-garage-account`, `account` tag = index).
+2. On key recovery: `GarageKey.recoverAccount(roboPool)` calls `roboPool.subscribeAccountRecovery` for both the current and legacy Nostr sec-key derivations; picks the event with the highest `created_at` / index.
+
+### legacy mode
+
+Old ephemeral-token flow. **Read-only for ongoing trades** — `/offers` and `/create` redirect to `/garage`; Make/Take buttons and nav tabs are disabled. `RobotPage` is the UI surface (not `GaragePage`). Tokens are not persisted as master secrets.
 
 ## `Order.Status` — 19 values (mirrors backend)
 
@@ -100,6 +141,8 @@ as `avg × 5` stars + `(count)`.
 - `Settings.network = 'testnet'` is intentionally supported for trading real testnet Lightning — not a dev/debug mode.
 - `Settings.useProxy` defaults on for mobile: Lightning invoice proxies protect the buyer's privacy (invoice reveals IP to the sender) — particularly important on mobile.
 - `Maker.model.ts` rules (premium bounds, range amounts, duration) encode product policy — don't relax them without coordinator alignment.
+- **GarageKey derivation is a wire-format invariant** — the path `m/44'/88'/{index}'/0`, sha512 seed, and base62 encoding are all fixed. Any change silently invalidates all existing users' saved garage keys.
+- **Account recovery Nostr kind (30078)** and d-tag (`robosats-garage-account`) are also wire-format — changing them breaks recovery for keys that published events under the old format. The legacy sec-key derivation path (`sha256(sha512(UTF8(hexKey)))`) must be kept for reading old recovery events even if the primary derivation is updated.
 
 ## Traps
 
@@ -116,3 +159,7 @@ as `avg × 5` stars + `(count)`.
 - Keep `Order.Status` values in sync with `api/models/order.py` — never add a status without a corresponding backend entry.
 - Do not add logic to `Garage`/`Slot` that prevents creating a second active order — that is coordinator-enforced.
 - Do not remove `Language` without also fixing the `'pl'` duplication and adding `'ja'` — the current union is a known bug, not intentional design.
+- Never change the `GarageKey` BIP32 derivation path, seed construction, or base62 encoding without a formal migration plan — it is a wire-format invariant.
+- Never remove `getLegacyNostrSecKeyFromGarageKey` from `utils/garageKey.ts` — it is required to read account-recovery events published before the raw-byte derivation fix.
+- `Slot.isReusable()` must remain the canonical guard for account reuse — do not duplicate this logic in components; always call `slot.isReusable()`.
+- `manualNavigationActive` prevents `ensureReusableSlot` from overriding a user's explicit account navigation. Always call `garage.resetManualNavigation()` after a trade completes (statuses 14, 17, 18).
