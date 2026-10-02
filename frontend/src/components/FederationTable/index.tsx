@@ -263,7 +263,7 @@ const FederationTable = ({
                 <LinkOff color='error' />
               ) : Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
                 <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
-              ) : params.row.limits !== undefined ? (
+              ) : params.row.info !== undefined ? (
                 <Link color='success' />
               ) : (
                 <LinkOff color='error' />
