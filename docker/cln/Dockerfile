@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim as builder
+FROM debian:bookworm-slim as builder
 ARG DEBIAN_FRONTEND=noninteractive
 
 ARG LIGHTNINGD_VERSION=v25.09.3
