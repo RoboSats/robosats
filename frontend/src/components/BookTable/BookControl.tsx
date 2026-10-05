@@ -38,8 +38,8 @@ const BookControl = ({
   const [orderType, setOrderType] = useState<string>('any');
   const [_small, medium, large] = useMemo(() => {
     const small = 16;
-    const medium = small + 13;
-    const large = medium + (t('and use').length + t('pay with').length) * 0.6 + 5;
+    const medium = small + 17;
+    const large = small + 13 + (t('and use').length + t('pay with').length) * 0.6 + 9;
     return [small, medium, large];
   }, [i18n.language, fav.mode]);
 
