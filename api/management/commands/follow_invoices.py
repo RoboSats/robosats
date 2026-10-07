@@ -184,6 +184,8 @@ class Command(BaseCommand):
                 order.trade_escrow.status == LNPayment.Status.SETLED
                 and order.is_swap is False
             ):
+                lnpayment.status = LNPayment.Status.QUEUED
+                lnpayment.save(update_fields=["status"])
                 follow_send_payment.delay(lnpayment.payment_hash)
 
     def send_onchain_payments(self):
