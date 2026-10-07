@@ -64,6 +64,11 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
 - Before upgrading any library or infrastructure component, consult
   `development/blocked-upgrades.md` — it lists every pinned version with its blocker.
   See `development/AGENTS.md` for an overview of all developer reference docs.
+- **No inline comments in source code.** Rationale, design decisions, field semantics,
+  security properties, and non-obvious behaviour belong in the nearest AGENTS.md —
+  never in JSDoc blocks, block comments, or inline `//` comments in source files.
+  The only acceptable comments are TODOs that reference a tracked issue and
+  pre-existing comments in code you did not author in the current task.
 
 ## Gotchas
 

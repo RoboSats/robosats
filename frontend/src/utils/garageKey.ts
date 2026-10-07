@@ -142,5 +142,12 @@ export function garageKeyToRobotToken(garageKey: string, accountIndex: number = 
   return derivedKeyToToken(derivedKey);
 }
 
+export function deriveCoordinatorToken(baseToken: string, shortAlias: string): string {
+  const preimage = `robosats-coordinator-token:${shortAlias}|${baseToken}`;
+  const preimageBytes = new TextEncoder().encode(preimage);
+  const hashBytes = sha256(preimageBytes);
+  return derivedKeyToToken(hashBytes);
+}
+
 export { hexToBytes };
 export { bytesToHex };

@@ -31,6 +31,7 @@ const RobotPage = (): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { slotUpdatedAt } = useContext<UseAppStoreType>(AppContext);
   const params = useParams();
+  const mobileView = windowSize?.width < 50;
   const urlToken = settings.selfhostedClient ? params.token : null;
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
@@ -120,11 +121,13 @@ const RobotPage = (): React.JSX.Element => {
           </ToggleButton>
         </ToggleButtonGroup>
 
-        <Alert severity='warning' sx={{ width: '100%' }}>
-          {t(
-            'You are in Legacy mode. This mode is only for recovering robots from ongoing trades. Switch to Garage Key mode to create new orders.',
-          )}
-        </Alert>
+        {!mobileView && (
+          <Alert severity='warning' sx={{ width: '100%' }}>
+            {t(
+              'You are in Legacy mode. This mode is only for recovering robots from ongoing trades. Switch to Garage Key mode to create new orders.',
+            )}
+          </Alert>
+        )}
       </Stack>
 
       <Dialog open={showModeChangeDialog} onClose={cancelModeChange} maxWidth='sm' fullWidth>
