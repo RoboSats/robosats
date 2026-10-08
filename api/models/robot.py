@@ -49,6 +49,10 @@ class Robot(models.Model):
     webhook_api_key = models.CharField(max_length=256, null=True, blank=True)
     webhook_enabled = models.BooleanField(default=False, null=False)
 
+    nostr_forward_pubkey = models.CharField(max_length=64, null=True, blank=True)
+    nostr_forward_relay = models.CharField(max_length=500, null=True, blank=True)
+    nostr_forward_enabled = models.BooleanField(default=False, null=False)
+
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards
@@ -111,6 +115,27 @@ class Robot(models.Model):
                 parsed.scheme == "http"
                 and hostname.endswith(".onion")
                 and not hostname.endswith("..onion")
+                and len(hostname) > len(".onion")
+            )
+        except Exception:
+            return False
+
+    @staticmethod
+    def is_valid_onion_relay_url(url):
+        """Validates that the URL is a websocket .onion relay."""
+        if not url:
+            return False
+        try:
+            from urllib.parse import urlparse
+
+            from nostr_sdk import RelayUrl
+
+            relay = RelayUrl.parse(url)
+            parsed = urlparse(str(relay))
+            hostname = parsed.hostname or ""
+            return (
+                relay.is_onion()
+                and ".." not in hostname
                 and len(hostname) > len(".onion")
             )
         except Exception:

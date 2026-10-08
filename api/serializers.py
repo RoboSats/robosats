@@ -1,6 +1,9 @@
 from decouple import config
 from decimal import Decimal
+from django.db import transaction
+from nostr_sdk import PublicKey
 from rest_framework import serializers
+from secp256k1 import PublicKey as Secp256k1PublicKey
 
 from .models import MarketTick, Order, Notification, Robot
 
@@ -746,17 +749,32 @@ class StealthSerializer(serializers.Serializer):
 
 
 class UpdateRobotSerializer(serializers.ModelSerializer):
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            self.instance = Robot.objects.select_for_update().get(pk=instance.pk)
+            validated_data = self.validate(validated_data)
+            # Only write submitted settings, never stale reward balances.
+            Robot.objects.filter(pk=instance.pk).update(**validated_data)
+            instance.refresh_from_db()
+        return instance
+
     class Meta:
         model = Robot
         fields = (
             "webhook_url",
             "webhook_enabled",
             "webhook_api_key",
+            "nostr_forward_pubkey",
+            "nostr_forward_relay",
+            "nostr_forward_enabled",
         )
         extra_kwargs = {
             "webhook_url": {"required": False, "allow_null": True},
             "webhook_enabled": {"required": False},
             "webhook_api_key": {"required": False, "allow_null": True},
+            "nostr_forward_pubkey": {"required": False, "allow_null": True},
+            "nostr_forward_relay": {"required": False, "allow_null": True},
+            "nostr_forward_enabled": {"required": False},
         }
 
     def validate_webhook_url(self, value):
@@ -765,3 +783,51 @@ class UpdateRobotSerializer(serializers.ModelSerializer):
                 "Webhook URL must be a Tor .onion address"
             )
         return value
+
+    def validate_nostr_forward_pubkey(self, value):
+        if value:
+            if value.isupper():
+                value = value.lower()
+            try:
+                pubkey = PublicKey.parse(value)
+                Secp256k1PublicKey(bytes.fromhex("02" + pubkey.to_hex()), raw=True)
+            except Exception:
+                raise serializers.ValidationError(
+                    "Nostr forward pubkey must be a valid hex or npub public key"
+                )
+        return value
+
+    def validate_nostr_forward_relay(self, value):
+        if value and not Robot.is_valid_onion_relay_url(value):
+            raise serializers.ValidationError(
+                "Nostr relay must be a Tor .onion websocket URL"
+            )
+        return value
+
+    def validate(self, attrs):
+        enabled = attrs.get(
+            "nostr_forward_enabled",
+            self.instance.nostr_forward_enabled,
+        )
+        pubkey = attrs.get(
+            "nostr_forward_pubkey",
+            self.instance.nostr_forward_pubkey,
+        )
+        relay = attrs.get(
+            "nostr_forward_relay",
+            self.instance.nostr_forward_relay,
+        )
+
+        errors = {}
+        if enabled and not pubkey:
+            errors["nostr_forward_pubkey"] = (
+                "A Nostr forward pubkey is required when forwarding is enabled"
+            )
+        if enabled and not relay:
+            errors["nostr_forward_relay"] = (
+                "A Nostr forward relay is required when forwarding is enabled"
+            )
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return attrs
