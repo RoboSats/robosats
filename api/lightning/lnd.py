@@ -448,7 +448,9 @@ class LNDNode:
     #     return True
 
     @classmethod
-    def validate_ln_invoice(cls, invoice, num_satoshis, routing_budget_ppm):
+    def validate_ln_invoice(
+        cls, invoice, num_satoshis, routing_budget_ppm, routing_budget_sats=None
+    ):
         """Checks if the submited LN invoice comforms to expectations"""
 
         payout = {
@@ -473,7 +475,9 @@ class LNDNode:
         route_hints = payreq_decoded.route_hints
 
         # Max amount RoboSats will pay for routing
-        if routing_budget_ppm == 0:
+        if routing_budget_sats is not None:
+            max_routing_fee_sats = int(routing_budget_sats)
+        elif routing_budget_ppm == 0:
             max_routing_fee_sats = max(
                 num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                 float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
@@ -499,7 +503,7 @@ class LNDNode:
                 routes_cost.append(route_cost)
 
             # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
-            if min(routes_cost) >= max_routing_fee_sats:
+            if min(routes_cost) > max_routing_fee_sats:
                 payout["context"] = {
                     "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget. This can be adjusted with Advanced Options enabled."
                 }
@@ -543,13 +547,7 @@ class LNDNode:
         """Sends sats. Used for rewards payouts"""
         from api.models import LNPayment
 
-        fee_limit_sat = int(
-            max(
-                lnpayment.num_satoshis
-                * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
-                float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
-            )
-        )  # 1000 ppm or 2 sats
+        fee_limit_sat = int(lnpayment.routing_budget_sats)
         timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
         request = router_pb2.SendPaymentRequest(
             payment_request=lnpayment.invoice,

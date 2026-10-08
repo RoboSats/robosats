@@ -172,7 +172,14 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 user.robot.nostr_pubkey = nostr_pubkey
 
             update_last_login(None, user)
-            user.save()
+            user.robot.save(
+                update_fields=[
+                    "hash_id",
+                    "public_key",
+                    "encrypted_private_key",
+                    "nostr_pubkey",
+                ]
+            )
 
         response = self.get_response(request)
         return response

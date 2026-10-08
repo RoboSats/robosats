@@ -734,7 +734,12 @@ class RewardViewSchema:
             200: {
                 "type": "object",
                 "properties": {
-                    "successful_withdrawal": {"type": "boolean", "default": True}
+                    "successful_withdrawal": {"type": "boolean", "default": True},
+                    "earned_rewards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Remaining claimable rewards in satoshis",
+                    },
                 },
             },
             400: {
