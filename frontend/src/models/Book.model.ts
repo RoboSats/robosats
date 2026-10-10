@@ -19,6 +19,9 @@ export interface PublicOrder {
   bond_size: string;
   maker: number | null;
   escrow_duration: number;
+  /** Absent on coordinators that predate instant orders */
+  is_instant?: boolean;
+  chat_duration?: number;
   maker_nick: string | null;
   maker_hash_id: string | null;
   price: number | null;

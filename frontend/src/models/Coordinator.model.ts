@@ -55,6 +55,11 @@ export interface Info {
   max_swap: number;
   current_swap_fee_rate: number;
   blossom_enabled: boolean;
+  /** Instant order policy of the coordinator. Optional because coordinators predating the
+   *  feature do not advertise it; an absent value means instant orders are unavailable. */
+  instant_escrow_max_duration?: number;
+  instant_chat_max_duration?: number;
+  instant_payment_methods?: string[];
   network: 'mainnet' | 'testnet' | undefined;
   openUpdateClient: boolean;
   notice_severity: 'none' | 'warning' | 'error' | 'success' | 'info';

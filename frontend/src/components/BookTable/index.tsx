@@ -35,7 +35,7 @@ import { PaymentStringAsIcons } from '../PaymentMethods';
 import RobotAvatar from '../RobotAvatar';
 
 // Icons
-import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
+import { Bolt, Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import headerStyleFix from '../DataGrid/HeaderFix';
@@ -368,13 +368,26 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
-            <div style={{ position: 'relative', top: '0.4em' }}>
+            <div
+              style={{
+                position: 'relative',
+                top: '0.4em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25em',
+              }}
+            >
               <PaymentStringAsIcons
                 othersText={t('Others')}
                 verbose={false}
                 size={1.7 * fontSize}
                 text={params.row.payment_method}
               />
+              {params.row.is_instant ? (
+                <Tooltip title={t('Instant order - reduced escrow and chat timers')}>
+                  <Bolt sx={{ height: '0.85em', width: '0.85em', color: 'primary.main' }} />
+                </Tooltip>
+              ) : null}
             </div>
           </div>
         );
@@ -400,12 +413,17 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias ?? '');
             }}
           >
-            <PaymentStringAsIcons
-              othersText={t('Others')}
-              size={1.3 * fontSize}
-              verbose={false}
-              text={params.row.payment_method}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.2em' }}>
+              <PaymentStringAsIcons
+                othersText={t('Others')}
+                size={1.3 * fontSize}
+                verbose={false}
+                text={params.row.payment_method}
+              />
+              {params.row.is_instant ? (
+                <Bolt sx={{ height: '0.75em', width: '0.75em', color: 'primary.main' }} />
+              ) : null}
+            </div>
           </div>
         );
       },

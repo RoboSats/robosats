@@ -7,7 +7,7 @@ import Countdown from 'react-countdown';
 import currencies from '../../utils/currencies';
 
 import { type Order, type Info } from '../../models';
-import { ConfirmationDialog, OrderDescriptionDialog } from '../Dialogs';
+import { ConfirmationDialog, FastTraderWarningDialog, OrderDescriptionDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
@@ -27,9 +27,10 @@ interface TakeButtonProps {
 
 interface OpenDialogsProps {
   description: boolean;
+  fastTrader: boolean;
   confirmation: boolean;
 }
-const closeAll = { description: false, confirmation: false };
+const closeAll = { description: false, fastTrader: false, confirmation: false };
 
 const TakeButton = ({
   password,
@@ -131,11 +132,15 @@ const TakeButton = ({
     }
   }, [slotUpdatedAt, takeAmount]);
 
+  // The fast trader warning sits between the order description and the robot confirmation, so
+  // a taker cannot reach the confirmation without seeing the reduced timers first.
   const onTakeOrderClicked = function (): void {
     if (currentOrder?.description && currentOrder?.description !== '') {
-      setOpen({ description: true, confirmation: false });
+      setOpen({ description: true, fastTrader: false, confirmation: false });
+    } else if (currentOrder?.is_instant) {
+      setOpen({ description: false, fastTrader: true, confirmation: false });
     } else {
-      setOpen({ description: false, confirmation: true });
+      setOpen({ description: false, fastTrader: false, confirmation: true });
     }
   };
 
@@ -336,7 +341,20 @@ const TakeButton = ({
         open={open.description}
         onClose={() => setOpen({ ...open, description: false })}
         onClickBack={() => setOpen({ ...open, description: false })}
-        onClickDone={() => setOpen({ ...open, description: false, confirmation: true })}
+        onClickDone={() =>
+          setOpen({
+            description: false,
+            fastTrader: Boolean(currentOrder?.is_instant),
+            confirmation: !currentOrder?.is_instant,
+          })
+        }
+        order={currentOrder}
+      />
+
+      <FastTraderWarningDialog
+        open={open.fastTrader}
+        onClose={() => setOpen(closeAll)}
+        onClickDone={() => setOpen({ description: false, fastTrader: false, confirmation: true })}
         order={currentOrder}
       />
 
