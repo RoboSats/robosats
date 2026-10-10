@@ -148,6 +148,11 @@ class Nostr:
             Tag.parse(["z", "order"]),
         ]
 
+        # Only advertised when set, so events for regular orders stay byte-identical to before.
+        # Relays and third-party clients that do not know this tag simply ignore it.
+        if order.is_instant:
+            tags.append(Tag.parse(["instant", "true", str(order.chat_duration)]))
+
         if order.latitude and order.longitude:
             tags.extend(
                 [Tag.parse(["g", pygeohash.encode(order.latitude, order.longitude)])]

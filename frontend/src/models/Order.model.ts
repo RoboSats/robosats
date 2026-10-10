@@ -76,6 +76,8 @@ class Order {
   maker: number = 0;
   taker: number = 0;
   escrow_duration: number = 0;
+  is_instant: boolean = false;
+  chat_duration: number = 0;
   total_secs_exp: number = 0;
   penalty: Date | undefined = undefined;
   is_maker: boolean = false;
@@ -207,6 +209,10 @@ class Order {
       satoshis: this.is_explicit ? this.satoshis : null,
       public_duration: this.public_duration,
       escrow_duration: this.escrow_duration,
+      is_instant: this.is_instant,
+      // Only instant orders send a chat window. Otherwise the key is omitted so the
+      // coordinator applies its own FIAT_EXCHANGE_DURATION default.
+      ...(this.is_instant && this.chat_duration > 0 ? { chat_duration: this.chat_duration } : {}),
       bond_size: this.bond_size,
       latitude: this.latitude,
       longitude: this.longitude,

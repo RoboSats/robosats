@@ -130,6 +130,8 @@ class MakerView(CreateAPIView):
         is_explicit = serializer.data.get("is_explicit")
         public_duration = serializer.data.get("public_duration")
         escrow_duration = serializer.data.get("escrow_duration")
+        is_instant = serializer.data.get("is_instant")
+        chat_duration = serializer.data.get("chat_duration")
         bond_size = serializer.data.get("bond_size")
         latitude = serializer.data.get("latitude")
         longitude = serializer.data.get("longitude")
@@ -141,6 +143,11 @@ class MakerView(CreateAPIView):
             public_duration = 60 * 60 * settings.DEFAULT_PUBLIC_ORDER_DURATION
         if escrow_duration is None:
             escrow_duration = 60 * settings.INVOICE_AND_ESCROW_DURATION
+        if is_instant is None:
+            is_instant = False
+        # Non-instant orders keep the coordinator-wide chat window, as they do today
+        if chat_duration is None:
+            chat_duration = 60 * 60 * settings.FIAT_EXCHANGE_DURATION
         if bond_size is None:
             bond_size = settings.DEFAULT_BOND_SIZE
         if has_range is None:
@@ -191,6 +198,8 @@ class MakerView(CreateAPIView):
                 maker=request.user,
                 public_duration=public_duration,
                 escrow_duration=escrow_duration,
+                is_instant=is_instant,
+                chat_duration=chat_duration,
                 bond_size=bond_size,
                 latitude=latitude,
                 longitude=longitude,
@@ -205,6 +214,10 @@ class MakerView(CreateAPIView):
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
             valid, context = Logics.validate_location(order)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+            valid, context = Logics.validate_instant_order(order)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -1054,6 +1067,12 @@ class InfoView(viewsets.ViewSet):
         context["swap_enabled"] = not config("DISABLE_ONCHAIN", cast=bool, default=True)
         context["max_swap"] = config("MAX_SWAP_AMOUNT", cast=int, default=0)
         context["blossom_enabled"] = config("BLOSSOM_ENABLED", cast=bool, default=False)
+
+        # Instant order policy. Advertised so clients render the maker toggle and the taker
+        # warning from the coordinator's authoritative limits instead of hardcoded values.
+        context["instant_escrow_max_duration"] = settings.INSTANT_ESCROW_MAX_DURATION
+        context["instant_chat_max_duration"] = settings.INSTANT_CHAT_MAX_DURATION
+        context["instant_payment_methods"] = settings.INSTANT_PAYMENT_METHODS
 
         try:
             context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(

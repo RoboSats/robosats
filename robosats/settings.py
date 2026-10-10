@@ -15,7 +15,7 @@ import json
 import textwrap
 from pathlib import Path
 
-from decouple import config
+from decouple import Csv, config
 
 from .celery.conf import *  # noqa
 
@@ -308,6 +308,21 @@ MAX_BOND_SIZE = float(15)
 INVOICE_AND_ESCROW_DURATION = 180
 # Time to confirm chat and confirm fiat (time to Fiat Sent confirmation) HOURS
 FIAT_EXCHANGE_DURATION = 24
+
+# Instant orders: an opt-in, tighter-timer mode for fast settlement rails, where the maker
+# expects the fiat to arrive in minutes rather than days. See Logics.validate_instant_order().
+# Max escrow/invoice step length an instant order may request HOURS
+INSTANT_ESCROW_MAX_DURATION = config('INSTANT_ESCROW_MAX_DURATION', cast=float, default=2.0)
+# Max chat window (fiat exchange duration) an instant order may request HOURS
+INSTANT_CHAT_MAX_DURATION = config('INSTANT_CHAT_MAX_DURATION', cast=float, default=4.0)
+# Payment rails fast enough to be eligible for instant orders, as a comma-separated string:
+# decouple casts defaults as well as values, so the default must be a string for the Csv cast.
+# Coordinators may override with their own list, e.g. INSTANT_PAYMENT_METHODS="Strike,Zelle,Bizum"
+INSTANT_PAYMENT_METHODS = config(
+    'INSTANT_PAYMENT_METHODS',
+    cast=Csv(),
+    default='Strike,CashApp,Zelle,Revolut,Wise,Instant SEPA,N26',
+)
 
 # The name of the request header used for CSRF authentication.
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default=[])

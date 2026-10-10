@@ -16,3 +16,4 @@ export { default as WarningDialog } from './Warning';
 export { default as DeleteRobotConfirmationDialog } from './DeleteRobotConfirmation';
 export { default as DeleteGarageKeyConfirmationDialog } from './DeleteGarageKeyConfirmation';
 export { default as OrderDescriptionDialog } from './OrderDescription';
+export { default as FastTraderWarningDialog } from './FastTraderWarning';

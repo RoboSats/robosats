@@ -14,6 +14,10 @@ export interface Maker {
   publicDuration: number;
   escrowExpiryTime: Date;
   escrowDuration: number;
+  /** Instant order opt-in. Tightens the escrow and chat timers for fast settlement rails. */
+  isInstant: boolean;
+  /** Chat window in seconds. Only sent when isInstant is true. */
+  chatDuration: number;
   bondSize: number;
   minAmount: number | null;
   maxAmount: number | null;
@@ -43,6 +47,8 @@ export const defaultMaker: Maker = {
   publicDuration: 86340,
   escrowExpiryTime: new Date(0, 0, 0, 3, 0),
   escrowDuration: 10800,
+  isInstant: false,
+  chatDuration: 0,
   bondSize: 3,
   minAmount: null,
   maxAmount: null,

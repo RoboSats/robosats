@@ -37,7 +37,7 @@ import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
 import { useBondEstimate } from '../../hooks/useBondEstimate';
 import useLegacyMode from '../../hooks/useLegacyMode';
 
-import { SelfImprovement, Lock, DeleteSweep, Edit, Map } from '@mui/icons-material';
+import { SelfImprovement, Lock, DeleteSweep, Edit, Map, Bolt } from '@mui/icons-material';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import { LoadingButton } from '@mui/lab';
 import { fiatMethods } from '../PaymentMethods';
@@ -90,6 +90,32 @@ const MakerForm = ({
   const [limits, setLimits] = useState<LimitList>({});
 
   const amountSafeThresholds = [1.03, 0.98];
+
+  // Instant order policy comes from the coordinator via /api/info/ and is the single source of
+  // truth. The defaults only apply to coordinators that predate the feature, in which case the
+  // toggle is anyway hidden because no payment rails are advertised as fast.
+  const coordinatorInfo = federation.getCoordinator(maker.coordinator)?.info;
+  const instantPaymentMethods: string[] = coordinatorInfo?.instant_payment_methods ?? [];
+  const maxInstantEscrowHours = coordinatorInfo?.instant_escrow_max_duration ?? 2;
+  const maxInstantChatHours = coordinatorInfo?.instant_chat_max_duration ?? 4;
+  const maxInstantEscrowSecs = maxInstantEscrowHours * 60 * 60;
+  const maxInstantChatSecs = maxInstantChatHours * 60 * 60;
+
+  // The API matches the whole payment_method string against INSTANT_PAYMENT_METHODS, and the
+  // maker form joins several selected methods with a space. So an instant order is only
+  // selectable with exactly one rail, and that rail must be advertised as fast.
+  const isInstantEligible =
+    maker.paymentMethods.length === 1 && instantPaymentMethods.includes(maker.paymentMethods[0]);
+
+  const instantTooltip = isInstantEligible
+    ? t(
+        'Shortens the escrow and chat timers, so an unresponsive taker releases your collateral early',
+      )
+    : instantPaymentMethods.length === 0
+      ? t('This coordinator does not offer instant orders yet')
+      : t('Instant orders require exactly one fast payment method selected: {{methods}}', {
+          methods: instantPaymentMethods.join(', '),
+        });
 
   useEffect(() => {
     setCurrencyCode(currencyDict[String(fav.currency === 0 ? 1 : fav.currency)]);
@@ -280,6 +306,8 @@ const MakerForm = ({
         satoshis: null,
         public_duration: maker.publicDuration,
         escrow_duration: maker.escrowDuration,
+        is_instant: maker.isInstant,
+        chat_duration: maker.chatDuration,
         bond_size: maker.bondSize,
         latitude: maker.latitude,
         longitude: maker.longitude,
@@ -305,6 +333,42 @@ const MakerForm = ({
         });
     }
     setOpenDialogs(false);
+  };
+
+  // Changing the rail can make an already-enabled instant order invalid, so drop the flag
+  // instead of letting the maker submit an order the coordinator would reject.
+  useEffect(() => {
+    if (!isInstantEligible) {
+      setMaker((prev) => (prev.isInstant ? { ...prev, isInstant: false, chatDuration: 0 } : prev));
+    }
+  }, [isInstantEligible]);
+
+  const handleToggleInstant = function (enabled: boolean): void {
+    if (!enabled) {
+      setMaker({ ...maker, isInstant: false, chatDuration: 0 });
+      return;
+    }
+
+    // Clamp the escrow timer to the ceiling and reflect it in the picker, otherwise the maker
+    // would see a value the coordinator is about to reject.
+    const escrowSecs = Math.min(
+      maker.escrowDuration > 0 ? maker.escrowDuration : maxInstantEscrowSecs,
+      maxInstantEscrowSecs,
+    );
+
+    setMaker({
+      ...maker,
+      isInstant: true,
+      escrowDuration: escrowSecs,
+      escrowExpiryTime: new Date(
+        0,
+        0,
+        0,
+        Math.floor(escrowSecs / 3600),
+        Math.floor((escrowSecs % 3600) / 60),
+      ),
+      chatDuration: maxInstantChatSecs,
+    });
   };
 
   const handleChangePublicDuration = function (date: Date): void {
@@ -1074,6 +1138,69 @@ const MakerForm = ({
               </Tooltip>
             </Grid>
 
+            {/* Instant order opt-in. Only selectable with a rail the coordinator advertises as
+                fast, so the maker cannot pick a combination the API would reject. */}
+            <Grid sx={{ width: '100%', marginBottom: '8px' }}>
+              <Box
+                sx={{
+                  padding: '0.5em',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderRadius: '4px',
+                  borderColor: maker.isInstant
+                    ? 'primary.main'
+                    : theme.palette.mode === 'dark'
+                      ? '#434343'
+                      : '#c4c4c4',
+                }}
+              >
+                <Tooltip
+                  enterDelay={800}
+                  enterTouchDelay={0}
+                  placement='top'
+                  title={instantTooltip}
+                >
+                  <FormControlLabel
+                    sx={{ width: '100%', justifyContent: 'center', margin: 0 }}
+                    control={
+                      <Switch
+                        checked={maker.isInstant}
+                        disabled={!isInstantEligible}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleToggleInstant(e.target.checked)
+                        }
+                      />
+                    }
+                    label={
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        <Bolt sx={{ height: '0.9em', width: '0.9em', color: 'primary.main' }} />
+                        {t('Instant Order')}
+                      </Typography>
+                    }
+                  />
+                </Tooltip>
+                {maker.isInstant ? (
+                  <Typography
+                    variant='caption'
+                    sx={{ display: 'block', textAlign: 'center', color: 'text.secondary' }}
+                  >
+                    {t('Escrow max {{escrowMax}}h · Chat max {{chatMax}}h', {
+                      escrowMax: maxInstantEscrowHours,
+                      chatMax: maxInstantChatHours,
+                    })}
+                  </Typography>
+                ) : null}
+              </Box>
+            </Grid>
+
             <Grid sx={{ width: '100%' }}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileTimePicker
@@ -1140,7 +1267,11 @@ const MakerForm = ({
                     if (value instanceof Date) handleChangeEscrowDuration(value);
                   }}
                   minTime={new Date(0, 0, 0, 1, 0)}
-                  maxTime={new Date(0, 0, 0, 10, 0)}
+                  maxTime={
+                    maker.isInstant
+                      ? new Date(0, 0, 0, maxInstantEscrowHours, 0)
+                      : new Date(0, 0, 0, 10, 0)
+                  }
                 />
               </LocalizationProvider>
             </Grid>

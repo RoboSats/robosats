@@ -131,6 +131,25 @@ class Order(models.Model):
         blank=False,
     )
 
+    # Instant orders: makers opt-in to tighter timers when they use a fast settlement rail.
+    # Flag only; the actual limits are enforced server-side by Logics.validate_instant_order()
+    # against settings.INSTANT_* , so a malicious client cannot self-declare them.
+    is_instant = models.BooleanField(default=False, null=False, blank=False)
+
+    # Chat window length of this order (seconds). It defaults to the coordinator-wide
+    # FIAT_EXCHANGE_DURATION, so non-instant orders keep today's behaviour unchanged. Instant
+    # orders may shorten it, which is what releases the maker's collateral early when a taker
+    # goes unresponsive (see issue #2473).
+    chat_duration = models.PositiveBigIntegerField(
+        default=60 * 60 * settings.FIAT_EXCHANGE_DURATION,
+        null=False,
+        validators=[
+            MinValueValidator(60 * 30),  # Min is 30 minutes
+            MaxValueValidator(60 * 60 * 24),  # Max is 24 Hours
+        ],
+        blank=False,
+    )
+
     # optionally makers can choose the fidelity bond size of the maker and taker (%)
     bond_size = models.DecimalField(
         max_digits=4,
@@ -324,10 +343,8 @@ class Order(models.Model):
             ),  # 'Waiting for trade collateral and buyer invoice'
             7: int(self.escrow_duration),  # 'Waiting only for seller trade collateral'
             8: int(self.escrow_duration),  # 'Waiting only for buyer invoice'
-            9: 60
-            * 60
-            * settings.FIAT_EXCHANGE_DURATION,  # 'Sending fiat - In chatroom'
-            10: 60 * 60 * settings.FIAT_EXCHANGE_DURATION,  # 'Fiat sent - In chatroom'
+            9: int(self.chat_duration),  # 'Sending fiat - In chatroom'
+            10: int(self.chat_duration),  # 'Fiat sent - In chatroom'
             11: 1 * 24 * 60 * 60,  # 'In dispute'
             12: 0,  # 'Collaboratively cancelled'
             13: 100 * 24 * 60 * 60,  # 'Sending satoshis to buyer'
