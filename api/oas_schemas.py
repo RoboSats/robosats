@@ -32,6 +32,8 @@ class MakerViewSchema:
             Default values for the following fields if not specified:
             - `public_duration` - **{settings.DEFAULT_PUBLIC_ORDER_DURATION}**
             - `escrow_duration` - **{settings.INVOICE_AND_ESCROW_DURATION}**
+            - `is_instant` - **false**
+            - `chat_duration` - **{settings.FIAT_EXCHANGE_DURATION}**
             - `bond_size` -  **{settings.DEFAULT_BOND_SIZE}**
             - `has_range` - **false**
             - `premium` - **0**
@@ -96,6 +98,8 @@ class OrderViewSchema:
             - `maker`
             - `taker`
             - `escrow_duration`
+            - `is_instant`
+            - `chat_duration`
             - `total_secs_exp`
             - `penalty`
             - `is_maker`

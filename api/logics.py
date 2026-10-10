@@ -2,6 +2,7 @@ import math
 from datetime import timedelta
 
 from decouple import config, Csv
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
@@ -159,6 +160,45 @@ class Logics:
             return False, new_error(1010, {"country": country})
         else:
             return True, None
+
+    @classmethod
+    def validate_instant_order(cls, order) -> tuple[bool, dict | None]:
+        """Validates the constraints of an opt-in instant order.
+
+        The instant flag only ever tightens timers, so it is checked server-side rather than
+        trusted from the client: the payment rail must be one this coordinator considers fast,
+        and both the escrow and the chat timers must stay inside settings.INSTANT_* . The
+        bounds live in settings, which is the single authoritative source.
+        """
+        if not order.is_instant:
+            return True, None
+
+        if order.payment_method not in settings.INSTANT_PAYMENT_METHODS:
+            return False, new_error(
+                1057,
+                {
+                    "instant_payment_methods": ", ".join(
+                        settings.INSTANT_PAYMENT_METHODS
+                    )
+                },
+            )
+
+        max_escrow_secs = 60 * 60 * settings.INSTANT_ESCROW_MAX_DURATION
+        max_chat_secs = 60 * 60 * settings.INSTANT_CHAT_MAX_DURATION
+
+        if (
+            order.escrow_duration > max_escrow_secs
+            or order.chat_duration > max_chat_secs
+        ):
+            return False, new_error(
+                1058,
+                {
+                    "max_escrow_hours": settings.INSTANT_ESCROW_MAX_DURATION,
+                    "max_chat_hours": settings.INSTANT_CHAT_MAX_DURATION,
+                },
+            )
+
+        return True, None
 
     def validate_amount_within_range(order, amount):
         if amount > float(order.max_amount) or amount < float(order.min_amount):

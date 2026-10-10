@@ -57,6 +57,17 @@ class InfoSerializer(serializers.Serializer):
     blossom_enabled = serializers.BooleanField(
         help_text="Whether the coordinator offers encrypted image uploads via Blossom in chat"
     )
+    instant_escrow_max_duration = serializers.FloatField(
+        help_text="Maximum escrow/invoice step length, in hours, this coordinator allows on an instant order"
+    )
+    instant_chat_max_duration = serializers.FloatField(
+        help_text="Maximum chat window, in hours, this coordinator allows on an instant order"
+    )
+    instant_payment_methods = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="Payment rails this coordinator considers fast enough for an instant order. "
+        "Empty when instant orders are disabled on this coordinator",
+    )
     version = VersionSerializer()
     notice_severity = serializers.ChoiceField(
         choices=[
@@ -101,6 +112,8 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "maker",
             "taker",
             "escrow_duration",
+            "is_instant",
+            "chat_duration",
             "bond_size",
             "latitude",
             "longitude",
@@ -453,6 +466,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "maker",
             "taker",
             "escrow_duration",
+            "is_instant",
+            "chat_duration",
             "total_secs_exp",
             "penalty",
             "is_maker",
@@ -577,6 +592,8 @@ class OrderPublicSerializer(serializers.ModelSerializer):
             "maker_status",
             "price",
             "escrow_duration",
+            "is_instant",
+            "chat_duration",
             "satoshis_now",
             "bond_size",
             "latitude",
@@ -603,6 +620,20 @@ class MakeOrderSerializer(serializers.ModelSerializer):
         default=False,
         help_text="Whether the order specifies a range of amount or a fixed amount.\n\nIf `true`, then `min_amount` and `max_amount` fields are **required**.\n\n If `false` then `amount` is **required**",
     )
+    is_instant = serializers.BooleanField(
+        default=False,
+        required=False,
+        help_text="Opt in to an **instant order**: a short trade window for fast settlement rails,\n"
+        "so an unresponsive taker releases the maker's collateral early.\n\n"
+        "Only allowed with the payment methods listed in `INSTANT_PAYMENT_METHODS`, and it caps\n"
+        "`escrow_duration` at `INSTANT_ESCROW_MAX_DURATION` and `chat_duration` at `INSTANT_CHAT_MAX_DURATION`.",
+    )
+    chat_duration = serializers.IntegerField(
+        required=False,
+        help_text="Time to confirm chat and to confirm the fiat payment, in seconds. Defaults to the\n"
+        "coordinator's `FIAT_EXCHANGE_DURATION`. Instant orders may shorten it, but not below the\n"
+        "model minimum nor above `INSTANT_CHAT_MAX_DURATION`.",
+    )
 
     class Meta:
         model = Order
@@ -619,6 +650,8 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "satoshis",
             "public_duration",
             "escrow_duration",
+            "is_instant",
+            "chat_duration",
             "bond_size",
             "latitude",
             "longitude",
