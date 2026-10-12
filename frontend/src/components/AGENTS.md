@@ -181,3 +181,7 @@ while the cryptographic certification is in progress."_
 - **Never bypass the `isReusable()` guard in `MakerForm` and `TakeButton`** — it is the client-side privacy boundary preventing a garageKey-mode robot with a completed trade from being reused. This guard only fires when `garage.garageKey` is set (no-op in legacy mode).
 - `Recovery.tsx` is the correct place for all token/key recovery UI — do not add inline recovery flows to `MakerForm`, `TakeButton`, or page components.
 - Do not add `TorIndicator/` or `TradeSteps/` — these components do not exist.
+- **QR codes always render black (`#000000`) on a white (`#fff`) box, regardless of
+  `settings.mode`** (`TradeBox/Prompts/LockInvoice.tsx`, `Dialogs/EnableTelegram.tsx`).
+  Light-on-dark (inverted) QRs lack the contrast expected by ISO/IEC 18004 and many wallet
+  scanners fail to read them. Do not reintroduce a dark/themed QR option (see #2494).

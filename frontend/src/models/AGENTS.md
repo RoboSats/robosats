@@ -92,7 +92,6 @@ Old ephemeral-token flow. **Read-only for ongoing trades** — `/offers` and `/c
 | `network`              | `'mainnet'`                               | `'testnet'` is a first-class surface, not dev-only |
 | `language`             | `'en'`                                    | Must be a valid `Language` type (see Traps)        |
 | `fontSize`             | `14`                                      | Basic UI font size                                 |
-| `lightQRs`             | `false`                                   | QR code colour scheme                              |
 | `freezeViewports`      | `false`                                   | Mobile viewport lock                               |
 | `unsafeClient`         | `false`                                   | Enables clearnet web (discouraged)                 |
 | `selfhostedClient`     | `false`                                   | Enables custom coordinator                         |

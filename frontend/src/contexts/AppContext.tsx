@@ -169,7 +169,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): React
 
   useEffect(() => {
     setTheme(makeTheme(settings));
-  }, [settings.fontSize, settings.mode, settings.lightQRs]);
+  }, [settings.fontSize, settings.mode]);
 
   useEffect(() => {
     void i18n.changeLanguage(settings.language);
