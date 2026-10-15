@@ -262,11 +262,11 @@
     "nostrHexPubkey": "e489cdb0b24fa416a49b524625e0edab0f7235f3a0261a3cdfc64c4efdc14afd",
     "contact": {
       "email": "fp-coordinator@proton.me",
-      "telegram": null,
-      "simplex": null,
+      "telegram": "@fp_coord",
+      "simplex": "https://smp10.simplex.im/a#VCmb2OfCbPGACZ-Jnh3lfAiAZis5aSrnV3ywGqOIaPk",
       "pgp": "/static/federation/pgp/27099F12B8752D8267B6DFF28265E7B36362CF31.asc",
       "nostr": "npub1ujyumv9jf7jpdfym2frztc8d4v8hyd0n5qnp50xlcexyalwpft7s7gqfnw",
-      "website": null,
+      "website": "https://freeport.bz",
       "matrix": null,
       "fingerprint": "27099F12B8752D8267B6DFF28265E7B36362CF31"
     },
