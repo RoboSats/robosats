@@ -48,7 +48,7 @@ const OrderPage = (): React.JSX.Element => {
     return <CircularProgress />;
   }
 
-  return <OrderPageContent key={`${garage.currentSlot}:${params.shortAlias}:${params.orderId}`} />;
+  return <OrderPageContent key={`${params.shortAlias}:${params.orderId}`} />;
 };
 
 const OrderPageContent = (): React.JSX.Element => {

@@ -160,8 +160,10 @@ const TakeButton = ({
       .then(async (nextIndex) => {
         await garage.setAccountIndex(federation, nextIndex);
         garage.publishAccountRecovery(federation, nextIndex);
+      })
+      .then(() => {
         setOpenUsedRobotDialog(false);
-        proceedToTakeFlow();
+        takeOrder();
       })
       .catch(() => {
         setBadRequest('Could not switch to a new robot. Please try again.');

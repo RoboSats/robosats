@@ -45,7 +45,7 @@
   "Last order #{{orderID}}": "Senaste order #{{orderID}}",
   "Looking for orders!": "Letar efter ordrar!",
   "No existing orders found": "Inga befintliga ordrar hittades",
-  "This robot has completed a trade. Navigate to a new account for fresh privacy.": "This robot has completed a trade. Navigate to a new account for fresh privacy.",
+  "This robot was involved in a trade. Navigate to a new account for fresh privacy.": "This robot was involved in a trade. Navigate to a new account for fresh privacy.",
   "#7": "Phrases in basic/GaragePage/index.tsx",
   "Cancel": "Avbryt",
   "Change Robot Generation Mode?": "Change Robot Generation Mode?",
