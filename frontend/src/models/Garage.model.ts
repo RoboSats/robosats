@@ -399,9 +399,18 @@ class Garage {
     } else {
       await this.createRobot(federation, token);
     }
+
+    if (this.currentSlot !== token) return;
+
     const slot = this.getSlot(token);
     await slot?.fetchActiveOrder(federation);
+
+    if (this.currentSlot !== token) return;
+
     await slot?.ensureLastOrderStatus(federation);
+
+    if (this.currentSlot !== token) return;
+
     this.setCurrentSlot(token);
   };
 
