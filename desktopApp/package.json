@@ -16,7 +16,7 @@
   "overrides": {
     "@xmldom/xmldom": "^0.8.13",
     "minimatch": "^9.0.7",
-    "brace-expansion": "^1.1.18",
+    "brace-expansion": "^1.1.21",
     "@electron/universal": {
       "minimatch": "^9.0.7",
       "brace-expansion": "^1.1.18"
