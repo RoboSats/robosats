@@ -269,7 +269,6 @@ const GarageKeyProfile = ({ setView, width, setInputGarageKey }: GarageKeyProfil
                   garageKey={garageKey?.encodedKey ?? ''}
                   setGarageKey={setInputGarageKey}
                   editable={false}
-                  masked={true}
                   label={t('Garage Key')}
                 />
               </Grid>
