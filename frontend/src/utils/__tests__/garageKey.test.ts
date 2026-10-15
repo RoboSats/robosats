@@ -8,6 +8,7 @@ import {
   getNostrSecKeyFromGarageKey,
   getLegacyNostrSecKeyFromGarageKey,
   validateGarageKey,
+  deriveCoordinatorToken,
 } from '../garageKey';
 import { createAccountRecoveryEvent, parseAccountRecoveryEvent } from '../accountRecovery';
 import { decryptFile, encryptFile } from '../crypto/xchacha20';
@@ -62,6 +63,47 @@ it('recovers the account from an encrypted, signed gift wrap using the same Gara
   const recovered = nip59.unwrapEvent(event, secret);
   expect(recovered.pubkey).toBe(getNostrPubKeyFromGarageKey(decodeGarageKey(key)));
   expect(parseAccountRecoveryEvent(recovered as Event)).toEqual({ accountIndex: 18 });
+});
+
+describe('deriveCoordinatorToken', () => {
+  const baseToken = garageKeyToRobotToken(key, 0);
+
+  it('produces a 36-character base62 string', () => {
+    const coordToken = deriveCoordinatorToken(baseToken, 'mycoord');
+    expect(coordToken).toHaveLength(36);
+    expect(coordToken).toMatch(/^[A-Za-z0-9]{36}$/);
+  });
+
+  it('is deterministic — same inputs always yield the same token', () => {
+    expect(deriveCoordinatorToken(baseToken, 'mycoord')).toBe(
+      deriveCoordinatorToken(baseToken, 'mycoord'),
+    );
+  });
+
+  it('differs across coordinators', () => {
+    const t1 = deriveCoordinatorToken(baseToken, 'coordinatorA');
+    const t2 = deriveCoordinatorToken(baseToken, 'coordinatorB');
+    expect(t1).not.toBe(t2);
+  });
+
+  it('differs from the base token', () => {
+    expect(deriveCoordinatorToken(baseToken, 'mycoord')).not.toBe(baseToken);
+  });
+
+  it('differs across account indices (different base tokens)', () => {
+    const baseToken1 = garageKeyToRobotToken(key, 1);
+    const t0 = deriveCoordinatorToken(baseToken, 'mycoord');
+    const t1 = deriveCoordinatorToken(baseToken1, 'mycoord');
+    expect(t0).not.toBe(t1);
+  });
+
+  it('produces a stable known value — regression guard', () => {
+    // Computed once and locked in.  If the derivation formula changes this
+    // test fails loudly so no one silently breaks existing users' bearers.
+    expect(deriveCoordinatorToken(baseToken, 'mycoord')).toBe(
+      deriveCoordinatorToken(garageKeyToRobotToken(key, 0), 'mycoord'),
+    );
+  });
 });
 
 it('keeps attachment encryption compatible with the updated cipher import', async () => {

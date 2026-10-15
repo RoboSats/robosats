@@ -78,7 +78,7 @@ export function deriveRobotKey(plainKey: Uint8Array, accountIndex: number): Uint
   }
 
   if (!isValidAccountIndex(accountIndex)) {
-    throw new Error('Account index must be an integer between 0 and 2147483647');
+    throw new Error('Robot index must be an integer between 0 and 2147483647');
   }
 
   const seed = sha512(plainKey);
@@ -140,6 +140,13 @@ export function garageKeyToRobotToken(garageKey: string, accountIndex: number = 
   const plainKey = decodeGarageKey(garageKey);
   const derivedKey = deriveRobotKey(plainKey, accountIndex);
   return derivedKeyToToken(derivedKey);
+}
+
+export function deriveCoordinatorToken(baseToken: string, shortAlias: string): string {
+  const preimage = `robosats-coordinator-token:${shortAlias}|${baseToken}`;
+  const preimageBytes = new TextEncoder().encode(preimage);
+  const hashBytes = sha256(preimageBytes);
+  return derivedKeyToToken(hashBytes);
 }
 
 export { hexToBytes };

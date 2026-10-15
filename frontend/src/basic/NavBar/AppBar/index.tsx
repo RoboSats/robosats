@@ -61,6 +61,7 @@ const AppBar = ({ changePage }: AppBarProps): React.JSX.Element => {
                 }}
                 style={{
                   position: 'absolute',
+                  top: 0,
                   zIndex: 1,
                   left: 0,
                   right: 0,
