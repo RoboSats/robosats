@@ -349,7 +349,7 @@ const EncryptedChat: React.FC<Props> = ({
   const slot = garage.getSlot();
   const nostrCapable =
     Boolean(slot) &&
-    !slot?.legacy &&
+    garage.getMode() === 'garageKey' &&
     Boolean(order.maker_nostr_pubkey) &&
     Boolean(order.taker_nostr_pubkey);
 

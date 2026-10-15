@@ -79,7 +79,10 @@ const GarageKeyOnboarding = ({
         setToastMessage(
           t(
             'Switched from Robot #{{fromIndex}} to #{{toIndex}} - previous robot has completed trades',
-            { fromIndex: switchResult.fromIndex, toIndex: switchResult.toIndex },
+            {
+              fromIndex: switchResult.fromIndex,
+              toIndex: switchResult.toIndex,
+            },
           ),
         );
         setToastOpen(true);
