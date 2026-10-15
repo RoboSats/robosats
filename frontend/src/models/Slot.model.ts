@@ -307,7 +307,7 @@ class Slot {
       return false;
     }
 
-    const reusableStatuses = [0, 1, 2, 4, 5];
+    const reusableStatuses = [0, 1, 4, 5];
 
     return reusableStatuses.includes(this.lastOrder.status);
   };
