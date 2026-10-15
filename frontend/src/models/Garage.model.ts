@@ -36,6 +36,8 @@ interface StoredSlot {
   lastOrder?: Partial<Order> & { id?: number };
   activeOrder?: Partial<Order> & { id?: number };
   lastOrderStatusKnown?: boolean;
+  /** Mirrors Slot.legacy.  Absent means the slot was stored before this field
+   *  was introduced, so it is treated as legacy (true) for backwards compat. */
   legacy?: boolean;
 }
 
@@ -404,6 +406,7 @@ class Garage {
       this.setCurrentSlot(token);
       await this.fetchRobot(federation, token);
     } else {
+      // Garage-key slots always use per-coordinator bearers (legacy: false).
       await this.createRobot(federation, token, undefined, false);
     }
     await this.getSlot(token)?.ensureLastOrderStatus(federation);
