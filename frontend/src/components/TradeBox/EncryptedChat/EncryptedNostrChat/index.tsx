@@ -1,17 +1,14 @@
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, TextField, Grid, Paper, Typography, IconButton, Tooltip } from '@mui/material';
 
-// Icons
 import CircularProgress from '@mui/material/CircularProgress';
-import KeyIcon from '@mui/icons-material/Key';
-import { AttachFile } from '@mui/icons-material';
+import { AttachFile, Send } from '@mui/icons-material';
 import PrivacyWarningDialog from '../PrivacyWarningDialog';
 import { useTheme } from '@mui/material';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ChatApiResponse } from '..';
-// import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
 import {
   type UseFederationStoreType,
   FederationContext,
@@ -42,8 +39,11 @@ interface Props {
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
   setLastIndex: Dispatch<SetStateAction<number>>;
+  blossomEnabled: boolean;
   coordinatorUrl?: string;
 }
+
+const PEER_POLL_INTERVAL_MS = 5000;
 
 const audioPath =
   getSettings().client == 'mobile'
@@ -65,6 +65,7 @@ const EncryptedNostrChat: React.FC<Props> = ({
   onSendFile,
   setError,
   setLastIndex,
+  blossomEnabled,
   coordinatorUrl,
 }: Props): React.JSX.Element => {
   const { t } = useTranslation();
@@ -81,10 +82,12 @@ const EncryptedNostrChat: React.FC<Props> = ({
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadPeerPubKey();
+    const interval = setInterval(loadPeerPubKey, PEER_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -102,22 +105,21 @@ const EncryptedNostrChat: React.FC<Props> = ({
     if (nostrPubKey && nostrSecKey) {
       setMessages(() => {
         const robotNotifications = notifications[nostrPubKey] ?? [];
+        const expectedOrderId = `${order.shortAlias}/${order.id}`;
         const chatMessages = robotNotifications
           .values()
-          .filter(([_wrapedEvent, event]) => {
+          .filter(([_wrappedEvent, event]) => {
             const orderIdTag = event.tags.find((t) => t[0] === 'order_id');
-            const expectedOrderId = `${order.shortAlias}/${order.id}`;
             const pubKeysRefs = event.tags.filter((t) => t[0] === 'p');
-            const isChatMessage =
+            return (
               [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(event.pubkey) &&
               pubKeysRefs.every((tag) =>
                 [order.maker_nostr_pubkey, order.taker_nostr_pubkey].includes(tag[1]),
               ) &&
-              orderIdTag?.[1] !== expectedOrderId;
-
-            return isChatMessage;
+              orderIdTag?.[1] === expectedOrderId
+            );
           })
-          .map(([wrapedEvent, event]) => {
+          .map(([wrappedEvent, event]) => {
             const userNick =
               event.pubkey === order.maker_nostr_pubkey ? order.maker_nick : order.taker_nick;
 
@@ -137,27 +139,23 @@ const EncryptedNostrChat: React.FC<Props> = ({
               if (imgMeta) {
                 fileMetadata = imgMeta;
                 displayText = t('[Loading Encrypted Image]');
-              } else {
-                displayText = t('[Corrupted Image File]');
               }
             }
 
             return {
               index: event.created_at + Math.random() * 0.001,
-              encryptedMessage: JSON.stringify(wrapedEvent),
+              encryptedMessage: JSON.stringify(wrappedEvent),
               plainTextMessage: displayText,
               validSignature: true,
-              fileMetadata: fileMetadata,
-              userNick: userNick,
+              fileMetadata,
+              userNick,
               time: new Date(event.created_at * 1000).toISOString(),
             };
           })
           .toArray();
 
-        const sortedMessages = chatMessages.sort((a, b) => b.index - a.index);
-
-        setLastIndex(sortedMessages[0]?.index ?? 0);
-
+        const sortedMessages = chatMessages.sort((a, b) => a.index - b.index);
+        setLastIndex(sortedMessages[sortedMessages.length - 1]?.index ?? 0);
         return sortedMessages;
       });
     }
@@ -196,7 +194,6 @@ const EncryptedNostrChat: React.FC<Props> = ({
   };
 
   const handleAttachClick = (): void => {
-    // Clear any previous errors
     setError('');
     setPrivacyWarningOpen(true);
   };
@@ -339,10 +336,18 @@ const EncryptedNostrChat: React.FC<Props> = ({
               accept='image/*'
               onChange={handleFileChange}
             />
-            <Tooltip title={peerPubKey === undefined ? t('Waiting for peer...') : ''}>
+            <Tooltip
+              title={
+                !blossomEnabled
+                  ? t('This coordinator does not offer image uploads')
+                  : peerPubKey === undefined
+                    ? t('Waiting for peer...')
+                    : ''
+              }
+            >
               <span>
                 <IconButton
-                  disabled={uploading || peerPubKey === undefined}
+                  disabled={uploading || peerPubKey === undefined || !blossomEnabled}
                   onClick={handleAttachClick}
                   color='primary'
                 >
@@ -355,30 +360,9 @@ const EncryptedNostrChat: React.FC<Props> = ({
               type='submit'
               variant='contained'
               color='primary'
-              fullWidth={true}
+              loading={waitingEcho}
             >
-              {waitingEcho ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    minWidth: '4.68em',
-                    width: '4.68em',
-                    position: 'relative',
-                    left: '1em',
-                  }}
-                >
-                  <div style={{ width: '1.2em' }}>
-                    <KeyIcon sx={{ width: '1em' }} />
-                  </div>
-                  <div style={{ width: '1em', position: 'relative', left: '0.5em' }}>
-                    <CircularProgress size={1.1 * theme.typography.fontSize} thickness={5} />
-                  </div>
-                </div>
-              ) : (
-                t('Send')
-              )}
+              <Send />
             </Button>
           </Grid>
           <Typography color='error' variant='caption'>

@@ -7,7 +7,7 @@ import Countdown from 'react-countdown';
 import currencies from '../../utils/currencies';
 
 import { type Order, type Info } from '../../models';
-import { ConfirmationDialog, OrderDescriptionDialog } from '../Dialogs';
+import { ConfirmationDialog, OrderDescriptionDialog, UsedRobotDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
@@ -52,6 +52,9 @@ const TakeButton = ({
   const [loadingTake, setLoadingTake] = useState<boolean>(false);
   const [open, setOpen] = useState<OpenDialogsProps>(closeAll);
   const [satoshis, setSatoshis] = useState<string>('');
+  const [openUsedRobotDialog, setOpenUsedRobotDialog] = useState<boolean>(false);
+  const [usedRobotHasActiveOrder, setUsedRobotHasActiveOrder] = useState<boolean>(false);
+  const [changingRobot, setChangingRobot] = useState<boolean>(false);
 
   const satoshisNow = (): string | undefined => {
     if (currentOrder === null) return;
@@ -131,12 +134,44 @@ const TakeButton = ({
     }
   }, [slotUpdatedAt, takeAmount]);
 
-  const onTakeOrderClicked = function (): void {
+  const proceedToTakeFlow = function (): void {
     if (currentOrder?.description && currentOrder?.description !== '') {
       setOpen({ description: true, confirmation: false });
     } else {
       setOpen({ description: false, confirmation: true });
     }
+  };
+
+  const onTakeOrderClicked = function (): void {
+    const slot = garage.getSlot();
+    if (slot && !slot.isReusable()) {
+      setUsedRobotHasActiveOrder(Boolean(slot.activeOrder));
+      setOpenUsedRobotDialog(true);
+      return;
+    }
+    proceedToTakeFlow();
+  };
+
+  const handleChangeRobotAndTake = (): void => {
+    setChangingRobot(true);
+    const currentIndex = garage.getCurrentAccountIndex();
+    void garage
+      .findNextUnusedAccount(federation, currentIndex + 1)
+      .then(async (nextIndex) => {
+        await garage.setAccountIndex(federation, nextIndex);
+        garage.publishAccountRecovery(federation, nextIndex);
+      })
+      .then(() => {
+        setOpenUsedRobotDialog(false);
+        proceedToTakeFlow();
+      })
+      .catch(() => {
+        setBadRequest('Could not switch to a new robot. Please try again.');
+        setOpenUsedRobotDialog(false);
+      })
+      .finally(() => {
+        setChangingRobot(false);
+      });
   };
 
   const invalidTakeAmount = useMemo(() => {
@@ -352,6 +387,17 @@ const TakeButton = ({
         }}
         hasRobot={Boolean(garage.getSlot()?.hashId)}
         onClickGenerateRobot={onClickGenerateRobot}
+      />
+
+      <UsedRobotDialog
+        open={openUsedRobotDialog}
+        action='take'
+        hasActiveOrder={usedRobotHasActiveOrder}
+        isRangeOrder={Boolean(currentOrder?.has_range)}
+        isLegacyMode={isLegacyMode}
+        onClose={() => setOpenUsedRobotDialog(false)}
+        onChangeRobot={handleChangeRobotAndTake}
+        loading={changingRobot}
       />
     </Box>
   );
