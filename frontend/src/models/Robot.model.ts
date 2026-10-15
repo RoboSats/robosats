@@ -59,7 +59,6 @@ class Robot {
   public bitsEntropy?: number;
   public shannonEntropy?: number;
   public tokenSHA256: string = '';
-  public tokenSHA256Hex: string = '';
   public hasEnoughEntropy: boolean = false;
 
   public webhookUrl: string = '';

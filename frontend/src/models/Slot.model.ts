@@ -7,7 +7,6 @@ import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import hexToBase91 from '../utils/hexToBase91';
 import { validateTokenEntropy } from '../utils/token';
 import { getPublicKey } from 'nostr-tools';
-import { deriveCoordinatorToken } from '../utils/garageKey';
 
 class Slot {
   constructor(
@@ -15,11 +14,9 @@ class Slot {
     shortAliases: string[],
     robotAttributes: object,
     onSlotUpdate: () => void,
-    legacy: boolean = true,
   ) {
     this.onSlotUpdate = onSlotUpdate;
     this.token = token;
-    this.legacy = legacy;
 
     this.hashId = sha256(sha256(this.token));
     this.nickname = null;
@@ -32,8 +29,7 @@ class Slot {
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
-    const sharedTokenSHA256Hex = sha256(token);
-    const sharedTokenSHA256 = hexToBase91(sharedTokenSHA256Hex);
+    const tokenSHA256 = hexToBase91(sha256(token));
 
     const tokenBytes = new TextEncoder().encode(this.token ?? '');
     const nostrSecKey = sha256Hash(sha512(tokenBytes));
@@ -42,18 +38,6 @@ class Slot {
     this.nostrPubKey = nostrPubKey;
 
     this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
-      let tokenSHA256: string;
-      let tokenSHA256Hex: string;
-
-      if (legacy) {
-        tokenSHA256 = sharedTokenSHA256;
-        tokenSHA256Hex = sharedTokenSHA256Hex;
-      } else {
-        const coordToken = deriveCoordinatorToken(token, shortAlias);
-        tokenSHA256Hex = sha256(coordToken);
-        tokenSHA256 = hexToBase91(tokenSHA256Hex);
-      }
-
       acc[shortAlias] = new Robot({
         ...robotAttributes,
         token,
@@ -62,7 +46,6 @@ class Slot {
         bitsEntropy,
         shannonEntropy,
         tokenSHA256,
-        tokenSHA256Hex,
         nostrPubKey,
       });
       this.updateSlotFromRobot(acc[shortAlias]);
@@ -85,7 +68,6 @@ class Slot {
   nostrPubKey?: string;
   availableRewards: string | null = null;
   loading: boolean;
-  legacy: boolean;
 
   onSlotUpdate: () => void;
 
@@ -141,6 +123,13 @@ class Slot {
         id: robot.activeOrderId,
         shortAlias: robot.shortAlias,
       });
+      changed = true;
+    } else if (
+      !robot.activeOrderId &&
+      this.activeOrder &&
+      this.lastOrder?.id !== this.activeOrder.id
+    ) {
+      this.activeOrder = null;
       changed = true;
     }
 
@@ -267,26 +256,12 @@ class Slot {
   ) => {
     const defaultRobot = this.getRobot();
     if (defaultRobot?.token) {
-      let tokenSHA256: string;
-      let tokenSHA256Hex: string;
-
-      if (this.legacy) {
-        tokenSHA256Hex = sha256(defaultRobot.token);
-        tokenSHA256 = hexToBase91(tokenSHA256Hex);
-      } else {
-        const coordToken = deriveCoordinatorToken(defaultRobot.token, shortAlias);
-        tokenSHA256Hex = sha256(coordToken);
-        tokenSHA256 = hexToBase91(tokenSHA256Hex);
-      }
-
       this.robots[shortAlias] = new Robot({
         shortAlias,
         hasEnoughEntropy: defaultRobot.hasEnoughEntropy,
         bitsEntropy: defaultRobot.bitsEntropy,
         shannonEntropy: defaultRobot.shannonEntropy,
         token: defaultRobot.token,
-        tokenSHA256,
-        tokenSHA256Hex,
         pubKey: defaultRobot.pubKey,
         encPrivKey: defaultRobot.encPrivKey,
         nostrPubKey: defaultRobot.nostrPubKey,
