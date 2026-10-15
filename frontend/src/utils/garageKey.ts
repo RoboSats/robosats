@@ -78,7 +78,7 @@ export function deriveRobotKey(plainKey: Uint8Array, accountIndex: number): Uint
   }
 
   if (!isValidAccountIndex(accountIndex)) {
-    throw new Error('Account index must be an integer between 0 and 2147483647');
+    throw new Error('Robot index must be an integer between 0 and 2147483647');
   }
 
   const seed = sha512(plainKey);
