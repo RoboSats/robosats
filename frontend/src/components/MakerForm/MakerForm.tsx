@@ -27,7 +27,7 @@ import { type LimitList, defaultMaker, type Order } from '../../models';
 
 import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ConfirmationDialog, F2fMapDialog, UsedRobotDialog } from '../Dialogs';
+import { StoreTokenDialog, NoRobotDialog, F2fMapDialog, UsedRobotDialog } from '../Dialogs';
 
 import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
@@ -80,7 +80,8 @@ const MakerForm = ({
 
   const [addNewPaymentMethodOpen, setAddNewPaymentMethodOpen] = useState<boolean>(false);
   const [hasCustomPaymentMethod, setHasCustomPaymentMethod] = useState<boolean>(false);
-  const [openDialogs, setOpenDialogs] = useState<boolean>(false);
+  const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
+  const [openStoreToken, setOpenStoreToken] = useState<boolean>(false);
   const [openUsedRobotDialog, setOpenUsedRobotDialog] = useState<boolean>(false);
   const [usedRobotHasActiveOrder, setUsedRobotHasActiveOrder] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
@@ -297,9 +298,10 @@ const MakerForm = ({
     if (!disableRequest && maker.coordinator && slot) {
       setSubmittingRequest(true);
 
-      if (garage.garageKey && !slot.isReusable()) {
+      const slotHasBeenUsed = Boolean(slot.activeOrder ?? slot.lastOrder);
+      if (garage.garageKey && slotHasBeenUsed && !slot.isReusable()) {
         setSubmittingRequest(false);
-        setOpenDialogs(false);
+        setOpenStoreToken(false);
         setUsedRobotHasActiveOrder(Boolean(slot.activeOrder));
         setOpenUsedRobotDialog(true);
         return;
@@ -307,7 +309,7 @@ const MakerForm = ({
 
       submitOrder();
     }
-    setOpenDialogs(false);
+    setOpenStoreToken(false);
   };
 
   const handleChangeRobotAndCreate = (): void => {
@@ -624,18 +626,27 @@ const MakerForm = ({
 
   return (
     <Box>
-      <ConfirmationDialog
-        open={openDialogs}
+      <NoRobotDialog
+        open={openNoRobot}
         onClose={() => {
-          setOpenDialogs(false);
+          setOpenNoRobot(false);
         }}
-        onClickDone={handleCreateOrder}
-        hasRobot={Boolean(garage.getSlot()?.hashId)}
         onClickGenerateRobot={() =>
           garage.generateRobot(federation).then(() => {
-            setOpenDialogs(true);
+            setOpenNoRobot(false);
+            setOpenStoreToken(true);
           })
         }
+      />
+      <StoreTokenDialog
+        open={openStoreToken}
+        onClose={() => {
+          setOpenStoreToken(false);
+        }}
+        onClickBack={() => {
+          setOpenStoreToken(false);
+        }}
+        onClickDone={handleCreateOrder}
       />
       <F2fMapDialog
         interactive
@@ -1286,7 +1297,15 @@ const MakerForm = ({
                   color='primary'
                   size='large'
                   variant='contained'
-                  onClick={() => (disableRequest ? onSubmit() : setOpenDialogs(true))}
+                  onClick={() => {
+                    if (disableRequest) {
+                      onSubmit();
+                    } else if (garage.getSlot()?.hashId) {
+                      setOpenStoreToken(true);
+                    } else {
+                      setOpenNoRobot(true);
+                    }
+                  }}
                 >
                   {t(submitButtonLabel)}
                 </LoadingButton>

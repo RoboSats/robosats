@@ -289,6 +289,8 @@ class Slot {
   };
 
   isReusable = (): boolean => {
+    if (this.loading) return false;
+
     if (this.activeOrder) return false;
 
     if (!this.lastOrder) {
