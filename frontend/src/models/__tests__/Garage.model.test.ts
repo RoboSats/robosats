@@ -200,3 +200,54 @@ it('loads a recovered account only once and selects cached accounts before the r
   finish({ earned_rewards: 0 });
   await switching;
 });
+
+it('activeOrder takes priority over lastOrder when the robot reports both', async () => {
+  const { slot } = await garageWithSlot();
+  jest
+    .spyOn(apiClient, 'get')
+    .mockResolvedValue({ earned_rewards: 0, active_order_id: 7, last_order_id: 3 });
+  await slot.fetchRobot(federation);
+  expect(slot.activeOrder?.id).toBe(7);
+  expect(slot.lastOrder?.id).toBe(3);
+});
+
+it('does not update lastOrder when robot reports the same id for both active and last order', async () => {
+  const { slot } = await garageWithSlot();
+  jest
+    .spyOn(apiClient, 'get')
+    .mockResolvedValue({ earned_rewards: 0, active_order_id: 9, last_order_id: 9 });
+  await slot.fetchRobot(federation);
+  expect(slot.activeOrder?.id).toBe(9);
+  expect(slot.lastOrder).toBeNull();
+});
+
+it('activeOrder from coordinator A is not cleared by a no-active-order response from coordinator B', async () => {
+  const twoCoordFederation = {
+    getCoordinatorsAlias: () => ['coordA', 'coordB'],
+    getCoordinator: (alias: string) => ({ shortAlias: alias, url: `https://${alias}.example` }),
+    roboPool: { sendEvent: jest.fn() },
+  } as unknown as Federation;
+
+  const garage = new Garage();
+  await garage.waitForSlotsLoaded();
+  garage.setMode('garageKey');
+  garage.setGarageKey(new GarageKey(key));
+  const token = garage.garageKey!.getCurrentRobotToken();
+  const slot = new Slot(token, ['coordA', 'coordB'], {}, jest.fn());
+  garage.slots[token] = slot;
+  garage.currentSlot = token;
+  await Promise.resolve();
+  jest.mocked(slot.onSlotUpdate).mockClear();
+
+  const get = jest.spyOn(apiClient, 'get');
+  get.mockImplementation(async (url: string) => {
+    if ((url as string).includes('coordA')) return { earned_rewards: 0, active_order_id: 5 };
+    return { earned_rewards: 0, last_order_id: 3 };
+  });
+
+  await slot.fetchRobot(twoCoordFederation);
+
+  expect(slot.activeOrder?.id).toBe(5);
+  expect(slot.activeOrder?.shortAlias).toBe('coordA');
+  expect(slot.lastOrder?.id).toBe(3);
+});

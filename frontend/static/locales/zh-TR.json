@@ -45,7 +45,7 @@
   "Last order #{{orderID}}": "上一張訂單 #{{orderID}}",
   "Looking for orders!": "找尋訂單！",
   "No existing orders found": "未找到現有訂單",
-  "This robot has completed a trade. Navigate to a new account for fresh privacy.": "This robot has completed a trade. Navigate to a new account for fresh privacy.",
+  "This robot was involved in a trade. Navigate to a new account for fresh privacy.": "This robot was involved in a trade. Navigate to a new account for fresh privacy.",
   "#7": "Phrases in basic/GaragePage/index.tsx",
   "Cancel": "取消",
   "Change Robot Generation Mode?": "Change Robot Generation Mode?",

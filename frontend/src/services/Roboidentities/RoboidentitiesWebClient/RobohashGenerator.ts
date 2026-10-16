@@ -32,8 +32,14 @@ class RoboGenerator {
 
     setTimeout(() => {
       this.waitingForLibrary = false;
+      this.drainQueue();
     }, 3000);
   }
+
+  public getFromCache = (hash: string, size: 'small' | 'large'): string | undefined => {
+    const cacheKey = `${hash};${size}`;
+    return this.assetsCache[cacheKey];
+  };
 
   public generate: (hash: string, size: 'small' | 'large') => Promise<string> = async (
     hash,
@@ -44,21 +50,20 @@ class RoboGenerator {
       return this.assetsCache[cacheKey];
     } else {
       return await new Promise((resolve, reject) => {
-        let task = this.taskQueue.find((task) => task.robohash.cacheKey === cacheKey);
-        if (!task) {
-          task = {
+        const alreadyInFlight = (this.resolves[cacheKey]?.length ?? 0) > 0;
+
+        this.resolves[cacheKey] = [...(this.resolves[cacheKey] ?? []), resolve];
+        this.rejects[cacheKey] = [...(this.rejects[cacheKey] ?? []), reject];
+
+        if (!alreadyInFlight) {
+          this.addTask({
             robohash: {
               hash,
               size,
               cacheKey,
             },
-          };
+          });
         }
-
-        this.resolves[cacheKey] = [...(this.resolves[cacheKey] ?? []), resolve];
-        this.rejects[cacheKey] = [...(this.rejects[cacheKey] ?? []), reject];
-
-        this.addTask(task);
       });
     }
   };
@@ -69,9 +74,12 @@ class RoboGenerator {
 
     worker.onmessage = (event) => {
       const { cacheKey, imageUrl } = event.data;
-      // Update the cache and resolve the promise
       this.assetsCache[cacheKey] = imageUrl;
-      this.resolves[cacheKey].forEach((f) => {
+
+      const callbacks = this.resolves[cacheKey] ?? [];
+      delete this.resolves[cacheKey];
+      delete this.rejects[cacheKey];
+      callbacks.forEach((f) => {
         f(imageUrl);
       });
 
@@ -90,9 +98,21 @@ class RoboGenerator {
   addTask = (task: Task): void => {
     const availableWorker = this.workers.find((w) => !w.busy);
     if (availableWorker && !this.waitingForLibrary) {
+      availableWorker.busy = true;
       availableWorker.worker.postMessage(task);
     } else {
       this.taskQueue.push(task);
+    }
+  };
+
+  private drainQueue = (): void => {
+    for (const worker of this.workers) {
+      if (this.taskQueue.length === 0) break;
+      if (!worker.busy) {
+        const nextTask = this.taskQueue.shift()!;
+        worker.busy = true;
+        worker.worker.postMessage(nextTask);
+      }
     }
   };
 }

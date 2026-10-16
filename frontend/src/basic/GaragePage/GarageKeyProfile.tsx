@@ -160,7 +160,7 @@ const GarageKeyProfile = ({ setView, width, setInputGarageKey }: GarageKeyProfil
               tooltip={
                 !slot?.activeOrder?.id && slot && !slot.isReusable()
                   ? t(
-                      'This robot has completed a trade. Navigate to a new account for fresh privacy.',
+                      'This robot was involved in a trade. Navigate to a new account for fresh privacy.',
                     )
                   : t('This is your trading avatar')
               }
@@ -172,7 +172,7 @@ const GarageKeyProfile = ({ setView, width, setInputGarageKey }: GarageKeyProfil
             <Grid sx={{ width: '100%' }}>
               <Alert severity='info'>
                 {t(
-                  'This robot has completed a trade. Navigate to a new account for fresh privacy.',
+                  'This robot was involved in a trade. Navigate to a new account for fresh privacy.',
                 )}
               </Alert>
             </Grid>

@@ -45,7 +45,7 @@
   "Last order #{{orderID}}": "Ultimo ordine #{{orderID}}",
   "Looking for orders!": "Alla ricerca di ordini!",
   "No existing orders found": "Nessun ordine esistente trovato",
-  "This robot has completed a trade. Navigate to a new account for fresh privacy.": "This robot has completed a trade. Navigate to a new account for fresh privacy.",
+  "This robot was involved in a trade. Navigate to a new account for fresh privacy.": "This robot was involved in a trade. Navigate to a new account for fresh privacy.",
   "#7": "Phrases in basic/GaragePage/index.tsx",
   "Cancel": "Annulla",
   "Change Robot Generation Mode?": "Change Robot Generation Mode?",
