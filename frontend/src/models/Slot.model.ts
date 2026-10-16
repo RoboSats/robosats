@@ -160,6 +160,7 @@ class Slot {
       const order = this.activeOrder;
       const previousStatus = order.status;
       await order.fecth(federation, this);
+      this.loading = false;
       if (this.activeOrder !== order) return;
       this.updateSlotFromOrder(order);
       if (this.activeOrder && order.status !== previousStatus) this.onSlotUpdate();
