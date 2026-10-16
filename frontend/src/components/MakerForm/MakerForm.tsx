@@ -33,7 +33,7 @@ import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../utils/currencies';
-import { amountToString, computeSats, genBase62Token, pn } from '../../utils';
+import { amountToString, computeSats, pn } from '../../utils';
 import { useBondEstimate } from '../../hooks/useBondEstimate';
 import useLegacyMode from '../../hooks/useLegacyMode';
 
@@ -631,18 +631,11 @@ const MakerForm = ({
         }}
         onClickDone={handleCreateOrder}
         hasRobot={Boolean(garage.getSlot()?.hashId)}
-        onClickGenerateRobot={() => {
-          setOpenDialogs(false);
-          const token = genBase62Token(36);
-          garage
-            .createRobot(federation, token)
-            .then(() => {
-              setOpenDialogs(true);
-            })
-            .catch((e) => {
-              console.log(e);
-            });
-        }}
+        onClickGenerateRobot={() =>
+          garage.generateRobot(federation).then(() => {
+            setOpenDialogs(true);
+          })
+        }
       />
       <F2fMapDialog
         interactive
