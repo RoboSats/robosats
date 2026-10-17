@@ -2,7 +2,7 @@ import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-import { filterOrders, genBase62Token } from '../../utils';
+import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
@@ -95,19 +95,12 @@ const MakerPage = (): React.JSX.Element => {
         onClose={() => {
           setOpenNoRobot(false);
         }}
-        onClickGenerateRobot={() => {
-          const token = genBase62Token(36);
-          garage
-            .createRobot(federation, token)
-            .then(() => {
-              setOpenNoRobot(true);
-              if (clickedOrder)
-                navigateToPage(`order/${clickedOrder?.shortAlias}/${clickedOrder?.id}`, navigate);
-            })
-            .catch((e) => {
-              console.log(e);
-            });
-        }}
+        onClickGenerateRobot={() =>
+          garage.generateRobot(federation).then(() => {
+            if (clickedOrder)
+              navigateToPage(`order/${clickedOrder?.shortAlias}/${clickedOrder?.id}`, navigate);
+          })
+        }
       />
       <Grid>
         <Collapse in={matches.length > 0 && showMatches}>
