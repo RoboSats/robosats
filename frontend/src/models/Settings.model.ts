@@ -36,10 +36,6 @@ class BaseSettings {
       this.fontSize = fontSizeCookie !== '' ? Number(fontSizeCookie) : 14;
     });
 
-    systemClient.getItem('settings_light_qr').then((result) => {
-      this.lightQRs = result === 'true';
-    });
-
     systemClient.getItem('settings_language').then((result) => {
       this.language =
         result !== ''
@@ -77,7 +73,6 @@ class BaseSettings {
   public mode: 'light' | 'dark' = this.getMode();
   public client: 'web' | 'mobile' = 'web';
   public fontSize: number = 14;
-  public lightQRs: boolean = false;
   public language?: Language;
   public freezeViewports: boolean = false;
   public network?: 'mainnet' | 'testnet';

@@ -22,7 +22,7 @@ Four React contexts provide app-wide state: `AppContext` (settings, theme, UI di
 - `open: OpenDialogs` — keys: `more, learn, community, info, coordinator, warning, exchange, client, update, profile, recovery, confirmCollabCancel, search, thirdParty`.
 - `entryPage` — `'garage'` if `client === 'mobile'`, else current path or `'garage'`.
 - `torStatus` — mobile-only: 5 s polling via `window.AndroidAppRobosats.getTorStatus(uuid)` + `window.AndroidRobosats.storePromise`.
-- Settings keys read from `systemClient`: `settings_mode`, `settings_fontsize_basic`, `settings_light_qr`, `settings_language`, `settings_connection` (default `'nostr'`), `settings_network` (default `'mainnet'`), `settings_notifications` (on by default for mobile), `settings_use_proxy` (on for mobile unless explicitly `'false'`).
+- Settings keys read from `systemClient`: `settings_mode`, `settings_fontsize_basic`, `settings_language`, `settings_connection` (default `'nostr'`), `settings_network` (default `'mainnet'`), `settings_notifications` (on by default for mobile), `settings_use_proxy` (on for mobile unless explicitly `'false'`).
 
 ## FederationContext (`FederationContext.tsx`)
 
