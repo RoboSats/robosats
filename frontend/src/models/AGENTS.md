@@ -78,6 +78,8 @@ attack. Legacy (non-garageKey) slots share a single bearer across all coordinato
 
 Old ephemeral-token flow. **Read-only for ongoing trades** — `/offers` and `/create` redirect to `/garage`; Make/Take buttons and nav tabs are disabled. `RobotPage` is the UI surface (not `GaragePage`). Tokens are not persisted as master secrets.
 
+Legacy keys are only for recovering robots from trades created prior the migration. Legacy robots can't take or create orders anymore.
+
 ## `Order.Status` — 19 values (mirrors backend)
 
 `WFB(0) PUB(1) PAU(2) TAK(3) UCA(4) EXP(5) WF2(6) WFE(7) WFI(8) CHA(9) FSE(10) DIS(11) CCA(12) PAY(13) SUC(14) FAI(15) WFR(16) MLD(17) TLD(18)` — must stay in sync with `api/models/order.py`. See `api/models/AGENTS.md` for the full state machine.
