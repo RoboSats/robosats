@@ -251,3 +251,37 @@ it('activeOrder from coordinator A is not cleared by a no-active-order response 
   expect(slot.activeOrder?.shortAlias).toBe('coordA');
   expect(slot.lastOrder?.id).toBe(3);
 });
+
+it('generateRobot creates a garageKey and uses account #0 when starting from legacy mode', async () => {
+  const garage = new Garage();
+  await garage.waitForSlotsLoaded();
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+  expect(garage.getMode()).toBe('legacy');
+  expect(garage.getGarageKey()).toBeNull();
+
+  await garage.generateRobot(federation);
+
+  expect(garage.getMode()).toBe('garageKey');
+  const garageKey = garage.getGarageKey();
+  expect(garageKey).not.toBeNull();
+  expect(garageKey!.currentAccountIndex).toBe(0);
+
+  const expectedToken = garageKey!.deriveRobotToken(0);
+  expect(garage.currentSlot).toBe(expectedToken);
+  expect(garage.getSlot()?.token).toBe(expectedToken);
+});
+
+it('generateRobot reuses an existing garageKey and does not overwrite it', async () => {
+  const garage = new Garage();
+  await garage.waitForSlotsLoaded();
+  garage.setMode('garageKey');
+  garage.setGarageKey(new GarageKey(key));
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+  const originalKey = garage.getGarageKey();
+  await garage.generateRobot(federation);
+
+  expect(garage.getGarageKey()).toBe(originalKey);
+  expect(garage.currentSlot).toBe(originalKey!.deriveRobotToken(originalKey!.currentAccountIndex));
+});

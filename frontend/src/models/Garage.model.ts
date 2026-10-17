@@ -480,6 +480,14 @@ class Garage {
     }
   };
 
+  generateRobot = async (federation: Federation): Promise<void> => {
+    if (!this.garageKey) {
+      this.setMode('garageKey');
+      this.setGarageKey(new GarageKey('generate'));
+    }
+    await this.createRobotFromGarageKey(federation, undefined, true);
+  };
+
   makeOrderWithRecovery = async (federation: Federation, attributes: object): Promise<Order> => {
     const slot = this.getSlot();
     if (!slot) {
