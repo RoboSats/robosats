@@ -22,7 +22,7 @@ interface TakeButtonProps {
   password?: string;
   info?: Info;
   setCurrentOrder: (currentOrder: Order) => void;
-  onClickGenerateRobot?: () => void;
+  onClickGenerateRobot?: () => Promise<void>;
 }
 
 interface OpenDialogsProps {
@@ -36,7 +36,7 @@ const TakeButton = ({
   currentOrder,
   setCurrentOrder,
   info,
-  onClickGenerateRobot = () => null,
+  onClickGenerateRobot = async () => {},
 }: TakeButtonProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
