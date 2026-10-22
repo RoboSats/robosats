@@ -26,6 +26,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TRUSTED_RUN: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     steps:
     - name: 'Checkout'
@@ -86,19 +88,19 @@ jobs:
     - name: Print semver
       run: echo The semver is ${{ github.event.inputs.semver }}
     - name: 'Invoke Coodinator Image CI'
-      if: inputs.semver == ''
+      if: inputs.semver == '' && env.TRUSTED_RUN == 'true'
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Docker: Coordinator'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Selfhosted Client App Build CI/CD workflow'
-      if: inputs.semver == ''
+      if: inputs.semver == '' && env.TRUSTED_RUN == 'true'
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Docker: Selfhosted Client'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Web Client App Build CI/CD workflow'
-      if: inputs.semver == ''
+      if: inputs.semver == '' && env.TRUSTED_RUN == 'true'
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Docker: Web Client'

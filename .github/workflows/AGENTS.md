@@ -39,6 +39,24 @@ When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
 `benc-uk/workflow-dispatch@v1` + `PERSONAL_TOKEN`. Android and desktop builds are
 **not** dispatched on plain pushes — they are release-only artifacts.
 
+## Fork PR Gating (`TRUSTED_RUN`)
+GitHub withholds repository secrets and grants only a read-only `GITHUB_TOKEN` to
+`pull_request` runs from forks. `frontend-build`, `web-client-image`,
+`selfhosted-client-image` and `android-build` set a job-level
+`TRUSTED_RUN = github.event_name != 'pull_request' || head repo == github.repository`.
+When `TRUSTED_RUN` is `'false'` (fork PR only), steps that need secrets or write access are
+skipped so the job validates the change instead of failing on missing credentials:
+
+| Workflow | Skipped / disabled on fork PRs | Still runs |
+|---|---|---|
+| `frontend-build.yml` | 3 `workflow-dispatch` steps (`PERSONAL_TOKEN`) | `npm ci`, `npm run build`, all 5 artifact uploads |
+| `web-client-image.yml` / `selfhosted-client-image.yml` | Docker Hub login; `push:` evaluates to `false` | QEMU/Buildx multi-arch image build |
+| `android-build.yml` | `Sign APK` (`KEYSTORE`/`KEY_*`), `Create Pre-Release` + 3 asset uploads (write token) | Gradle `assembleRelease`, IzzyOnDroid FOSS scan |
+
+Push, tag-release (`workflow_call`), `workflow_dispatch` and same-repo PR runs evaluate
+`TRUSTED_RUN` to `'true'` and behave exactly as before. Never gate a build, lint or
+FOSS-scan step on `TRUSTED_RUN` — only steps that consume secrets or need write scope.
+
 ## Integration Tests (`integration-tests.yml`)
 - **Stack**: `docker-tests.yml` with services `bitcoind`, `postgres`, `redis`,
   `coordinator-LND`/`coordinator-CLN`, `robot-LND`, `coordinator` (health-polled).
