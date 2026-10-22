@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from decouple import config, Csv
 from django.contrib.auth.models import User
-from django.db.models import Q, Sum
+from django.db.models import F, Q, Sum
 from django.utils import timezone
 from django.utils.html import format_html
 from django.db import transaction
@@ -276,8 +276,18 @@ class Logics:
 
     @classmethod
     def order_expires(cls, order):
-        """General cases when time runs out."""
+        """General cases when time runs out.
 
+        Row-locks the order so concurrent expiry handling (view
+        triggered, follow_invoices and clean_orders daemons) cannot
+        settle the same bond or credit slashed rewards twice.
+        """
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=order.pk)
+            return cls._order_expires(order)
+
+    @classmethod
+    def _order_expires(cls, order):
         # Do not change order status if an order in any with
         # any of these status is sent to expire here
         does_not_expire = [
@@ -362,7 +372,8 @@ class Logics:
                     cls.cancel_escrow(order)
                 except Exception:
                     pass
-                order.update_status(Order.Status.EXP)
+                if not order.transition_status(Order.Status.EXP, [Order.Status.WFE]):
+                    return False
                 order.expiry_reason = Order.ExpiryReasons.NESCRO
                 order.save(update_fields=["expiry_reason"])
                 # Reward taker with part of the maker bond
@@ -382,6 +393,8 @@ class Logics:
                     cls.cancel_escrow(order)
                 except Exception:
                     pass
+                if not order.transition_status(Order.Status.PUB, [Order.Status.WFE]):
+                    return False
                 taker_bond = order.taker_bond
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
@@ -403,7 +416,8 @@ class Logics:
                 cls.settle_bond(order.maker_bond)
                 cls.return_bond(order.taker_bond)
                 cls.return_escrow(order)
-                order.update_status(Order.Status.EXP)
+                if not order.transition_status(Order.Status.EXP, [Order.Status.WFI]):
+                    return False
                 order.expiry_reason = Order.ExpiryReasons.NINVOI
                 order.save(update_fields=["expiry_reason"])
                 # Reward taker with part of the maker bond
@@ -419,6 +433,8 @@ class Logics:
             else:
                 cls.settle_bond(order.taker_bond)
                 cls.return_escrow(order)
+                if not order.transition_status(Order.Status.PUB, [Order.Status.WFI]):
+                    return False
                 taker_bond = order.taker_bond
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
@@ -463,8 +479,16 @@ class Logics:
         never sent a message on the chat and never marked 'fiat
         sent'. By solving the dispute automatically before
         flagging it as dispute, we avoid having to settle the
-        bonds"""
+        bonds. Row-locks the order so concurrent dispute
+        resolution cannot settle the same bond or credit slashed
+        rewards twice."""
 
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=order.pk)
+            return cls._automatic_dispute_resolution(order)
+
+    @classmethod
+    def _automatic_dispute_resolution(cls, order):
         # If fiat has been marked as sent (or was sent and then reverted),
         # automatic dispute resolution is not possible.
         if order.is_fiat_sent or order.reverted_fiat_sent:
@@ -484,10 +508,13 @@ class Logics:
         )
 
         if num_messages_maker == num_messages_taker == 0:
+            if not order.transition_status(
+                Order.Status.DIS, [Order.Status.CHA, Order.Status.FSE]
+            ):
+                return False
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.settle_bond(order.taker_bond)
-            order.update_status(Order.Status.DIS)
 
             order.log("Maker bond was **settled**")
             order.log("Taker bond was **settled**")
@@ -496,10 +523,13 @@ class Logics:
             )
 
         elif num_messages_maker == 0:
+            if not order.transition_status(
+                Order.Status.MLD, [Order.Status.CHA, Order.Status.FSE]
+            ):
+                return False
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            order.update_status(Order.Status.MLD)
             cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
             order.log("Maker bond was **settled**")
@@ -509,10 +539,13 @@ class Logics:
             )
 
         elif num_messages_taker == 0:
+            if not order.transition_status(
+                Order.Status.TLD, [Order.Status.CHA, Order.Status.FSE]
+            ):
+                return False
             cls.return_escrow(order)
             cls.settle_bond(order.taker_bond)
             cls.return_bond(order.maker_bond)
-            order.update_status(Order.Status.TLD)
             cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
 
             order.log("Maker bond was **unlocked**")
@@ -1059,6 +1092,19 @@ class Logics:
 
     @classmethod
     def cancel_order(cls, order, user, cancel_status=None):
+        """Row-locks the order to serialize concurrent cancel requests.
+
+        Without the lock, simultaneous requests all observe the
+        pre-cancel status, settle the same bond repeatedly (node
+        settlement is idempotent) and credit slashed rewards more than
+        once.
+        """
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=order.pk)
+            return cls._cancel_order(order, user, cancel_status)
+
+    @classmethod
+    def _cancel_order(cls, order, user, cancel_status=None):
         # If cancel status is specified, do no cancel the order
         # if it is not the correct one.
         # This prevents the client from cancelling an order that
@@ -1147,8 +1193,9 @@ class Logics:
             cls.return_bond(order.taker_bond)  # returns taker bond
             cls.cancel_escrow(order)
 
-            if valid:
-                order.update_status(Order.Status.UCA)
+            if valid and order.transition_status(
+                Order.Status.UCA, [Order.Status.WF2, Order.Status.WFE]
+            ):
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
@@ -1169,7 +1216,9 @@ class Logics:
             cls.cancel_onchain_payment(order)
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.taker_bond)
-            if valid:
+            if valid and order.transition_status(
+                Order.Status.PUB, [Order.Status.WF2, Order.Status.WFE]
+            ):
                 taker_bond = order.taker_bond
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
@@ -1615,6 +1664,8 @@ class Logics:
 
     def settle_bond(bond):
         """Settles the bond hold invoice"""
+        if bond.status == LNPayment.Status.SETLED:
+            return True
         if LNNode.settle_hold_invoice(bond.preimage):
             bond.status = LNPayment.Status.SETLED
             bond.save(update_fields=["status"])
@@ -1622,6 +1673,8 @@ class Logics:
 
     def return_escrow(order):
         """returns the trade escrow"""
+        if order.trade_escrow is None:
+            return False
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.RETNED
             order.trade_escrow.save(update_fields=["status"])
@@ -1631,6 +1684,8 @@ class Logics:
     def cancel_escrow(order):
         """returns the trade escrow"""
         # Same as return escrow, but used when the invoice was never LOCKED
+        if order.trade_escrow is None:
+            return False
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.CANCEL
             order.trade_escrow.save(update_fields=["status"])
@@ -1867,19 +1922,20 @@ class Logics:
 
         reward = int(slashed_satoshis * reward_fraction)
         rewarded_robot = staked_bond.sender.robot
-        rewarded_robot.earned_rewards += reward
-        rewarded_robot.save(update_fields=["earned_rewards"])
+        Robot.objects.filter(pk=rewarded_robot.pk).update(
+            earned_rewards=F("earned_rewards") + reward
+        )
 
         slashed_robot_log = ""
         if slashed_return > 100:
             slashed_robot = slashed_bond.sender.robot
-            slashed_robot.earned_rewards += slashed_return
-            slashed_robot.save(update_fields=["earned_rewards"])
+            Robot.objects.filter(pk=slashed_robot.pk).update(
+                earned_rewards=F("earned_rewards") + slashed_return
+            )
             slashed_robot_log = f"Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
 
         new_proceeds = int(slashed_satoshis * (1 - reward_fraction))
-        order.proceeds += new_proceeds
-        order.save(update_fields=["proceeds"])
+        Order.objects.filter(pk=order.pk).update(proceeds=F("proceeds") + new_proceeds)
         send_devfund_donation.delay(order.id, new_proceeds, "slashed bond")
         order.log(
             f"Robot({rewarded_robot.id},{rewarded_robot.user.username}) was rewarded {reward} Sats. {slashed_robot_log}"
