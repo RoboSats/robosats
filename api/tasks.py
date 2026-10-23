@@ -92,6 +92,22 @@ def follow_send_payment(hash):
     lnpayment.last_routing_time = timezone.now()
     lnpayment.save(update_fields=["last_routing_time"])
 
+    # Checked against LND before every attempt; a payout that fails it is held (and
+    # retried in an hour) until the coordinator looks at it.
+    from api.logics import payout_problem
+
+    problem = payout_problem(lnpayment)
+    if problem:
+        print(f"PAYOUT HELD {hash}: {problem}", flush=True)
+        from api.models import Order
+
+        order = Order.objects.filter(payout=lnpayment).first()
+        if order and "PAYOUT HELD" not in (order.logs or ""):
+            order.log(f"PAYOUT HELD: {problem}", level="WARN")
+        lnpayment.last_routing_time = timezone.now() + timedelta(hours=1)
+        lnpayment.save(update_fields=["last_routing_time"])
+        return
+
     # Default is 0ppm. Set by the user over API. Client's default is 1000 ppm.
     fee_limit_sat = int(
         float(lnpayment.num_satoshis) * float(lnpayment.routing_budget_ppm) / 1_000_000
