@@ -2107,6 +2107,42 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(response)
         self.assertTrue(response.json()["successful_withdrawal"])
 
+    def test_concurrent_cancel_does_not_double_credit_slashed_rewards(self):
+        """
+        Regression: concurrent cancel requests used to settle the same maker
+        bond repeatedly (node settlement is idempotent) and credit slashed
+        rewards once per request, draining earned_rewards. A second cancel
+        must be rejected with error 1021 and must not credit extra rewards.
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.cancel_order(trade.maker_index)
+
+        self.assertEqual(trade.response.status_code, 200)
+
+        # Maker was credited the range overhang (maker bond - taker bond) once
+        path = reverse("robot")
+        maker_headers = trade.get_robot_auth(trade.maker_index)
+        response = self.client.get(path, **maker_headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        maker_rewards = response.json()["earned_rewards"]
+        self.assertGreater(maker_rewards, 0)
+
+        # A raced cancel request must be rejected with error 1021
+        trade.cancel_order(trade.maker_index)
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
+        self.assertEqual(trade.response.json()["error_code"], 1021)
+
+        # Rewards remain credited exactly once
+        response = self.client.get(path, **maker_headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["earned_rewards"], maker_rewards)
+
     def test_order_expires_after_fiat_sent(self):
         """
         Tests the expiration of an order after fiat sent is confirmed
