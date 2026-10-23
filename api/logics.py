@@ -1888,7 +1888,9 @@ class Logics:
         slashed_bond.refresh_from_db(fields=["status"])
         if slashed_bond.status != LNPayment.Status.SETLED:
             return "the slashed bond is not settled"
-        if reward < 0 or reward > min(slashed_bond.num_satoshis, staked_bond.num_satoshis):
+        if reward < 0 or reward > min(
+            slashed_bond.num_satoshis, staked_bond.num_satoshis
+        ):
             return f"reward {reward} is larger than the smaller bond"
         try:
             if not LNNode.double_check_htlc_is_settled(slashed_bond.payment_hash):
@@ -1985,18 +1987,24 @@ class Logics:
                 ],
             )
             cooldown = config("REWARD_WITHDRAW_COOLDOWN", cast=int, default=0)
-            if cooldown and withdrawals.filter(
-                receiver=user,
-                created_at__gt=timezone.now() - timedelta(seconds=cooldown),
-            ).exists():
+            if (
+                cooldown
+                and withdrawals.filter(
+                    receiver=user,
+                    created_at__gt=timezone.now() - timedelta(seconds=cooldown),
+                ).exists()
+            ):
                 return False, {
                     "bad_invoice": "You withdrew your rewards recently. Try again later."
                 }
             global_max = config("REWARD_WITHDRAW_GLOBAL_DAILY_MAX", cast=int, default=0)
             if global_max:
-                withdrawn = withdrawals.filter(
-                    created_at__gt=timezone.now() - timedelta(hours=24)
-                ).aggregate(sats=Sum("num_satoshis"))["sats"] or 0
+                withdrawn = (
+                    withdrawals.filter(
+                        created_at__gt=timezone.now() - timedelta(hours=24)
+                    ).aggregate(sats=Sum("num_satoshis"))["sats"]
+                    or 0
+                )
                 if withdrawn + num_satoshis > global_max:
                     return False, {
                         "bad_invoice": "Reward withdrawals are paused for now. Try again later."
