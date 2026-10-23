@@ -190,13 +190,18 @@ const EncryptedChat: React.FC<Props> = ({
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
-  // Resolve the receiver's own working URL for the coordinator.  This is used
-  // by MessageCard to build a local blossom download URL that is always
-  // reachable regardless of the topology the *sender* was using.
   const coordinatorUrl = federation.getCoordinator(order.shortAlias)?.url;
 
   const [error, setError] = useState<string>('');
   const [lastIndex, setLastIndex] = useState<number>(0);
+
+  const slot = garage.getSlot();
+  const nostrCapable =
+    Boolean(slot) &&
+    garage.getMode() === 'garageKey' &&
+    Boolean(order.maker_nostr_pubkey) &&
+    Boolean(order.taker_nostr_pubkey);
+  const nostrMode = settings.connection === 'nostr' && nostrCapable;
 
   const onSendMessage = async (
     content: string,
@@ -239,8 +244,8 @@ const EncryptedChat: React.FC<Props> = ({
   };
 
   const sendToCoordinator = async (content: string): Promise<object | void> => {
-    const slot = garage.getSlot();
-    const robot = slot?.getRobot();
+    const currentSlot = garage.getSlot();
+    const robot = currentSlot?.getRobot();
     const url =
       federation.getCoordinator(garage.getSlot()?.activeOrder?.shortAlias ?? '')?.url ?? '';
 
@@ -249,23 +254,31 @@ const EncryptedChat: React.FC<Props> = ({
       robot?.pubKey ?? '',
       peerPubKey ?? '',
       robot?.encPrivKey ?? '',
-      slot?.token ?? '',
-    ).catch((error) => {
-      setError(error.toString());
+      currentSlot?.token ?? '',
+    ).catch((err) => {
+      setError(err.toString());
     });
 
     if (!encryptedMessage) return;
 
-    return apiClient.post(
-      url,
-      `/api/chat/`,
-      {
-        PGP_message: String(encryptedMessage).split('\n').join('\\'),
-        order_id: order.id,
-        offset: lastIndex,
-      },
-      { tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '' },
-    );
+    const body: Record<string, unknown> = {
+      PGP_message: String(encryptedMessage).split('\n').join('\\'),
+      order_id: order.id,
+    };
+
+    if (!nostrMode) {
+      body.offset = Math.floor(lastIndex);
+    }
+
+    const response = await apiClient.post(url, `/api/chat/`, body, {
+      tokenSHA256: currentSlot?.getRobot()?.tokenSHA256 ?? '',
+    });
+
+    if (response != null && typeof response === 'object' && 'bad_request' in response) {
+      setError(t('Message could not be saved on the coordinator'));
+    }
+
+    return response;
   };
 
   const sendFile = async (file: File): Promise<void> => {
@@ -346,14 +359,7 @@ const EncryptedChat: React.FC<Props> = ({
     }
   };
 
-  const slot = garage.getSlot();
-  const nostrCapable =
-    Boolean(slot) &&
-    garage.getMode() === 'garageKey' &&
-    Boolean(order.maker_nostr_pubkey) &&
-    Boolean(order.taker_nostr_pubkey);
-
-  if (settings.connection === 'nostr' && nostrCapable) {
+  if (nostrMode) {
     return (
       <EncryptedNostrChat
         messages={messages}
@@ -368,8 +374,6 @@ const EncryptedChat: React.FC<Props> = ({
         setPeerPubKey={setPeerPubKey}
         error={error}
         setError={setError}
-        lastIndex={lastIndex}
-        setLastIndex={setLastIndex}
         blossomEnabled={blossomEnabled}
         coordinatorUrl={coordinatorUrl}
       />
