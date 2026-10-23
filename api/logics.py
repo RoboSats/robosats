@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from decouple import config, Csv
 from django.contrib.auth.models import User
-from django.db.models import Q, Sum
+from django.db.models import F, Q, Sum
 from django.utils import timezone
 from django.utils.html import format_html
 from django.db import transaction
@@ -1928,19 +1928,33 @@ class Logics:
                 level="WARN",
             )
             return
-        rewarded_robot.earned_rewards += reward
-        rewarded_robot.save(update_fields=["earned_rewards"])
-
-        slashed_robot_log = ""
-        if slashed_return > 100:
-            slashed_robot = slashed_bond.sender.robot
-            slashed_robot.earned_rewards += slashed_return
-            slashed_robot.save(update_fields=["earned_rewards"])
-            slashed_robot_log = f"Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
-
         new_proceeds = int(slashed_satoshis * (1 - reward_fraction))
-        order.proceeds += new_proceeds
-        order.save(update_fields=["proceeds"])
+        slashed_robot_log = ""
+        with transaction.atomic():
+            # Only the call that marks the bond as rewarded credits it: a second call
+            # for the same bond (concurrent cancels, retries) finds it already marked.
+            claimed = LNPayment.objects.filter(
+                pk=slashed_bond.pk, rewarded_at__isnull=True
+            ).update(rewarded_at=timezone.now())
+            if not claimed:
+                order.log(
+                    f"Reward for slashed bond {slashed_bond.payment_hash} NOT CREDITED: already rewarded",
+                    level="WARN",
+                )
+                return
+            Robot.objects.filter(pk=rewarded_robot.pk).update(
+                earned_rewards=F("earned_rewards") + reward
+            )
+            if slashed_return > 100:
+                slashed_robot = slashed_bond.sender.robot
+                Robot.objects.filter(pk=slashed_robot.pk).update(
+                    earned_rewards=F("earned_rewards") + slashed_return
+                )
+                slashed_robot_log = f"Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
+            Order.objects.filter(pk=order.pk).update(
+                proceeds=F("proceeds") + new_proceeds
+            )
+        order.refresh_from_db(fields=["proceeds"])
         send_devfund_donation.delay(order.id, new_proceeds, "slashed bond")
         order.log(
             f"Robot({rewarded_robot.id},{rewarded_robot.user.username}) was rewarded {reward} Sats. {slashed_robot_log}"
