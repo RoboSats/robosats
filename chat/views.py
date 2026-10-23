@@ -43,7 +43,11 @@ class ChatView(viewsets.ViewSet):
         """
 
         order_id = request.GET.get("order_id", None)
-        offset = request.GET.get("offset", 0)
+        raw_offset = request.GET.get("offset", 0)
+        try:
+            offset = max(0, int(float(raw_offset)))
+        except (TypeError, ValueError):
+            offset = 0
 
         if order_id is None:
             return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)

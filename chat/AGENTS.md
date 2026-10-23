@@ -74,6 +74,22 @@ Two implementations in `frontend/src/components/TradeBox/EncryptedChat/`:
 
 The WebSocket chat (`EncryptedSocketChat`) has been removed from the frontend. This backend (`/chat` Django Channels app) is retained for `EncryptedApiChat` REST access and API compatibility.
 
+### Read/write invariant across connection modes
+
+**Reads are single-source per mode**: Nostr mode renders only relay events; API mode renders only coordinator messages. There is no cross-mode read path.
+
+**Sends always write to both stores**: every message goes to the Nostr relay (via `sendToNostr`) AND to the coordinator (via `sendToCoordinator`) in a single `onSendMessage` call, regardless of the active connection mode. This keeps both stores current so switching modes never loses messages.
+
+**`offset`/`lastIndex` belong exclusively to the coordinator's sequential-index domain**:
+- `Message.index` is a simple sequential integer (1, 2, 3…) assigned by the coordinator on POST.
+- `offset` in GET/POST requests is that sequential integer — used to page through coordinator messages.
+- Nostr relay events are display-ordered by `event.created_at + tiny_random` — a Unix timestamp float (~1.7 billion). This value is a display sort key only. It must never be used as, or written into, `lastIndex`/`offset`.
+- Mixing these domains causes the coordinator to reject POST requests (DRF `IntegerField` rejects a 10-digit float) and GET requests to return empty results (no coordinator message has `index > 1_700_000_000`). Both failures were previously silent.
+
+**`EncryptedNostrChat` never writes to `lastIndex`**: the component has no `setLastIndex` prop. In Nostr mode the coordinator POST body omits `offset` entirely (the coordinator stores the message and returns `{}`; no coordinator read occurs). The presence poll (`loadPeerPubKey`) passes `order.chat_last_index` — a coordinator-domain value maintained by regular order polling — so its GET offset is always a valid sequential integer.
+
+**`chat/views.py` GET defensively coerces `offset`**: `int(float(raw_offset))` with a fallback of 0, clamped ≥ 0. A malformed or float offset returns history instead of a 500.
+
 ## Notification Throttling
 Chat notifications (Telegram/Nostr/webhook) are rate-limited:
 - Throttles on `CHAT_NOTIFICATION_TIMEGAP` min (env, default 5) since the prior chatroom
