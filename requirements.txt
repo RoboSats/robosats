@@ -18,7 +18,7 @@ requests[socks]==2.34.2
 ring==0.10.1
 gunicorn==26.2.0
 psycopg2==2.9.13
-django-import-export==4.4.1
+django-import-export==4.4.3
 shapely==2.2.0
 python-gnupg==0.5.7
 daphne==4.2.3
