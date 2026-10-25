@@ -14,13 +14,15 @@ RETURNED = re.compile(r"Robot\((\d+),[^)]*\) was returned (\d+) Sats")
 class Command(BaseCommand):
     help = (
         "Read-only audit of past rewards and payouts against the payout safety rules: "
-        "rewards credited more than once per order, rewards whose slashed bond LND does "
-        "not show as settled, robots that withdrew more than they were ever credited, "
-        "and buyer payouts not covered by a settled escrow. Changes nothing."
+        "rewards credited more than once per order, rewards whose slashed bond the "
+        "lightning node does not show as settled, robots that withdrew more than they "
+        "were ever credited, and buyer payouts not covered by a settled escrow. Changes nothing."
     )
 
     def add_arguments(self, parser):
-        parser.add_argument("--no-lnd", action="store_true", help="skip the LND lookups")
+        parser.add_argument(
+            "--no-lnd", action="store_true", help="skip the lightning node lookups"
+        )
 
     def handle(self, *args, **options):
         lnd = not options["no_lnd"]
@@ -37,7 +39,9 @@ class Command(BaseCommand):
             rewards = REWARDED.findall(order.logs)
             if len(rewards) > 1:
                 total = sum(int(s) for _, s in rewards)
-                report(f"order {order.id}: rewarded {len(rewards)} times ({total} sats in all)")
+                report(
+                    f"order {order.id}: rewarded {len(rewards)} times ({total} sats in all)"
+                )
             # Only the first credit per order counts as legitimate.
             robot, sats = rewards[0]
             credited[int(robot)] += int(sats)
@@ -52,13 +56,21 @@ class Command(BaseCommand):
                         ok = LNNode.double_check_htlc_is_settled(bond.payment_hash)
                     except Exception as e:
                         ok = None
-                        report(f"order {order.id}: could not look up bond {bond.payment_hash} ({e})")
+                        report(
+                            f"order {order.id}: could not look up bond {bond.payment_hash} ({e})"
+                        )
                     if ok is False:
-                        report(f"order {order.id}: bond {bond.payment_hash} is SETTLED in the database but not in LND")
+                        report(
+                            f"order {order.id}: bond {bond.payment_hash} is SETTLED in the database but not in the lightning node"
+                        )
 
-        self.stdout.write("Reward withdrawals against what was credited (admin credits are not in the logs: check those by hand):")
+        self.stdout.write(
+            "Reward withdrawals against what was credited (admin credits are not in the logs: check those by hand):"
+        )
         withdrawn = (
-            LNPayment.objects.filter(concept=LNPayment.Concepts.WITHREWA, status=LNPayment.Status.SUCCED)
+            LNPayment.objects.filter(
+                concept=LNPayment.Concepts.WITHREWA, status=LNPayment.Status.SUCCED
+            )
             .values("receiver__robot")
             .annotate(sats=Sum("num_satoshis"))
         )
@@ -74,20 +86,28 @@ class Command(BaseCommand):
                 )
 
         self.stdout.write("Buyer payouts:")
-        for payout in LNPayment.objects.filter(concept=LNPayment.Concepts.PAYBUYER, status=LNPayment.Status.SUCCED):
+        for payout in LNPayment.objects.filter(
+            concept=LNPayment.Concepts.PAYBUYER, status=LNPayment.Status.SUCCED
+        ):
             order = Order.objects.filter(payout=payout).first()
             if order is None:
                 report(f"payout {payout.payment_hash}: paid but no order has it")
                 continue
             escrow = order.trade_escrow
             if escrow is None or escrow.status != LNPayment.Status.SETLED:
-                report(f"order {order.id}: buyer paid {payout.num_satoshis} without a settled escrow")
+                report(
+                    f"order {order.id}: buyer paid {payout.num_satoshis} without a settled escrow"
+                )
             elif escrow.num_satoshis < payout.num_satoshis:
-                report(f"order {order.id}: buyer paid {payout.num_satoshis} > escrow {escrow.num_satoshis}")
+                report(
+                    f"order {order.id}: buyer paid {payout.num_satoshis} > escrow {escrow.num_satoshis}"
+                )
             elif lnd:
                 try:
                     if not LNNode.double_check_htlc_is_settled(escrow.payment_hash):
-                        report(f"order {order.id}: escrow is SETTLED in the database but not in LND")
+                        report(
+                            f"order {order.id}: escrow is SETTLED in the database but not in the lightning node"
+                        )
                 except Exception as e:
                     report(f"order {order.id}: could not look up the escrow ({e})")
 

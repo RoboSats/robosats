@@ -45,8 +45,9 @@ GEOBLOCKED_COUNTRIES = config("GEOBLOCKED_COUNTRIES", cast=Csv(), default="")
 
 def payout_problem(lnpayment):
     """Why a buyer payout must not be sent now, or None. Checked right before every
-    attempt, against LND and not only the database: the escrow that backs it must be
-    settled in LND and cover it, and PAYOUT_MAX_SATS (if set) caps a single payout."""
+    attempt, against the lightning node and not only the database: the escrow that
+    backs it must be settled in the lightning node and cover it, and PAYOUT_MAX_SATS
+    (if set) caps a single payout."""
     if lnpayment.concept != LNPayment.Concepts.PAYBUYER:
         return "not a buyer payout"
     order = Order.objects.filter(payout=lnpayment).first()
@@ -64,9 +65,9 @@ def payout_problem(lnpayment):
         return f"payout {lnpayment.num_satoshis} is over PAYOUT_MAX_SATS ({cap})"
     try:
         if not LNNode.double_check_htlc_is_settled(escrow.payment_hash):
-            return "LND does not show the trade escrow as settled"
+            return "the lightning node does not show the trade escrow as settled"
     except Exception as e:
-        return f"could not check the escrow in LND ({e})"
+        return f"could not check the escrow in the lightning node ({e})"
     return None
 
 
@@ -1875,8 +1876,9 @@ class Logics:
         """Why a slashed bond must not be rewarded, or None: one bond is this order's
         maker bond and the other a taker bond of another robot (the taker's link is
         already cleared when the order goes back to the book, so it can't be required),
-        the slashed bond is settled in the database AND in LND (the sats really are the
-        coordinator's), and the reward is not larger than the smaller bond."""
+        the slashed bond is settled in the database AND in the lightning node (the sats
+        really are the coordinator's), and the reward is not larger than the smaller
+        bond."""
         pair = {slashed_bond.pk, staked_bond.pk}
         if order.maker_bond_id not in pair or len(pair) != 2:
             return "the bonds are not this order's maker bond and a taker bond"
@@ -1894,9 +1896,9 @@ class Logics:
             return f"reward {reward} is larger than the smaller bond"
         try:
             if not LNNode.double_check_htlc_is_settled(slashed_bond.payment_hash):
-                return "LND does not show the slashed bond as settled"
+                return "the lightning node does not show the slashed bond as settled"
         except Exception as e:
-            return f"could not check the slashed bond in LND ({e})"
+            return f"could not check the slashed bond in the lightning node ({e})"
         return None
 
     @classmethod

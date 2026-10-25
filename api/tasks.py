@@ -92,8 +92,8 @@ def follow_send_payment(hash):
     lnpayment.last_routing_time = timezone.now()
     lnpayment.save(update_fields=["last_routing_time"])
 
-    # Checked against LND before every attempt; a payout that fails it is held (and
-    # retried in an hour) until the coordinator looks at it.
+    # Checked against the lightning node before every attempt; a payout that fails it
+    # is held (and retried in an hour) until the coordinator looks at it.
     from api.logics import payout_problem
 
     problem = payout_problem(lnpayment)
