@@ -16,6 +16,8 @@ Un moyen sûr et très privé d'accéder à RoboSats est de passer par l'adresse
 
 > [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
+Si cette adresse ne se charge pas, vous pouvez utiliser à la place l'adresse onion propre à n'importe quel coordinateur de la fédération, car ils servent tous le même client. La liste à jour se trouve dans [federation.json](https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/federation.json) : utilisez l'adresse `onion` indiquée dans l'entrée `mainnet` de chaque coordinateur.
+
 **Privé :** Votre connexion est chiffrée de bout-en-bout et relayée par plusieurs couches de nœuds, ce qui rend le suivi plus difficile.
 {: .notice--primary}
 
