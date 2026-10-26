@@ -1988,28 +1988,43 @@ class Logics:
                     LNPayment.Status.SUCCED,
                 ],
             )
+            # The refusals say when to come back, so nobody has to guess.
             cooldown = config("REWARD_WITHDRAW_COOLDOWN", cast=int, default=0)
-            if (
-                cooldown
-                and withdrawals.filter(
-                    receiver=user,
-                    created_at__gt=timezone.now() - timedelta(seconds=cooldown),
-                ).exists()
-            ):
-                return False, {
-                    "bad_invoice": "You withdrew your rewards recently. Try again later."
-                }
+            if cooldown:
+                last = withdrawals.filter(receiver=user).order_by("-created_at").first()
+                if last and last.created_at > timezone.now() - timedelta(
+                    seconds=cooldown
+                ):
+                    until = last.created_at + timedelta(seconds=cooldown)
+                    return False, {
+                        "bad_invoice": "You withdrew your rewards recently. You can "
+                        f"withdraw again from {until:%Y-%m-%d %H:%M} UTC."
+                    }
             global_max = config("REWARD_WITHDRAW_GLOBAL_DAILY_MAX", cast=int, default=0)
             if global_max:
-                withdrawn = (
-                    withdrawals.filter(
-                        created_at__gt=timezone.now() - timedelta(hours=24)
-                    ).aggregate(sats=Sum("num_satoshis"))["sats"]
-                    or 0
-                )
+                recent = withdrawals.filter(
+                    created_at__gt=timezone.now() - timedelta(hours=24)
+                ).order_by("created_at")
+                withdrawn = recent.aggregate(sats=Sum("num_satoshis"))["sats"] or 0
                 if withdrawn + num_satoshis > global_max:
+                    # Room comes back as past withdrawals leave the 24-hour window.
+                    until, freed = None, 0
+                    excess = withdrawn + num_satoshis - global_max
+                    if num_satoshis <= global_max:
+                        for created_at, sats in recent.values_list(
+                            "created_at", "num_satoshis"
+                        ):
+                            freed += sats
+                            if freed >= excess:
+                                until = created_at + timedelta(hours=24)
+                                break
+                    when = (
+                        f"Try again from {until:%Y-%m-%d %H:%M} UTC."
+                        if until
+                        else "Try again later."
+                    )
                     return False, {
-                        "bad_invoice": "Reward withdrawals are paused for now. Try again later."
+                        "bad_invoice": f"Reward withdrawals are paused for now. {when}"
                     }
 
             if routing_budget_ppm is not None and routing_budget_ppm is not False:
