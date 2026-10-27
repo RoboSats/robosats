@@ -14,7 +14,7 @@ requiring a real Lightning node.
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, skipIf
 
 from api.errors import ERRORS
 from api.models import LNPayment, Robot
@@ -178,3 +178,82 @@ class WithdrawRewardsTest(TestCase):
         self.assertEqual(error["error_code"], 3006)
         # Rewards must remain at 0 — HTLC is still in-flight.
         self.assertEqual(user.robot.earned_rewards, 0)
+
+
+# ---------------------------------------------------------------------------
+# Known issue F1 — IntegrityError inside transaction.atomic() → 500
+# ---------------------------------------------------------------------------
+#
+# When a duplicate invoice payment_hash is submitted, LNPayment.objects.create()
+# raises IntegrityError.  That exception is caught and returns error 3004, but it
+# is caught *inside* the outer transaction.atomic() block.  On Postgres an
+# IntegrityError aborts the transaction, so the subsequent commit raises a
+# DatabaseError instead of letting the except clause return cleanly.  The user
+# receives a 500 instead of error 3004.
+#
+# The fix is to wrap LNPayment.objects.create() in a nested atomic() (savepoint).
+# Until that fix lands, this test is skipped.  Remove the skip once F1 is patched.
+
+
+@skipIf(
+    True,
+    "F1 not yet fixed: IntegrityError inside transaction.atomic() gives 500 on Postgres",
+)
+class DuplicateInvoiceReturns3004Test(TestCase):
+    """
+    Submitting a withdrawal invoice whose payment_hash is already in the database
+    must return error 3004, not raise an unhandled exception.
+
+    DB-backed: requires the real LNPayment table so the IntegrityError is real.
+    Skip if postgres is not available (the test would pass trivially on SQLite
+    because SQLite does not abort the transaction on a constraint violation).
+    """
+
+    def test_duplicate_payment_hash_returns_3004(self):
+        from django.db import connection
+
+        if connection.vendor != "postgresql":
+            self.skipTest("Only meaningful on PostgreSQL (savepoint semantics)")
+
+        from django.contrib.auth.models import User as DjangoUser
+        from django.utils import timezone
+        import uuid as _uuid
+
+        from api.logics import Logics
+        from api.models import LNPayment as LP
+
+        escrow_user = DjangoUser.objects.create_user(username="escrow_f1", password="x")
+        robot_user = DjangoUser.objects.create_user(username="user_f1", password="x")
+        robot_user.robot.earned_rewards = 500
+        robot_user.robot.save(update_fields=["earned_rewards"])
+
+        now = timezone.now()
+        existing_hash = _uuid.uuid4().hex
+        LP.objects.create(
+            type=LP.Types.NORM,
+            concept=LP.Concepts.WITHREWA,
+            status=LP.Status.VALIDI,
+            payment_hash=existing_hash,
+            num_satoshis=490,
+            created_at=now,
+            expires_at=now + timezone.timedelta(hours=1),
+            sender=escrow_user,
+            receiver=robot_user,
+        )
+
+        validate_result = {
+            "valid": True,
+            "description": "test",
+            "payment_hash": existing_hash,
+            "created_at": now.isoformat(),
+            "expires_at": (now + timezone.timedelta(hours=1)).isoformat(),
+        }
+
+        with patch(
+            "api.logics.LNNode.validate_ln_invoice", return_value=validate_result
+        ):
+            valid, ctx = Logics.withdraw_rewards(robot_user, "lnbc1duptest", 0)
+
+        self.assertFalse(valid)
+        self.assertIn("error_code", ctx)
+        self.assertEqual(ctx["error_code"], 3004)
