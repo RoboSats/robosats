@@ -2076,9 +2076,10 @@ class Logics:
         # Pays the invoice.
         paid, failure_reason = LNNode.pay_invoice(lnpayment)
         if paid:
-            user.robot.earned_rewards = 0
-            user.robot.claimed_rewards += num_satoshis
-            user.robot.save(update_fields=["earned_rewards", "claimed_rewards"])
+            Robot.objects.filter(pk=user.robot.pk).update(
+                earned_rewards=0,
+                claimed_rewards=F("claimed_rewards") + num_satoshis,
+            )
             return True, None
 
         # Re-fetch lnpayment to get the status written by pay_invoice.
@@ -2092,8 +2093,9 @@ class Logics:
         # stays in the DB; a retry with the same invoice is blocked by the duplicate-
         # hash guard above (error 3004) until the hash is resolved or expires.
         if lnpayment.status == LNPayment.Status.FAILRO:
-            user.robot.earned_rewards = num_satoshis
-            user.robot.save(update_fields=["earned_rewards"])
+            Robot.objects.filter(pk=user.robot.pk).update(
+                earned_rewards=num_satoshis,
+            )
             return False, new_error(3005, {"failure_reason": failure_reason})
 
         # Payment outcome is ambiguous (in-flight or stream ended without final status).

@@ -45,6 +45,12 @@ class WithdrawRewardsTest(TestCase):
 
     The atomic block and DB interactions are mocked so these run without a
     full database / Lightning node.
+
+    After the F2 fix, balance updates after pay_invoice are done via
+    Robot.objects.filter(...).update(...) rather than through the in-memory
+    user.robot instance.  The tests therefore assert on the keyword arguments
+    passed to mock_robot_qs.filter(...).update(...) rather than on
+    user.robot.earned_rewards / user.robot.claimed_rewards directly.
     """
 
     def setUp(self):
@@ -59,6 +65,8 @@ class WithdrawRewardsTest(TestCase):
         pay_invoice_return     – (paid: bool, failure_reason: str|None)
         lnpayment_status_after – the LNPayment.status value after pay_invoice runs
                                   (simulates what pay_invoice writes to the DB row)
+
+        Returns (paid, error, mock_robot_qs) so callers can inspect update() calls.
         """
         lnp = _make_lnpayment(
             status=LNPayment.Status.VALIDI,  # initial status
@@ -104,14 +112,24 @@ class WithdrawRewardsTest(TestCase):
 
             from api.logics import Logics
 
-            return Logics.withdraw_rewards(user, self.invoice, self.routing_budget_ppm)
+            paid, error = Logics.withdraw_rewards(
+                user, self.invoice, self.routing_budget_ppm
+            )
+            return paid, error, mock_robot_qs
+
+    def _last_update_kwargs(self, mock_robot_qs):
+        """Return the kwargs of the last Robot.objects.filter(...).update(...) call."""
+        return mock_robot_qs.filter.return_value.update.call_args.kwargs
 
     # ------------------------------------------------------------------
-    # Case 1: payment SUCCEEDED — rewards stay zeroed, claimed_rewards bumped
+    # Case 1: payment SUCCEEDED — earned_rewards zeroed, claimed_rewards
+    # incremented atomically via F() expression in a DB update().
     # ------------------------------------------------------------------
     def test_succeeded_zeros_rewards_and_credits_claimed(self):
+        from django.db.models import F
+
         user = _make_user(earned_rewards=500)
-        paid, error = self._run_withdraw(
+        paid, error, mock_robot_qs = self._run_withdraw(
             user,
             pay_invoice_return=(True, None),
             lnpayment_status_after=LNPayment.Status.SUCCED,
@@ -119,15 +137,17 @@ class WithdrawRewardsTest(TestCase):
 
         self.assertTrue(paid)
         self.assertIsNone(error)
-        self.assertEqual(user.robot.earned_rewards, 0)
-        self.assertEqual(user.robot.claimed_rewards, self.num_satoshis)
+        kwargs = self._last_update_kwargs(mock_robot_qs)
+        self.assertEqual(kwargs["earned_rewards"], 0)
+        self.assertIsInstance(kwargs["claimed_rewards"], F)
 
     # ------------------------------------------------------------------
-    # Case 2: payment definitively FAILED (FAILRO) — rewards restored
+    # Case 2: payment definitively FAILED (FAILRO) — rewards restored via
+    # DB update() so a concurrent credit is not clobbered.
     # ------------------------------------------------------------------
     def test_failro_restores_rewards(self):
         user = _make_user(earned_rewards=500)
-        paid, error = self._run_withdraw(
+        paid, error, mock_robot_qs = self._run_withdraw(
             user,
             pay_invoice_return=(False, "no route"),
             lnpayment_status_after=LNPayment.Status.FAILRO,
@@ -136,16 +156,17 @@ class WithdrawRewardsTest(TestCase):
         self.assertFalse(paid)
         self.assertIn("bad_invoice", error)
         self.assertEqual(error["error_code"], 3005)
-        # Rewards must be restored to the routing-budget-trimmed invoice amount.
-        self.assertEqual(user.robot.earned_rewards, self.num_satoshis)
+        kwargs = self._last_update_kwargs(mock_robot_qs)
+        self.assertEqual(kwargs["earned_rewards"], self.num_satoshis)
 
     # ------------------------------------------------------------------
     # Case 3: ambiguous — stream ended without final status (status stays
     # VALIDI).  Rewards must NOT be restored (double-spend prevention).
+    # No post-pay_invoice update() must be issued for the robot balance.
     # ------------------------------------------------------------------
     def test_ambiguous_stream_end_does_not_restore_rewards(self):
         user = _make_user(earned_rewards=500)
-        paid, error = self._run_withdraw(
+        paid, error, mock_robot_qs = self._run_withdraw(
             user,
             pay_invoice_return=(False, "Payment stream ended without a final status"),
             lnpayment_status_after=LNPayment.Status.VALIDI,  # unchanged
@@ -154,12 +175,8 @@ class WithdrawRewardsTest(TestCase):
         self.assertFalse(paid)
         self.assertIn("bad_invoice", error)
         self.assertEqual(error["error_code"], 3006)
-        # The critical assertion: rewards must remain 0.
-        self.assertEqual(user.robot.earned_rewards, 0)
-        self.assertIn(
-            ERRORS[3006],
-            error["bad_invoice"],
-        )
+        self.assertIn(ERRORS[3006], error["bad_invoice"])
+        mock_robot_qs.filter.return_value.update.assert_not_called()
 
     # ------------------------------------------------------------------
     # Case 4: CLN PENDING — status is FLIGHT.
@@ -167,7 +184,7 @@ class WithdrawRewardsTest(TestCase):
     # ------------------------------------------------------------------
     def test_cln_pending_flight_does_not_restore_rewards(self):
         user = _make_user(earned_rewards=500)
-        paid, error = self._run_withdraw(
+        paid, error, mock_robot_qs = self._run_withdraw(
             user,
             pay_invoice_return=(False, "Payment isn't failed (yet)"),
             lnpayment_status_after=LNPayment.Status.FLIGHT,
@@ -176,8 +193,7 @@ class WithdrawRewardsTest(TestCase):
         self.assertFalse(paid)
         self.assertIn("bad_invoice", error)
         self.assertEqual(error["error_code"], 3006)
-        # Rewards must remain at 0 — HTLC is still in-flight.
-        self.assertEqual(user.robot.earned_rewards, 0)
+        mock_robot_qs.filter.return_value.update.assert_not_called()
 
 
 class DuplicateInvoiceReturns3004Test(TestCase):
