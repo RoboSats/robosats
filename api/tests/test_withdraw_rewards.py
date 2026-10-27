@@ -14,7 +14,7 @@ requiring a real Lightning node.
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
-from django.test import TestCase, skipIf
+from django.test import TestCase
 
 from api.errors import ERRORS
 from api.models import LNPayment, Robot
@@ -180,25 +180,6 @@ class WithdrawRewardsTest(TestCase):
         self.assertEqual(user.robot.earned_rewards, 0)
 
 
-# ---------------------------------------------------------------------------
-# Known issue F1 — IntegrityError inside transaction.atomic() → 500
-# ---------------------------------------------------------------------------
-#
-# When a duplicate invoice payment_hash is submitted, LNPayment.objects.create()
-# raises IntegrityError.  That exception is caught and returns error 3004, but it
-# is caught *inside* the outer transaction.atomic() block.  On Postgres an
-# IntegrityError aborts the transaction, so the subsequent commit raises a
-# DatabaseError instead of letting the except clause return cleanly.  The user
-# receives a 500 instead of error 3004.
-#
-# The fix is to wrap LNPayment.objects.create() in a nested atomic() (savepoint).
-# Until that fix lands, this test is skipped.  Remove the skip once F1 is patched.
-
-
-@skipIf(
-    True,
-    "F1 not yet fixed: IntegrityError inside transaction.atomic() gives 500 on Postgres",
-)
 class DuplicateInvoiceReturns3004Test(TestCase):
     """
     Submitting a withdrawal invoice whose payment_hash is already in the database

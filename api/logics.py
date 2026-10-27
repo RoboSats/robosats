@@ -2053,20 +2053,20 @@ class Logics:
                 return False, reward_payout["context"]
 
             try:
-                lnpayment = LNPayment.objects.create(
-                    concept=LNPayment.Concepts.WITHREWA,
-                    type=LNPayment.Types.NORM,
-                    sender=User.objects.get(username=ESCROW_USERNAME),
-                    status=LNPayment.Status.VALIDI,
-                    receiver=user,
-                    invoice=invoice,
-                    num_satoshis=num_satoshis,
-                    description=reward_payout["description"],
-                    payment_hash=reward_payout["payment_hash"],
-                    created_at=reward_payout["created_at"],
-                    expires_at=reward_payout["expires_at"],
-                )
-            # Might fail if payment_hash already exists in DB
+                with transaction.atomic():
+                    lnpayment = LNPayment.objects.create(
+                        concept=LNPayment.Concepts.WITHREWA,
+                        type=LNPayment.Types.NORM,
+                        sender=User.objects.get(username=ESCROW_USERNAME),
+                        status=LNPayment.Status.VALIDI,
+                        receiver=user,
+                        invoice=invoice,
+                        num_satoshis=num_satoshis,
+                        description=reward_payout["description"],
+                        payment_hash=reward_payout["payment_hash"],
+                        created_at=reward_payout["created_at"],
+                        expires_at=reward_payout["expires_at"],
+                    )
             except Exception:
                 return False, new_error(3004)
 
