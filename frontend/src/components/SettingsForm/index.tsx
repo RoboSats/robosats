@@ -22,7 +22,6 @@ import {
   DarkMode,
   SettingsOverscan,
   Link,
-  QrCode,
   SettingsInputAntenna,
   NotificationsActive,
 } from '@mui/icons-material';
@@ -111,60 +110,6 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): React.JSX.Element =
             />
           }
         />
-        {settings.mode === 'dark' ? (
-          <>
-            <ListItemIcon sx={{ minWidth: 56 }}>
-              <QrCode />
-            </ListItemIcon>
-            <FormControlLabel
-              labelPlacement='end'
-              label={settings.lightQRs ? t('Light') : t('Dark')}
-              control={
-                <Switch
-                  checked={!settings.lightQRs}
-                  checkedIcon={
-                    <Paper
-                      elevation={3}
-                      sx={{
-                        width: '1.2em',
-                        height: '1.2em',
-                        borderRadius: '0.4em',
-                        backgroundColor: 'white',
-                        position: 'relative',
-                        top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                      }}
-                    >
-                      <DarkMode sx={{ width: '0.8em', height: '0.8em', color: '#666' }} />
-                    </Paper>
-                  }
-                  icon={
-                    <Paper
-                      elevation={3}
-                      sx={{
-                        width: '1.2em',
-                        height: '1.2em',
-                        borderRadius: '0.4em',
-                        backgroundColor: 'white',
-                        padding: '0.07em',
-                        position: 'relative',
-                        top: `${7 - 0.5 * theme.typography.fontSize}px`,
-                      }}
-                    >
-                      <LightMode sx={{ width: '0.67em', height: '0.67em', color: '#666' }} />
-                    </Paper>
-                  }
-                  onChange={(e) => {
-                    const lightQRs = !e.target.checked;
-                    setSettings({ ...settings, lightQRs });
-                    systemClient.setItem('settings_light_qr', String(lightQRs));
-                  }}
-                />
-              }
-            />
-          </>
-        ) : (
-          <></>
-        )}
       </ListItem>
 
       <ListItem>

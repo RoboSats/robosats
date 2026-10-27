@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Box, Grid, Typography, Tooltip, useTheme } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
@@ -7,7 +7,6 @@ import { type Order } from '../../../models';
 import { systemClient } from '../../../services/System';
 import currencies from '../../../utils/currencies';
 import WalletsButton from '../WalletsButton';
-import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 
 interface LockInvoicePromptProps {
   order: Order;
@@ -18,7 +17,6 @@ export const LockInvoicePrompt = ({
   order,
   concept,
 }: LockInvoicePromptProps): React.JSX.Element => {
-  const { settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const currencyCode: string = currencies[`${order.currency}`];
@@ -87,7 +85,7 @@ export const LockInvoicePrompt = ({
         <Box
           sx={{
             display: 'flex',
-            backgroundColor: settings.lightQRs ? '#fff' : theme.palette.background.paper,
+            backgroundColor: '#fff',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '0.5em',
@@ -101,7 +99,7 @@ export const LockInvoicePrompt = ({
         >
           <QRCode
             bgColor={'rgba(255, 255, 255, 0)'}
-            fgColor={settings.lightQRs ? '#000000' : theme.palette.text.primary}
+            fgColor={'#000000'}
             value={invoice?.toUpperCase() ?? 'Undefined: BOLT11 invoice not received'}
             size={theme.typography.fontSize * 21.8}
             onClick={handleClickQR}
