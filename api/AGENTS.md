@@ -303,6 +303,18 @@ entry. Don't add a cost to collaborative cancel, or a loser-penalty field to dis
 **Do not** re-credit rewards — a user able to force repeated
 exceptions could restore rewards they already received (exploit).
 
+**Bond settlement / reward crediting is concurrency-guarded** —
+`cancel_order`, `order_expires` and `automatic_dispute_resolution` re-fetch
+the order under `select_for_update()` inside `transaction.atomic()`, and
+every branch that settles a bond or calls `add_slashed_rewards` gates the
+credit on a successful `Order.transition_status` CAS. Node settlement
+(`SettleInvoice`) is idempotent, so without the lock+CAS a burst of
+concurrent requests credited slashed rewards once per request (drain
+via `/api/reward/`). Any new call site that settles bonds or credits
+rewards must follow the same lock + CAS pattern. `settle_bond` is a
+no-op on an already `SETLED` bond; `return_escrow`/`cancel_escrow`
+tolerate a missing (`None`) escrow.
+
 ## Rules
 
 - Always update or create integration and/or unitary tests in ../tests
