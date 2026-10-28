@@ -230,6 +230,12 @@ class AddSlashedRewardsIdempotencyTest(TestCase):
         Mirror: taker cancels a WF2 order twice.
         Taker bond is slashed, maker is rewarded.
         Second cancel must not credit a second reward.
+
+        The stale object simulates a second HTTP request that read the order
+        before publish_order() cleared taker/taker_bond on the DB row.  We
+        therefore set both fields explicitly on the stale instance so that
+        the cancel_order branch condition (order.taker == user) is still
+        satisfied, which is the exact race interleaving being tested.
         """
         maker, taker = _make_users_with_robots(2)
         maker_bond = _lnpayment(LNPayment.Concepts.MAKEBOND, maker, 10_000)
@@ -247,6 +253,7 @@ class AddSlashedRewardsIdempotencyTest(TestCase):
         order_stale = Order.objects.get(pk=order.pk)
         order_stale.status = Order.Status.WF2
         order_stale.taker = taker
+        order_stale.taker_bond = taker_bond
 
         Logics.cancel_order(order_stale, taker)
 
@@ -507,6 +514,8 @@ class ConcurrentCancelCreditOnceTest(TransactionTestCase):
                     Logics.cancel_order(local_order, maker)
             except Exception as exc:
                 errors.append(exc)
+            finally:
+                connection.close()
 
         threads = [threading.Thread(target=_worker) for _ in range(self.NUM_THREADS)]
         for t in threads:
