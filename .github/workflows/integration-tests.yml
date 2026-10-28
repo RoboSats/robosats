@@ -191,8 +191,11 @@ jobs:
     - name: 'Run tests with coverage'
       run: |
         docker exec test-coordinator coverage run manage.py test
-        docker exec test-coordinator coverage report
+        docker exec test-coordinator coverage report --fail-under=70
         docker exec test-coordinator coverage html
+        docker exec test-coordinator coverage json
+        docker cp test-coordinator:/usr/src/robosats/htmlcov ./htmlcov
+        docker cp test-coordinator:/usr/src/robosats/coverage.json ./coverage.json
       env:
         LNVENDOR: ${{ matrix.ln-vendor }}
         DEVELOPMENT: True
@@ -202,4 +205,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: coverage-report-${{ matrix.python-tag }}-${{ matrix.ln-vendor }}-${{ github.run_id }}
-        path: htmlcov/
+        path: |
+          htmlcov/
+          coverage.json

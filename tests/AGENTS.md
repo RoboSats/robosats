@@ -71,6 +71,7 @@ python manage.py test tests  # all tests
 ```
 
 ## Agent Guidelines
+- Integration tests here are **required** per the root `AGENTS.md` Testing policy for any change to an API endpoint, the order state machine, or Lightning/escrow flows.
 - Add new trade flow tests to `TradeTest` in `test_trade_pipeline.py`
 - Endpoint-specific tests belong in their own `test_api_*.py` file
 - Use `Trade` utility class for any test that needs a live order — do not reproduce the multi-step setup manually

@@ -6,27 +6,47 @@ module.exports = {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
   transformIgnorePatterns: ['node_modules/(?!(@noble|@scure|nostr-tools)/)'],
-  // Stub platform-specific singletons that pull in ESM-only packages (uuid,
-  // WebSocket Android bridge, WASM) that cannot run in a plain Node Jest env.
   moduleNameMapper: {
-    // api service (uuid ESM via ApiAndroidClient)
     '\\./(api|api/.*)$': '<rootDir>/src/services/__mocks__/api.ts',
     '\\.\\./(api|api/.*)$': '<rootDir>/src/services/__mocks__/api.ts',
-    // '..' is TWO dots — the previous '...'-matching pattern never matched.
     '\\.\\./(services/api|services/api/.*)$': '<rootDir>/src/services/__mocks__/api.ts',
 
-    // Websocket service (uuid ESM via WebsocketAndroidClient)
     '<rootDir>/src/services/Websocket(.*)': '<rootDir>/src/services/__mocks__/Websocket.ts',
     '\\./(Websocket|Websocket/.*)$': '<rootDir>/src/services/__mocks__/Websocket.ts',
     '\\.\\./(Websocket|Websocket/.*)$': '<rootDir>/src/services/__mocks__/Websocket.ts',
 
-    // Roboidentities service (robo-identities-wasm via RoboidentitiesWebClient)
     '\\.\\./(services/Roboidentities|services/Roboidentities/.*)$':
       '<rootDir>/src/services/__mocks__/Roboidentities.ts',
 
-    // nostr-tools — use CJS build
     '^nostr-tools$': '<rootDir>/node_modules/nostr-tools/lib/cjs/index.js',
     '^nostr-tools/(.*)$': '<rootDir>/node_modules/nostr-tools/lib/cjs/$1',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  collectCoverageFrom: [
+    'src/models/Coordinator.model.ts',
+    'src/models/Garage.model.ts',
+    'src/models/GarageKey.model.ts',
+    'src/models/Limit.model.ts',
+    'src/models/Order.model.ts',
+    'src/models/Robot.model.ts',
+    'src/models/Slot.model.ts',
+    'src/services/FederationDiscovery/index.ts',
+    'src/services/RoboPool/index.ts',
+    'src/utils/accountRecovery.ts',
+    'src/utils/crypto/xchacha20.ts',
+    'src/utils/federationLottery.ts',
+    'src/utils/garageKey.ts',
+    'src/utils/hexToBase91.ts',
+    'src/utils/prettyNumbers.ts',
+    'src/utils/saveFile.ts',
+    'src/utils/token.ts',
+  ],
+  coverageThreshold: {
+    global: {
+      statements: 71,
+      branches: 56,
+      functions: 61,
+      lines: 72,
+    },
+  },
 };

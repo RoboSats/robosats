@@ -46,6 +46,10 @@ external call (config lookups, HTTP session, file I/O) is mocked via `unittest.m
   | `api.tasks` → `send_community_donation` (delay) | `"api.tasks.send_community_donation"` |
   | `api.tasks` / `api.utils` → `config` | `"decouple.config"` (patch at each module) |
 
+## Mandate
+
+Mocked unit tests here are **required** per the root `AGENTS.md` Testing policy for any change to `api/logics.py`, `api/utils.py`, `api/serializers.py`, `api/tasks.py`, `api/notifications.py`, or `api/nostr.py`. Add a new `test_<module>.py` file when covering a module not yet represented above, or extend an existing file — never mix concerns across files.
+
 ## Contrast with root `/tests`
 `/home/koala/Workspace/robosats/tests/` (outside `api/`) is a **separate**, much heavier
 suite: end-to-end against a live Django server with real LND/CLN/bitcoind nodes in

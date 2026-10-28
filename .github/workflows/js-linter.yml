@@ -61,7 +61,7 @@ jobs:
           cd frontend
           npm run format:check
 
-      - name: 'Run Jest unit tests'
+      - name: 'Run Jest unit tests with coverage gate'
         run: |
           cd frontend
-          npm test -- --no-coverage
+          npm test -- --coverage

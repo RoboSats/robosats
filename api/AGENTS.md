@@ -305,4 +305,17 @@ exceptions could restore rewards they already received (exploit).
 
 ## Rules
 
-- Always update or create integration and/or unitary tests in ../tests
+- Always update or create tests covering any change in the same branch (see root `AGENTS.md` Testing section for the full policy and coverage-floor ratchet rule).
+
+### Testing — which suite to use
+
+| Change type | Suite | Location |
+|---|---|---|
+| `Logics` math, fees, bond/payout calculation | Unit (mocked) | `api/tests/` |
+| `utils.py` helpers, serializer validation, task logic, notifications, Nostr event construction | Unit (mocked) | `api/tests/` |
+| Endpoint behaviour, HTTP status codes, response schema | Integration | `/tests/` |
+| Order state-machine transitions, escrow/bond payment flows | Integration | `/tests/` |
+
+- Unit tests use `unittest.mock`; patch at the definition site — see `api/tests/AGENTS.md` for the canonical patch-target mapping.
+- Integration tests must call `assertResponse` (schema validation via drf-spectacular) on every new endpoint assertion.
+- Coverage floor enforced by `coverage report --fail-under` in `integration-tests.yml`; see root `AGENTS.md` for the current value.

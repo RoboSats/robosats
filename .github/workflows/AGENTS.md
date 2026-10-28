@@ -9,14 +9,14 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | Workflow file | Name | Trigger | Consumes | Produces |
 |---|---|---|---|---|
 | `frontend-build.yml` | Build: Frontend All Bundles | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend"]` | — | 5 artifacts (see below) + dispatches 3 Docker workflows when non-release |
-| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML artifact |
+| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML + JSON artifact (`htmlcov/`, `coverage.json` copied out of container); fails on `--fail-under` regression |
 | `coordinator-image.yml` | Docker: Coordinator | dispatch / workflow_call(`semver`) / push+PR `main paths:["api","robosats","frontend"]` | `django-main-static` | Docker image `recksato/robosats` |
 | `selfhosted-client-image.yml` | Docker: Selfhosted Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","nodeapp"]` | `nodeapp-main-static` | Docker image `recksato/robosats-client` |
 | `web-client-image.yml` | Docker: Web Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","web"]` | `web-main-static` | Docker image `recksato/robosats-web` |
 | `android-build.yml` | Build: Android | workflow_call(`semver`, secrets) / push+PR `main paths:["android","frontend"]` | `mobile-web.bundle` | APK artifacts (4 ABIs) |
 | `desktop-build.yml` | Build: Desktop | dispatch / workflow_call(`semver`) / push+PR `main paths:["desktopApp","frontend"]` | `desktop-main-static` | desktop zip artifacts (mac/linux/win) |
 | `release.yml` | Release | `push: tags: v*.*.*` | all build artifacts | Draft GitHub release + all APK/zip assets |
-| `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check (check-mode) |
+| `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check + Jest with coverage gate (`coverageThreshold` in `jest.config.js`) |
 | `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v4`) |
 | `codeql.yml` | CodeQL Advanced | push/PR `main` / `schedule: Sun 21:27 UTC` | — | GitHub security alerts |
 | `lnproxy-sync.yml` | Sync lnproxy relays | `schedule: Sun 12:00 UTC` | live `lnproxy-webui2/assets/relays.json` | PR against `main` updating `frontend/static/lnproxies.json` |
@@ -114,9 +114,7 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 3. **Deprecated actions**: `::set-output` in `release.yml check-versions`;
    `actions/upload-release-asset@v1` (all APK/zip uploads in `release.yml`);
    `actions/create-release@v1` (android non-release path).
-4. **Coverage artifact likely empty**: `integration-tests.yml` uploads `htmlcov/` from the
-   runner host, but `coverage html` ran inside the `test-coordinator` Docker container —
-   the host directory is empty.
+4. ~~**Coverage artifact likely empty**~~ **Fixed**: `integration-tests.yml` now runs `docker cp` to copy `htmlcov/` and `coverage.json` from inside the `test-coordinator` container to the runner host before uploading the artifact.
 5. **Dead step in `android-build.yml`**: `kaisugi/action-regex-match@v1.0.2` on `github.ref`
    is run but its output is never consumed by any subsequent step.
 6. **Malformed pre-release APK asset names**: the non-release android path names assets with
@@ -138,3 +136,4 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
   gate.
 - Keep LND and CLN in the integration test matrix symmetrically.
 - The `lnproxy-sync` workflow must always open a PR — never auto-commit third-party data.
+- **Coverage floors never decrease.** `js-linter.yml` enforces `coverageThreshold.global` in `frontend/jest.config.js`; `integration-tests.yml` enforces `coverage report --fail-under` (backend). When a PR raises coverage, bump the floor in the same PR. Never lower a floor to make a PR pass — fix the coverage gap instead.
