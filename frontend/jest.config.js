@@ -41,6 +41,7 @@ module.exports = {
     'src/utils/saveFile.ts',
     'src/utils/token.ts',
   ],
+  coverageReporters: ['text', 'json-summary'],
   coverageThreshold: {
     global: {
       statements: 71,
