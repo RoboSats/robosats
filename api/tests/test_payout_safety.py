@@ -217,10 +217,10 @@ class FollowSendPaymentHoldTest(TestCase):
         with (
             patch("api.models.LNPayment.objects") as mock_lnp_objects,
             patch("api.models.Order.objects") as mock_order_objects,
-            patch("api.tasks.payout_problem", return_value=problem_value),
+            patch("api.logics.payout_problem", return_value=problem_value),
             patch("api.lightning.node.LNNode.follow_send_payment") as mock_ln_pay,
             patch(
-                "api.tasks.config", side_effect=lambda k, **kw: kw.get("default", False)
+                "decouple.config", side_effect=lambda k, **kw: kw.get("default", False)
             ),
         ):
             mock_lnp_objects.get.return_value = lnp
