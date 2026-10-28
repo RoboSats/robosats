@@ -64,7 +64,7 @@ jobs:
           npm test -- --coverage
 
       - name: 'Restore coverage baseline from cache'
-        if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+        if: github.event_name == 'pull_request' && github.base_ref == 'main'
         uses: actions/cache/restore@v4
         with:
           path: .coverage-baseline/frontend-coverage-summary.json
@@ -73,7 +73,7 @@ jobs:
             frontend-coverage-main-
 
       - name: 'Check coverage has not regressed'
-        if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+        if: github.event_name == 'pull_request' && github.base_ref == 'main'
         run: |
           node .github/scripts/check-frontend-coverage.js \
             .coverage-baseline/frontend-coverage-summary.json \

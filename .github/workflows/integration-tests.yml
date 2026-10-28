@@ -202,7 +202,7 @@ jobs:
         USE_TOR: False
 
     - name: 'Restore coverage baseline from cache'
-      if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+      if: github.event_name == 'pull_request' && github.base_ref == 'main'
       uses: actions/cache/restore@v4
       with:
         path: .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json
@@ -211,7 +211,7 @@ jobs:
           backend-coverage-main-${{ matrix.ln-vendor }}-
 
     - name: 'Check coverage has not regressed'
-      if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+      if: github.event_name == 'pull_request' && github.base_ref == 'main'
       run: |
         python3 .github/scripts/check-backend-coverage.py \
           .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json \
