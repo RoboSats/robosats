@@ -9,7 +9,7 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | Workflow file | Name | Trigger | Consumes | Produces |
 |---|---|---|---|---|
 | `frontend-build.yml` | Build: Frontend All Bundles | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend"]` | — | 5 artifacts (see below) + dispatches 3 Docker workflows when non-release |
-| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML + JSON artifact (`htmlcov/`, `coverage.json` copied out of container); fails on `--fail-under` regression |
+| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML + JSON artifact (`htmlcov/`, `coverage.json` copied out of container); fails on regression vs cached `main` baseline (per ln-vendor) |
 | `coordinator-image.yml` | Docker: Coordinator | dispatch / workflow_call(`semver`) / push+PR `main paths:["api","robosats","frontend"]` | `django-main-static` | Docker image `recksato/robosats` |
 | `selfhosted-client-image.yml` | Docker: Selfhosted Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","nodeapp"]` | `nodeapp-main-static` | Docker image `recksato/robosats-client` |
 | `web-client-image.yml` | Docker: Web Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","web"]` | `web-main-static` | Docker image `recksato/robosats-web` |
@@ -136,4 +136,4 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
   gate.
 - Keep LND and CLN in the integration test matrix symmetrically.
 - The `lnproxy-sync` workflow must always open a PR — never auto-commit third-party data.
-- **Coverage floors never decrease.** `js-linter.yml` enforces `coverageThreshold.global` in `frontend/jest.config.js`; `integration-tests.yml` enforces `coverage report --fail-under` (backend). When a PR raises coverage, bump the floor in the same PR. Never lower a floor to make a PR pass — fix the coverage gap instead.
+- **Coverage never regresses.** Both `js-linter.yml` (frontend) and `integration-tests.yml` (backend, per ln-vendor) compare coverage against the last successful `main` baseline stored in GitHub Actions cache. The baseline is updated automatically on every successful push to `main`. Cache keys: `frontend-coverage-main-{sha}` and `backend-coverage-main-{LND|CLN}-{sha}` with prefix-based fallback restore. Comparison scripts live in `.github/scripts/`. If the cache is cold (first run or 7-day eviction), the check is skipped — it never hard-blocks on a missing baseline.

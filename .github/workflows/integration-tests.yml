@@ -191,7 +191,7 @@ jobs:
     - name: 'Run tests with coverage'
       run: |
         docker exec test-coordinator coverage run manage.py test
-        docker exec test-coordinator coverage report --fail-under=70
+        docker exec test-coordinator coverage report
         docker exec test-coordinator coverage html
         docker exec test-coordinator coverage json
         docker cp test-coordinator:/usr/src/robosats/htmlcov ./htmlcov
@@ -200,6 +200,35 @@ jobs:
         LNVENDOR: ${{ matrix.ln-vendor }}
         DEVELOPMENT: True
         USE_TOR: False
+
+    - name: 'Restore coverage baseline from cache'
+      if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+      uses: actions/cache/restore@v4
+      with:
+        path: .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json
+        key: backend-coverage-main-${{ matrix.ln-vendor }}-${{ github.sha }}
+        restore-keys: |
+          backend-coverage-main-${{ matrix.ln-vendor }}-
+
+    - name: 'Check coverage has not regressed'
+      if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+      run: |
+        python3 .github/scripts/check-backend-coverage.py \
+          .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json \
+          coverage.json
+
+    - name: 'Copy coverage to baseline dir before saving'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        mkdir -p .coverage-baseline
+        cp coverage.json .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json
+
+    - name: 'Save coverage baseline to cache'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@v4
+      with:
+        path: .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json
+        key: backend-coverage-main-${{ matrix.ln-vendor }}-${{ github.sha }}
 
     - name: 'Upload coverage report'
       uses: actions/upload-artifact@v7

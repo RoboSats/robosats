@@ -147,7 +147,7 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - **Scope:** pure-logic, no DOM rendering. React components and browser-only flows are out of scope for the Node Jest environment.
 - **ESM-only services** (`api`, `Websocket`, `Roboidentities`) are stubbed via `jest.config.js` `moduleNameMapper` → `src/services/__mocks__/`. `nostr-tools` is mapped to its CJS build. Do not import these directly in tests — use the mock path.
 - **`tsc` exclusion:** `*.test.ts` files are excluded from `tsconfig.json` `include` but are still linted and formatted via ESLint/Prettier.
-- **Coverage floor:** `coverageThreshold.global` in `jest.config.js` — see root `AGENTS.md` Testing section for current values and the ratchet rule.
+- **Coverage regression gate:** CI compares the PR's `coverage/coverage-summary.json` against the last `main` baseline cached in GitHub Actions via `.github/scripts/check-frontend-coverage.js`. See root `AGENTS.md` Testing section for details.
 - New or changed logic in `src/models/`, `src/utils/`, `src/services/` **must** ship with Jest coverage in the same branch.
 
 ## Constraints

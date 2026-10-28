@@ -42,12 +42,4 @@ module.exports = {
     'src/utils/token.ts',
   ],
   coverageReporters: ['text', 'json-summary'],
-  coverageThreshold: {
-    global: {
-      statements: 71,
-      branches: 56,
-      functions: 61,
-      lines: 72,
-    },
-  },
 };

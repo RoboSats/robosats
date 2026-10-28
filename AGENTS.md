@@ -79,14 +79,16 @@ Every branch that adds or changes behaviour **must ship tests covering that chan
 - **Frontend — unit:** Jest tests colocated in `__tests__/` next to the module under test (`src/models/`, `src/utils/`, `src/services/`). Run with `npm test`. See `frontend/AGENTS.md` for the Jest environment constraints and mock conventions.
 - **Exemptions** (no tests required): pure documentation edits, comment-only changes, AGENTS.md updates, config-only changes with zero behaviour delta. State the exemption reason explicitly in the PR description.
 
-### Coverage floors (ratchet — floors only move up)
+### Coverage regression gate
 
-CI hard-fails when coverage drops below the floor. When your change raises coverage, **update the floor in the same PR**.
+CI compares each PR's coverage against the **last passing `main` baseline**, cached in GitHub Actions. A PR fails if coverage drops on any metric — no hardcoded floor to maintain. The baseline updates automatically after every successful merge to `main`.
 
-| Suite | Floor | Config location |
+| Suite | Comparison script | Baseline cache key |
 |---|---|---|
-| Frontend (Jest) | statements 71 / branches 56 / functions 61 / lines 72 | `frontend/jest.config.js` → `coverageThreshold.global` |
-| Backend (Python coverage) | 70% overall | `integration-tests.yml` → `coverage report --fail-under` |
+| Frontend (Jest) | `.github/scripts/check-frontend-coverage.js` | `frontend-coverage-main-{sha}` |
+| Backend (Python, per ln-vendor) | `.github/scripts/check-backend-coverage.py` | `backend-coverage-main-{LND\|CLN}-{sha}` |
+
+If no cached baseline exists (first run or cache eviction after 7 days of inactivity), the check is skipped with a warning — it never blocks on a cold cache.
 
 ## Gotchas
 

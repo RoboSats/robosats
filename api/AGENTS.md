@@ -318,4 +318,4 @@ exceptions could restore rewards they already received (exploit).
 
 - Unit tests use `unittest.mock`; patch at the definition site — see `api/tests/AGENTS.md` for the canonical patch-target mapping.
 - Integration tests must call `assertResponse` (schema validation via drf-spectacular) on every new endpoint assertion.
-- Coverage floor enforced by `coverage report --fail-under` in `integration-tests.yml`; see root `AGENTS.md` for the current value.
+- Coverage regression is caught by `.github/scripts/check-backend-coverage.py` in `integration-tests.yml`, comparing against the cached `main` baseline; see root `AGENTS.md` Testing section for details.
