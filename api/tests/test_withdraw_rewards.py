@@ -139,7 +139,13 @@ class WithdrawRewardsTest(TestCase):
         self.assertIsNone(error)
         kwargs = self._last_update_kwargs(mock_robot_qs)
         self.assertEqual(kwargs["earned_rewards"], 0)
-        self.assertIsInstance(kwargs["claimed_rewards"], F)
+        claimed = kwargs["claimed_rewards"]
+        lhs = claimed if isinstance(claimed, F) else getattr(claimed, "lhs", None)
+        self.assertIsInstance(
+            lhs,
+            F,
+            msg=f"claimed_rewards must use F('claimed_rewards'), got {claimed!r}",
+        )
 
     # ------------------------------------------------------------------
     # Case 2: payment definitively FAILED (FAILRO) — rewards restored via

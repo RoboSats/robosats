@@ -82,14 +82,38 @@ def _make_users_with_robots(n):
     return users
 
 
-def _make_order(maker, taker, maker_bond, taker_bond, status=Order.Status.WF2):
-    """Create a minimal Order in the given status with bonds attached."""
+def _make_escrow_payment(maker_user):
+    """Create a dummy trade-escrow LNPayment so cancel_escrow() doesn't crash."""
     now = timezone.now()
+    return LNPayment.objects.create(
+        type=LNPayment.Types.HOLD,
+        concept=LNPayment.Concepts.TRESCROW,
+        status=LNPayment.Status.INVGEN,
+        payment_hash=uuid.uuid4().hex,
+        preimage=uuid.uuid4().hex,
+        num_satoshis=100_000,
+        created_at=now,
+        expires_at=now + timezone.timedelta(hours=1),
+        sender=maker_user,
+    )
+
+
+def _make_order(maker, taker, maker_bond, taker_bond, status=Order.Status.WF2):
+    """Create a minimal Order in the given status with bonds attached.
+
+    amount is set explicitly (non-range) so that Order.__str__ never tries
+    float(None) inside publish_order's order.log() call.
+    trade_escrow is a real row so cancel_escrow() can access .payment_hash.
+    """
+    now = timezone.now()
+    escrow = _make_escrow_payment(maker)
     return Order.objects.create(
         type=Order.Types.BUY,
         status=status,
         created_at=now,
         expires_at=now + timezone.timedelta(hours=2),
+        has_range=False,
+        amount=100,
         satoshis=100_000,
         t0_satoshis=100_000,
         last_satoshis=100_000,
@@ -97,6 +121,7 @@ def _make_order(maker, taker, maker_bond, taker_bond, status=Order.Status.WF2):
         taker=taker,
         maker_bond=maker_bond,
         taker_bond=taker_bond,
+        trade_escrow=escrow,
         bond_size=3,
     )
 

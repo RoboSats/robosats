@@ -215,16 +215,16 @@ class FollowSendPaymentHoldTest(TestCase):
         lnp.save = _save
 
         with (
-            patch("api.tasks.LNPayment") as mock_lnp_model,
-            patch("api.tasks.Order") as mock_order_model,
+            patch("api.models.LNPayment.objects") as mock_lnp_objects,
+            patch("api.models.Order.objects") as mock_order_objects,
             patch("api.tasks.payout_problem", return_value=problem_value),
             patch("api.lightning.node.LNNode.follow_send_payment") as mock_ln_pay,
             patch(
                 "api.tasks.config", side_effect=lambda k, **kw: kw.get("default", False)
             ),
         ):
-            mock_lnp_model.objects.get.return_value = lnp
-            mock_order_model.objects.filter.return_value.first.return_value = order
+            mock_lnp_objects.get.return_value = lnp
+            mock_order_objects.filter.return_value.first.return_value = order
 
             follow_send_payment(payment_hash)
 
