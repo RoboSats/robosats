@@ -132,7 +132,7 @@ jobs:
 
       - name: Create Pre-Release
         id: create_release
-        if: inputs.semver == '' # only if this workflow is not called from a Release
+        if: inputs.semver == '' && github.event_name == 'push'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -143,7 +143,7 @@ jobs:
 
       - name: Upload APK Universal Asset
         id: upload-release-asset-universal-apk
-        if: inputs.semver == '' # only if this workflow is not called from a Release
+        if: inputs.semver == '' && github.event_name == 'push'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -155,7 +155,7 @@ jobs:
 
       - name: Upload APK arm64-v8a Asset
         id: upload-release-asset-arm64-v8a
-        if: inputs.semver == '' # only if this workflow is not called from a Release
+        if: inputs.semver == '' && github.event_name == 'push'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -167,7 +167,7 @@ jobs:
 
       - name: Upload APK armeabi-v7a Asset
         id: upload-release-asset-armeabi-v7a
-        if: inputs.semver == '' # only if this workflow is not called from a Release
+        if: inputs.semver == '' && github.event_name == 'push'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
