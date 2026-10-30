@@ -76,6 +76,7 @@ jobs:
           repo/bin/scanapk.php android/app/build/outputs/apk/release/app-universal-release-unsigned.apk
 
       - name: Sign APK
+        if: inputs.semver != ''
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: android/app/build/outputs/apk/release
