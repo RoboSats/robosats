@@ -8,9 +8,11 @@ RoboSats v0.8.8-alpha is now out! :rocket:
 ### For Users
 - New garage key introduced as a replacement of the robot key, more info: https://github.com/RoboSats/robosats/issues/2342
 - Nostr encrypted chat is now enabled
+- Alice and Eleuteria coordinators dropped the fedeation.
 - Android app now embeds Tor via kmp-tor 2.6.0 (tor 0.4.9)
 - Payout safety: reward sources and buyer payouts are verified against the Lightning node, with optional withdrawal limits
 - Reward withdrawal UI now shows when withdrawals can be made again
+- Multiple libraries security updates
 
 **New payment methods**
 
@@ -37,6 +39,7 @@ RoboSats v0.8.8-alpha is now out! :rocket:
 - Payout safety checks added: optional `WITHDRAWAL_LIMIT` env var to cap reward withdrawals
 - Django bumped to 5.2.18
 - Pillow bumped to 13.0.0
+- Multiple libraries security updates
 - Coordinator onion addresses documented as fallback on the access page
 
 # Android
