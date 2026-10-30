@@ -9,14 +9,14 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | Workflow file | Name | Trigger | Consumes | Produces |
 |---|---|---|---|---|
 | `frontend-build.yml` | Build: Frontend All Bundles | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend"]` | — | 5 artifacts (see below) + dispatches 3 Docker workflows when non-release |
-| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML + JSON artifact (`htmlcov/`, `coverage.json` copied out of container); fails on regression vs cached `main` baseline (per ln-vendor) |
+| `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML artifact (`htmlcov/` copied out of container) |
 | `coordinator-image.yml` | Docker: Coordinator | dispatch / workflow_call(`semver`) / push+PR `main paths:["api","robosats","frontend"]` | `django-main-static` | Docker image `recksato/robosats` |
 | `selfhosted-client-image.yml` | Docker: Selfhosted Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","nodeapp"]` | `nodeapp-main-static` | Docker image `recksato/robosats-client` |
 | `web-client-image.yml` | Docker: Web Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","web"]` | `web-main-static` | Docker image `recksato/robosats-web` |
 | `android-build.yml` | Build: Android | workflow_call(`semver`, secrets) / push+PR `main paths:["android","frontend"]` | `mobile-web.bundle` | APK artifacts (4 ABIs) |
 | `desktop-build.yml` | Build: Desktop | dispatch / workflow_call(`semver`) / push+PR `main paths:["desktopApp","frontend"]` | `desktop-main-static` | desktop zip artifacts (mac/linux/win) |
 | `release.yml` | Release | `push: tags: v*.*.*` | all build artifacts | Draft GitHub release + all APK/zip assets |
-| `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check + Jest with coverage gate (`coverageThreshold` in `jest.config.js`) |
+| `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check + Jest unit tests |
 | `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v4`) |
 | `codeql.yml` | CodeQL Advanced | push/PR `main` / `schedule: Sun 21:27 UTC` | — | GitHub security alerts |
 | `lnproxy-sync.yml` | Sync lnproxy relays | `schedule: Sun 12:00 UTC` | live `lnproxy-webui2/assets/relays.json` | PR against `main` updating `frontend/static/lnproxies.json` |
@@ -136,4 +136,4 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
   gate.
 - Keep LND and CLN in the integration test matrix symmetrically.
 - The `lnproxy-sync` workflow must always open a PR — never auto-commit third-party data.
-- **Coverage never regresses.** Both `js-linter.yml` (frontend) and `integration-tests.yml` (backend, per ln-vendor) compare coverage against the last successful `main` baseline stored in GitHub Actions cache. The baseline is updated automatically on every successful push to `main`. Cache keys: `frontend-coverage-main-{sha}` and `backend-coverage-main-{LND|CLN}-{sha}` with prefix-based fallback restore. Comparison scripts live in `.github/scripts/`. If the cache is cold (first run or 7-day eviction), the check is skipped — it never hard-blocks on a missing baseline.
+

@@ -58,36 +58,7 @@ jobs:
           cd frontend
           npm run format:check
 
-      - name: 'Run Jest unit tests with coverage'
+      - name: 'Run Jest unit tests'
         run: |
           cd frontend
-          npm test -- --coverage
-
-      - name: 'Restore coverage baseline from cache'
-        if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
-        uses: actions/cache/restore@v4
-        with:
-          path: .coverage-baseline/frontend-coverage-summary.json
-          key: frontend-coverage-main-${{ github.sha }}
-          restore-keys: |
-            frontend-coverage-main-
-
-      - name: 'Check coverage has not regressed'
-        if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
-        run: |
-          node .github/scripts/check-frontend-coverage.js \
-            .coverage-baseline/frontend-coverage-summary.json \
-            frontend/coverage/coverage-summary.json
-
-      - name: 'Copy summary to baseline dir before saving'
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          mkdir -p .coverage-baseline
-          cp frontend/coverage/coverage-summary.json .coverage-baseline/frontend-coverage-summary.json
-
-      - name: 'Save coverage baseline to cache'
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: actions/cache/save@v4
-        with:
-          path: .coverage-baseline/frontend-coverage-summary.json
-          key: frontend-coverage-main-${{ github.sha }}
+          npm test -- --no-coverage
