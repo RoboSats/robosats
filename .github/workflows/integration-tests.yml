@@ -202,7 +202,7 @@ jobs:
         USE_TOR: False
 
     - name: 'Restore coverage baseline from cache'
-      if: github.event_name == 'pull_request' && github.base_ref == 'main'
+      if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
       uses: actions/cache/restore@v4
       with:
         path: .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json
@@ -211,20 +211,20 @@ jobs:
           backend-coverage-main-${{ matrix.ln-vendor }}-
 
     - name: 'Check coverage has not regressed'
-      if: github.event_name == 'pull_request' && github.base_ref == 'main'
+      if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
       run: |
         python3 .github/scripts/check-backend-coverage.py \
           .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json \
           coverage.json
 
     - name: 'Copy coverage to baseline dir before saving'
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       run: |
         mkdir -p .coverage-baseline
         cp coverage.json .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json
 
     - name: 'Save coverage baseline to cache'
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: actions/cache/save@v4
       with:
         path: .coverage-baseline/backend-coverage-${{ matrix.ln-vendor }}.json
