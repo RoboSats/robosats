@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from decouple import config, Csv
 from django.contrib.auth.models import User
-from django.db.models import Q, Sum
+from django.db.models import F, Q, Sum
 from django.utils import timezone
 from django.utils.html import format_html
 from django.db import transaction
@@ -41,6 +41,34 @@ MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(
 )
 
 GEOBLOCKED_COUNTRIES = config("GEOBLOCKED_COUNTRIES", cast=Csv(), default="")
+
+
+def payout_problem(lnpayment):
+    """Why a buyer payout must not be sent now, or None. Checked right before every
+    attempt, against the lightning node and not only the database: the escrow that
+    backs it must be settled in the lightning node and cover it, and PAYOUT_MAX_SATS
+    (if set) caps a single payout."""
+    if lnpayment.concept != LNPayment.Concepts.PAYBUYER:
+        return "not a buyer payout"
+    order = Order.objects.filter(payout=lnpayment).first()
+    if order is None:
+        return "no order has this payout"
+    if order.status not in (Order.Status.PAY, Order.Status.FAI):
+        return f"order status is {order.get_status_display()}"
+    escrow = order.trade_escrow
+    if escrow is None or escrow.status != LNPayment.Status.SETLED:
+        return "the trade escrow is not settled"
+    if escrow.num_satoshis < lnpayment.num_satoshis:
+        return f"payout {lnpayment.num_satoshis} > escrow {escrow.num_satoshis}"
+    cap = config("PAYOUT_MAX_SATS", cast=int, default=0)
+    if cap and lnpayment.num_satoshis > cap:
+        return f"payout {lnpayment.num_satoshis} is over PAYOUT_MAX_SATS ({cap})"
+    try:
+        if not LNNode.double_check_htlc_is_settled(escrow.payment_hash):
+            return "the lightning node does not show the trade escrow as settled"
+    except Exception as e:
+        return f"could not check the escrow in the lightning node ({e})"
+    return None
 
 
 class Logics:
@@ -1844,6 +1872,36 @@ class Logics:
         return True, None
 
     @classmethod
+    def reward_source_problem(cls, order, slashed_bond, staked_bond, reward):
+        """Why a slashed bond must not be rewarded, or None: one bond is this order's
+        maker bond and the other a taker bond of another robot (the taker's link is
+        already cleared when the order goes back to the book, so it can't be required),
+        the slashed bond is settled in the database AND in the lightning node (the sats
+        really are the coordinator's), and the reward is not larger than the smaller
+        bond."""
+        pair = {slashed_bond.pk, staked_bond.pk}
+        if order.maker_bond_id not in pair or len(pair) != 2:
+            return "the bonds are not this order's maker bond and a taker bond"
+        other = staked_bond if slashed_bond.pk == order.maker_bond_id else slashed_bond
+        if other.concept != LNPayment.Concepts.TAKEBOND:
+            return "the other bond is not a taker bond"
+        if slashed_bond.sender_id == staked_bond.sender_id:
+            return "slashed and staked bond are the same robot's"
+        slashed_bond.refresh_from_db(fields=["status"])
+        if slashed_bond.status != LNPayment.Status.SETLED:
+            return "the slashed bond is not settled"
+        if reward < 0 or reward > min(
+            slashed_bond.num_satoshis, staked_bond.num_satoshis
+        ):
+            return f"reward {reward} is larger than the smaller bond"
+        try:
+            if not LNNode.double_check_htlc_is_settled(slashed_bond.payment_hash):
+                return "the lightning node does not show the slashed bond as settled"
+        except Exception as e:
+            return f"could not check the slashed bond in the lightning node ({e})"
+        return None
+
+    @classmethod
     def add_slashed_rewards(cls, order, slashed_bond, staked_bond):
         """
         When a bond is slashed due to overtime, rewards the user that was waiting.
@@ -1867,19 +1925,40 @@ class Logics:
 
         reward = int(slashed_satoshis * reward_fraction)
         rewarded_robot = staked_bond.sender.robot
-        rewarded_robot.earned_rewards += reward
-        rewarded_robot.save(update_fields=["earned_rewards"])
-
-        slashed_robot_log = ""
-        if slashed_return > 100:
-            slashed_robot = slashed_bond.sender.robot
-            slashed_robot.earned_rewards += slashed_return
-            slashed_robot.save(update_fields=["earned_rewards"])
-            slashed_robot_log = f"Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
-
+        problem = cls.reward_source_problem(order, slashed_bond, staked_bond, reward)
+        if problem:
+            order.log(
+                f"Reward for slashed bond {slashed_bond.payment_hash} NOT CREDITED: {problem}",
+                level="WARN",
+            )
+            return
         new_proceeds = int(slashed_satoshis * (1 - reward_fraction))
-        order.proceeds += new_proceeds
-        order.save(update_fields=["proceeds"])
+        slashed_robot_log = ""
+        with transaction.atomic():
+            # Only the call that marks the bond as rewarded credits it: a second call
+            # for the same bond (concurrent cancels, retries) finds it already marked.
+            claimed = LNPayment.objects.filter(
+                pk=slashed_bond.pk, rewarded_at__isnull=True
+            ).update(rewarded_at=timezone.now())
+            if not claimed:
+                order.log(
+                    f"Reward for slashed bond {slashed_bond.payment_hash} NOT CREDITED: already rewarded",
+                    level="WARN",
+                )
+                return
+            Robot.objects.filter(pk=rewarded_robot.pk).update(
+                earned_rewards=F("earned_rewards") + reward
+            )
+            if slashed_return > 100:
+                slashed_robot = slashed_bond.sender.robot
+                Robot.objects.filter(pk=slashed_robot.pk).update(
+                    earned_rewards=F("earned_rewards") + slashed_return
+                )
+                slashed_robot_log = f"Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
+            Order.objects.filter(pk=order.pk).update(
+                proceeds=F("proceeds") + new_proceeds
+            )
+        order.refresh_from_db(fields=["proceeds"])
         send_devfund_donation.delay(order.id, new_proceeds, "slashed bond")
         order.log(
             f"Robot({rewarded_robot.id},{rewarded_robot.user.username}) was rewarded {reward} Sats. {slashed_robot_log}"
@@ -1897,6 +1976,56 @@ class Logics:
                 return False, new_error(3003)
 
             num_satoshis = user.robot.earned_rewards
+
+            # Optional limits on what leaves as rewards, whatever inflated a balance:
+            # one withdrawal per robot every REWARD_WITHDRAW_COOLDOWN seconds, and at
+            # most REWARD_WITHDRAW_GLOBAL_DAILY_MAX Sats for all robots in 24 hours.
+            withdrawals = LNPayment.objects.filter(
+                concept=LNPayment.Concepts.WITHREWA,
+                status__in=[
+                    LNPayment.Status.VALIDI,
+                    LNPayment.Status.FLIGHT,
+                    LNPayment.Status.SUCCED,
+                ],
+            )
+            # The refusals say when to come back, so nobody has to guess.
+            cooldown = config("REWARD_WITHDRAW_COOLDOWN", cast=int, default=0)
+            if cooldown:
+                last = withdrawals.filter(receiver=user).order_by("-created_at").first()
+                if last and last.created_at > timezone.now() - timedelta(
+                    seconds=cooldown
+                ):
+                    until = last.created_at + timedelta(seconds=cooldown)
+                    return False, {
+                        "bad_invoice": "You withdrew your rewards recently. You can "
+                        f"withdraw again from {until:%Y-%m-%d %H:%M} UTC."
+                    }
+            global_max = config("REWARD_WITHDRAW_GLOBAL_DAILY_MAX", cast=int, default=0)
+            if global_max:
+                recent = withdrawals.filter(
+                    created_at__gt=timezone.now() - timedelta(hours=24)
+                ).order_by("created_at")
+                withdrawn = recent.aggregate(sats=Sum("num_satoshis"))["sats"] or 0
+                if withdrawn + num_satoshis > global_max:
+                    # Room comes back as past withdrawals leave the 24-hour window.
+                    until, freed = None, 0
+                    excess = withdrawn + num_satoshis - global_max
+                    if num_satoshis <= global_max:
+                        for created_at, sats in recent.values_list(
+                            "created_at", "num_satoshis"
+                        ):
+                            freed += sats
+                            if freed >= excess:
+                                until = created_at + timedelta(hours=24)
+                                break
+                    when = (
+                        f"Try again from {until:%Y-%m-%d %H:%M} UTC."
+                        if until
+                        else "Try again later."
+                    )
+                    return False, {
+                        "bad_invoice": f"Reward withdrawals are paused for now. {when}"
+                    }
 
             if routing_budget_ppm is not None and routing_budget_ppm is not False:
                 routing_budget_sats = float(num_satoshis) * (
@@ -1924,20 +2053,20 @@ class Logics:
                 return False, reward_payout["context"]
 
             try:
-                lnpayment = LNPayment.objects.create(
-                    concept=LNPayment.Concepts.WITHREWA,
-                    type=LNPayment.Types.NORM,
-                    sender=User.objects.get(username=ESCROW_USERNAME),
-                    status=LNPayment.Status.VALIDI,
-                    receiver=user,
-                    invoice=invoice,
-                    num_satoshis=num_satoshis,
-                    description=reward_payout["description"],
-                    payment_hash=reward_payout["payment_hash"],
-                    created_at=reward_payout["created_at"],
-                    expires_at=reward_payout["expires_at"],
-                )
-            # Might fail if payment_hash already exists in DB
+                with transaction.atomic():
+                    lnpayment = LNPayment.objects.create(
+                        concept=LNPayment.Concepts.WITHREWA,
+                        type=LNPayment.Types.NORM,
+                        sender=User.objects.get(username=ESCROW_USERNAME),
+                        status=LNPayment.Status.VALIDI,
+                        receiver=user,
+                        invoice=invoice,
+                        num_satoshis=num_satoshis,
+                        description=reward_payout["description"],
+                        payment_hash=reward_payout["payment_hash"],
+                        created_at=reward_payout["created_at"],
+                        expires_at=reward_payout["expires_at"],
+                    )
             except Exception:
                 return False, new_error(3004)
 
@@ -1947,9 +2076,10 @@ class Logics:
         # Pays the invoice.
         paid, failure_reason = LNNode.pay_invoice(lnpayment)
         if paid:
-            user.robot.earned_rewards = 0
-            user.robot.claimed_rewards += num_satoshis
-            user.robot.save(update_fields=["earned_rewards", "claimed_rewards"])
+            Robot.objects.filter(pk=user.robot.pk).update(
+                earned_rewards=0,
+                claimed_rewards=F("claimed_rewards") + num_satoshis,
+            )
             return True, None
 
         # Re-fetch lnpayment to get the status written by pay_invoice.
@@ -1963,8 +2093,9 @@ class Logics:
         # stays in the DB; a retry with the same invoice is blocked by the duplicate-
         # hash guard above (error 3004) until the hash is resolved or expires.
         if lnpayment.status == LNPayment.Status.FAILRO:
-            user.robot.earned_rewards = num_satoshis
-            user.robot.save(update_fields=["earned_rewards"])
+            Robot.objects.filter(pk=user.robot.pk).update(
+                earned_rewards=num_satoshis,
+            )
             return False, new_error(3005, {"failure_reason": failure_reason})
 
         # Payment outcome is ambiguous (in-flight or stream ended without final status).
