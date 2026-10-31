@@ -28,6 +28,17 @@ model rename), `0047_notification.py` (Notification model added), `0051_takeorde
 the DB, this migration simply makes Django migrations aware of the `max_length=80_000`
 constraint so future `makemigrations` runs stay clean).
 
+`0061_convert_order_logs_to_json.py` (data-only) converts `Order.logs` written by
+v0.8.7 and earlier — an HTML table (`<thead>` header plus one `<tr><td>timestamp</td>
+<td>level</td><td>event</td></tr>` per entry) — to the JSON list that `Order.log()` and
+`render_order_logs()` use since v0.8.8. Without it the admin shows "No logs were
+recorded" for every older order and the next `log()` call replaces the whole history
+(the record of past disputes) with a one-entry list. `<b>`/`<i>` in events become the
+`**`/`*` markers `render_order_logs()` understands, any other tag is dropped and HTML
+entities are decoded, so the text reads as it did in the old admin. Rows that already
+parse as JSON, empty and NULL logs are skipped, so it is safe to run again; each row is
+only written if it still holds the value that was read. Reverse is a no-op.
+
 The squash migration (only migration in this app with a cross-app dependency) depends on
 `("control", "0002_auto_20220619_0535")` — `control`'s migrations must be applied
 consistently with this app's.
