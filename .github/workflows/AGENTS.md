@@ -63,6 +63,11 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 `type=raw,value=latest`. Uses `docker/metadata-action@v6` + `docker/build-push-action@v7`.
 
 ## Android Build (`android-build.yml`)
+- JDK: Temurin 17 (pinned via `actions/setup-java@v6`). Gradle 8.13 supports Java up to 23;
+  Java 24 support requires Gradle 8.14 and Java 25 requires Gradle 9.1. `ubuntu-latest`
+  migrated to Ubuntu 26.04 (default JDK 25) in November 2026, so the JDK must be
+  explicitly pinned — do not remove the `Setup Java` step. See
+  `development/blocked-upgrades.md` for the Gradle upgrade blocker.
 - Node: N/A; Gradle cache on `~/.gradle/caches`.
 - `cd android && ./gradlew assembleRelease --stacktrace`.
 - **IzzyOnDroid FOSS scan**: downloads Apktool 2.7.0 jar+wrapper, clones

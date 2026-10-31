@@ -70,6 +70,13 @@ jobs:
     #   uses: actions/setup-example@v1
 
     # Initializes the CodeQL tools for scanning.
+    - name: Setup Java
+      if: matrix.language == 'java-kotlin'
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: '17'
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
       with:
