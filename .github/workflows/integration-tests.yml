@@ -193,6 +193,7 @@ jobs:
         docker exec test-coordinator coverage run manage.py test
         docker exec test-coordinator coverage report
         docker exec test-coordinator coverage html
+        docker cp test-coordinator:/usr/src/robosats/htmlcov ./htmlcov
       env:
         LNVENDOR: ${{ matrix.ln-vendor }}
         DEVELOPMENT: True

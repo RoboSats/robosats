@@ -1,6 +1,6 @@
 import com.android.build.api.dsl.Packaging
 
-val baseVersionCode = 87
+val baseVersionCode = 88
 
 plugins {
     alias(libs.plugins.android.application)
@@ -16,7 +16,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = baseVersionCode
-        versionName = "0.8.7-alpha"
+        versionName = "0.8.8-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -90,7 +90,8 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.okhttp)
-    implementation(libs.kmp.tor)
+    implementation(libs.kmp.tor.runtime)
+    implementation(libs.kmp.tor.resource.exec)
     implementation(libs.quartz) {
         exclude("net.java.dev.jna")
     }
@@ -99,7 +100,6 @@ dependencies {
     }
     implementation(libs.jna) { artifact { type = "aar" } }
     implementation(libs.security.crypto.ktx)
-    implementation(libs.kmp.tor.binary)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
