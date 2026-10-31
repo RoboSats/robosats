@@ -30,7 +30,6 @@ interface Props {
   takerHashId: string;
   makerHashId: string;
   error: string;
-  lastIndex?: number;
   messages: EncryptedChatMessage[];
   setMessages: Dispatch<SetStateAction<EncryptedChatMessage[]>>;
   onSendMessage: (content: string) => Promise<object | void>;
@@ -38,7 +37,6 @@ interface Props {
   peerPubKey?: string;
   setPeerPubKey: (peerPubKey: string) => void;
   setError: Dispatch<SetStateAction<string>>;
-  setLastIndex: Dispatch<SetStateAction<number>>;
   blossomEnabled: boolean;
   coordinatorUrl?: string;
 }
@@ -58,13 +56,11 @@ const EncryptedNostrChat: React.FC<Props> = ({
   messages,
   peerPubKey,
   error,
-  lastIndex,
   setPeerPubKey,
   setMessages,
   onSendMessage,
   onSendFile,
   setError,
-  setLastIndex,
   blossomEnabled,
   coordinatorUrl,
 }: Props): React.JSX.Element => {
@@ -83,10 +79,13 @@ const EncryptedNostrChat: React.FC<Props> = ({
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const orderRef = useRef(order);
+  orderRef.current = order;
 
   useEffect(() => {
-    loadPeerPubKey();
-    const interval = setInterval(loadPeerPubKey, PEER_POLL_INTERVAL_MS);
+    const poll = (): void => loadPeerPubKey(orderRef.current);
+    poll();
+    const interval = setInterval(poll, PEER_POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, []);
 
@@ -155,20 +154,19 @@ const EncryptedNostrChat: React.FC<Props> = ({
           .toArray();
 
         const sortedMessages = chatMessages.sort((a, b) => a.index - b.index);
-        setLastIndex(sortedMessages[sortedMessages.length - 1]?.index ?? 0);
         return sortedMessages;
       });
     }
   }, [notificationsUpdatedAt, slotUpdatedAt]);
 
-  const loadPeerPubKey: () => void = () => {
+  const loadPeerPubKey = (currentOrder: Order): void => {
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
     if (!shortAlias) return;
 
     const url = federation.getCoordinator(shortAlias)?.url ?? '';
     if (!url) return;
     apiClient
-      .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex ?? 0}`, {
+      .get(url, `/api/chat/?order_id=${currentOrder.id}&offset=${currentOrder.chat_last_index}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
       .then((data: unknown) => {
