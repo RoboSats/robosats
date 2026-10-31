@@ -192,15 +192,9 @@ jobs:
       run: |
         docker exec test-coordinator coverage run manage.py test
         docker exec test-coordinator coverage report
-        docker exec test-coordinator coverage html
-        docker cp test-coordinator:/usr/src/robosats/htmlcov ./htmlcov
       env:
         LNVENDOR: ${{ matrix.ln-vendor }}
         DEVELOPMENT: True
         USE_TOR: False
 
-    - name: 'Upload coverage report'
-      uses: actions/upload-artifact@v7
-      with:
-        name: coverage-report-${{ matrix.python-tag }}-${{ matrix.ln-vendor }}-${{ github.run_id }}
-        path: htmlcov/
+
