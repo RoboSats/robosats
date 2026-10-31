@@ -1,5 +1,5 @@
-ruff==0.17.0
-coverage==7.16.2
+ruff==0.17.3
+coverage==7.17.0
 git+https://github.com/Reckless-Satoshi/drf-openapi-tester.git@2af4d20743439444054c5bf8a02c9f299b14491f
 pre-commit==4.7.0
 python-dotenv[cli]==1.2.4
