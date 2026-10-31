@@ -656,15 +656,15 @@ class Logics:
 
         if shape == "linear":
             MIN_SWAP_FEE = config("MIN_SWAP_FEE", cast=float, default=0.01)
-            MIN_POINT = float(config("MIN_POINT"))
+            MIN_SWAP_POINT = float(config("MIN_SWAP_POINT"))
             MAX_SWAP_FEE = float(config("MAX_SWAP_FEE"))
-            MAX_POINT = float(config("MAX_POINT"))
-            if float(balance.onchain_fraction) > MIN_POINT:
+            MAX_SWAP_POINT = float(config("MAX_SWAP_POINT"))
+            if float(balance.onchain_fraction) > MIN_SWAP_POINT:
                 swap_fee_rate = MIN_SWAP_FEE
             else:
-                slope = (MAX_SWAP_FEE - MIN_SWAP_FEE) / (MAX_POINT - MIN_POINT)
+                slope = (MAX_SWAP_FEE - MIN_SWAP_FEE) / (MAX_SWAP_POINT - MIN_SWAP_POINT)
                 swap_fee_rate = (
-                    slope * (balance.onchain_fraction - MAX_POINT) + MAX_SWAP_FEE
+                    slope * (balance.onchain_fraction - MAX_SWAP_POINT) + MAX_SWAP_FEE
                 )
 
         elif shape == "exponential":
