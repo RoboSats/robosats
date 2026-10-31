@@ -1,7 +1,7 @@
 import { sha256 } from 'js-sha256';
 import { sha256 as sha256Hash, sha512 } from '@noble/hashes/sha2.js';
 import Robot from './Robot.model';
-import Order from './Order.model';
+import Order, { type SubmitActionProps } from './Order.model';
 import type Federation from './Federation.model';
 import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import hexToBase91 from '../utils/hexToBase91';
@@ -165,6 +165,18 @@ class Slot {
       this.updateSlotFromOrder(order);
       if (this.activeOrder && order.status !== previousStatus) this.onSlotUpdate();
     }
+  };
+
+  submitOrderAction = async (
+    federation: Federation,
+    order: Order,
+    action: SubmitActionProps,
+  ): Promise<Order> => {
+    const previousStatus = order.status;
+    await order.submitAction(federation, this, action);
+    this.updateSlotFromOrder(order);
+    if (this.activeOrder && order.status !== previousStatus) this.onSlotUpdate();
+    return order;
   };
 
   takeOrder = async (federation: Federation, order: Order, takeAmount: string): Promise<Order> => {
