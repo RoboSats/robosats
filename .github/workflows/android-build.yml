@@ -48,6 +48,12 @@ jobs:
           name: mobile-web.bundle
           path: android/app/src/main/assets
 
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Cache gradle
         uses: actions/cache@v6
         with:
