@@ -8,9 +8,9 @@ djangorestframework==3.18.3
 channels==4.3.2
 channels-redis==4.3.0
 celery==5.6.3
-grpcio==1.84.0
-googleapis-common-protos==1.75.5
-grpcio-tools==1.84.0
+grpcio==1.85.0
+googleapis-common-protos==1.76.0
+grpcio-tools==1.85.0
 numpy==2.5.2
 Pillow==13.0.0
 python-decouple==3.8
@@ -18,7 +18,7 @@ requests[socks]==2.34.2
 ring==0.10.1
 gunicorn==26.2.0
 psycopg2==2.9.13
-django-import-export==4.4.1
+django-import-export==4.4.4
 shapely==2.2.0
 python-gnupg==0.5.7
 daphne==4.2.3
@@ -28,7 +28,7 @@ django-cors-headers==4.9.0
 base91==1.0.1
 nostr-sdk==0.45.1
 pygeohash==3.5.1
-asgiref==3.12.1
+asgiref==3.13.0
 secp256k1==0.14.0
 idna==3.20
 redis==8.1.0
