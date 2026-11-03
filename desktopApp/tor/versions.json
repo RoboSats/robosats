@@ -1,0 +1,35 @@
+{
+  "minimumTorVersion": "0.4.9",
+  "expertBundle": "16.0",
+  "torVersion": "0.4.9.15",
+  "updatedAt": "2026-11-03",
+  "platforms": {
+    "linux-x86_64": {
+      "bundleUrl": "https://dist.torproject.org/torbrowser/16.0/tor-expert-bundle-linux-x86_64-16.0.tar.gz",
+      "bundleSha256": "cc950ebe9acb80188325c3a2cd8817def7dd7237d6fdcd861bb87b234a0cb2fd",
+      "binary": "tor-linux/tor/tor",
+      "binarySha256": "4c05f632c1231ef8ab5fc828a24661a8df9af6a56e1d7b742dfd632ee93e9c8b",
+      "libs": {
+        "tor-linux/tor/libcrypto.so.3": "e2c0901c520c07cdaab4af3507bf20f6c80273571764b4dc9b3b0b4a75621052",
+        "tor-linux/tor/libssl.so.3": "cb31eaf171a10f660137b6c3d1ff552c2e89fdedd20e8523a7bf30cc06727457",
+        "tor-linux/tor/libevent-2.1.so.7": "d252ad9c63de5ac276bdcf73f466ecf6ce0b390f33c3d241b6a32ea4e2f59ef6"
+      }
+    },
+    "macos-x86_64": {
+      "bundleUrl": "https://dist.torproject.org/torbrowser/16.0/tor-expert-bundle-macos-x86_64-16.0.tar.gz",
+      "bundleSha256": "5b1860215c26f2d408392d1d79e798a2f81d65eb939510bb94c11f237bd0bfc3",
+      "binary": "tor-mac/tor/tor",
+      "binarySha256": "333a612b7ea40a87fae29d08aa350ac1d28aee2523940e07f47e87b038358b73",
+      "libs": {
+        "tor-mac/tor/libevent-2.1.7.dylib": "25646a77c3f71f62f7cc3756320e6f7c3cc48174d5763b11ba03148daaae81e9"
+      }
+    },
+    "windows-x86_64": {
+      "bundleUrl": "https://dist.torproject.org/torbrowser/16.0/tor-expert-bundle-windows-x86_64-16.0.tar.gz",
+      "bundleSha256": "2ee123e9167318a3742778ff704e75f01d4780f05a14522d451fe011011077c4",
+      "binary": "tor-win/tor/tor.exe",
+      "binarySha256": "1607d98f5d13859077b1b349c55beba76b09acc788f0431fd824d11966fb1074",
+      "libs": {}
+    }
+  }
+}
