@@ -50,6 +50,8 @@ interface Props {
   coordinatorUrl?: string;
 }
 
+const CHAT_POLL_INTERVAL_MS = 5000;
+
 const audioPath =
   getSettings().client == 'mobile'
     ? 'file:///android_asset/static/assets/sounds'
@@ -90,6 +92,7 @@ const EncryptedApiChat: React.FC<Props> = ({
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const [privacyWarningOpen, setPrivacyWarningOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastIndexRef = useRef<number>(lastIndex);
 
   useEffect(() => {
     if (messages.length > messageCount) {
@@ -105,10 +108,20 @@ const EncryptedApiChat: React.FC<Props> = ({
   }, [serverMessages, peerPubKey]);
 
   useEffect(() => {
-    if (chatOffset === 0 || chatOffset > lastIndex) {
+    lastIndexRef.current = lastIndex;
+  }, [lastIndex]);
+
+  useEffect(() => {
+    if (chatOffset === 0 || chatOffset > lastIndexRef.current) {
       loadMessages();
     }
   }, [chatOffset]);
+
+  useEffect(() => {
+    loadMessages();
+    const interval = setInterval(loadMessages, CHAT_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, []);
 
   const loadMessages: () => void = () => {
     const shortAlias = garage.getSlot()?.activeOrder?.shortAlias;
@@ -118,7 +131,7 @@ const EncryptedApiChat: React.FC<Props> = ({
     const url = federation.getCoordinator(shortAlias)?.url ?? '';
     if (!url) return;
     apiClient
-      .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndex}`, {
+      .get(url, `/api/chat/?order_id=${order.id}&offset=${lastIndexRef.current}`, {
         tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
       .then((raw) => {

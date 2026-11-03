@@ -262,7 +262,7 @@ const EncryptedChat: React.FC<Props> = ({
       {
         PGP_message: String(encryptedMessage).split('\n').join('\\'),
         order_id: order.id,
-        offset: lastIndex,
+        offset: Math.floor(lastIndex),
       },
       { tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '' },
     );
