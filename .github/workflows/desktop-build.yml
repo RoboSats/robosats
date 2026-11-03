@@ -103,6 +103,16 @@ jobs:
           cd desktopApp
           npm ci
 
+      - name: Verify bundled Tor binaries
+        run: |
+          cd desktopApp
+          node tor/verify.js
+
+      - name: Run desktop tests
+        run: |
+          cd desktopApp
+          npm test
+
       - name: Pre-download Electron binary (with retry)
         run: |
           cd desktopApp
