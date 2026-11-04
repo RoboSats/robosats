@@ -36,6 +36,7 @@ interface StoredSlot {
   lastOrder?: Partial<Order> & { id?: number };
   activeOrder?: Partial<Order> & { id?: number };
   lastOrderStatusKnown?: boolean;
+  accountIndex?: number;
 }
 
 const hasStoredOrderDetails = (
@@ -150,6 +151,9 @@ class Garage {
           if (rawSlot.activeOrder?.id) {
             this.slots[rawSlot.token].activeOrder = new Order(rawSlot.activeOrder);
           }
+          if (typeof rawSlot.accountIndex === 'number') {
+            this.slots[rawSlot.token].accountIndex = rawSlot.accountIndex;
+          }
         }
       });
 
@@ -170,7 +174,22 @@ class Garage {
     const targetIndex = token ?? this.currentSlot;
     if (targetIndex) {
       Reflect.deleteProperty(this.slots, targetIndex);
-      this.currentSlot = Object.keys(this.slots)[0] ?? null;
+      const nextToken = Object.keys(this.slots)[0] ?? null;
+      this.currentSlot = nextToken;
+      if (nextToken) {
+        const nextSlot = this.getSlot(nextToken);
+        if (this.garageKey && nextSlot) {
+          if (nextSlot.accountIndex !== null && nextSlot.accountIndex !== undefined) {
+            this.garageKey.setAccountIndex(nextSlot.accountIndex);
+          } else {
+            const derivedIndex = this.inferAccountIndex(nextToken);
+            if (derivedIndex !== null) {
+              nextSlot.accountIndex = derivedIndex;
+              this.garageKey.setAccountIndex(derivedIndex);
+            }
+          }
+        }
+      }
       this.save();
       this.triggerHook('onSlotUpdate');
     }
@@ -178,8 +197,31 @@ class Garage {
 
   setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {
     this.currentSlot = currentSlot;
+    const slot = this.getSlot(currentSlot);
+    if (this.garageKey && slot) {
+      if (slot.accountIndex !== null && slot.accountIndex !== undefined) {
+        this.garageKey.setAccountIndex(slot.accountIndex);
+      } else {
+        const derivedIndex = this.inferAccountIndex(currentSlot);
+        if (derivedIndex !== null) {
+          slot.accountIndex = derivedIndex;
+          this.garageKey.setAccountIndex(derivedIndex);
+        }
+      }
+    }
     this.save();
     this.triggerHook('onSlotUpdate');
+  };
+
+  inferAccountIndex = (token: string): number | null => {
+    if (!this.garageKey) return null;
+    const searchLimit = Math.max(this.garageKey.currentAccountIndex + 1, 1);
+    for (let i = 0; i < searchLimit; i++) {
+      if (this.garageKey.deriveRobotToken(i) === token) {
+        return i;
+      }
+    }
+    return null;
   };
 
   resetManualNavigation = (): void => {
@@ -223,6 +265,10 @@ class Garage {
         toIndex: currentIndex,
         reason: 'active_order',
       };
+    }
+
+    if (currentSlot.loading) {
+      await currentSlot.fetchRobot(federation);
     }
 
     await currentSlot.ensureLastOrderStatus(federation);
@@ -358,6 +404,13 @@ class Garage {
     });
     if (this.garageKey) {
       console.log('Garage Key was loaded from local storage');
+      const currentSlotToken = this.currentSlot;
+      if (currentSlotToken) {
+        const currentSlot = this.getSlot(currentSlotToken);
+        if (currentSlot?.accountIndex !== null && currentSlot?.accountIndex !== undefined) {
+          this.garageKey.setAccountIndex(currentSlot.accountIndex);
+        }
+      }
       this.triggerHook('onSlotUpdate');
     }
   };
@@ -403,6 +456,7 @@ class Garage {
     if (this.currentSlot !== token) return;
 
     const slot = this.getSlot(token);
+    if (slot) slot.accountIndex = index;
     await slot?.fetchActiveOrder(federation);
 
     if (this.currentSlot !== token) return;
@@ -529,6 +583,10 @@ class Garage {
 
       if (!existingSlot) {
         return i;
+      }
+
+      if (existingSlot.loading) {
+        await existingSlot.fetchRobot(federation);
       }
 
       await existingSlot.ensureLastOrderStatus(federation);
