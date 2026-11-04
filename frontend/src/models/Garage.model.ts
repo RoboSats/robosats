@@ -167,7 +167,9 @@ class Garage {
   // Slots
   getSlot: (token?: string) => Slot | null = (token) => {
     const currentToken = token ?? this.currentSlot;
-    return currentToken ? (this.slots[currentToken] ?? null) : null;
+    return currentToken && Object.hasOwn(this.slots, currentToken)
+      ? this.slots[currentToken]
+      : null;
   };
 
   deleteSlot: (token?: string) => void = (token) => {
