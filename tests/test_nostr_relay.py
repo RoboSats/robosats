@@ -38,12 +38,14 @@ from django.test import TestCase
 
 from nostr_sdk import (
     Client,
+    EventBuilder,
     Filter,
     Keys,
     Kind,
     PublicKey,
     RelayUrl,
     ReqTarget,
+    Tag,
 )
 
 from api.models import Order
@@ -164,7 +166,7 @@ class TestNostrOrderEventOnRealRelay(TestCase):
         }
 
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_send_order_event_reaches_relay(self):
         """kind-38383 event must arrive on the relay after send_order_event()."""
@@ -295,7 +297,7 @@ class TestNostrNotificationEventOnRealRelay(TestCase):
         }
 
     def _run(self, coro):
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def test_notification_event_reaches_relay(self):
         """kind-1059 gift-wrap must arrive on the relay."""
@@ -335,3 +337,109 @@ class TestNostrNotificationEventOnRealRelay(TestCase):
                 async_to_sync(self.nostr.send_notification_event)(
                     robot, order, "should not reach relay"
                 )
+
+
+class TestNostrChatParticipationOnRealRelay(TestCase):
+    """
+    has_chat_participation() against the live relay.
+
+    The robot publishes a kind-30079 participation event (d tag
+    robosats-chat-<orderId>, p tag = coordinator pubkey) with its own Nostr
+    key; the coordinator answers True/False decisively, or None when the
+    relay cannot be consulted.
+    """
+
+    def setUp(self):
+        self.nostr = Nostr()
+        self.robot_keys = Keys.generate()
+        self.env_overrides = {
+            "NOSTR_NSEC": TEST_NSEC,
+            "COORDINATOR_ALIAS": "TestCoord",
+            "HOST_NAME": "test.onion",
+            "NETWORK": "testnet",
+            "STRFRY_HOST": RELAY_HOST,
+            "STRFRY_PORT": RELAY_PORT,
+        }
+
+    def _run(self, coro):
+        return asyncio.run(coro)
+
+    def _robot(self):
+        robot = MagicMock()
+        robot.nostr_pubkey = self.robot_keys.get_public_key().to_hex()
+        return robot
+
+    def _env_patch(self, **extra):
+        from unittest.mock import patch
+
+        env = {**self.env_overrides, **extra}
+        patcher = patch("api.nostr.config")
+        mock_config = patcher.start()
+        mock_config.side_effect = lambda key, **kw: env.get(key, kw.get("default", ""))
+        self.addCleanup(patcher.stop)
+        return env
+
+    def _publish_participation_event(self, order_id):
+        coordinator_pubkey = Keys.parse(TEST_NSEC).get_public_key().to_hex()
+
+        async def _publish():
+            event = await (
+                EventBuilder(Kind(30079), "")
+                .tags(
+                    [
+                        Tag.parse(["d", f"robosats-chat-{order_id}"]),
+                        Tag.parse(["p", coordinator_pubkey]),
+                    ]
+                )
+                .finalize_async(self.robot_keys)
+            )
+            client = Client()
+            await client.add_relay(RelayUrl.parse(RELAY_URL))
+            await client.connect()
+            await client.send_event(event)
+            await client.disconnect()
+
+        self._run(_publish())
+
+    def test_participation_event_found(self):
+        """A participation event signed by the robot must be found."""
+        order = _make_order(order_id=30001)
+        self._env_patch()
+        self._publish_participation_event(30001)
+
+        time.sleep(1)
+
+        found = self._run(self.nostr.has_chat_participation(order, self._robot()))
+        self.assertTrue(found)
+
+    def test_no_event_for_other_order(self):
+        """No decisive answer without a matching d tag — must answer False."""
+        order = _make_order(order_id=30002)
+        self._env_patch()
+        self._publish_participation_event(30001)
+
+        time.sleep(1)
+
+        found = self._run(self.nostr.has_chat_participation(order, self._robot()))
+        self.assertFalse(found)
+
+    def test_participation_of_other_robot_not_found(self):
+        """Events signed by a different robot key must not match."""
+        order = _make_order(order_id=30004)
+        self._env_patch()
+        self._publish_participation_event(30004)
+
+        time.sleep(1)
+
+        other_robot = MagicMock()
+        other_robot.nostr_pubkey = PublicKey.parse(TEST_RECIPIENT_NPUB).to_hex()
+        found = self._run(self.nostr.has_chat_participation(order, other_robot))
+        self.assertFalse(found)
+
+    def test_dead_relay_returns_none(self):
+        """An unreachable relay is inconclusive — the caller must veto."""
+        order = _make_order(order_id=30005)
+        self._env_patch(STRFRY_HOST="127.0.0.1", STRFRY_PORT="1")
+
+        found = self._run(self.nostr.has_chat_participation(order, self._robot()))
+        self.assertIsNone(found)

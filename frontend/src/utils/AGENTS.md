@@ -15,6 +15,7 @@ One subdirectory: `crypto/`.
 | `blossom.ts`           | `uploadToBlossom`, `downloadFromBlossom`, `downloadFromBlossomWithFallback`, `verifyBlobHash`, `computeSha256`                                                                                                                                                                                     | Chat image E2E upload/download; uploads **ciphertext only** (see §Blossom below)                                                                             |
 | `bondCalculator.ts`    | `BondCalculatorProps`, `calculateBondAmount`                                                                                                                                                                                                                                                       | Bond sats ↔ percent, delegates from `useBondEstimate`                                                                                                        |
 | `checkVer.ts`          | `checkVer`, `getHigherVer`, `getClientVersion`                                                                                                                                                                                                                                                     | Compares client version vs coordinator-reported `version`; **live** `getHigherVer` — do not edit the dead duplicate that was in `aggregateInfo.ts` (deleted) |
+| `chatParticipation.ts` | `CHAT_PARTICIPATION_KIND`, `chatParticipationDTag`, `createChatParticipationEvent`, `publishChatParticipation`                                                                                                                                                                                     | Kind-30079 dispute-evidence event published on first chat-message send; see §chatParticipation below                                                         |
 | `computeSats.ts`       | `computeSats`                                                                                                                                                                                                                                                                                      | Fiat ↔ sats conversion using current price + premium                                                                                                         |
 | `crypto/xchacha20.ts`  | `encryptFile`, `decryptFile`, `generateKey`, `toBase64`, `fromBase64`                                                                                                                                                                                                                              | XChaCha20-Poly1305 symmetric file encryption for chat images (`@noble/ciphers`)                                                                              |
 | `federationLottery.ts` | `federationLottery`                                                                                                                                                                                                                                                                                | Randomises coordinator order weighted by DevFund donation % (capped at 50)                                                                                   |
@@ -121,6 +122,29 @@ Publishes and parses Nostr account-state recovery events so a Garage Key can rec
 - `createAccountRecoveryEvent(nostrSecKey, accountIndex)` builds and seals the event.
 - `parseAccountRecoveryEvent(event)` unwraps the inner event and validates kind/d-tag/account tag.
 - `saveAccountRecovery(nostrSecKey, accountIndex, roboPool)` = create + publish; called by `Garage.makeOrderWithRecovery`.
+
+### `chatParticipation.ts`
+
+Dispute-evidence participation signal for the encrypted chat.
+
+- **Event format**: kind **30079** (parameterized replaceable; a dedicated kind so the
+  coordinator relay sync filter can replicate participation without dragging kind-30078
+  account recovery events across federation relays), `d` tag `robosats-chat-<orderId>`,
+  `p` tag = the order coordinator's `nostrHexPubkey`, content empty. Signed with the
+  slot's `nostrSecKey` — the same per-coordinator identity that signs the chat gift wraps,
+  so `event.pubkey` matches the `nostr_pubkey` registered via the auth header.
+- **Purpose**: the coordinator's `/api/chat/` message count is not a complete
+  participation record — Nostr-transport messages never touch the coordinator DB, and
+  POSTs made while the coordinator was offline are lost. The signed event proves the
+  robot was in the chat even when its API messages were not; `Logics.automatic_dispute_resolution`
+  vetoes one-sided automatic dispute losses when it finds one (or when the relay query is
+  inconclusive). See `api/AGENTS.md` Product intent.
+- `publishChatParticipation` returns `true` only when `roboPool.sendEvent` accepted the
+  event; callers retry on subsequent message sends until it returns `true` (replaceable
+  event — re-publishing is idempotent).
+- Published to the whole relay pool (plus coordinator-relay sync) by design — it exposes
+  only participation metadata already implied by kind-31986 ratings (single-use
+  per-coordinator identity, no credentials, no chat content).
 
 ### `token.ts`
 

@@ -99,6 +99,13 @@ EXIF-stripped → XChaCha20-Poly1305 encrypted → ciphertext-only upload to Blo
 (`/blossom/upload`); the decryption key + nonce travel inside the PGP-encrypted message.
 See `src/utils/AGENTS.md §Blossom` and `chat/AGENTS.md §Image attachments` for the full flow.
 
+**Participation event**: on the first message send of each order, `EncryptedChat/index.tsx`
+also publishes a signed kind-30079 participation event to the relay pool
+(`src/utils/chatParticipation.ts`) — retrying on subsequent sends until accepted. It is the
+dispute-evidence signal the coordinator uses to veto one-sided automatic dispute losses
+when API chat messages were lost (e.g. coordinator offline while the robot chatted over
+Nostr). Fire-and-forget: never blocks or fails the message being sent.
+
 ## FederationTable
 
 Shows the list of active coordinators with a ratings column (`field: 'rating'`, avg ×5

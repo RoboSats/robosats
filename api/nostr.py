@@ -1,5 +1,7 @@
 import pygeohash
+import asyncio
 import hashlib
+import json
 import uuid
 
 from secp256k1 import PrivateKey
@@ -8,7 +10,10 @@ from nostr_sdk import (
     Keys,
     Client,
     EventBuilder,
+    Filter,
     Kind,
+    ReqTarget,
+    RelayStatus,
     Tag,
     PublicKey,
     RelayUrl,
@@ -17,6 +22,9 @@ from nostr_sdk import (
 from api.models import Order
 from api.utils import get_federation_short_alias
 from decouple import config
+
+CHAT_PARTICIPATION_KIND = 30079
+CHAT_PARTICIPATION_D_PREFIX = "robosats-chat-"
 
 
 class Nostr:
@@ -160,6 +168,68 @@ class Nostr:
             return "pending"
         else:
             return "success"
+
+    async def has_chat_participation(self, order, robot):
+        """Returns whether the robot signed a chat participation event (kind 30079)
+        for this order on the coordinator relay. Answers True/False only when
+        decisive; returns None when the relay cannot be consulted."""
+
+        if config("NOSTR_NSEC", cast=str, default="") == "" or not robot.nostr_pubkey:
+            return False
+
+        d_value = f"{CHAT_PARTICIPATION_D_PREFIX}{order.id}"
+
+        try:
+            keys = Keys.parse(config("NOSTR_NSEC", cast=str))
+            client = await self.initialize_client()
+
+            connected = False
+            for _ in range(15):
+                connected = any(
+                    relay.status() == RelayStatus.CONNECTED
+                    for relay in (await client.relays()).values()
+                )
+                if connected:
+                    break
+                await asyncio.sleep(0.2)
+            if not connected:
+                return None
+
+            event_filter = (
+                Filter()
+                .kind(Kind(CHAT_PARTICIPATION_KIND))
+                .author(PublicKey.parse(robot.nostr_pubkey))
+                .identifier(d_value)
+                .pubkey(keys.public_key())
+            )
+
+            events = await client.fetch_events(ReqTarget.auto([event_filter]))
+        except Exception:
+            return None
+
+        for event in events:
+            try:
+                data = json.loads(event.as_json())
+            except Exception:
+                return None
+
+            tags = data.get("tags", [])
+            has_d_tag = any(
+                len(tag) > 1 and tag[0] == "d" and tag[1] == d_value for tag in tags
+            )
+            has_p_tag = any(
+                len(tag) > 1 and tag[0] == "p" and tag[1] == keys.public_key().to_hex()
+                for tag in tags
+            )
+            if (
+                has_d_tag
+                and has_p_tag
+                and data.get("kind") == CHAT_PARTICIPATION_KIND
+                and data.get("pubkey") == robot.nostr_pubkey
+            ):
+                return True
+
+        return False
 
     def sign_message(text: str) -> str:
         try:

@@ -15,6 +15,7 @@ import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
 import { uploadToBlossom, computeSha256 } from '../../../utils/blossom';
 import { createFileMessage, type ParsedFileMessage } from '../../../utils/nip17File';
+import { publishChatParticipation } from '../../../utils/chatParticipation';
 
 /**
  * Strip EXIF and other metadata by re-drawing the image onto a canvas and
@@ -197,12 +198,29 @@ const EncryptedChat: React.FC<Props> = ({
 
   const [error, setError] = useState<string>('');
   const [lastIndex, setLastIndex] = useState<number>(0);
+  const [participationPublished, setParticipationPublished] = useState(false);
+
+  const publishParticipationOnce = (): void => {
+    if (participationPublished) return;
+
+    const slot = garage.getSlot();
+    const coordinator = federation.getCoordinator(order.shortAlias);
+    const published = publishChatParticipation(
+      order.id,
+      slot?.nostrSecKey,
+      coordinator?.nostrHexPubkey,
+      federation.roboPool,
+    );
+
+    if (published) setParticipationPublished(true);
+  };
 
   const onSendMessage = async (
     content: string,
     options: { skipCoordinator?: boolean } = {},
   ): Promise<object | void> => {
     sendToNostr(content);
+    publishParticipationOnce();
     if (!options.skipCoordinator) {
       return sendToCoordinator(content);
     }

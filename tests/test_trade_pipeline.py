@@ -1979,6 +1979,105 @@ class TradeTest(BaseAPITestCase):
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
+    def test_order_expires_blocked_by_chat_participation_event(self):
+        """
+        Maker never messaged through the API chat, but signed a chat
+        participation event (kind 30079) on the coordinator relay — as if it
+        was chatting over the Nostr transport while the coordinator was
+        offline. The automatic maker-loss must be vetoed and the order must
+        enter full DIS for human resolution.
+        """
+        import asyncio
+
+        from nostr_sdk import Client, EventBuilder, Keys, Kind, RelayUrl, Tag
+
+        relay_url = (
+            f"ws://{config('STRFRY_HOST', cast=str, default='localhost')}:"
+            f"{config('STRFRY_PORT', cast=str, default='7778')}"
+        )
+
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        order = Order.objects.get(id=trade.order_id)
+        robot = order.maker.robot
+        original_pubkey = robot.nostr_pubkey
+
+        def cleanup():
+            robot.nostr_pubkey = original_pubkey
+            robot.save(update_fields=["nostr_pubkey"])
+            order.refresh_from_db()
+            if order.status == Order.Status.DIS:
+                order.status = Order.Status.MLD
+                order.save(update_fields=["status"])
+
+        self.addCleanup(cleanup)
+
+        # Swap the maker robot's registered nostr pubkey for one whose secret
+        # key is known here, then sign a participation event for this order
+        # as the maker's client would publish it to the coordinator relay.
+        robot_keys = Keys.generate()
+        coordinator_pubkey = Keys.parse(config("NOSTR_NSEC")).public_key().to_hex()
+        robot.nostr_pubkey = robot_keys.get_public_key().to_hex()
+        robot.save(update_fields=["nostr_pubkey"])
+
+        async def publish():
+            event = await (
+                EventBuilder(Kind(30079), "")
+                .tags(
+                    [
+                        Tag.parse(["d", f"robosats-chat-{trade.order_id}"]),
+                        Tag.parse(["p", coordinator_pubkey]),
+                    ]
+                )
+                .finalize_async(robot_keys)
+            )
+            client = Client()
+            await client.add_relay(RelayUrl.parse(relay_url))
+            await client.connect()
+            await client.send_event(event)
+            await client.disconnect()
+
+        asyncio.run(publish())
+
+        # The taker wrote in the API chat, the maker never did
+        path = reverse("chat")
+        params = f"?order_id={trade.order_id}"
+        taker_headers = trade.get_robot_auth(trade.taker_index)
+        body = {
+            "PGP_message": "Unencrypted message from taker",
+            "order_id": trade.order_id,
+        }
+        self.client.post(path + params, data=body, **taker_headers)
+
+        # Expire the order (maker has zero API chat messages)
+        order.expires_at = datetime.now()
+        order.save()
+
+        trade.clean_orders()
+
+        trade.get_order()
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        # Maker participation evidence vetoes the automatic maker-loss: the
+        # dispute must wait for human resolution in full DIS custody.
+        self.assertEqual(
+            data["status"],
+            Order.Status.DIS,
+            "Chat participation event must block the automatic maker-loss",
+        )
+        self.assertTrue(data["is_disputed"])
+
+        self.assert_order_logs(data["id"])
+
     # def test_dispute_closed_maker_wins(self):
     #     trade = Trade(self.client)
     #     trade.publish_order()

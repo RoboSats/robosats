@@ -67,6 +67,17 @@ each robot's stored `public_key` — cryptographically confirming the decrypted 
 authentic content of the encrypted messages, without the coordinator ever having held the
 private keys or seen the plaintext during the trade.
 
+### Chat participation signal
+Because messages are E2E-encrypted, the coordinator cannot attribute Nostr-transport
+messages to a robot by reading them. Each client instead publishes a **kind-30079
+participation event** (`d` = `robosats-chat-<orderId>`, `p` = coordinator nostr pubkey,
+empty content, signed with the robot's Nostr key) on first chat-message send — see
+`frontend/src/utils/chatParticipation.ts`. The coordinator reads these from its own relay
+(`Nostr.has_chat_participation`) when a chat-stage timeout dispute opens, and the answer
+veto/allow the one-sided automatic dispute resolution in `api/logics.py` — the coordinator
+DB message count alone is not a reliable participation record when the coordinator was
+offline (API POSTs fail, Nostr relays keep working).
+
 ## Frontend Chat Implementations
 Two implementations in `frontend/src/components/TradeBox/EncryptedChat/`:
 1. **Nostr** (`EncryptedNostrChat`) — NIP-17 gift-wrapped DMs over Nostr relays; used for garageKey robots when both peers have Nostr pubkeys and `settings.connection === 'nostr'`

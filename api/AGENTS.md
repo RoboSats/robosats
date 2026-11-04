@@ -94,7 +94,10 @@ and `api/models/AGENTS.md`'s **Trade economics**).
   collaborative cancel is **always free** (see Product intent — `oas_schemas.py`'s "future
   cost" text is stale)
 - `open_dispute()` / `automatic_dispute_resolution()` / `dispute_statement()` — dispute flow;
-  auto-resolution short-circuits when one side never wrote in chat (char limits: see Traps)
+  auto-resolution short-circuits when one side never wrote in chat, gated by the expiry-lag
+  guard and the relay participation veto (char limits: see Traps)
+- `has_chat_participation()` — sync bridge to `Nostr.has_chat_participation`; True/False when
+  decisive, None when the relay cannot be consulted (None vetoes automatic resolution)
 - `order_expires()` — general timeout handler, branches per status; CHA/FSE timeout
   **auto-opens a dispute** (see Product intent)
 - `calc_sats()` / `satoshis_now()` / `price_and_premium_now()` — fiat↔sats conversion
@@ -161,6 +164,17 @@ Notifications above); `d` and `y` keep raw `COORDINATOR_ALIAS`.
 Password orders (`order.password is not None`) skipped before construction (see Product
 intent). DMs via `send_private_msg`; signs with `NOSTR_NSEC`; publishes to one self-hosted
 strfry relay (`STRFRY_HOST`/`STRFRY_PORT`) over plain `ws://`.
+
+**Chat participation events (kind 30079)** — clients sign one per order (`d` =
+`robosats-chat-<orderId>`, `p` = coordinator nostr pubkey, empty content) and publish to
+the relay pool; the strfry sync filter (`docker/strfry/sync.sh`) replicates them across
+federation relays. `Nostr.has_chat_participation(order, robot)` queries the local relay
+(kind 30079, `author` = robot's registered `nostr_pubkey`, `d` match, `p` match, schnorr
+verified at ingest) and answers True/False, or **None when inconclusive** (relay
+unreachable, i.e. not CONNECTED after a 3 s grace loop, fetch error, unparseable event).
+Early exits returning False without touching the relay: empty `NOSTR_NSEC` or robot
+without `nostr_pubkey`. Consumed only by `automatic_dispute_resolution` (see Product
+intent — participation is dispute evidence, never linked to any payout path).
 
 ## Admin actions (`admin.py`) — move real funds, bypass `Logics`
 `OrderAdmin.actions`: `cancel_public_order`, `maker_wins`, `taker_wins`,
@@ -259,6 +273,30 @@ settled to the coordinator and **held indefinitely** — not split, not returned
 of the peers appears and contacts the coordinator. This is consistent with the same trust
 stance: the coordinator cannot know who is at fault without evidence, so it holds the bonds
 as a neutral custodian rather than making an arbitrary automatic call.
+
+**One-sided auto-loss and its two gates** (`automatic_dispute_resolution`): when exactly
+one party wrote zero messages, that party **loses automatically** (MLD/TLD) — the
+one-sided-silence heuristic treats an unresponsive counterparty as a desertion. The API
+message count is not a complete record of the conversation, though: with the Nostr chat
+transport a robot's messages can exist only on relays (its `/api/chat/` POSTs failed while
+the coordinator was offline), and a fully offline coordinator can lose API messages it
+never received. Two gates prevent the heuristic from acting on incomplete data:
+
+1. **Expiry-lag guard** (`DISPUTE_AUTO_RESOLUTION_MAX_LAG`, default 600 s): the expiry
+   sweepers run every 5 s, so in normal operation the lag between `expires_at` and the
+   resolution decision is seconds. A large lag means the order expired while the
+   coordinator was down → all automatic resolution skipped, dispute goes to manual
+   custody. No relay dependency; also covers relay downtime and the post-restart sync
+   race (`strfry sync` cron runs every 1 min and may not have landed yet).
+2. **Participation veto**: the losing branch additionally requires a decisive relay answer
+   that the silent robot signed no kind-30079 participation event. `True` (the robot was
+   chatting) or `None` (relay inconclusive) → automatic resolution skipped, manual
+   custody. Only a verified-signed event or a confirmed-empty relay counts as decisive.
+
+The gates never award anyone — they only route doubtful disputes to human review.
+Client-side publisher: `frontend/src/utils/chatParticipation.ts`, fired once per order on
+first chat-message send (idempotent, replaceable event, retried on subsequent sends until
+the pool accepts it).
 
 ## Traps
 Both nostr Celery tasks registered with empty `name=""`. `send_telegram_message` retries

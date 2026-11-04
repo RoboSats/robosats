@@ -11,6 +11,7 @@ live in tests/test_nostr_relay.py and run against the real strfry relay in
 the docker-tests.yml stack. There are no Client mocks here.
 """
 
+import asyncio
 import hashlib
 import uuid
 from datetime import datetime, timezone
@@ -310,3 +311,45 @@ class TestNostrSignMessage(TestCase):
         mock_config.return_value = "not_a_valid_nsec"
         result = Nostr.sign_message("any text")
         self.assertEqual(result, "")
+
+
+# ---------------------------------------------------------------------------
+class TestNostrChatParticipationEarlyExits(TestCase):
+    """
+    has_chat_participation() early exits — no relay client is created.
+    Decisive-answer paths (event found / not found / dead relay) live in
+    tests/test_nostr_relay.py against the real strfry relay.
+    """
+
+    def setUp(self):
+        self.nostr = Nostr()
+
+    @patch("api.nostr.config")
+    def test_chat_participation_constants(self, mock_config):
+        mock_config.side_effect = lambda key, **kw: kw.get("default", "")
+        from api.nostr import CHAT_PARTICIPATION_D_PREFIX, CHAT_PARTICIPATION_KIND
+
+        self.assertEqual(CHAT_PARTICIPATION_KIND, 30079)
+        self.assertEqual(CHAT_PARTICIPATION_D_PREFIX, "robosats-chat-")
+
+    @patch("api.nostr.config")
+    def test_empty_nostr_nsec_returns_false(self, mock_config):
+        mock_config.side_effect = lambda key, **kw: (
+            "" if key == "NOSTR_NSEC" else kw.get("default", "")
+        )
+        order = _make_order(order_id=42)
+        robot = MagicMock()
+        robot.nostr_pubkey = "aa" * 32
+
+        self.assertFalse(asyncio.run(self.nostr.has_chat_participation(order, robot)))
+
+    @patch("api.nostr.config")
+    def test_robot_without_pubkey_returns_false(self, mock_config):
+        mock_config.side_effect = lambda key, **kw: (
+            TEST_NSEC if key == "NOSTR_NSEC" else kw.get("default", "")
+        )
+        order = _make_order(order_id=42)
+        robot = MagicMock()
+        robot.nostr_pubkey = ""
+
+        self.assertFalse(asyncio.run(self.nostr.has_chat_participation(order, robot)))

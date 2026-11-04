@@ -1,6 +1,7 @@
 import math
 from datetime import timedelta
 
+from asgiref.sync import async_to_sync
 from decouple import config, Csv
 from django.contrib.auth.models import User
 from django.db.models import F, Q, Sum
@@ -28,6 +29,10 @@ MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
 
 ESCROW_USERNAME = config("ESCROW_USERNAME")
 PENALTY_TIMEOUT = int(config("PENALTY_TIMEOUT"))
+
+DISPUTE_AUTO_RESOLUTION_MAX_LAG = int(
+    config("DISPUTE_AUTO_RESOLUTION_MAX_LAG", default=600)
+)
 
 MIN_ORDER_SIZE = config("MIN_ORDER_SIZE", cast=int, default=20_000)
 MAX_ORDER_SIZE = config("MAX_ORDER_SIZE", cast=int, default=500_000)
@@ -484,6 +489,18 @@ class Logics:
         return True
 
     @classmethod
+    def has_chat_participation(cls, order, user):
+        """Asks the coordinator relay whether the robot signed a chat
+        participation event (kind 30079) for this order. True/False when
+        decisive, None when the relay cannot be consulted."""
+        if user is None:
+            return False
+
+        from api.nostr import Nostr
+
+        return async_to_sync(Nostr().has_chat_participation)(order, user.robot)
+
+    @classmethod
     def automatic_dispute_resolution(cls, order):
         """Simple case where a dispute can be solved with a
         priori knowledge. For example, a dispute that opens
@@ -504,6 +521,19 @@ class Logics:
         if order.expires_at >= timezone.now():
             return False
 
+        # If the order expired long ago, the coordinator was likely offline
+        # while the chat was happening: chat messages may have failed to reach
+        # the API and relay sync may not have landed yet. The decision inputs
+        # are not trustworthy, a human resolves the dispute instead.
+        lag_seconds = (timezone.now() - order.expires_at).total_seconds()
+        if lag_seconds > DISPUTE_AUTO_RESOLUTION_MAX_LAG:
+            order.log(
+                f"Order expired {int(lag_seconds)}s ago; automatic dispute "
+                "resolution skipped (expiry lag exceeds "
+                f"{DISPUTE_AUTO_RESOLUTION_MAX_LAG}s)"
+            )
+            return False
+
         num_messages_taker = len(
             Message.objects.filter(order=order, sender=order.taker)
         )
@@ -512,6 +542,16 @@ class Logics:
         )
 
         if num_messages_maker == num_messages_taker == 0:
+            maker_participation = cls.has_chat_participation(order, order.maker)
+            taker_participation = cls.has_chat_participation(order, order.taker)
+            if maker_participation is not False or taker_participation is not False:
+                order.log(
+                    "No robot wrote in the API chat, but chat participation "
+                    "evidence on the relay is missing or inconclusive; "
+                    "automatic dispute resolution skipped"
+                )
+                return False
+
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.settle_bond(order.taker_bond)
@@ -524,6 +564,14 @@ class Logics:
             )
 
         elif num_messages_maker == 0:
+            if cls.has_chat_participation(order, order.maker) is not False:
+                order.log(
+                    "Maker did not write in the API chat, but chat participation "
+                    "evidence on the relay exists or is inconclusive; "
+                    "automatic dispute resolution skipped"
+                )
+                return False
+
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
@@ -537,6 +585,14 @@ class Logics:
             )
 
         elif num_messages_taker == 0:
+            if cls.has_chat_participation(order, order.taker) is not False:
+                order.log(
+                    "Taker did not write in the API chat, but chat participation "
+                    "evidence on the relay exists or is inconclusive; "
+                    "automatic dispute resolution skipped"
+                )
+                return False
+
             cls.return_escrow(order)
             cls.settle_bond(order.taker_bond)
             cls.return_bond(order.maker_bond)
