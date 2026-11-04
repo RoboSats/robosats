@@ -648,6 +648,9 @@ docs/_site*
 node
 desktopApp/release-builds
 
+# frontend coverage output
+frontend/coverage/
+
 # frontend statics
 *.html
 frontend/templates/frontend/*.html

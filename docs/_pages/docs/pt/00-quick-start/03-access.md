@@ -14,7 +14,9 @@ src: "_pages/docs/pt/00-quick-start/03-access.md"
 
 Uma forma segura e muito privada de usar o RoboSats é através do endereço Onion. Você precisa do [navegador TOR](/docs/pt/tor/) e acesse pelo link:
 
-> [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
+> [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
+
+Se este endereço não carregar, você pode usar o endereço onion próprio de qualquer coordenador da federação, já que todos servem o mesmo cliente. A lista atualizada está em [federation.json](https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/federation.json): use o endereço `onion` listado na entrada `mainnet` de cada coordenador.
 
 Você também pode abrir o atalho [dex.robosats.com](https://dex.robosats.com) no navegador Tor e ser redirecionado instantaneamente para o site Onion.
 

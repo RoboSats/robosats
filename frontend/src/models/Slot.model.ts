@@ -28,6 +28,7 @@ class Slot {
     void roboidentitiesClient.generateRobohash(this.hashId, 'large');
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
+
     const tokenSHA256 = hexToBase91(sha256(token));
 
     const tokenBytes = new TextEncoder().encode(this.token ?? '');
@@ -103,26 +104,38 @@ class Slot {
 
     let changed = false;
 
-    if (robot.lastOrderId && this.lastOrder?.id !== robot.lastOrderId) {
-      // If active order became last order, preserve the full object.
-      if (this.activeOrder?.id === robot.lastOrderId) {
-        this.lastOrder = this.activeOrder;
-        this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
-        this.activeOrder = null;
-      } else {
-        // New last order with minimal data, status must be resolved before reusability checks.
-        this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
-        this.lastOrderStatusKnown = false;
-      }
-      changed = true;
-    }
-
     if (robot.activeOrderId && this.activeOrder?.id !== robot.activeOrderId) {
       this.activeOrder = new Order({
         id: robot.activeOrderId,
         shortAlias: robot.shortAlias,
       });
       changed = true;
+    } else if (
+      !robot.activeOrderId &&
+      this.activeOrder?.shortAlias === robot.shortAlias &&
+      this.lastOrder?.id !== this.activeOrder.id
+    ) {
+      this.activeOrder = null;
+      changed = true;
+    }
+
+    if (robot.lastOrderId && this.lastOrder?.id !== robot.lastOrderId) {
+      if (robot.lastOrderId === robot.activeOrderId) {
+        // The robot reports the same id for both last and active — it is still
+        // active, so leave activeOrder in place and skip updating lastOrder.
+      } else if (this.activeOrder?.id === robot.lastOrderId) {
+        // The previously-active order is now the last order: preserve the full
+        // object so that status details are not lost.
+        this.lastOrder = this.activeOrder;
+        this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
+        this.activeOrder = null;
+        changed = true;
+      } else {
+        // New last order with minimal data, status must be resolved before reusability checks.
+        this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
+        this.lastOrderStatusKnown = false;
+        changed = true;
+      }
     }
 
     const previousRewards = this.availableRewards;
@@ -147,6 +160,7 @@ class Slot {
       const order = this.activeOrder;
       const previousStatus = order.status;
       await order.fecth(federation, this);
+      this.loading = false;
       if (this.activeOrder !== order) return;
       this.updateSlotFromOrder(order);
       if (this.activeOrder && order.status !== previousStatus) this.onSlotUpdate();
@@ -173,11 +187,21 @@ class Slot {
     return order;
   };
 
+  private resolveBadRequestStatus = (order: Order): boolean => {
+    if (order.bad_request?.includes('expired')) {
+      order.status = 5;
+      return true;
+    }
+    if (order.bad_request?.includes('collaborativelly')) {
+      order.status = 12;
+      return true;
+    }
+    return false;
+  };
+
   updateSlotFromOrder: (newOrder: Order | null) => void = (newOrder) => {
     if (newOrder) {
-      // FIXME: API responses with bad_request should include also order's status
-      if (newOrder?.bad_request?.includes('expired')) newOrder.status = 5;
-      if (newOrder?.bad_request?.includes('collaborativelly')) newOrder.status = 12;
+      this.resolveBadRequestStatus(newOrder);
       if (
         newOrder.id === this.activeOrder?.id &&
         newOrder.shortAlias === this.activeOrder?.shortAlias
@@ -238,7 +262,9 @@ class Slot {
     }
 
     await this.lastOrder.fecth(federation, this);
-    this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
+    const statusResolved =
+      !this.lastOrder.bad_request || this.resolveBadRequestStatus(this.lastOrder);
+    this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder) && statusResolved;
     this.onSlotUpdate();
   };
 
@@ -264,6 +290,8 @@ class Slot {
   };
 
   isReusable = (): boolean => {
+    if (this.loading) return false;
+
     if (this.activeOrder) return false;
 
     if (!this.lastOrder) {
@@ -274,7 +302,7 @@ class Slot {
       return false;
     }
 
-    const reusableStatuses = [0, 1, 2, 4, 5];
+    const reusableStatuses = [4, 5];
 
     return reusableStatuses.includes(this.lastOrder.status);
   };

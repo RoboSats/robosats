@@ -6,7 +6,7 @@ interface ConfirmationDialogProps {
   onClose: () => void;
   onClickDone: () => void;
   hasRobot: boolean;
-  onClickGenerateRobot?: () => void;
+  onClickGenerateRobot?: () => Promise<void>;
 }
 
 const ConfirmationDialog = ({
@@ -14,7 +14,7 @@ const ConfirmationDialog = ({
   onClose,
   hasRobot,
   onClickDone,
-  onClickGenerateRobot = () => null,
+  onClickGenerateRobot = async () => {},
 }: ConfirmationDialogProps): React.JSX.Element => {
   return hasRobot ? (
     <StoreTokenDialog

@@ -6,6 +6,7 @@ import { type RoboidentitiesClient } from '../Roboidentities/type';
 const client: RoboidentitiesClient = {
   generateRoboname: (_initialString: string) => Promise.resolve('TestRobot'),
   generateRobohash: (_initialString: string, _size: 'small' | 'large') => Promise.resolve(''),
+  getRobohashFromCache: (_initialString: string, _size: 'small' | 'large') => undefined,
 };
 
 export const roboidentitiesClient = client;

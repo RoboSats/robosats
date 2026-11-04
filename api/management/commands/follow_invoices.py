@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from decouple import config
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from django.utils import timezone
 
 from api.lightning.node import LNNode
@@ -153,6 +154,10 @@ class Command(BaseCommand):
             status=LNPayment.Status.FLIGHT,
             in_flight=False,
             routing_attempts=0,
+        ).filter(
+            # A payout held by payout_problem() waits until its next check time.
+            Q(last_routing_time__isnull=True)
+            | Q(last_routing_time__lt=timezone.now())
         )
 
         retry_invoices = queryset.filter(

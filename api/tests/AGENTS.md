@@ -15,7 +15,9 @@ external call (config lookups, HTTP session, file I/O) is mocked via `unittest.m
 | `test_nostr.py` | Nostr event construction (`nostr.py`) |
 | `test_notifications.py` | `Notifications` fan-out methods |
 | `test_payout_amount.py` | `payout_amount` / fee-split math |
-| `test_withdraw_rewards.py` | `withdraw_rewards` flow |
+| `test_withdraw_rewards.py` | `withdraw_rewards` flow — three `pay_invoice` outcomes (success, FAILRO, ambiguous) |
+| `test_slashed_rewards.py` | `add_slashed_rewards` idempotency (exploit regression), reward-source gate, reward math, concurrent-cancel Postgres stress test |
+| `test_payout_safety.py` | `payout_problem()` gates, `follow_send_payment` hold behaviour, `withdraw_rewards` rate limits (cooldown + global daily max) |
 
 - `test_utils.py` detail: `get_exchange_rates` (rate aggregation, asserts median across
   mocked API responses), `weighted_median`, `validate_pgp_keys`/`verify_signed_message`
@@ -45,6 +47,10 @@ external call (config lookups, HTTP session, file I/O) is mocked via `unittest.m
   | `api.tasks` → `resolve_lightning_address` | `"api.utils.resolve_lightning_address"` |
   | `api.tasks` → `send_community_donation` (delay) | `"api.tasks.send_community_donation"` |
   | `api.tasks` / `api.utils` → `config` | `"decouple.config"` (patch at each module) |
+
+## Mandate
+
+Mocked unit tests here are **required** per the root `AGENTS.md` Testing policy for any change to `api/logics.py`, `api/utils.py`, `api/serializers.py`, `api/tasks.py`, `api/notifications.py`, or `api/nostr.py`. Add a new `test_<module>.py` file when covering a module not yet represented above, or extend an existing file — never mix concerns across files.
 
 ## Contrast with root `/tests`
 `/home/koala/Workspace/robosats/tests/` (outside `api/`) is a **separate**, much heavier

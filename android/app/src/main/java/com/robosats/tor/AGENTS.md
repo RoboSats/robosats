@@ -1,7 +1,7 @@
 # /android/…/com/robosats/tor — Tor Lifecycle
 
 ## Purpose
-kmp-tor lifecycle management: daemon startup, port configuration, SOCKS proxy exposure, and Orbot bypass. All outbound HTTP and WebSocket traffic from OkHttp routes through the SOCKS proxy this module provides.
+kmp-tor 2.x (`io.matthewnelson.kmp-tor:runtime` + `resource-exec-tor`, tor 0.4.9) lifecycle management: daemon startup, port configuration, SOCKS proxy exposure, and Orbot bypass. All outbound HTTP and WebSocket traffic from OkHttp routes through the SOCKS proxy this module provides.
 
 ## File map
 | File | Role |
@@ -12,7 +12,7 @@ kmp-tor lifecycle management: daemon startup, port configuration, SOCKS proxy ex
 
 **Note**: there is no `TorKmp.kt` — both `class TorKmp` and `object TorKmpManager` live in `TorKmpManager.kt`.
 
-## Port configuration (`TorKmp` constructor body)
+## Port configuration (`TorRuntime.Builder` `config {}` block)
 | Port type | Ports | Extra flags |
 |---|---|---|
 | DNS | 9252, 9253 | — |
@@ -21,16 +21,18 @@ kmp-tor lifecycle management: daemon startup, port configuration, SOCKS proxy ex
 | Trans | 9262, 9263 | — |
 | Socks (isolated) | 9264 | `OnionTrafficOnly` + `IsolateClientAddr` |
 
-`DormantClientTimeout` = 10 minutes.
+All use the `__XxxPort` options: a taken port is reassigned to `auto` instead of failing startup.
+`proxy` is built from `RuntimeEvent.LISTENERS`: the 9254 listener, else any non-9264 one (9264 is onion-only and would break clearnet requests).
+`DormantClientTimeout` = 10 minutes. tor runs as its own process (exec), workDir `getDir("kmptor")`, cache `cacheDir/kmptor`; no Android Service.
 
 ## TorKmpManager (singleton object)
 - `getTorKmpObject()`: returns current `TorKmp` instance; throws `UninitializedPropertyAccessException` if not yet created
 - `updateTorKmpObject(torKmp: TorKmp)`: stores the instance
-- Exposes: `torOperationManager.startQuietly()`, `torState: TorState`, `isConnected(): Boolean`, `isStarting(): Boolean`, `proxy: Proxy` (SOCKS `InetSocketAddress`)
+- Exposes: `startQuietly()` / `stopQuietly()` / `restartQuietly()` / `newIdentity()`, `torState: TorState`, `isConnected(): Boolean`, `isStarting(): Boolean`, `proxy: Proxy` (SOCKS `InetSocketAddress`)
 
 ## Startup integration (`MainActivity`)
 1. `getTorKmpObject()` — if `UninitializedPropertyAccessException`, create `TorKmp(application)` + call `TorKmpManager.updateTorKmpObject`
-2. `torOperationManager.startQuietly()`
+2. `startQuietly()` (enqueues `Action.StartDaemon`, never throws)
 3. Background thread polls `isConnected()` / `isStarting()` (max 15 retries × 2s)
 4. On success: `HttpClientManager.setDefaultProxy(getTorKmpObject().proxy)` — all subsequent OkHttp calls use this proxy
 
@@ -42,6 +44,8 @@ Embedded kmp-tor is the **default and primary transport**. Orbot mode is an esca
 
 ## Traps
 - `getTorKmpObject()` throws (not returns null) when uninitialized — callers in `WebAppInterface` (`getTorStatus`) must be aware.
+- tor 0.4.8 (kmp-tor 1.x) stalls at ~30% bootstrap since the 28 Oct 2026 consensus requires Desc=3/Microdesc=3 — do not downgrade below tor 0.4.9.
+- Exec mode needs `jniLibs.useLegacyPackaging = true` (tor ships as `libtor.so` and is executed from `nativeLibraryDir`).
 - `DormantClientTimeout = 10 min` means Tor may go dormant during background use; `NotificationsService` must call `startQuietly()` / check `isConnected()` independently (it does so via `keepAlive()`).
 
 ## Constraints

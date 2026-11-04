@@ -5,9 +5,39 @@ Pre-built Tor binaries for Linux, macOS, and Windows, committed directly to git.
 parent `index.ts` spawns the appropriate binary at module load. This directory contains
 no application logic — it is a pure platform-binary depot.
 
+## Current versions
+See `versions.json` for the authoritative per-platform record.
+
+| Platform | Bundle | tor version |
+|---|---|---|
+| Linux x86_64 | Expert Bundle 16.0 | 0.4.9.15 |
+| macOS x86_64 | Expert Bundle 16.0 | 0.4.9.15 |
+| Windows x86_64 | Expert Bundle 16.0 | 0.4.9.15 |
+
+`versions.json` records `minimumTorVersion`, per-platform `bundleUrl`, `bundleSha256`,
+`binarySha256`, and `libs` sha256. Update all fields when replacing binaries.
+
+## Updating the bundled binaries
+
+1. Download the three Expert Bundle tarballs from
+   `https://dist.torproject.org/torbrowser/<bundle-version>/`:
+   `tor-expert-bundle-linux-x86_64-<bundle>.tar.gz`, `-macos-x86_64-`, `-windows-x86_64-`.
+   Verify `.asc` signatures against Tor Browser Developers key
+   `EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290`.
+2. Replace `tor-<platform>/tor/` and `tor-<platform>/data/` with the bundle contents.
+   Preserve executable bits (`chmod +x` on binaries).
+3. Update `versions.json`: bump `expertBundle`, `torVersion`, `updatedAt`,
+   all `bundleUrl`, `bundleSha256`, `binarySha256`, and `libs` sha256 values.
+4. Run `node tor/verify.js` from `desktopApp/` — must exit 0.
+5. Recompile: `npm run compile` from `desktopApp/`.
+6. Commit binaries, `versions.json`, and compiled JS together.
+
 ## Layout
 ```
 tor/
+  versions.json                  ← provenance manifest and minimum-version record
+  verify.js                      ← guard script (run by CI before packaging)
+  __tests__/verify.test.js       ← unit tests for verify.js
   geoip                          ← root-level GeoIP database (unused — see Traps)
   geoip6                         ← root-level GeoIP6 database (unused)
   README.CONJURE.md              ← upstream bundle readme
@@ -15,31 +45,28 @@ tor/
   README.WEBTUNNEL.md
   tor-linux/
     tor/
-      tor                        ← ELF binary
+      tor                        ← ELF binary (x86_64)
       libcrypto.so.3
       libevent-2.1.so.7
       libssl.so.3
-      libstdc++.so.6
     data/geoip
     data/geoip6
-    pluggable_transports/        ← conjure-client, lyrebird, snowflake-client,
-                                    webtunnel-client, pt_config.json, READMEs
+    pluggable_transports/        ← conjure-client, lyrebird, pt_config.json
   tor-mac/
     tor/
-      tor                        ← Mach-O binary
+      tor                        ← Mach-O binary (x86_64; Apple Silicon uses Rosetta)
       libevent-2.1.7.dylib
     data/geoip
     data/geoip6
-    pluggable_transports/        ← same set as linux
+    pluggable_transports/        ← conjure-client, lyrebird, pt_config.json
   tor-win/
     tor/
       tor.exe
       tor-gencert.exe
     data/geoip
     data/geoip6
-    pluggable_transports/        ← same set as linux
+    pluggable_transports/        ← conjure-client.exe, lyrebird.exe, pt_config.json
 ```
-Total: **44 files** tracked in git.
 
 ## Invocation
 Called from `../index.ts` `checkPlatformAndRunTor()`:
@@ -51,25 +78,24 @@ spawn(path.join(__dirname, '/tor/tor-<platform>/tor/tor[.exe]'))
   — no GeoIPFile / GeoIPv6File override
   — no SocksPort override
 ```
-Tor starts with **all defaults**, which means it binds SocksPort **9050** on localhost.
+Tor starts with **all defaults**, binding SocksPort **9050** on localhost.
 The parent's `session.setProxy({ proxyRules: "socks://localhost:9050" })` targets exactly
 that default port. The dependency is implicit — there is no config file linking the two.
 
-## Provenance
-- Binaries are copies from the upstream **Tor Expert Bundle** (one zip per platform,
-  published by the Tor Project).
-- Updated **manually** by a maintainer: download the new bundle, extract, replace files,
-  commit.
-- **No automation**: no download script, no CI step, no in-repo checksum or signature
-  verification file.
-- All 44 files are committed to git (including the platform ELF/Mach-O/PE binaries).
+## Version guard
+`verify.js` is run by CI (`desktop-build.yml`) after `npm ci` and before packaging.
+It checks sha256 of every committed binary against `versions.json` and confirms that
+the self-reported version satisfies `minimumTorVersion`. Run it locally with
+`node tor/verify.js` from `desktopApp/`.
+
+Raise `minimumTorVersion` when the Tor consensus changes `required-client-protocols`
+to a value a lower series cannot satisfy, or when the current series reaches EOL.
 
 ## Traps
-1. **`pluggable_transports/` is dead payload.** `conjure-client`, `lyrebird`,
-   `snowflake-client`, and `webtunnel-client` are shipped as a side effect of copying
-   the upstream bundle. No torrc is ever written, so no bridge/pluggable-transport is
-   configured. Censorship-circumvention via bridges is **unimplemented**, not a supported
-   feature. Do not advertise or document it as one.
+1. **`pluggable_transports/` is dead payload.** `conjure-client` and `lyrebird` are
+   shipped as a side effect of copying the upstream bundle. No torrc is ever written, so
+   no bridge/pluggable-transport is configured. Censorship-circumvention via bridges is
+   **unimplemented**, not a supported feature. Do not advertise or document it as one.
 2. **Root `geoip`/`geoip6` and per-platform `data/geoip*` are also dead payload** for the
    same reason — GeoIP is a torrc-configured feature; with no torrc these files are never
    loaded.
@@ -80,10 +106,8 @@ that default port. The dependency is implicit — there is no config file linkin
 4. **All three platform trees ship in every packaged build.** `@electron/packager` does
    not filter `tor/` by target platform — every release zip contains the Linux, macOS,
    and Windows binaries regardless of the packaged platform, inflating binary size.
-5. **No readiness polling.** `checkPlatformAndRunTor()` returns as soon as `spawn()`
-   returns. The app window opens immediately; if Tor hasn't bootstrapped yet, outbound
-   coordinator API calls fail silently until it does. (Documented here and in the parent
-   `desktopApp/AGENTS.md`.)
+5. **`libstdc++.so.6` was removed in Expert Bundle 16.0.** Do not re-add it unless
+   a future bundle reintroduces it.
 
 ## Constraints
 - Do not move or rename `tor-linux/`, `tor-mac/`, `tor-win/` — paths are hardcoded in
@@ -91,3 +115,5 @@ that default port. The dependency is implicit — there is no config file linkin
 - Do not hand-patch binaries — replace the entire bundle from the upstream release.
 - Do not advertise pluggable transports as a working feature; they are unconnected.
 - Do not add a torrc unless the parent `index.ts` is updated to pass it as a spawn arg.
+- Always update `versions.json` and run `verify.js` after any binary replacement.
+- Always bump `minimumTorVersion` when the Tor Project changes `required-client-protocols`.
