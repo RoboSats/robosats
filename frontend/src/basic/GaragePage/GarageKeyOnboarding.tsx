@@ -78,8 +78,11 @@ const GarageKeyOnboarding = ({
       if (switchResult.switched) {
         setToastMessage(
           t(
-            'Switched from Account #{{fromIndex}} to #{{toIndex}} - previous account has completed trades',
-            { fromIndex: switchResult.fromIndex, toIndex: switchResult.toIndex },
+            'Switched from Robot #{{fromIndex}} to #{{toIndex}} - previous robot has completed trades',
+            {
+              fromIndex: switchResult.fromIndex,
+              toIndex: switchResult.toIndex,
+            },
           ),
         );
         setToastOpen(true);

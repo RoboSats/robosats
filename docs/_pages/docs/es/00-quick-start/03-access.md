@@ -16,6 +16,8 @@ Una forma segura y muy privada de usar RoboSats es a través de la dirección On
 
 > [<b>robosats</b>y56bwqn56qyadmcxkx767hnab<br/>g4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
+Si esta dirección no carga, puedes usar en su lugar la dirección onion propia de cualquier coordinador de la federación, ya que todos sirven el mismo cliente. La lista actualizada está en [federation.json](https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/federation.json): usa la dirección `onion` que aparece en la entrada `mainnet` de cada coordinador.
+
 **Privado:** tu conexión será encriptada de extremo a extremo y retransmitida por varias capas de nodos, lo que dificultará el seguimiento.
 {: .notice--primary}
 

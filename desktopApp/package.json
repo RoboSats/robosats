@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron .",
     "compile": "./node_modules/.bin/tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test tor/__tests__/verify.test.js __tests__/torMonitor.test.js",
+    "verify-tor": "node tor/verify.js",
     "package-linux": "npx @electron/packager . Robosats  --platform=linux --arch=x64 --icon=./assets/icon/Robosats.svg --overwrite  --out=release-builds --asar.unpackDir=tor",
     "package-win": "npx @electron/packager . Robosats  --platform=win32 --arch=x64 --icon=./assets/icon/Robosats.ico --overwrite   --out=release-builds --asar.unpackDir=tor",
     "package-mac": "npx @electron/packager . Robosats  --platform=darwin --arch=x64 --icon=./assets/icon/Robosats.icns --overwrite    --out=release-builds --asar.unpackDir=tor"
@@ -16,7 +17,7 @@
   "overrides": {
     "@xmldom/xmldom": "^0.8.13",
     "minimatch": "^9.0.7",
-    "brace-expansion": "^1.1.18",
+    "brace-expansion": "^1.1.21",
     "@electron/universal": {
       "minimatch": "^9.0.7",
       "brace-expansion": "^1.1.18"
@@ -24,7 +25,7 @@
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
-    "electron": "^44.4.5",
+    "electron": "^44.9.1",
     "typescript": "^7.0.2"
   },
   "build": {

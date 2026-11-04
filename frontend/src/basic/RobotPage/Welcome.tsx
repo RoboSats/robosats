@@ -3,14 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Box, Button, Grid, Typography, useTheme, Tooltip } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { FastForward, RocketLaunch, Key, Search } from '@mui/icons-material';
-import { genBase62Token } from '../../utils';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { useNavigate } from 'react-router-dom';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import useLegacyMode from '../../hooks/useLegacyMode';
-
-import GarageKey from '../../models/GarageKey.model';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'profile') => void;
@@ -152,24 +149,13 @@ const Welcome = ({ setView, width, setInputToken }: WelcomeProps): React.JSX.Ele
               color='primary'
               disabled={isLegacyMode}
               onClick={() => {
-                if (garage.getMode() === 'garageKey') {
-                  if (!garage.getGarageKey()) {
-                    const newKey = new GarageKey('generate');
-                    garage.setGarageKey(newKey);
+                void garage.generateRobot(federation).then(() => {
+                  const garageKey = garage.getGarageKey();
+                  if (garageKey) {
+                    setInputToken(garageKey.encodedKey);
                   }
-                  void garage.createRobotFromGarageKey(federation, undefined, true).then(() => {
-                    const garageKey = garage.getGarageKey();
-                    if (garageKey) {
-                      setInputToken(garageKey.encodedKey);
-                    }
-                    navigateToPage('create', navigate);
-                  });
-                } else {
-                  const token = genBase62Token(36);
-                  void garage.createRobot(federation, token);
-                  setInputToken(token);
                   navigateToPage('create', navigate);
-                }
+                });
               }}
             >
               <FastForward /> <div style={{ width: '0.5em' }} />

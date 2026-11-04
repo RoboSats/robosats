@@ -22,7 +22,6 @@ import { FederationContext, type UseFederationStoreType } from '../../contexts/F
 import { NoRobotDialog, WarningDialog } from '../../components/Dialogs';
 import { Order } from '../../models';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
-import { genBase62Token } from '../../utils';
 
 const OrderPage = (): React.JSX.Element => {
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
@@ -48,7 +47,7 @@ const OrderPage = (): React.JSX.Element => {
     return <CircularProgress />;
   }
 
-  return <OrderPageContent key={`${garage.currentSlot}:${params.shortAlias}:${params.orderId}`} />;
+  return <OrderPageContent key={`${params.shortAlias}:${params.orderId}`} />;
 };
 
 const OrderPageContent = (): React.JSX.Element => {
@@ -153,17 +152,7 @@ const OrderPageContent = (): React.JSX.Element => {
         onClose={() => {
           setOpenNoRobot(false);
         }}
-        onClickGenerateRobot={() => {
-          const token = genBase62Token(36);
-          garage
-            .createRobot(federation, token)
-            .then(() => {
-              setOpenNoRobot(false);
-            })
-            .catch((e) => {
-              console.log(e);
-            });
-        }}
+        onClickGenerateRobot={() => garage.generateRobot(federation)}
       />
       {!currentOrder?.maker && !currentOrder?.bad_request && <CircularProgress />}
 

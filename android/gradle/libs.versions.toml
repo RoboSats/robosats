@@ -10,8 +10,8 @@ appcompat = "1.7.1"
 material = "1.13.0"
 activity = "1.11.0"
 constraintlayout = "2.2.1"
-kmpTor= "4.8.10-0-1.4.5"
-kmpTorBinary= "4.8.10-0"
+kmpTor = "2.6.0"
+kmpTorResource = "409.5.0"
 jna = "5.18.1"
 okhttp = "5.2.0"
 quartz = "0.92.7"
@@ -25,8 +25,8 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-kmp-tor = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor", version.ref = "kmpTor" }
-kmp-tor-binary = { group = "io.matthewnelson.kotlin-components", name = "kmp-tor-binary-extract-android", version.ref = "kmpTorBinary" }
+kmp-tor-runtime = { group = "io.matthewnelson.kmp-tor", name = "runtime", version.ref = "kmpTor" }
+kmp-tor-resource-exec = { group = "io.matthewnelson.kmp-tor", name = "resource-exec-tor", version.ref = "kmpTorResource" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 quartz = { module = "com.github.koalasat.amethyst:quartz", version.ref = "quartz" }
 ammolite = { module = "com.github.koalasat.amethyst:ammolite", version.ref = "quartz" }

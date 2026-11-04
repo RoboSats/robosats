@@ -68,10 +68,11 @@ authentic content of the encrypted messages, without the coordinator ever having
 private keys or seen the plaintext during the trade.
 
 ## Frontend Chat Implementations
-Three implementations in `frontend/src/components/TradeBox/EncryptedChat/`:
-1. **Socket** (`EncryptedSocketChat`) — WebSocket-based, preferred
-2. **API** (`EncryptedApiChat`) — REST polling fallback
-3. **Nostr** (`EncryptedNostrChat`) — Nostr relay-based, under development
+Two implementations in `frontend/src/components/TradeBox/EncryptedChat/`:
+1. **Nostr** (`EncryptedNostrChat`) — NIP-17 gift-wrapped DMs over Nostr relays; used for garageKey robots when both peers have Nostr pubkeys and `settings.connection === 'nostr'`
+2. **API** (`EncryptedApiChat`) — REST polling against this `/chat` app; used for legacy robots, missing Nostr pubkeys, or `settings.connection === 'api'`
+
+The WebSocket chat (`EncryptedSocketChat`) has been removed from the frontend. This backend (`/chat` Django Channels app) is retained for `EncryptedApiChat` REST access and API compatibility.
 
 ## Notification Throttling
 Chat notifications (Telegram/Nostr/webhook) are rate-limited:

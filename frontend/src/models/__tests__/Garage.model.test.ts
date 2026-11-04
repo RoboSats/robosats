@@ -54,6 +54,25 @@ it('notifies completion for an empty robot without repeatedly fetching it', asyn
   expect(get).toHaveBeenCalledTimes(1);
 });
 
+it('clears activeOrder and treats robot as unused when pre-taker TakeOrder expires', async () => {
+  const { slot, garage } = await garageWithSlot();
+  const get = jest.spyOn(apiClient, 'get');
+
+  get.mockResolvedValueOnce({ earned_rewards: 0, active_order_id: 42 });
+  await slot.fetchRobot(federation);
+  expect(slot.activeOrder?.id).toBe(42);
+  expect(slot.lastOrder).toBeNull();
+  expect(slot.isReusable()).toBe(false);
+  expect(garage.isCurrentSlotUsed()).toBe(false);
+
+  get.mockResolvedValueOnce({ earned_rewards: 0 });
+  await slot.fetchRobot(federation);
+  expect(slot.activeOrder).toBeNull();
+  expect(slot.lastOrder).toBeNull();
+  expect(slot.isReusable()).toBe(true);
+  expect(garage.isCurrentSlotUsed()).toBe(false);
+});
+
 it.each([4, 5, 12, 14, 17, 18])(
   'reconciles terminal status %s once and preserves renewal eligibility',
   async (status) => {
@@ -180,4 +199,89 @@ it('loads a recovered account only once and selects cached accounts before the r
   expect(garage.getSlot()).toBe(accountOne);
   finish({ earned_rewards: 0 });
   await switching;
+});
+
+it('activeOrder takes priority over lastOrder when the robot reports both', async () => {
+  const { slot } = await garageWithSlot();
+  jest
+    .spyOn(apiClient, 'get')
+    .mockResolvedValue({ earned_rewards: 0, active_order_id: 7, last_order_id: 3 });
+  await slot.fetchRobot(federation);
+  expect(slot.activeOrder?.id).toBe(7);
+  expect(slot.lastOrder?.id).toBe(3);
+});
+
+it('does not update lastOrder when robot reports the same id for both active and last order', async () => {
+  const { slot } = await garageWithSlot();
+  jest
+    .spyOn(apiClient, 'get')
+    .mockResolvedValue({ earned_rewards: 0, active_order_id: 9, last_order_id: 9 });
+  await slot.fetchRobot(federation);
+  expect(slot.activeOrder?.id).toBe(9);
+  expect(slot.lastOrder).toBeNull();
+});
+
+it('activeOrder from coordinator A is not cleared by a no-active-order response from coordinator B', async () => {
+  const twoCoordFederation = {
+    getCoordinatorsAlias: () => ['coordA', 'coordB'],
+    getCoordinator: (alias: string) => ({ shortAlias: alias, url: `https://${alias}.example` }),
+    roboPool: { sendEvent: jest.fn() },
+  } as unknown as Federation;
+
+  const garage = new Garage();
+  await garage.waitForSlotsLoaded();
+  garage.setMode('garageKey');
+  garage.setGarageKey(new GarageKey(key));
+  const token = garage.garageKey!.getCurrentRobotToken();
+  const slot = new Slot(token, ['coordA', 'coordB'], {}, jest.fn());
+  garage.slots[token] = slot;
+  garage.currentSlot = token;
+  await Promise.resolve();
+  jest.mocked(slot.onSlotUpdate).mockClear();
+
+  const get = jest.spyOn(apiClient, 'get');
+  get.mockImplementation(async (url: string) => {
+    if ((url as string).includes('coordA')) return { earned_rewards: 0, active_order_id: 5 };
+    return { earned_rewards: 0, last_order_id: 3 };
+  });
+
+  await slot.fetchRobot(twoCoordFederation);
+
+  expect(slot.activeOrder?.id).toBe(5);
+  expect(slot.activeOrder?.shortAlias).toBe('coordA');
+  expect(slot.lastOrder?.id).toBe(3);
+});
+
+it('generateRobot creates a garageKey and uses account #0 when starting from legacy mode', async () => {
+  const garage = new Garage();
+  await garage.waitForSlotsLoaded();
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+  expect(garage.getMode()).toBe('legacy');
+  expect(garage.getGarageKey()).toBeNull();
+
+  await garage.generateRobot(federation);
+
+  expect(garage.getMode()).toBe('garageKey');
+  const garageKey = garage.getGarageKey();
+  expect(garageKey).not.toBeNull();
+  expect(garageKey!.currentAccountIndex).toBe(0);
+
+  const expectedToken = garageKey!.deriveRobotToken(0);
+  expect(garage.currentSlot).toBe(expectedToken);
+  expect(garage.getSlot()?.token).toBe(expectedToken);
+});
+
+it('generateRobot reuses an existing garageKey and does not overwrite it', async () => {
+  const garage = new Garage();
+  await garage.waitForSlotsLoaded();
+  garage.setMode('garageKey');
+  garage.setGarageKey(new GarageKey(key));
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+  const originalKey = garage.getGarageKey();
+  await garage.generateRobot(federation);
+
+  expect(garage.getGarageKey()).toBe(originalKey);
+  expect(garage.currentSlot).toBe(originalKey!.deriveRobotToken(originalKey!.currentAccountIndex));
 });

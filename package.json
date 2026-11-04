@@ -7,7 +7,7 @@
   },
   "overrides": {
     "minimatch": "^3.1.4",
-    "brace-expansion": "^1.1.18",
+    "brace-expansion": "^1.1.21",
     "filelist": {
       "minimatch": "^5.1.8",
       "brace-expansion": "^1.1.18"

@@ -2,7 +2,7 @@ import React, { Suspense, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import BasicMain from './basic/Main';
 import ProMain from './pro/Main';
-import { CssBaseline, Snackbar, Alert } from '@mui/material';
+import { CssBaseline, Snackbar, Alert, type SnackbarCloseReason } from '@mui/material';
 import HostAlert from './components/HostAlert';
 
 import { I18nextProvider } from 'react-i18next';
@@ -35,10 +35,17 @@ const App = (): React.JSX.Element => {
     };
   }, []);
 
-  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleSnackbarClose = (
+    event: React.SyntheticEvent | Event | null,
+    reason: SnackbarCloseReason,
+  ) => {
     if (reason === 'clickaway') {
       return;
     }
+    setErrorOpen(false);
+  };
+
+  const handleAlertClose = () => {
     setErrorOpen(false);
   };
 
@@ -56,11 +63,11 @@ const App = (): React.JSX.Element => {
                 <Snackbar
                   open={errorOpen}
                   autoHideDuration={6000}
-                  onClose={handleClose}
+                  onClose={handleSnackbarClose}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 >
                   <Alert
-                    onClose={handleClose}
+                    onClose={handleAlertClose}
                     severity='error'
                     sx={{ width: '100%' }}
                     variant='filled'

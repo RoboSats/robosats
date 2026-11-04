@@ -19,7 +19,7 @@ import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { type Slot } from '../../models';
 import { AppContext, closeAll, type UseAppStoreType } from '../../contexts/AppContext';
-import { genBase62Token } from '../../utils';
+
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
@@ -63,9 +63,12 @@ const RobotProfile = ({
 
   const handleAddRobot = (): void => {
     setLoading(true);
-    const token = genBase62Token(36);
-    void garage.createRobot(federation, token);
-    setInputToken(token);
+    void garage.generateRobot(federation).then(() => {
+      const garageKey = garage.getGarageKey();
+      if (garageKey) {
+        setInputToken(garageKey.encodedKey);
+      }
+    });
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<string>): void => {

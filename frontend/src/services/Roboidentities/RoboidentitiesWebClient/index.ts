@@ -13,6 +13,13 @@ class RoboidentitiesClientWebClient implements RoboidentitiesClient {
     async (initialString, size) => {
       return await robohash.generate(initialString, size);
     };
+
+  public getRobohashFromCache = (
+    initialString: string,
+    size: 'small' | 'large',
+  ): string | undefined => {
+    return robohash.getFromCache(initialString, size);
+  };
 }
 
 export default RoboidentitiesClientWebClient;

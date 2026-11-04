@@ -399,7 +399,18 @@ class Garage {
     } else {
       await this.createRobot(federation, token);
     }
-    await this.getSlot(token)?.ensureLastOrderStatus(federation);
+
+    if (this.currentSlot !== token) return;
+
+    const slot = this.getSlot(token);
+    await slot?.fetchActiveOrder(federation);
+
+    if (this.currentSlot !== token) return;
+
+    await slot?.ensureLastOrderStatus(federation);
+
+    if (this.currentSlot !== token) return;
+
     this.setCurrentSlot(token);
   };
 
@@ -467,6 +478,14 @@ class Garage {
     } catch (error) {
       console.error('Failed to publish account recovery event:', error);
     }
+  };
+
+  generateRobot = async (federation: Federation): Promise<void> => {
+    if (!this.garageKey) {
+      this.setMode('garageKey');
+      this.setGarageKey(new GarageKey('generate'));
+    }
+    await this.createRobotFromGarageKey(federation, undefined, true);
   };
 
   makeOrderWithRecovery = async (federation: Federation, attributes: object): Promise<Order> => {

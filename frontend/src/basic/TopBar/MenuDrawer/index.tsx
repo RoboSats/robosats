@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   Box,
   CircularProgress,
-  Collapse,
   Divider,
   Drawer,
   List,
@@ -18,8 +17,6 @@ import { GarageContext, type UseGarageStoreType } from '../../../contexts/Garage
 import {
   Add,
   BubbleChart,
-  ExpandLess,
-  ExpandMore,
   Info,
   People,
   PriceChange,
@@ -46,7 +43,6 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
   const { open, setOpen, client, torStatus, page, navigateToPage, settings } =
     useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const [openGarage, setOpenGarage] = useState<boolean>(false);
 
   const [torColor, setTorColor] = useState<
     'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' | 'inherit'
@@ -55,10 +51,6 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
   const [torTitle, setTorTitle] = useState<string>(t('Connection error'));
 
   const slot = garage.getSlot();
-
-  useEffect(() => {
-    if (!show) setOpenGarage(false);
-  }, [show]);
 
   useEffect(() => {
     setShow(false);
@@ -113,58 +105,11 @@ const MenuDrawer = ({ show, setShow }: MenuDrawerProps): React.JSX.Element => {
                       hashId={slot?.hashId}
                     />
                   </ListItemIcon>
-                </ListItemButton>
-                <ListItemButton
-                  onClick={() => setOpenGarage((op) => !op)}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    pl: 0,
-                  }}
-                >
                   <Typography align='center' sx={{ ml: 1 }}>
                     <b>{slot?.nickname}</b>
                   </Typography>
-                  {openGarage ? <ExpandLess /> : <ExpandMore />}
                 </ListItemButton>
               </ListItem>
-              <Collapse in={openGarage} timeout='auto' unmountOnExit>
-                <List component='div' disablePadding>
-                  {Object.values(garage.slots).map((garageSlot, index) => {
-                    if (garageSlot.token === slot.token) return <div key={index}></div>;
-
-                    return (
-                      <ListItem disablePadding key={index}>
-                        <ListItemButton
-                          sx={{ pr: 0 }}
-                          onClick={() => {
-                            garage.setCurrentSlot(garageSlot.token ?? '');
-                            setOpenGarage(false);
-                            setTimeout(() => setShow(false), 300);
-                          }}
-                        >
-                          <ListItemIcon sx={{ minWidth: 56 }}>
-                            <RobotAvatar
-                              style={{ width: '1.5em', height: '1.5em' }}
-                              hashId={garageSlot.hashId ?? ''}
-                            />
-                          </ListItemIcon>
-                          <Typography align='center' sx={{ ml: 1 }}>
-                            <b>{garageSlot?.nickname}</b>
-                          </Typography>
-                        </ListItemButton>
-                      </ListItem>
-                    );
-                  })}
-                  <ListItemButton sx={{ pr: 0 }} onClick={handleAddRobot} key='add_robot'>
-                    <ListItemIcon sx={{ minWidth: 56 }}>
-                      <Add /> <div style={{ width: '0.5em' }} />
-                      {t('Add Robot')}
-                    </ListItemIcon>
-                  </ListItemButton>
-                </List>
-              </Collapse>
             </>
           ) : (
             <ListItem disablePadding sx={{ height: '30px', mt: '8px', mb: '8px' }}>
