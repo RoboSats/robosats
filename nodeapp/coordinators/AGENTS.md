@@ -13,8 +13,6 @@ name — all three must match exactly.
 | temple | 102 | 1002 | ✅ yes | Full testnet nginx locations |
 | lake | 104 | 1004 | ✅ yes | Full testnet nginx locations |
 | bazaar | 107 | — | ❌ no testnet bridge | Nginx answers `/testnet/bazaar/` with `return 503` |
-| alice | 109 | — | ❌ no testnet bridge | Nginx answers `/testnet/alice/` with `return 503` |
-| eleuteria | 110 | 1010 | ✅ yes | Full testnet nginx locations |
 | freeport | 111 | — | ❌ no testnet bridge | Nginx answers `/testnet/freeport/` with `return 503` |
 | ammanaya | 112 | — | ❌ no testnet bridge | Nginx answers `/testnet/ammanaya/` with `return 503` |
 
@@ -22,7 +20,7 @@ Testnet port convention for coordinators that have testnet: mainnet port + 900 (
 There is no `moon` coordinator — that entry was a documentation error.
 
 ## `upstreams.conf` Contract
-Coordinators with a live testnet bridge (temple, lake, eleuteria) declare both upstreams:
+Coordinators with a live testnet bridge (temple, lake) declare both upstreams:
 ```nginx
 upstream mainnet_{alias} {
     server 127.0.0.1:{mainnet_port};
@@ -31,7 +29,7 @@ upstream testnet_{alias} {
     server 127.0.0.1:{testnet_port};
 }
 ```
-Mainnet-only coordinators (bazaar, alice, freeport, ammanaya) declare only `mainnet_{alias}`.
+Mainnet-only coordinators (bazaar, freeport, ammanaya) declare only `mainnet_{alias}`.
 Both upstream names must match exactly what `locations.conf` references in `proxy_pass`.
 
 ## `locations.conf` Route Set (canonical pattern, per coordinator)
@@ -47,7 +45,7 @@ Both upstream names must match exactly what `locations.conf` references in `prox
 
 **Testnet routes** — two patterns depending on coordinator:
 
-*Full testnet locations* (temple, lake, eleuteria — have a live `testnet_{alias}` upstream):
+*Full testnet locations* (temple, lake — have a live `testnet_{alias}` upstream):
 | Location | Upstream | Notes |
 |---|---|---|
 | `/testnet/{alias}/static/assets/avatars/` | `testnet_{alias}` | Coordinator avatar images (testnet) |
@@ -56,7 +54,7 @@ Both upstream names must match exactly what `locations.conf` references in `prox
 | `/testnet/{alias}/relay/` | `testnet_{alias}` | Nostr relay; same upgrade headers + `Origin $http_origin` + `Access-Control-Allow-Origin *` |
 | `/testnet/{alias}/blossom/` | `testnet_{alias}` | Blossom media upload proxy (testnet) |
 
-*503 stub* (bazaar, alice, freeport, ammanaya — no testnet bridge):
+*503 stub* (bazaar, freeport, ammanaya — no testnet bridge):
 ```nginx
 location /testnet/{alias}/ {
     return 503;
@@ -94,16 +92,16 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   users deploy a known, auditable set of coordinators torified at the container level,
   not a runtime-fetched list. Generating this config automatically from
   `federation.json` is a known improvement path but has not been implemented.
-- **Testnet support in nodeapp is best-effort.** Only temple, lake, and eleuteria have a
-  distinct testnet onion and a live testnet socat bridge with full nginx locations. The
-  remaining four coordinators (bazaar, alice, freeport, ammanaya) are mainnet-only —
+- **Testnet support in nodeapp is best-effort.** Only temple and lake have a distinct
+  testnet onion and a live testnet socat bridge with full nginx locations. The remaining
+  three coordinators (bazaar, freeport, ammanaya) are mainnet-only —
   `/testnet/{alias}/` returns 503.
 
 ## Traps
 - Several `locations.conf` comments name the wrong coordinator (e.g., lake's testnet
   section heading says "Freedomsats Coordinator Testnet Locations", bazaar's says
   "TheBigLake Coordinator Mainnet") — copy-paste artefacts; functionally harmless.
-- Mainnet-only coordinators (`bazaar`, `alice`, `freeport`, `ammanaya`) have no
+- Mainnet-only coordinators (`bazaar`, `freeport`, `ammanaya`) have no
   `testnet_{alias}` upstream in `upstreams.conf` — do not add a testnet location block
   for them without first adding the socat bridge in `robosats-client.sh` and the upstream
   in `upstreams.conf`.
@@ -115,7 +113,7 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
 - Upstream names (`mainnet_{alias}`, `testnet_{alias}`) must match exactly in both
   `upstreams.conf` and `locations.conf` for the same coordinator.
 - Never duplicate the nginx include lines for the same coordinator in `nginx.conf`.
-- When copying an existing coordinator as a template, prefer temple, lake, or eleuteria
+- When copying an existing coordinator as a template, prefer temple or lake
   as the source — they have distinct testnet onions and complete config sets.
 - New coordinators must include the `/mainnet/{alias}/blossom/` location block — it is
   part of the canonical mainnet route set.
