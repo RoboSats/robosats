@@ -1857,7 +1857,10 @@ class TradeTest(BaseAPITestCase):
 
     def test_order_expires_after_only_taker_messaged(self):
         """
-        Tests the expiration of an order in chat where maker never messaged
+        Tests that an order that expires in chat where only the taker messaged
+        opens a full dispute. Chat now runs over Nostr so coordinator Message
+        rows are not a reliable signal — auto-resolution based on chat history
+        is removed and every timeout-dispute goes through the full DIS path.
         """
         trade = Trade(self.client)
         trade.publish_order()
@@ -1890,11 +1893,8 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
-        # Verify taker lost dispute automatically
-        self.assertEqual(
-            data["status"],
-            Order.Status.MLD,
-        )
+        self.assertEqual(data["status"], Order.Status.DIS)
+        self.assertTrue(data["is_disputed"])
 
         self.assert_order_logs(data["id"])
 
@@ -1919,7 +1919,10 @@ class TradeTest(BaseAPITestCase):
 
     def test_order_expires_after_only_maker_messaged(self):
         """
-        Tests the expiration of an order in chat where taker never messaged
+        Tests that an order that expires in chat where only the maker messaged
+        opens a full dispute. Chat now runs over Nostr so coordinator Message
+        rows are not a reliable signal — auto-resolution based on chat history
+        is removed and every timeout-dispute goes through the full DIS path.
         """
         trade = Trade(self.client)
         trade.publish_order()
@@ -1930,11 +1933,11 @@ class TradeTest(BaseAPITestCase):
         trade.submit_payout_invoice(trade.maker_index)
 
         path = reverse("chat")
-        message = "Unencrypted message from taker"
+        message = "Unencrypted message from maker"
         params = f"?order_id={trade.order_id}"
         maker_headers = trade.get_robot_auth(trade.maker_index)
 
-        # Post new message as taker
+        # Post new message as maker
         body = {"PGP_message": message, "order_id": trade.order_id}
         self.client.post(path + params, data=body, **maker_headers)
 
@@ -1952,11 +1955,8 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
-        # Verify taker lost dispute automatically
-        self.assertEqual(
-            data["status"],
-            Order.Status.TLD,
-        )
+        self.assertEqual(data["status"], Order.Status.DIS)
+        self.assertTrue(data["is_disputed"])
 
         self.assert_order_logs(data["id"])
 
@@ -2308,10 +2308,10 @@ class TradeTest(BaseAPITestCase):
 
     def test_order_expires_after_undo_confirm_fiat_sent(self):
         """
-        Tests that automatic dispute resolution is blocked when fiat was marked
-        sent and then reverted (undo_confirm). The fix for security issue F2
-        ensures that reverted_fiat_sent=True prevents auto-resolution even if
-        the taker never messaged, so the order must enter full DIS status.
+        Tests that an order that expires in CHA after fiat-sent was confirmed
+        and then reverted enters full DIS status. reverted_fiat_sent=True is
+        irrelevant now that auto-resolution is gone, but the expected outcome
+        (full coordinator-custody dispute) is unchanged.
         """
         trade = Trade(self.client)
         trade.publish_order()
@@ -2341,7 +2341,7 @@ class TradeTest(BaseAPITestCase):
         order.expires_at = datetime.now()
         order.save()
 
-        # Make orders expire — this calls open_dispute → automatic_dispute_resolution
+        # Make orders expire — open_dispute opens a full coordinator-custody dispute
         trade.clean_orders()
 
         trade.get_order()
@@ -2350,13 +2350,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
-        # The fix: reverted_fiat_sent=True must block automatic resolution,
-        # so the order must be in full DIS status (not TLD/MLD).
-        self.assertEqual(
-            data["status"],
-            Order.Status.DIS,
-            "Order with reverted_fiat_sent must enter full DIS, not be auto-resolved",
-        )
+        self.assertEqual(data["status"], Order.Status.DIS)
         self.assertTrue(data["is_disputed"])
 
         self.assert_order_logs(data["id"])

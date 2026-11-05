@@ -56,18 +56,23 @@ attack. Legacy (non-garageKey) slots share a single bearer across all coordinato
 
 **Key lifecycle methods on `Garage`:**
 
-| Method                                                          | Purpose                                                                                  |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `createRobotFromGarageKey(federation, index?, autoFindUnused?)` | Derives token at index, creates/fetches slot (`legacy=false`), sets as current           |
-| `createRobot(federation, token, skipSelect?, legacy?)`          | Generic slot creation; defaults to `legacy=true`; pass `false` for garage-key slots      |
-| `ensureReusableSlot(federation, options)`                       | Auto-advances to next reusable account; suppressed when `manualNavigationActive=true`    |
-| `nextAccount(federation, source)` / `previousAccount`           | Manual index navigation; sets `manualNavigationActive=true` on `source='manual'`         |
-| `makeOrderWithRecovery(federation, attributes)`                 | Creates order + publishes Nostr account-recovery event (kind 30078, NIP-59 gift-wrapped) |
-| `publishAccountRecovery(federation, index?)`                    | Publishes recovery event without creating an order                                       |
-| `findNextUnusedAccount(federation, startIndex)`                 | Scans up to 100 slots for first reusable; fetches last-order status when unknown         |
-| `loadGarageKey()` / `setGarageKey()` / `deleteGarageKey()`      | GarageKey persistence lifecycle                                                          |
+| Method                                                          | Purpose                                                                                                                                                    |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createRobotFromGarageKey(federation, index?, autoFindUnused?)` | Derives token at index, creates/fetches slot (`legacy=false`), sets as current; stamps `slot.accountIndex`                                                 |
+| `createRobot(federation, token, skipSelect?, legacy?)`          | Generic slot creation; defaults to `legacy=true`; pass `false` for garage-key slots                                                                        |
+| `ensureReusableSlot(federation, options)`                       | Auto-advances to next reusable account; suppressed when `manualNavigationActive=true`; fetches robot when slot is still loading before judging reusability |
+| `nextAccount(federation, source)` / `previousAccount`           | Manual index navigation; sets `manualNavigationActive=true` on `source='manual'`                                                                           |
+| `makeOrderWithRecovery(federation, attributes)`                 | Creates order + publishes Nostr account-recovery event (kind 30078, NIP-59 gift-wrapped)                                                                   |
+| `publishAccountRecovery(federation, index?)`                    | Publishes recovery event without creating an order                                                                                                         |
+| `findNextUnusedAccount(federation, startIndex)`                 | Scans up to 100 slots for first reusable; fetches robot from coordinator when slot is still loading before judging; fetches last-order status when unknown |
+| `inferAccountIndex(token)`                                      | Synchronously scans derivation 0…currentAccountIndex to find which account number a token belongs to; used by `setCurrentSlot`                             |
+| `loadGarageKey()` / `setGarageKey()` / `deleteGarageKey()`      | GarageKey persistence lifecycle                                                                                                                            |
 
-**`Slot.isReusable()`** returns `true` when: no active order AND (no last order OR last order status ∈ `[0,1,2,4,5]` = WFB/PUB/PAU/UCA/EXP). `lastOrderStatusKnown` gates this — slots with an unknown last-order status are conservatively **not** reusable until `ensureLastOrderStatus()` fetches the real status.
+**`Slot.accountIndex`** (`number | null`, default `null`) — the GarageKey account number this slot was derived from. Set by `createRobotFromGarageKey` and restored from local storage. `null` means the slot predates this field or was created outside garageKey mode; in that case `setCurrentSlot` infers the index via `inferAccountIndex` and stamps it.
+
+**`Garage.setCurrentSlot` / `Garage.deleteSlot` account-sync invariant** — whenever the active slot changes, `garageKey.currentAccountIndex` is updated to match the incoming slot's `accountIndex`. If the slot doesn't have a stored `accountIndex`, `inferAccountIndex` is called to derive it from the GarageKey (scanning 0…currentAccountIndex). This keeps the two in sync so that `handleChangeRobotAndCreate` / `handleChangeRobotAndTake` always start the unused-account search from the right position (currentAccountIndex + 1). Without this sync, notifications or Profile-dialog slot changes left the account index pointing to a different robot than the displayed one, causing the new order to skip a robot.
+
+**`Slot.isReusable()`** returns `true` when: no active order AND (no last order OR last order status ∈ `{4, 5}` = UCA/EXP). `lastOrderStatusKnown` gates this — slots with an unknown last-order status are conservatively **not** reusable until `ensureLastOrderStatus()` fetches the real status. A slot that has never been fetched (`loading=true`) also returns `false`; both `ensureReusableSlot` and `findNextUnusedAccount` call `fetchRobot` first when they encounter a loading slot.
 
 **Account recovery flow** (Nostr):
 

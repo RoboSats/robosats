@@ -68,6 +68,7 @@ class Slot {
   nostrPubKey?: string;
   availableRewards: string | null = null;
   loading: boolean;
+  accountIndex: number | null = null;
 
   onSlotUpdate: () => void;
 
