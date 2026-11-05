@@ -18,6 +18,7 @@ external call (config lookups, HTTP session, file I/O) is mocked via `unittest.m
 | `test_withdraw_rewards.py` | `withdraw_rewards` flow — three `pay_invoice` outcomes (success, FAILRO, ambiguous) |
 | `test_slashed_rewards.py` | `add_slashed_rewards` idempotency (exploit regression), reward-source gate, reward math, concurrent-cancel Postgres stress test |
 | `test_payout_safety.py` | `payout_problem()` gates, `follow_send_payment` hold behaviour, `withdraw_rewards` rate limits (cooldown + global daily max) |
+| `test_open_dispute.py` | `Logics.open_dispute()` — full custody path on expired CHA order (escrow + both bonds settled, status DIS, notification fired, no auto-resolution); guards that `automatic_dispute_resolution` no longer exists; invalid-status (error 1013) and too-early (error 1054) rejection paths |
 
 - `test_utils.py` detail: `get_exchange_rates` (rate aggregation, asserts median across
   mocked API responses), `weighted_median`, `validate_pgp_keys`/`verify_signed_message`
