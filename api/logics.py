@@ -21,7 +21,6 @@ from api.models import (
 )
 from api.tasks import send_devfund_donation, send_notification, nostr_send_order_event
 from api.utils import get_minning_fee, validate_onchain_address, location_country
-from chat.models import Message
 
 FEE = float(config("FEE"))
 MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
@@ -484,83 +483,6 @@ class Logics:
         return True
 
     @classmethod
-    def automatic_dispute_resolution(cls, order):
-        """Simple case where a dispute can be solved with a
-        priori knowledge. For example, a dispute that opens
-        at expiration on an order where one of the participants
-        never sent a message on the chat and never marked 'fiat
-        sent'. By solving the dispute automatically before
-        flagging it as dispute, we avoid having to settle the
-        bonds"""
-
-        # If fiat has been marked as sent (or was sent and then reverted),
-        # automatic dispute resolution is not possible.
-        if order.is_fiat_sent or order.reverted_fiat_sent:
-            return False
-
-        # If the order has not entered dispute due to time expire
-        # (a user triggered it), automatic dispute resolution is
-        # not possible.
-        if order.expires_at >= timezone.now():
-            return False
-
-        num_messages_taker = len(
-            Message.objects.filter(order=order, sender=order.taker)
-        )
-        num_messages_maker = len(
-            Message.objects.filter(order=order, sender=order.maker)
-        )
-
-        if num_messages_maker == num_messages_taker == 0:
-            cls.return_escrow(order)
-            cls.settle_bond(order.maker_bond)
-            cls.settle_bond(order.taker_bond)
-            order.update_status(Order.Status.DIS)
-
-            order.log("Maker bond was **settled**")
-            order.log("Taker bond was **settled**")
-            order.log(
-                "No robot wrote in the chat, the dispute cannot be solved automatically"
-            )
-
-        elif num_messages_maker == 0:
-            cls.return_escrow(order)
-            cls.settle_bond(order.maker_bond)
-            cls.return_bond(order.taker_bond)
-            order.update_status(Order.Status.MLD)
-            cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
-
-            order.log("Maker bond was **settled**")
-            order.log("Taker bond was **unlocked**")
-            order.log(
-                "**The dispute was solved automatically:** 'Maker lost dispute', the maker did not write in the chat"
-            )
-
-        elif num_messages_taker == 0:
-            cls.return_escrow(order)
-            cls.settle_bond(order.taker_bond)
-            cls.return_bond(order.maker_bond)
-            order.update_status(Order.Status.TLD)
-            cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
-
-            order.log("Maker bond was **unlocked**")
-            order.log("Taker bond was **settled**")
-            order.log(
-                "**The dispute was solved automatically:** 'Taker lost dispute', the maker did not write in the chat"
-            )
-        else:
-            return False
-
-        order.is_disputed = True
-        order.expires_at = timezone.now() + timedelta(
-            seconds=order.t_to_expire(Order.Status.DIS)
-        )
-        order.save(update_fields=["is_disputed", "expires_at"])
-        send_notification.delay(order_id=order.id, message="dispute_opened")
-
-        return True
-
-    @classmethod
     def open_dispute(cls, order, user=None):
         # Always settle escrow and bonds during a dispute. Disputes
         # can take long to resolve, it might trigger force closure
@@ -577,11 +499,6 @@ class Logics:
 
         if order.expires_at and timezone.now() < order.expires_at - timedelta(hours=18):
             return False, new_error(1054)
-
-        automatically_solved = cls.automatic_dispute_resolution(order)
-
-        if automatically_solved:
-            return True, None
 
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
             cls.settle_escrow(order)
