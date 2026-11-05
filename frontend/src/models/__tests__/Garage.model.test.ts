@@ -285,3 +285,104 @@ it('generateRobot reuses an existing garageKey and does not overwrite it', async
   expect(garage.getGarageKey()).toBe(originalKey);
   expect(garage.currentSlot).toBe(originalKey!.deriveRobotToken(originalKey!.currentAccountIndex));
 });
+
+it('createRobotFromGarageKey stamps accountIndex on the slot', async () => {
+  const { garage } = await garageWithSlot();
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+  await garage.createRobotFromGarageKey(federation, 3);
+  expect(garage.getSlot()?.accountIndex).toBe(3);
+  expect(garage.garageKey!.currentAccountIndex).toBe(3);
+});
+
+it('setCurrentSlot syncs garageKey account index to the slot accountIndex', async () => {
+  const { garage } = await garageWithSlot();
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+  await garage.createRobotFromGarageKey(federation, 2);
+  const tokenTwo = garage.garageKey!.deriveRobotToken(2);
+  expect(garage.garageKey!.currentAccountIndex).toBe(2);
+
+  await garage.createRobotFromGarageKey(federation, 0);
+  expect(garage.garageKey!.currentAccountIndex).toBe(0);
+
+  garage.setCurrentSlot(tokenTwo);
+  expect(garage.garageKey!.currentAccountIndex).toBe(2);
+});
+
+it('setCurrentSlot does not change account index for slots without an accountIndex', async () => {
+  const { garage } = await garageWithSlot();
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+  await garage.createRobotFromGarageKey(federation, 5);
+  expect(garage.garageKey!.currentAccountIndex).toBe(5);
+
+  const legacyToken = 'some-legacy-token-without-account-index';
+  garage.slots[legacyToken] = new Slot(legacyToken, ['test'], {}, jest.fn());
+
+  garage.setCurrentSlot(legacyToken);
+  expect(garage.garageKey!.currentAccountIndex).toBe(5);
+});
+
+it('findNextUnusedAccount fetches a loading slot before judging it and finds it unused', async () => {
+  const { garage } = await garageWithSlot();
+  const get = jest.spyOn(apiClient, 'get');
+
+  get.mockResolvedValueOnce({ earned_rewards: 0, last_order_id: 10 });
+  get.mockResolvedValueOnce({ status: 5, maker: 1, is_participant: true });
+  await garage.createRobotFromGarageKey(federation, 1);
+
+  const slotOne = garage.getSlot(garage.garageKey!.deriveRobotToken(1))!;
+  expect(slotOne.isReusable()).toBe(true);
+
+  slotOne.loading = true;
+  get.mockResolvedValue({ earned_rewards: 0 });
+
+  const nextIndex = await garage.findNextUnusedAccount(federation, 1);
+  expect(nextIndex).toBe(1);
+  expect(slotOne.loading).toBe(false);
+});
+
+it('findNextUnusedAccount skips a loading slot that turns out to be used', async () => {
+  const { garage } = await garageWithSlot();
+  const get = jest.spyOn(apiClient, 'get');
+
+  get.mockResolvedValueOnce({ earned_rewards: 0 });
+  await garage.createRobotFromGarageKey(federation, 1);
+
+  const slotOne = garage.getSlot(garage.garageKey!.deriveRobotToken(1))!;
+  slotOne.loading = true;
+  slotOne.lastOrder = new Order({ id: 10, maker: 1 });
+  slotOne.lastOrderStatusKnown = false;
+
+  get.mockResolvedValueOnce({ earned_rewards: 0, last_order_id: 10 });
+  get.mockResolvedValueOnce({ status: 9, maker: 1, is_participant: true });
+
+  const nextIndex = await garage.findNextUnusedAccount(federation, 1);
+  expect(nextIndex).toBe(2);
+});
+
+it('the exact reported scenario: order goes to #1 not #2 when user is put back on #0 after auto-switch', async () => {
+  const { garage, slot: slotZero } = await garageWithSlot();
+  const get = jest.spyOn(apiClient, 'get');
+
+  slotZero.lastOrder = new Order({ id: 1, shortAlias: 'test', maker: 1, status: 14 });
+  slotZero.lastOrderStatusKnown = true;
+
+  get.mockResolvedValue({ earned_rewards: 0 });
+  garage.resetManualNavigation();
+  const switchResult = await garage.ensureReusableSlot(federation, { source: 'auto' });
+  expect(switchResult).toMatchObject({ switched: true, fromIndex: 0, toIndex: 1 });
+  const tokenOne = garage.garageKey!.deriveRobotToken(1);
+  expect(garage.getSlot()?.token).toBe(tokenOne);
+  expect(garage.garageKey!.currentAccountIndex).toBe(1);
+  expect(garage.getSlot()?.accountIndex).toBe(1);
+
+  garage.setCurrentSlot(garage.garageKey!.deriveRobotToken(0));
+  expect(garage.garageKey!.currentAccountIndex).toBe(0);
+
+  const nextIndex = await garage.findNextUnusedAccount(
+    federation,
+    garage.getCurrentAccountIndex() + 1,
+  );
+  expect(nextIndex).toBe(1);
+});

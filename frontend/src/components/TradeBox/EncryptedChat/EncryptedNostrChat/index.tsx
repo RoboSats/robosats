@@ -43,7 +43,7 @@ interface Props {
   coordinatorUrl?: string;
 }
 
-const PEER_POLL_INTERVAL_MS = 5000;
+const PEER_PUBKEY_RETRY_INTERVAL_MS = 5000;
 
 const audioPath =
   getSettings().client == 'mobile'
@@ -64,7 +64,6 @@ const EncryptedNostrChat: React.FC<Props> = ({
   onSendMessage,
   onSendFile,
   setError,
-  setLastIndex,
   blossomEnabled,
   coordinatorUrl,
 }: Props): React.JSX.Element => {
@@ -85,10 +84,13 @@ const EncryptedNostrChat: React.FC<Props> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (peerPubKey) return;
     loadPeerPubKey();
-    const interval = setInterval(loadPeerPubKey, PEER_POLL_INTERVAL_MS);
+    const interval = setInterval(() => {
+      if (!peerPubKey) loadPeerPubKey();
+    }, PEER_PUBKEY_RETRY_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [peerPubKey]);
 
   useEffect(() => {
     if (messages.length > messageCount) {
@@ -155,7 +157,6 @@ const EncryptedNostrChat: React.FC<Props> = ({
           .toArray();
 
         const sortedMessages = chatMessages.sort((a, b) => a.index - b.index);
-        setLastIndex(sortedMessages[sortedMessages.length - 1]?.index ?? 0);
         return sortedMessages;
       });
     }

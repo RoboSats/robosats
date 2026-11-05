@@ -93,8 +93,9 @@ and `api/models/AGENTS.md`'s **Trade economics**).
 - `cancel_order()` / `collaborative_cancel()` — branches per status; post-escrow
   collaborative cancel is **always free** (see Product intent — `oas_schemas.py`'s "future
   cost" text is stale)
-- `open_dispute()` / `automatic_dispute_resolution()` / `dispute_statement()` — dispute flow;
-  auto-resolution short-circuits when one side never wrote in chat (char limits: see Traps)
+- `open_dispute()` / `dispute_statement()` — dispute flow; every timeout-dispute settles
+  escrow and both bonds to the coordinator immediately (full custody path, no auto-resolution;
+  char limits for statements: see Traps)
 - `order_expires()` — general timeout handler, branches per status; CHA/FSE timeout
   **auto-opens a dispute** (see Product intent)
 - `calc_sats()` / `satoshis_now()` / `price_and_premium_now()` — fiat↔sats conversion
@@ -253,12 +254,13 @@ guard on the dispute itself, not an SLA for coordinator resolution. Federation t
 on careful, unhurried dispute adjudication — disputes are never auto-rushed or auto-resolved
 against a user's favour once the coordinator has taken custody.
 
-**Both-silent auto-resolution** (`automatic_dispute_resolution`): if both parties wrote zero
-chat messages and fiat was never marked sent, the escrow is returned but both bonds are
-settled to the coordinator and **held indefinitely** — not split, not returned — until one
-of the peers appears and contacts the coordinator. This is consistent with the same trust
-stance: the coordinator cannot know who is at fault without evidence, so it holds the bonds
-as a neutral custodian rather than making an arbitrary automatic call.
+**No automatic dispute resolution.** Chat now runs over Nostr; the coordinator's
+`chat.models.Message` table is no longer a reliable record of who participated. Deciding
+a winner based on coordinator-side message counts would punish a robot that wrote in chat
+via Nostr but whose message was not stored locally. `automatic_dispute_resolution` has
+been removed. Every dispute opened by a CHA/FSE timeout follows the same full custody
+path as a user-triggered dispute: escrow and both bonds are settled to the coordinator,
+the order moves to `DIS`, and the coordinator resolves it manually via the admin.
 
 ## Traps
 Both nostr Celery tasks registered with empty `name=""`. `send_telegram_message` retries
