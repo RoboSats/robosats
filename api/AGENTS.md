@@ -96,7 +96,8 @@ and `api/models/AGENTS.md`'s **Trade economics**).
 - `open_dispute()` / `automatic_dispute_resolution()` / `dispute_statement()` — dispute flow;
   auto-resolution short-circuits when one side never wrote in chat (char limits: see Traps)
 - `order_expires()` — general timeout handler, branches per status; CHA/FSE timeout
-  **auto-opens a dispute** (see Product intent)
+  **auto-opens a dispute** (see Product intent), unless the expiry is processed late
+  (`expiry_processed_late()`): then `extend_chat_after_downtime()` extends the chat instead
 - `calc_sats()` / `satoshis_now()` / `price_and_premium_now()` — fiat↔sats conversion
 - `compute_cltv_expiry_blocks()`, `create_onchain_payment()`/`update_address()` — on-chain
   swap setup (see `api/lightning/AGENTS.md` + Product intent)
@@ -259,6 +260,22 @@ settled to the coordinator and **held indefinitely** — not split, not returned
 of the peers appears and contacts the coordinator. This is consistent with the same trust
 stance: the coordinator cannot know who is at fault without evidence, so it holds the bonds
 as a neutral custodian rather than making an arbitrary automatic call.
+
+**Late expiry = coordinator downtime** (`MAX_EXPIRY_LATENESS`, default 300 s):
+`clean_orders` checks expiries every ~5 s, so a CHA/FSE order whose expiry is processed
+more than `MAX_EXPIRY_LATENESS` after `expires_at` means the coordinator was offline. During
+that time the robots could not press "fiat sent"/"confirm" or reach the in-app chat (they may
+have kept talking over Nostr, which leaves no `Message` rows), so neither a dispute nor the
+message-count auto-resolution is fair. `order_expires()` instead sets
+`expires_at = now + min(max(lateness, MIN_DOWNTIME_EXTENSION), t_to_expire(CHA))`: the robots
+get back at least the time the order sat expired while the coordinator was down (the downtime
+before `expires_at` is unknown), and never less than `MIN_DOWNTIME_EXTENSION` (default 1 h) so
+a short outage still leaves time to act, capped at one normal chat period so the escrow hold invoice, whose CLTV budget is
+sized for `t_to_expire(CHA) + t_to_expire(WFE)`, is not held much longer than planned. Status
+is unchanged and it returns `False` (the order did not expire). As a backstop,
+`automatic_dispute_resolution()` never auto-resolves a late-processed expiry, e.g. a robot
+opening a dispute right after the coordinator comes back, before `clean_orders` runs: that
+dispute goes to manual resolution.
 
 ## Traps
 Both nostr Celery tasks registered with empty `name=""`. `send_telegram_message` retries

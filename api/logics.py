@@ -42,6 +42,9 @@ MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(
 
 GEOBLOCKED_COUNTRIES = config("GEOBLOCKED_COUNTRIES", cast=Csv(), default="")
 
+MAX_EXPIRY_LATENESS = config("MAX_EXPIRY_LATENESS", cast=int, default=300)
+MIN_DOWNTIME_EXTENSION = config("MIN_DOWNTIME_EXTENSION", cast=int, default=3600)
+
 
 def payout_problem(lnpayment):
     """Why a buyer payout must not be sent now, or None. Checked right before every
@@ -459,6 +462,10 @@ class Logics:
                 return True
 
         elif order.status in [Order.Status.CHA, Order.Status.FSE]:
+            if cls.expiry_processed_late(order):
+                cls.extend_chat_after_downtime(order)
+                return False
+
             # Another weird case. The time to confirm 'fiat sent or received' expired. Yet no dispute
             # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat
             # sent", we assume this is a dispute case by default.
@@ -467,6 +474,25 @@ class Logics:
                 "Order expired during chat and a dispute was opened automatically"
             )
             return True
+
+    def expiry_processed_late(order):
+        lateness = timezone.now() - order.expires_at
+        return lateness > timedelta(seconds=MAX_EXPIRY_LATENESS)
+
+    def extend_chat_after_downtime(order):
+        now = timezone.now()
+        lateness = now - order.expires_at
+        extension = min(
+            max(lateness, timedelta(seconds=MIN_DOWNTIME_EXTENSION)),
+            timedelta(seconds=order.t_to_expire(Order.Status.CHA)),
+        )
+        order.expires_at = now + extension
+        order.save(update_fields=["expires_at"])
+
+        order.log(
+            f"Order expired during chat but its expiry was processed {int(lateness.total_seconds() // 60)} minutes late: the coordinator was offline. "
+            f"Chat time was **extended** by {int(extension.total_seconds() // 60)} minutes instead of opening a dispute"
+        )
 
     @classmethod
     def kick_taker(cls, take_order):
@@ -502,6 +528,12 @@ class Logics:
         # (a user triggered it), automatic dispute resolution is
         # not possible.
         if order.expires_at >= timezone.now():
+            return False
+
+        if cls.expiry_processed_late(order):
+            order.log(
+                "The order expiry was processed late (the coordinator was offline), the dispute cannot be solved automatically"
+            )
             return False
 
         num_messages_taker = len(
@@ -546,7 +578,7 @@ class Logics:
             order.log("Maker bond was **unlocked**")
             order.log("Taker bond was **settled**")
             order.log(
-                "**The dispute was solved automatically:** 'Taker lost dispute', the maker did not write in the chat"
+                "**The dispute was solved automatically:** 'Taker lost dispute', the taker did not write in the chat"
             )
         else:
             return False
