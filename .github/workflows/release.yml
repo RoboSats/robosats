@@ -67,9 +67,13 @@ jobs:
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
+  nodeapp-test:
+    uses: RoboSats/robosats/.github/workflows/nodeapp-test.yml@main
+    needs: check-versions
+
   selfhosted-client-image:
     uses: RoboSats/robosats/.github/workflows/selfhosted-client-image.yml@main
-    needs: [frontend-build, check-versions]
+    needs: [frontend-build, check-versions, nodeapp-test]
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}

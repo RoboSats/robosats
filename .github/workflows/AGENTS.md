@@ -1,7 +1,7 @@
 # /.github/workflows — GitHub Actions Workflows
 
 ## Purpose
-12 workflows: one build orchestrator (`frontend-build.yml`) that is the single source of
+13 workflows: one build orchestrator (`frontend-build.yml`) that is the single source of
 all static bundles, downstream build/image/test workflows that consume those artifacts, two
 linters, CodeQL scanning, and a weekly third-party data sync.
 
@@ -11,6 +11,7 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | `frontend-build.yml` | Build: Frontend All Bundles | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend"]` | — | 5 artifacts (see below) + dispatches 3 Docker workflows when non-release |
 | `integration-tests.yml` | Test: Coordinator | dispatch / workflow_call / push `main paths:["api/**","chat/**","control/**","robosats/**"]` / `pull_request **.py` | `django-main-static` | coverage HTML artifact (`htmlcov/` copied out of container) |
 | `coordinator-image.yml` | Docker: Coordinator | dispatch / workflow_call(`semver`) / push+PR `main paths:["api","robosats","frontend"]` | `django-main-static` | Docker image `recksato/robosats` |
+| `nodeapp-test.yml` | Test: Nodeapp | dispatch / workflow_call / push+PR `main paths:["nodeapp/**","frontend/**"]` | — | consistency check pass/fail (`nodeapp/tests/consistency-check.sh`) + container smoke test (docker run + internal healthcheck) |
 | `selfhosted-client-image.yml` | Docker: Selfhosted Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","nodeapp"]` | `nodeapp-main-static` | Docker image `recksato/robosats-client` |
 | `web-client-image.yml` | Docker: Web Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","web"]` | `web-main-static` | Docker image `recksato/robosats-web` |
 | `android-build.yml` | Build: Android | workflow_call(`semver`, secrets) / push+PR `main paths:["android","frontend"]` | `mobile-web.bundle` | APK artifacts (4 ABIs) |
@@ -50,6 +51,29 @@ When `inputs.semver == ''` (i.e. a plain push to `main`, not a tag release),
   + `coverage html`; uploads artifact `coverage-report-{python-tag}-{ln-vendor}-{run_id}`.
 - Integration tests gate `coordinator-image` in `release.yml` — coordinator image only
   builds after both LND and CLN test jobs pass.
+
+## Nodeapp Test (`nodeapp-test.yml`)
+- **Why**: PR #2881 removed the alice/eleuteria coordinators from the federation but left
+  dangling nginx includes and socat references in nodeapp, crashing the self-hosted client
+  at startup (fixed by PR #2899). No CI job covered nodeapp. This workflow guards the
+  coordinator add/remove procedure (`nodeapp/coordinators/AGENTS.md`).
+- **`consistency` job**: runs `nodeapp/tests/consistency-check.sh` (POSIX sh, no
+  dependencies) validating: nginx.conf includes ↔ `coordinators/` directories
+  (bidirectional, no duplicates), socat bridges defined ↔ launched in `robosats-client.sh`,
+  socat port ↔ `upstreams.conf` server port, upstream names ↔ `proxy_pass` references,
+  `federation.json` shortAlias set ↔ coordinator directories (hard fail), and
+  `sh -n` syntax check. Accepts an optional argument selecting an alternative `nodeapp/`
+  root (used to test historical states).
+- **`smoke-test` job**: `docker build ./nodeapp` + `docker run -d` + polls the internal
+  plain-HTTP healthcheck `http://127.0.0.1:8080/selfhosted` via `docker exec wget` for up
+  to 60s, failing fast with container logs if the container exits. Does not need the Tor
+  service or the `nodeapp-main-static` artifact — socat listeners bind without Tor and the
+  healthcheck is independent of the static bundle; a startup crash (nginx config error,
+  shell syntax error) kills the container and fails the job.
+- **Gating**: in `release.yml`, `nodeapp-test` gates `selfhosted-client-image` — the
+  client image only builds after both jobs pass (mirrors integration-tests →
+  coordinator-image). On push/PR to `main` it triggers on `paths: ["nodeapp/**",
+  "frontend/**"]` (`frontend/**` because `federation.json` lives there).
 
 ## Docker Images
 | Image | Arch | Context | Notes |

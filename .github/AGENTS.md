@@ -25,7 +25,7 @@ push tag v*.*.*
   └─ check-versions ──────────────────────────────────────────────────────────┐
        └─ frontend-build                                                       │
              ├─ integration-tests ──→ coordinator-image (needs tests + build)  │
-             ├─ selfhosted-client-image                                        │
+             ├─ nodeapp-test ──→ selfhosted-client-image (needs test + build)  │
              ├─ web-client-image                                               │
              ├─ android-build                                                  │
              └─ desktop-build                                                  │
