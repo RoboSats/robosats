@@ -53,6 +53,15 @@ frontend-build.yml
   └── webpack build → artifact "nodeapp-main-static"
         (nodeapp/static/ + nodeapp/basic.html + nodeapp/pro.html)
 
+nodeapp-test.yml  (triggered on push/PR to main for nodeapp|frontend paths,
+                    or called from release.yml gating selfhosted-client-image)
+  ├── consistency: nodeapp/tests/consistency-check.sh validates nginx.conf includes ↔
+  │   coordinators/ dirs, socat bridges defined ↔ launched, socat port ↔ upstream port,
+  │   upstream ↔ proxy_pass names, federation.json shortAlias ↔ coordinators/ dirs
+  └── smoke-test: docker build + run, polls internal healthcheck 127.0.0.1:8080/selfhosted;
+      catches startup crashes (dangling nginx includes / undefined socat refs after a
+      coordinator is added or removed — the PR #2881/#2899 failure mode)
+
 selfhosted-client-image.yml  (triggered on push/PR to main for frontend|nodeapp paths,
                                or called from release.yml with semver)
   ├── downloads "nodeapp-main-static" into nodeapp/
@@ -65,9 +74,9 @@ The static bundle (`static/frontend/` + HTML entry points) is **never committed 
 (`nodeapp/static` and `nodeapp/*.html` are `.gitignore`d). HTML files present in the
 working tree are local dev builds — never hand-edit them.
 
-The CI `push`/`pull_request` path filter is `paths: ["frontend", "nodeapp"]` — missing
-`/**` globs; this filter likely never triggers on file changes *inside* those directories
-(same latent bug as `desktop-build.yml`).
+Run `sh nodeapp/tests/consistency-check.sh` locally before PRs that add or remove a
+coordinator — it reproduces the exact gate run in CI (an optional argument selects an
+alternative `nodeapp/` root for testing historical states).
 
 ## Environment Variables
 | Variable | Default | Purpose |
