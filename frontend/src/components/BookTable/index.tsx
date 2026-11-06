@@ -1000,7 +1000,8 @@ const BookTable = ({
                 flexDirection: 'column',
               }
             : {
-                minWidth: `23em`,
+                minWidth: `min(23em, 100%)`,
+                maxWidth: '100%',
                 width: `${width}em`,
                 height: `${height}em`,
                 overflow: 'auto',
