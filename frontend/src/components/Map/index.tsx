@@ -1,20 +1,102 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 'react-leaflet';
+import { MapContainer, GeoJSON, Marker, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import { useTheme, LinearProgress } from '@mui/material';
 import { type GeoJsonObject } from 'geojson';
-import { DivIcon, type LeafletMouseEvent } from 'leaflet';
+import {
+  Control,
+  DivIcon,
+  TileLayer as LeafletTileLayer,
+  type Coords,
+  type DoneCallback,
+  type LeafletMouseEvent,
+  type TileEvent,
+} from 'leaflet';
 import { type PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import getWorldmapGeojson from '../../geo/Web';
 import { apiClient } from '../../services/api';
+import {
+  cancelOsmTile,
+  loadOsmTileBlob,
+  OSM_TILE_ATTRIBUTION,
+  OSM_TILE_URL,
+} from './osmTiles';
 
 interface MapPinProps {
   fillColor: string;
   outlineColor: string;
   eyesColor: string;
 }
+const isAbortError = (error: unknown): boolean =>
+  (error instanceof DOMException || error instanceof Error) && error.name === 'AbortError';
+
+class OsmTileLayer extends LeafletTileLayer {
+  private readonly aborts = new WeakMap<HTMLElement, AbortController>();
+  private readonly objectUrls = new WeakMap<HTMLElement, string>();
+
+  constructor() {
+    super(OSM_TILE_URL, {
+      attribution: OSM_TILE_ATTRIBUTION,
+      referrerPolicy: 'no-referrer',
+    });
+    this.on('tileunload', (event) => {
+      cancelOsmTile((event as TileEvent).tile, this.aborts, this.objectUrls);
+    });
+    this.on('tileabort', (event) => {
+      cancelOsmTile((event as TileEvent).tile, this.aborts, this.objectUrls);
+    });
+  }
+
+  protected createTile(coords: Coords, done: DoneCallback): HTMLElement {
+    const tile = document.createElement('img');
+    tile.alt = '';
+    const controller = new AbortController();
+    this.aborts.set(tile, controller);
+
+    void loadOsmTileBlob(this.getTileUrl(coords), controller.signal)
+      .then((blob) => {
+        if (controller.signal.aborted) return;
+        const objectUrl = URL.createObjectURL(blob);
+        this.objectUrls.set(tile, objectUrl);
+        tile.onload = () => {
+          done(undefined, tile);
+        };
+        tile.onerror = () => {
+          cancelOsmTile(tile, this.aborts, this.objectUrls);
+          done(new Error('OSM tile failed to decode'), tile);
+        };
+        tile.src = objectUrl;
+      })
+      .catch((error: unknown) => {
+        const aborted = controller.signal.aborted || isAbortError(error);
+        cancelOsmTile(tile, this.aborts, this.objectUrls);
+        if (aborted) return;
+        done(error instanceof Error ? error : new Error('OSM tile request failed'), tile);
+      });
+
+    return tile;
+  }
+}
+
+const OsmTiles = (): null => {
+  const map = useMap();
+
+  useEffect(() => {
+    const attribution = new Control.Attribution({ prefix: false });
+    attribution.addTo(map);
+    const layer = new OsmTileLayer();
+    layer.addTo(map);
+    return () => {
+      layer.remove();
+      attribution.remove();
+    };
+  }, [map]);
+
+  return null;
+};
+
 const MapPin = ({ fillColor, outlineColor, eyesColor }: MapPinProps): string => {
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.66 29.68">
@@ -176,13 +258,7 @@ const Map = ({
           }}
         />
       )}
-      {useTiles && (
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-          referrerPolicy='no-referrer'
-        />
-      )}
+      {useTiles && <OsmTiles />}
       {getOrderMarkers()}
       <LocationMarker />
     </MapContainer>
