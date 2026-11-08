@@ -33,7 +33,7 @@ No clearnet path exists; no I2P fallback is implemented.
 ## Key Files
 | File | Role |
 |---|---|
-| `robosats-client.sh` | Starts **6** socat bridges (mainnet + testnet for temple, lake; mainnet-only for bazaar, freeport, ammanaya); generates a self-signed TLS cert (`/etc/nginx/ssl/server.crt`) if absent; then `nginx` in foreground |
+| `robosats-client.sh` | Starts **7** socat bridges (mainnet + testnet for temple, lake; mainnet-only for bazaar, freeport, ammanaya, gumpellite); generates a self-signed TLS cert (`/etc/nginx/ssl/server.crt`) if absent; then `nginx` in foreground |
 | `nginx.conf` | Nginx config; `daemon off;` HTTPS `listen 12596 ssl` (self-signed cert, `error_page 497` redirects plain HTTP to HTTPS on the same port); internal plain-HTTP healthcheck server on `127.0.0.1:8080`; includes `conf.d/{alias}/upstreams.conf` (http block) + `locations.conf` (server block) per coordinator |
 | `Dockerfile` | Alpine 3.23; installs socat + nginx + openssl; `COPY . .`; `EXPOSE 12596`; HEALTHCHECK uses `wget` (BusyBox) against `http://127.0.0.1:8080/selfhosted`; `CMD ["sh", "robosats-client.sh"]` |
 | `docker-compose.yml` | **Dev-only** — builds `../frontend` + `../docker/tor` locally; references non-existent `../node/tor/*` path (see Traps); mounts `./ssl:/etc/nginx/ssl` |
@@ -131,8 +131,8 @@ alternative `nodeapp/` root for testing historical states).
   `../node/` directory is **untracked**; it is created at runtime by the dev stack and is
   absent on a fresh clone. The dev compose will fail at startup unless that directory is
   created first or the volume mounts are adjusted.
-- **5 coordinators, 6 socat bridges.** Only temple and lake have a distinct testnet onion
-  and a live testnet socat bridge. The remaining three (bazaar, freeport, ammanaya) are
+- **6 coordinators, 7 socat bridges.** Only temple and lake have a distinct testnet onion
+  and a live testnet socat bridge. The remaining four (bazaar, freeport, ammanaya, gumpellite) are
   **mainnet-only** in `robosats-client.sh`; there is no testnet bridge for them.
 - **Testnet nginx handling differs by coordinator.** Temple and lake have full testnet
   location sets (`/testnet/{alias}/static/assets/avatars/`, `.../api/`, `.../ws/`,
