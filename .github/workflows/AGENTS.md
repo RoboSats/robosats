@@ -14,8 +14,8 @@ linters, CodeQL scanning, and a weekly third-party data sync.
 | `nodeapp-test.yml` | Test: Nodeapp | dispatch / workflow_call / push+PR `main paths:["nodeapp/**","frontend/**"]` | — | consistency check pass/fail (`nodeapp/tests/consistency-check.sh`) + container smoke test (docker run + internal healthcheck) |
 | `selfhosted-client-image.yml` | Docker: Selfhosted Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","nodeapp"]` | `nodeapp-main-static` | Docker image `recksato/robosats-client` |
 | `web-client-image.yml` | Docker: Web Client | dispatch / workflow_call(`semver`) / push+PR `main paths:["frontend","web"]` | `web-main-static` | Docker image `recksato/robosats-web` |
-| `android-build.yml` | Build: Android | workflow_call(`semver`, secrets) / push+PR `main paths:["android","frontend"]` | `mobile-web.bundle` | APK artifacts (4 ABIs) |
-| `desktop-build.yml` | Build: Desktop | dispatch / workflow_call(`semver`) / push+PR `main paths:["desktopApp","frontend"]` | `desktop-main-static` | desktop zip artifacts (mac/linux/win) |
+| `android-build.yml` | Build: Android | dispatch / workflow_call(`semver`, secrets) / push+PR `main paths:["android/**"]` | `mobile-web.bundle` | APK artifacts (4 ABIs) |
+| `desktop-build.yml` | Build: Desktop | dispatch / workflow_call(`semver`) / push+PR `main paths:["desktopApp/**"]` | `desktop-main-static` | desktop zip artifacts (mac/linux/win) |
 | `release.yml` | Release | `push: tags: v*.*.*` | all build artifacts | Draft GitHub release + all APK/zip assets |
 | `js-linter.yml` | Lint: Javascript Client | push `main` / `pull_request **.(js\|ts\|tsx)` | — | ESLint + Prettier check + Jest unit tests |
 | `py-linter.yml` | Lint: Python Coordinator | push `main` / `pull_request **.py` | — | ruff check (`astral-sh/ruff-action@v4`) |
@@ -130,9 +130,10 @@ Tag set (all three): `type=ref,event=pr`, `type=ref,event=tag`,
 1. **Path filters missing `/**`** — most push/PR triggers use bare directory names (e.g.
    `paths: [ "frontend" ]`, `["api","chat",…]`); GitHub requires glob patterns to match
    files *inside* a directory. These triggers likely never fire on file changes within
-   those directories. **Fixed in `integration-tests.yml`** (now `["api/**",…]`); remaining
-   workflows (`frontend-build`, `coordinator-image`, image workflows, `android-build`,
-   `desktop-build`) still use bare names — fixing those would newly activate dormant push
+   those directories. **Fixed in `integration-tests.yml`** (now `["api/**",…]`),
+   `android-build.yml` (now `["android/**"]`), and `desktop-build.yml` (now
+   `["desktopApp/**"]`); remaining workflows (`frontend-build`, `coordinator-image`, image
+   workflows) still use bare names — fixing those would newly activate dormant push
    triggers with Docker-push side effects, and is deferred.
 2. **`pull_request` first-time contributor gate** — `js-linter.yml`, `py-linter.yml`, and
    `integration-tests.yml` use `pull_request` (untrusted fork code runs in an isolated,
