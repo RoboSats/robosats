@@ -539,6 +539,7 @@ class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "user_link",
         "telegram_enabled",
         "webhook_enabled",
+        "nostr_forward_enabled",
         "total_contracts",
         "earned_rewards",
         "claimed_rewards",
