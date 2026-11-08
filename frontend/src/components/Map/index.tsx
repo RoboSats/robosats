@@ -17,12 +17,7 @@ import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import getWorldmapGeojson from '../../geo/Web';
 import { apiClient } from '../../services/api';
-import {
-  cancelOsmTile,
-  loadOsmTileBlob,
-  OSM_TILE_ATTRIBUTION,
-  OSM_TILE_URL,
-} from './osmTiles';
+import { cancelOsmTile, loadOsmTileBlob, OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from './osmTiles';
 
 interface MapPinProps {
   fillColor: string;
