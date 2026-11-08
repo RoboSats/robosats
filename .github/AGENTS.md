@@ -105,8 +105,9 @@ the project's only revenue source (no VC, no coordinator fees to the core team).
   `actions/create-release@v1` are also deprecated/archived upstream.
 - Path-filter globs on push/PR triggers are bare directory names (e.g.
   `paths: [ "frontend" ]`) without `/**` — these filters likely never match file changes
-  inside those directories. Affects `frontend-build`, image workflows, `android-build`,
-  `desktop-build`. **`integration-tests.yml` has been fixed** to use `["api/**",…]`.
+  inside those directories. Affects `frontend-build` and image workflows. Fixed in
+  `integration-tests.yml` (`["api/**",…]`), `android-build.yml` (`["android/**"]`), and
+  `desktop-build.yml` (`["desktopApp/**"]`).
 - `js-linter`, `py-linter`, and `integration-tests` now use `pull_request` (isolated,
   read-only fork context). First-time contributor PRs require a maintainer "Approve and
   run" click before the workflow starts — this is the intended security trade-off.
