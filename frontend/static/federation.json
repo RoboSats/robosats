@@ -244,5 +244,54 @@
     ],
     "testnetNodesPubkeys": [],
     "federated": true
+  },
+  "gumpellite": {
+    "longAlias": "Gumpellite",
+    "shortAlias": "gumpellite",
+    "identifier": "gumpellite",
+    "description": "Privacy-focused Tor-only P2P Bitcoin exchange coordinator.",
+    "motto": "The gumpy place for decentralized sats",
+    "color": "#FF2D92",
+    "established": "2026-11-06",
+    "nostrHexPubkey": "84e6c796dacfed47e6ebac8755c3d0d494cf78f83356eefa9ee789ebc3a2c840",
+    "contact": {
+      "email": "GumpelliteCoord@proton.me",
+      "telegram": null,
+      "simplex": "https://smp4.simplex.im/a#zk_lpS5JI9oDH2lxmWKqefzvADIiw6T0cFARpaa8Z6U",
+      "pgp": "/static/federation/pgp/1A5C45EA049DCEB0F1EDFB1273CB46EAA393C2E7.asc",
+      "nostr": null,
+      "website": null,
+      "matrix": null,
+      "fingerprint": "1A5C45EA049DCEB0F1EDFB1273CB46EAA393C2E7"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy": "Gumpellite does not require KYC. We do not ask for identity documents, real names, or similar information. We minimize data. Data is retained only as needed for order operation, dispute handling, abuse prevention, debugging, and service integrity. No third-party analytics are used. No user data is sold. We recommend you avoid sending unnecessary personal information in chats, disputes, or contact messages.",
+      "Data Policy": "Order-related data is kept only as long as needed to operate and complete the order. Dispute-related data is kept while a dispute is open and for a limited time afterward, so that issues can be reviewed and resolved fairly. Abuse-related records may be kept longer, as needed to protect the service and other users. Data is not kept forever. Retention is based on operational need, not on collecting information.",
+      "Support Policy": "Support is provided on a best-effort basis. Response times vary. Use SimpleX as the primary contact channel. Include a clear description of the issue, relevant order information, and any evidence you can share. Do not include personal information that is not relevant. The operator is not able to move funds between users.",
+      "Dispute Evidence Policy": "Dispute evidence may be reviewed manually by the coordinator operator. Evidence is used to determine the outcome of a dispute, not for any other purpose. Send only what is needed: receipts, payment proofs, and chat screenshots are usually sufficient. Do not send identity documents or unrelated personal information.",
+      "Availability Policy": "Gumpellite is run on a best-effort basis. There is no uptime guarantee. The coordinator may go offline for maintenance, restart, or other reasons. The operator may stop running the coordinator at any time.",
+      "Abuse Policy": "The coordinator operator may take action to protect the service and its users, including denying service, canceling orders, or resolving disputes against abusive parties. Users are responsible for ensuring their own use of this coordinator is lawful in their jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://jvnfeiy3aizcpva6zekd3v6o5kpzduqeeqqihhtudhuqqa7e5jzm7kyd.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "0337a597a971a8dadd4e7bcec2638e4b5156a36157ec91c26d782aa4a0a8a7cef2"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
   }
 }
