@@ -158,6 +158,7 @@ as `avg × 5` stars + `(count)`.
 
 - `Garage` stores all robot slots across sessions (persisted via `systemClient`).
 - Each `Slot` holds exactly one `Robot` and its `activeOrder` (if any).
+- `updateSlotFromOrder(order)` only calls `onSlotUpdate()` when the status (or `bad_request`) differs from the slot's `activeOrder`. When `order` **is** the `activeOrder` and was already updated in place (`Order.submitAction`/`fecth` call `this.update(data)`), it sees no change. `fetchActiveOrder` and `submitOrderAction` therefore read the status before the request and call `onSlotUpdate()` themselves when it changed. Components submit order actions through `slot.submitOrderAction(...)`, never `order.submitAction(...)` + `updateSlotFromOrder`, or the trade box keeps showing the previous step (e.g. the "Confirm fiat sent" button after the order moved to status 10).
 - `getSlot()` returns the **currently selected** slot (one active at a time in the UI, but multiple can exist).
 - The garage does not enforce single-active-order — the coordinator does.
 
