@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from api.errors import new_error
 from api.models import Order
 from api.tasks import send_notification
+from api.utils import parse_int_param
 from chat.models import ChatRoom, Message
 from chat.serializers import ChatSerializer, InMessageSerializer, PostMessageSerializer
 
@@ -48,7 +49,18 @@ class ChatView(viewsets.ViewSet):
         if order_id is None:
             return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)
 
-        order = Order.objects.get(id=order_id)
+        order_id, error = parse_int_param(order_id, 6004, {"param": "order_id"})
+        if error is not None:
+            return Response(error, status.HTTP_400_BAD_REQUEST)
+
+        offset, error = parse_int_param(offset, 6004, {"param": "offset"})
+        if error is not None:
+            return Response(error, status.HTTP_400_BAD_REQUEST)
+
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)
 
         if not (request.user == order.maker or request.user == order.taker):
             return Response(new_error(6001), status.HTTP_400_BAD_REQUEST)
@@ -128,7 +140,10 @@ class ChatView(viewsets.ViewSet):
         if order_id is None:
             return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)
 
-        order = Order.objects.get(id=order_id)
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)
 
         if not (request.user == order.maker or request.user == order.taker):
             return Response(new_error(6001), status.HTTP_400_BAD_REQUEST)

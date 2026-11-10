@@ -86,3 +86,6 @@ Chat notifications (Telegram/Nostr/webhook) are rate-limited:
 - `ChatView` — combined GET/POST for HTTP-based chat access
 - Validates order ownership before allowing access
 - Returns ordered messages from requested index onward
+- GET query params validated via `api.utils.parse_int_param`: non-integer
+  `order_id`/`offset` → 400/6004 before any DB access; nonexistent order → 400/6000
+  (POST `order_id` is serializer-validated `IntegerField`, but `DoesNotExist` also → 6000)

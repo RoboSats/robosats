@@ -195,7 +195,11 @@ Public reads cached in Redis (`CACHES` default → `REDIS_URL`): `BookView` key 
 TTL 10s (`BOOK_CACHE_TTL`, only HTTP 200 cached — 404 "no orders" is not), `InfoView` key `info`
 TTL 30s (`INFO_CACHE_TTL`), `PriceView` key `price` TTL 30s (`PRICE_CACHE_TTL`). No manual
 invalidation — short TTLs suffice; book staleness is invisible to clients because frontends
-update the live book via Nostr kind 38383, not `/api/book/`.
+update the live book via Nostr kind 38383, not `/api/book/`. `BookView` parses `currency`/`type`
+via `parse_int_param` (`api/utils.py`, shared with `chat/`) **before** the cache key is built —
+non-integer input gets 400/1057 and never reaches Redis as a key. Query-param error codes:
+1057 (book currency/type), 1058 (make: unknown currency id), 6004 (chat: order_id/offset);
+order `order_id` parse failures reuse 1042.
 
 ## `/api/review/` — coordinator rating token
 `ReviewView.post(request)`:
