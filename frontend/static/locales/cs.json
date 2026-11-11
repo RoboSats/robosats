@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "Žádné nabídky na koupi BTC za {{currencyCode}}",
   "No orders found to sell BTC for {{currencyCode}}": "Žádné nabídky na prodej BTC za {{currencyCode}}",
   "No results found.": "Nenalezeny žádné výsledky.",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "Operátor",
   "Or": "Nebo",
   "Others": "Ostatní",

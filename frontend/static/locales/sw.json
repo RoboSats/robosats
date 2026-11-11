@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "Hakuna amri zilizopatikana za kununua BTC kwa {{currencyCode}}",
   "No orders found to sell BTC for {{currencyCode}}": "Hakuna amri zilizopatikana za kuuza BTC kwa {{currencyCode}}",
   "No results found.": "Hakuna matokeo yaliyopatikana.",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "Msimamizi",
   "Or": "Au",
   "Others": "Wengine",

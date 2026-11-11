@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "Eskaerarik ez BTC {{currencyCode}}gatik erosteko",
   "No orders found to sell BTC for {{currencyCode}}": "Eskaerarik ez BTC {{currencyCode}}gatik saltzeko",
   "No results found.": "Ez da emaitzarik aurkitu.",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "Operadorea",
   "Or": "Edo",
   "Others": "Besteak",

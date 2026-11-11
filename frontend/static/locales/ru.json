@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "Не найдено ордеров на покупку BTC за {{currencyCode}}",
   "No orders found to sell BTC for {{currencyCode}}": "Не найдено ордеров на продажу BTC за {{currencyCode}}",
   "No results found.": "Результаты не найдены.",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "Оператор",
   "Or": "Или",
   "Others": "Другие",

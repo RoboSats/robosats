@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "Aucun ordre trouvé pour acheter des BTC pour {{currencyCode}}",
   "No orders found to sell BTC for {{currencyCode}}": "Aucun ordre trouvé pour vendre des BTC pour {{currencyCode}}",
   "No results found.": "Aucun résultat trouvé.",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "Opérateur",
   "Or": "Ou",
   "Others": "Autres",

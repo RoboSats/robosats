@@ -8,8 +8,8 @@ class WebsocketConnectionWeb implements WebsocketConnection {
       minReconnectionDelay: 15000,
       connectionTimeout: 15000,
       reconnectionDelayGrowFactor: 2,
-      maxRetries: 4,
-      maxReconnectionDelay: 1000000,
+      maxRetries: Infinity,
+      maxReconnectionDelay: 300000,
     });
   }
 
@@ -21,6 +21,10 @@ class WebsocketConnectionWeb implements WebsocketConnection {
 
   public close: () => void = () => {
     this.rws.close();
+  };
+
+  public onOpen: (event: () => void) => void = (event) => {
+    this.rws.addEventListener('open', event);
   };
 
   public onMessage: (event: (message: object) => void) => void = (event) => {

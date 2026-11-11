@@ -13,7 +13,7 @@ book), `EncryptedChat` (three transport implementations), `RobotAvatar`, `RobotI
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `TradeBox/`         | Central trade UI — maps all 19 `Order.Status` values to user-facing prompts and actions                                                                                                                                      |
 | `MakerForm/`        | Order creation form — amount, currency, premium, payment method, duration, bond size; disabled in legacy mode via `useLegacyMode`; calls `garage.makeOrderWithRecovery` (not `slot.makeOrder` directly)                      |
-| `BookTable/`        | Filterable, sortable order book table                                                                                                                                                                                        |
+| `BookTable/`        | Filterable, sortable order book table. Footer shows a connected/total Nostr relay chip (nostr mode only) fed by `federation.roboPool.getConnectionStates()`                                                                  |
 | `OrderDetails/`     | Order summary card + `TakeButton`                                                                                                                                                                                            |
 | `EncryptedChat/`    | Chat UI — two transport implementations: `EncryptedNostrChat` (NIP-17 gift-wrapped DMs, default for garageKey robots) and `EncryptedApiChat` (REST polling, used for legacy robots and when `settings.connection === 'api'`) |
 | `RobotAvatar/`      | Deterministic robot avatar; `placeholder.json` swapped for `placeholder_highres.json` on Android                                                                                                                             |
@@ -190,6 +190,10 @@ tiles with `referrerPolicy: 'no-referrer'` on an `<img>`.
   not assume it is always interactive.
 - `FederationTable`'s "Verify ratings" can freeze the UI for several seconds on Tor — the
   user warning is intentional.
+- **BookTable's `gridComponents` useMemo captures slot components (footer, overlays) in a
+  closure** — any dynamic value a slot renders (e.g. the relay chip counts) must be listed
+  in that memo's dependency array, or the slot renders stale data until remount (values
+  only refresh on tab switch).
 
 ## Constraints
 

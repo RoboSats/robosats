@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "未找到以 {{currencyCode}} 購買比特幣的訂單",
   "No orders found to sell BTC for {{currencyCode}}": "未找到以 {{currencyCode}} 出售比特幣的訂單",
   "No results found.": "未找到結果。",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "運算符",
   "Or": "或",
   "Others": "其他",

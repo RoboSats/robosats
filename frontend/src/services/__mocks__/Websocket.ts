@@ -11,8 +11,9 @@ export interface WebsocketConnection {
   close: () => void;
   getReadyState: () => WebsocketState;
   onMessage: (cb: (e: unknown) => void) => void;
-  onError: (cb: (e: unknown) => void) => void;
+  onOpen: (cb: () => void) => void;
   onClose: (cb: () => void) => void;
+  onError: (cb: (e: unknown) => void) => void;
 }
 
 export interface WebsocketClient {
@@ -26,8 +27,9 @@ export const websocketClient: WebsocketClient = {
       close: () => {},
       getReadyState: () => WebsocketState.OPEN,
       onMessage: () => {},
-      onError: () => {},
+      onOpen: () => {},
       onClose: () => {},
+      onError: () => {},
     }),
 };
 

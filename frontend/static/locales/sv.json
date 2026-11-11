@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "Inga ordrar hittades för att köpa BTC för {{currencyCode}}",
   "No orders found to sell BTC for {{currencyCode}}": "Inga ordrar hittades för att sälja BTC för {{currencyCode}}",
   "No results found.": "Inga resultat hittades.",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "Operatör",
   "Or": "Eller",
   "Others": "Andra",

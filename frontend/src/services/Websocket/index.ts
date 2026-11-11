@@ -11,6 +11,7 @@ export const WebsocketState = {
 export interface WebsocketConnection {
   send: (message: string) => void;
   onMessage: (event: (message: object) => void) => void;
+  onOpen: (event: () => void) => void;
   onClose: (event: () => void) => void;
   onError: (event: (error: object) => void) => void;
   close: () => void;

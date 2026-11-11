@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "ไม่พบคำสั่งซื้อ BTC เป็น {{currencyCode}}",
   "No orders found to sell BTC for {{currencyCode}}": "ไม่พบคำสั่งขาย BTC เป็น {{currencyCode}}",
   "No results found.": "ไม่พบผลลัพธ์",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "ตัวดำเนินการ",
   "Or": "หรือ",
   "Others": "อื่นๆ",

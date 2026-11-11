@@ -160,6 +160,7 @@
   "No orders found to buy BTC for {{currencyCode}}": "{{currencyCode}}でBTCを買う注文は見つかりませんでした",
   "No orders found to sell BTC for {{currencyCode}}": "{{currencyCode}}でBTCを売る注文は見つかりませんでした。",
   "No results found.": "結果が見つかりません。",
+  "Nostr relays connected": "Nostr relays connected",
   "Operator": "オペレーター",
   "Or": "または",
   "Others": "その他",

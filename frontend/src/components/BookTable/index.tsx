@@ -13,6 +13,7 @@ import {
   Tooltip,
   styled,
   Skeleton,
+  Chip,
 } from '@mui/material';
 import {
   DataGrid,
@@ -35,9 +36,10 @@ import { PaymentStringAsIcons } from '../PaymentMethods';
 import RobotAvatar from '../RobotAvatar';
 
 // Icons
-import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
+import { Fullscreen, FullscreenExit, Refresh, Lan } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { WebsocketState } from '../../services/Websocket';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import thirdParties from '../../../static/thirdparties.json';
 
@@ -889,6 +891,13 @@ const BookTable = ({
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
+  const relayStates =
+    settings.connection === 'nostr' ? federation.roboPool.getConnectionStates() : {};
+  const relayTotal = Object.keys(relayStates).length;
+  const relayConnected = Object.values(relayStates).filter(
+    (state) => state === WebsocketState.OPEN,
+  ).length;
+
   const Footer = function (): React.JSX.Element {
     return (
       <Grid
@@ -897,8 +906,8 @@ const BookTable = ({
         sx={{ alignItems: 'center', justifyContent: 'space-between' }}
       >
         <Grid>
-          <Grid container direction='row' sx={{ alignItems: 'center' }}>
-            <Grid size={6}>
+          <Grid container direction='row' sx={{ alignItems: 'center' }} spacing={0.5}>
+            <Grid>
               <IconButton
                 onClick={() => {
                   setFullscreen(!fullscreen);
@@ -907,8 +916,22 @@ const BookTable = ({
                 {fullscreen ? <FullscreenExit /> : <Fullscreen />}
               </IconButton>
             </Grid>
+            {settings.connection === 'nostr' && relayTotal > 0 && (
+              <Grid>
+                <Tooltip title={t('Nostr relays connected')}>
+                  <Chip
+                    icon={<Lan />}
+                    size='small'
+                    variant='outlined'
+                    color={relayConnected === relayTotal ? 'success' : 'warning'}
+                    label={`${relayConnected}/${relayTotal}`}
+                    sx={{ flexShrink: 0 }}
+                  />
+                </Tooltip>
+              </Grid>
+            )}
             {settings.connection === 'api' && (
-              <Grid size={6}>
+              <Grid>
                 <IconButton
                   onClick={() => {
                     void federation.loadBook();
@@ -974,7 +997,7 @@ const BookTable = ({
       components.footer = Footer;
     }
     return components;
-  }, [showNoResults, showFooter, fullscreen]);
+  }, [showNoResults, showFooter, fullscreen, settings.connection, relayConnected, relayTotal]);
 
   const filteredOrders = useMemo(() => {
     return showControls
