@@ -92,6 +92,7 @@ class RoboPool {
   private livenessId = 0;
   private spareQueue: string[] = [];
   private hostRelay?: string;
+  private everConnected = false;
   private readonly relayHealth = new Map<string, RelayHealth>();
 
   private health = (url: string): RelayHealth => {
@@ -161,6 +162,8 @@ class RoboPool {
     return states;
   };
 
+  hasEverConnected = (): boolean => this.everConnected;
+
   private connectRelay = (
     url: string,
     sockets: Record<string, WebsocketConnection | null> = this.webSockets,
@@ -219,6 +222,7 @@ class RoboPool {
       const h = this.health(url);
       h.downSince = undefined;
       h.lastActivityAt = Date.now();
+      this.everConnected = true;
       this.resubscribeAll(url);
       this.notifyConnectionChange();
     });
@@ -355,6 +359,7 @@ class RoboPool {
     this.relayHealth.clear();
     this.spareQueue = [];
     this.hostRelay = undefined;
+    this.everConnected = false;
     Object.values(sockets).forEach((ws) => {
       ws?.close();
     });

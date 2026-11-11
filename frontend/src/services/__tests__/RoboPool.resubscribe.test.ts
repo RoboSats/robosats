@@ -215,6 +215,20 @@ describe('RoboPool relay reconnection', () => {
     expect(changeSpy).toHaveBeenCalledTimes(2);
   });
 
+  it('tracks whether the pool ever connected, resetting on pool rebuild', async () => {
+    expect(pool.hasEverConnected()).toBe(false);
+
+    pool.connect([relayUrl]);
+    await Promise.resolve();
+    expect(pool.hasEverConnected()).toBe(true);
+
+    pool.updateRelays('relay', [{ getRelayUrl: () => 'wss://second' } as Coordinator]);
+    expect(pool.hasEverConnected()).toBe(false);
+
+    await Promise.resolve();
+    expect(pool.hasEverConnected()).toBe(true);
+  });
+
   it('does not probe a relay that is receiving traffic', async () => {
     pool.connect([relayUrl]);
     await Promise.resolve();

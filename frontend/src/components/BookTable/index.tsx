@@ -897,6 +897,9 @@ const BookTable = ({
   const relayConnected = Object.values(relayStates).filter(
     (state) => state === WebsocketState.OPEN,
   ).length;
+  const everConnected = federation.roboPool.hasEverConnected();
+  const allRelaysDown = relayTotal > 0 && relayConnected === 0 && everConnected;
+  const relaysConnecting = relayTotal > 0 && relayConnected === 0 && !everConnected;
 
   const Footer = function (): React.JSX.Element {
     return (
@@ -918,14 +921,38 @@ const BookTable = ({
             </Grid>
             {settings.connection === 'nostr' && relayTotal > 0 && (
               <Grid>
-                <Tooltip title={t('Nostr relays connected')}>
+                <Tooltip
+                  title={
+                    allRelaysDown
+                      ? t('All Nostr relays disconnected')
+                      : relaysConnecting
+                        ? t('Connecting to Nostr relays')
+                        : t('Nostr relays connected')
+                  }
+                >
                   <Chip
                     icon={<Lan />}
                     size='small'
                     variant='outlined'
-                    color={relayConnected === relayTotal ? 'success' : 'warning'}
+                    color={
+                      allRelaysDown
+                        ? 'error'
+                        : relayConnected === relayTotal
+                          ? 'success'
+                          : 'warning'
+                    }
                     label={`${relayConnected}/${relayTotal}`}
-                    sx={{ flexShrink: 0 }}
+                    sx={{
+                      flexShrink: 0,
+                      ...(allRelaysDown && {
+                        animation: 'robosats-relay-blink 1.2s ease-in-out infinite',
+                        '@keyframes robosats-relay-blink': {
+                          '0%, 100%': { opacity: 1 },
+                          '50%': { opacity: 0.25 },
+                        },
+                        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+                      }),
+                    }}
                   />
                 </Tooltip>
               </Grid>
@@ -997,7 +1024,15 @@ const BookTable = ({
       components.footer = Footer;
     }
     return components;
-  }, [showNoResults, showFooter, fullscreen, settings.connection, relayConnected, relayTotal]);
+  }, [
+    showNoResults,
+    showFooter,
+    fullscreen,
+    settings.connection,
+    relayConnected,
+    relayTotal,
+    allRelaysDown,
+  ]);
 
   const filteredOrders = useMemo(() => {
     return showControls
