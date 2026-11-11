@@ -146,6 +146,19 @@ while the cryptographic certification is in progress."_
 
 `StoreToken`, `Profile` dialogs unchanged.
 
+## Map
+
+Detailed OpenStreetMap tiles stay opt-in (`useTiles`) behind the existing third-party
+warning. Tor Browser does not send a `Referer` from `.onion` pages, and an `<img>` tile
+cannot send `X-Requested-With`, so `tile.openstreetmap.org` responds with its 403
+"Access blocked" tile. The detailed layer therefore `fetch`es
+`https://tile.openstreetmap.org/{z}/{x}/{y}.png` with `Referrer-Policy: no-referrer`
+(the page origin, including an onion address, is not sent) and
+`X-Requested-With: RoboSats`, which is the identification the tile usage policy accepts
+when a Referer is absent. The OpenStreetMap attribution control is mounted only while
+that layer is on. Do not point the layer back at `{s}.tile.openstreetmap.org` or load
+tiles with `referrerPolicy: 'no-referrer'` on an `<img>`.
+
 ## Product Intent
 
 - **TradeBox prompt collapsing is intentional** — 19 backend statuses → ~8 user states;
