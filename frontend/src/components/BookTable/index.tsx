@@ -13,7 +13,6 @@ import {
   Tooltip,
   styled,
   Skeleton,
-  Chip,
 } from '@mui/material';
 import {
   DataGrid,
@@ -36,10 +35,10 @@ import { PaymentStringAsIcons } from '../PaymentMethods';
 import RobotAvatar from '../RobotAvatar';
 
 // Icons
-import { Fullscreen, FullscreenExit, Refresh, Lan } from '@mui/icons-material';
+import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { WebsocketState } from '../../services/Websocket';
+import RelayStatusChip from '../RelayStatusChip';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import thirdParties from '../../../static/thirdparties.json';
 
@@ -891,16 +890,6 @@ const BookTable = ({
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
-  const relayStates =
-    settings.connection === 'nostr' ? federation.roboPool.getConnectionStates() : {};
-  const relayTotal = Object.keys(relayStates).length;
-  const relayConnected = Object.values(relayStates).filter(
-    (state) => state === WebsocketState.OPEN,
-  ).length;
-  const everConnected = federation.roboPool.hasEverConnected();
-  const allRelaysDown = relayTotal > 0 && relayConnected === 0 && everConnected;
-  const relaysConnecting = relayTotal > 0 && relayConnected === 0 && !everConnected;
-
   const Footer = function (): React.JSX.Element {
     return (
       <Grid
@@ -919,44 +908,9 @@ const BookTable = ({
                 {fullscreen ? <FullscreenExit /> : <Fullscreen />}
               </IconButton>
             </Grid>
-            {settings.connection === 'nostr' && relayTotal > 0 && (
-              <Grid>
-                <Tooltip
-                  title={
-                    allRelaysDown
-                      ? t('All Nostr relays disconnected')
-                      : relaysConnecting
-                        ? t('Connecting to Nostr relays')
-                        : t('Nostr relays connected')
-                  }
-                >
-                  <Chip
-                    icon={<Lan />}
-                    size='small'
-                    variant='outlined'
-                    color={
-                      allRelaysDown
-                        ? 'error'
-                        : relayConnected === relayTotal
-                          ? 'success'
-                          : 'warning'
-                    }
-                    label={`${relayConnected}/${relayTotal}`}
-                    sx={{
-                      flexShrink: 0,
-                      ...(allRelaysDown && {
-                        animation: 'robosats-relay-blink 1.2s ease-in-out infinite',
-                        '@keyframes robosats-relay-blink': {
-                          '0%, 100%': { opacity: 1 },
-                          '50%': { opacity: 0.25 },
-                        },
-                        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-                      }),
-                    }}
-                  />
-                </Tooltip>
-              </Grid>
-            )}
+            <Grid>
+              <RelayStatusChip />
+            </Grid>
             {settings.connection === 'api' && (
               <Grid>
                 <IconButton
@@ -1024,15 +978,7 @@ const BookTable = ({
       components.footer = Footer;
     }
     return components;
-  }, [
-    showNoResults,
-    showFooter,
-    fullscreen,
-    settings.connection,
-    relayConnected,
-    relayTotal,
-    allRelaysDown,
-  ]);
+  }, [showNoResults, showFooter, fullscreen]);
 
   const filteredOrders = useMemo(() => {
     return showControls
