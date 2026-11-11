@@ -70,11 +70,13 @@ class PostMessageSerializer(serializers.ModelSerializer):
         help_text="Your peer's public key",
     )
 
-    offset = serializers.IntegerField(
+    # A float, not an integer: v0.8.8-alpha clients in Nostr mode send a timestamp with
+    # decimals here, and rejecting it dropped the message (see message_offset).
+    offset = serializers.FloatField(
         allow_null=True,
         default=None,
         required=False,
-        min_value=Decimal(0),
+        min_value=0,
         help_text="Offset for message index to get as response",
     )
 
