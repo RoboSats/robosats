@@ -35,6 +35,10 @@ class WebsocketConnectionAndroid implements WebsocketConnection {
     this.wsMessagePromises.push(event);
   };
 
+  public onOpen: (event: () => void) => void = (_event) => {
+    // Not implemented
+  };
+
   public onClose: (event: () => void) => void = (event) => {
     this.wsClosePromises.push(event);
   };
