@@ -8,6 +8,7 @@ import {
   ListItemIcon,
   ListItemText,
   Grid,
+  Box,
   useTheme,
   Divider,
   Typography,
@@ -49,6 +50,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const theme = useTheme();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
+  const [routingBudgetPPM, setRoutingBudgetPPM] = useState<string>('1000');
   const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
   const [withdrawn, setWithdrawn] = useState<boolean>(false);
   const [badInvoice, setBadInvoice] = useState<string>('');
@@ -88,25 +90,38 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     setDisable(Boolean(robot?.loading));
   }, [robot?.loading]);
 
-  const handleSubmitInvoiceClicked = (e: React.MouseEvent | Event, rewardInvoice: string): void => {
+  const handleSubmitReward = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    if (showRewardsSpinner || !e.currentTarget.reportValidity()) return;
+
     setBadInvoice('');
     setShowRewardsSpinner(true);
-
-    if (robot?.token && robot.encPrivKey != null) {
-      void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot?.token).then(
-        (signedInvoice) => {
-          void robot.fetchReward(federation, signedInvoice).then((data) => {
-            setShowRewardsSpinner(false);
-            if (data != null) {
-              setBadInvoice(data.bad_invoice ?? '');
-              setWithdrawn(Boolean(data.successful_withdrawal));
-              setOpenClaimRewards(!data.successful_withdrawal);
-            }
-          });
-        },
+    try {
+      if (!robot?.token || robot.encPrivKey == null) throw new Error('Missing robot keys');
+      const signedInvoice = await signCleartextMessage(
+        rewardInvoice,
+        robot.encPrivKey,
+        robot.token,
       );
+      const data = await robot.fetchReward(federation, signedInvoice, Number(routingBudgetPPM));
+      if (data?.successful_withdrawal) {
+        setWithdrawn(true);
+        setOpenClaimRewards(false);
+      } else {
+        setBadInvoice(data?.bad_invoice || t('Could not claim rewards. Try again.'));
+      }
+    } catch {
+      setBadInvoice(t('Could not claim rewards. Try again.'));
+    } finally {
+      setShowRewardsSpinner(false);
     }
-    e.preventDefault();
+  };
+
+  const closeOptions = (): void => {
+    setOpenOptions(false);
+    setOpenClaimRewards(false);
+    setRewardInvoice('');
+    setBadInvoice('');
   };
 
   const setStealthInvoice = (): void => {
@@ -164,7 +179,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
           </ListItemIcon>
         )}
       </ListItemButton>
-      <Dialog open={openOptions} key={coordinator.shortAlias} onClose={() => setOpenOptions(false)}>
+      <Dialog open={openOptions} key={coordinator.shortAlias} onClose={closeOptions}>
         <DialogContent>
           <List dense disablePadding={true}>
             <ListItemButton
@@ -400,74 +415,102 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
               </ListItemText>
             </ListItem>
 
-            <ListItem>
+            <ListItem
+              secondaryAction={
+                !openClaimRewards && (
+                  <Tooltip
+                    placement='left'
+                    enterTouchDelay={0}
+                    title={
+                      (robot?.earnedRewards ?? 0) === 0
+                        ? t('Nothing to claim yet')
+                        : t('Claim your rewards')
+                    }
+                  >
+                    <span>
+                      <Button
+                        disabled={(robot?.earnedRewards ?? 0) === 0 || showRewardsSpinner}
+                        onClick={() => {
+                          setRewardInvoice('');
+                          setBadInvoice('');
+                          setWithdrawn(false);
+                          setOpenClaimRewards(true);
+                        }}
+                        variant='outlined'
+                        color='primary'
+                        size='small'
+                      >
+                        {t('Claim')}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                )
+              }
+            >
               <ListItemIcon sx={{ minWidth: 56 }}>
                 <EmojiEvents />
               </ListItemIcon>
 
               {!openClaimRewards ? (
-                <ListItemText secondary={t('Your compensations')}>
-                  <Grid container sx={{ justifyContent: 'space-between' }}>
-                    <Grid size={9}>
-                      <Typography>{`${String(robot?.earnedRewards)} Sats`}</Typography>
-                    </Grid>
-
-                    <Grid size={3}>
-                      <Button
-                        disabled={robot?.earnedRewards === 0}
-                        onClick={() => {
-                          setOpenClaimRewards(true);
-                        }}
-                        variant='contained'
-                        size='small'
-                      >
-                        {t('Claim')}
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </ListItemText>
+                <ListItemText
+                  primary={`${String(robot?.earnedRewards ?? 0)} Sats`}
+                  secondary={t('Your compensations')}
+                />
               ) : (
-                <form noValidate style={{ maxWidth: 270 }}>
-                  <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                    <Grid style={{ display: 'flex', maxWidth: 160 }}>
+                <form onSubmit={(e) => void handleSubmitReward(e)} style={{ width: '100%' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Tooltip
+                      placement='top'
+                      enterTouchDelay={0}
+                      title={t(
+                        'Routing budget for the reward payment. Higher values may help if payment fails.',
+                      )}
+                    >
                       <TextField
-                        error={Boolean(badInvoice)}
-                        helperText={badInvoice ?? ''}
-                        label={t('Invoice for {{amountSats}} Sats', {
-                          amountSats: robot?.earnedRewards,
-                        })}
+                        label={t('Routing Budget (PPM)')}
+                        type='number'
                         size='small'
-                        value={rewardInvoice}
-                        onChange={(e) => {
-                          setRewardInvoice(e.target.value);
-                        }}
+                        fullWidth
+                        required
+                        disabled={showRewardsSpinner}
+                        value={routingBudgetPPM}
+                        onChange={(e) => setRoutingBudgetPPM(e.target.value)}
+                        slotProps={{ htmlInput: { min: 0, max: 10000, step: 1 } }}
                       />
-                    </Grid>
-                    <Grid style={{ display: 'flex', maxWidth: 80 }} sx={{ alignItems: 'stretch' }}>
-                      <Button
-                        sx={{ maxHeight: 38 }}
-                        disabled={rewardInvoice === ''}
-                        onClick={(e) => {
-                          handleSubmitInvoiceClicked(e, rewardInvoice);
-                        }}
-                        variant='contained'
-                        color='primary'
-                        size='small'
-                        type='submit'
-                      >
-                        {t('Submit')}
-                      </Button>
-                    </Grid>
-                  </Grid>
+                    </Tooltip>
+                    <TextField
+                      error={Boolean(badInvoice)}
+                      helperText={badInvoice}
+                      label={t('Invoice for {{amountSats}} Sats', {
+                        amountSats: Math.floor(
+                          (robot?.earnedRewards ?? 0) -
+                            ((robot?.earnedRewards ?? 0) * Number(routingBudgetPPM)) / 1000000,
+                        ),
+                      })}
+                      size='small'
+                      fullWidth
+                      required
+                      disabled={showRewardsSpinner}
+                      value={rewardInvoice}
+                      onChange={(e) => setRewardInvoice(e.target.value)}
+                    />
+                    <Button
+                      disabled={rewardInvoice === '' || showRewardsSpinner}
+                      variant='contained'
+                      color='primary'
+                      fullWidth
+                      type='submit'
+                    >
+                      {showRewardsSpinner ? (
+                        <CircularProgress size={24} color='inherit' />
+                      ) : (
+                        t('Submit')
+                      )}
+                    </Button>
+                  </Box>
                 </form>
               )}
             </ListItem>
-
-            {showRewardsSpinner && (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <CircularProgress />
-              </div>
-            )}
 
             {withdrawn && (
               <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -479,7 +522,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenOptions(false)} size='large'>
+          <Button onClick={closeOptions} size='large'>
             {t('Back')}
           </Button>
         </DialogActions>
