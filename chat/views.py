@@ -17,6 +17,20 @@ from chat.models import ChatRoom, Message
 from chat.serializers import ChatSerializer, InMessageSerializer, PostMessageSerializer
 
 
+def message_offset(value):
+    """
+    The message index to read from, as an integer.
+
+    v0.8.8-alpha clients in Nostr mode send the Nostr timestamp of their last
+    message, with decimals (e.g. 1793650000.0004). Taken as is, that made every
+    copy of a message after the first one fail, and the dispute had no chat.
+    """
+    try:
+        return max(int(float(value)), 0)
+    except (TypeError, ValueError, OverflowError):
+        return 0
+
+
 class ChatView(viewsets.ViewSet):
     serializer_class = ChatSerializer
     authentication_classes = [TokenAuthentication]
@@ -43,7 +57,7 @@ class ChatView(viewsets.ViewSet):
         """
 
         order_id = request.GET.get("order_id", None)
-        offset = request.GET.get("offset", 0)
+        offset = message_offset(request.GET.get("offset", 0))
 
         if order_id is None:
             return Response(new_error(6000), status.HTTP_400_BAD_REQUEST)
@@ -193,7 +207,8 @@ class ChatView(viewsets.ViewSet):
 
         # if offset is given, reply with messages
         offset = serializer.data.get("offset", None)
-        if offset or offset == 0:
+        if offset is not None:
+            offset = message_offset(offset)
             queryset = Message.objects.filter(order=order, index__gt=offset)
             messages = []
             for message in queryset:
