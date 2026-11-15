@@ -62,6 +62,8 @@ ERRORS = {
     1054: "Cannot open a dispute yet. You need to wait until 18 hours before expiry.",
     1055: "This public key is already in use by another active robot.",
     1056: "Your PGP public key was created too recently ({key_creation_date}). Keys must be at least 12 hours old. Please check your system clock and generate a new key.",
+    1057: "Invalid query parameter '{param}'",
+    1058: "Currency with ID {currency_id} is not supported",
     # 2000 - Bad statement
     2000: "The statement and chat logs are longer than 50,000 characters",
     2001: "The statement is too short. Make sure to be thorough.",
@@ -87,6 +89,7 @@ ERRORS = {
     6001: "You are not participant in this order",
     6002: "Order is not in chat status",
     6003: "Invalid serializer",
+    6004: "Invalid query parameter '{param}'",
     # 7000 - Middlewares bad request
     7000: "Robot token SHA256 was provided in the header. However it is not a valid 39 or 40 characters Base91 string.",
     7001: "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys and a nostr pubkey",

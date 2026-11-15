@@ -72,6 +72,7 @@ from api.utils import (
     get_cln_version,
     get_lnd_version,
     get_robosats_commit,
+    parse_int_param,
     verify_signed_message,
 )
 from api.nostr import Nostr
@@ -162,6 +163,13 @@ class MakerView(CreateAPIView):
         if len(Currency.objects.all()) == 0:
             cache_market()
 
+        try:
+            currency = Currency.objects.get(id=currency)
+        except Currency.DoesNotExist:
+            return Response(
+                new_error(1058, {"currency_id": currency}), status.HTTP_400_BAD_REQUEST
+            )
+
         # Serialize concurrent make/take attempts from the same robot by locking
         # its row for the duration of the check-then-create. This closes the TOCTOU
         # window between validate_already_maker_or_taker (SELECT) and order.save()
@@ -178,7 +186,7 @@ class MakerView(CreateAPIView):
             # Creates a new order
             order = Order(
                 type=type,
-                currency=Currency.objects.get(id=currency),
+                currency=currency,
                 amount=amount,
                 has_range=has_range,
                 min_amount=min_amount,
@@ -234,6 +242,10 @@ class OrderView(viewsets.ViewSet):
 
         if order_id is None:
             return Response(new_error(1041), status=status.HTTP_400_BAD_REQUEST)
+
+        order_id, error = parse_int_param(order_id, 1042)
+        if error is not None:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         order = Order.objects.filter(id=order_id)
 
@@ -539,7 +551,17 @@ class OrderView(viewsets.ViewSet):
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        order = Order.objects.get(id=order_id)
+        if order_id is None:
+            return Response(new_error(1041), status=status.HTTP_400_BAD_REQUEST)
+
+        order_id, error = parse_int_param(order_id, 1042)
+        if error is not None:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response(new_error(1042), status.HTTP_404_NOT_FOUND)
 
         # action is either 1)'take', 2)'confirm', 2.b)'undo_confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice'
         # 5.b)'update_address' 6)'submit_statement' (in dispute), 7)'rate_user' , 8)'rate_platform'
@@ -564,7 +586,10 @@ class OrderView(viewsets.ViewSet):
 
                 # For order with amount range, validate the amount before acquiring the lock.
                 if order.has_range:
-                    amount = float(serializer.data.get("amount"))
+                    raw_amount = serializer.data.get("amount")
+                    if raw_amount is None:
+                        return Response(new_error(1039), status.HTTP_400_BAD_REQUEST)
+                    amount = float(raw_amount)
                     valid, context = Logics.validate_amount_within_range(order, amount)
                     if not valid:
                         return Response(context, status=status.HTTP_400_BAD_REQUEST)
@@ -593,7 +618,7 @@ class OrderView(viewsets.ViewSet):
                 return self.get(request)
 
             else:
-                Response(new_error(1046), status.HTTP_400_BAD_REQUEST)
+                return Response(new_error(1046), status.HTTP_400_BAD_REQUEST)
 
         # 2) If action is cancel
         elif action == "cancel":
@@ -779,8 +804,16 @@ class BookView(ListAPIView):
 
     @extend_schema(**BookViewSchema.get)
     def get(self, request, format=None):
-        currency = request.GET.get("currency", 0)
-        type = request.GET.get("type", 2)
+        currency, error = parse_int_param(
+            request.GET.get("currency", 0), 1057, {"param": "currency"}
+        )
+        if error is not None:
+            return Response(error, status.HTTP_400_BAD_REQUEST)
+        type, error = parse_int_param(
+            request.GET.get("type", 2), 1057, {"param": "type"}
+        )
+        if error is not None:
+            return Response(error, status.HTTP_400_BAD_REQUEST)
 
         cache_key = f"book:{currency}:{type}"
         book_data = cache.get(cache_key)
@@ -789,9 +822,9 @@ class BookView(ListAPIView):
             queryset = Order.objects.filter(status=Order.Status.PUB, password=None)
 
             # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
-            if int(type) != 2:
+            if type != 2:
                 queryset = queryset.filter(type=type)
-            if int(currency) != 0:
+            if currency != 0:
                 queryset = queryset.filter(currency=currency)
 
             if len(queryset) == 0:

@@ -22,6 +22,7 @@ Tests require `docker-tests.yml` stack running:
 | `test_api_cache.py` | Redis response-cache behavior for `/api/book/`, `/api/info/`, `/api/price/` (locmem cache override, no Redis dependency) |
 | `test_api_limits.py` | `/api/limits/` endpoint |
 | `test_api_robot_webhook.py` | Robot webhook notification delivery |
+| `test_input_validation.py` | Malformed/SQLi query params on `/api/book/`, `/api/order/`, `/api/chat/`, `/api/make/` return 400/404 with stable `error_code` (never 500); take guards (amount missing/out-of-range, non-public order 1046) — no Lightning dependency |
 | `test_frontend_fetch.py` | Frontend asset serving |
 | `test_grpc_stubs.py` | gRPC stub generation / import sanity |
 | `test_nostr_relay.py` | Nostr relay connectivity and event filtering |

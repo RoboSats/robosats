@@ -11,7 +11,10 @@ from chat.models import ChatRoom, Message
 class ChatRoomConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def allow_in_chatroom(self):
-        order = Order.objects.get(id=self.order_id)
+        try:
+            order = Order.objects.get(id=self.order_id)
+        except (Order.DoesNotExist, ValueError):
+            return False
 
         if order.status not in [
             Order.Status.CHA,
