@@ -212,8 +212,8 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
     const slot = garage.getSlot();
 
     if (slot && currentOrder) {
-      currentOrder
-        .submitAction(federation, slot, {
+      slot
+        .submitOrderAction(federation, currentOrder, {
           action,
           invoice,
           routing_budget_ppm,
@@ -233,7 +233,6 @@ const TradeBox = ({ currentOrder }: TradeBoxProps): React.JSX.Element => {
           } else if (data.bad_statement && data.bad_statement !== '') {
             setDispute({ ...dispute, badStatement: data.bad_statement });
           }
-          slot.updateSlotFromOrder(data);
         })
         .catch(() => {
           setOpen(closeAll);
