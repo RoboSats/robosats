@@ -37,9 +37,8 @@ class TestPayoutAmount(TestCase):
         user = Mock(id=1)
         order = self._make_order(maker=user, last_satoshis=5_000)
 
-        result, context = Logics.payout_amount(order, user)
+        context = Logics.compute_buyer_payout_context(order)
 
-        self.assertTrue(result)
         self.assertFalse(context["swap_allowed"])
         self.assertIn("smaller than the minimum swap", context["swap_failure_reason"])
 
@@ -53,9 +52,8 @@ class TestPayoutAmount(TestCase):
         user = Mock(id=1)
         order = self._make_order(maker=user, last_satoshis=600_000)
 
-        result, context = Logics.payout_amount(order, user)
+        context = Logics.compute_buyer_payout_context(order)
 
-        self.assertTrue(result)
         self.assertFalse(context["swap_allowed"])
         self.assertIn("bigger than the maximum swap", context["swap_failure_reason"])
 
@@ -69,8 +67,7 @@ class TestPayoutAmount(TestCase):
         user = Mock(id=1)
         order = self._make_order(maker=user)
 
-        result, context = Logics.payout_amount(order, user)
+        context = Logics.compute_buyer_payout_context(order)
 
-        self.assertTrue(result)
         self.assertFalse(context["swap_allowed"])
         self.assertIn("submarine swaps are disabled", context["swap_failure_reason"])
