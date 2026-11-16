@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Apply migrations
-python manage.py migrate
+python manage.py migrate_locked
 
 # Collect static files
 if [ $SKIP_COLLECT_STATIC ]; then
