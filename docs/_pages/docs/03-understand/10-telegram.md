@@ -46,6 +46,12 @@ When the bridge says **Bridge ready**, it sends buttons to your bot chat. Keep t
   <figcaption>Filter the list, then open an offer to review its terms and enter an amount.</figcaption>
 </figure>
 
+<figure class="half">
+  <img src="{{ '/assets/images/telegram-bridge/lightning-payout-setup.png' | relative_url }}" alt="Continue on phone and set up a Lightning payout from the bot chat" width="360" loading="lazy">
+  <img src="{{ '/assets/images/telegram-bridge/lightning-invoice-confirmation.jpg' | relative_url }}" alt="Confirm a Lightning payout invoice and its routing budget in Telegram" width="360" loading="lazy">
+  <figcaption>Set up your Lightning payout on your phone, then confirm the invoice and routing budget. Screenshots show an earlier version of the escrow status wording.</figcaption>
+</figure>
+
 Enter your Garage Key on the computer when starting the bridge to use the full purchase flow. You can browse offers and receive alerts without it.
 
 ## Switch between your computer and phone
