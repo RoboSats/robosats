@@ -121,6 +121,8 @@ Works good overall. It does support invoice lock. It has also good UX.
 ### Rizful (Web)
 Works with RoboSats for both selling and buying (works in any browser). You copy each invoice from RoboSats into Rizful's Send screen, and paste an invoice from Rizful into RoboSats for the payout. While a bond or the escrow is locked, the home screen shows the held amount as "in-flight sats" and the balance is lowered by it (a few sats more than the invoice, kept for routing fees). A bond that RoboSats returns is listed as "Failed Send": that is the sats coming back, and the balance shows them in full. If a bond or escrow payment fails before it reaches RoboSats, Rizful will not pay the same invoice again: pay it from another wallet.
 
+Step-by-step guide with Rizful on both sides: [RoboSats Tutorial](https://docs.megalithic.me/guides/robosats-tutorial/).
+
 ### SBW (Mobile)
 From 2.5 it doesn't support lightning anymore.
 
