@@ -17,8 +17,10 @@ src: "_pages/docs/03-understand/10-telegram.md"
 ## Download and install the bridge
 
 1. On your Mac or Windows PC, download the ZIP and extract it. [Download the bridge ZIP](https://github.com/wildbillwallace/robosats-telegram/archive/refs/heads/main.zip) · [GitHub project](https://github.com/wildbillwallace/robosats-telegram)
-2. Follow the guide for your computer to install any missing tools and connect to Tor. [macOS setup](https://github.com/wildbillwallace/robosats-telegram/blob/main/SETUP-MACOS.md) · [Windows setup](https://github.com/wildbillwallace/robosats-telegram/blob/main/SETUP-WINDOWS.md)
-3. Open the extracted folder. On Mac, double-click **Start RoboSats Bridge.command**. On Windows, double-click **Start RoboSats Bridge.cmd**. The launcher installs the bridge’s libraries on the first run, then opens the bot setup prompts.
+2. Connect to Tor. You can use Tor Browser, a Brave private window with Tor, or a Tor service you already run.
+3. Open the extracted folder. On Mac, double-click **Start RoboSats Bridge.command**. On Windows, double-click **Start RoboSats Bridge.cmd**. On the first run, the launcher sets up the bridge and installs its libraries automatically, then opens the bot setup prompts.
+
+If your computer is missing a required tool or you need help connecting to Tor, see the guide for your computer. [macOS setup](https://github.com/wildbillwallace/robosats-telegram/blob/main/SETUP-MACOS.md) · [Windows setup](https://github.com/wildbillwallace/robosats-telegram/blob/main/SETUP-WINDOWS.md)
 
 ## Set up your bot once
 
