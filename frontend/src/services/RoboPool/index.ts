@@ -51,6 +51,7 @@ interface RelayHealth {
   lastActivityAt?: number;
   probingSince?: number;
   probeId?: string;
+  openFailed?: boolean;
 }
 
 const DEFAULT_NOTIFICATION_BACKFILL_SECONDS = 48 * 60 * 60;
@@ -111,6 +112,7 @@ class RoboPool {
     h.lastActivityAt = undefined;
     h.probingSince = undefined;
     h.probeId = undefined;
+    h.openFailed = undefined;
   };
 
   updateRelays = (hostUrl: string, coordinators: Coordinator[]) => {
@@ -172,60 +174,71 @@ class RoboPool {
     health.epoch += 1;
     const epoch = health.epoch;
 
-    void websocketClient.open(url).then((connection) => {
-      if (
-        sockets !== this.webSockets ||
-        epoch !== this.relayHealth.get(url)?.epoch ||
-        this.webSockets[url] !== null
-      ) {
-        connection.close();
-        return;
-      }
-      console.log(`Connected to ${url}`);
+    void websocketClient.open(url).then(
+      (connection) => {
+        if (
+          sockets !== this.webSockets ||
+          epoch !== this.relayHealth.get(url)?.epoch ||
+          this.webSockets[url] !== null
+        ) {
+          connection.close();
+          return;
+        }
+        console.log(`Connected to ${url}`);
 
-      connection.onOpen(() => {
-        if (sockets !== this.webSockets || epoch !== this.relayHealth.get(url)?.epoch) return;
+        connection.onOpen(() => {
+          if (sockets !== this.webSockets || epoch !== this.relayHealth.get(url)?.epoch) return;
+          const h = this.health(url);
+          h.connectingSince = undefined;
+          h.downSince = undefined;
+          this.resubscribeAll(url);
+          this.notifyConnectionChange();
+        });
+
+        connection.onMessage((event) => {
+          if (sockets !== this.webSockets || epoch !== this.relayHealth.get(url)?.epoch) return;
+          const h = this.health(url);
+          h.lastActivityAt = Date.now();
+          const answeredProbe = h.probeId;
+          if (answeredProbe !== undefined) {
+            h.probeId = undefined;
+            h.probingSince = undefined;
+            this.sendToSocket(url, JSON.stringify(['CLOSE', answeredProbe]));
+          }
+          this.messageHandlers.forEach((handler) => {
+            handler(url, event as unknown as MessageEvent<unknown>);
+          });
+        });
+
+        connection.onError((error) => {
+          console.error(`WebSocket error on ${url}:`, error);
+        });
+
+        connection.onClose(() => {
+          if (sockets !== this.webSockets || epoch !== this.relayHealth.get(url)?.epoch) return;
+          console.log(`Disconnected from ${url}`);
+          this.clearConnectionState(url);
+          this.notifyConnectionChange();
+        });
+
+        this.webSockets[url] = connection;
         const h = this.health(url);
-        h.connectingSince = undefined;
         h.downSince = undefined;
+        h.openFailed = undefined;
+        h.lastActivityAt = Date.now();
+        this.everConnected = true;
         this.resubscribeAll(url);
         this.notifyConnectionChange();
-      });
-
-      connection.onMessage((event) => {
+      },
+      (error) => {
         if (sockets !== this.webSockets || epoch !== this.relayHealth.get(url)?.epoch) return;
+        console.error(`Failed to open ${url}:`, error);
         const h = this.health(url);
-        h.lastActivityAt = Date.now();
-        const answeredProbe = h.probeId;
-        if (answeredProbe !== undefined) {
-          h.probeId = undefined;
-          h.probingSince = undefined;
-          this.sendToSocket(url, JSON.stringify(['CLOSE', answeredProbe]));
-        }
-        this.messageHandlers.forEach((handler) => {
-          handler(url, event as unknown as MessageEvent<unknown>);
-        });
-      });
-
-      connection.onError((error) => {
-        console.error(`WebSocket error on ${url}:`, error);
-      });
-
-      connection.onClose(() => {
-        if (sockets !== this.webSockets || epoch !== this.relayHealth.get(url)?.epoch) return;
-        console.log(`Disconnected from ${url}`);
-        this.clearConnectionState(url);
+        h.openFailed = true;
+        if (h.downSince === undefined) h.downSince = Date.now();
         this.notifyConnectionChange();
-      });
-
-      this.webSockets[url] = connection;
-      const h = this.health(url);
-      h.downSince = undefined;
-      h.lastActivityAt = Date.now();
-      this.everConnected = true;
-      this.resubscribeAll(url);
-      this.notifyConnectionChange();
-    });
+      },
+    );
   };
 
   private reconnectRelay = (url: string): void => {
@@ -252,8 +265,14 @@ class RoboPool {
     const now = Date.now();
     Object.entries(this.webSockets).forEach(([url, ws]) => {
       if (!ws) {
+        const h = this.health(url);
         this.noteUnhealthyAndMaybeFailover(url, now);
-        if (url in this.webSockets) this.trackConnectingAndMaybeReconnect(url, now);
+        if (!(url in this.webSockets)) return;
+        if (h.openFailed) {
+          this.reconnectRelay(url);
+        } else {
+          this.trackConnectingAndMaybeReconnect(url, now);
+        }
         return;
       }
 
