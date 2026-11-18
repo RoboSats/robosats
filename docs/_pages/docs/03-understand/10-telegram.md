@@ -35,7 +35,7 @@ When the bridge says **Bridge ready**, it sends buttons to your bot chat. Keep t
 
 ## Buy sats from your phone
 
-1. **Find and take an offer.** Open **Browse offers** or narrow the list under **Offer filters**. Open an offer, choose a robot if prompted, and review the terms. If the offer shows a range, enter an amount within that range. When you take the offer, the bot gives you the bond invoice. Pay it in your Lightning wallet on the phone, then tap **Continue order → Continue on phone**.
+1. **Find and take an offer.** Open **Browse offers** or narrow the list under **Offer filters**. Open an offer, choose a robot if prompted, and review the terms. If the offer shows a range, enter an amount within that range. When you take the offer, the bot gives you the bond invoice. Pay it in your Lightning wallet on the phone, then tap **Continue order**. Once the bond is locked, the bridge opens the current trade stage automatically.
 2. **Set up your payout.** When RoboSats is ready for your invoice, tap **Set up Lightning payout**. You can adjust the routing budget in sats or parts per million. Create a Lightning invoice in your wallet for the exact amount the bot shows, then submit and confirm it in the bot chat.
 3. **Chat and pay.** Once the bot says **Seller chat is open**, type a normal message to the seller in your bot chat. When the bot says **Ready for payment**, agree on payment details and use your wallet or payment app on the same phone to send the payment. If you’re paying with a stablecoin, agree on the amount and network in chat. After paying, tap **Confirm Sent** and finish the confirmation.
 4. **Follow the trade through payout.** The bot tells you when RoboSats records your payment confirmation and when the trade completes. Check your Lightning wallet for the payout. Use **Menu → Show bridge controls** at any point to see the current status and available actions.
@@ -49,7 +49,7 @@ When the bridge says **Bridge ready**, it sends buttons to your bot chat. Keep t
 <figure class="half">
   <img src="{{ '/assets/images/telegram-bridge/lightning-payout-setup.png' | relative_url }}" alt="Continue on phone and set up a Lightning payout from the bot chat" width="360" loading="lazy">
   <img src="{{ '/assets/images/telegram-bridge/lightning-invoice-confirmation.jpg' | relative_url }}" alt="Confirm a Lightning payout invoice and its routing budget in Telegram" width="360" loading="lazy">
-  <figcaption>Set up your Lightning payout on your phone, then confirm the invoice and routing budget. Screenshots show an earlier version of the escrow status wording.</figcaption>
+  <figcaption>Set up your Lightning payout on your phone, then confirm the invoice and routing budget. These screenshots show an earlier version. The bridge now opens the trade automatically after Continue order and uses clearer escrow messages.</figcaption>
 </figure>
 
 <figure>
