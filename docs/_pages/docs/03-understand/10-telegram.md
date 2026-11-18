@@ -52,6 +52,11 @@ When the bridge says **Bridge ready**, it sends buttons to your bot chat. Keep t
   <figcaption>Set up your Lightning payout on your phone, then confirm the invoice and routing budget. Screenshots show an earlier version of the escrow status wording.</figcaption>
 </figure>
 
+<figure>
+  <img src="{{ '/assets/images/telegram-bridge/lightning-payout-received.png' | relative_url }}" alt="Muun notification confirms BTC received while Telegram shows payment confirmation and payout updates" width="360" loading="lazy">
+  <figcaption>A Muun wallet notification shows the payout arriving while the trade updates remain visible in Telegram.</figcaption>
+</figure>
+
 Enter your Garage Key on the computer when starting the bridge to use the full purchase flow. You can browse offers and receive alerts without it.
 
 ## Switch between your computer and phone
