@@ -14,9 +14,15 @@ src: "_pages/docs/03-understand/10-telegram.md"
 
 **Start the bridge on your computer, then buy sats on RoboSats from your phone.** In a bot you own, browse and take an offer, get your Lightning bond invoice, set up your payout, chat with the seller, confirm payment, and follow the trade through payout. Lock the bond and pay the seller using your wallet or payment app on the same phone. You can start a purchase on your phone or pick up one you began on your computer.
 
+## Download and install the bridge
+
+1. On your Mac or Windows PC, download the ZIP and extract it. [Download the bridge ZIP](https://github.com/wildbillwallace/robosats-telegram/archive/refs/heads/main.zip) · [GitHub project](https://github.com/wildbillwallace/robosats-telegram)
+2. Follow the guide for your computer to install any missing tools and connect to Tor. [macOS setup](https://github.com/wildbillwallace/robosats-telegram/blob/main/SETUP-MACOS.md) · [Windows setup](https://github.com/wildbillwallace/robosats-telegram/blob/main/SETUP-WINDOWS.md)
+3. Open the extracted folder. On Mac, double-click **Start RoboSats Bridge.command**. On Windows, double-click **Start RoboSats Bridge.cmd**. The launcher installs the bridge’s libraries on the first run, then opens the bot setup prompts.
+
 ## Set up your bot once
 
-Download the bridge and follow the Mac or Windows setup guide. On your phone, open the verified BotFather chat, tap **Start** if prompted, then send `/newbot`. Choose a display name and a username. BotFather gives you a token to paste into the bridge window on your computer. Follow the pairing prompt to connect your bot. This is a one-time setup. You can also pair a dedicated bot you already own. [Download and setup guides](https://github.com/wildbillwallace/robosats-telegram) · [Open BotFather](https://t.me/BotFather)
+On your phone, open the verified BotFather chat, tap **Start** if prompted, then send `/newbot`. Choose a display name and a username. BotFather gives you a token to paste into the bridge window on your computer. Follow the pairing prompt to connect your bot. This is a one-time setup. You can also pair a dedicated bot you already own. [Open BotFather](https://t.me/BotFather)
 
 When the bridge says **Bridge ready**, it sends buttons to your bot chat. Keep the bridge running, the computer online, and Tor connected. The bridge keeps the computer awake while it runs, so you can lock your screen and continue on your phone. Leave the laptop lid open if closing it puts the computer to sleep. Tap **Menu → Show bridge controls** to bring the buttons back anytime.
 
