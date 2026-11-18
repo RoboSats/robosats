@@ -63,8 +63,9 @@ Registered as `window.AndroidAppRobosats`. Promise-based: every method takes a `
 | `generateRobohash(uuid, message)` | Rust JNI deterministic avatar |
 | `copyToClipboard(message)` | ClipData label `"RoboSats Data"` |
 | `getTorStatus(uuid)` | Returns `getTorKmpObject().torState.state.name` |
-| `openWS(uuid, path)` | Open OkHttp WebSocket via Tor |
-| `sendWsMessage(uuid, path, message)` | Send on existing WebSocket |
+| `openWS(connectionId, path)` | Open OkHttp WebSocket via Tor; keyed by `connectionId` (UUID). `resolvePromise(connectionId, path)` on open; `rejectPromise(connectionId, …)` on pre-open failure. |
+| `sendWsMessage(connectionId, message): Boolean` | Send on existing socket; returns `true` on success, `false` if the socket is gone (JS treats `false` as a close signal). No UUID promise — synchronous return value. |
+| `closeWS(connectionId)` | Remove socket from map and call `webSocket.close(1000, "Client closed")`. Idempotent. |
 | `sendBinary(uuid, url, headers, base64Data)` | PUT binary; default content-type `application/octet-stream` |
 | `getBinary(uuid, url)` | GET → base64 `NO_WRAP` |
 | `sendRequest(uuid, action, url, headers, body)` | HTTP; body as `application/json; charset=utf-8`; result: `{"json":…,"headers":…}` |
@@ -73,9 +74,18 @@ Registered as `window.AndroidAppRobosats`. Promise-based: every method takes a `
 | `deleteEncryptedStorage(uuid, key)` | Delete key |
 | `restart()` | Relaunch with CLEAR_TOP\|NEW_TASK\|CLEAR_TASK then `context.finish()` |
 
-WebSocket events pushed to JS:
-- `window.AndroidRobosats.onWSMessage('$path', '$msg')` — **capital WS**
-- `window.AndroidRobosats.onWsError('$path')` / `onWsClose('$path')` — lowercase Ws
+WebSocket events pushed to JS (all keyed by **connection id**, not URL):
+- `window.AndroidRobosats.onWSMessage('$connectionId', '$msg')` — **capital WS**
+- `window.AndroidRobosats.onWsError('$connectionId')` / `onWsClose('$connectionId')` — lowercase Ws
+
+WebSocket lifecycle (OkHttp → JS):
+- `onOpen`: store socket in `webSockets[connectionId]`; resolve the JS promise with `path`.
+- `onMessage`: only forwarded if `webSockets[connectionId] === webSocket` (guards against stale frames from a closed socket reaching a new one on the same relay URL).
+- `onClosing`: call `webSocket.close(1000, null)` to complete the close handshake, remove from map, fire `onWsClose`.
+- `onClosed`: remove from map if still present, fire `onWsClose` (idempotent).
+- `onFailure` before `onOpen`: `rejectPromise` only. `onFailure` after open: remove from map, fire `onWsError` then `onWsClose`.
+
+`webSockets` is keyed by **connection id (UUID)**, not by URL. Multiple connections to the same relay URL are independent entries. Never switch back to URL-keying — that caused late `onClosing` callbacks from a dead socket to remove the new socket for the same URL.
 
 Input validation: `UUID_PATTERN` (hex UUID format) + `SAFE_STRING_PATTERN` (`[a-zA-Z0-9\s_\-.,:;!?()\[\]{}"]*`) — invalid uuid silently returns (logged only). `encodeForJavaScript` escapes `\ ' " \n \r \t` and `< > &` → `\u003C \u003E \u0026`. `safeEvaluateJavascript` strips `\u0000` and posts to `webView.post{}`.
 
@@ -87,7 +97,7 @@ Input validation: `UUID_PATTERN` (hex UUID format) + `SAFE_STRING_PATTERN` (`[a-
 
 ## Traps
 - **Never reintroduce raw Intent-extra interpolation into `evaluateJavascript()`.** The `order_id` Intent extra is attacker-controlled (any co-installed app can `startActivity()` with arbitrary extras; a malicious coordinator can craft it via the Nostr `order_id` DM tag). All intent extras must pass through `extractOrderPath()` (allowlist) **and** `encodeForJavaScript()` (escaping) before reaching `evaluateJavascript()`. Both layers are required: the whitelist kills unknown payloads at intake; the escaping is defence-in-depth for any future loosening of the pattern.
-- WebSocket callbacks have **inconsistent casing**: `onWSMessage` (capital WS) vs `onWsError`/`onWsClose` (capital W, lowercase s). The private Kotlin function is `onWsMessage` — the JS-facing name differs. Frontend must match these exactly.
+- WebSocket JS callbacks have **inconsistent casing**: `onWSMessage` (capital WS) vs `onWsError`/`onWsClose` (capital W, lowercase s). The private Kotlin helper is `onWsMessage` — the JS-facing call differs. Frontend must match these exactly and must never normalise the casing.
 - `allowUniversalAccessFromFileURLs = true` is required and intentional — do not remove it without confirming `.onion` requests still work.
 - `resolvePromise`/`rejectPromise` silently swallow invalid UUIDs (log only, no JS callback fired) — the frontend promise will hang if a UUID is malformed.
 - **`isValidUrl` uses `java.net.URL` for parsing, which has NO protocol handler for `ws://`/`wss://` — those schemes throw `MalformedURLException: unknown protocol: ws` and would silently reject every WebSocket URL.** The function normalises `ws→http` / `wss→https` before calling `URL()` solely for host/port extraction; the scheme allowlist check (`ws`/`wss` allowed) is still performed on the original string beforehand, so SSRF protections are fully preserved. **Do not refactor this back to passing the raw `ws(s)://` URL directly to `URL()`.**
