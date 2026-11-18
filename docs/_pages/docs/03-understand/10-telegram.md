@@ -10,7 +10,7 @@ sidebar:
 src: "_pages/docs/03-understand/10-telegram.md"
 ---
 
-<img class="telegram-bridge-banner" src="{{ '/assets/images/telegram-bridge/sats-bridge.jpeg' | relative_url }}" alt="A suspension bridge connects the RoboSats logo to a Lightning bolt" width="640" style="display: block; width: 100%; max-width: 640px; aspect-ratio: 3 / 1; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+<img class="telegram-bridge-banner" src="{{ '/assets/images/telegram-bridge/robosats-telegram-banner.jpeg' | relative_url }}" alt="A suspension bridge connects the RoboSats and Telegram logos, with a gold Lightning bolt above the center span" width="640" style="display: block; width: 100%; max-width: 640px; aspect-ratio: 3 / 1; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
 
 **Start the bridge on your computer, then buy sats on RoboSats from your phone.** In a bot you own, browse and take an offer, get your Lightning bond invoice, set up your payout, chat with the seller, confirm payment, and follow the trade through payout. Lock the bond and pay the seller using your wallet or payment app on the same phone. You can start a purchase on your phone or pick up one you began on your computer.
 
