@@ -1,6 +1,6 @@
 ---
 layout: single
-title: Telegram Notifications, Alert and Groups
+title: RoboSats Telegram Bridge
 permalink: /docs/telegram/
 toc: true
 toc_sticky: true
@@ -10,71 +10,59 @@ sidebar:
 src: "_pages/docs/03-understand/10-telegram.md"
 ---
 
-<!-- Cover: telegram notification bot: how to enable (on phone and desktop). What are the privacy trade offs. Alert bot (Jacky). Telegram public support group, different language group. Warning: never reply to privates. Never share your robot token -->
+**Start the bridge on your computer, then buy sats on RoboSats from your phone.** In a bot you own, browse and take an offer, get your Lightning bond invoice, set up your payout, chat with the seller, confirm payment, and follow the trade through payout. Lock the bond and pay the seller using your wallet or payment app on the same phone. You can start a purchase on your phone or pick up one you began on your computer.
 
-## **RoboSats Alert bot 🔔**
+## Set up your bot once
 
-You can find it on Telegram with the username @RobosatsAlertBot, whose admin is @jakyhack.
+Download the bridge and follow the Mac or Windows setup guide. On your phone, open the verified BotFather chat, tap **Start** if prompted, then send `/newbot`. Choose a display name and a username. BotFather gives you a token to paste into the bridge window on your computer. Follow the pairing prompt to connect your bot. This is a one-time setup. You can also pair a dedicated bot you already own. [Download and setup guides](https://github.com/wildbillwallace/robosats-telegram) · [Open BotFather](https://t.me/BotFather)
 
-## **What Can I Do with @RobosatsAlertBot?**
+When the bridge says **Bridge ready**, it sends buttons to your bot chat. Keep the bridge running, the computer online, and Tor connected. The bridge keeps the computer awake while it runs, so you can lock your screen and continue on your phone. Leave the laptop lid open if closing it puts the computer to sleep. Tap **Menu → Show bridge controls** to bring the buttons back anytime.
 
-It is a bot designed to notify you when an order that meets your requirements is posted on RoboSats.
+<figure>
+  <img src="{{ '/assets/images/telegram-bridge/bridge-menu-and-offers.png' | relative_url }}" alt="The bot's startup menu and a list of buy offers in Telegram" width="360" loading="lazy">
+  <figcaption>The bridge sends the main buttons when it starts. In the offer list, you can compare amounts, premiums, and bonds.</figcaption>
+</figure>
 
-This means that if you want to "BUY" Sats with "EUROS" with a maximum premium of "5%" through the payment methods "BIZUM,PAYPAL,SEPA,STRIKE", tell @RobosatsAlertBot and he will take care of it to notify you when a trade that meets these requirements is published on RoboSats.
+## Buy sats from your phone
 
-## **User Guide**
+1. **Find and take an offer.** Open **Browse offers** or narrow the list under **Offer filters**. Open an offer, choose a robot if prompted, and review the terms. If the offer shows a range, enter an amount within that range. When you take the offer, the bot gives you the bond invoice. Pay it in your Lightning wallet on the phone, then tap **Continue order → Continue on phone**.
+2. **Set up your payout.** When RoboSats is ready for your invoice, tap **Set up Lightning payout**. You can adjust the routing budget in sats or parts per million. Create a Lightning invoice in your wallet for the exact amount the bot shows, then submit and confirm it in the bot chat.
+3. **Chat and pay.** Once the bot says **Seller chat is open**, type a normal message to the seller in your bot chat. When the bot says **Ready for payment**, agree on payment details and use your wallet or payment app on the same phone to send the payment. If you’re paying with a stablecoin, agree on the amount and network in chat. After paying, tap **Confirm Sent** and finish the confirmation.
+4. **Follow the trade through payout.** The bot tells you when RoboSats records your payment confirmation and when the trade completes. Check your Lightning wallet for the payout. Use **Menu → Show bridge controls** at any point to see the current status and available actions.
 
-Access @RobosatsAlertBot and start the bot with the /start command.
+<figure class="half">
+  <img src="{{ '/assets/images/telegram-bridge/offer-filters.png' | relative_url }}" alt="Offer filters for currency, payment method, and coordinator" width="360" loading="lazy">
+  <img src="{{ '/assets/images/telegram-bridge/offer-details.png' | relative_url }}" alt="A public offer showing the amount range, premium, bond, and payment methods" width="360" loading="lazy">
+  <figcaption>Filter the list, then open an offer to review its terms and enter an amount.</figcaption>
+</figure>
 
-Next, it will give you a choice between 2 options: add a new alert or list the alerts that you already have configured. Obviously, when you start the bot for the first time, you will not have any alerts configured.
+Enter your Garage Key on the computer when starting the bridge to use the full purchase flow. You can browse offers and receive alerts without it.
 
-![image](https://user-images.githubusercontent.com/47178010/170114653-f1d22f61-1db3-4a6a-b38c-5542a1b76648.png)
+## Switch between your computer and phone
 
-Proceed to create a new alert by clicking on the "+ Add new alert" button or using the /new command.
+If you started a supported buy order in RoboSats on your computer, tap **Resume an order** in the bot and choose the matching order. To continue a Telegram-started order in RoboSats, open it with the same robot and coordinator and check the current status before taking the next action.
 
-From that moment, the bot is ready to save your preferences. It will ask you 4 questions:
-- What do you want to do? You will be able to choose between buying or selling; this means telling the bot what you want to do within RoboSats.
+## How the bridge connects to RoboSats
 
-![image](https://user-images.githubusercontent.com/47178010/170114706-a4226028-50a5-414e-8ae8-c44f90833ff6.png)
+The bridge uses the coordinator API for order actions and status. It supports the encrypted Nostr trade chat introduced in RoboSats v0.8.8-alpha and the coordinator’s PGP-encrypted chat. It reads replies over Nostr when both robots’ Nostr keys are available and uses coordinator chat otherwise. It sends your replies over both routes when both are available. [RoboSats release notes](https://github.com/RoboSats/robosats/releases/tag/v0.8.8-alpha)
 
-- What is your fiat currency? It will give you a list of fiat currencies, just choose yours.
+## Get an offer alert
 
-![image](https://user-images.githubusercontent.com/47178010/170114837-3e83f1c9-035a-4b59-8c8e-043f77995a33.png)
+1. Open **Offer filters** from the buttons the bridge sends at startup. Pick a currency, payment method, and coordinator, or leave any of them open. You can bring the buttons back with **Menu → Show bridge controls**.
+2. Open **Offer alerts** and choose **Buy sats** or **Sell sats**. A buy alert looks for sellers at or below your maximum premium. A sell alert looks for buyers at or above your minimum premium. Choose **Any premium** if you prefer.
+3. Tap **Turn on alerts**. When a match arrives, tap **View offer** to check whether it is still available. Tap **Pause alerts** whenever you want to stop receiving them.
 
-- What is the maximum premium you are willing to pay? Or, what is the minimum premium you are willing to accept? Depending on whether you want to buy or sell Sats, it will ask you one question or another.
+<figure>
+  <img src="{{ '/assets/images/telegram-bridge/offer-alert-settings.jpg' | relative_url }}" alt="Offer alert settings with buy and sell choices and a premium limit" width="360" loading="lazy">
+  <figcaption>Choose which side of the book to watch, set a premium limit, and turn alerts on.</figcaption>
+</figure>
 
-![image](https://user-images.githubusercontent.com/47178010/170115618-66117113-e702-4faa-b02d-a8101244f7da.png)
+The bridge checks the public order book about once a minute while browsing. A matching offer can be taken or expire before you open it. Alerts require no Garage Key and resume automatically when the bridge returns to browsing after a trade.
 
-- What payment methods do you accept to make/receive payment with fiat? Simply tell the bot what payment methods you would be willing to accept for your trade. Inform them in the following format: "Révolut,SEPA,Strike,Bizum" (without quotes). If you are indifferent to the fiat payment method, simply send it: "Any" (without quotes).
+From a buy alert, you can review the offer and enter the purchase flow above. From a sell alert, open the matching buy offer in RoboSats using the Tor link in the alert details.
 
-![image](https://user-images.githubusercontent.com/47178010/170115693-7378b25a-93af-4ad3-ad7e-d0185364003d.png)
+## Privacy
 
-Once all this has been reported, your alert is configured correctly. In the event an order is posted on RoboSats that meets your conditions, @RobosatsAlertBot will notify you via Telegram with a link to the order book so you can proceed with your trade if you wish. Below is an example of an alert.
-
-![image](https://user-images.githubusercontent.com/47178010/170116003-6316c10a-0c6f-44bc-8eb6-17a1df8e1f3f.png)
-
-## **How Often Does RoboSats Look at the Order Book?**
-
-RoboSats checks the order book every minute; this means that the maximum time that will pass from when an order that meets your conditions is published until @RobosatsAlertBot notifies you will be 1 minute.
-
-## **Once @RobosatsAlertBot Has Notified Me, Can I Use that Same Alert Again?**
-
-Yes, once @RobosatsAlertBot notifies you, your alert stays in the disabled state, simply turn it back on and @RobosatsAlertBot will notify you again when an order meets your conditions.
-
-## **What Can Go Wrong?**
-
-Nothing wrong, but there can be disappointments. It is possible that the conditions of your alert are conditions shared by many users, this means that there are many users who want to find a trade with the same (or very similar) conditions as you. This means that an order with very restrictive conditions may be in the order book for a very short time because some other user accepts it before you do, which is why the bot's creator recommends always having it with sound.
-
-## **LOSS OF PRIVACY**
-
-RoboSats is an exchange focused on user privacy because personal information is not required. The optimal setup for RoboSats is through a recommended access method like the private TOR browser.
-
-Once you leave TOR to a third party application (i.e., Telegram) you lose privacy.
-
-This bot, like any other, will store your Telegram user ID as it is necessary to contact the user. It will also store the data of your alert.
-
-That is, the bot will know that user 123456789 has an alert to buy Sats with EUROS with a maximum of 5% premium through Bizum, PayPal, or Strike.
-
-It is important to always keep this in mind. Some are willing to sacrifice a degree of privacy in favor of convenient notifications, but you must consider the tradeoffs associated with revealing the aforementioned information. Privacy is what we choose to selectively reveal and is ultimately up to the end-user as to how private they want to make their RoboSats experience.
+Your computer reads the public RoboSats order book over Tor, matches alerts, and stores your preferences. Because you run your own bridge with your own bot, your setup operates independently of a shared alert bot. Telegram carries the alerts, trade updates, and chat messages you send through the bot. Enter your Garage Key and bot token only in the local setup window. Use RoboSats directly if you want seller messages to stay within RoboSats.
 
 {% include improve %}
