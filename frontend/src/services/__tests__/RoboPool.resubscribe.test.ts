@@ -105,6 +105,66 @@ describe('RoboPool relay reconnection', () => {
     expect(first.requests('subscribeBook')).toHaveLength(1);
   });
 
+  it('filters pending orders server-side and pairs a closed-stream REQ for tombstones', async () => {
+    pool.connect([relayUrl]);
+    await Promise.resolve();
+
+    const events = { onevent: jest.fn(), oneose: jest.fn() };
+    pool.subscribeBook(false, events);
+
+    const bookReqs = first.requests('subscribeBook');
+    expect(bookReqs).toHaveLength(1);
+    const [, , bookFilter] = bookReqs[0];
+    expect(bookFilter.kinds).toEqual([38383]);
+    expect(bookFilter['#s']).toEqual(['pending']);
+    expect(bookFilter.authors.length).toBeGreaterThan(0);
+    expect(bookFilter.since).toBeGreaterThan(0);
+
+    const closedReqs = first.requests('subscribeBookClosed');
+    expect(closedReqs).toHaveLength(1);
+    const [, , closedFilter] = closedReqs[0];
+    expect(closedFilter.kinds).toEqual([38383]);
+    expect(closedFilter['#s']).toEqual(['success']);
+    expect(closedFilter.authors).toEqual(bookFilter.authors);
+    expect(closedFilter.since).toBeGreaterThan(bookFilter.since);
+  });
+
+  it('tombstones through the closed stream without firing a second book EOSE', async () => {
+    pool.connect([relayUrl]);
+    await Promise.resolve();
+
+    const events = { onevent: jest.fn(), oneose: jest.fn() };
+    pool.subscribeBook(false, events);
+
+    first.receive('EVENT', 'subscribeBookClosed', bookEvent('mainnet'));
+    expect(events.onevent).toHaveBeenCalledTimes(1);
+    expect(events.oneose).not.toHaveBeenCalled();
+
+    first.receive('EOSE', 'subscribeBookClosed');
+    expect(events.oneose).not.toHaveBeenCalled();
+
+    first.receive('EOSE', 'subscribeBook');
+    expect(events.oneose).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears the book via onresubscribe and re-sends both book REQs when a relay reopens', async () => {
+    pool.connect([relayUrl]);
+    await Promise.resolve();
+
+    const onresubscribe = jest.fn();
+    const events = { onevent: jest.fn(), oneose: jest.fn(), onresubscribe };
+    pool.subscribeBook(false, events);
+    expect(first.requests('subscribeBook')).toHaveLength(1);
+    expect(first.requests('subscribeBookClosed')).toHaveLength(1);
+
+    first.drop();
+    first.open();
+
+    expect(onresubscribe).toHaveBeenCalledTimes(1);
+    expect(first.requests('subscribeBook')).toHaveLength(2);
+    expect(first.requests('subscribeBookClosed')).toHaveLength(2);
+  });
+
   it('re-sends book and notification REQs after a relay reconnects', async () => {
     pool.connect([relayUrl]);
     await Promise.resolve();
