@@ -94,7 +94,7 @@
     "react-countdown": "^2.3.6",
     "react-dom": "^19.2.8",
     "react-grid-layout": "^2.2.4",
-    "react-i18next": "^17.0.15",
+    "react-i18next": "^18.0.2",
     "react-image": "^4.1.0",
     "react-leaflet": "^5.0.0",
     "react-leaflet-markercluster": "^5.0.0-rc.0",
