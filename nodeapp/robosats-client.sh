@@ -53,6 +53,13 @@ mainnet_ammanaya_onion=ammannjgzybw4qm2odmci7xgolh5grzijidacjxose5tthm375dcopad.
 mainnet_ammanaya_port=112
 mainnet_ammanaya_socat="socat tcp4-LISTEN:${mainnet_ammanaya_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_ammanaya_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
+################################
+# Gumpellite
+# Mainnet
+mainnet_gumpellite_onion=jvnfeiy3aizcpva6zekd3v6o5kpzduqeeqqihhtudhuqqa7e5jzm7kyd.onion
+mainnet_gumpellite_port=113
+mainnet_gumpellite_socat="socat tcp4-LISTEN:${mainnet_gumpellite_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS5-CONNECT:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_gumpellite_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+
 # RUN!
 mkdir -p /etc/nginx/ssl
 if [ ! -f /etc/nginx/ssl/server.crt ]; then
@@ -61,4 +68,4 @@ if [ ! -f /etc/nginx/ssl/server.crt ]; then
         -subj "/CN=robosats_client" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 fi
 
-$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $mainnet_freeport_socat & $mainnet_ammanaya_socat & nginx
+$mainnet_temple_socat & $testnet_temple_socat & $mainnet_lake_socat & $testnet_lake_socat & $mainnet_bazaar_socat & $mainnet_freeport_socat & $mainnet_ammanaya_socat & $mainnet_gumpellite_socat & nginx

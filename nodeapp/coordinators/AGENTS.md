@@ -15,6 +15,7 @@ name — all three must match exactly.
 | bazaar | 107 | — | ❌ no testnet bridge | Nginx answers `/testnet/bazaar/` with `return 503` |
 | freeport | 111 | — | ❌ no testnet bridge | Nginx answers `/testnet/freeport/` with `return 503` |
 | ammanaya | 112 | — | ❌ no testnet bridge | Nginx answers `/testnet/ammanaya/` with `return 503` |
+| gumpellite | 113 | — | ❌ no testnet bridge | Nginx answers `/testnet/gumpellite/` with `return 503` |
 
 Testnet port convention for coordinators that have testnet: mainnet port + 900 (e.g. 102 → 1002).
 There is no `moon` coordinator — that entry was a documentation error.
@@ -29,7 +30,7 @@ upstream testnet_{alias} {
     server 127.0.0.1:{testnet_port};
 }
 ```
-Mainnet-only coordinators (bazaar, freeport, ammanaya) declare only `mainnet_{alias}`.
+Mainnet-only coordinators (bazaar, freeport, ammanaya, gumpellite) declare only `mainnet_{alias}`.
 Both upstream names must match exactly what `locations.conf` references in `proxy_pass`.
 
 ## `locations.conf` Route Set (canonical pattern, per coordinator)
@@ -54,7 +55,7 @@ Both upstream names must match exactly what `locations.conf` references in `prox
 | `/testnet/{alias}/relay/` | `testnet_{alias}` | Nostr relay; same upgrade headers + `Origin $http_origin` + `Access-Control-Allow-Origin *` |
 | `/testnet/{alias}/blossom/` | `testnet_{alias}` | Blossom media upload proxy (testnet) |
 
-*503 stub* (bazaar, freeport, ammanaya — no testnet bridge):
+*503 stub* (bazaar, freeport, ammanaya, gumpellite — no testnet bridge):
 ```nginx
 location /testnet/{alias}/ {
     return 503;
@@ -94,14 +95,14 @@ Reverse of the above: remove socat lines from `robosats-client.sh`, delete the
   `federation.json` is a known improvement path but has not been implemented.
 - **Testnet support in nodeapp is best-effort.** Only temple and lake have a distinct
   testnet onion and a live testnet socat bridge with full nginx locations. The remaining
-  three coordinators (bazaar, freeport, ammanaya) are mainnet-only —
+  four coordinators (bazaar, freeport, ammanaya, gumpellite) are mainnet-only —
   `/testnet/{alias}/` returns 503.
 
 ## Traps
 - Several `locations.conf` comments name the wrong coordinator (e.g., lake's testnet
   section heading says "Freedomsats Coordinator Testnet Locations", bazaar's says
   "TheBigLake Coordinator Mainnet") — copy-paste artefacts; functionally harmless.
-- Mainnet-only coordinators (`bazaar`, `freeport`, `ammanaya`) have no
+- Mainnet-only coordinators (`bazaar`, `freeport`, `ammanaya`, `gumpellite`) have no
   `testnet_{alias}` upstream in `upstreams.conf` — do not add a testnet location block
   for them without first adding the socat bridge in `robosats-client.sh` and the upstream
   in `upstreams.conf`.
