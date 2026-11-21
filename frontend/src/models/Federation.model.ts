@@ -539,6 +539,9 @@ export class Federation {
         this.updateExchange();
         this.triggerHook('onFederationUpdate');
       },
+      onresubscribe: () => {
+        this.book = {};
+      },
     });
   };
 

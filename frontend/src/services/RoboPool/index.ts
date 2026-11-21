@@ -18,6 +18,7 @@ export function setFederationPubkeys(pubkeys: string[]): void {
 interface RoboPoolEvents {
   onevent: (event: Event) => void;
   oneose: () => void;
+  onresubscribe?: () => void;
 }
 
 interface NotificationSubscriptionOptions {
@@ -56,6 +57,7 @@ interface RelayHealth {
 const DEFAULT_NOTIFICATION_BACKFILL_SECONDS = 48 * 60 * 60;
 const DEFAULT_NOTIFICATION_EOSE_TIMEOUT_MS = 5000;
 const BOOK_BACKFILL_SECONDS = 108000;
+const BOOK_CLOSED_BACKFILL_SECONDS = 2 * 60 * 60;
 const WATCHDOG_INTERVAL_MS = 60000;
 const WATCHDOG_CONNECTING_TIMEOUT_MS = 300000;
 const LIVENESS_PROBE_AFTER_MS = 600000;
@@ -375,7 +377,10 @@ class RoboPool {
   private resubscribeAll = (url: string): void => {
     if (this.bookSubscription) {
       this.ensureMessageHandler(this.bookSubscription.handler);
-      this.sendToSocket(url, this.buildBookRequest(this.bookSubscription.robosatsOnly));
+      this.bookSubscription.events.onresubscribe?.();
+      this.buildBookRequest(this.bookSubscription.robosatsOnly).forEach((request) =>
+        this.sendToSocket(url, request),
+      );
     }
 
     this.notificationSubscriptions.forEach(({ request, handler }) => {
@@ -413,23 +418,37 @@ class RoboPool {
     return authors;
   };
 
-  private buildBookRequest = (robosatsOnly: boolean): string => {
+  private buildBookRequest = (robosatsOnly: boolean): string[] => {
+    const authors = this.bookAuthors(robosatsOnly);
+    const now = Math.floor(new Date().getTime() / 1000);
     const requestBook = [
       'REQ',
       'subscribeBook',
       {
-        authors: this.bookAuthors(robosatsOnly),
+        authors,
         kinds: [38383],
-        since: Math.floor(new Date().getTime() / 1000) - BOOK_BACKFILL_SECONDS,
+        '#s': ['pending'],
+        since: now - BOOK_BACKFILL_SECONDS,
       },
     ];
-    return JSON.stringify(requestBook);
+    const requestClosed = [
+      'REQ',
+      'subscribeBookClosed',
+      {
+        authors,
+        kinds: [38383],
+        '#s': ['success'],
+        since: now - BOOK_CLOSED_BACKFILL_SECONDS,
+      },
+    ];
+    return [JSON.stringify(requestBook), JSON.stringify(requestClosed)];
   };
 
   private sendBookRequest = (robosatsOnly: boolean): void => {
-    const request = this.buildBookRequest(robosatsOnly);
-    Object.keys(this.webSockets).forEach((url) => {
-      this.sendToSocket(url, request);
+    this.buildBookRequest(robosatsOnly).forEach((request) => {
+      Object.keys(this.webSockets).forEach((url) => {
+        this.sendToSocket(url, request);
+      });
     });
   };
 
@@ -437,17 +456,18 @@ class RoboPool {
     if (this.bookSubscription) this.removeMessageHandler(this.bookSubscription.handler);
 
     const subscribeBook = 'subscribeBook';
+    const subscribeBookClosed = 'subscribeBookClosed';
 
     const handler = (_url: string, messageEvent: MessageEvent): void => {
       const jsonMessage = JSON.parse(messageEvent.data);
 
-      if (subscribeBook !== jsonMessage[1]) return;
+      if (subscribeBook !== jsonMessage[1] && subscribeBookClosed !== jsonMessage[1]) return;
 
       if (jsonMessage[0] === 'EVENT') {
         const event: Event = jsonMessage[2];
         const network = event.tags.find((e) => e[0] === 'network');
         if (network?.[1] === this.network) events.onevent(jsonMessage[2]);
-      } else if (jsonMessage[0] === 'EOSE') {
+      } else if (jsonMessage[0] === 'EOSE' && jsonMessage[1] === subscribeBook) {
         events.oneose();
       }
     };
