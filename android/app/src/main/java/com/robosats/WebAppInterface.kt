@@ -13,6 +13,8 @@ import com.robosats.services.NotificationsService
 import com.robosats.tor.TorKmpManager.getTorKmpObject
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient.Builder
 import okhttp3.Request
@@ -39,7 +41,7 @@ import okhttp3.Request.Builder as RequestBuilder
 class WebAppInterface(private val context: MainActivity, private val webView: WebView) {
     private val TAG = "WebAppInterface"
     private val roboIdentities = RoboIdentities()
-    private val webSockets: MutableMap<String?, WebSocket?> = HashMap<String?, WebSocket?>()
+    private val webSockets: MutableMap<String, WebSocket> = HashMap()
 
     // Security patterns for input validation
     private val UUID_PATTERN = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE)
@@ -145,25 +147,20 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
     }
 
     @JavascriptInterface
-    fun openWS(uuid: String, path: String) {
-        // Validate UUID
-        if (!isValidUuid(uuid)) {
-            Log.e(TAG, "Invalid UUID for openWS: $uuid")
+    fun openWS(connectionId: String, path: String) {
+        if (!isValidUuid(connectionId)) {
+            Log.e(TAG, "Invalid UUID for openWS: $connectionId")
             return
         }
-        if (!isValidUrl(path)) {
+        val parsedWsUrl = parseValidatedUrl(path)
+        if (parsedWsUrl == null) {
             Log.e(TAG, "Invalid or disallowed URL for openWS: $path")
-            rejectPromise(uuid, "Invalid URL")
+            rejectPromise(connectionId, "Invalid URL")
             return
         }
 
         try {
-            Log.d(TAG, "WebSocket opening: $path")
-            // Create OkHttpClient
-            // readTimeout must be 0 (disabled) for long-lived WebSocket connections;
-            // a non-zero value causes OkHttp to kill the socket after the timeout
-            // fires during a quiet period.  A ping interval keeps the connection alive
-            // through NAT/firewall idle timeouts instead.
+            Log.d(TAG, "WebSocket opening: $path (id=$connectionId)")
             var builder = Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(0, TimeUnit.SECONDS)
@@ -175,39 +172,45 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
             val client = builder.build()
 
-            // Create a request for the WebSocket connection
             val request: Request = RequestBuilder()
-                .url(path)
+                .url(parsedWsUrl)
                 .build()
 
+            var opened = false
 
-            // Create a WebSocket listener
             val listener: WebSocketListener = object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
-                    Log.d(TAG, "WebSocket opened: " + response.message)
+                    Log.d(TAG, "WebSocket opened: $path (id=$connectionId)")
+                    opened = true
                     synchronized(webSockets) {
-                        webSockets.put(
-                            path,
-                            webSocket
-                        ) // Store the WebSocket instance with its URL
+                        webSockets[connectionId] = webSocket
                     }
-                    resolvePromise(uuid, path)
+                    resolvePromise(connectionId, path)
                 }
 
                 override fun onMessage(webSocket: WebSocket, text: String) {
-                    onWsMessage(path, text)
+                    val current: WebSocket?
+                    synchronized(webSockets) { current = webSockets[connectionId] }
+                    if (current === webSocket) onWsMessage(connectionId, text)
                 }
 
                 override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                    onWsMessage(path, bytes.hex())
+                    val current: WebSocket?
+                    synchronized(webSockets) { current = webSockets[connectionId] }
+                    if (current === webSocket) onWsMessage(connectionId, bytes.hex())
                 }
 
                 override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                    Log.d(TAG, "WebSocket closing: " + reason)
-                    onWsClose(path)
-                    synchronized(webSockets) {
-                        webSockets.remove(path) // Remove the WebSocket instance by URL
-                    }
+                    Log.d(TAG, "WebSocket closing: $path (id=$connectionId, reason=$reason)")
+                    webSocket.close(1000, null)
+                    synchronized(webSockets) { webSockets.remove(connectionId) }
+                    onWsClose(connectionId)
+                }
+
+                override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                    Log.d(TAG, "WebSocket closed: $path (id=$connectionId)")
+                    synchronized(webSockets) { webSockets.remove(connectionId) }
+                    onWsClose(connectionId)
                 }
 
                 override fun onFailure(
@@ -215,34 +218,50 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
                     t: Throwable,
                     response: Response?
                 ) {
-                    Log.d(TAG, "WebSocket error: " + t.message)
-                    onWsError(path)
-                    rejectPromise(uuid, "false")
+                    Log.d(TAG, "WebSocket failure: $path (id=$connectionId, opened=$opened, err=${t.message})")
+                    if (!opened) {
+                        rejectPromise(connectionId, "Failed to connect: ${t.message}")
+                    } else {
+                        synchronized(webSockets) { webSockets.remove(connectionId) }
+                        onWsError(connectionId)
+                        onWsClose(connectionId)
+                    }
                 }
             }
 
             client.newWebSocket(request, listener)
         } catch (e: Exception) {
             Log.e(TAG, "Error connecting to WebSocket", e)
-            rejectPromise(uuid, "Error connecting Tor WebSocket")
+            rejectPromise(connectionId, "Error connecting Tor WebSocket")
         }
     }
 
     @JavascriptInterface
-    fun sendWsMessage(uuid: String, path: String, message: String) {
-        // Validate UUID
-        if (!isValidUuid(uuid)) {
-            Log.e(TAG, "Invalid UUID for getTorStatus: $uuid")
+    fun sendWsMessage(connectionId: String, message: String): Boolean {
+        if (!isValidUuid(connectionId)) {
+            Log.e(TAG, "Invalid UUID for sendWsMessage: $connectionId")
+            return false
+        }
+        val websocket: WebSocket?
+        synchronized(webSockets) { websocket = webSockets[connectionId] }
+        return if (websocket != null) {
+            websocket.send(message)
+        } else {
+            Log.w(TAG, "sendWsMessage: no socket for id=$connectionId")
+            false
+        }
+    }
+
+    @JavascriptInterface
+    fun closeWS(connectionId: String) {
+        if (!isValidUuid(connectionId)) {
+            Log.e(TAG, "Invalid UUID for closeWS: $connectionId")
             return
         }
-
-        val websocket = webSockets[path]
-        if (websocket != null) {
-            websocket.send(message)
-            resolvePromise(uuid, "true")
-        } else {
-            rejectPromise(uuid, "Error sending WebSocket message")
-        }
+        val websocket: WebSocket?
+        synchronized(webSockets) { websocket = webSockets.remove(connectionId) }
+        websocket?.close(1000, "Client closed")
+        Log.d(TAG, "WebSocket closed by client: id=$connectionId")
     }
 
     @JavascriptInterface
@@ -253,7 +272,8 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             rejectPromise(uuid, "Invalid UUID")
             return
         }
-        if (!isValidUrl(url)) {
+        val parsedBinaryUrl = parseValidatedUrl(url)
+        if (parsedBinaryUrl == null) {
             Log.e(TAG, "Invalid or disallowed URL for sendBinary: $url")
             rejectPromise(uuid, "Invalid URL")
             return
@@ -275,7 +295,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             val client = builder.build()
 
             // Build request with URL
-            val requestBuilder = RequestBuilder().url(url)
+            val requestBuilder = RequestBuilder().url(parsedBinaryUrl)
 
             // Add headers from JSON and extract Content-Type
             val headersObject = JSONObject(headers)
@@ -335,7 +355,8 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             rejectPromise(uuid, "Invalid UUID")
             return
         }
-        if (!isValidUrl(url)) {
+        val parsedGetUrl = parseValidatedUrl(url)
+        if (parsedGetUrl == null) {
             Log.e(TAG, "Invalid or disallowed URL for getBinary: $url")
             rejectPromise(uuid, "Invalid URL")
             return
@@ -354,7 +375,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             val client = builder.build()
 
             // Build request with URL
-            val request = RequestBuilder().url(url).build()
+            val request = RequestBuilder().url(parsedGetUrl).build()
 
             // Execute request
             client.newCall(request).enqueue(object : Callback {
@@ -392,7 +413,8 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             rejectPromise(uuid, "Invalid UUID")
             return
         }
-        if (!isValidUrl(url)) {
+        val parsedRequestUrl = parseValidatedUrl(url)
+        if (parsedRequestUrl == null) {
             Log.e(TAG, "Invalid or disallowed URL for sendRequest: $url")
             rejectPromise(uuid, "Invalid URL")
             return
@@ -411,7 +433,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
             val client = builder.build()
 
             // Build request with URL
-            val requestBuilder = RequestBuilder().url(url)
+            val requestBuilder = RequestBuilder().url(parsedRequestUrl)
 
             // Add headers from JSON
             val headersObject = JSONObject(headers)
@@ -562,19 +584,19 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
         }
     }
 
-    private fun onWsMessage(path: String?, message: String?) {
+    private fun onWsMessage(connectionId: String, message: String?) {
         val encodedMessage = encodeForJavaScript(message)
-        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWSMessage('$path', '$encodedMessage')")
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWSMessage('$connectionId', '$encodedMessage')")
     }
 
-    private fun onWsError(path: String?) {
-        Log.d(TAG, "WebSocket error: $path")
-        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWsError('$path')")
+    private fun onWsError(connectionId: String) {
+        Log.d(TAG, "WebSocket error: id=$connectionId")
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWsError('$connectionId')")
     }
 
-    private fun onWsClose(path: String?) {
-        Log.d(TAG, "WebSocket close: $path")
-        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWsClose('$path')")
+    private fun onWsClose(connectionId: String) {
+        Log.d(TAG, "WebSocket close: id=$connectionId")
+        safeEvaluateJavascript("javascript:window.AndroidRobosats.onWsClose('$connectionId')")
     }
 
     private fun resolvePromise(uuid: String, result: String) {
@@ -595,6 +617,33 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
         val encodedError = encodeForJavaScript(errorMessage)
         safeEvaluateJavascript("javascript:window.AndroidRobosats.onRejectPromise('$uuid', '$encodedError')")
+    }
+
+    private fun parseValidatedUrl(rawUrl: String?): HttpUrl? {
+        if (rawUrl.isNullOrBlank()) return null
+        return try {
+            val trimmed = rawUrl.trim()
+            val scheme = trimmed.substringBefore("://").lowercase()
+            if (scheme !in setOf("http", "https", "ws", "wss")) return null
+            val normalized = when (scheme) {
+                "ws"  -> "http://" + trimmed.removePrefix("ws://")
+                "wss" -> "https://" + trimmed.removePrefix("wss://")
+                else  -> trimmed
+            }
+            val javaUrl = URL(normalized)
+            val host = javaUrl.host.lowercase()
+            if (host == "localhost") return null
+            val ipv4Loopback = Regex("""^127\.\d+\.\d+\.\d+$""")
+            val ipv4Private = Regex("""^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)""")
+            val ipv4LinkLocal = Regex("""^169\.254\.""")
+            if (ipv4Loopback.containsMatchIn(host)) return null
+            if (ipv4Private.containsMatchIn(host)) return null
+            if (ipv4LinkLocal.containsMatchIn(host)) return null
+            if (host == "::1" || host == "[::1]") return null
+            trimmed.toHttpUrlOrNull()
+        } catch (e: MalformedURLException) {
+            null
+        }
     }
 
     /**

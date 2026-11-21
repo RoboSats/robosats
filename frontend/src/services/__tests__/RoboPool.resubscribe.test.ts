@@ -476,3 +476,59 @@ describe('RoboPool relay failover', () => {
     expect(pool.relays).toEqual(['wss://first', 'wss://second', 'wss://third']);
   });
 });
+
+describe('RoboPool Android open() failure fast-retry', () => {
+  let pool: RoboPool;
+  let harness: Harness;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    harness = relayHarness();
+    pool = new RoboPool({ network: 'mainnet' } as Settings);
+  });
+
+  afterEach(() => {
+    pool.close();
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('retries at the next watchdog tick when open() rejects, then replays REQs on success', async () => {
+    const openSpy = jest.spyOn(websocketClient, 'open');
+    openSpy
+      .mockRejectedValueOnce(new Error('connection refused'))
+      .mockResolvedValue(harness.connection);
+
+    pool.connect([relayUrl]);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(pool.getConnectionStates()[relayUrl]).toBe(WebsocketState.CONNECTING);
+
+    const events = { onevent: jest.fn(), oneose: jest.fn() };
+    pool.subscribeBook(false, events);
+
+    jest.advanceTimersByTime(60000);
+    await Promise.resolve();
+
+    expect(openSpy).toHaveBeenCalledTimes(2);
+    expect(pool.getConnectionStates()[relayUrl]).toBe(WebsocketState.OPEN);
+    expect(harness.requests('subscribeBook')).toHaveLength(1);
+  });
+
+  it('reports CLOSED state while open() has rejected and watchdog has not yet fired', async () => {
+    const openSpy = jest.spyOn(websocketClient, 'open');
+    openSpy
+      .mockRejectedValueOnce(new Error('connection refused'))
+      .mockResolvedValue(harness.connection);
+
+    pool.connect([relayUrl]);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(pool.getConnectionStates()[relayUrl]).toBe(WebsocketState.CONNECTING);
+  });
+});
