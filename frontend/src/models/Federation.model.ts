@@ -96,6 +96,7 @@ export class Federation {
     if (tesnetHost) this.network = 'testnet';
     this.connection = null;
     this.roboPool = new RoboPool(settings);
+    this.roboPool.onConnectionStateChange = () => this.triggerHook('onFederationUpdate');
 
     if (settings.client === 'mobile') {
       const federationUrls = Object.values(this.coordinators)
@@ -537,6 +538,9 @@ export class Federation {
         this.exchange.loadingCache = this.exchange.loadingCache - 1;
         this.updateExchange();
         this.triggerHook('onFederationUpdate');
+      },
+      onresubscribe: () => {
+        this.book = {};
       },
     });
   };

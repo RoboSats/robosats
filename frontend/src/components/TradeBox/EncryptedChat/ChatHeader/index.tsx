@@ -2,6 +2,8 @@ import React from 'react';
 import { Grid, Paper, Typography, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
+import RelayStatusChip from '../../../RelayStatusChip';
+
 interface Props {
   connected: boolean;
   peerConnected: boolean;
@@ -17,7 +19,13 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected }) => {
     <Grid
       container
       direction='row'
-      sx={{ alignItems: 'flex-end', justifyContent: 'space-between', padding: 0 }}
+      sx={{
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        padding: 0,
+        flexWrap: 'wrap',
+        rowGap: 0.5,
+      }}
     >
       <Grid>
         <Paper
@@ -36,6 +44,9 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected }) => {
             {connected ? t('connected') : t('disconnected')}
           </Typography>
         </Paper>
+      </Grid>
+      <Grid>
+        <RelayStatusChip />
       </Grid>
       <Grid>
         <Paper

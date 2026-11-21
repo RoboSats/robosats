@@ -17,10 +17,10 @@ on:
         required: true
   push:
     branches: [ "main" ]
-    paths: [ "android/**", "frontend/**" ]
+    paths: [ "android/**" ]
   pull_request:
     branches: [ "main" ]
-    paths: [ "android/**", "frontend/**" ]
+    paths: [ "android/**" ]
 
 jobs:
   build-android:
@@ -35,7 +35,7 @@ jobs:
 
       - name: 'Download Android Web.bundle Artifact (built frontend)'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
-        uses: dawidd6/action-download-artifact@v27
+        uses: dawidd6/action-download-artifact@v28
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
