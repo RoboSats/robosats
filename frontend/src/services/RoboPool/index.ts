@@ -437,7 +437,7 @@ class RoboPool {
       {
         authors,
         kinds: [38383],
-        '#s': ['success'],
+        '#s': ['success', 'canceled', 'in-progress', 'expired'],
         since: now - BOOK_CLOSED_BACKFILL_SECONDS,
       },
     ];
