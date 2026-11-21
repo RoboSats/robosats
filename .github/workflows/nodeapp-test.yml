@@ -1,0 +1,63 @@
+name: 'Test: Nodeapp'
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: [ "main" ]
+    paths: ["nodeapp/**", "frontend/**"]
+  pull_request:
+    branches: [ "main" ]
+    paths: ["nodeapp/**", "frontend/**"]
+
+jobs:
+  consistency:
+    name: 'Consistency check'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+    - name: 'Run nodeapp consistency check'
+      shell: bash
+      run: sh nodeapp/tests/consistency-check.sh
+
+  smoke-test:
+    name: 'Container smoke test'
+    needs: consistency
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+    - name: 'Build nodeapp image'
+      run: docker build -t robosats-nodeapp-smoke ./nodeapp
+
+    - name: 'Run nodeapp container'
+      run: docker run -d --name nodeapp-smoke robosats-nodeapp-smoke
+
+    - name: 'Wait for internal healthcheck'
+      run: |
+        for i in $(seq 1 30); do
+          if docker exec nodeapp-smoke wget -q -O- http://127.0.0.1:8080/selfhosted 2>/dev/null | grep -q OK; then
+            echo "Healthcheck passed: container is serving on the internal healthcheck endpoint"
+            exit 0
+          fi
+          if [ "$(docker inspect -f '{{.State.Running}}' nodeapp-smoke)" != "true" ]; then
+            echo "Container exited prematurely:"
+            docker logs nodeapp-smoke
+            exit 1
+          fi
+          sleep 2
+        done
+        echo "Healthcheck did not pass within 60s:"
+        docker logs nodeapp-smoke
+        exit 1
+
+    - name: 'Stop container'
+      if: always()
+      run: docker rm -f nodeapp-smoke

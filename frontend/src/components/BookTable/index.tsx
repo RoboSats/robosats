@@ -38,6 +38,7 @@ import RobotAvatar from '../RobotAvatar';
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import RelayStatusChip from '../RelayStatusChip';
 import headerStyleFix from '../DataGrid/HeaderFix';
 import thirdParties from '../../../static/thirdparties.json';
 
@@ -897,8 +898,8 @@ const BookTable = ({
         sx={{ alignItems: 'center', justifyContent: 'space-between' }}
       >
         <Grid>
-          <Grid container direction='row' sx={{ alignItems: 'center' }}>
-            <Grid size={6}>
+          <Grid container direction='row' sx={{ alignItems: 'center' }} spacing={0.5}>
+            <Grid>
               <IconButton
                 onClick={() => {
                   setFullscreen(!fullscreen);
@@ -907,8 +908,11 @@ const BookTable = ({
                 {fullscreen ? <FullscreenExit /> : <Fullscreen />}
               </IconButton>
             </Grid>
+            <Grid>
+              <RelayStatusChip />
+            </Grid>
             {settings.connection === 'api' && (
-              <Grid size={6}>
+              <Grid>
                 <IconButton
                   onClick={() => {
                     void federation.loadBook();
