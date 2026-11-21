@@ -154,8 +154,10 @@ federation `shortAlias` (e.g. `templeofsats` vs `temple`) and the frontend canno
 
 ## Nostr (`nostr.py`)
 Order events (kind 38383), NIP-69 tags: `d, name, k, f, s, amt, fa, pm, premium, source,
-expiration, y, network, layer, bond, z` (+`g` only if lat/long set). `get_status_tag` is
-binary: `"pending"` only if `status==PUB`, else `"success"`. No order-id tag on the order
+expiration, y, network, layer, bond, z` (+`g` only if lat/long set). `get_status_tag` maps
+`Order.Status` to NIP-69 (`pending` only for PUB; `canceled`, `in-progress`, `success`,
+`expired`). Non-PUB events carry an `expiration` of at least now + 1 h, because strfry
+rejects events that are already expired and the old `pending` event would stay listed. No order-id tag on the order
 event — `d` is `md5(COORDINATOR_ALIAS+order.id)` as UUID (DM event does carry `order_id`).
 The DM `order_id` tag and the `source` tag use `get_federation_short_alias()` (see
 Notifications above); `d` and `y` keep raw `COORDINATOR_ALIAS`.
