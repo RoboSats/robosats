@@ -43,6 +43,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Muun](#muun-mobile)|[2.8.0](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.thumbsdown}}|
 |[Valet](#valet-mobile)|[4.4.4](https://valet.finance/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Phoenix](#phoenix-mobile)|[2.7.15](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
+|[Rizful](#rizful-web)|[Web, 2026-11](https://rizful.com/)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[SBW](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Zeus](#zeus-mobile-lnd-cln-eclair-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -116,6 +117,11 @@ Valet is a fork of SBW wallet with a unique feature for its support for "Hosted 
 
 ### Phoenix (Mobile)
 Works good overall. It does support invoice lock. It has also good UX. 
+
+### Rizful (Web)
+Works with RoboSats for both selling and buying (works in any browser). You copy each invoice from RoboSats into Rizful's Send screen, and paste an invoice from Rizful into RoboSats for the payout. While a bond or the escrow is locked, the home screen shows the held amount as "in-flight sats" and the balance is lowered by it (a few sats more than the invoice, kept for routing fees). A bond that RoboSats returns is listed as "Failed Send": that is the sats coming back, and the balance shows them in full. If a bond or escrow payment fails before it reaches RoboSats, Rizful will not pay the same invoice again: pay it from another wallet.
+
+Step-by-step guide with Rizful on both sides: [RoboSats Tutorial](https://docs.megalithic.me/guides/robosats-tutorial/).
 
 ### SBW (Mobile)
 From 2.5 it doesn't support lightning anymore.

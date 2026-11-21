@@ -11,9 +11,6 @@ on:
   push:
     branches: [ "main" ]
     paths: [ "frontend/**" ]
-  pull_request:
-    branches: [ "main" ]
-    paths: [ "frontend/**" ]
 
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'

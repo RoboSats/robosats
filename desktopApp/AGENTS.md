@@ -143,8 +143,11 @@ All use `npx @electron/packager . Robosats --overwrite --out=release-builds`.
    'index.html#/garage')` (correct); `did-fail-load` uses bare `${__dirname}/index.html#/garage`
    (may also fail on the same root cause) — retry can loop.
 9. `desktop-build.yml`'s `on.push`/`on.pull_request` path filter is
-   `paths: [ "desktopApp/**", "frontend/**" ]` — the `/**` glob is present; changes
-   inside those directories do trigger the filter correctly.
+   `paths: [ "desktopApp/**" ]` — only `desktopApp/` changes trigger the build on
+   push/PR. `frontend/**` was deliberately removed: PR builds would download the bundle
+   from the last `main` run anyway (PRs don't run `frontend-build.yml`), making the
+   trigger misleading and expensive. Release builds are always triggered via
+   `workflow_call` from `release.yml` regardless of paths.
 
 ## Constraints
 - Never hand-edit `index.js` or `index.js.map` — edit `index.ts`, run `npm run compile`,
