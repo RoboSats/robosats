@@ -16,7 +16,7 @@ Pillow==13.0.0
 python-decouple==3.8
 requests[socks]==2.34.2
 ring==0.10.1
-gunicorn==26.2.0
+gunicorn==27.0.1
 psycopg2==2.9.13
 django-import-export==4.4.5
 shapely==2.2.0
