@@ -872,6 +872,18 @@ paths:
                     type: string
                     nullable: true
                     description: API key sent in X-API-Key header for webhook authentication
+                  nostr_forward_pubkey:
+                    type: string
+                    nullable: true
+                    description: Nostr public key for forwarded notifications
+                  nostr_forward_relay:
+                    type: string
+                    nullable: true
+                    description: Private .onion relay for forwarded notifications
+                  nostr_forward_enabled:
+                    type: boolean
+                    default: false
+                    description: Whether Nostr forwarding is enabled
               examples:
                 SuccessfullyRetrievedRobot:
                   value:
@@ -895,7 +907,7 @@ paths:
       operationId: robot_update
       description: |2
 
-        Update the robot's webhook notification settings.
+        Update the robot's webhook and Nostr forwarding notification settings.
 
         Webhooks allow you to receive HTTP POST notifications to your own server
         when order events occur. **Only `.onion` URLs are accepted** for privacy.
@@ -910,9 +922,16 @@ paths:
 
         If `webhook_api_key` is set, it will be sent in the `X-API-Key` header.
 
-        **Note:** Webhook is enabled automatically when a valid .onion URL is set.
-        A test notification will be sent when the webhook URL is configured.
-      summary: Update robot webhook settings
+        A test notification is sent when the webhook URL changes or webhooks are
+        enabled.
+
+        Nostr forwarding requires a valid hex or npub public key and a `ws` or
+        `wss` `.onion` relay. Both are required when forwarding is enabled.
+
+        Providing the destination public key lets the coordinator associate it
+        with this robot. The relay sees the recipient public key. If it requires
+        NIP-42 authentication, it also sees the coordinator's public key.
+      summary: Update robot notification settings
       tags:
       - robot
       security:
@@ -935,13 +954,27 @@ paths:
                     type: string
                     nullable: true
                     description: API key sent in X-API-Key header
+                  nostr_forward_pubkey:
+                    type: string
+                    nullable: true
+                    description: Nostr public key for forwarded notifications
+                  nostr_forward_relay:
+                    type: string
+                    nullable: true
+                    description: Private .onion relay for forwarded notifications
+                  nostr_forward_enabled:
+                    type: boolean
+                    description: Whether Nostr forwarding is enabled
               examples:
-                SuccessfullyUpdatedWebhookSettings:
+                SuccessfullyUpdatedNotificationSettings:
                   value:
                     webhook_url: http://myserver.onion/webhook
                     webhook_enabled: true
                     webhook_api_key: my-secret-key
-                  summary: Successfully updated webhook settings
+                    nostr_forward_pubkey: npub16sfzpqkjrunmweeu4tj9z83pv4cwweqcnc5kyxctzdgpelng73zqms3kqr
+                    nostr_forward_relay: ws://myrelay.onion
+                    nostr_forward_enabled: true
+                  summary: Successfully updated notification settings
           description: ''
         '400':
           content:
@@ -954,6 +987,16 @@ paths:
                     items:
                       type: string
                     description: Validation errors for webhook_url field
+                  nostr_forward_pubkey:
+                    type: array
+                    items:
+                      type: string
+                    description: Validation errors for the Nostr public key
+                  nostr_forward_relay:
+                    type: array
+                    items:
+                      type: string
+                    description: Validation errors for the Nostr relay
               examples:
                 InvalidURL(not.onion):
                   value:
