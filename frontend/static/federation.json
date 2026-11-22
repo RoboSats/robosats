@@ -293,5 +293,55 @@
     ],
     "testnetNodesPubkeys": [],
     "federated": true
+  },
+
+  "ibiratech": {
+    "longAlias": "IbiraTech",
+    "shortAlias": "ibiratech",
+    "identifier": "ibiratech",
+    "description": "Small self-hosted coordinator run by IbiraTech Solucoes (Brazil) on our own LND node, reachable over Tor. Non-custodial, no account, no e-mail, no KYC. Deliberately home-sized: 20,000-100,000 sats per order and 10 public orders, because the same node serves our other Lightning services. Disputes are answered by the operator himself, in Portuguese or English.",
+    "motto": "Peer-to-peer, over Lightning, aqui perto.",
+    "color": "#0F1315",
+    "established": "2026-11-22",
+    "nostrHexPubkey": "cf24a8e4345f51d5564fe1a0c0e61e05b4dc0d6cade3ddefb54a922e2a9ee17f",
+    "contact": {
+      "email": null,
+      "telegram": "ibiratech_bot",
+      "simplex": "https://smp11.simplex.im/a#_vXNkxjPX1CCv56yEXxiklwRymMkXXV71qja1u0z1ik",
+      "matrix": null,
+      "website": "https://ibirapay.com",
+      "nostr": "npub1euj23ep5taga24j0uxsvpes7qk6dcrtv4h3amma4f2fzu257u9ls6mrurz",
+      "pgp": "/static/federation/pgp/C640BBBB8877C257430B054139F0A3549B6A98E2.asc",
+      "fingerprint": "C640BBBB8877C257430B054139F0A3549B6A98E2"
+    },
+    "badges": {
+      "isFounder": false,
+      "donatesToDevFund": 20,
+      "hasGoodOpSec": true,
+      "hasLargeLimits": false
+    },
+    "policies": {
+      "Privacy Policy": "No KYC and no user account. The only data we hold about a trade is what the robot itself sends in the order (amount, currency, payment method) plus the order chat, which is end-to-end encrypted with the robot's own key. We do not ask for identity documents in a dispute - payment evidence is enough. The operator is in Brazil and answers to Brazilian law, but there is no personal data on this server to hand over.",
+      "Data Policy": "Order data lives only in this coordinator's database, on the operator's own hardware. Nothing is sold, shared with third parties, used for analytics or tracked with cookies. Access logs (Tor/nginx) are kept short and rotated, without request bodies. Completed orders are kept locally while they may still be reviewed in a dispute; an encrypted snapshot of the database is taken hourly and stored on the same premises only.",
+      "Support Policy": "SimpleX is the primary channel; the Telegram bot @ibiratech_bot reaches the operator as well. Portuguese or English. Best-effort, not 24/7 - this is a home-run coordinator, so expect an answer the same day rather than the same hour. Please include the order number and the off-platform payment proof in the first message.",
+      "Dispute Evidence Policy": "We ask for what the payment rails already produce: bank/PIX receipts, transaction ids, screenshots of the transfer confirmation. Identity documents are not required and are only asked for if a dispute escalates beyond the platform. We decide disputes on the evidence in the order chat, and we explain the decision to both sides.",
+      "Availability Policy": "Best-effort, no uptime guarantee. The coordinator runs on a single home server behind CGNAT, published as a Tor hidden service; it may go down for maintenance, a power cut or an internet outage. Order size is capped at 100,000 sats and 10 public orders while the coordinator is new and shares its node with other services - these limits go up with use, not with requests.",
+      "Abuse Policy": "The operator may cancel orders, refuse service or decide a dispute against a party to protect the service and the other robots. Users are responsible for making sure their own use of this coordinator is lawful in their jurisdiction."
+    },
+    "mainnet": {
+      "onion": "http://fqwbot32fnj6ha3p42p76drg65grdyld4utvnowqe5a5shvinb3ysfad.onion",
+      "clearnet": null,
+      "i2p": null
+    },
+    "testnet": {
+      "onion": null,
+      "clearnet": null,
+      "i2p": null
+    },
+    "mainnetNodesPubkeys": [
+      "02dbdd45505ca50500f78b0c52e73747415147e0c5ca28d72450d18884c54771d8"
+    ],
+    "testnetNodesPubkeys": [],
+    "federated": true
   }
 }
