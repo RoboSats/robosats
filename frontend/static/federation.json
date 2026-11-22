@@ -294,12 +294,11 @@
     "testnetNodesPubkeys": [],
     "federated": true
   },
-
-  "ibiratech": {
-    "longAlias": "IbiraTech",
-    "shortAlias": "ibiratech",
-    "identifier": "ibiratech",
-    "description": "Small self-hosted coordinator run by IbiraTech Solucoes (Brazil) on our own LND node, reachable over Tor. Non-custodial, no account, no e-mail, no KYC. Deliberately home-sized: 20,000-100,000 sats per order and 10 public orders, because the same node serves our other Lightning services. Disputes are answered by the operator himself, in Portuguese or English.",
+  "criptobro": {
+    "longAlias": "CriptoBro",
+    "shortAlias": "criptobro",
+    "identifier": "criptobro",
+    "description": "Small self-hosted coordinator run by CriptoBro on our own LND node, reachable over Tor. Non-custodial, no account, no e-mail, no KYC. Deliberately home-sized: 20,000-100,000 sats per order and 10 public orders, because the same node serves our other Lightning services. Disputes are answered by the operator himself, in Portuguese or English.",
     "motto": "Peer-to-peer, over Lightning, aqui perto.",
     "color": "#0F1315",
     "established": "2026-11-22",
@@ -309,7 +308,7 @@
       "telegram": "ibiratech_bot",
       "simplex": "https://smp11.simplex.im/a#_vXNkxjPX1CCv56yEXxiklwRymMkXXV71qja1u0z1ik",
       "matrix": null,
-      "website": "https://ibirapay.com",
+      "website": null,
       "nostr": "npub1euj23ep5taga24j0uxsvpes7qk6dcrtv4h3amma4f2fzu257u9ls6mrurz",
       "pgp": "/static/federation/pgp/C640BBBB8877C257430B054139F0A3549B6A98E2.asc",
       "fingerprint": "C640BBBB8877C257430B054139F0A3549B6A98E2"
