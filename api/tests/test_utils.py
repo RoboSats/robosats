@@ -7,6 +7,7 @@ from datetime import timedelta
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import numpy as np
+import requests
 from decouple import config
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -15,6 +16,7 @@ from django.utils import timezone
 from api.models import Robot
 from api.mempool import _fetch_mempool_fees
 from api.utils import (
+    BITCOIND_RPC_TIMEOUT,
     base91_to_hex,
     bitcoind_rpc,
     get_cln_version,
@@ -102,12 +104,30 @@ class TestUtils(TestCase):
         response = bitcoind_rpc("method", ["params"])
         self.assertEqual(response, "response")
 
+    @patch("api.utils.config")
+    @patch("api.utils.requests.post")
+    def test_bitcoind_rpc_sets_request_timeout(self, mock_post, mock_config):
+        mock_config.side_effect = ["url", "user", "password"]
+        mock_post.return_value.json.return_value = {"result": "response"}
+        bitcoind_rpc("method", ["params"])
+        self.assertEqual(mock_post.call_args.kwargs["timeout"], BITCOIND_RPC_TIMEOUT)
+
     @patch("api.utils.bitcoind_rpc")
     def test_validate_onchain_address(self, mock_bitcoind_rpc):
         mock_bitcoind_rpc.return_value = {"isvalid": True}
         result, error = validate_onchain_address("address")
         self.assertTrue(result)
         self.assertIsNone(error)
+
+    @patch("api.utils.bitcoind_rpc")
+    def test_validate_onchain_address_when_bitcoind_times_out(self, mock_bitcoind_rpc):
+        mock_bitcoind_rpc.side_effect = requests.exceptions.Timeout()
+        result, error = validate_onchain_address("address")
+        self.assertFalse(result)
+        self.assertEqual(
+            error,
+            {"bad_address": "Unable to validate address, check bitcoind backend"},
+        )
 
     @patch("api.utils.config")
     @patch("api.utils.get_session")
