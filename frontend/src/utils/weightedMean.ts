@@ -10,6 +10,10 @@ export const weightedMean = (arrValues: number[], arrWeights: number[]): number 
     })
     .reduce((p, c) => [p[0] + c[0], p[1] + c[1]], [0, 0]);
 
+  if (!result[1]) {
+    return 0;
+  }
+
   return result[0] / result[1];
 };
 
