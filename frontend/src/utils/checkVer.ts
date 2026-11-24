@@ -44,7 +44,9 @@ export const checkVer: (coordinatorVersion: Version) => boolean = (coordinatorVe
     const { major, minor, patch } = coordinatorVersion;
     if (!(major === null || minor === null || patch === null)) {
       const client = getClientVersion().semver;
-      updateAvailable = major > Number(client.major) || minor > Number(client.minor);
+      updateAvailable =
+        major > Number(client.major) ||
+        (major === Number(client.major) && minor > Number(client.minor));
       // const patchAvailable: boolean = !updateAvailable && patch > Number(client.semver[2]);
     }
   }
