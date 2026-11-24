@@ -271,9 +271,8 @@ expects a `User` — likely dead/broken path. `dispute_statement` enforces **100
 chars** (errors 2001/2000) — narrower than `oas_schemas.py`'s "100–5000" and the
 serializer's `max_length=500_000`; `logics.py` is authoritative. `update_invoice`'s error
 3001 text claims "3 failed attempts" but code only checks `payout.status == EXPIRE`.
-`OnchainPayment.Status.CONFI` defined but never assigned (see on-chain swap gap below). `successful_trade` **overwrites**
-(not adds to) `earned_rewards` and also calls `Logics.pay_buyer` — unlike the other
-credit-only admin actions. Several `Logics` methods are plain functions with no `self`/
+`OnchainPayment.Status.CONFI` defined but never assigned (see on-chain swap gap below). `successful_trade` also calls
+`Logics.pay_buyer` — unlike the other credit-only admin actions. Several `Logics` methods are plain functions with no `self`/
 `cls` (`is_buyer`, `is_seller`, `calc_sats`, `settle_bond`, `dispute_statement`) — adding
 one breaks call sites. `chat/urls.py` is dead — `/api/chat/` mounts from `api/urls.py`.
 `Order.log()` gated by `DISABLE_ORDER_LOGS` — code default `True` vs `.env-sample`'s

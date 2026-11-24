@@ -3,6 +3,7 @@ from statistics import median
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group, User
+from django.db.models import F
 from django.utils.html import mark_safe
 from django_admin_relation_links import AdminChangeLinksMixin
 from rest_framework.authtoken.admin import TokenAdmin
@@ -16,6 +17,10 @@ from api.tasks import send_notification
 admin.site.unregister(Group)
 admin.site.unregister(User)
 admin.site.unregister(TokenProxy)
+
+
+def credit_rewards(robot, sats):
+    Robot.objects.filter(pk=robot.pk).update(earned_rewards=F("earned_rewards") + sats)
 
 
 class RobotInline(admin.StackedInline):
@@ -215,8 +220,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 else:
                     trade_sats = order.trade_escrow.num_satoshis
 
-                order.maker.robot.earned_rewards = own_bond_sats + trade_sats
-                order.maker.robot.save(update_fields=["earned_rewards"])
+                credit_rewards(order.maker.robot, own_bond_sats + trade_sats)
                 order.update_status(Order.Status.TLD)
 
                 self.message_user(
@@ -253,8 +257,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 else:
                     trade_sats = order.trade_escrow.num_satoshis
 
-                order.taker.robot.earned_rewards = own_bond_sats + trade_sats
-                order.taker.robot.save(update_fields=["earned_rewards"])
+                credit_rewards(order.taker.robot, own_bond_sats + trade_sats)
 
                 order.update_status(Order.Status.MLD)
 
@@ -323,10 +326,8 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.status in [Order.Status.DIS, Order.Status.WFR]
                 and order.is_disputed
             ):
-                order.maker.robot.earned_rewards = order.maker_bond.num_satoshis
-                order.maker.robot.save(update_fields=["earned_rewards"])
-                order.taker.robot.earned_rewards = order.taker_bond.num_satoshis
-                order.taker.robot.save(update_fields=["earned_rewards"])
+                credit_rewards(order.maker.robot, order.maker_bond.num_satoshis)
+                credit_rewards(order.taker.robot, order.taker_bond.num_satoshis)
 
                 # Dispute timeouts cancel the onchain payout (order_expires ->
                 # cancel_onchain_payment). The stored address was validated
