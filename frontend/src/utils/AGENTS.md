@@ -29,6 +29,7 @@ One subdirectory: `crypto/`.
 | `nip17File.ts`         | `nip17File`                                                                                                                                                                                                                                                                                        | NIP-17 file message helpers for Nostr chat                                                                                                                   |
 | `nostr.ts`             | `eventToPublicOrder` (default), `verifyCoordinatorToken`                                                                                                                                                                                                                                           | NIP-69 event → Order; coordinator token schnorr-verify                                                                                                       |
 | `prettyNumbers.ts`     | `prettyNumbers`, `pn`                                                                                                                                                                                                                                                                              | Human-readable number formatting                                                                                                                             |
+| `routingFailure.ts`    | `MAX_ROUTING_ATTEMPTS`, `getRoutingRetryProgress`, `getRoutingFailureKind`, `formatRetryCountdown`, `routingFailureReport`                                                                                                                                                                         | Failed buyer payout (status 15) helpers for `TradeBox/Prompts/RoutingFailed.tsx`; see §routingFailure below                                                  |
 | `saveFile.ts`          | `saveFile`                                                                                                                                                                                                                                                                                         | Browser file-save helper                                                                                                                                     |
 | `settings.ts`          | `getSettings`, `getClientType`                                                                                                                                                                                                                                                                     | Reads `window.RobosatsSettings`, returns typed Settings                                                                                                      |
 | `statusBadgeColor.ts`  | `statusBadgeColor`                                                                                                                                                                                                                                                                                 | Maps `Order.Status` → MUI badge colour                                                                                                                       |
@@ -132,6 +133,21 @@ Publishes and parses Nostr account-state recovery events so a Garage Key can rec
 `hexToBase91` / `base91ToHex` — encoding used by the HTTP auth header (`tokenSHA256`
 transmitted as base91). Must remain in sync with backend `api/utils.py`
 `hex_to_base91` / `base91_to_hex`.
+
+### `routingFailure.ts`
+
+Helpers for the failed payout prompt (`TradeBox/Prompts/RoutingFailed.tsx`, status 15).
+`MAX_ROUTING_ATTEMPTS` mirrors the coordinator: the LND and CLN backends both set the
+payout to `EXPIRE` once `routing_attempts > 2` and reset the counter to 0, so `order.retries`
+is 1 or 2 while a retry is pending. `getRoutingRetryProgress` returns `null` outside that
+range instead of guessing. `getRoutingFailureKind` classifies the `LNPayment.FailureReason`
+label sent as `failure_reason` by keyword rather than by exact label, so small wording
+changes on the coordinator side do not break it: a timeout or no route is usually on the
+receiving side (offline wallet, not enough inbound liquidity), incorrect payment details
+mean the receiving wallet rejected the payment, and insufficient balance or a
+non-recoverable error is on the coordinator side. `routingFailureReport` is the text copied
+for coordinator support. It is not translated and only contains the order id, the
+coordinator alias and the failure reason (never the invoice or the robot token).
 
 ## Product Intent
 
