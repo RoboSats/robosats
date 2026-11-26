@@ -54,6 +54,8 @@ export interface TradeCoordinatorSummary {
   trade_revenue_sats: number;
 }
 
+const payoutFailureDefaults = { invoice_expired: false, failure_reason: '' };
+
 class Order {
   constructor(attributes: object) {
     Object.assign(this, attributes);
@@ -189,7 +191,10 @@ class Order {
   bad_statement?: string = '';
 
   update = (attributes: object): Order => {
-    Object.assign(this, attributes);
+    Object.assign(
+      this,
+      'status' in attributes ? { ...payoutFailureDefaults, ...attributes } : attributes,
+    );
     return this;
   };
 
