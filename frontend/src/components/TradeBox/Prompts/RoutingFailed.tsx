@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
-import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
+import { Box, Button, CircularProgress, Grid, Tooltip, Typography, useTheme } from '@mui/material';
+import { ContentCopy, SupportAgent } from '@mui/icons-material';
+import Countdown, { type CountdownRenderProps } from 'react-countdown';
 
 import { type Order, type Settings } from '../../../models';
 import { type LightningForm, LightningPayoutForm } from '../Forms';
+import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
+import { systemClient } from '../../../services/System';
+import {
+  formatRetryCountdown,
+  getRoutingFailureKind,
+  getRoutingRetryProgress,
+  routingFailureReport,
+  type RoutingFailureKind,
+} from '../../../utils/routingFailure';
 
 interface RoutingFailedPromptProps {
   order: Order;
@@ -42,6 +52,76 @@ const FailureReason = ({ failureReason }: FailureReasonProps): React.JSX.Element
   );
 };
 
+interface NextStepsProps {
+  order: Order;
+}
+
+const NextSteps = ({ order }: NextStepsProps): React.JSX.Element => {
+  const { t } = useTranslation();
+  const { setOpen } = useContext<UseAppStoreType>(AppContext);
+
+  const routeHints = [
+    t('Check that your wallet is online and has enough inbound liquidity for this amount.'),
+    t('Try a higher routing budget in the advanced options below.'),
+    t('Try an invoice from a different wallet.'),
+  ];
+  const hints: Record<RoutingFailureKind, string[]> = {
+    route: routeHints,
+    unknown: routeHints,
+    invoice: [
+      t('Your wallet rejected the payment. Generate a new invoice and submit it below.'),
+      t('Try an invoice from a different wallet.'),
+    ],
+    coordinator: [
+      t(
+        'The coordinator could not send this payment. Contact the coordinator and share the error details.',
+      ),
+    ],
+  };
+
+  return (
+    <Box sx={{ px: 1 }}>
+      <Typography variant='body2'>
+        <b>{t('What you can do:')}</b>
+      </Typography>
+      <Box component='ul' sx={{ mt: 0.5, mb: 1, pl: 2.5 }}>
+        {hints[getRoutingFailureKind(order.failure_reason)].map((hint) => (
+          <Typography component='li' variant='body2' key={hint}>
+            {hint}
+          </Typography>
+        ))}
+      </Box>
+      <Grid container spacing={1} sx={{ justifyContent: 'center' }}>
+        <Grid>
+          <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+            <Button
+              size='small'
+              color='inherit'
+              startIcon={<ContentCopy />}
+              onClick={() => {
+                systemClient.copyToClipboard(routingFailureReport(order));
+              }}
+            >
+              {t('Copy error details')}
+            </Button>
+          </Tooltip>
+        </Grid>
+        <Grid>
+          <Button
+            size='small'
+            startIcon={<SupportAgent />}
+            onClick={() => {
+              setOpen((open) => ({ ...open, coordinator: order.shortAlias }));
+            }}
+          >
+            {t('Contact coordinator')}
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
 export const RoutingFailedPrompt = ({
   order,
   onClickSubmitInvoice,
@@ -51,8 +131,11 @@ export const RoutingFailedPrompt = ({
   settings,
 }: RoutingFailedPromptProps): React.JSX.Element => {
   const { t } = useTranslation();
+  const retryProgress = getRoutingRetryProgress(order.retries);
 
   const countdownRenderer = function ({
+    days,
+    hours,
     minutes,
     seconds,
     completed,
@@ -73,7 +156,7 @@ export const RoutingFailedPrompt = ({
         </Grid>
       );
     } else {
-      return <span>{`${zeroPad(minutes)}m ${zeroPad(seconds)}s `}</span>;
+      return <span>{formatRetryCountdown({ days, hours, minutes, seconds })}</span>;
     }
   };
 
@@ -97,13 +180,17 @@ export const RoutingFailedPrompt = ({
           </Typography>
         </Grid>
 
-        {order.failure_reason != null ? (
+        {order.failure_reason ? (
           <Grid>
             <FailureReason failureReason={order.failure_reason} />
           </Grid>
         ) : (
           <></>
         )}
+
+        <Grid>
+          <NextSteps order={order} />
+        </Grid>
 
         <Grid>
           <LightningPayoutForm
@@ -129,9 +216,27 @@ export const RoutingFailedPrompt = ({
           padding: 1,
         }}
       >
-        <Grid>
-          <FailureReason failureReason={order.failure_reason} />
-        </Grid>
+        {order.failure_reason ? (
+          <Grid>
+            <FailureReason failureReason={order.failure_reason} />
+          </Grid>
+        ) : (
+          <></>
+        )}
+        {retryProgress != null ? (
+          <Grid>
+            <Typography variant='body2' align='center'>
+              <b>
+                {t('Payment attempt {{attempt}} of {{total}} failed', {
+                  attempt: retryProgress.attempt,
+                  total: retryProgress.total,
+                })}
+              </b>
+            </Typography>
+          </Grid>
+        ) : (
+          <></>
+        )}
         <Grid>
           <Typography variant='body2'>
             {t(

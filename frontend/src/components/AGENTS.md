@@ -56,6 +56,17 @@ be published in Nostr mode. Flow:
 Platform rating (separate from coordinator rating): `rateUserPlatform` in
 `TradeBox/index.tsx` → `POST /api/order/ { action: 'rate_platform', rating }`.
 
+**Failed payout (`TradeBox/Prompts/RoutingFailed.tsx`, status `FAI` 15, buyer only):**
+While the coordinator is still retrying (`invoice_expired` false) the prompt shows the
+failure reason, "Payment attempt N of 3 failed" from `order.retries` and a countdown to
+`next_retry_time` (with hours, since a payout held by `payout_problem` is re-checked an hour
+later). The invoice form is rendered only once `invoice_expired` is true; above it, a
+"What you can do" list picked by `getRoutingFailureKind`, a "Copy error details" button
+(`routingFailureReport` → `systemClient.copyToClipboard`) and a "Contact coordinator"
+button that opens `CoordinatorDialog` via `setOpen({ ...open, coordinator: shortAlias })`.
+Helpers live in `utils/routingFailure.ts`; the stale-form fix is in `Order.update()` (see
+`models/AGENTS.md`).
+
 ## MakerForm
 
 Order creation form. Key product rules enforced client-side (mirrors coordinator validation):
