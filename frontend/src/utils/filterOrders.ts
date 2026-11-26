@@ -16,8 +16,6 @@ interface FilterOrders {
   paymentMethods?: string[];
 }
 
-// A method without a country, such as 'Amazon GiftCard', also matches its
-// country versions, such as 'Amazon DE GiftCard'. Other methods match as before.
 const paymentMethodPattern = function (method: string): RegExp {
   const words = method.split(' ').map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   if (words.length < 2) {
