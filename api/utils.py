@@ -648,6 +648,65 @@ def verify_signed_message(pub_key, signed_message):
         return False, None
 
 
+REQUIRE_SIGNED_ACTIONS = config("REQUIRE_SIGNED_ACTIONS", cast=bool, default=True)
+ACTION_SIGNATURE_WINDOW = 300
+
+
+def validate_action_signature(user, expected_content, signature):
+    """
+    Validates the detached signature of an order action. The signature must be
+    a valid cleartext PGP signature made with the robot's private key and its
+    content must equal `expected_content`. The Robot row is always fetched
+    fresh from the database.
+    """
+    if not REQUIRE_SIGNED_ACTIONS:
+        return True, None
+
+    if not signature:
+        return False, new_error(1048)
+
+    public_key = Robot.objects.get(user=user).public_key
+    valid, content = verify_signed_message(public_key, signature)
+    if not valid or content != expected_content:
+        return False, new_error(1048)
+
+    return True, None
+
+
+def validate_signed_action_timestamp(user, action, signature):
+    """
+    Validates the detached signature of an action outside an order context.
+    The signed content must be '{action}:{unix_ts}' and the embedded timestamp
+    must be within ACTION_SIGNATURE_WINDOW seconds of server time. The Robot
+    row is always fetched fresh from the database.
+    """
+    if not REQUIRE_SIGNED_ACTIONS:
+        return True, None
+
+    if not signature:
+        return False, new_error(1048)
+
+    public_key = Robot.objects.get(user=user).public_key
+    valid, content = verify_signed_message(public_key, signature)
+    if not valid:
+        return False, new_error(1048)
+
+    prefix = f"{action}:"
+    if not content.startswith(prefix):
+        return False, new_error(1048)
+
+    try:
+        signed_at = int(content[len(prefix) :])
+    except (TypeError, ValueError):
+        return False, new_error(1048)
+
+    now = datetime.now(datetime_timezone.utc).timestamp()
+    if abs(now - signed_at) > ACTION_SIGNATURE_WINDOW:
+        return False, new_error(1048)
+
+    return True, None
+
+
 def base91_to_hex(base91_str: str) -> str:
     bytes_data = decode(base91_str)
     return bytes_data.hex()

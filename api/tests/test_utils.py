@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from datetime import timedelta
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
@@ -29,8 +30,10 @@ from api.utils import (
     render_order_logs,
     mining_fee,
     robosats_commit_cache,
+    validate_action_signature,
     validate_onchain_address,
     validate_pgp_keys,
+    validate_signed_action_timestamp,
     verify_signed_message,
     weighted_median,
 )
@@ -613,3 +616,155 @@ class TestGetFederationShortAlias(TestCase):
     def test_empty_alias_returns_empty(self, mock_config):
         self._patch_config(mock_config, "", "")
         self.assertEqual(get_federation_short_alias(), "")
+
+
+class ValidateActionSignatureTest(TestCase):
+    def setUp(self):
+        robot = MagicMock()
+        robot.public_key = "pub_key_block"
+        patcher = patch("api.utils.Robot.objects.get", return_value=robot)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _user(self):
+        return MagicMock()
+
+    def test_disabled_flag_allows_unsigned(self):
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", False):
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+
+    def test_missing_signature_rejected(self):
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", True):
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_invalid_signature_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(False, None),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_content_mismatch_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "cancel:1:alias"),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_valid_signature_accepted(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "confirm:1:alias"),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+
+
+class ValidateSignedActionTimestampTest(TestCase):
+    def setUp(self):
+        robot = MagicMock()
+        robot.public_key = "pub_key_block"
+        patcher = patch("api.utils.Robot.objects.get", return_value=robot)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _user(self):
+        return MagicMock()
+
+    def test_disabled_flag_allows_unsigned(self):
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", False):
+            valid, error = validate_signed_action_timestamp(user, "make", None)
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+
+    def test_missing_signature_rejected(self):
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", True):
+            valid, error = validate_signed_action_timestamp(user, "make", None)
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_invalid_signature_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(False, None),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_wrong_action_prefix_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "stealth:1700000000"),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_non_integer_timestamp_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "make:not-a-number"),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_expired_timestamp_rejected(self):
+        user = self._user()
+        stale = "make:1000000000"
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch("api.utils.verify_signed_message", return_value=(True, stale)),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_fresh_timestamp_accepted(self):
+        user = self._user()
+        fresh = f"make:{int(time.time())}"
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch("api.utils.verify_signed_message", return_value=(True, fresh)),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertTrue(valid)
+        self.assertIsNone(error)

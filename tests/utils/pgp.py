@@ -23,3 +23,15 @@ def sign_message(message, private_key_path, passphrase_path):
     # [print(name, getattr(signed_message, name)) for name in dir(signed_message) if not callable(getattr(signed_message, name))]
 
     return signed_message.data.decode(encoding="UTF-8", errors="strict")
+
+
+def sign_action(content, robot_index):
+    """
+    Signs a detached action signature with the robot's key material, mirroring
+    the frontend's signCleartextMessage for action bodies.
+    """
+    return sign_message(
+        content,
+        private_key_path=f"tests/robots/{robot_index}/enc_priv_key",
+        passphrase_path=f"tests/robots/{robot_index}/token",
+    )

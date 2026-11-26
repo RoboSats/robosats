@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from unittest.mock import patch
@@ -16,7 +17,7 @@ from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
 from tests.utils.node import add_invoice, set_up_regtest_network
-from tests.utils.pgp import sign_message
+from tests.utils.pgp import sign_action, sign_message
 from tests.utils.trade import Trade, maker_form_buy_with_range
 
 from api.admin import OrderAdmin
@@ -2374,6 +2375,106 @@ class TradeTest(BaseAPITestCase):
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
 
+    def test_unsigned_order_action_is_rejected(self):
+        """
+        Order actions without a valid action signature are rejected with error
+        1048 and the order state is left unchanged (stays in CHA, escrow is not
+        moved towards fiat-sent).
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        path = reverse("order")
+        params = f"?order_id={trade.order_id}"
+        headers = trade.get_robot_auth(trade.maker_index)
+
+        # Confirm without any signature
+        response = self.client.post(path + params, {"action": "confirm"}, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
+        # Confirm signed with the wrong action content
+        body = {
+            "action": "confirm",
+            "signature": trade.action_signature(
+                "cancel", trade.maker_index, trade.order_id
+            ),
+        }
+        response = self.client.post(path + params, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
+        # Confirm signed with a foreign robot key while authenticated as the
+        # maker participant
+        body = {
+            "action": "confirm",
+            "signature": trade.action_signature(
+                "confirm", trade.third_index, trade.order_id
+            ),
+        }
+        response = self.client.post(path + params, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
+        # A non-participant is rejected by the participant guard before the
+        # signature is checked
+        foreign_headers = trade.get_robot_auth(trade.third_index)
+        response = self.client.post(path + params, body, **foreign_headers)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["error_code"], 1047)
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.CHA)
+        self.assertFalse(order.is_fiat_sent)
+
+        # A properly signed confirm still works afterwards
+        trade.confirm_fiat(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.FSE).label)
+        self.assertTrue(data["is_fiat_sent"])
+
+        self.assert_order_logs(trade.order_id)
+
+    def test_unsigned_make_is_rejected(self):
+        """
+        Order creation without a signature, with an expired timestamp or with
+        the wrong action prefix is rejected with error 1048.
+        """
+        path = reverse("make")
+        headers = {
+            "HTTP_AUTHORIZATION": (
+                f"Token {read_file('tests/robots/1/b91_token')}"
+                f" | Public {read_file('tests/robots/1/pub_key')}"
+                f" | Private {read_file('tests/robots/1/enc_priv_key')}"
+                f" | Nostr {read_file('tests/robots/1/nostr_pubkey')}"
+            )
+        }
+        old_ts = int(time.time()) - 3600
+
+        response = self.client.post(path, maker_form_buy_with_range, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
+        body = {
+            **maker_form_buy_with_range,
+            "signature": sign_action(f"make:{old_ts}", 1),
+        }
+        response = self.client.post(path, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
+        body = {**maker_form_buy_with_range, "signature": "not a signature"}
+        response = self.client.post(path, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
     def test_dispute_records_order_id_in_robot(self):
         """
         Tests that a user-opened dispute records the order ID in
@@ -2398,7 +2499,13 @@ class TradeTest(BaseAPITestCase):
 
         params = f"?order_id={trade_a.order_id}"
         headers = trade_a.get_robot_auth(trade_a.maker_index)
-        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        dispute_body = {
+            "action": "dispute",
+            "signature": trade_a.action_signature(
+                "dispute", trade_a.maker_index, trade_a.order_id
+            ),
+        }
+        response = self.client.post(path + params, dispute_body, **headers)
         self.assertEqual(response.status_code, 200)
 
         order_a = Order.objects.get(id=trade_a.order_id)
@@ -2434,7 +2541,13 @@ class TradeTest(BaseAPITestCase):
 
         params = f"?order_id={trade_b.order_id}"
         headers = trade_b.get_robot_auth(trade_b.maker_index)
-        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        dispute_body = {
+            "action": "dispute",
+            "signature": trade_b.action_signature(
+                "dispute", trade_b.maker_index, trade_b.order_id
+            ),
+        }
+        response = self.client.post(path + params, dispute_body, **headers)
         self.assertEqual(response.status_code, 200)
 
         order_b = Order.objects.get(id=trade_b.order_id)

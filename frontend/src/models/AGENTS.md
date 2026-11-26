@@ -32,20 +32,20 @@ sha512(plainKey) → BIP32 master seed
   → m/44'/88'/{accountIndex}'/0 → derivedPrivKey
   → base62(derivedPrivKey)[0..36] = robot base token  (slot.token, PGP passphrase, never transmitted)
 
-Per-coordinator bearer (garage-key slots only):
-  sha256("robosats-coordinator-token:" + shortAlias + "|" + baseToken)
-  → 32 bytes → base62[0..36] = coordToken
-  → sha256(coordToken) → hex → base91 = tokenSHA256  (sent in Authorization header)
-  → sha256(coordToken) → hex             = tokenSHA256Hex (used for WebSocket auth)
-
 sha256(sha512(plainKey)) → GarageKey.nostrSecKey (Nostr identity for account recovery)
 ```
 
-**Security property**: a malicious/compromised coordinator only ever sees its own
-`tokenSHA256`. Replaying that credential at any other coordinator authenticates
-against a different, non-existent robot — blocking the bearer-replay / escrow-settlement
-attack. Legacy (non-garageKey) slots share a single bearer across all coordinators
-(old behaviour, unchanged).
+**Per-coordinator bearer: NOT implemented.** Earlier revisions of this doc described a
+`deriveCoordinatorToken` (sha256 of `"robosats-coordinator-token:" + shortAlias + "|" +
+baseToken`) that would give each coordinator its own bearer credential. That function was
+**never shipped** — no such export exists in `utils/garageKey.ts` and every slot sends the
+same `tokenSHA256 = base91(sha256(token))` to all coordinators. The bearer credential must
+therefore be treated as replayable across coordinators; the write-side mitigation is
+**PGP-signed actions** (`utils/actionSignature.ts` + `api/utils.py:
+validate_action_signature`): every state-changing request additionally carries a cleartext
+PGP signature the coordinator verifies against the robot's public key, so a stolen bearer
+allows reads but cannot mutate trades. Per-coordinator bearers remain the long-term read
+side of that fix but are unbuilt.
 
 `currentAccountIndex` (0–2147483647) selects which robot is active; persisted in `systemClient` under `garage_key`.
 
@@ -88,6 +88,27 @@ Legacy keys are only for recovering robots from trades created prior the migrati
 ## `Order.Status` — 19 values (mirrors backend)
 
 `WFB(0) PUB(1) PAU(2) TAK(3) UCA(4) EXP(5) WF2(6) WFE(7) WFI(8) CHA(9) FSE(10) DIS(11) CCA(12) PAY(13) SUC(14) FAI(15) WFR(16) MLD(17) TLD(18)` — must stay in sync with `api/models/order.py`. See `api/models/AGENTS.md` for the full state machine.
+
+## Signed actions — PGP is the write credential
+
+Every state-changing request carries a cleartext PGP signature (made with the robot's
+private key, unlocked by the token) in the request body's `signature` field, alongside the
+replayable bearer (`tokenSHA256` header — read credential only). Content builders and the
+`signAction` wrapper live in `utils/actionSignature.ts`:
+
+| Call site                                          | Signed content                     |
+| -------------------------------------------------- | ---------------------------------- |
+| `Order.submitAction` (all order actions centrally) | `{action}:{orderId}:{shortAlias}`  |
+| `Order.make`                                       | `make:{unix_ts}`                   |
+| `Robot.fetchStealth`                               | `stealth:{unix_ts}`                |
+| `Robot.fetchWebhook`                               | `robot:{unix_ts}`                  |
+| `Robot.loadReviewToken`                            | `review:{nostrPubKey}` (no window) |
+| `Dispute.tsx` (statement payload, invoice pattern) | the statement text itself          |
+
+The timestamped contents must stay within ±300 s of coordinator time
+(`ACTION_SIGNATURE_WINDOW`, mirrored by `api/utils.py`); the coordinator rejects anything
+else with error 1048. If the robot has no key material, `signAction` returns `undefined`
+and the coordinator rejects the request — fail-safe by design.
 
 ## `Settings.model.ts` — fields + defaults
 

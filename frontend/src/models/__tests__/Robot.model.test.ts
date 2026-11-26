@@ -10,11 +10,16 @@
  * order ids that a previous bug may have persisted in the garage.
  */
 
+import { signCleartextMessage } from '../../pgp';
 import { apiClient } from '../../services/api';
 import type { Slot } from '../Slot.model';
 import type Federation from '../Federation.model';
 import Order from '../Order.model';
 import Robot from '../Robot.model';
+
+jest.mock('../../pgp', () => ({
+  signCleartextMessage: jest.fn().mockResolvedValue('SIGNED_ACTION'),
+}));
 
 const makeFederation = (url: string): Federation =>
   ({
@@ -79,5 +84,88 @@ describe('Order.submitAction — coordinator.url guard', () => {
       action: 'cancel',
     });
     expect(postSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('Robot — signed actions', () => {
+  const makeSigningRobot = (): Robot =>
+    new Robot({
+      shortAlias: 'test',
+      token: 'token',
+      encPrivKey: 'enc-priv-key',
+      tokenSHA256: 'sha',
+      nostrPubKey: 'npub123',
+      hasEnoughEntropy: true,
+    });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('fetchStealth posts the wantsStealth flag with a timestamped signature', async () => {
+    const postSpy = jest.spyOn(apiClient, 'post').mockResolvedValue(null);
+    const robot = makeSigningRobot();
+
+    await robot.fetchStealth(makeFederation('http://testcoord.onion'), false);
+
+    expect(signCleartextMessage).toHaveBeenCalledWith(
+      expect.stringMatching(/^stealth:\d+$/),
+      'enc-priv-key',
+      'token',
+    );
+    expect(postSpy).toHaveBeenCalledWith(
+      'http://testcoord.onion',
+      '/api/stealth/',
+      { wantsStealth: false, signature: 'SIGNED_ACTION' },
+      { tokenSHA256: 'sha' },
+    );
+    expect(robot.stealthInvoices).toBe(false);
+  });
+
+  it('fetchWebhook puts the webhook settings with a timestamped signature', async () => {
+    const putSpy = jest.spyOn(apiClient, 'put').mockResolvedValue({
+      webhook_url: 'http://testwebhook.onion/notify',
+      webhook_enabled: true,
+      webhook_api_key: 'key',
+    });
+    const robot = makeSigningRobot();
+
+    await robot.fetchWebhook(makeFederation('http://testcoord.onion'), {
+      webhook_url: 'http://testwebhook.onion/notify',
+    });
+
+    expect(signCleartextMessage).toHaveBeenCalledWith(
+      expect.stringMatching(/^robot:\d+$/),
+      'enc-priv-key',
+      'token',
+    );
+    expect(putSpy).toHaveBeenCalledWith(
+      'http://testcoord.onion',
+      '/api/robot/',
+      { webhook_url: 'http://testwebhook.onion/notify', signature: 'SIGNED_ACTION' },
+      { tokenSHA256: 'sha' },
+    );
+    expect(robot.webhookUrl).toBe('http://testwebhook.onion/notify');
+  });
+
+  it('loadReviewToken posts the nostr pubkey with its signature as content', async () => {
+    const postSpy = jest.spyOn(apiClient, 'post').mockResolvedValue({ token: 'review-token' });
+    const robot = makeSigningRobot();
+
+    let loaded: string | undefined;
+    robot.loadReviewToken(makeFederation('http://testcoord.onion'), (token) => {
+      loaded = token;
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(signCleartextMessage).toHaveBeenCalledWith('review:npub123', 'enc-priv-key', 'token');
+    expect(postSpy).toHaveBeenCalledWith(
+      'http://testcoord.onion',
+      '/api/review/',
+      { pubkey: 'npub123', signature: 'SIGNED_ACTION' },
+      { tokenSHA256: 'sha' },
+    );
+    expect(loaded).toBe('review-token');
   });
 });
