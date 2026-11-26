@@ -94,11 +94,11 @@ class Trade:
         """
         Builds the detached action signature. Order-bound actions sign
         '{action}:{order_id}:{shortAlias}'; actions outside an order context
-        sign '{action}:{unix_ts}'.
+        sign '{action}:{shortAlias}:{unix_ts}'.
         """
         if content is None:
             if order_id is None:
-                content = f"{action}:{int(time.time())}"
+                content = f"{action}:{get_federation_short_alias()}:{int(time.time())}"
             else:
                 content = f"{action}:{order_id}:{get_federation_short_alias()}"
 

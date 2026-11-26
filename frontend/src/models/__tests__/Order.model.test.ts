@@ -84,7 +84,7 @@ describe('Order.make — action signature', () => {
     await order.make(makeFederation('http://testcoord.onion'), makeSlot(robot));
 
     expect(signCleartextMessage).toHaveBeenCalledWith(
-      expect.stringMatching(/^make:\d+$/),
+      expect.stringMatching(/^make:test:\d+$/),
       'enc-priv-key',
       'token',
     );
@@ -134,7 +134,7 @@ describe('Order signatures — per-coordinator robot resolution', () => {
     await order.make(twoCoordinatorFederation, slotWithDivergentKeys());
 
     expect(signCleartextMessage).toHaveBeenCalledWith(
-      expect.stringMatching(/^make:\d+$/),
+      expect.stringMatching(/^make:[ab]:\d+$/),
       `enc-${alias}`,
       'token',
     );

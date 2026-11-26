@@ -22,6 +22,7 @@ from tests.utils.trade import Trade, maker_form_buy_with_range
 
 from api.admin import OrderAdmin
 from api.logics import Logics
+from api.utils import get_federation_short_alias
 
 
 def read_file(file_path):
@@ -2446,8 +2447,9 @@ class TradeTest(BaseAPITestCase):
     def test_unsigned_make_is_rejected(self):
         """
         Order creation with no signature is rejected with 1059, one whose
-        signature is valid but stale with 1060, and one whose signature does
-        not verify with 1048.
+        signature is valid but stale with 1060, one signed for another
+        coordinator with 1061, and one whose signature does not verify with
+        1048.
         """
         path = reverse("make")
         headers = {
@@ -2466,11 +2468,21 @@ class TradeTest(BaseAPITestCase):
 
         body = {
             **maker_form_buy_with_range,
-            "signature": sign_action(f"make:{old_ts}", 1),
+            "signature": sign_action(
+                f"make:{get_federation_short_alias()}:{old_ts}", 1
+            ),
         }
         response = self.client.post(path, body, **headers)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error_code"], 1060)
+
+        body = {
+            **maker_form_buy_with_range,
+            "signature": sign_action(f"make:other:{int(time.time())}", 1),
+        }
+        response = self.client.post(path, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1061)
 
         body = {**maker_form_buy_with_range, "signature": "not a signature"}
         response = self.client.post(path, body, **headers)

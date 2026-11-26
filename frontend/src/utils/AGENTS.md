@@ -136,9 +136,12 @@ the body's `signature` field, verified by the coordinator against the robot's pu
     — used by `Order.submitAction` for every order action (take, cancel, confirm,
     undo_confirm, dispute, submit_statement, update_invoice, update_address, pause,
     rate_platform).
-  - `timedActionContent(action)` → `"{action}:{unix_ts}"` — `make` (`Order.make`),
-    `stealth` (`Robot.fetchStealth`) and `robot` (`Robot.fetchWebhook`); the coordinator
-    enforces `ACTION_SIGNATURE_WINDOW` (300 s) around the timestamp.
+  - `timedActionContent(action, shortAlias)` → `"{action}:{shortAlias}:{unix_ts}"` —
+    `make` (`Order.make`), `stealth` (`Robot.fetchStealth`) and `robot`
+    (`Robot.fetchWebhook`); the coordinator verifies its own federation alias (a
+    signature made for one coordinator is rejected elsewhere with error 1061 — keeps a
+    captured signature from being replayed across coordinators) and enforces
+    `ACTION_SIGNATURE_WINDOW` (300 s) around the timestamp.
   - `reviewActionContent(pubkey)` → `"review:{pubkey}"` — no timestamp (idempotent;
     binds the write-once nostr pubkey).
 - `signAction(content, encPrivKey, token)` — thin wrapper over

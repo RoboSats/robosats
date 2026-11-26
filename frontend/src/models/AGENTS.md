@@ -99,16 +99,20 @@ replayable bearer (`tokenSHA256` header — read credential only). Content build
 | Call site                                          | Signed content                     |
 | -------------------------------------------------- | ---------------------------------- |
 | `Order.submitAction` (all order actions centrally) | `{action}:{orderId}:{shortAlias}`  |
-| `Order.make`                                       | `make:{unix_ts}`                   |
-| `Robot.fetchStealth`                               | `stealth:{unix_ts}`                |
-| `Robot.fetchWebhook`                               | `robot:{unix_ts}`                  |
+| `Order.make`                                       | `make:{shortAlias}:{unix_ts}`      |
+| `Robot.fetchStealth`                               | `stealth:{shortAlias}:{unix_ts}`   |
+| `Robot.fetchWebhook`                               | `robot:{shortAlias}:{unix_ts}`     |
 | `Robot.loadReviewToken`                            | `review:{nostrPubKey}` (no window) |
 | `Dispute.tsx` (statement payload, invoice pattern) | the statement text itself          |
 
-The timestamped contents must stay within ±300 s of coordinator time
-(`ACTION_SIGNATURE_WINDOW`, mirrored by `api/utils.py`); the coordinator rejects anything
-else with error 1048. If the robot has no key material, `signAction` returns `undefined`
-and the coordinator rejects the request — fail-safe by design.
+The timestamped contents also carry the target coordinator's `shortAlias` — the
+coordinator rebuilds the expected alias server-side (`get_federation_short_alias()`) and
+rejects a signature made for another coordinator with error 1061, so a captured signature
+cannot be replayed across the federation. Timestamped contents must also stay within
+±300 s of coordinator time (`ACTION_SIGNATURE_WINDOW`, mirrored by `api/utils.py`); the
+coordinator rejects anything else with error 1048. If the robot has no key material,
+`signAction` returns `undefined` and the coordinator rejects the request — fail-safe by
+design.
 
 ## `Settings.model.ts` — fields + defaults
 

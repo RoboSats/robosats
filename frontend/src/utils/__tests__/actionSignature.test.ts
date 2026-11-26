@@ -17,12 +17,12 @@ describe('action signature content builders', () => {
     expect(orderActionContent('take', 1, 'robosats')).toBe('take:1:robosats');
   });
 
-  it('binds timed actions to the action and the current unix timestamp', () => {
+  it('binds timed actions to the action, the coordinator shortAlias and the current unix timestamp', () => {
     const before = Math.floor(Date.now() / 1000);
-    const content = timedActionContent('make');
+    const content = timedActionContent('make', 'bazaar');
     const after = Math.floor(Date.now() / 1000);
-    expect(content).toMatch(/^make:\d+$/);
-    const ts = Number(content.split(':')[1]);
+    expect(content).toMatch(/^make:bazaar:\d+$/);
+    const ts = Number(content.split(':')[2]);
     expect(ts).toBeGreaterThanOrEqual(before);
     expect(ts).toBeLessThanOrEqual(after);
   });

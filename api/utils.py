@@ -717,9 +717,12 @@ def validate_action_signature(user, expected_content, signature):
 def validate_signed_action_timestamp(user, action, signature):
     """
     Validates the detached signature of an action outside an order context.
-    The signed content must be '{action}:{unix_ts}' and the embedded timestamp
-    must be within ACTION_SIGNATURE_WINDOW seconds of server time. The Robot
-    row is always fetched fresh from the database.
+    The signed content must be '{action}:{short_alias}:{unix_ts}' where
+    short_alias is this coordinator's federation alias, and the embedded
+    timestamp must be within ACTION_SIGNATURE_WINDOW seconds of server time.
+    The coordinator binding keeps a signature captured at one coordinator from
+    being replayed at another. The Robot row is always fetched fresh from the
+    database.
     """
     if not REQUIRE_SIGNED_ACTIONS:
         if not signature:
@@ -741,9 +744,17 @@ def validate_signed_action_timestamp(user, action, signature):
         return False, new_error(1048)
 
     try:
-        signed_at = int(content[len(prefix) :])
+        signed_alias, signed_ts = content[len(prefix) :].split(":", 1)
+        signed_at = int(signed_ts)
     except (TypeError, ValueError):
         return False, new_error(1048)
+
+    short_alias = get_federation_short_alias()
+    if signed_alias != short_alias:
+        return False, new_error(
+            1061,
+            {"signed_for_alias": signed_alias, "coordinator_alias": short_alias},
+        )
 
     now = datetime.now(datetime_timezone.utc).timestamp()
     if abs(now - signed_at) > ACTION_SIGNATURE_WINDOW:

@@ -699,6 +699,23 @@ class ValidateActionSignatureTest(TestCase):
         self.assertFalse(valid)
         self.assertEqual(error["error_code"], 1048)
 
+    def test_foreign_alias_is_content_mismatch(self):
+        # Order actions get the alias binding from the expected content built
+        # by the view, so a signature for another coordinator is just a
+        # mismatch (1048). The dedicated 1061 belongs to the timestamped
+        # helper, which rebuilds no expected content of its own.
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "confirm:1:other"),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
     def test_valid_signature_accepted(self):
         user = self._user()
         with (
@@ -720,6 +737,12 @@ class ValidateSignedActionTimestampTest(TestCase):
         patcher = patch("api.utils.Robot.objects.get", return_value=robot)
         patcher.start()
         self.addCleanup(patcher.stop)
+
+        alias_patcher = patch(
+            "api.utils.get_federation_short_alias", return_value="robosats"
+        )
+        alias_patcher.start()
+        self.addCleanup(alias_patcher.stop)
 
     def _user(self):
         return MagicMock()
@@ -757,7 +780,7 @@ class ValidateSignedActionTimestampTest(TestCase):
             patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
             patch(
                 "api.utils.verify_signed_message",
-                return_value=(True, "stealth:1700000000"),
+                return_value=(True, "stealth:robosats:1700000000"),
             ),
         ):
             valid, error = validate_signed_action_timestamp(user, "make", "sig")
@@ -770,19 +793,51 @@ class ValidateSignedActionTimestampTest(TestCase):
             patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
             patch(
                 "api.utils.verify_signed_message",
-                return_value=(True, "make:not-a-number"),
+                return_value=(True, "make:robosats:not-a-number"),
             ),
         ):
             valid, error = validate_signed_action_timestamp(user, "make", "sig")
         self.assertFalse(valid)
         self.assertEqual(error["error_code"], 1048)
 
+    def test_missing_alias_segment_rejected(self):
+        # A signature without the coordinator segment comes from a client that
+        # predates the alias binding. It does not match the expected content,
+        # so it is a signature failure (1048), not a foreign-coordinator one.
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "make:1700000000"),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_foreign_alias_rejected_with_own_code(self):
+        # A signature valid for another coordinator is the replay of a captured
+        # request. Neither a malformed signature (1048) nor a skewed clock
+        # (1060), it gets its own code and names both coordinators.
+        user = self._user()
+        fresh = f"make:other:{int(time.time())}"
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch("api.utils.verify_signed_message", return_value=(True, fresh)),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1061)
+        self.assertIn("other", error["bad_request"])
+        self.assertIn("robosats", error["bad_request"])
+
     def test_expired_timestamp_returns_clock_skew(self):
         # A signature that verifies but falls outside the window is a device
         # with a skewed clock. The human needs "fix your clock", and it must
         # not be counted among the signature failures.
         user = self._user()
-        stale = "make:1000000000"
+        stale = "make:robosats:1000000000"
         with (
             patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
             patch("api.utils.verify_signed_message", return_value=(True, stale)),
@@ -793,7 +848,7 @@ class ValidateSignedActionTimestampTest(TestCase):
 
     def test_fresh_timestamp_accepted(self):
         user = self._user()
-        fresh = f"make:{int(time.time())}"
+        fresh = f"make:robosats:{int(time.time())}"
         with (
             patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
             patch("api.utils.verify_signed_message", return_value=(True, fresh)),

@@ -109,7 +109,7 @@ describe('Robot — signed actions', () => {
     await robot.fetchStealth(makeFederation('http://testcoord.onion'), false);
 
     expect(signCleartextMessage).toHaveBeenCalledWith(
-      expect.stringMatching(/^stealth:\d+$/),
+      expect.stringMatching(/^stealth:test:\d+$/),
       'enc-priv-key',
       'token',
     );
@@ -135,7 +135,7 @@ describe('Robot — signed actions', () => {
     });
 
     expect(signCleartextMessage).toHaveBeenCalledWith(
-      expect.stringMatching(/^robot:\d+$/),
+      expect.stringMatching(/^robot:test:\d+$/),
       'enc-priv-key',
       'token',
     );

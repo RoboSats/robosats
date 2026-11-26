@@ -6,8 +6,8 @@ export function orderActionContent(action: string, orderId: number, shortAlias: 
   return `${action}:${orderId}:${shortAlias}`;
 }
 
-export function timedActionContent(action: string): string {
-  return `${action}:${Math.floor(Date.now() / 1000)}`;
+export function timedActionContent(action: string, shortAlias: string): string {
+  return `${action}:${shortAlias}:${Math.floor(Date.now() / 1000)}`;
 }
 
 export function reviewActionContent(pubkey: string): string {

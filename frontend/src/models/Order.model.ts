@@ -222,7 +222,11 @@ class Order {
       if (!robot) return this;
       const authHeaders = robot.getAuthHeaders();
       if (!authHeaders) return this;
-      const signature = await signAction(timedActionContent('make'), robot.encPrivKey, robot.token);
+      const signature = await signAction(
+        timedActionContent('make', this.shortAlias),
+        robot.encPrivKey,
+        robot.token,
+      );
       const data = await apiClient
         .post(coordinator.url, '/api/make/', { ...body, signature }, authHeaders)
         .catch((e) => {

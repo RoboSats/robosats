@@ -66,13 +66,18 @@ Wire format (byte-exact; mirrored in `frontend/src/utils/actionSignature.ts`):
 | Request                        | Signed content                            | Window |
 | ------------------------------ | ----------------------------------------- | ------ |
 | `POST /api/order/` (all actions) | `{action}:{order_id}:{shortAlias}`        | none   |
-| `POST /api/make/`              | `make:{unix_ts}`                          | ±300 s |
-| `POST /api/stealth/`           | `stealth:{unix_ts}`                       | ±300 s |
-| `PUT /api/robot/`              | `robot:{unix_ts}`                         | ±300 s |
+| `POST /api/make/`              | `make:{shortAlias}:{unix_ts}`             | ±300 s |
+| `POST /api/stealth/`           | `stealth:{shortAlias}:{unix_ts}`          | ±300 s |
+| `PUT /api/robot/`              | `robot:{shortAlias}:{unix_ts}`            | ±300 s |
 | `POST /api/review/`            | `review:{pubkey}`                         | none (idempotent, binds write-once nostr pubkey) |
 
 - `{shortAlias}` is `get_federation_short_alias()` (never raw `COORDINATOR_ALIAS`), the
   same value the frontend signs with.
+- Every signed content carries the coordinator alias, so a signature captured at one
+  coordinator cannot be replayed at another. `validate_signed_action_timestamp` builds
+  the expected alias itself from `get_federation_short_alias()` — a mismatch rejects
+  with **error 1061** (distinct from 1048 malformed / 1060 clock skew; a replayed
+  signature is neither).
 - `submit_statement` carries two signatures: the action signature above **and** the
   `statement` field is itself a cleartext-signed payload (invoice pattern) — the view
   extracts the text with `verify_signed_message` before `Logics.dispute_statement`.

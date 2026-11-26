@@ -180,7 +180,11 @@ class Robot {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     if (!coordinator || !coordinator.url) return;
-    const signature = await signAction(timedActionContent('stealth'), this.encPrivKey, this.token);
+    const signature = await signAction(
+      timedActionContent('stealth', this.shortAlias),
+      this.encPrivKey,
+      this.token,
+    );
     await apiClient
       .post(
         coordinator.url,
@@ -207,7 +211,11 @@ class Robot {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     if (!coordinator || !coordinator.url) return;
-    const signature = await signAction(timedActionContent('robot'), this.encPrivKey, this.token);
+    const signature = await signAction(
+      timedActionContent('robot', this.shortAlias),
+      this.encPrivKey,
+      this.token,
+    );
     await apiClient
       .put(
         coordinator.url,
