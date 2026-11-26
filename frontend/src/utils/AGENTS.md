@@ -18,7 +18,7 @@ One subdirectory: `crypto/`.
 | `computeSats.ts`       | `computeSats`                                                                                                                                                                                                                                                                                      | Fiat ↔ sats conversion using current price + premium                                                                                                         |
 | `crypto/xchacha20.ts`  | `encryptFile`, `decryptFile`, `generateKey`, `toBase64`, `fromBase64`                                                                                                                                                                                                                              | XChaCha20-Poly1305 symmetric file encryption for chat images (`@noble/ciphers`)                                                                              |
 | `federationLottery.ts` | `federationLottery`                                                                                                                                                                                                                                                                                | Randomises coordinator order weighted by DevFund donation % (capped at 50)                                                                                   |
-| `filterOrders.ts`      | `filterOrders`                                                                                                                                                                                                                                                                                     | Applies book filter state to an order list                                                                                                                   |
+| `filterOrders.ts`      | `filterOrders`, `filterByPayment`                                                                                                                                                                                                                                                                  | Applies book filter state to an order list; see §filterOrders below                                                                                          |
 | `garageKey.ts`         | `generateGarageKey`, `encodeGarageKey`, `decodeGarageKey`, `validateGarageKey`, `deriveRobotKey`, `derivedKeyToToken`, `garageKeyToRobotToken`, `deriveCoordinatorToken`, `getNostrSecKeyFromGarageKey`, `getNostrPubKeyFromGarageKey`, `getLegacyNostrSecKeyFromGarageKey`, `isValidAccountIndex` | Garage Key crypto primitives; see §garageKey below                                                                                                           |
 | `getHost.ts`           | `getHost`, `getOrigin`                                                                                                                                                                                                                                                                             | Coordinator URL resolution per client type                                                                                                                   |
 | `getRouter.ts`         | `getRouter`                                                                                                                                                                                                                                                                                        | Returns the active React Router instance                                                                                                                     |
@@ -57,6 +57,15 @@ to replace the seed order from `federation.json`. Signature
 provided. The value is clamped to `[0, 50]`. This randomisation is the mechanism that
 makes `fav.coordinator: 'robosats'` (the seed default) a transient legacy value — it is
 overwritten at runtime.
+
+### `filterOrders.ts`
+
+`filterByPayment(order, paymentMethods)` builds one pattern per selected method. A method
+name without a country, such as `Amazon GiftCard`, also matches its country versions
+(`Amazon DE GiftCard`, `Amazon USA GiftCard`), so the country-less filter returns every Amazon
+gift card order. A country version stays specific. Every other method still matches as a
+substring of `order.payment_method`. Only `Amazon GiftCard` currently has country versions in
+`components/PaymentMethods/MethodList.ts`.
 
 ### `getHost.ts` / `getOrigin`
 

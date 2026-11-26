@@ -16,16 +16,19 @@ interface FilterOrders {
   paymentMethods?: string[];
 }
 
-const filterByPayment = function (order: PublicOrder, paymentMethods: string[]): boolean {
+const paymentMethodPattern = function (method: string): RegExp {
+  const words = method.split(' ').map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  if (words.length < 2) {
+    return new RegExp(words.join(' '));
+  }
+  return new RegExp(`${words[0]}(?: [A-Z]{2,3})? ${words.slice(1).join(' ')}`);
+};
+
+export const filterByPayment = function (order: PublicOrder, paymentMethods: string[]): boolean {
   if (paymentMethods.length === 0) {
     return true;
-  } else {
-    let result = false;
-    paymentMethods.forEach((method) => {
-      result = result || order.payment_method.includes(method);
-    });
-    return result;
   }
+  return paymentMethods.some((method) => paymentMethodPattern(method).test(order.payment_method));
 };
 
 const filterByHost = function (
