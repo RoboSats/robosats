@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from api.models import Robot
 from api.mempool import _fetch_mempool_fees
+from api import utils as api_utils
 from api.utils import (
     base91_to_hex,
     bitcoind_rpc,
@@ -636,12 +637,41 @@ class ValidateActionSignatureTest(TestCase):
         self.assertTrue(valid)
         self.assertIsNone(error)
 
-    def test_missing_signature_rejected(self):
+    def test_missing_signature_returns_client_outdated(self):
+        # "No signature at all" and "signature failed to verify" are different
+        # problems with different fixes, so they must not share an error code.
         user = self._user()
         with patch("api.utils.REQUIRE_SIGNED_ACTIONS", True):
             valid, error = validate_action_signature(user, "confirm:1:alias", None)
         self.assertFalse(valid)
-        self.assertEqual(error["error_code"], 1048)
+        self.assertEqual(error["error_code"], 1059)
+
+    def test_outdated_client_is_pointed_at_the_coordinator(self):
+        # Outdated clients render this message as-is, so the address in it is
+        # the entire fix for those users and has to survive rendering.
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch.dict(os.environ, {"HOST_NAME": "test.onion"}),
+        ):
+            _, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertIn("outdated client", error["bad_request"])
+        self.assertIn("recover your robot", error["bad_request"])
+        self.assertIn("http://test.onion", error["bad_request"])
+
+    def test_shadow_mode_notes_unsigned_once_per_user(self):
+        user = self._user()
+        api_utils.SHADOW_MODE_WARNED.clear()
+        self.addCleanup(api_utils.SHADOW_MODE_WARNED.clear)
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", False),
+            self.assertLogs("api.utils", level="WARNING") as logged,
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+        self.assertEqual(len(logged.output), 1)
 
     def test_invalid_signature_rejected(self):
         user = self._user()
@@ -701,12 +731,12 @@ class ValidateSignedActionTimestampTest(TestCase):
         self.assertTrue(valid)
         self.assertIsNone(error)
 
-    def test_missing_signature_rejected(self):
+    def test_missing_signature_returns_client_outdated(self):
         user = self._user()
         with patch("api.utils.REQUIRE_SIGNED_ACTIONS", True):
             valid, error = validate_signed_action_timestamp(user, "make", None)
         self.assertFalse(valid)
-        self.assertEqual(error["error_code"], 1048)
+        self.assertEqual(error["error_code"], 1059)
 
     def test_invalid_signature_rejected(self):
         user = self._user()
@@ -747,7 +777,10 @@ class ValidateSignedActionTimestampTest(TestCase):
         self.assertFalse(valid)
         self.assertEqual(error["error_code"], 1048)
 
-    def test_expired_timestamp_rejected(self):
+    def test_expired_timestamp_returns_clock_skew(self):
+        # A signature that verifies but falls outside the window is a device
+        # with a skewed clock. The human needs "fix your clock", and it must
+        # not be counted among the signature failures.
         user = self._user()
         stale = "make:1000000000"
         with (
@@ -756,7 +789,7 @@ class ValidateSignedActionTimestampTest(TestCase):
         ):
             valid, error = validate_signed_action_timestamp(user, "make", "sig")
         self.assertFalse(valid)
-        self.assertEqual(error["error_code"], 1048)
+        self.assertEqual(error["error_code"], 1060)
 
     def test_fresh_timestamp_accepted(self):
         user = self._user()

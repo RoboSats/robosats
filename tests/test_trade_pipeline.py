@@ -2377,8 +2377,9 @@ class TradeTest(BaseAPITestCase):
 
     def test_unsigned_order_action_is_rejected(self):
         """
-        Order actions without a valid action signature are rejected with error
-        1048 and the order state is left unchanged (stays in CHA, escrow is not
+        Order actions with no action signature at all are rejected with 1059,
+        and ones carrying a signature that fails to verify with 1048. Either
+        way the order state is left unchanged (stays in CHA, escrow is not
         moved towards fiat-sent).
         """
         trade = Trade(self.client)
@@ -2393,10 +2394,10 @@ class TradeTest(BaseAPITestCase):
         params = f"?order_id={trade.order_id}"
         headers = trade.get_robot_auth(trade.maker_index)
 
-        # Confirm without any signature
+        # Confirm without any signature: outdated client, so 1059 not 1048
         response = self.client.post(path + params, {"action": "confirm"}, **headers)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["error_code"], 1048)
+        self.assertEqual(response.json()["error_code"], 1059)
 
         # Confirm signed with the wrong action content
         body = {
@@ -2444,8 +2445,9 @@ class TradeTest(BaseAPITestCase):
 
     def test_unsigned_make_is_rejected(self):
         """
-        Order creation without a signature, with an expired timestamp or with
-        the wrong action prefix is rejected with error 1048.
+        Order creation with no signature is rejected with 1059, one whose
+        signature is valid but stale with 1060, and one whose signature does
+        not verify with 1048.
         """
         path = reverse("make")
         headers = {
@@ -2460,7 +2462,7 @@ class TradeTest(BaseAPITestCase):
 
         response = self.client.post(path, maker_form_buy_with_range, **headers)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["error_code"], 1048)
+        self.assertEqual(response.json()["error_code"], 1059)
 
         body = {
             **maker_form_buy_with_range,
@@ -2468,7 +2470,7 @@ class TradeTest(BaseAPITestCase):
         }
         response = self.client.post(path, body, **headers)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["error_code"], 1048)
+        self.assertEqual(response.json()["error_code"], 1060)
 
         body = {**maker_form_buy_with_range, "signature": "not a signature"}
         response = self.client.post(path, body, **headers)

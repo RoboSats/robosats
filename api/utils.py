@@ -652,6 +652,40 @@ REQUIRE_SIGNED_ACTIONS = config("REQUIRE_SIGNED_ACTIONS", cast=bool, default=Tru
 ACTION_SIGNATURE_WINDOW = 300
 
 
+def robot_recovery_url():
+    """
+    The coordinator's own address, for telling a user where they can recover
+    their robot with a client that is able to sign. HOST_NAME holds a bare
+    hostname, so the scheme is added here as it is for every other link the
+    API builds.
+    """
+    return f"http://{config('HOST_NAME')}"
+
+
+# Users already noted while enforcement is off, so the missing-signature signal
+# costs one log line per user per process instead of one per request.
+SHADOW_MODE_WARNED = set()
+
+
+def warn_shadow_mode_unsigned(user, context):
+    """
+    Notes an unsigned action while REQUIRE_SIGNED_ACTIONS is off. Shadow mode is
+    how a coordinator sizes its old-client population before turning enforcement
+    on. Without a log line the only feedback is a meter nobody reads, and the
+    flag gets flipped blind.
+    """
+    if user.pk in SHADOW_MODE_WARNED:
+        return
+
+    SHADOW_MODE_WARNED.add(user.pk)
+    logger.warning(
+        "Unsigned '%s' from user %s with REQUIRE_SIGNED_ACTIONS off "
+        "(client too old to sign?)",
+        context,
+        user.pk,
+    )
+
+
 def validate_action_signature(user, expected_content, signature):
     """
     Validates the detached signature of an order action. The signature must be
@@ -660,10 +694,17 @@ def validate_action_signature(user, expected_content, signature):
     fresh from the database.
     """
     if not REQUIRE_SIGNED_ACTIONS:
+        if not signature:
+            warn_shadow_mode_unsigned(user, "order action")
         return True, None
 
     if not signature:
-        return False, new_error(1048)
+        # A missing signature is a different problem from a bad one. A client
+        # too old to sign sends none at all, and only that user can fix it, so
+        # the answer has to be an instruction rather than a description. It
+        # also keeps 1048 meaning exactly one thing: a signature that failed to
+        # verify.
+        return False, new_error(1059, {"recover_url": robot_recovery_url()})
 
     public_key = Robot.objects.get(user=user).public_key
     valid, content = verify_signed_message(public_key, signature)
@@ -681,10 +722,14 @@ def validate_signed_action_timestamp(user, action, signature):
     row is always fetched fresh from the database.
     """
     if not REQUIRE_SIGNED_ACTIONS:
+        if not signature:
+            warn_shadow_mode_unsigned(user, action)
         return True, None
 
     if not signature:
-        return False, new_error(1048)
+        # Same split as in validate_action_signature: no signature at all is an
+        # outdated client, not a malformed action.
+        return False, new_error(1059, {"recover_url": robot_recovery_url()})
 
     public_key = Robot.objects.get(user=user).public_key
     valid, content = verify_signed_message(public_key, signature)
@@ -702,7 +747,10 @@ def validate_signed_action_timestamp(user, action, signature):
 
     now = datetime.now(datetime_timezone.utc).timestamp()
     if abs(now - signed_at) > ACTION_SIGNATURE_WINDOW:
-        return False, new_error(1048)
+        # A valid signature outside the window is a skewed device clock, not a
+        # malformed action. It needs its own code so the two stay tellable apart
+        # and the user is told to look at their clock.
+        return False, new_error(1060)
 
     return True, None
 
