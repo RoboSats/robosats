@@ -218,14 +218,11 @@ class Order {
     if (slot) {
       const coordinator = federation.getCoordinator(this.shortAlias);
       if (!coordinator || !coordinator.url) return this;
-      const robot = slot.getRobot();
-      const authHeaders = robot?.getAuthHeaders();
+      const robot = slot.ensureRobot(federation, this.shortAlias);
+      if (!robot) return this;
+      const authHeaders = robot.getAuthHeaders();
       if (!authHeaders) return this;
-      const signature = await signAction(
-        timedActionContent('make'),
-        robot?.encPrivKey,
-        robot?.token,
-      );
+      const signature = await signAction(timedActionContent('make'), robot.encPrivKey, robot.token);
       const data = await apiClient
         .post(coordinator.url, '/api/make/', { ...body, signature }, authHeaders)
         .catch((e) => {
@@ -256,11 +253,12 @@ class Order {
       if (slot) {
         const coordinator = federation.getCoordinator(this.shortAlias);
         if (!coordinator || !coordinator.url) return this;
-        const robot = slot.getRobot();
+        const robot = slot.ensureRobot(federation, this.shortAlias);
+        if (!robot) return this;
         const signature = await signAction(
           orderActionContent(action.action, Number(this.id), this.shortAlias),
-          robot?.encPrivKey,
-          robot?.token,
+          robot.encPrivKey,
+          robot.token,
         );
         const data = await apiClient
           .post(
@@ -268,7 +266,7 @@ class Order {
             `/api/order/?order_id=${Number(this.id)}`,
             { ...action, signature },
             {
-              tokenSHA256: robot?.tokenSHA256 ?? '',
+              tokenSHA256: robot.tokenSHA256,
             },
           )
           .catch((e) => {
@@ -285,7 +283,7 @@ class Order {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     if (!coordinator || !coordinator.url) return this;
-    const authHeaders = slot.getRobot()?.getAuthHeaders();
+    const authHeaders = slot.ensureRobot(federation, this.shortAlias)?.getAuthHeaders();
     if (!authHeaders) return this;
     const data = await apiClient
       .get(coordinator.url, `/api/order/?order_id=${this.id}`, authHeaders)

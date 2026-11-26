@@ -2,7 +2,7 @@ import { signCleartextMessage } from '../../pgp';
 import { apiClient } from '../../services/api';
 import type Federation from '../Federation.model';
 import Robot from '../Robot.model';
-import type Slot from '../Slot.model';
+import Slot from '../Slot.model';
 import Order from '../Order.model';
 
 jest.mock('../../pgp', () => ({
@@ -17,6 +17,7 @@ const makeFederation = (url: string): Federation =>
 const makeSlot = (robot: Robot): Slot =>
   ({
     getRobot: () => robot,
+    ensureRobot: () => robot,
     token: robot.token,
   }) as unknown as Slot;
 
@@ -104,5 +105,62 @@ describe('Order.make — action signature', () => {
     await order.make(makeFederation('http://testcoord.onion'), makeSlot(robot));
 
     expect(postSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('Order signatures — per-coordinator robot resolution', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const twoCoordinatorFederation = {
+    getCoordinator: (alias: string) =>
+      alias === 'a' || alias === 'b'
+        ? { url: `http://${alias}.onion`, shortAlias: alias }
+        : undefined,
+  } as unknown as Federation;
+
+  const slotWithDivergentKeys = (): Slot => {
+    const slot = new Slot('token', ['a', 'b'], { pubKey: 'pub-b', encPrivKey: 'enc-b' }, jest.fn());
+    slot.robots['a'].update({ pubKey: 'pub-a', encPrivKey: 'enc-a' });
+    return slot;
+  };
+
+  it.each(['a', 'b'])('make signs with the robot of the target coordinator %s', async (alias) => {
+    const postSpy = jest.spyOn(apiClient, 'post').mockResolvedValue({ id: 7 });
+    jest.spyOn(apiClient, 'get').mockResolvedValue(null);
+    const order = new Order({ id: 0, shortAlias: alias, type: 1, currency: 1 });
+
+    await order.make(twoCoordinatorFederation, slotWithDivergentKeys());
+
+    expect(signCleartextMessage).toHaveBeenCalledWith(
+      expect.stringMatching(/^make:\d+$/),
+      `enc-${alias}`,
+      'token',
+    );
+    expect(postSpy).toHaveBeenCalledWith(
+      `http://${alias}.onion`,
+      '/api/make/',
+      expect.objectContaining({ signature: 'SIGNED_ACTION' }),
+      expect.objectContaining({ tokenSHA256: expect.any(String) }),
+    );
+  });
+
+  it('submitAction signs with the order coordinator robot even when the last order points elsewhere', async () => {
+    const postSpy = jest.spyOn(apiClient, 'post').mockResolvedValue({ id: 93 });
+    jest.spyOn(apiClient, 'get').mockResolvedValue(null);
+    const slot = slotWithDivergentKeys();
+    slot.lastOrder = new Order({ id: 5, shortAlias: 'a' });
+    const order = new Order({ id: 93, shortAlias: 'b' });
+
+    await order.submitAction(twoCoordinatorFederation, slot, { action: 'take', amount: 1 });
+
+    expect(signCleartextMessage).toHaveBeenCalledWith('take:93:b', 'enc-b', 'token');
+    expect(postSpy).toHaveBeenCalledWith(
+      'http://b.onion',
+      '/api/order/?order_id=93',
+      { action: 'take', amount: 1, signature: 'SIGNED_ACTION' },
+      { tokenSHA256: expect.any(String) },
+    );
   });
 });
