@@ -124,7 +124,7 @@ describe('RoboPool relay reconnection', () => {
     expect(closedReqs).toHaveLength(1);
     const [, , closedFilter] = closedReqs[0];
     expect(closedFilter.kinds).toEqual([38383]);
-    expect(closedFilter['#s']).toEqual(['success']);
+    expect(closedFilter['#s']).toEqual(['success', 'canceled', 'in-progress', 'expired']);
     expect(closedFilter.authors).toEqual(bookFilter.authors);
     expect(closedFilter.since).toBeGreaterThan(bookFilter.since);
   });
