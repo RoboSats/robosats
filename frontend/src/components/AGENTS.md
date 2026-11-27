@@ -80,10 +80,10 @@ Order creation form. Key product rules enforced client-side (mirrors coordinator
 
 All in `TradeBox/EncryptedChat/`:
 
-| Component            | Transport                   | When used                                                                           |
-| -------------------- | --------------------------- | ----------------------------------------------------------------------------------- |
-| `EncryptedNostrChat` | Nostr relay NIP-17 DMs      | garageKey robot + both peers have Nostr pubkeys + `settings.connection === 'nostr'` |
-| `EncryptedApiChat`   | REST polling (`/api/chat/`) | Legacy robots, missing Nostr pubkeys, or `settings.connection === 'api'`            |
+| Component            | Transport                   | When used                                                                                 |
+| -------------------- | --------------------------- | ----------------------------------------------------------------------------------------- |
+| `EncryptedNostrChat` | Nostr relay NIP-17 DMs      | garageKey robot + both peers have valid Nostr pubkeys + `settings.connection === 'nostr'` |
+| `EncryptedApiChat`   | REST polling (`/api/chat/`) | Legacy robots, missing or invalid Nostr pubkeys, or `settings.connection === 'api'`       |
 
 `EncryptedChat/index.tsx` owns the routing decision — child components never switch transport themselves. The WebSocket chat (`EncryptedSocketChat`) has been removed from the frontend; the Django Channels backend (`/chat`) is kept for `EncryptedApiChat`.
 
@@ -172,9 +172,12 @@ tiles with `referrerPolicy: 'no-referrer'` on an `<img>`.
   the coordinator's `Robot.platform_rating` via REST; coordinator Nostr rating publishes
   a kind 31986 event to the Nostr relay. Both happen in `Successful.tsx`/`TradeBox`.
 - **Chat transport routing** — `EncryptedChat/index.tsx` selects the transport: garageKey
-  robots with both Nostr pubkeys set and `settings.connection === 'nostr'` use
-  `EncryptedNostrChat`; all other cases (legacy robots, missing pubkeys, or
-  `settings.connection === 'api'`) fall back to `EncryptedApiChat`. The WebSocket chat
+  robots with both Nostr pubkeys valid (`utils/nostrPubkey.ts:isValidNostrPubkey`) and
+  `settings.connection === 'nostr'` use `EncryptedNostrChat`; all other cases (legacy
+  robots, missing or invalid pubkeys, or `settings.connection === 'api'`) fall back to
+  `EncryptedApiChat`. Messages cannot be gift-wrapped to an invalid key (e.g. the
+  coordinator's `'0' * 64` placeholder) and incoming events never match it, so the Nostr
+  chat would stay empty; the PGP chat does not depend on the Nostr keys. The WebSocket chat
   (`EncryptedSocketChat`) has been removed from the frontend; the backend `/chat` Django
   app (Channels consumer + REST) is kept for `EncryptedApiChat` and API compatibility.
 - **Password/private orders** (when `order.password` is set) are shared out-of-band via
@@ -195,6 +198,11 @@ tiles with `referrerPolicy: 'no-referrer'` on an `<img>`.
   closure** — any dynamic value a slot renders (e.g. the relay chip counts) must be listed
   in that memo's dependency array, or the slot renders stale data until remount (values
   only refresh on tab switch).
+- **`Dialogs/AuditPGP.tsx` evaluates its content while closed** — `ChatPrompt` and
+  `Profile` keep it mounted with `open={audit}`, so the expressions in its JSX run on every
+  render of the chat. A malformed peer pubkey made `nip19.npubEncode` throw there and the
+  `ErrorBoundary` replaced the app with the crash screen (#2424). Encode npubs with
+  `utils/nostrPubkey.ts:toNpub`.
 
 ## Constraints
 

@@ -78,6 +78,20 @@ Two exports:
   `schnorr.verify(sig, UTF8(${event.pubkey}${orderId}), coordinatorPubKey)`. Returns
   `false` on any error. Used by `Federation.model.loadRatings(verify=true)`.
 
+### `nostrPubkey.ts`
+
+- **`isValidNostrPubkey(pubkey)`** — `true` only for 64-char lowercase hex that lifts to a
+  secp256k1 point (BIP340 `lift_x`). Coordinators can serve keys that fail this: the
+  `'0' * 64` placeholder the backend stores for robots with an unknown key
+  (`robosats/middleware.py`; x = 0 is not on the curve), `'None'` from the order view's
+  `str()` of a null `Robot.nostr_pubkey`, and values such as `'Nostr'` or `''` still found in
+  some coordinator databases (#2542). Lowercase only: relay events carry lowercase pubkeys
+  and the chat matches them against the order's pubkeys by string equality.
+- **`toNpub(pubkey)`** — `nip19.npubEncode` for valid keys, `''` otherwise.
+  `nip19.npubEncode` throws on odd-length or non-hex input and `nip59.wrapEvent` throws on
+  keys that are not on the curve, so a key received from a coordinator must pass
+  `isValidNostrPubkey` before either call.
+
 ### `blossom.ts` — Chat image E2E encryption
 
 Chat images are **fully end-to-end encrypted** — the Blossom server (coordinator) stores

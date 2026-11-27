@@ -1,5 +1,6 @@
 import { apiClient, type Auth } from '../services/api';
 import type Federation from './Federation.model';
+import { isValidNostrPubkey } from '../utils/nostrPubkey';
 
 interface RobotApiResponse {
   bad_request?: string;
@@ -132,7 +133,7 @@ class Robot {
           last_login: data.last_login,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
-          nostrPubKey: data.nostr_pubkey,
+          nostrPubKey: isValidNostrPubkey(data.nostr_pubkey) ? data.nostr_pubkey : this.nostrPubKey,
           webhookUrl: data.webhook_url ?? '',
           webhookEnabled: data.webhook_enabled ?? false,
           webhookApiKey: data.webhook_api_key ?? '',

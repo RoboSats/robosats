@@ -15,6 +15,7 @@ import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 import { encryptFile, generateKey } from '../../../utils/crypto/xchacha20';
 import { uploadToBlossom, computeSha256 } from '../../../utils/blossom';
 import { createFileMessage, type ParsedFileMessage } from '../../../utils/nip17File';
+import { isValidNostrPubkey } from '../../../utils/nostrPubkey';
 
 /**
  * Strip EXIF and other metadata by re-drawing the image onto a canvas and
@@ -214,7 +215,14 @@ const EncryptedChat: React.FC<Props> = ({
     const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
     const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
 
-    if (!coordinator || !slot?.nostrSecKey || !peerPublicKey || !ownPublicKey) return;
+    if (
+      !coordinator ||
+      !slot?.nostrSecKey ||
+      !isValidNostrPubkey(peerPublicKey) ||
+      !isValidNostrPubkey(ownPublicKey)
+    ) {
+      return;
+    }
 
     try {
       const messageEvent: EventTemplate = {
@@ -277,7 +285,12 @@ const EncryptedChat: React.FC<Props> = ({
     const peerPublicKey = order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey;
     const ownPublicKey = order.is_maker ? order.maker_nostr_pubkey : order.taker_nostr_pubkey;
 
-    if (!slot?.nostrSecKey || !peerPublicKey || !ownPublicKey || !coordinator) {
+    if (
+      !slot?.nostrSecKey ||
+      !isValidNostrPubkey(peerPublicKey) ||
+      !isValidNostrPubkey(ownPublicKey) ||
+      !coordinator
+    ) {
       throw new Error(t('Cannot send file: missing keys or peer not connected'));
     }
     if (!coordinator.url) {
@@ -350,8 +363,8 @@ const EncryptedChat: React.FC<Props> = ({
   const nostrCapable =
     Boolean(slot) &&
     garage.getMode() === 'garageKey' &&
-    Boolean(order.maker_nostr_pubkey) &&
-    Boolean(order.taker_nostr_pubkey);
+    isValidNostrPubkey(order.maker_nostr_pubkey) &&
+    isValidNostrPubkey(order.taker_nostr_pubkey);
 
   if (settings.connection === 'nostr' && nostrCapable) {
     return (
