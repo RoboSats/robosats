@@ -386,3 +386,28 @@ it('the exact reported scenario: order goes to #1 not #2 when user is put back o
   );
   expect(nextIndex).toBe(1);
 });
+
+it('ensureRobot reuses the existing per-coordinator robot', async () => {
+  const { slot } = await garageWithSlot();
+  const robot = slot.ensureRobot(federation, 'test');
+  expect(robot).toBe(slot.robots['test']);
+  expect(slot.robots['test'].shortAlias).toBe('test');
+});
+
+it('ensureRobot creates a robot for a coordinator the slot has none for', async () => {
+  const { slot } = await garageWithSlot();
+  jest.spyOn(apiClient, 'get').mockResolvedValue({ earned_rewards: 0 });
+
+  const created = slot.ensureRobot(federation, 'other');
+
+  expect(slot.robots['other']).toBe(created);
+  expect(created?.token).toBe(slot.token);
+  expect(created?.encPrivKey).toBe(slot.robots['test'].encPrivKey);
+  expect(slot.robots['other'].shortAlias).toBe('other');
+});
+
+it('ensureRobot returns null when the slot has no default robot with a token', async () => {
+  const { slot } = await garageWithSlot();
+  slot.robots['test'].token = undefined;
+  expect(slot.ensureRobot(federation, 'other')).toBeNull();
+});

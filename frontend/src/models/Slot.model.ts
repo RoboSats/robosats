@@ -269,25 +269,36 @@ class Slot {
     this.onSlotUpdate();
   };
 
+  ensureRobot: (federation: Federation, shortAlias: string) => Robot | null = (
+    federation,
+    shortAlias,
+  ) => {
+    const existing = this.robots[shortAlias];
+    if (existing) return existing;
+
+    const defaultRobot = this.getRobot();
+    if (!defaultRobot?.token) return null;
+
+    this.robots[shortAlias] = new Robot({
+      shortAlias,
+      hasEnoughEntropy: defaultRobot.hasEnoughEntropy,
+      bitsEntropy: defaultRobot.bitsEntropy,
+      shannonEntropy: defaultRobot.shannonEntropy,
+      token: defaultRobot.token,
+      pubKey: defaultRobot.pubKey,
+      encPrivKey: defaultRobot.encPrivKey,
+      nostrPubKey: defaultRobot.nostrPubKey,
+    });
+    void this.robots[shortAlias].fetch(federation);
+    this.updateSlotFromRobot(this.robots[shortAlias]);
+    return this.robots[shortAlias];
+  };
+
   syncCoordinator: (federation: Federation, shortAlias: string) => void = (
     federation,
     shortAlias,
   ) => {
-    const defaultRobot = this.getRobot();
-    if (defaultRobot?.token) {
-      this.robots[shortAlias] = new Robot({
-        shortAlias,
-        hasEnoughEntropy: defaultRobot.hasEnoughEntropy,
-        bitsEntropy: defaultRobot.bitsEntropy,
-        shannonEntropy: defaultRobot.shannonEntropy,
-        token: defaultRobot.token,
-        pubKey: defaultRobot.pubKey,
-        encPrivKey: defaultRobot.encPrivKey,
-        nostrPubKey: defaultRobot.nostrPubKey,
-      });
-      void this.robots[shortAlias].fetch(federation);
-      this.updateSlotFromRobot(this.robots[shortAlias]);
-    }
+    this.ensureRobot(federation, shortAlias);
   };
 
   isReusable = (): boolean => {

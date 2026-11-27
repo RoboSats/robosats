@@ -16,7 +16,7 @@ import { UseFederationStoreType, FederationContext } from '../../../contexts/Fed
 import { apiClient } from '../../../services/api';
 import { GarageContext, UseGarageStoreType } from '../../../contexts/GarageContext';
 import { EncryptedChatMessage, ServerMessage } from '../EncryptedChat';
-import { decryptMessage } from '../../../pgp';
+import { decryptMessage, signCleartextMessage } from '../../../pgp';
 import { SubmitActionProps } from '../index';
 
 export interface DisputeForm {
@@ -78,8 +78,15 @@ export const DisputePrompt = ({
         statement = JSON.stringify(payload, null, 2);
       }
 
+      const robot = garage.getSlot()?.getRobot();
+      const token = garage.getSlot()?.token;
+
+      if (robot?.encPrivKey == null || token == null) return;
+
       setLoading(true);
-      submitAction({ action: 'submit_statement', statement });
+      void signCleartextMessage(statement, robot.encPrivKey, token).then((signedStatement) => {
+        submitAction({ action: 'submit_statement', statement: signedStatement });
+      });
     }
   };
 
