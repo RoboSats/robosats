@@ -134,21 +134,26 @@ const TakeButton = ({
     }
   }, [slotUpdatedAt, takeAmount]);
 
+  const checkRobotThenConfirm = function (): void {
+    const slot = garage.getSlot();
+    if (slot && !slot.isReusable()) {
+      setUsedRobotHasActiveOrder(Boolean(slot.activeOrder));
+      setOpen({ description: false, confirmation: false });
+      setOpenUsedRobotDialog(true);
+      return;
+    }
+    setOpen({ description: false, confirmation: true });
+  };
+
   const proceedToTakeFlow = function (): void {
     if (currentOrder?.description && currentOrder?.description !== '') {
       setOpen({ description: true, confirmation: false });
     } else {
-      setOpen({ description: false, confirmation: true });
+      checkRobotThenConfirm();
     }
   };
 
   const onTakeOrderClicked = function (): void {
-    const slot = garage.getSlot();
-    if (slot && !slot.isReusable()) {
-      setUsedRobotHasActiveOrder(Boolean(slot.activeOrder));
-      setOpenUsedRobotDialog(true);
-      return;
-    }
     proceedToTakeFlow();
   };
 
@@ -371,7 +376,7 @@ const TakeButton = ({
         open={open.description}
         onClose={() => setOpen({ ...open, description: false })}
         onClickBack={() => setOpen({ ...open, description: false })}
-        onClickDone={() => setOpen({ ...open, description: false, confirmation: true })}
+        onClickDone={checkRobotThenConfirm}
         order={currentOrder}
       />
 

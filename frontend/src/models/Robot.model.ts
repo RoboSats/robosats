@@ -1,4 +1,5 @@
 import { apiClient, type Auth } from '../services/api';
+import { reviewActionContent, signAction, timedActionContent } from '../utils/actionSignature';
 import type Federation from './Federation.model';
 
 interface RobotApiResponse {
@@ -179,8 +180,18 @@ class Robot {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     if (!coordinator || !coordinator.url) return;
+    const signature = await signAction(
+      timedActionContent('stealth', this.shortAlias),
+      this.encPrivKey,
+      this.token,
+    );
     await apiClient
-      .post(coordinator.url, '/api/stealth/', { wantsStealth }, { tokenSHA256: this.tokenSHA256 })
+      .post(
+        coordinator.url,
+        '/api/stealth/',
+        { wantsStealth, signature },
+        { tokenSHA256: this.tokenSHA256 },
+      )
       .catch((e) => {
         console.log(e);
       });
@@ -200,8 +211,20 @@ class Robot {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     if (!coordinator || !coordinator.url) return;
+    const signature = await signAction(
+      timedActionContent('robot', this.shortAlias),
+      this.encPrivKey,
+      this.token,
+    );
     await apiClient
-      .put(coordinator.url, '/api/robot/', settings, { tokenSHA256: this.tokenSHA256 })
+      .put(
+        coordinator.url,
+        '/api/robot/',
+        { ...settings, signature },
+        {
+          tokenSHA256: this.tokenSHA256,
+        },
+      )
       .then((raw) => {
         const data = raw as WebhookApiResponse | undefined;
         if (data) {
@@ -225,23 +248,29 @@ class Robot {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     if (!coordinator || !coordinator.url) return;
-    const body = {
-      pubkey: this.nostrPubKey,
-    };
 
-    apiClient
-      .post(coordinator.url, '/api/review/', body, {
-        tokenSHA256: this.tokenSHA256,
-      })
-      .then((raw) => {
-        const data = raw as ReviewApiResponse | undefined;
-        if (data?.token) {
-          onDataLoad(data.token);
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+    void signAction(reviewActionContent(this.nostrPubKey ?? ''), this.encPrivKey, this.token).then(
+      (signature) => {
+        apiClient
+          .post(
+            coordinator.url,
+            '/api/review/',
+            { pubkey: this.nostrPubKey, signature },
+            {
+              tokenSHA256: this.tokenSHA256,
+            },
+          )
+          .then((raw) => {
+            const data = raw as ReviewApiResponse | undefined;
+            if (data?.token) {
+              onDataLoad(data.token);
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      },
+    );
   };
 }
 

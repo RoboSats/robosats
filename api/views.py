@@ -70,8 +70,11 @@ from api.serializers import (
 from api.utils import (
     compute_avg_premium,
     get_cln_version,
+    get_federation_short_alias,
     get_lnd_version,
     get_robosats_commit,
+    validate_action_signature,
+    validate_signed_action_timestamp,
     verify_signed_message,
 )
 from api.nostr import Nostr
@@ -101,6 +104,12 @@ class MakerView(CreateAPIView):
 
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        valid, context = validate_signed_action_timestamp(
+            request.user, "make", serializer.validated_data.get("signature")
+        )
+        if not valid:
+            return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # In case it gets overwhelming. Limit the number of public orders.
         if Order.objects.filter(status=Order.Status.PUB).count() >= int(
@@ -552,9 +561,17 @@ class OrderView(viewsets.ViewSet):
         rating = serializer.data.get("rating")
         cancel_status = serializer.data.get("cancel_status")
         password = serializer.data.get("password")
+        signature = serializer.data.get("signature")
+        short_alias = get_federation_short_alias()
 
         # 1) If action is take, it is a taker request!
         if action == "take":
+            valid, context = validate_action_signature(
+                request.user, f"take:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             if order.status == Order.Status.PUB:
                 if order.password is not None:
                     if password is None or not compare_digest(order.password, password):
@@ -597,6 +614,12 @@ class OrderView(viewsets.ViewSet):
 
         # 2) If action is cancel
         elif action == "cancel":
+            valid, context = validate_action_signature(
+                request.user, f"cancel:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid, context = Logics.cancel_order(order, request.user, cancel_status)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
@@ -620,6 +643,12 @@ class OrderView(viewsets.ViewSet):
 
         # 3) If action is 'update invoice'
         elif action == "update_invoice":
+            valid, context = validate_action_signature(
+                request.user, f"update_invoice:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid_signature, invoice = verify_signed_message(
                 request.user.robot.public_key, pgp_invoice
             )
@@ -635,6 +664,12 @@ class OrderView(viewsets.ViewSet):
 
         # 3.b) If action is 'update address'
         elif action == "update_address":
+            valid, context = validate_action_signature(
+                request.user, f"update_address:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid_signature, address = verify_signed_message(
                 request.user.robot.public_key, pgp_address
             )
@@ -650,24 +685,56 @@ class OrderView(viewsets.ViewSet):
 
         # 5) If action is confirm
         elif action == "confirm":
+            valid, context = validate_action_signature(
+                request.user, f"confirm:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid, context = Logics.confirm_fiat(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 5.b) If action is confirm
         elif action == "undo_confirm":
+            valid, context = validate_action_signature(
+                request.user, f"undo_confirm:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid, context = Logics.undo_confirm_fiat_sent(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 6) If action is dispute
         elif action == "dispute":
+            valid, context = validate_action_signature(
+                request.user, f"dispute:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid, context = Logics.open_dispute(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         elif action == "submit_statement":
-            valid, context = Logics.dispute_statement(order, request.user, statement)
+            valid, context = validate_action_signature(
+                request.user, f"submit_statement:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+            valid_statement, extracted_statement = verify_signed_message(
+                request.user.robot.public_key, statement
+            )
+            if not valid_statement:
+                return Response(new_error(1048), status.HTTP_400_BAD_REQUEST)
+
+            valid, context = Logics.dispute_statement(
+                order, request.user, extracted_statement
+            )
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -678,12 +745,24 @@ class OrderView(viewsets.ViewSet):
 
         # 8) If action is rate_platform
         elif action == "rate_platform" and rating:
+            valid, context = validate_action_signature(
+                request.user, f"rate_platform:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid, context = Logics.rate_platform(request.user, rating)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 9) If action is pause
         elif action == "pause":
+            valid, context = validate_action_signature(
+                request.user, f"pause:{order.id}:{short_alias}", signature
+            )
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
             valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
@@ -754,6 +833,14 @@ class RobotView(APIView):
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        signature = serializer.validated_data.pop("signature", None)
+
+        valid, context = validate_signed_action_timestamp(
+            request.user, "robot", signature
+        )
+        if not valid:
+            return Response(context, status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
 
@@ -1227,6 +1314,12 @@ class StealthView(APIView):
 
         stealth = serializer.data.get("wantsStealth")
 
+        valid, context = validate_signed_action_timestamp(
+            request.user, "stealth", serializer.validated_data.get("signature")
+        )
+        if not valid:
+            return Response(context, status.HTTP_400_BAD_REQUEST)
+
         request.user.robot.wants_stealth = stealth
         request.user.robot.save(update_fields=["wants_stealth"])
 
@@ -1247,6 +1340,13 @@ class ReviewView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         pubkey = serializer.data.get("pubkey")
+
+        valid, context = validate_action_signature(
+            request.user, f"review:{pubkey}", serializer.validated_data.get("signature")
+        )
+        if not valid:
+            return Response(context, status.HTTP_400_BAD_REQUEST)
+
         last_order = Order.objects.filter(
             Q(maker=request.user) | Q(taker=request.user)
         ).last()

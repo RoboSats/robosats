@@ -603,6 +603,15 @@ class MakeOrderSerializer(serializers.ModelSerializer):
         default=False,
         help_text="Whether the order specifies a range of amount or a fixed amount.\n\nIf `true`, then `min_amount` and `max_amount` fields are **required**.\n\n If `false` then `amount` is **required**",
     )
+    signature = serializers.CharField(
+        max_length=15000,
+        allow_null=True,
+        allow_blank=True,
+        required=False,
+        default=None,
+        write_only=True,
+        help_text="Cleartext PGP signature (SHA512) of `make:{unix_ts}` made with the robot key. Must be within 300 seconds of server time.",
+    )
 
     class Meta:
         model = Order
@@ -624,6 +633,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "longitude",
             "password",
             "description",
+            "signature",
         )
 
 
@@ -694,6 +704,14 @@ class UpdateOrderSerializer(serializers.Serializer):
         default=None,
         help_text="Status the order should have for it to be cancelled.",
     )
+    signature = serializers.CharField(
+        max_length=15000,
+        allow_null=True,
+        allow_blank=True,
+        required=False,
+        default=None,
+        help_text="Cleartext PGP signature (SHA512) of `{action}:{order_id}:{shortAlias}` made with the robot key.",
+    )
 
 
 class ClaimRewardSerializer(serializers.Serializer):
@@ -739,16 +757,43 @@ class ReviewSerializer(serializers.Serializer):
         allow_blank=False,
         required=True,
     )
+    signature = serializers.CharField(
+        max_length=15000,
+        allow_null=True,
+        allow_blank=True,
+        required=False,
+        default=None,
+        help_text="Cleartext PGP signature (SHA512) of `review:{pubkey}` made with the robot key.",
+    )
 
 
 class StealthSerializer(serializers.Serializer):
     wantsStealth = serializers.BooleanField()
+    signature = serializers.CharField(
+        max_length=15000,
+        allow_null=True,
+        allow_blank=True,
+        required=False,
+        default=None,
+        help_text="Cleartext PGP signature (SHA512) of `stealth:{unix_ts}` made with the robot key. Must be within 300 seconds of server time.",
+    )
 
 
 class UpdateRobotSerializer(serializers.ModelSerializer):
+    signature = serializers.CharField(
+        max_length=15000,
+        allow_null=True,
+        allow_blank=True,
+        required=False,
+        default=None,
+        write_only=True,
+        help_text="Cleartext PGP signature (SHA512) of `robot:{unix_ts}` made with the robot key. Must be within 300 seconds of server time.",
+    )
+
     class Meta:
         model = Robot
         fields = (
+            "signature",
             "webhook_url",
             "webhook_enabled",
             "webhook_api_key",
