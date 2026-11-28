@@ -72,3 +72,14 @@ radius as `Logics` itself. Never remove a `hasattr()` branch in `follow_invoices
 without checking `api/models/AGENTS.md`'s `related_name` table for what it corresponds to.
 Don't assume Celery beat schedules these — they run in their own infinite loops, independent
 of `robosats/celery/__init__.py`.
+
+## `migrate_locked.py`
+One-shot, not a daemon. `scripts/entrypoint.sh` runs it instead of `migrate`, so it runs
+in every service started from the backend image (backend, Celery, beat, the three daemons
+above). Plain `migrate` from several containers at once applies the same migrations in
+parallel: the losers fail (e.g. `DuplicateColumn`) and `django_migrations` can end up with
+duplicate rows. On PostgreSQL it holds `pg_advisory_lock(MIGRATE_LOCK_ID)` around
+`call_command("migrate")`, so one service migrates and the others wait, then find nothing
+to apply; the lock is released even if `migrate` raises. On any other database it just runs
+`migrate`. `scripts/traditional/traditional-services` keeps plain `migrate`: it runs once,
+from a single process.
