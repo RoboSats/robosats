@@ -6,10 +6,33 @@ RoboSats v0.8.9-alpha is now out! :rocket:
 **TL;DR**
 
 ### For Users
-- Gumpellite coordinator dropped the federation.
+- Security fix (GHSA-22q8-9ghc-jg3h): every state-changing request now requires a PGP signature from the robot's private key — a stolen bearer token can no longer be replayed at another coordinator or used to settle escrow
+- Timed signatures are now bound to the target coordinator, preventing cross-coordinator signature replay
+- Nostr relay auto-recovery: dropped relays are automatically reconnected, subscriptions replayed and failed relays replaced by federation spares — long-session order-book and chat degradation is fixed
+- Nostr order book REQ split into pending-only and tombstone streams — orders were silently truncated near the 500-event relay cap, making the book incomplete
+- Third-party NIP-69 order tombstones (`canceled`, `in-progress`, `expired`) now remove stale orders from the book; previously only RoboSats `success` events were handled
+- Nostr relay status chip now shown in the chat header alongside the order book footer
+- Relay chip blinks red on total outage to signal the connectivity issue immediately
+- Android Nostr chat and websocket handling overhauled for reliability
+- Desktop Tor upgraded (new binaries for Linux/Mac/Windows, Conjure and Lyrebird pluggable transports updated, Snowflake and WebTunnel removed)
+- Robot reusability enforced client-side: a finished robot slot is correctly offered for reuse instead of blocking a new order
+- Automatic dispute resolution removed — all disputes now require manual coordinator intervention
+- Gumpellite coordinator dropped from the federation
+- OpenStreetMaps 403 blocked access fixed
 - Multiple libraries security updates
 
+**Bugs**
+
+- Fixed "1048 signature does not verify" error when making an order after recovering a garage key on a fresh client
+- Fixed order description dialog being skipped when taking an order with an already-used robot
+- Fixed stale third-party NIP-69 orders lingering in the Nostr order book
+
 ### For Coordinators
+- Security fix (GHSA-22q8-9ghc-jg3h): signed actions enforced by default (`REQUIRE_SIGNED_ACTIONS=true`); set to `false` as a temporary escape hatch while outdated desktop/Android clients are still in use — never leave it off permanently
+- New error codes: 1059 (missing signature — points user to coordinator address for client update), 1060 (signature outside time window — asks user to sync device clock); 1048 now means strictly "signature fails to verify"
+- Automatic dispute resolution removed — disputes are now fully manual
+- Django bumped to 5.2.19
+- Gunicorn bumped to 27.0.1
 - Multiple libraries security updates
 
 # Android
