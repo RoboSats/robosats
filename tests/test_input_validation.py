@@ -21,6 +21,7 @@ Covered endpoints:
 - POST /api/make/   (nonexistent currency)      -> 400 / error_code 1058
 """
 
+import time
 from datetime import timedelta
 from decimal import Decimal
 from urllib.parse import urlencode
@@ -32,7 +33,9 @@ from django.urls import reverse
 from django.utils import timezone
 
 from api.models import Currency, Order
+from api.utils import get_federation_short_alias
 from tests.test_api import BaseAPITestCase
+from tests.utils.pgp import sign_action
 from tests.utils.trade import maker_form_buy_with_range
 
 SQLI_PAYLOADS = [
@@ -68,6 +71,21 @@ class RobotAuthMixin:
         return {
             "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key} | Nostr {nostr_pubkey}"
         }
+
+    def action_signature(self, action, order_id=None, content=None):
+        """
+        Builds the detached action signature for this test robot, mirroring
+        tests/utils/trade.py: order-bound actions sign
+        '{action}:{order_id}:{shortAlias}'; actions outside an order context
+        sign '{action}:{shortAlias}:{unix_ts}'.
+        """
+        if content is None:
+            if order_id is None:
+                content = f"{action}:{get_federation_short_alias()}:{int(time.time())}"
+            else:
+                content = f"{action}:{order_id}:{get_federation_short_alias()}"
+
+        return sign_action(content, self.robot_index)
 
     def create_robot(self):
         return self.client.get(reverse("robot"), **self.get_robot_auth())
@@ -254,7 +272,10 @@ class MakerInputValidationTest(RobotAuthMixin, BaseAPITestCase):
         form = dict(maker_form_buy_with_range, currency=999999)
 
         response = self.client.post(
-            path, data=form, content_type="application/json", **self.get_robot_auth()
+            path,
+            data={**form, "signature": self.action_signature("make")},
+            content_type="application/json",
+            **self.get_robot_auth(),
         )
         self.assertEqual(response.status_code, 400)
         data = response.json()
@@ -311,7 +332,10 @@ class TakeRangeValidationTest(RobotAuthMixin, BaseAPITestCase):
     def _take(self, payload):
         return self.client.post(
             f"{reverse('order')}?order_id={self.order.id}",
-            data=payload,
+            data={
+                **payload,
+                "signature": self.action_signature("take", order_id=self.order.id),
+            },
             content_type="application/json",
             **self.get_robot_auth(),
         )
@@ -360,7 +384,10 @@ class TakeNonPublicValidationTest(RobotAuthMixin, BaseAPITestCase):
     def test_take_nonpublic_order(self):
         response = self.client.post(
             f"{reverse('order')}?order_id={self.order.id}",
-            data={"action": "take"},
+            data={
+                "action": "take",
+                "signature": self.action_signature("take", order_id=self.order.id),
+            },
             content_type="application/json",
             **self.get_robot_auth(),
         )
