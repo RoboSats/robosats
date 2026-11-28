@@ -51,6 +51,53 @@ submit_statement, dispute, cancel, confirm, undo_confirm, rate_platform`. Option
 `cancel_status` is an optimistic-concurrency guard — `Logics.cancel_order` rejects if
 `order.status != cancel_status`.
 
+## Signed actions — bearer = read credential, PGP = write credential
+
+The `tokenSHA256` bearer header is derived only from the token and is identical across all
+coordinators, so a coordinator (or anyone who steals the header) can replay it at any other
+coordinator and act there as the robot (GHSA-22q8-9ghc-jg3h). Reads can stay bearer-
+authenticated; every **state-changing** request additionally requires a cleartext PGP
+signature (`signature` body field) made with the robot's private key, verified against
+`robot.public_key` via `api/utils.py` helpers. An attacker holding only the auth headers
+(`pub_key` + `enc_priv_key`) cannot sign — the token (passphrase) is the missing secret.
+
+Wire format (byte-exact; mirrored in `frontend/src/utils/actionSignature.ts`):
+
+| Request                        | Signed content                            | Window |
+| ------------------------------ | ----------------------------------------- | ------ |
+| `POST /api/order/` (all actions) | `{action}:{order_id}:{shortAlias}`        | none   |
+| `POST /api/make/`              | `make:{shortAlias}:{unix_ts}`             | ±300 s |
+| `POST /api/stealth/`           | `stealth:{shortAlias}:{unix_ts}`          | ±300 s |
+| `PUT /api/robot/`              | `robot:{shortAlias}:{unix_ts}`            | ±300 s |
+| `POST /api/review/`            | `review:{pubkey}`                         | none (idempotent, binds write-once nostr pubkey) |
+
+- `{shortAlias}` is `get_federation_short_alias()` (never raw `COORDINATOR_ALIAS`), the
+  same value the frontend signs with.
+- Every signed content carries the coordinator alias, so a signature captured at one
+  coordinator cannot be replayed at another. `validate_signed_action_timestamp` builds
+  the expected alias itself from `get_federation_short_alias()` — a mismatch rejects
+  with **error 1061** (distinct from 1048 malformed / 1060 clock skew; a replayed
+  signature is neither).
+- `submit_statement` carries two signatures: the action signature above **and** the
+  `statement` field is itself a cleartext-signed payload (invoice pattern) — the view
+  extracts the text with `verify_signed_message` before `Logics.dispute_statement`.
+- `update_invoice`/`update_address` keep their pre-existing per-payload signature checks,
+  now alongside the uniform action signature.
+- `validate_action_signature(user, expected_content, signature)` and
+  `validate_signed_action_timestamp(user, action, signature)` return `(True, None)` or
+  `(False, new_error(1048))`. Timestamped actions must be within
+  `ACTION_SIGNATURE_WINDOW` (300 s) of server time; `review` is exempt (idempotent,
+  binds the write-once nostr pubkey). Both helpers fetch the Robot row with
+  `Robot.objects.get(user=user)` instead of `user.robot`: accessing the reverse
+  relation caches the instance on `request.user` for the whole request, so a
+  mid-request penalty mutation (`kick_taker` on pretaker cancel) would be invisible
+  to `is_penalized` when the view builds its GET response afterwards.
+- Validation runs before any mutation — on `take`, before the `transaction.atomic`
+  `select_for_update` block.
+- `REQUIRE_SIGNED_ACTIONS` (default `true`) is a temporary escape hatch for coordinators
+  mid-upgrade: `false` restores the pre-hardening behaviour for outdated desktop/Android
+  clients. Never deploy it permanently — with it off, a stolen bearer can settle escrow.
+
 ## Order state machine
 19 statuses in `api/models/order.py` — see `api/models/AGENTS.md` for the full enum, expiry
 reasons, `t_to_expire` table.

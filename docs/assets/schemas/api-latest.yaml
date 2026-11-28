@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: RoboSats REST API
-  version: 0.8.6
+  version: 0.8.8
   x-logo:
     url: https://raw.githubusercontent.com/Robosats/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png
     backgroundColor: '#FFFFFF'
@@ -109,6 +109,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/Chat'
           description: ''
+  /api/federation/:
+    get:
+      operationId: federation_retrieve
+      description: |2
+
+        Returns the coordinator's full federation document — identical in schema
+        to `api/federation.json`.
+
+        **This endpoint is only fetched by clients when the hash-based vote
+        (Phase B of federation discovery) produces a winning hash that differs
+        from the client's own bundled seed hash.**  In the common case where
+        nothing has changed the client never calls this endpoint at all; it
+        learns the hash via the `federation_hash` field on `/api/info/`.
+
+        After receiving the document the client recomputes its canonical hash
+        locally and requires it to equal the winning hash from the vote, ensuring
+        the coordinator cannot serve a document that differs from what it
+        committed to via `/api/info/`.
+
+        The coordinator reads its federation document from `FEDERATION_JSON_PATH`
+        (env var, defaults to `api/federation.json`).  Operators can update that
+        file at any time to change their federation vote without a release.
+      summary: Get full federation list
+      tags:
+      - federation
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                description: The federation document — identical in schema to api/federation.json.
+                additionalProperties: true
+          description: ''
   /api/historical/:
     get:
       operationId: historical_list
@@ -171,6 +208,12 @@ paths:
           - on-chain swap fees
         - Development fund
           - devfund donation percentage
+        - Federation
+          - `federation_hash`: SHA-256 of this coordinator's normalized canonical
+            federation document.  Clients collect this from all coordinators and run
+            a majority vote to detect federation list changes without any additional
+            requests.  Only when the winning hash differs from the client's seed does
+            the client fetch `/api/federation/` once to obtain the full document.
       summary: Get info
       tags:
       - info
@@ -1203,7 +1246,8 @@ components:
           description: Swap fees to perform on-chain transaction (percent)
         blossom_enabled:
           type: boolean
-          description: Whether the coordinator offers encrypted image uploads via Blossom in chat
+          description: Whether the coordinator offers encrypted image uploads via
+            Blossom in chat
         version:
           $ref: '#/components/schemas/Version'
         notice_severity:
@@ -1212,15 +1256,25 @@ components:
           type: string
         notice_message:
           type: string
+        federation_hash:
+          type: string
+          description: SHA-256 of the normalized canonical federation document served
+            by this coordinator. Clients collect this hash from all coordinators via
+            the already-polled /api/info/ response and run a majority vote to determine
+            the current federation list without any additional requests. Only when
+            the winning hash differs from the client's own seed does the client fetch
+            /api/federation/ once to obtain the full document.
       required:
       - active_robots_today
       - alternative_name
       - alternative_site
+      - blossom_enabled
       - bond_size
       - book_liquidity
       - cln_version
       - current_swap_fee_rate
       - devfund
+      - federation_hash
       - last_day_nonkyc_btc_premium
       - last_day_volume
       - lifetime_volume
@@ -1241,7 +1295,6 @@ components:
       - swap_enabled
       - taker_fee
       - version
-      - blossom_enabled
     ListNotification:
       type: object
       properties:
@@ -1436,6 +1489,13 @@ components:
           type: string
           nullable: true
           maxLength: 240
+        signature:
+          type: string
+          writeOnly: true
+          nullable: true
+          description: Cleartext PGP signature (SHA512) of `make:{unix_ts}` made with
+            the robot key. Must be within 300 seconds of server time.
+          maxLength: 15000
       required:
       - currency
       - type
@@ -1941,6 +2001,12 @@ components:
         pubkey:
           type: string
           description: Robot's nostr hex pubkey
+        signature:
+          type: string
+          nullable: true
+          description: Cleartext PGP signature (SHA512) of `review:{pubkey}` made
+            with the robot key.
+          maxLength: 15000
       required:
       - pubkey
     StatusEnum:
@@ -1990,6 +2056,12 @@ components:
       properties:
         wantsStealth:
           type: boolean
+        signature:
+          type: string
+          nullable: true
+          description: Cleartext PGP signature (SHA512) of `stealth:{unix_ts}` made
+            with the robot key. Must be within 300 seconds of server time.
+          maxLength: 15000
       required:
       - wantsStealth
     Summary:
@@ -2177,6 +2249,12 @@ components:
           - $ref: '#/components/schemas/StatusEnum'
           - $ref: '#/components/schemas/BlankEnum'
           - $ref: '#/components/schemas/NullEnum'
+        signature:
+          type: string
+          nullable: true
+          description: Cleartext PGP signature (SHA512) of `{action}:{order_id}:{shortAlias}`
+            made with the robot key.
+          maxLength: 15000
       required:
       - action
     UpdateOrderResponse:
