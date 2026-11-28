@@ -9,10 +9,6 @@ RoboSats v0.8.9-alpha is now out! :rocket:
 - Gumpellite coordinator dropped the federation.
 - Multiple libraries security updates
 
-**Bugs**
-
--
-
 ### For Coordinators
 - Multiple libraries security updates
 
