@@ -3,7 +3,8 @@ Unit tests for api/nostr.py — pure-logic, no relay required.
 
 Coverage:
 - generate_tags: tag construction and NIP-69 field values
-- get_status_tag: PUB → "pending", everything else → "success"
+- get_status_tag: Order.Status → NIP-69 status
+- get_expiration: unlisting events never carry an expiration in the past
 - sign_message: Schnorr signature shape, determinism, bad-key fallback
 
 Network tests (send_order_event, send_notification_event, initialize_client)
@@ -12,8 +13,9 @@ the docker-tests.yml stack. There are no Client mocks here.
 """
 
 import hashlib
+import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
@@ -265,16 +267,74 @@ class TestNostrGetStatusTag(TestCase):
         order = _make_order(status=Order.Status.PUB)
         self.assertEqual(self.nostr.get_status_tag(order), "pending")
 
-    def test_non_pub_status_returns_success(self):
-        for status in (
-            Order.Status.WFB,
-            Order.Status.CHA,
-            Order.Status.SUC,
-            Order.Status.DIS,
-        ):
+    def test_non_pub_statuses_map_to_nip69(self):
+        expected = {
+            Order.Status.WFB: "canceled",
+            Order.Status.PAU: "canceled",
+            Order.Status.TAK: "in-progress",
+            Order.Status.UCA: "canceled",
+            Order.Status.EXP: "expired",
+            Order.Status.WF2: "in-progress",
+            Order.Status.WFE: "in-progress",
+            Order.Status.WFI: "in-progress",
+            Order.Status.CHA: "in-progress",
+            Order.Status.FSE: "in-progress",
+            Order.Status.DIS: "in-progress",
+            Order.Status.CCA: "canceled",
+            Order.Status.PAY: "in-progress",
+            Order.Status.SUC: "success",
+            Order.Status.FAI: "in-progress",
+            Order.Status.WFR: "in-progress",
+            Order.Status.MLD: "success",
+            Order.Status.TLD: "success",
+        }
+        self.assertEqual(set(expected) | {Order.Status.PUB}, set(Order.Status))
+        for status, nip69 in expected.items():
             with self.subTest(status=status):
                 order = _make_order(status=status)
-                self.assertEqual(self.nostr.get_status_tag(order), "success")
+                self.assertEqual(self.nostr.get_status_tag(order), nip69)
+
+
+# ---------------------------------------------------------------------------
+class TestNostrExpiration(TestCase):
+    """A relay drops events whose expiration is in the past, so the event that
+    takes an order off the book must not carry one."""
+
+    def setUp(self):
+        self.nostr = Nostr()
+
+    def test_public_order_uses_expires_at(self):
+        order = _make_order(status=Order.Status.PUB)
+        self.assertEqual(
+            self.nostr.get_expiration(order), int(order.expires_at.timestamp())
+        )
+
+    def test_unlisted_order_with_past_expires_at(self):
+        for status in (Order.Status.EXP, Order.Status.UCA, Order.Status.SUC):
+            with self.subTest(status=status):
+                order = _make_order(status=status)
+                order.expires_at = datetime.now(UTC) - timedelta(minutes=5)
+                self.assertGreaterEqual(
+                    self.nostr.get_expiration(order), int(time.time()) + 3600
+                )
+
+    def test_unlisted_order_keeps_later_expires_at(self):
+        order = _make_order(status=Order.Status.CHA)
+        self.assertEqual(
+            self.nostr.get_expiration(order), int(order.expires_at.timestamp())
+        )
+
+    @patch("api.nostr.config")
+    def test_expired_order_tag_is_in_the_future(self, mock_config):
+        mock_config.side_effect = lambda key, **kw: ENV_OVERRIDES.get(
+            key, kw.get("default", "")
+        )
+        order = _make_order(status=Order.Status.EXP)
+        order.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+        tags = self.nostr.generate_tags(order, "RoboMaker", "abc123", "EUR")
+        tag = next(t.to_vec() for t in tags if t.to_vec()[0] == "expiration")
+        self.assertGreater(int(tag[1]), int(time.time()))
+        self.assertEqual(tag[2], "3600")
 
 
 # ---------------------------------------------------------------------------

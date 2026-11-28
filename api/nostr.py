@@ -1,5 +1,6 @@
 import pygeohash
 import hashlib
+import time
 import uuid
 
 from secp256k1 import PrivateKey
@@ -17,6 +18,11 @@ from nostr_sdk import (
 from api.models import Order
 from api.utils import get_federation_short_alias
 from decouple import config
+
+# Minimum lifetime of the event that takes an order off the book. Relays reject
+# events whose NIP-40 expiration is already in the past, which would leave the
+# previous "pending" event listed.
+MIN_UNLISTED_EVENT_LIFETIME = 3600
 
 
 class Nostr:
@@ -137,7 +143,7 @@ class Nostr:
             Tag.parse(
                 [
                     "expiration",
-                    str(int(order.expires_at.timestamp())),
+                    str(self.get_expiration(order)),
                     str(order.escrow_duration),
                 ]
             ),
@@ -155,11 +161,32 @@ class Nostr:
 
         return tags
 
+    def get_expiration(self, order):
+        expiration = int(order.expires_at.timestamp())
+        if order.status == Order.Status.PUB:
+            return expiration
+        return max(expiration, int(time.time()) + MIN_UNLISTED_EVENT_LIFETIME)
+
     def get_status_tag(self, order):
+        # NIP-69 statuses: pending, canceled, in-progress, success, expired
         if order.status == Order.Status.PUB:
             return "pending"
-        else:
+        if order.status == Order.Status.EXP:
+            return "expired"
+        if order.status in (
+            Order.Status.WFB,
+            Order.Status.PAU,
+            Order.Status.UCA,
+            Order.Status.CCA,
+        ):
+            return "canceled"
+        if order.status in (
+            Order.Status.SUC,
+            Order.Status.MLD,
+            Order.Status.TLD,
+        ):
             return "success"
+        return "in-progress"
 
     def sign_message(text: str) -> str:
         try:
