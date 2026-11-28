@@ -176,7 +176,7 @@ class Slot {
     const previousStatus = order.status;
     await order.submitAction(federation, this, action);
     this.updateSlotFromOrder(order);
-    if (this.activeOrder && order.status !== previousStatus) this.onSlotUpdate();
+    if (this.activeOrder === order && order.status !== previousStatus) this.onSlotUpdate();
     return order;
   };
 
