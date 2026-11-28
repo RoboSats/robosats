@@ -1,3 +1,4 @@
+import time
 from unittest.mock import patch
 from datetime import datetime
 from django.urls import reverse
@@ -6,6 +7,7 @@ from api.management.commands.clean_orders import Command as CleanOrders
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Order, TakeOrder
 from api.tasks import follow_send_payment, send_notification
+from api.utils import get_federation_short_alias
 from tests.utils.node import (
     add_invoice,
     create_address,
@@ -13,7 +15,7 @@ from tests.utils.node import (
     pay_invoice,
     wait_nodes_sync,
 )
-from tests.utils.pgp import sign_message
+from tests.utils.pgp import sign_action, sign_message
 
 maker_form_buy_with_range = {
     "type": Order.Types.BUY,
@@ -88,6 +90,20 @@ class Trade:
 
         return self.client.get(path, **headers)
 
+    def action_signature(self, action, robot_index, order_id=None, content=None):
+        """
+        Builds the detached action signature. Order-bound actions sign
+        '{action}:{order_id}:{shortAlias}'; actions outside an order context
+        sign '{action}:{shortAlias}:{unix_ts}'.
+        """
+        if content is None:
+            if order_id is None:
+                content = f"{action}:{get_federation_short_alias()}:{int(time.time())}"
+            else:
+                content = f"{action}:{order_id}:{get_federation_short_alias()}"
+
+        return sign_action(content, robot_index)
+
     def make_order(self, maker_form, robot_index=1):
         """
         Create an order for the test.
@@ -96,7 +112,8 @@ class Trade:
         # Get valid robot auth headers
         headers = self.get_robot_auth(robot_index)
 
-        response = self.client.post(path, maker_form, **headers)
+        body = {**maker_form, "signature": self.action_signature("make", robot_index)}
+        response = self.client.post(path, body, **headers)
 
         self.response = response
         if response.status_code == 201:
@@ -118,7 +135,12 @@ class Trade:
         path = reverse("review")
         headers = self.get_robot_auth(robot_index)
         nostr_pubkey = read_file(f"tests/robots/{robot_index}/nostr_pubkey")
-        body = {"pubkey": nostr_pubkey}
+        body = {
+            "pubkey": nostr_pubkey,
+            "signature": self.action_signature(
+                "review", robot_index, content=f"review:{nostr_pubkey}"
+            ),
+        }
         self.response = self.client.post(path, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
@@ -126,7 +148,10 @@ class Trade:
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(robot_index)
-        body = {"action": "cancel"}
+        body = {
+            "action": "cancel",
+            "signature": self.action_signature("cancel", robot_index, self.order_id),
+        }
         if cancel_status is not None:
             body.update({"cancel_status": cancel_status})
         self.response = self.client.post(path + params, body, **headers)
@@ -143,7 +168,10 @@ class Trade:
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(robot_index)
-        body = {"action": "pause"}
+        body = {
+            "action": "pause",
+            "signature": self.action_signature("pause", robot_index, self.order_id),
+        }
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
@@ -202,7 +230,11 @@ class Trade:
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(self.taker_index)
-        body = {"action": "take", "amount": self.take_amount}
+        body = {
+            "action": "take",
+            "amount": self.take_amount,
+            "signature": self.action_signature("take", self.taker_index, self.order_id),
+        }
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
@@ -210,7 +242,12 @@ class Trade:
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(self.taker_index)
-        body = {"action": "take", "amount": self.take_amount, "password": password}
+        body = {
+            "action": "take",
+            "amount": self.take_amount,
+            "password": password,
+            "signature": self.action_signature("take", self.taker_index, self.order_id),
+        }
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
@@ -218,7 +255,11 @@ class Trade:
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(self.third_index)
-        body = {"action": "take", "amount": self.take_amount}
+        body = {
+            "action": "take",
+            "amount": self.take_amount,
+            "signature": self.action_signature("take", self.third_index, self.order_id),
+        }
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
@@ -272,6 +313,9 @@ class Trade:
             "action": "update_address",
             "address": signed_payout_address,
             "mining_fee_rate": 50,
+            "signature": self.action_signature(
+                "update_address", robot_index, self.order_id
+            ),
         }
         self.response = self.client.post(path + params, body, **headers)
 
@@ -293,6 +337,9 @@ class Trade:
             "action": "update_invoice",
             "invoice": signed_payout_invoice,
             "routing_budget_ppm": routing_budget,
+            "signature": self.action_signature(
+                "update_invoice", robot_index, self.order_id
+            ),
         }
 
         self.response = self.client.post(path + params, body, **headers)
@@ -302,7 +349,10 @@ class Trade:
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(robot_index)
-        body = {"action": "confirm"}
+        body = {
+            "action": "confirm",
+            "signature": self.action_signature("confirm", robot_index, self.order_id),
+        }
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)
@@ -310,7 +360,12 @@ class Trade:
         path = reverse("order")
         params = f"?order_id={self.order_id}"
         headers = self.get_robot_auth(robot_index)
-        body = {"action": "undo_confirm"}
+        body = {
+            "action": "undo_confirm",
+            "signature": self.action_signature(
+                "undo_confirm", robot_index, self.order_id
+            ),
+        }
         self.response = self.client.post(path + params, body, **headers)
 
     @patch("api.tasks.send_notification.delay", send_notification)

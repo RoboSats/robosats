@@ -660,6 +660,124 @@ def verify_signed_message(pub_key, signed_message):
         return False, None
 
 
+REQUIRE_SIGNED_ACTIONS = config("REQUIRE_SIGNED_ACTIONS", cast=bool, default=True)
+ACTION_SIGNATURE_WINDOW = 300
+
+
+def robot_recovery_url():
+    """
+    The coordinator's own address, for telling a user where they can recover
+    their robot with a client that is able to sign. HOST_NAME holds a bare
+    hostname, so the scheme is added here as it is for every other link the
+    API builds.
+    """
+    return f"http://{config('HOST_NAME')}"
+
+
+# Users already noted while enforcement is off, so the missing-signature signal
+# costs one log line per user per process instead of one per request.
+SHADOW_MODE_WARNED = set()
+
+
+def warn_shadow_mode_unsigned(user, context):
+    """
+    Notes an unsigned action while REQUIRE_SIGNED_ACTIONS is off. Shadow mode is
+    how a coordinator sizes its old-client population before turning enforcement
+    on. Without a log line the only feedback is a meter nobody reads, and the
+    flag gets flipped blind.
+    """
+    if user.pk in SHADOW_MODE_WARNED:
+        return
+
+    SHADOW_MODE_WARNED.add(user.pk)
+    logger.warning(
+        "Unsigned '%s' from user %s with REQUIRE_SIGNED_ACTIONS off "
+        "(client too old to sign?)",
+        context,
+        user.pk,
+    )
+
+
+def validate_action_signature(user, expected_content, signature):
+    """
+    Validates the detached signature of an order action. The signature must be
+    a valid cleartext PGP signature made with the robot's private key and its
+    content must equal `expected_content`. The Robot row is always fetched
+    fresh from the database.
+    """
+    if not REQUIRE_SIGNED_ACTIONS:
+        if not signature:
+            warn_shadow_mode_unsigned(user, "order action")
+        return True, None
+
+    if not signature:
+        # A missing signature is a different problem from a bad one. A client
+        # too old to sign sends none at all, and only that user can fix it, so
+        # the answer has to be an instruction rather than a description. It
+        # also keeps 1048 meaning exactly one thing: a signature that failed to
+        # verify.
+        return False, new_error(1059, {"recover_url": robot_recovery_url()})
+
+    public_key = Robot.objects.get(user=user).public_key
+    valid, content = verify_signed_message(public_key, signature)
+    if not valid or content != expected_content:
+        return False, new_error(1048)
+
+    return True, None
+
+
+def validate_signed_action_timestamp(user, action, signature):
+    """
+    Validates the detached signature of an action outside an order context.
+    The signed content must be '{action}:{short_alias}:{unix_ts}' where
+    short_alias is this coordinator's federation alias, and the embedded
+    timestamp must be within ACTION_SIGNATURE_WINDOW seconds of server time.
+    The coordinator binding keeps a signature captured at one coordinator from
+    being replayed at another. The Robot row is always fetched fresh from the
+    database.
+    """
+    if not REQUIRE_SIGNED_ACTIONS:
+        if not signature:
+            warn_shadow_mode_unsigned(user, action)
+        return True, None
+
+    if not signature:
+        # Same split as in validate_action_signature: no signature at all is an
+        # outdated client, not a malformed action.
+        return False, new_error(1059, {"recover_url": robot_recovery_url()})
+
+    public_key = Robot.objects.get(user=user).public_key
+    valid, content = verify_signed_message(public_key, signature)
+    if not valid:
+        return False, new_error(1048)
+
+    prefix = f"{action}:"
+    if not content.startswith(prefix):
+        return False, new_error(1048)
+
+    try:
+        signed_alias, signed_ts = content[len(prefix) :].split(":", 1)
+        signed_at = int(signed_ts)
+    except (TypeError, ValueError):
+        return False, new_error(1048)
+
+    short_alias = get_federation_short_alias()
+    if signed_alias != short_alias:
+        return False, new_error(
+            1061,
+            {"signed_for_alias": signed_alias, "coordinator_alias": short_alias},
+        )
+
+    now = datetime.now(datetime_timezone.utc).timestamp()
+    if abs(now - signed_at) > ACTION_SIGNATURE_WINDOW:
+        # A valid signature outside the window is a skewed device clock, not a
+        # malformed action. It needs its own code so the two stay tellable apart
+        # and the user is told to look at their clock.
+        return False, new_error(1060)
+
+    return True, None
+
+
 def base91_to_hex(base91_str: str) -> str:
     bytes_data = decode(base91_str)
     return bytes_data.hex()
