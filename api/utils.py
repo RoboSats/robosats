@@ -24,6 +24,7 @@ logger = logging.getLogger("api.utils")
 TOR_PROXY = config("TOR_PROXY", default="127.0.0.1:9050")
 USE_TOR = config("USE_TOR", cast=bool, default=True)
 LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+BITCOIND_RPC_TIMEOUT = 10
 
 
 def get_session():
@@ -99,7 +100,10 @@ def bitcoind_rpc(method, params=None):
         {"jsonrpc": "2.0", "id": "robosats", "method": method, "params": params}
     )
     return requests.post(
-        BITCOIND_RPCURL, auth=(BITCOIND_RPCUSER, BITCOIND_RPCPASSWORD), data=payload
+        BITCOIND_RPCURL,
+        auth=(BITCOIND_RPCUSER, BITCOIND_RPCPASSWORD),
+        data=payload,
+        timeout=BITCOIND_RPC_TIMEOUT,
     ).json()["result"]
 
 
