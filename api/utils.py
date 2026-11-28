@@ -37,6 +37,18 @@ def get_session():
     return session
 
 
+def parse_int_param(raw, error_code, error_params=None):
+    """
+    Parses a raw query-string value as an integer.
+    Returns (value, None) on success, or (None, new_error payload) when the
+    value is missing or not a valid integer literal.
+    """
+    try:
+        return int(raw), None
+    except (TypeError, ValueError):
+        return None, new_error(error_code, error_params)
+
+
 _FEDERATION_BUNDLED_PATH = os.path.join(os.path.dirname(__file__), "federation.json")
 
 
