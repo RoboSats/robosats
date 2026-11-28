@@ -159,11 +159,12 @@ they mutate — see `api/AGENTS.md` for the endpoint/state-machine context)
 
 ## Admin actions (`admin.py`) — money-moving, bypass `Logics`
 `OrderAdmin.actions`: `cancel_public_order` (PUB/PAU → `return_bond(maker_bond)`, status
-`UCA`), `maker_wins`/`taker_wins` (DIS/WFR only — credit the winner via a **raw
-assignment** `robot.earned_rewards = own_bond_sats + trade_sats`, set loser's status to
+`UCA`), `maker_wins`/`taker_wins` (DIS/WFR only — credit the winner by adding
+`own_bond_sats + trade_sats` to `earned_rewards` through `credit_rewards` (an atomic `F()`
+increment that keeps any existing balance), set loser's status to
 `TLD`/`MLD`), `return_everything` (DIS/WFR — adds all three bond/escrow sat amounts back to
-each sender's `earned_rewards`, status `CCA`), `successful_trade` (DIS/WFR — **overwrites**,
-not adds to, `earned_rewards` for both sides, then calls `Logics.pay_buyer`),
+each sender's `earned_rewards`, status `CCA`), `successful_trade` (DIS/WFR — adds each
+bond to that side's `earned_rewards`, then calls `Logics.pay_buyer`),
 `compute_median_trade_time` (reporting only, no mutation). None of these call through
 `Logics`'s bond/escrow guard methods — a change here is a direct field write moving funds.
 
