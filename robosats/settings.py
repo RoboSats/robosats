@@ -15,7 +15,7 @@ import json
 import textwrap
 from pathlib import Path
 
-from decouple import config
+from decouple import Csv, config
 
 from .celery.conf import *  # noqa
 
@@ -310,4 +310,4 @@ INVOICE_AND_ESCROW_DURATION = 180
 FIAT_EXCHANGE_DURATION = 24
 
 # The name of the request header used for CSRF authentication.
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')], default=[])
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", cast=Csv(), default="")
