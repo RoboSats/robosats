@@ -44,8 +44,23 @@ i18next setup with two entry points: `Web.js` (HTTP-fetched locales, used by web
 - `Settings.model.ts`'s `Language` union **duplicates `'pl'` and omits `'ja'`** — `ja` locale ships and resolves at runtime but is not a valid `Language` TS type. Typed `Language` fields will reject `'ja'` at compile time.
 - `zh-SI` and `zh-TR` are non-standard locale codes (simplified/traditional Chinese) — do not normalise them to `zh-CN`/`zh-TW` without updating all locale JSON filenames and import paths.
 
+## Version requirements (i18next 27 / react-i18next 18)
+
+Upgraded in Nov 2026. The two packages are version-coupled: react-i18next 18 requires i18next ≥ 27.
+
+Key behaviour changes that affect this codebase:
+
+- **`fallbackLng` must remain `'en'`** — i18next 27 defaults to `false` (no fallback); we set `'en'` explicitly and must keep it.
+- **`returnEmptyString: false` is the new default** — zero empty values in any locale file, so this is a no-op for us; do not add empty-string translation values without setting `returnEmptyString: true`.
+- **`Trans` always decodes HTML entities regardless of `escapeValue`** — we use `escapeValue: false` and no locale string contains HTML entities, so no change.
+- **`keySeparator: false` now means strictly flat** — v27 fixed a bug where the string `'false'` was used as a separator character. Our flat keys are unaffected, but nested keys would silently break if `keySeparator` were removed.
+- **react-i18next 18 requires React ≥ 18** — we use React 19; fine. Node ≥ 22 is also required; CI and `frontend/Dockerfile` pin Node 22.
+- **`use-sync-external-store` dependency removed** — react-i18next 18 uses React's built-in `useSyncExternalStore`; do not add it back as a direct dependency.
+- **`icu.macro` removed** — not used in this codebase.
+
 ## Constraints
 
 - New locale: add JSON to `static/locales/` AND add static import to `Mobile.js` — both together, atomically.
 - Do not change `keySeparator` from `false` — all existing keys are flat strings; changing would break every translation lookup.
 - Do not enable `react.useSuspense` without adding Suspense boundaries around all i18n-consuming components.
+- Do not set `fallbackLng` to anything other than `'en'` — removing it causes i18next 27 to default to `false`, which silently leaves unsupported languages with no fallback.
