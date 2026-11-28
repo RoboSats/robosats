@@ -85,6 +85,10 @@ Old ephemeral-token flow. **Read-only for ongoing trades** — `/offers` and `/c
 
 Legacy keys are only for recovering robots from trades created prior the migration. Legacy robots can't take or create orders anymore.
 
+## `Robot.fetch` — Nostr pubkey
+
+`Slot` derives every robot's `nostrPubKey` from its token and `getAuthHeaders` sends it to the coordinator. `Robot.fetch` takes the coordinator's stored `nostr_pubkey` only when it passes `utils/nostrPubkey.ts:isValidNostrPubkey`. The backend stores `'0' * 64` for robots whose key was unknown or corrupted and replaces it with a valid key from the `Authorization` header on the 2-minute `last_login` refresh (`robosats/middleware.py`). Copying the placeholder into the robot made it send the placeholder back, so the coordinator could not repair the key while the app stayed open.
+
 ## `Order.Status` — 19 values (mirrors backend)
 
 `WFB(0) PUB(1) PAU(2) TAK(3) UCA(4) EXP(5) WF2(6) WFE(7) WFI(8) CHA(9) FSE(10) DIS(11) CCA(12) PAY(13) SUC(14) FAI(15) WFR(16) MLD(17) TLD(18)` — must stay in sync with `api/models/order.py`. See `api/models/AGENTS.md` for the full state machine.

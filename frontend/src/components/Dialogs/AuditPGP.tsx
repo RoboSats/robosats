@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 
 import { saveAsJson } from '../../utils';
+import { toNpub } from '../../utils/nostrPubkey';
 import { systemClient } from '../../services/System';
 
 // Icons
@@ -256,7 +257,7 @@ const AuditPGPDialog = ({
                 'Your nostr public key. Your peer uses it to encrypt messages only you can read.',
               )}
               label={t('Your public key')}
-              value={nip19.npubEncode(slot?.nostrPubKey ?? '')}
+              value={toNpub(slot?.nostrPubKey)}
               copiedTitle={t('Copied!')}
             />
 
@@ -266,9 +267,7 @@ const AuditPGPDialog = ({
                   'Your peer nostr public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.',
                 )}
                 label={t('Peer public key')}
-                value={nip19.npubEncode(
-                  order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
-                )}
+                value={toNpub(order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey)}
                 copiedTitle={t('Copied!')}
               />
             )}
@@ -298,12 +297,12 @@ const AuditPGPDialog = ({
                     variant='contained'
                     onClick={() => {
                       const object: Record<string, string> = {
-                        own_public_key: nip19.npubEncode(slot?.nostrPubKey ?? ''),
+                        own_public_key: toNpub(slot?.nostrPubKey),
                         private_key: slot?.nostrSecKey ? nip19.nsecEncode(slot?.nostrSecKey) : '',
                       };
 
                       if (order) {
-                        object['peer_public_key'] = nip19.npubEncode(
+                        object['peer_public_key'] = toNpub(
                           order.is_maker ? order.taker_nostr_pubkey : order.maker_nostr_pubkey,
                         );
                       }
