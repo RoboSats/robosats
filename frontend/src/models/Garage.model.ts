@@ -36,7 +36,7 @@ interface StoredSlot {
   lastOrder?: Partial<Order> & { id?: number };
   activeOrder?: Partial<Order> & { id?: number };
   lastOrderStatusKnown?: boolean;
-  legacy?: boolean;
+  accountIndex?: number;
 }
 
 const hasStoredOrderDetails = (
@@ -140,7 +140,6 @@ class Garage {
             () => {
               this.triggerHook('onSlotUpdate');
             },
-            rawSlot.legacy ?? true,
           );
           if (rawSlot.lastOrder?.id) {
             this.slots[rawSlot.token].lastOrder = new Order(rawSlot.lastOrder);
@@ -151,6 +150,9 @@ class Garage {
           }
           if (rawSlot.activeOrder?.id) {
             this.slots[rawSlot.token].activeOrder = new Order(rawSlot.activeOrder);
+          }
+          if (typeof rawSlot.accountIndex === 'number') {
+            this.slots[rawSlot.token].accountIndex = rawSlot.accountIndex;
           }
         }
       });
@@ -165,14 +167,31 @@ class Garage {
   // Slots
   getSlot: (token?: string) => Slot | null = (token) => {
     const currentToken = token ?? this.currentSlot;
-    return currentToken ? (this.slots[currentToken] ?? null) : null;
+    return currentToken && Object.hasOwn(this.slots, currentToken)
+      ? this.slots[currentToken]
+      : null;
   };
 
   deleteSlot: (token?: string) => void = (token) => {
     const targetIndex = token ?? this.currentSlot;
     if (targetIndex) {
       Reflect.deleteProperty(this.slots, targetIndex);
-      this.currentSlot = Object.keys(this.slots)[0] ?? null;
+      const nextToken = Object.keys(this.slots)[0] ?? null;
+      this.currentSlot = nextToken;
+      if (nextToken) {
+        const nextSlot = this.getSlot(nextToken);
+        if (this.garageKey && nextSlot) {
+          if (nextSlot.accountIndex !== null && nextSlot.accountIndex !== undefined) {
+            this.garageKey.setAccountIndex(nextSlot.accountIndex);
+          } else {
+            const derivedIndex = this.inferAccountIndex(nextToken);
+            if (derivedIndex !== null) {
+              nextSlot.accountIndex = derivedIndex;
+              this.garageKey.setAccountIndex(derivedIndex);
+            }
+          }
+        }
+      }
       this.save();
       this.triggerHook('onSlotUpdate');
     }
@@ -180,8 +199,31 @@ class Garage {
 
   setCurrentSlot: (currentSlot: string) => void = (currentSlot) => {
     this.currentSlot = currentSlot;
+    const slot = this.getSlot(currentSlot);
+    if (this.garageKey && slot) {
+      if (slot.accountIndex !== null && slot.accountIndex !== undefined) {
+        this.garageKey.setAccountIndex(slot.accountIndex);
+      } else {
+        const derivedIndex = this.inferAccountIndex(currentSlot);
+        if (derivedIndex !== null) {
+          slot.accountIndex = derivedIndex;
+          this.garageKey.setAccountIndex(derivedIndex);
+        }
+      }
+    }
     this.save();
     this.triggerHook('onSlotUpdate');
+  };
+
+  inferAccountIndex = (token: string): number | null => {
+    if (!this.garageKey) return null;
+    const searchLimit = Math.max(this.garageKey.currentAccountIndex + 1, 1);
+    for (let i = 0; i < searchLimit; i++) {
+      if (this.garageKey.deriveRobotToken(i) === token) {
+        return i;
+      }
+    }
+    return null;
   };
 
   resetManualNavigation = (): void => {
@@ -225,6 +267,10 @@ class Garage {
         toIndex: currentIndex,
         reason: 'active_order',
       };
+    }
+
+    if (currentSlot.loading) {
+      await currentSlot.fetchRobot(federation);
     }
 
     await currentSlot.ensureLastOrderStatus(federation);
@@ -272,40 +318,35 @@ class Garage {
   };
 
   // Robots
-  createRobot: (
-    federation: Federation,
-    token: string,
-    skipSelect?: boolean,
-    legacy?: boolean,
-  ) => Promise<void> = async (federation, token, skipSelect, legacy = true) => {
-    if (!token) return;
+  createRobot: (federation: Federation, token: string, skipSelect?: boolean) => Promise<void> =
+    async (federation, token, skipSelect) => {
+      if (!token) return;
 
-    if (this.getSlot(token) === null) {
-      try {
-        const key = await genKey(token);
-        const robotAttributes = {
-          token,
-          pubKey: key.publicKeyArmored,
-          encPrivKey: key.encryptedPrivateKeyArmored,
-        };
+      if (this.getSlot(token) === null) {
+        try {
+          const key = await genKey(token);
+          const robotAttributes = {
+            token,
+            pubKey: key.publicKeyArmored,
+            encPrivKey: key.encryptedPrivateKeyArmored,
+          };
 
-        this.slots[token] = new Slot(
-          token,
-          federation.getCoordinatorsAlias(),
-          robotAttributes,
-          () => {
-            this.triggerHook('onSlotUpdate');
-          },
-          legacy,
-        );
-        if (!skipSelect) this.setCurrentSlot(token);
-        await this.fetchRobot(federation, token);
-        this.save();
-      } catch (error) {
-        console.error('Error:', error);
+          this.slots[token] = new Slot(
+            token,
+            federation.getCoordinatorsAlias(),
+            robotAttributes,
+            () => {
+              this.triggerHook('onSlotUpdate');
+            },
+          );
+          if (!skipSelect) this.setCurrentSlot(token);
+          await this.fetchRobot(federation, token);
+          this.save();
+        } catch (error) {
+          console.error('Error:', error);
+        }
       }
-    }
-  };
+    };
 
   fetchRobot = async (federation: Federation, token: string): Promise<void> => {
     const slot = this.getSlot(token);
@@ -365,6 +406,13 @@ class Garage {
     });
     if (this.garageKey) {
       console.log('Garage Key was loaded from local storage');
+      const currentSlotToken = this.currentSlot;
+      if (currentSlotToken) {
+        const currentSlot = this.getSlot(currentSlotToken);
+        if (currentSlot?.accountIndex !== null && currentSlot?.accountIndex !== undefined) {
+          this.garageKey.setAccountIndex(currentSlot.accountIndex);
+        }
+      }
       this.triggerHook('onSlotUpdate');
     }
   };
@@ -404,9 +452,21 @@ class Garage {
       this.setCurrentSlot(token);
       await this.fetchRobot(federation, token);
     } else {
-      await this.createRobot(federation, token, undefined, false);
+      await this.createRobot(federation, token);
     }
-    await this.getSlot(token)?.ensureLastOrderStatus(federation);
+
+    if (this.currentSlot !== token) return;
+
+    const slot = this.getSlot(token);
+    if (slot) slot.accountIndex = index;
+    await slot?.fetchActiveOrder(federation);
+
+    if (this.currentSlot !== token) return;
+
+    await slot?.ensureLastOrderStatus(federation);
+
+    if (this.currentSlot !== token) return;
+
     this.setCurrentSlot(token);
   };
 
@@ -476,6 +536,14 @@ class Garage {
     }
   };
 
+  generateRobot = async (federation: Federation): Promise<void> => {
+    if (!this.garageKey) {
+      this.setMode('garageKey');
+      this.setGarageKey(new GarageKey('generate'));
+    }
+    await this.createRobotFromGarageKey(federation, undefined, true);
+  };
+
   makeOrderWithRecovery = async (federation: Federation, attributes: object): Promise<Order> => {
     const slot = this.getSlot();
     if (!slot) {
@@ -517,6 +585,10 @@ class Garage {
 
       if (!existingSlot) {
         return i;
+      }
+
+      if (existingSlot.loading) {
+        await existingSlot.fetchRobot(federation);
       }
 
       await existingSlot.ensureLastOrderStatus(federation);

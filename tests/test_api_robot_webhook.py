@@ -6,11 +6,14 @@ Tests the webhook configuration functionality:
 - Validation: webhook_url must be .onion
 """
 
+import time
 from unittest.mock import patch
 
 from django.urls import reverse
 
+from api.utils import get_federation_short_alias
 from tests.test_api import BaseAPITestCase
+from tests.utils.pgp import sign_action
 
 
 def read_file(file_path):
@@ -64,6 +67,10 @@ class RobotWebhookAPITest(BaseAPITestCase):
         update_data = {
             "webhook_url": "http://test123abc.onion/webhook",
             "webhook_api_key": "my-secret-key",
+            "signature": sign_action(
+                f"robot:{get_federation_short_alias()}:{int(time.time())}",
+                self.robot_index,
+            ),
         }
 
         response = self.client.put(
@@ -82,7 +89,13 @@ class RobotWebhookAPITest(BaseAPITestCase):
         path = reverse("robot")
         headers = self.get_robot_auth()
 
-        update_data = {"webhook_api_key": "test-key"}
+        update_data = {
+            "webhook_api_key": "test-key",
+            "signature": sign_action(
+                f"robot:{get_federation_short_alias()}:{int(time.time())}",
+                self.robot_index,
+            ),
+        }
 
         response = self.client.put(
             path, data=update_data, content_type="application/json", **headers
@@ -115,7 +128,13 @@ class RobotWebhookAPITest(BaseAPITestCase):
         headers = self.get_robot_auth()
 
         test_url = "http://testwebhook.onion/notify"
-        update_data = {"webhook_url": test_url}
+        update_data = {
+            "webhook_url": test_url,
+            "signature": sign_action(
+                f"robot:{get_federation_short_alias()}:{int(time.time())}",
+                self.robot_index,
+            ),
+        }
 
         response = self.client.put(
             path, data=update_data, content_type="application/json", **headers
@@ -123,3 +142,22 @@ class RobotWebhookAPITest(BaseAPITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
+
+    def test_robot_put_rejects_foreign_coordinator_signature(self):
+        """A signature made for another coordinator is rejected with 1061."""
+        path = reverse("robot")
+        headers = self.get_robot_auth()
+
+        update_data = {
+            "webhook_api_key": "test-key",
+            "signature": sign_action(
+                f"robot:other:{int(time.time())}", self.robot_index
+            ),
+        }
+
+        response = self.client.put(
+            path, data=update_data, content_type="application/json", **headers
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1061)

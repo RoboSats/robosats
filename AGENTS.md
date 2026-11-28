@@ -70,6 +70,19 @@ Bitcoin P2P Lightning exchange. Users trade fiat for sats through a coordinator 
   The only acceptable comments are TODOs that reference a tracked issue and
   pre-existing comments in code you did not author in the current task.
 
+## Testing
+
+Every branch that adds or changes behaviour **must ship tests covering that change in the same branch** — never deferred to a follow-up.
+
+- **Backend — unit (mocked):** `api/tests/` for logic, utils, serializers, tasks, notifications. See `api/tests/AGENTS.md` for the patch-at-source convention and existing file map.
+- **Backend — integration:** `/tests/` for any endpoint change, order state-machine path, or Lightning/escrow flow. `assertResponse` schema validation is mandatory for every new endpoint test. See `tests/AGENTS.md` for setup and utilities.
+- **Frontend — unit:** Jest tests colocated in `__tests__/` next to the module under test (`src/models/`, `src/utils/`, `src/services/`). Run with `npm test`. See `frontend/AGENTS.md` for the Jest environment constraints and mock conventions.
+- **Exemptions** (no tests required): pure documentation edits, comment-only changes, AGENTS.md updates, config-only changes with zero behaviour delta. State the exemption reason explicitly in the PR description.
+
+### Coverage
+
+Every branch that adds or changes behaviour is expected to maintain or improve coverage. Run `npm test` (frontend) and `coverage run manage.py test && coverage report` (backend) locally before opening a PR to confirm no regression.
+
 ## Gotchas
 
 - Modifications to api endpoint paths or coordinators requires updating /nodeapp

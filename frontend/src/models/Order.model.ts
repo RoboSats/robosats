@@ -1,4 +1,5 @@
 import { apiClient } from '../services/api';
+import { orderActionContent, signAction, timedActionContent } from '../utils/actionSignature';
 import type Federation from './Federation.model';
 import type Slot from './Slot.model';
 
@@ -217,10 +218,17 @@ class Order {
     if (slot) {
       const coordinator = federation.getCoordinator(this.shortAlias);
       if (!coordinator || !coordinator.url) return this;
-      const authHeaders = slot.getRobot()?.getAuthHeaders();
+      const robot = slot.ensureRobot(federation, this.shortAlias);
+      if (!robot) return this;
+      const authHeaders = robot.getAuthHeaders();
       if (!authHeaders) return this;
+      const signature = await signAction(
+        timedActionContent('make', this.shortAlias),
+        robot.encPrivKey,
+        robot.token,
+      );
       const data = await apiClient
-        .post(coordinator.url, '/api/make/', body, authHeaders)
+        .post(coordinator.url, '/api/make/', { ...body, signature }, authHeaders)
         .catch((e) => {
           console.log(e);
         });
@@ -249,10 +257,22 @@ class Order {
       if (slot) {
         const coordinator = federation.getCoordinator(this.shortAlias);
         if (!coordinator || !coordinator.url) return this;
+        const robot = slot.ensureRobot(federation, this.shortAlias);
+        if (!robot) return this;
+        const signature = await signAction(
+          orderActionContent(action.action, Number(this.id), this.shortAlias),
+          robot.encPrivKey,
+          robot.token,
+        );
         const data = await apiClient
-          .post(coordinator.url, `/api/order/?order_id=${Number(this.id)}`, action, {
-            tokenSHA256: slot?.getRobot()?.tokenSHA256 ?? '',
-          })
+          .post(
+            coordinator.url,
+            `/api/order/?order_id=${Number(this.id)}`,
+            { ...action, signature },
+            {
+              tokenSHA256: robot.tokenSHA256,
+            },
+          )
           .catch((e) => {
             console.log(e);
           });
@@ -267,7 +287,7 @@ class Order {
 
     const coordinator = federation.getCoordinator(this.shortAlias);
     if (!coordinator || !coordinator.url) return this;
-    const authHeaders = slot.getRobot()?.getAuthHeaders();
+    const authHeaders = slot.ensureRobot(federation, this.shortAlias)?.getAuthHeaders();
     if (!authHeaders) return this;
     const data = await apiClient
       .get(coordinator.url, `/api/order/?order_id=${this.id}`, authHeaders)

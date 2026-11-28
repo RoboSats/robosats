@@ -25,6 +25,14 @@ class RoboidentitiesAndroidClient implements RoboidentitiesClient {
     }
   };
 
+  public getRobohashFromCache = (
+    initialString: string,
+    size: 'small' | 'large',
+  ): string | undefined => {
+    const key = `${initialString};${size === 'small' ? 80 : 256}`;
+    return this.robohashes[key];
+  };
+
   public generateRobohash: (initialString: string, size: 'small' | 'large') => Promise<string> =
     async (initialString, size) => {
       const key = `${initialString};${size === 'small' ? 80 : 256}`;

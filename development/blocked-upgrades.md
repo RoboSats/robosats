@@ -96,6 +96,20 @@ publish releases that declare Django 6.1 support.
 
 ## Infrastructure
 
+### Gradle — pinned at `8.13` (android wrapper)
+
+**File**: `android/gradle/wrapper/gradle-wrapper.properties`
+
+**Current**: `8.13`
+**Blocker**: Java 24 support requires Gradle 8.14; Java 25 requires Gradle 9.1. The
+`ubuntu-latest` GitHub Actions runner switched to Ubuntu 26.04 in November 2026, making
+JDK 25 the new default. CI now pins Temurin 17 via `actions/setup-java@v6` to work
+around this. Upgrading the Gradle wrapper to 9.1+ would allow removing that pin and
+using the runner's default JDK, but needs a compatibility audit of AGP and Kotlin plugin
+versions first (Gradle 9.x ships with Kotlin 2.2.0+ and requires AGP 9.0+).
+
+---
+
 ### CLN (Core Lightning) — hard version cap at `≤ v25.09.x`
 
 **Component**: `docker/cln/plugins/holdinvoice` binary

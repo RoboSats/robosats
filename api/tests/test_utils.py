@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 from datetime import timedelta
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
@@ -14,6 +15,7 @@ from django.utils import timezone
 
 from api.models import Robot
 from api.mempool import _fetch_mempool_fees
+from api import utils as api_utils
 from api.utils import (
     base91_to_hex,
     bitcoind_rpc,
@@ -29,8 +31,10 @@ from api.utils import (
     render_order_logs,
     mining_fee,
     robosats_commit_cache,
+    validate_action_signature,
     validate_onchain_address,
     validate_pgp_keys,
+    validate_signed_action_timestamp,
     verify_signed_message,
     weighted_median,
 )
@@ -613,3 +617,242 @@ class TestGetFederationShortAlias(TestCase):
     def test_empty_alias_returns_empty(self, mock_config):
         self._patch_config(mock_config, "", "")
         self.assertEqual(get_federation_short_alias(), "")
+
+
+class ValidateActionSignatureTest(TestCase):
+    def setUp(self):
+        robot = MagicMock()
+        robot.public_key = "pub_key_block"
+        patcher = patch("api.utils.Robot.objects.get", return_value=robot)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _user(self):
+        return MagicMock()
+
+    def test_disabled_flag_allows_unsigned(self):
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", False):
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+
+    def test_missing_signature_returns_client_outdated(self):
+        # "No signature at all" and "signature failed to verify" are different
+        # problems with different fixes, so they must not share an error code.
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", True):
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1059)
+
+    def test_outdated_client_is_pointed_at_the_coordinator(self):
+        # Outdated clients render this message as-is, so the address in it is
+        # the entire fix for those users and has to survive rendering.
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch.dict(os.environ, {"HOST_NAME": "test.onion"}),
+        ):
+            _, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertIn("outdated client", error["bad_request"])
+        self.assertIn("recover your robot", error["bad_request"])
+        self.assertIn("http://test.onion", error["bad_request"])
+
+    def test_shadow_mode_notes_unsigned_once_per_user(self):
+        user = self._user()
+        api_utils.SHADOW_MODE_WARNED.clear()
+        self.addCleanup(api_utils.SHADOW_MODE_WARNED.clear)
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", False),
+            self.assertLogs("api.utils", level="WARNING") as logged,
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+            valid, error = validate_action_signature(user, "confirm:1:alias", None)
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+        self.assertEqual(len(logged.output), 1)
+
+    def test_invalid_signature_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(False, None),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_content_mismatch_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "cancel:1:alias"),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_foreign_alias_is_content_mismatch(self):
+        # Order actions get the alias binding from the expected content built
+        # by the view, so a signature for another coordinator is just a
+        # mismatch (1048). The dedicated 1061 belongs to the timestamped
+        # helper, which rebuilds no expected content of its own.
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "confirm:1:other"),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_valid_signature_accepted(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "confirm:1:alias"),
+            ),
+        ):
+            valid, error = validate_action_signature(user, "confirm:1:alias", "sig")
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+
+
+class ValidateSignedActionTimestampTest(TestCase):
+    def setUp(self):
+        robot = MagicMock()
+        robot.public_key = "pub_key_block"
+        patcher = patch("api.utils.Robot.objects.get", return_value=robot)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        alias_patcher = patch(
+            "api.utils.get_federation_short_alias", return_value="robosats"
+        )
+        alias_patcher.start()
+        self.addCleanup(alias_patcher.stop)
+
+    def _user(self):
+        return MagicMock()
+
+    def test_disabled_flag_allows_unsigned(self):
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", False):
+            valid, error = validate_signed_action_timestamp(user, "make", None)
+        self.assertTrue(valid)
+        self.assertIsNone(error)
+
+    def test_missing_signature_returns_client_outdated(self):
+        user = self._user()
+        with patch("api.utils.REQUIRE_SIGNED_ACTIONS", True):
+            valid, error = validate_signed_action_timestamp(user, "make", None)
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1059)
+
+    def test_invalid_signature_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(False, None),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_wrong_action_prefix_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "stealth:robosats:1700000000"),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_non_integer_timestamp_rejected(self):
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "make:robosats:not-a-number"),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_missing_alias_segment_rejected(self):
+        # A signature without the coordinator segment comes from a client that
+        # predates the alias binding. It does not match the expected content,
+        # so it is a signature failure (1048), not a foreign-coordinator one.
+        user = self._user()
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch(
+                "api.utils.verify_signed_message",
+                return_value=(True, "make:1700000000"),
+            ),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1048)
+
+    def test_foreign_alias_rejected_with_own_code(self):
+        # A signature valid for another coordinator is the replay of a captured
+        # request. Neither a malformed signature (1048) nor a skewed clock
+        # (1060), it gets its own code and names both coordinators.
+        user = self._user()
+        fresh = f"make:other:{int(time.time())}"
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch("api.utils.verify_signed_message", return_value=(True, fresh)),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1061)
+        self.assertIn("other", error["bad_request"])
+        self.assertIn("robosats", error["bad_request"])
+
+    def test_expired_timestamp_returns_clock_skew(self):
+        # A signature that verifies but falls outside the window is a device
+        # with a skewed clock. The human needs "fix your clock", and it must
+        # not be counted among the signature failures.
+        user = self._user()
+        stale = "make:robosats:1000000000"
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch("api.utils.verify_signed_message", return_value=(True, stale)),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertFalse(valid)
+        self.assertEqual(error["error_code"], 1060)
+
+    def test_fresh_timestamp_accepted(self):
+        user = self._user()
+        fresh = f"make:robosats:{int(time.time())}"
+        with (
+            patch("api.utils.REQUIRE_SIGNED_ACTIONS", True),
+            patch("api.utils.verify_signed_message", return_value=(True, fresh)),
+        ):
+            valid, error = validate_signed_action_timestamp(user, "make", "sig")
+        self.assertTrue(valid)
+        self.assertIsNone(error)

@@ -17,6 +17,7 @@ A safe and very private way to access RoboSats federated client is through the O
 >
 [<b>RoboSats</b>y56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion](http://robosatsy56bwqn56qyadmcxkx767hnabg4mihxlmgyt6if5gnuxvzad.onion/)
 
+If this address doesn't load, you can use any federation coordinator's own onion address instead, since they all serve the same client. The current list is in [federation.json](https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/federation.json): use the `onion` address listed under each coordinator's `mainnet` entry.
 
 **Private:** Your connection is encrypted end-to-end and relaid by several layers of nodes, thus making tracking harder.
 {: .notice--primary}

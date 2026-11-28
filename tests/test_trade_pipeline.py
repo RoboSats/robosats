@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from unittest.mock import patch
@@ -16,11 +17,12 @@ from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
 from tests.utils.node import add_invoice, set_up_regtest_network
-from tests.utils.pgp import sign_message
+from tests.utils.pgp import sign_action, sign_message
 from tests.utils.trade import Trade, maker_form_buy_with_range
 
 from api.admin import OrderAdmin
 from api.logics import Logics
+from api.utils import get_federation_short_alias
 
 
 def read_file(file_path):
@@ -1857,7 +1859,10 @@ class TradeTest(BaseAPITestCase):
 
     def test_order_expires_after_only_taker_messaged(self):
         """
-        Tests the expiration of an order in chat where maker never messaged
+        Tests that an order that expires in chat where only the taker messaged
+        opens a full dispute. Chat now runs over Nostr so coordinator Message
+        rows are not a reliable signal — auto-resolution based on chat history
+        is removed and every timeout-dispute goes through the full DIS path.
         """
         trade = Trade(self.client)
         trade.publish_order()
@@ -1890,11 +1895,8 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
-        # Verify taker lost dispute automatically
-        self.assertEqual(
-            data["status"],
-            Order.Status.MLD,
-        )
+        self.assertEqual(data["status"], Order.Status.DIS)
+        self.assertTrue(data["is_disputed"])
 
         self.assert_order_logs(data["id"])
 
@@ -1919,7 +1921,10 @@ class TradeTest(BaseAPITestCase):
 
     def test_order_expires_after_only_maker_messaged(self):
         """
-        Tests the expiration of an order in chat where taker never messaged
+        Tests that an order that expires in chat where only the maker messaged
+        opens a full dispute. Chat now runs over Nostr so coordinator Message
+        rows are not a reliable signal — auto-resolution based on chat history
+        is removed and every timeout-dispute goes through the full DIS path.
         """
         trade = Trade(self.client)
         trade.publish_order()
@@ -1930,11 +1935,11 @@ class TradeTest(BaseAPITestCase):
         trade.submit_payout_invoice(trade.maker_index)
 
         path = reverse("chat")
-        message = "Unencrypted message from taker"
+        message = "Unencrypted message from maker"
         params = f"?order_id={trade.order_id}"
         maker_headers = trade.get_robot_auth(trade.maker_index)
 
-        # Post new message as taker
+        # Post new message as maker
         body = {"PGP_message": message, "order_id": trade.order_id}
         self.client.post(path + params, data=body, **maker_headers)
 
@@ -1952,11 +1957,8 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
-        # Verify taker lost dispute automatically
-        self.assertEqual(
-            data["status"],
-            Order.Status.TLD,
-        )
+        self.assertEqual(data["status"], Order.Status.DIS)
+        self.assertTrue(data["is_disputed"])
 
         self.assert_order_logs(data["id"])
 
@@ -2308,10 +2310,10 @@ class TradeTest(BaseAPITestCase):
 
     def test_order_expires_after_undo_confirm_fiat_sent(self):
         """
-        Tests that automatic dispute resolution is blocked when fiat was marked
-        sent and then reverted (undo_confirm). The fix for security issue F2
-        ensures that reverted_fiat_sent=True prevents auto-resolution even if
-        the taker never messaged, so the order must enter full DIS status.
+        Tests that an order that expires in CHA after fiat-sent was confirmed
+        and then reverted enters full DIS status. reverted_fiat_sent=True is
+        irrelevant now that auto-resolution is gone, but the expected outcome
+        (full coordinator-custody dispute) is unchanged.
         """
         trade = Trade(self.client)
         trade.publish_order()
@@ -2341,7 +2343,7 @@ class TradeTest(BaseAPITestCase):
         order.expires_at = datetime.now()
         order.save()
 
-        # Make orders expire — this calls open_dispute → automatic_dispute_resolution
+        # Make orders expire — open_dispute opens a full coordinator-custody dispute
         trade.clean_orders()
 
         trade.get_order()
@@ -2350,13 +2352,7 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(trade.response.status_code, 200)
         self.assertResponse(trade.response)
 
-        # The fix: reverted_fiat_sent=True must block automatic resolution,
-        # so the order must be in full DIS status (not TLD/MLD).
-        self.assertEqual(
-            data["status"],
-            Order.Status.DIS,
-            "Order with reverted_fiat_sent must enter full DIS, not be auto-resolved",
-        )
+        self.assertEqual(data["status"], Order.Status.DIS)
         self.assertTrue(data["is_disputed"])
 
         self.assert_order_logs(data["id"])
@@ -2379,6 +2375,119 @@ class TradeTest(BaseAPITestCase):
             notifications_data[0]["title"],
             f"⚖️ Hey {data['taker_nick']}, a dispute has been opened on your order with ID {str(trade.order_id)}.",
         )
+
+    def test_unsigned_order_action_is_rejected(self):
+        """
+        Order actions with no action signature at all are rejected with 1059,
+        and ones carrying a signature that fails to verify with 1048. Either
+        way the order state is left unchanged (stays in CHA, escrow is not
+        moved towards fiat-sent).
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.take_order_third()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+
+        path = reverse("order")
+        params = f"?order_id={trade.order_id}"
+        headers = trade.get_robot_auth(trade.maker_index)
+
+        # Confirm without any signature: outdated client, so 1059 not 1048
+        response = self.client.post(path + params, {"action": "confirm"}, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1059)
+
+        # Confirm signed with the wrong action content
+        body = {
+            "action": "confirm",
+            "signature": trade.action_signature(
+                "cancel", trade.maker_index, trade.order_id
+            ),
+        }
+        response = self.client.post(path + params, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
+        # Confirm signed with a foreign robot key while authenticated as the
+        # maker participant
+        body = {
+            "action": "confirm",
+            "signature": trade.action_signature(
+                "confirm", trade.third_index, trade.order_id
+            ),
+        }
+        response = self.client.post(path + params, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
+
+        # A non-participant is rejected by the participant guard before the
+        # signature is checked
+        foreign_headers = trade.get_robot_auth(trade.third_index)
+        response = self.client.post(path + params, body, **foreign_headers)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["error_code"], 1047)
+
+        order = Order.objects.get(id=trade.order_id)
+        self.assertEqual(order.status, Order.Status.CHA)
+        self.assertFalse(order.is_fiat_sent)
+
+        # A properly signed confirm still works afterwards
+        trade.confirm_fiat(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.FSE).label)
+        self.assertTrue(data["is_fiat_sent"])
+
+        self.assert_order_logs(trade.order_id)
+
+    def test_unsigned_make_is_rejected(self):
+        """
+        Order creation with no signature is rejected with 1059, one whose
+        signature is valid but stale with 1060, one signed for another
+        coordinator with 1061, and one whose signature does not verify with
+        1048.
+        """
+        path = reverse("make")
+        headers = {
+            "HTTP_AUTHORIZATION": (
+                f"Token {read_file('tests/robots/1/b91_token')}"
+                f" | Public {read_file('tests/robots/1/pub_key')}"
+                f" | Private {read_file('tests/robots/1/enc_priv_key')}"
+                f" | Nostr {read_file('tests/robots/1/nostr_pubkey')}"
+            )
+        }
+        old_ts = int(time.time()) - 3600
+
+        response = self.client.post(path, maker_form_buy_with_range, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1059)
+
+        body = {
+            **maker_form_buy_with_range,
+            "signature": sign_action(
+                f"make:{get_federation_short_alias()}:{old_ts}", 1
+            ),
+        }
+        response = self.client.post(path, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1060)
+
+        body = {
+            **maker_form_buy_with_range,
+            "signature": sign_action(f"make:other:{int(time.time())}", 1),
+        }
+        response = self.client.post(path, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1061)
+
+        body = {**maker_form_buy_with_range, "signature": "not a signature"}
+        response = self.client.post(path, body, **headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_code"], 1048)
 
     def test_dispute_records_order_id_in_robot(self):
         """
@@ -2404,7 +2513,13 @@ class TradeTest(BaseAPITestCase):
 
         params = f"?order_id={trade_a.order_id}"
         headers = trade_a.get_robot_auth(trade_a.maker_index)
-        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        dispute_body = {
+            "action": "dispute",
+            "signature": trade_a.action_signature(
+                "dispute", trade_a.maker_index, trade_a.order_id
+            ),
+        }
+        response = self.client.post(path + params, dispute_body, **headers)
         self.assertEqual(response.status_code, 200)
 
         order_a = Order.objects.get(id=trade_a.order_id)
@@ -2440,7 +2555,13 @@ class TradeTest(BaseAPITestCase):
 
         params = f"?order_id={trade_b.order_id}"
         headers = trade_b.get_robot_auth(trade_b.maker_index)
-        response = self.client.post(path + params, {"action": "dispute"}, **headers)
+        dispute_body = {
+            "action": "dispute",
+            "signature": trade_b.action_signature(
+                "dispute", trade_b.maker_index, trade_b.order_id
+            ),
+        }
+        response = self.client.post(path + params, dispute_body, **headers)
         self.assertEqual(response.status_code, 200)
 
         order_b = Order.objects.get(id=trade_b.order_id)

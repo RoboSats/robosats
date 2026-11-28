@@ -7,7 +7,6 @@ import { roboidentitiesClient } from '../services/Roboidentities/Web';
 import hexToBase91 from '../utils/hexToBase91';
 import { validateTokenEntropy } from '../utils/token';
 import { getPublicKey } from 'nostr-tools';
-import { deriveCoordinatorToken } from '../utils/garageKey';
 
 class Slot {
   constructor(
@@ -15,11 +14,9 @@ class Slot {
     shortAliases: string[],
     robotAttributes: object,
     onSlotUpdate: () => void,
-    legacy: boolean = true,
   ) {
     this.onSlotUpdate = onSlotUpdate;
     this.token = token;
-    this.legacy = legacy;
 
     this.hashId = sha256(sha256(this.token));
     this.nickname = null;
@@ -32,8 +29,7 @@ class Slot {
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
-    const sharedTokenSHA256Hex = sha256(token);
-    const sharedTokenSHA256 = hexToBase91(sharedTokenSHA256Hex);
+    const tokenSHA256 = hexToBase91(sha256(token));
 
     const tokenBytes = new TextEncoder().encode(this.token ?? '');
     const nostrSecKey = sha256Hash(sha512(tokenBytes));
@@ -42,18 +38,6 @@ class Slot {
     this.nostrPubKey = nostrPubKey;
 
     this.robots = shortAliases.reduce((acc: Record<string, Robot>, shortAlias: string) => {
-      let tokenSHA256: string;
-      let tokenSHA256Hex: string;
-
-      if (legacy) {
-        tokenSHA256 = sharedTokenSHA256;
-        tokenSHA256Hex = sharedTokenSHA256Hex;
-      } else {
-        const coordToken = deriveCoordinatorToken(token, shortAlias);
-        tokenSHA256Hex = sha256(coordToken);
-        tokenSHA256 = hexToBase91(tokenSHA256Hex);
-      }
-
       acc[shortAlias] = new Robot({
         ...robotAttributes,
         token,
@@ -62,7 +46,6 @@ class Slot {
         bitsEntropy,
         shannonEntropy,
         tokenSHA256,
-        tokenSHA256Hex,
         nostrPubKey,
       });
       this.updateSlotFromRobot(acc[shortAlias]);
@@ -85,7 +68,7 @@ class Slot {
   nostrPubKey?: string;
   availableRewards: string | null = null;
   loading: boolean;
-  legacy: boolean;
+  accountIndex: number | null = null;
 
   onSlotUpdate: () => void;
 
@@ -122,26 +105,38 @@ class Slot {
 
     let changed = false;
 
-    if (robot.lastOrderId && this.lastOrder?.id !== robot.lastOrderId) {
-      // If active order became last order, preserve the full object.
-      if (this.activeOrder?.id === robot.lastOrderId) {
-        this.lastOrder = this.activeOrder;
-        this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
-        this.activeOrder = null;
-      } else {
-        // New last order with minimal data, status must be resolved before reusability checks.
-        this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
-        this.lastOrderStatusKnown = false;
-      }
-      changed = true;
-    }
-
     if (robot.activeOrderId && this.activeOrder?.id !== robot.activeOrderId) {
       this.activeOrder = new Order({
         id: robot.activeOrderId,
         shortAlias: robot.shortAlias,
       });
       changed = true;
+    } else if (
+      !robot.activeOrderId &&
+      this.activeOrder?.shortAlias === robot.shortAlias &&
+      this.lastOrder?.id !== this.activeOrder.id
+    ) {
+      this.activeOrder = null;
+      changed = true;
+    }
+
+    if (robot.lastOrderId && this.lastOrder?.id !== robot.lastOrderId) {
+      if (robot.lastOrderId === robot.activeOrderId) {
+        // The robot reports the same id for both last and active — it is still
+        // active, so leave activeOrder in place and skip updating lastOrder.
+      } else if (this.activeOrder?.id === robot.lastOrderId) {
+        // The previously-active order is now the last order: preserve the full
+        // object so that status details are not lost.
+        this.lastOrder = this.activeOrder;
+        this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
+        this.activeOrder = null;
+        changed = true;
+      } else {
+        // New last order with minimal data, status must be resolved before reusability checks.
+        this.lastOrder = new Order({ id: robot.lastOrderId, shortAlias: robot.shortAlias });
+        this.lastOrderStatusKnown = false;
+        changed = true;
+      }
     }
 
     const previousRewards = this.availableRewards;
@@ -166,6 +161,7 @@ class Slot {
       const order = this.activeOrder;
       const previousStatus = order.status;
       await order.fecth(federation, this);
+      this.loading = false;
       if (this.activeOrder !== order) return;
       this.updateSlotFromOrder(order);
       if (this.activeOrder && order.status !== previousStatus) this.onSlotUpdate();
@@ -192,11 +188,21 @@ class Slot {
     return order;
   };
 
+  private resolveBadRequestStatus = (order: Order): boolean => {
+    if (order.bad_request?.includes('expired')) {
+      order.status = 5;
+      return true;
+    }
+    if (order.bad_request?.includes('collaborativelly')) {
+      order.status = 12;
+      return true;
+    }
+    return false;
+  };
+
   updateSlotFromOrder: (newOrder: Order | null) => void = (newOrder) => {
     if (newOrder) {
-      // FIXME: API responses with bad_request should include also order's status
-      if (newOrder?.bad_request?.includes('expired')) newOrder.status = 5;
-      if (newOrder?.bad_request?.includes('collaborativelly')) newOrder.status = 12;
+      this.resolveBadRequestStatus(newOrder);
       if (
         newOrder.id === this.activeOrder?.id &&
         newOrder.shortAlias === this.activeOrder?.shortAlias
@@ -257,46 +263,47 @@ class Slot {
     }
 
     await this.lastOrder.fecth(federation, this);
-    this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder);
+    const statusResolved =
+      !this.lastOrder.bad_request || this.resolveBadRequestStatus(this.lastOrder);
+    this.lastOrderStatusKnown = this.hasOrderDetails(this.lastOrder) && statusResolved;
     this.onSlotUpdate();
+  };
+
+  ensureRobot: (federation: Federation, shortAlias: string) => Robot | null = (
+    federation,
+    shortAlias,
+  ) => {
+    const existing = this.robots[shortAlias];
+    if (existing) return existing;
+
+    const defaultRobot = this.getRobot();
+    if (!defaultRobot?.token) return null;
+
+    this.robots[shortAlias] = new Robot({
+      shortAlias,
+      hasEnoughEntropy: defaultRobot.hasEnoughEntropy,
+      bitsEntropy: defaultRobot.bitsEntropy,
+      shannonEntropy: defaultRobot.shannonEntropy,
+      token: defaultRobot.token,
+      pubKey: defaultRobot.pubKey,
+      encPrivKey: defaultRobot.encPrivKey,
+      nostrPubKey: defaultRobot.nostrPubKey,
+    });
+    void this.robots[shortAlias].fetch(federation);
+    this.updateSlotFromRobot(this.robots[shortAlias]);
+    return this.robots[shortAlias];
   };
 
   syncCoordinator: (federation: Federation, shortAlias: string) => void = (
     federation,
     shortAlias,
   ) => {
-    const defaultRobot = this.getRobot();
-    if (defaultRobot?.token) {
-      let tokenSHA256: string;
-      let tokenSHA256Hex: string;
-
-      if (this.legacy) {
-        tokenSHA256Hex = sha256(defaultRobot.token);
-        tokenSHA256 = hexToBase91(tokenSHA256Hex);
-      } else {
-        const coordToken = deriveCoordinatorToken(defaultRobot.token, shortAlias);
-        tokenSHA256Hex = sha256(coordToken);
-        tokenSHA256 = hexToBase91(tokenSHA256Hex);
-      }
-
-      this.robots[shortAlias] = new Robot({
-        shortAlias,
-        hasEnoughEntropy: defaultRobot.hasEnoughEntropy,
-        bitsEntropy: defaultRobot.bitsEntropy,
-        shannonEntropy: defaultRobot.shannonEntropy,
-        token: defaultRobot.token,
-        tokenSHA256,
-        tokenSHA256Hex,
-        pubKey: defaultRobot.pubKey,
-        encPrivKey: defaultRobot.encPrivKey,
-        nostrPubKey: defaultRobot.nostrPubKey,
-      });
-      void this.robots[shortAlias].fetch(federation);
-      this.updateSlotFromRobot(this.robots[shortAlias]);
-    }
+    this.ensureRobot(federation, shortAlias);
   };
 
   isReusable = (): boolean => {
+    if (this.loading) return false;
+
     if (this.activeOrder) return false;
 
     if (!this.lastOrder) {
@@ -307,7 +314,7 @@ class Slot {
       return false;
     }
 
-    const reusableStatuses = [0, 1, 2, 4, 5];
+    const reusableStatuses = [4, 5];
 
     return reusableStatuses.includes(this.lastOrder.status);
   };

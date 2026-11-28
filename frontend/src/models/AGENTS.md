@@ -32,20 +32,20 @@ sha512(plainKey) → BIP32 master seed
   → m/44'/88'/{accountIndex}'/0 → derivedPrivKey
   → base62(derivedPrivKey)[0..36] = robot base token  (slot.token, PGP passphrase, never transmitted)
 
-Per-coordinator bearer (garage-key slots only):
-  sha256("robosats-coordinator-token:" + shortAlias + "|" + baseToken)
-  → 32 bytes → base62[0..36] = coordToken
-  → sha256(coordToken) → hex → base91 = tokenSHA256  (sent in Authorization header)
-  → sha256(coordToken) → hex             = tokenSHA256Hex (used for WebSocket auth)
-
 sha256(sha512(plainKey)) → GarageKey.nostrSecKey (Nostr identity for account recovery)
 ```
 
-**Security property**: a malicious/compromised coordinator only ever sees its own
-`tokenSHA256`. Replaying that credential at any other coordinator authenticates
-against a different, non-existent robot — blocking the bearer-replay / escrow-settlement
-attack. Legacy (non-garageKey) slots share a single bearer across all coordinators
-(old behaviour, unchanged).
+**Per-coordinator bearer: NOT implemented.** Earlier revisions of this doc described a
+`deriveCoordinatorToken` (sha256 of `"robosats-coordinator-token:" + shortAlias + "|" +
+baseToken`) that would give each coordinator its own bearer credential. That function was
+**never shipped** — no such export exists in `utils/garageKey.ts` and every slot sends the
+same `tokenSHA256 = base91(sha256(token))` to all coordinators. The bearer credential must
+therefore be treated as replayable across coordinators; the write-side mitigation is
+**PGP-signed actions** (`utils/actionSignature.ts` + `api/utils.py:
+validate_action_signature`): every state-changing request additionally carries a cleartext
+PGP signature the coordinator verifies against the robot's public key, so a stolen bearer
+allows reads but cannot mutate trades. Per-coordinator bearers remain the long-term read
+side of that fix but are unbuilt.
 
 `currentAccountIndex` (0–2147483647) selects which robot is active; persisted in `systemClient` under `garage_key`.
 
@@ -56,18 +56,23 @@ attack. Legacy (non-garageKey) slots share a single bearer across all coordinato
 
 **Key lifecycle methods on `Garage`:**
 
-| Method                                                          | Purpose                                                                                  |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `createRobotFromGarageKey(federation, index?, autoFindUnused?)` | Derives token at index, creates/fetches slot (`legacy=false`), sets as current           |
-| `createRobot(federation, token, skipSelect?, legacy?)`          | Generic slot creation; defaults to `legacy=true`; pass `false` for garage-key slots      |
-| `ensureReusableSlot(federation, options)`                       | Auto-advances to next reusable account; suppressed when `manualNavigationActive=true`    |
-| `nextAccount(federation, source)` / `previousAccount`           | Manual index navigation; sets `manualNavigationActive=true` on `source='manual'`         |
-| `makeOrderWithRecovery(federation, attributes)`                 | Creates order + publishes Nostr account-recovery event (kind 30078, NIP-59 gift-wrapped) |
-| `publishAccountRecovery(federation, index?)`                    | Publishes recovery event without creating an order                                       |
-| `findNextUnusedAccount(federation, startIndex)`                 | Scans up to 100 slots for first reusable; fetches last-order status when unknown         |
-| `loadGarageKey()` / `setGarageKey()` / `deleteGarageKey()`      | GarageKey persistence lifecycle                                                          |
+| Method                                                          | Purpose                                                                                                                                                    |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createRobotFromGarageKey(federation, index?, autoFindUnused?)` | Derives token at index, creates/fetches slot (`legacy=false`), sets as current; stamps `slot.accountIndex`                                                 |
+| `createRobot(federation, token, skipSelect?, legacy?)`          | Generic slot creation; defaults to `legacy=true`; pass `false` for garage-key slots                                                                        |
+| `ensureReusableSlot(federation, options)`                       | Auto-advances to next reusable account; suppressed when `manualNavigationActive=true`; fetches robot when slot is still loading before judging reusability |
+| `nextAccount(federation, source)` / `previousAccount`           | Manual index navigation; sets `manualNavigationActive=true` on `source='manual'`                                                                           |
+| `makeOrderWithRecovery(federation, attributes)`                 | Creates order + publishes Nostr account-recovery event (kind 30078, NIP-59 gift-wrapped)                                                                   |
+| `publishAccountRecovery(federation, index?)`                    | Publishes recovery event without creating an order                                                                                                         |
+| `findNextUnusedAccount(federation, startIndex)`                 | Scans up to 100 slots for first reusable; fetches robot from coordinator when slot is still loading before judging; fetches last-order status when unknown |
+| `inferAccountIndex(token)`                                      | Synchronously scans derivation 0…currentAccountIndex to find which account number a token belongs to; used by `setCurrentSlot`                             |
+| `loadGarageKey()` / `setGarageKey()` / `deleteGarageKey()`      | GarageKey persistence lifecycle                                                                                                                            |
 
-**`Slot.isReusable()`** returns `true` when: no active order AND (no last order OR last order status ∈ `[0,1,2,4,5]` = WFB/PUB/PAU/UCA/EXP). `lastOrderStatusKnown` gates this — slots with an unknown last-order status are conservatively **not** reusable until `ensureLastOrderStatus()` fetches the real status.
+**`Slot.accountIndex`** (`number | null`, default `null`) — the GarageKey account number this slot was derived from. Set by `createRobotFromGarageKey` and restored from local storage. `null` means the slot predates this field or was created outside garageKey mode; in that case `setCurrentSlot` infers the index via `inferAccountIndex` and stamps it.
+
+**`Garage.setCurrentSlot` / `Garage.deleteSlot` account-sync invariant** — whenever the active slot changes, `garageKey.currentAccountIndex` is updated to match the incoming slot's `accountIndex`. If the slot doesn't have a stored `accountIndex`, `inferAccountIndex` is called to derive it from the GarageKey (scanning 0…currentAccountIndex). This keeps the two in sync so that `handleChangeRobotAndCreate` / `handleChangeRobotAndTake` always start the unused-account search from the right position (currentAccountIndex + 1). Without this sync, notifications or Profile-dialog slot changes left the account index pointing to a different robot than the displayed one, causing the new order to skip a robot.
+
+**`Slot.isReusable()`** returns `true` when: no active order AND (no last order OR last order status ∈ `{4, 5}` = UCA/EXP). `lastOrderStatusKnown` gates this — slots with an unknown last-order status are conservatively **not** reusable until `ensureLastOrderStatus()` fetches the real status. A slot that has never been fetched (`loading=true`) also returns `false`; both `ensureReusableSlot` and `findNextUnusedAccount` call `fetchRobot` first when they encounter a loading slot.
 
 **Account recovery flow** (Nostr):
 
@@ -78,9 +83,36 @@ attack. Legacy (non-garageKey) slots share a single bearer across all coordinato
 
 Old ephemeral-token flow. **Read-only for ongoing trades** — `/offers` and `/create` redirect to `/garage`; Make/Take buttons and nav tabs are disabled. `RobotPage` is the UI surface (not `GaragePage`). Tokens are not persisted as master secrets.
 
+Legacy keys are only for recovering robots from trades created prior the migration. Legacy robots can't take or create orders anymore.
+
 ## `Order.Status` — 19 values (mirrors backend)
 
 `WFB(0) PUB(1) PAU(2) TAK(3) UCA(4) EXP(5) WF2(6) WFE(7) WFI(8) CHA(9) FSE(10) DIS(11) CCA(12) PAY(13) SUC(14) FAI(15) WFR(16) MLD(17) TLD(18)` — must stay in sync with `api/models/order.py`. See `api/models/AGENTS.md` for the full state machine.
+
+## Signed actions — PGP is the write credential
+
+Every state-changing request carries a cleartext PGP signature (made with the robot's
+private key, unlocked by the token) in the request body's `signature` field, alongside the
+replayable bearer (`tokenSHA256` header — read credential only). Content builders and the
+`signAction` wrapper live in `utils/actionSignature.ts`:
+
+| Call site                                          | Signed content                     |
+| -------------------------------------------------- | ---------------------------------- |
+| `Order.submitAction` (all order actions centrally) | `{action}:{orderId}:{shortAlias}`  |
+| `Order.make`                                       | `make:{shortAlias}:{unix_ts}`      |
+| `Robot.fetchStealth`                               | `stealth:{shortAlias}:{unix_ts}`   |
+| `Robot.fetchWebhook`                               | `robot:{shortAlias}:{unix_ts}`     |
+| `Robot.loadReviewToken`                            | `review:{nostrPubKey}` (no window) |
+| `Dispute.tsx` (statement payload, invoice pattern) | the statement text itself          |
+
+The timestamped contents also carry the target coordinator's `shortAlias` — the
+coordinator rebuilds the expected alias server-side (`get_federation_short_alias()`) and
+rejects a signature made for another coordinator with error 1061, so a captured signature
+cannot be replayed across the federation. Timestamped contents must also stay within
+±300 s of coordinator time (`ACTION_SIGNATURE_WINDOW`, mirrored by `api/utils.py`); the
+coordinator rejects anything else with error 1048. If the robot has no key material,
+`signAction` returns `undefined` and the coordinator rejects the request — fail-safe by
+design.
 
 ## `Settings.model.ts` — fields + defaults
 
@@ -153,6 +185,7 @@ as `avg × 5` stars + `(count)`.
 - Each `Slot` holds exactly one `Robot` and its `activeOrder` (if any).
 - `getSlot()` returns the **currently selected** slot (one active at a time in the UI, but multiple can exist).
 - The garage does not enforce single-active-order — the coordinator does.
+- `Slot.ensureRobot(federation, shortAlias)` returns the per-coordinator `Robot`, creating it from the slot's default robot when missing. It is the only robot resolver that honours a target coordinator; `syncCoordinator` delegates to it.
 
 ## Product Intent
 
@@ -171,6 +204,7 @@ as `avg × 5` stars + `(count)`.
 - `Garage` persistence relies on `systemClient` which is platform-specific (`SystemAndroidClient` uses Android Keystore; `SystemWebClient` uses `localStorage`). Never assume a specific storage implementation.
 - **`updateUrl`/`getRelayUrl` must never materialize `'null'`** — federation entries may have a null address for the current network/origin (e.g. `testnet.onion` is null for bazaar/alice/freeport/ammanaya). `String(null)` produced the url `'null'` and the relative relay `'null/relay/'`, which `ReconnectingWebSocket` resolved against the current page (`ws://<host>/<page>/null/relay/` → connection refused) while everything else kept working. `updateUrl` now stores `''` when no address exists (which also activates the `url === ''` guards in `loadBook`/`loadInfo`/`loadLimits`) and `getRelayUrl` returns `''`; `RoboPool.updateRelays` filters empty relays and caps the pool at `Math.min(3, available)` (the old loop also hung forever when fewer than 3 unique relays existed).
 - **Every consumer of `coordinator.url` must treat `''` as unreachable** — `''` is a relative URL that the browser resolves against the CURRENT host (the wrong coordinator!). Without the guard, `Robot.fetch('')` pulled `/api/robot/` from the host and every robot in the slot displayed the same order id, and `Order.submitAction` posted actions to the wrong coordinator. Guards live in `Robot.model` (5 methods — `fetch` also clears stale order ids persisted by the old bug) and `Order.model` (3 methods). Do not remove them.
+- **Sign with the robot of the coordinator the request targets.** `Slot.getRobot()` without an alias resolves by active order, then last order, then the first robot in the map (insertion follows the federation lottery order, randomised per session). Per-coordinator robots legitimately hold divergent PGP keys: a robot created on an older client keeps the first-registered key on that coordinator only, while the slot regenerates fresh key material on a cold load (`genKey` is random — the token is only the passphrase). Signing a request to one coordinator with another coordinator's robot key fails verification with error 1048. `Order.make`/`submitAction`/`fecth` must resolve via `slot.ensureRobot(federation, this.shortAlias)`; do not regress them to the aliased-less `getRobot()`.
 - **Empty-url guards must RESOLVE their loading flags** — `Robot.loading`, `Coordinator.loadingInfo/loadingLimits/loadingBook` default to `true` and a guard that returns early without setting them `false` spins the UI forever ("Looking for orders!" in RobotProfile, the "Up" spinner in FederationTable). Unreachable coordinators must fall through to the existing offline visuals: `LinkOff` in the FederationTable "Up" column (`!params.row.url` is checked first) and "No existing orders found" in the robot profile. Do not render a spinner for a coordinator that has no address on this network/origin.
 
 ## Constraints

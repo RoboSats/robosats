@@ -5,13 +5,10 @@ import { ContentCopy, Check } from '@mui/icons-material';
 import { validateGarageKey } from '../../utils';
 import { systemClient } from '../../services/System';
 
-const GARAGE_KEY_VISIBLE_PREFIX_LENGTH = 12;
-
 interface GarageKeyInputProps {
   garageKey: string;
   setGarageKey: (key: string) => void;
   editable?: boolean;
-  masked?: boolean;
   loading?: boolean;
   onPressEnter?: () => void;
   autoFocusTarget?: 'textField' | 'copyButton';
@@ -22,7 +19,6 @@ const GarageKeyInput = ({
   garageKey,
   setGarageKey,
   editable = true,
-  masked = false,
   loading = false,
   onPressEnter,
   autoFocusTarget = 'textField',
@@ -31,11 +27,6 @@ const GarageKeyInput = ({
 
   const [showCopied, setShowCopied] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-
-  const displayValue =
-    masked && garageKey.length > GARAGE_KEY_VISIBLE_PREFIX_LENGTH
-      ? `${garageKey.slice(0, GARAGE_KEY_VISIBLE_PREFIX_LENGTH)}${'*'.repeat(garageKey.length - GARAGE_KEY_VISIBLE_PREFIX_LENGTH)}`
-      : garageKey;
 
   useEffect(() => {
     setShowCopied(false);
@@ -77,11 +68,11 @@ const GarageKeyInput = ({
     <TextField
       fullWidth
       disabled={!editable || loading}
-      value={displayValue}
+      value={garageKey}
       onChange={handleChange}
       onKeyPress={handleKeyPress}
       error={!!error && garageKey.length > 0}
-      helperText={error && garageKey.length > 0 ? error : undefined}
+      helperText={error && garageKey.length > 0 ? error : t('Store your Garage Key safely')}
       autoFocus={autoFocusTarget === 'textField'}
       slotProps={{
         input: {

@@ -54,7 +54,7 @@ interface OrderDetailsProps {
   currentOrder: Order;
   setCurrentOrder: (currentOrder: Order) => void;
   onClickCoordinator?: () => void;
-  onClickGenerateRobot?: () => void;
+  onClickGenerateRobot?: () => Promise<void>;
 }
 
 const OrderDetails = ({
@@ -62,7 +62,7 @@ const OrderDetails = ({
   currentOrder,
   setCurrentOrder,
   onClickCoordinator = () => null,
-  onClickGenerateRobot = () => null,
+  onClickGenerateRobot = async () => {},
 }: OrderDetailsProps): React.JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();

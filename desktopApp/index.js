@@ -33,20 +33,15 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-// Modules to control application life and create native browser window
 const electron_1 = require("electron");
 const child_process_1 = require("child_process");
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
+const torMonitor_1 = require("./torMonitor");
 let tor = null;
-// Function to determine the current OS and find the appropriate Tor binary
+let monitor = null;
 function checkPlatformAndRunTor() {
     const platform = os.platform();
-    // When packaged with --asar, child_process.spawn() cannot execute binaries
-    // from inside the .asar archive.  The 'tor' directory is kept on the real
-    // filesystem via --asar.unpackDir=tor (see package.json) and lives at
-    // <resources>/app.asar.unpacked/tor/.  Fall back to __dirname when running
-    // unpackaged (development / CI test).
     const torBase = __dirname.includes('app.asar')
         ? path.join(process.resourcesPath, 'app.asar.unpacked')
         : __dirname;
@@ -59,9 +54,6 @@ function checkPlatformAndRunTor() {
             break;
         case 'linux': {
             const torDir = path.join(torBase, 'tor', 'tor-linux', 'tor');
-            // The bundled libevent/libssl/libcrypto live alongside the binary.
-            // LD_LIBRARY_PATH is required so the dynamic linker finds them instead
-            // of (possibly absent) system versions.
             tor = (0, child_process_1.spawn)(path.join(torDir, 'tor'), [], {
                 env: Object.assign(Object.assign({}, process.env), { LD_LIBRARY_PATH: torDir }),
             });
@@ -71,72 +63,74 @@ function checkPlatformAndRunTor() {
             throw new Error(`Unsupported platform: ${platform}`);
     }
 }
-// Function to start Tor process
+async function showTorFailureDialog(event) {
+    const message = (0, torMonitor_1.buildFailureMessage)(event);
+    const { response } = await electron_1.dialog.showMessageBox({
+        type: 'error',
+        title: 'Tor connection failed',
+        message: 'RoboSats could not connect to the Tor network',
+        detail: message,
+        buttons: ['Open release page', 'Quit'],
+        defaultId: 1,
+        cancelId: 1,
+    });
+    if (response === 0) {
+        await electron_1.shell.openExternal('https://github.com/RoboSats/robosats/releases/latest');
+    }
+    electron_1.app.exit(1);
+}
 checkPlatformAndRunTor();
-// Listen for Tor process stdout data
-tor.stdout.on("data", (data) => {
-    const message = data.toString();
-    console.log(`Data received: ${message}`);
+monitor = new torMonitor_1.TorMonitor(tor);
+monitor.on('tor-event', (event) => {
+    if (event.type === 'bootstrap') {
+        console.log(`Tor bootstrap: ${event.percent}% — ${event.summary}`);
+        return;
+    }
+    if (event.type === 'connected') {
+        console.log('Tor bootstrap complete.');
+        return;
+    }
+    console.error('Tor failure event:', event);
+    electron_1.app.whenReady().then(() => showTorFailureDialog(event));
 });
-// Listen for Tor process stderr data
-tor.stderr.on("data", (data) => {
-    console.error(`Error received: ${data.toString()}`);
-    electron_1.app.exit(1); // Exit the app if there's an error in the Tor process
-});
-// Function to create the main application window
 function createWindow() {
-    // Create the browser window with specific dimensions
     const mainWindow = new electron_1.BrowserWindow({
         width: 1200,
         height: 800,
         icon: path.join(__dirname, '/static/assets/images/favicon-32x32.png'),
         webPreferences: {
-            nodeIntegration: false, // Disable Node.js integration in the renderer
-            contextIsolation: true, // Enable context isolation for security
+            nodeIntegration: false,
+            contextIsolation: true,
         },
     });
-    // Load the index.html file from the app directory
-    mainWindow.loadURL(`file://${path.resolve(__dirname, 'index.html#/garage')}`, {
-        extraHeaders: "pragma: no-cache\n" // Prevent caching of the loaded file
-    });
-    // Handle failed load attempts by reloading the file
-    mainWindow.webContents.on("did-fail-load", () => {
-        console.log("Failed to load the page, retrying...");
+    mainWindow.loadURL(`file://${path.resolve(__dirname, 'index.html#/garage')}`, { extraHeaders: 'pragma: no-cache\n' });
+    mainWindow.webContents.on('did-fail-load', () => {
+        console.log('Failed to load the page, retrying...');
         mainWindow.loadURL(`file://${__dirname}/index.html#/garage`);
     });
-    // Uncomment the following line to open the DevTools
-    // mainWindow.webContents.openDevTools();
 }
-// This method is called when Electron has finished initialization
 electron_1.app.whenReady().then(() => {
-    // Create the window after the app is ready
     createWindow();
-    // Re-create a window if the app is activated and there are no other windows open (MacOS specific behavior)
-    electron_1.app.on("activate", () => {
+    electron_1.app.on('activate', () => {
         if (electron_1.BrowserWindow.getAllWindows().length === 0)
             createWindow();
     });
 });
-// Setup the app session when Electron is ready
-electron_1.app.on("ready", () => {
-    // Redirect requests to static files
+electron_1.app.on('ready', () => {
     electron_1.session.defaultSession.webRequest.onBeforeRequest({ urls: ['file:///static/*'] }, (details, callback) => {
-        const url = details.url;
-        const modifiedUrl = url.slice(7);
+        const modifiedUrl = details.url.slice(7);
         const staticFilePath = path.join(__dirname, modifiedUrl);
         callback({ redirectURL: `file://${staticFilePath}` });
     });
-    // Set the proxy for the session to route through Tor
     electron_1.session.defaultSession.setProxy({
-        proxyRules: "socks://localhost:9050",
-        proxyBypassRules: "<local>",
+        proxyRules: 'socks://localhost:9050',
+        proxyBypassRules: '<local>',
     });
 });
-// Handle all windows closed event except on macOS
-electron_1.app.on("window-all-closed", () => {
-    // Terminate the Tor process if it exists
+electron_1.app.on('window-all-closed', () => {
+    monitor === null || monitor === void 0 ? void 0 : monitor.stop();
     tor === null || tor === void 0 ? void 0 : tor.kill();
-    if (process.platform !== "darwin")
+    if (process.platform !== 'darwin')
         electron_1.app.quit();
 });
 //# sourceMappingURL=index.js.map

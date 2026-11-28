@@ -47,6 +47,21 @@ docker-compose restart
 ```
 Copy the `.env-sample` file into `.env` and check the environmental variables are right for your development.
 
+### Creating the LND wallet on first run
+
+On a fresh setup `lnd-dev` keeps restarting with `wallet unlock password file was specified but wallet does not exist`, because auto unlock is enabled but no wallet has been created yet. To create it:
+
+1. Comment out `wallet-unlock-password-file=/tmp/pwd` in `node/lnd/lnd.conf`. This file is generated from `docker/lnd/lnd.conf` on the first run and is the one LND reads, so editing `docker/lnd/lnd.conf` has no effect once it exists.
+2. Restart LND and create the wallet. Use the value of `AUTO_UNLOCK_PWD` from your `.env` as the wallet password (LND requires at least 8 characters).
+```bash
+docker restart lnd-dev
+docker exec -it lnd-dev lncli --network=testnet create
+```
+3. Uncomment `wallet-unlock-password-file=/tmp/pwd` in `node/lnd/lnd.conf` and restart LND. It should now unlock automatically.
+```bash
+docker restart lnd-dev
+```
+
 ### Using a restricted LND macaroon
 
 Coordinator operators using LND do not need to give RoboSats access to the full `admin.macaroon`. LND supports macaroons restricted to individual RPC method URIs, allowing the coordinator to use only the RPC calls it needs.

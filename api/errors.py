@@ -62,6 +62,13 @@ ERRORS = {
     1054: "Cannot open a dispute yet. You need to wait until 18 hours before expiry.",
     1055: "This public key is already in use by another active robot.",
     1056: "Your PGP public key was created too recently ({key_creation_date}). Keys must be at least 12 hours old. Please check your system clock and generate a new key.",
+    1059: "This action needs a signature which your client did not provide "
+    + "because you are using an outdated client. Please recover your robot in: "
+    + "{recover_url} and retry.",
+    1060: "The signed request timestamp is too far from this coordinator's clock. "
+    + "Please enable automatic time on your device and try again.",
+    1061: "This action was signed for the coordinator '{signed_for_alias}', but "
+    + "this is '{coordinator_alias}'. Update your client and try again.",
     # 2000 - Bad statement
     2000: "The statement and chat logs are longer than 50,000 characters",
     2001: "The statement is too short. Make sure to be thorough.",

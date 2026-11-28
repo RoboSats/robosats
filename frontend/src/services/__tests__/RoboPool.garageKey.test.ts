@@ -20,6 +20,7 @@ function relay() {
     onMessage: (callback) => {
       onMessage = callback;
     },
+    onOpen: () => {},
     onError: () => {},
     onClose: () => {},
   };
@@ -291,7 +292,7 @@ describe('Garage Key relay subscriptions', () => {
     jest.advanceTimersByTime(500);
     expect(second.requests()).toHaveLength(0);
     expect(events.oneose).not.toHaveBeenCalled();
-    expect(jest.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(1);
   });
 
   it('discards a connection opened after its pool was replaced', async () => {

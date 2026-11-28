@@ -110,7 +110,7 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - **Testnet is a first-class product surface**, not a dev-only escape hatch.
 - **ProMain targets arbitrage traders** who need a multi-panel dashboard with live orderbook depth and portfolio controls.
 - **`federation.json`/`lnproxies.json`/`thirdparties.json` are maintainer-owned seed files.** A webpack rebuild is required to propagate changes into the bundle.
-- **Jest tests are present (`npm test`) but not required** — the test suite is not ready. Do not mandate frontend tests in new code Constraints.
+- **Jest tests are CI-enforced** (`npm test -- --coverage` in `js-linter.yml`). Tests and coverage floors are mandatory per root `AGENTS.md` Testing policy.
 - **Coordinator reputation is Nostr-native and coordinator-attested** — after a successful
   trade (`SUC`/`MLD`/`TLD`), the coordinator signs a proof-of-trade token (`POST /api/review/`)
   that the robot uses to publish a Nostr kind 31986 rating event. Ratings aggregate in
@@ -139,6 +139,16 @@ Not from `window.RobosatsSettings`; selection happens at **module load** via `wi
 - **Encrypted-chat send/decrypt paths early-return when `robot.pubKey`/`peerPubKey`/`encPrivKey`/`slot.token` are missing.** In the socket path, the message index is recorded _before_ the guard, so a skipped message (e.g. missing `peerPubKey`) is never reprocessed once the key arrives.
 - **`utils/checkVer.ts` contains the live `getHigherVer`** (used by `Exchange.model.ts`). The previously dead copy in `aggregateInfo.ts` has been deleted — do not recreate it.
 - **`@nivo/theming`** is used by `NivoScheme/index.ts` and is an explicit dependency. It is NOT exported from `@nivo/core` — import `PartialTheme` directly from `@nivo/theming`.
+
+## Testing
+
+- **Runner:** `npm test` (Jest 30, `testEnvironment: 'node'`). `npm test -- --coverage` enforced by CI (`js-linter.yml`).
+- **File convention:** `__tests__/*.test.ts` colocated with the module under test — mirrors existing suites in `src/models/`, `src/utils/`, `src/services/`, and `src/services/FederationDiscovery/`.
+- **Scope:** pure-logic, no DOM rendering. React components and browser-only flows are out of scope for the Node Jest environment.
+- **ESM-only services** (`api`, `Websocket`, `Roboidentities`) are stubbed via `jest.config.js` `moduleNameMapper` → `src/services/__mocks__/`. `nostr-tools` is mapped to its CJS build. Do not import these directly in tests — use the mock path.
+- **`tsc` exclusion:** `*.test.ts` files are excluded from `tsconfig.json` `include` but are still linted and formatted via ESLint/Prettier.
+- **Coverage:** run `npm test` locally before opening a PR to confirm no regression. See root `AGENTS.md` Testing section.
+- New or changed logic in `src/models/`, `src/utils/`, `src/services/` **must** ship with Jest coverage in the same branch.
 
 ## Constraints
 

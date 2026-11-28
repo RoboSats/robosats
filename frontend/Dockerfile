@@ -1,13 +1,10 @@
-FROM node:22-bookworm-slim
+FROM node:22-alpine
 
 RUN mkdir -p /usr/src/frontend
 
-# specifying the working dir inside the container
 WORKDIR /usr/src/frontend
 
-RUN apt-get update && \
-    apt-get install -y python3 \
-    build-essential
+RUN apk --no-cache add python3 make g++
 
 # copy current workdir
 COPY package.json package.json

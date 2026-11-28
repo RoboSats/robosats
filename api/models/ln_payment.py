@@ -108,6 +108,9 @@ class LNPayment(models.Model):
     routing_attempts = models.PositiveSmallIntegerField(null=False, default=0)
     last_routing_time = models.DateTimeField(null=True, default=None, blank=True)
     in_flight = models.BooleanField(default=False, null=False, blank=False)
+    # When a slashed bond's reward was credited. Set once, by a conditional update,
+    # so a bond is never rewarded twice (see Logics.add_slashed_rewards).
+    rewarded_at = models.DateTimeField(null=True, default=None, blank=True)
     # involved parties
     sender = models.ForeignKey(
         User, related_name="sender", on_delete=models.SET_NULL, null=True, default=None

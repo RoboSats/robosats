@@ -51,6 +51,53 @@ submit_statement, dispute, cancel, confirm, undo_confirm, rate_platform`. Option
 `cancel_status` is an optimistic-concurrency guard — `Logics.cancel_order` rejects if
 `order.status != cancel_status`.
 
+## Signed actions — bearer = read credential, PGP = write credential
+
+The `tokenSHA256` bearer header is derived only from the token and is identical across all
+coordinators, so a coordinator (or anyone who steals the header) can replay it at any other
+coordinator and act there as the robot (GHSA-22q8-9ghc-jg3h). Reads can stay bearer-
+authenticated; every **state-changing** request additionally requires a cleartext PGP
+signature (`signature` body field) made with the robot's private key, verified against
+`robot.public_key` via `api/utils.py` helpers. An attacker holding only the auth headers
+(`pub_key` + `enc_priv_key`) cannot sign — the token (passphrase) is the missing secret.
+
+Wire format (byte-exact; mirrored in `frontend/src/utils/actionSignature.ts`):
+
+| Request                        | Signed content                            | Window |
+| ------------------------------ | ----------------------------------------- | ------ |
+| `POST /api/order/` (all actions) | `{action}:{order_id}:{shortAlias}`        | none   |
+| `POST /api/make/`              | `make:{shortAlias}:{unix_ts}`             | ±300 s |
+| `POST /api/stealth/`           | `stealth:{shortAlias}:{unix_ts}`          | ±300 s |
+| `PUT /api/robot/`              | `robot:{shortAlias}:{unix_ts}`            | ±300 s |
+| `POST /api/review/`            | `review:{pubkey}`                         | none (idempotent, binds write-once nostr pubkey) |
+
+- `{shortAlias}` is `get_federation_short_alias()` (never raw `COORDINATOR_ALIAS`), the
+  same value the frontend signs with.
+- Every signed content carries the coordinator alias, so a signature captured at one
+  coordinator cannot be replayed at another. `validate_signed_action_timestamp` builds
+  the expected alias itself from `get_federation_short_alias()` — a mismatch rejects
+  with **error 1061** (distinct from 1048 malformed / 1060 clock skew; a replayed
+  signature is neither).
+- `submit_statement` carries two signatures: the action signature above **and** the
+  `statement` field is itself a cleartext-signed payload (invoice pattern) — the view
+  extracts the text with `verify_signed_message` before `Logics.dispute_statement`.
+- `update_invoice`/`update_address` keep their pre-existing per-payload signature checks,
+  now alongside the uniform action signature.
+- `validate_action_signature(user, expected_content, signature)` and
+  `validate_signed_action_timestamp(user, action, signature)` return `(True, None)` or
+  `(False, new_error(1048))`. Timestamped actions must be within
+  `ACTION_SIGNATURE_WINDOW` (300 s) of server time; `review` is exempt (idempotent,
+  binds the write-once nostr pubkey). Both helpers fetch the Robot row with
+  `Robot.objects.get(user=user)` instead of `user.robot`: accessing the reverse
+  relation caches the instance on `request.user` for the whole request, so a
+  mid-request penalty mutation (`kick_taker` on pretaker cancel) would be invisible
+  to `is_penalized` when the view builds its GET response afterwards.
+- Validation runs before any mutation — on `take`, before the `transaction.atomic`
+  `select_for_update` block.
+- `REQUIRE_SIGNED_ACTIONS` (default `true`) is a temporary escape hatch for coordinators
+  mid-upgrade: `false` restores the pre-hardening behaviour for outdated desktop/Android
+  clients. Never deploy it permanently — with it off, a stolen bearer can settle escrow.
+
 ## Order state machine
 19 statuses in `api/models/order.py` — see `api/models/AGENTS.md` for the full enum, expiry
 reasons, `t_to_expire` table.
@@ -93,8 +140,9 @@ and `api/models/AGENTS.md`'s **Trade economics**).
 - `cancel_order()` / `collaborative_cancel()` — branches per status; post-escrow
   collaborative cancel is **always free** (see Product intent — `oas_schemas.py`'s "future
   cost" text is stale)
-- `open_dispute()` / `automatic_dispute_resolution()` / `dispute_statement()` — dispute flow;
-  auto-resolution short-circuits when one side never wrote in chat (char limits: see Traps)
+- `open_dispute()` / `dispute_statement()` — dispute flow; every timeout-dispute settles
+  escrow and both bonds to the coordinator immediately (full custody path, no auto-resolution;
+  char limits for statements: see Traps)
 - `order_expires()` — general timeout handler, branches per status; CHA/FSE timeout
   **auto-opens a dispute** (see Product intent)
 - `calc_sats()` / `satoshis_now()` / `price_and_premium_now()` — fiat↔sats conversion
@@ -253,12 +301,13 @@ guard on the dispute itself, not an SLA for coordinator resolution. Federation t
 on careful, unhurried dispute adjudication — disputes are never auto-rushed or auto-resolved
 against a user's favour once the coordinator has taken custody.
 
-**Both-silent auto-resolution** (`automatic_dispute_resolution`): if both parties wrote zero
-chat messages and fiat was never marked sent, the escrow is returned but both bonds are
-settled to the coordinator and **held indefinitely** — not split, not returned — until one
-of the peers appears and contacts the coordinator. This is consistent with the same trust
-stance: the coordinator cannot know who is at fault without evidence, so it holds the bonds
-as a neutral custodian rather than making an arbitrary automatic call.
+**No automatic dispute resolution.** Chat now runs over Nostr; the coordinator's
+`chat.models.Message` table is no longer a reliable record of who participated. Deciding
+a winner based on coordinator-side message counts would punish a robot that wrote in chat
+via Nostr but whose message was not stored locally. `automatic_dispute_resolution` has
+been removed. Every dispute opened by a CHA/FSE timeout follows the same full custody
+path as a user-triggered dispute: escrow and both bonds are settled to the coordinator,
+the order moves to `DIS`, and the coordinator resolves it manually via the admin.
 
 ## Traps
 Both nostr Celery tasks registered with empty `name=""`. `send_telegram_message` retries
@@ -305,4 +354,17 @@ exceptions could restore rewards they already received (exploit).
 
 ## Rules
 
-- Always update or create integration and/or unitary tests in ../tests
+- Always update or create tests covering any change in the same branch (see root `AGENTS.md` Testing section for the full policy and coverage-floor ratchet rule).
+
+### Testing — which suite to use
+
+| Change type | Suite | Location |
+|---|---|---|
+| `Logics` math, fees, bond/payout calculation | Unit (mocked) | `api/tests/` |
+| `utils.py` helpers, serializer validation, task logic, notifications, Nostr event construction | Unit (mocked) | `api/tests/` |
+| Endpoint behaviour, HTTP status codes, response schema | Integration | `/tests/` |
+| Order state-machine transitions, escrow/bond payment flows | Integration | `/tests/` |
+
+- Unit tests use `unittest.mock`; patch at the definition site — see `api/tests/AGENTS.md` for the canonical patch-target mapping.
+- Integration tests must call `assertResponse` (schema validation via drf-spectacular) on every new endpoint assertion.
+- Run `coverage run manage.py test && coverage report` locally before opening a PR to confirm no regression; see root `AGENTS.md` Testing section.

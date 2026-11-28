@@ -8,7 +8,7 @@ USER root
 RUN adduser --disabled-password lnd
 # Set the expected local user id
 # for shared group to access tor cookie
-RUN apk --no-cache --no-progress add shadow=~4 sudo=~1 gettext=~0.21 && \
+RUN apk --no-cache --no-progress add shadow=~4 sudo=~1 gettext=~1.0 && \
     usermod -u "$LOCAL_USER_ID" lnd && \
     groupmod -g "$LOCAL_GROUP_ID" lnd
 

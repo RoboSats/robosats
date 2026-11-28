@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip, type TooltipProps } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import placeholder from './placeholder.json';
@@ -47,52 +46,44 @@ const RobotAvatar: React.FC<Props> = ({
   imageStyle = {},
   onLoad = () => {},
 }) => {
-  const backgroundFadeTime = 3000;
   const [backgroundData] = useState<BackgroundData>(placeholder.loading);
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
   const { hostUrl, client } = useContext<UseAppStoreType>(AppContext);
-  const [avatarSrc, setAvatarSrc] = useState<string>();
-  const [activeBackground, setActiveBackground] = useState<boolean>(true);
+  const [, forceUpdate] = useState(0);
+
+  const size = small ? 'small' : 'large';
+
+  const avatarSrc: string | undefined = (() => {
+    if (shortAlias) {
+      return client !== 'mobile'
+        ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
+        : `file:///android_asset/static/assets/federation/avatars/${shortAlias}.webp`;
+    }
+    if (hashId) {
+      return roboidentitiesClient.getRobohashFromCache(hashId, size);
+    }
+    return undefined;
+  })();
+
+  const activeBackground = avatarSrc === undefined && !shortAlias;
 
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    if (hashId) {
-      generateAvatar();
+    if (!hashId || roboidentitiesClient.getRobohashFromCache(hashId, size) !== undefined) return;
 
-      setTimeout(() => {
-        if (!avatarSrc) generateAvatar();
-      }, backgroundFadeTime);
-    }
-  }, [hashId, small]);
-
-  useEffect(() => {
-    if (shortAlias && shortAlias !== '') {
-      const coordinatorAvatar =
-        client !== 'mobile'
-          ? `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`
-          : `file:///android_asset/static/assets/federation/avatars/${shortAlias}.webp`;
-      setAvatarSrc(coordinatorAvatar);
-      setActiveBackground(false);
-    } else {
-      setActiveBackground(true);
-    }
-  }, [shortAlias]);
-
-  const generateAvatar = () => {
-    if (!hashId) return;
-
+    let cancelled = false;
     roboidentitiesClient
-      .generateRobohash(hashId, small ? 'small' : 'large')
-      .then((avatar) => {
-        setAvatarSrc(avatar);
-        setActiveBackground(false);
+      .generateRobohash(hashId, size)
+      .then(() => {
+        if (!cancelled) forceUpdate((n) => n + 1);
       })
-      .catch(() => {
-        console.log('CATCH');
-        setActiveBackground(true);
-      });
-  };
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hashId, size]);
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '0.428em', top: '0.07em' }}>
@@ -132,21 +123,36 @@ const RobotAvatar: React.FC<Props> = ({
           }}
         >
           <div className={className}>
-            <SmoothImage
-              src={avatarSrc}
-              imageStyles={{
-                borderRadius: '50%',
-                border: '0.3px solid #55555',
-                filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-                ...imageStyle,
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                height: 0,
+                opacity: avatarSrc ? 1 : 0,
+                overflow: 'hidden',
+                paddingBottom: '100%',
               }}
-            />
+            >
+              {avatarSrc && (
+                <img
+                  src={avatarSrc}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    borderRadius: '50%',
+                    border: '0.3px solid #55555',
+                    filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
+                    ...imageStyle,
+                  }}
+                />
+              )}
+            </div>
           </div>
         </div>
       );
     } else {
-      // When avatarSrc is not yet available, use the placeholder image data URL
-      // so the loading animation is shown instead of MUI's grey silhouette.
       const src = avatarSrc ?? `data:${backgroundData.mime};base64,${backgroundData.data}`;
       return (
         <Avatar
@@ -163,7 +169,19 @@ const RobotAvatar: React.FC<Props> = ({
         />
       );
     }
-  }, [hashId, shortAlias, avatarSrc, statusColor, tooltip, avatarClass, activeBackground]);
+  }, [
+    hashId,
+    shortAlias,
+    avatarSrc,
+    avatarClass,
+    activeBackground,
+    smooth,
+    flipHorizontally,
+    className,
+    backgroundImage,
+    imageStyle,
+    style,
+  ]);
 
   const getAvatarWithBadges = useCallback(() => {
     let component = avatar;
