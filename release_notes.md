@@ -6,18 +6,14 @@ RoboSats v0.8.9-alpha is now out! :rocket:
 **TL;DR**
 
 ### For Users
+
+- Gumpellite coordinator dropped from the federation
 - Security fix (GHSA-22q8-9ghc-jg3h): state-changing requests now require a PGP signature — bearer tokens alone can no longer be replayed
 - Timed signatures bound to the target coordinator, preventing cross-coordinator replay
 - Nostr relay auto-recovery: dropped relays reconnect, subscriptions replay, failed relays replaced by federation spares
-- Nostr order book split into pending-only and tombstone streams, fixing silent truncation near the 500-event relay cap
-- Third-party NIP-69 order tombstones now remove stale orders from the book
-- Nostr relay status chip shown in the chat header
-- Relay chip blinks red on total outage
-- Android Nostr chat and websocket handling overhauled for reliability
 - Desktop Tor upgraded
 - Robot reusability enforced client-side after finishing a trade
 - Automatic dispute resolution removed — all disputes now require manual coordinator intervention
-- Gumpellite coordinator dropped from the federation
 - Multiple libraries security updates
 
 **Bugs**
